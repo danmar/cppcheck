@@ -148,13 +148,13 @@ def latestReport(latestResults: list) -> str:
         package = filename[filename.rfind('/')+1:]
         current_year = datetime.date.today().year
 
-        datestr = ''
+        datestr = None
         count = ['0', '0']
         lost = 0
         added = 0
         for line in open(filename, 'rt'):
             line = line.strip()
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             #elif line.startswith('cppcheck:'):
             #    cppcheck = line[9:]
@@ -185,8 +185,8 @@ def crashReport(results_path: str) -> str:
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        datestr = ''
         with open(filename, 'rt') as file_:
+            datestr = None
             for line in file_:
                 line = line.strip()
                 if line.startswith('cppcheck: '):
@@ -196,7 +196,7 @@ def crashReport(results_path: str) -> str:
                     else:
                         # Current package, parse on
                         continue
-                if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
                 elif line.startswith('count:'):
                     if line.find('Crash') < 0:
@@ -279,8 +279,8 @@ def timeoutReport(results_path: str) -> str:
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        datestr = ''
         with open(filename, 'rt') as file_:
+            datestr = None
             for line in file_:
                 line = line.strip()
                 if line.startswith('cppcheck: '):
@@ -290,7 +290,7 @@ def timeoutReport(results_path: str) -> str:
                     else:
                         # Current package, parse on
                         continue
-                if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
                 elif line.startswith('count:'):
                     if line.find('TO!') < 0:
@@ -680,7 +680,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     for filename in glob.glob(resultPath + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        datestr = ''
+        datestr = None
         for line in open(filename, 'rt'):
             line = line.strip()
             if line.startswith('cppcheck: '):
@@ -690,7 +690,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
             if not line.startswith('elapsed-time:'):
@@ -765,7 +765,7 @@ def timeReportSlow(resultPath: str) -> str:
     for filename in glob.glob(resultPath + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        datestr = ''
+        datestr = None
         for line in open(filename, 'rt'):
             line = line.strip()
             if line.startswith('cppcheck: '):
@@ -775,7 +775,7 @@ def timeReportSlow(resultPath: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
             elif line.startswith('count:'):
