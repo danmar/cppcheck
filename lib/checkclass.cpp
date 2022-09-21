@@ -1319,14 +1319,21 @@ void CheckClass::checkMemset()
 
                 const Token *typeTok = nullptr;
                 const Scope *type = nullptr;
-                if (Token::Match(arg3, "sizeof ( %type% ) )"))
-                    typeTok = arg3->tokAt(2);
-                else if (Token::Match(arg3, "sizeof ( %type% :: %type% ) )"))
-                    typeTok = arg3->tokAt(4);
-                else if (Token::Match(arg3, "sizeof ( struct %type% ) )"))
-                    typeTok = arg3->tokAt(3);
-                else if (Token::simpleMatch(arg3, "sizeof ( * this ) )") || Token::simpleMatch(arg1, "this ,")) {
-                    type = findFunctionOf(arg3->scope());
+                const Token* sizeofTok = arg3->previous()->astOperand2(); // try to find sizeof() in argument expression
+                if (sizeofTok && sizeofTok->astOperand1() && Token::simpleMatch(sizeofTok->astOperand1()->previous(), "sizeof ("))
+                    sizeofTok = sizeofTok->astOperand1();
+                else if (sizeofTok && sizeofTok->astOperand2() && Token::simpleMatch(sizeofTok->astOperand2()->previous(), "sizeof ("))
+                    sizeofTok = sizeofTok->astOperand2();
+                if (Token::simpleMatch(sizeofTok, "("))
+                    sizeofTok = sizeofTok->previous();
+                if (Token::Match(sizeofTok, "sizeof ( %type% )"))
+                    typeTok = sizeofTok->tokAt(2);
+                else if (Token::Match(sizeofTok, "sizeof ( %type% :: %type% )"))
+                    typeTok = sizeofTok->tokAt(4);
+                else if (Token::Match(sizeofTok, "sizeof ( struct %type% )"))
+                    typeTok = sizeofTok->tokAt(3);
+                else if (Token::simpleMatch(sizeofTok, "sizeof ( * this )") || Token::simpleMatch(arg1, "this ,")) {
+                    type = findFunctionOf(sizeofTok->scope());
                 } else if (Token::Match(arg1, "&|*|%var%")) {
                     int numIndirToVariableType = 0; // Offset to the actual type in terms of dereference/addressof
                     for (;; arg1 = arg1->next()) {
