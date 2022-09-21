@@ -5441,6 +5441,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int& i) {\n"
+              "    if (!i)\n"
+              "        i = 1; \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S {\n" // #9406
               "    S() : b(false) {}\n"
               "    void f() {\n"
