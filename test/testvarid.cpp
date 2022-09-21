@@ -135,6 +135,7 @@ private:
         TEST_CASE(varid_in_class20);    // #7267
         TEST_CASE(varid_in_class21);    // #7788
         TEST_CASE(varid_in_class22);    // #10872
+        TEST_CASE(varid_in_class23);    // #11293
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -1960,6 +1961,28 @@ private:
                                 "7: std :: vector < data > :: const_iterator end@2 ; end@2 = std@1 . end ( ) ;\n"
                                 "8: for ( std :: vector < data > :: const_iterator i@3 = std@1 . begin ( ) ; i@3 != end@2 ; ++ i@3 ) { }\n"
                                 "9: }\n";
+
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
+    void varid_in_class23() { // #11293
+        const char code[] = "struct A {\n"
+                            "    struct S {\n"
+                            "        bool b;\n"
+                            "    };\n"
+                            "};\n"
+                            "struct B : A::S {\n"
+                            "    void f() { b = false; }\n"
+                            "};\n";
+
+        const char expected[] = "1: struct A {\n"
+                                "2: struct S {\n"
+                                "3: bool b@1 ;\n"
+                                "4: } ;\n"
+                                "5: } ;\n"
+                                "6: struct B : A :: S {\n"
+                                "7: void f ( ) { b@1 = false ; }\n"
+                                "8: } ;\n";
 
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
