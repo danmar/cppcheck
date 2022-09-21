@@ -46,6 +46,10 @@ handler_file.setLevel(logging.ERROR)
 logger.addHandler(handler_file)
 
 
+def print_ts(msg):
+    print('[' + strDateTime() + '] ' + msg)
+
+
 # Set up an exception hook for all uncaught exceptions so they can be logged
 def handle_uncaught_exception(exc_type, exc_value, exc_traceback):
     if issubclass(exc_type, KeyboardInterrupt):
@@ -243,7 +247,7 @@ def crashReport(results_path: str) -> str:
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
                             continue
 
-                        print('{} - unmatched stack frame - {}'.format(package, l))
+                        print_ts('{} - unmatched stack frame - {}'.format(package, l))
                         break
                     key = hash(' '.join(stack_trace))
 
@@ -815,7 +819,7 @@ def timeReportSlow(resultPath: str) -> str:
 def check_library_report(result_path: str, message_id: str) -> str:
     if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore', 'checkLibraryCheckType'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
-        print(error_message)
+        print_ts(error_message)
         return error_message
 
     if message_id == 'checkLibraryCheckType':
@@ -941,7 +945,7 @@ class HttpClientThread(Thread):
     def run(self):
         try:
             cmd = self.cmd
-            print('[' + strDateTime() + '] ' + cmd)
+            print_ts(cmd)
             res = re.match(r'GET /([a-zA-Z0-9_\-\.\+%]*) HTTP', cmd)
             if res is None:
                 self.connection.close()
@@ -1012,7 +1016,7 @@ class HttpClientThread(Thread):
             else:
                 filename = resultPath + '/' + url
                 if not os.path.isfile(filename):
-                    print('HTTP/1.1 404 Not Found')
+                    print_ts('HTTP/1.1 404 Not Found')
                     self.connection.send(b'HTTP/1.1 404 Not Found\r\n\r\n')
                 else:
                     f = open(filename, 'rt')
@@ -1021,7 +1025,7 @@ class HttpClientThread(Thread):
                     httpGetResponse(self.connection, data, 'text/plain')
         except:
             tb = "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
-            print(tb)
+            print_ts(tb)
             httpGetResponse(self.connection, tb, 'text/plain')
         finally:
             time.sleep(1)
@@ -1042,12 +1046,12 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
         with open('latest.txt', 'rt') as f:
             latestResults = f.read().strip().split(' ')
 
-    print('[' + strDateTime() + '] version ' + SERVER_VERSION)
-    print('[' + strDateTime() + '] listening on port ' + str(server_address_port))
+    print_ts('version ' + SERVER_VERSION)
+    print_ts('listening on port ' + str(server_address_port))
 
     while True:
         # wait for a connection
-        print('[' + strDateTime() + '] waiting for a connection')
+        print_ts('waiting for a connection')
         connection, client_address = sock.accept()
         try:
             bytes_received = connection.recv(128)
@@ -1057,7 +1061,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             continue
         except UnicodeDecodeError as e:
             connection.close()
-            print('Error: Decoding failed: ' + str(e))
+            print_ts('Error: Decoding failed: ' + str(e))
             continue
         if cmd.find('\n') < 1:
             continue
@@ -1070,7 +1074,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             newThread.start()
         elif cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
-            print('[' + strDateTime() + '] GetCppcheckVersions: ' + reply)
+            print_ts('GetCppcheckVersions: ' + reply)
             connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd == 'get\n':
@@ -1083,7 +1087,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             f.write(str(packageIndex) + '\n')
             f.close()
 
-            print('[' + strDateTime() + '] get:' + pkg)
+            print_ts('get:' + pkg)
             connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
@@ -1098,7 +1102,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         try:
                             text_received = bytes_received.decode('utf-8', 'ignore')
                         except UnicodeDecodeError as e:
-                            print('Error: Decoding failed (write): ' + str(e))
+                            print_ts('Error: Decoding failed (write): ' + str(e))
                             data = ''
                             break
                         t = 0.0
@@ -1114,17 +1118,17 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if pos < 10:
                 continue
             url = data[:pos]
-            print('[' + strDateTime() + '] write:' + url)
+            print_ts('write:' + url)
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
                 res = re.match(r'https?://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
-                print('results not written. res is None.')
+                print_ts('results not written. res is None.')
                 continue
             if url not in packages:
-                print('results not written. url is not in packages.')
+                print_ts('results not written. url is not in packages.')
                 continue
             # Verify that head was compared to correct OLD_VERSION
             versions_found = False
@@ -1133,17 +1137,17 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 if line.startswith('cppcheck: '):
                     versions_found = True
                     if OLD_VERSION not in line.split():
-                        print('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
+                        print_ts('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
                               line)
-                        print('Ignoring data.')
+                        print_ts('Ignoring data.')
                         old_version_wrong = True
                     break
             if not versions_found:
-                print('Cppcheck versions missing in result data. Ignoring data.')
+                print_ts('Cppcheck versions missing in result data. Ignoring data.')
                 continue
             if old_version_wrong:
                 continue
-            print('results added for package ' + res.group(1))
+            print_ts('results added for package ' + res.group(1))
             filename = os.path.join(resultPath, res.group(1))
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
@@ -1167,7 +1171,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         try:
                             text_received = bytes_received.decode('utf-8', 'ignore')
                         except UnicodeDecodeError as e:
-                            print('Error: Decoding failed (write_info): ' + str(e))
+                            print_ts('Error: Decoding failed (write_info): ' + str(e))
                             data = ''
                             break
                         t = 0.0
@@ -1183,19 +1187,19 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if pos < 10:
                 continue
             url = data[:pos]
-            print('[' + strDateTime() + '] write_info:' + url)
+            print_ts('write_info:' + url)
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
                 res = re.match(r'https://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
-                print('info output not written. res is None.')
+                print_ts('info output not written. res is None.')
                 continue
             if url not in packages:
-                print('info output not written. url is not in packages.')
+                print_ts('info output not written. url is not in packages.')
                 continue
-            print('adding info output for package ' + res.group(1))
+            print_ts('adding info output for package ' + res.group(1))
             info_path = resultPath + '/' + 'info_output'
             if not os.path.exists(info_path):
                 os.mkdir(info_path)
@@ -1206,7 +1210,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             packages_count = str(len(packages))
             connection.send(packages_count.encode('utf-8', 'ignore'))
             connection.close()
-            print('[' + strDateTime() + '] getPackagesCount: ' + packages_count)
+            print_ts('getPackagesCount: ' + packages_count)
             continue
         elif cmd.startswith('getPackageIdx'):
             request_idx = abs(int(cmd[len('getPackageIdx:'):]))
@@ -1214,20 +1218,20 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 pkg = packages[request_idx]
                 connection.send(pkg.encode('utf-8', 'ignore'))
                 connection.close()
-                print('[' + strDateTime() + '] getPackageIdx: ' + pkg)
+                print_ts('getPackageIdx: ' + pkg)
             else:
                 connection.close()
-                print('[' + strDateTime() + '] getPackageIdx: index is out of range')
+                print_ts('getPackageIdx: index is out of range')
             continue
         else:
             if cmd.find('\n') < 0:
-                print('[' + strDateTime() + '] invalid command: "' + firstLine + '"')
+                print_ts('invalid command: "' + firstLine + '"')
             else:
                 lines = cmd.split('\n')
                 s = '\\n'.join(lines[:2])
                 if len(lines) > 2:
                     s += '...'
-                print('[' + strDateTime() + '] invalid command: "' + s + '"')
+                print_ts('invalid command: "' + s + '"')
             connection.close()
 
 
@@ -1236,17 +1240,17 @@ if __name__ == "__main__":
     if not os.path.isdir(workPath):
         workPath = os.path.expanduser('~/daca@home')
     os.chdir(workPath)
-    print('work path: ' + workPath)
+    print_ts('work path: ' + workPath)
     resultPath = workPath + '/donated-results'
 
     f = open('packages.txt', 'rt')
     packages = [val.strip() for val in f.readlines()]
     f.close()
 
-    print('packages: ' + str(len(packages)))
+    print_ts('packages: ' + str(len(packages)))
 
     if len(packages) == 0:
-        print('fatal: there are no packages')
+        print_ts('fatal: there are no packages')
         sys.exit(1)
 
     packageIndex = 0
@@ -1264,4 +1268,4 @@ if __name__ == "__main__":
     try:
         server(server_address_port, packages, packageIndex, resultPath)
     except socket.timeout:
-        print('Timeout!')
+        print_ts('Timeout!')
