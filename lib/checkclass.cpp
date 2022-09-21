@@ -1325,7 +1325,7 @@ void CheckClass::checkMemset()
                     typeTok = arg3->tokAt(4);
                 else if (Token::Match(arg3, "sizeof ( struct %type% ) )|*"))
                     typeTok = arg3->tokAt(3);
-                else if (Token::simpleMatch(arg3, "sizeof ( * this ) )|*") || Token::simpleMatch(arg1, "this ,")) {
+                else if (Token::Match(arg3, "sizeof ( * this ) )|*") || Token::simpleMatch(arg1, "this ,")) {
                     type = findFunctionOf(arg3->scope());
                 } else if (Token::Match(arg1, "&|*|%var%")) {
                     int numIndirToVariableType = 0; // Offset to the actual type in terms of dereference/addressof
