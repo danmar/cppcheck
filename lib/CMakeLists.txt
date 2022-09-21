@@ -22,11 +22,11 @@ function(build_src output filename)
     set_source_files_properties(${outfile} PROPERTIES GENERATED TRUE)
 endfunction()
 
-foreach(file ${srcs})
-    build_src(srcs_build ${file})
-endforeach()
-
 if (NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
+    foreach(file ${srcs})
+        build_src(srcs_build ${file})
+    endforeach()
+
     set(srcs_lib ${srcs_build})
 else()
     set(srcs_lib ${srcs})
