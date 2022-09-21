@@ -54,7 +54,7 @@ public:
     ValuePtr(ValuePtr&& rhs) : mPtr(std::move(rhs.mPtr)), mClone(std::move(rhs.mClone)) {}
 
     void release() {
-        return mPtr.reset();
+        mPtr.reset();
     }
 
     T* get() NOEXCEPT {
