@@ -63,7 +63,7 @@ sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime() -> str:
-    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
 
 def dateTimeFromStr(datestr: str) -> datetime.datetime:
