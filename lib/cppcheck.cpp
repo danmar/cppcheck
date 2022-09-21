@@ -45,6 +45,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <exception>
+#include <fstream>
 #include <iostream> // <- TEMPORARY
 #include <memory>
 #include <new>
@@ -365,6 +366,11 @@ CppCheck::~CppCheck()
         mFileInfo.pop_back();
     }
     s_timerResults.showResults(mSettings.showtime);
+
+    if (plistFile.is_open()) {
+        plistFile << ErrorLogger::plistFooter();
+        plistFile.close();
+    }
 }
 
 const char * CppCheck::version()

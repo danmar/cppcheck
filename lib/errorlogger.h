@@ -27,7 +27,6 @@
 #include "color.h"
 
 #include <cstddef>
-#include <fstream>
 #include <list>
 #include <string>
 #include <utility>
@@ -231,16 +230,9 @@ private:
  * should implement.
  */
 class CPPCHECKLIB ErrorLogger {
-protected:
-    std::ofstream plistFile;
 public:
     ErrorLogger() {}
-    virtual ~ErrorLogger() {
-        if (plistFile.is_open()) {
-            plistFile << ErrorLogger::plistFooter();
-            plistFile.close();
-        }
-    }
+    virtual ~ErrorLogger() {}
 
     /**
      * Information about progress is directed here.
