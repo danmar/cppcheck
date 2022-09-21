@@ -1250,8 +1250,15 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 print_ts('getPackageIdx: index is out of range')
             continue
         elif cmd.startswith('write_nodata\nftp://'):
+            data = cmd[cmd.find('\n') + 1:]
+            pos = data.find('\n')
+            if pos < 10:
+                print_ts('Data is less than 10 characters. Ignoring no-data data.')
+                continue
+            url = data[:pos]
+
             connection.close()
-            print_ts('write_nodata')
+            print_ts('write_nodata:' + url)
         else:
             if pos_nl < 0:
                 print_ts('invalid command: "' + firstLine + '"')
