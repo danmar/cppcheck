@@ -31,7 +31,6 @@
 #include "valueflow.h"
 
 #include <iomanip>
-#include <ostream>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -310,6 +309,8 @@ void CheckFunctions::checkMissingReturn()
         if (function->type != Function::Type::eFunction && function->type != Function::Type::eOperatorEqual)
             continue;
         if (Token::Match(function->retDef, "%name% (") && function->retDef->isUpperCaseName())
+            continue;
+        if (mTokenizer->isCPP() && Token::Match(function->retDef, "std :: enable_if|enable_if_t"))
             continue;
         if (Function::returnsVoid(function, true))
             continue;

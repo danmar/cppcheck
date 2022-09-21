@@ -35,6 +35,9 @@
 #include <istream>
 #include <iterator>
 #include <vector>
+#include <unordered_set>
+#include <algorithm>
+#include <numeric>
 
 int zerodiv_ldexp()
 {
@@ -824,6 +827,13 @@ std::bitset<10> std_bitset_count_ignoredReturnValue()
     // cppcheck-suppress ignoredReturnValue
     b1.count();
     return b1;
+}
+
+void std_unordered_set_count_ignoredReturnValue(const std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    u.count(i);
 }
 
 void valid_code()
@@ -2973,6 +2983,41 @@ void uninitvar_qsort(void)
     size_t size;
     // cppcheck-suppress uninitvar
     (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+}
+
+void uninitvar_stable_sort(std::vector<int>& v)
+{
+    std::vector<int>::iterator end;
+    // cppcheck-suppress uninitvar
+    std::stable_sort(v.begin(), end);
+}
+
+void uninitvar_merge(const std::vector<int>& a, const std::vector<int>& b)
+{
+    std::vector<int>::iterator dst;
+    // cppcheck-suppress uninitvar
+    std::merge(a.begin(), a.end(), b.begin(), b.end(), dst);
+}
+
+void uninitvar_push_heap(std::vector<int>& v)
+{
+    std::vector<int>::iterator end;
+    // cppcheck-suppress uninitvar
+    std::push_heap(v.begin(), end);
+}
+
+void uninitvar_copy_n(const std::vector<int>& v)
+{
+    std::vector<int>::iterator dst;
+    // cppcheck-suppress [uninitvar, invalidFunctionArg]
+    std::copy_n(v.begin(), -1, dst);
+}
+
+void uninitvar_iota(std::vector<int>& v)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    std::iota(v.begin(), v.end(), i);
 }
 
 void uninitvar_putc(void)

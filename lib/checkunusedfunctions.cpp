@@ -34,9 +34,8 @@
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
-#include <istream>
 #include <memory>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 #include <vector>
 
@@ -121,9 +120,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             while ((scope || start) && markupVarToken) {
                 if (markupVarToken->str() == settings->library.blockstart(FileName)) {
                     scope++;
-                    if (start) {
-                        start = false;
-                    }
+                    start = false;
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {

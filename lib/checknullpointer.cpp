@@ -146,6 +146,10 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
     return isPointerDeRef(tok, unknown, mSettings);
 }
 
+static bool isUnevaluated(const Token* tok) {
+    return tok && Token::Match(tok->previous(), "sizeof|decltype (");
+}
+
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)
 {
     unknown = false;
@@ -182,7 +186,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // Dereferencing pointer..
-    if (parent->isUnaryOp("*")) {
+    if (parent->isUnaryOp("*") && !isUnevaluated(parent->astParent())) {
         // declaration of function pointer
         if (tok->variable() && tok->variable()->nameToken() == tok)
             return false;
@@ -545,6 +549,7 @@ std::string CheckNullPointer::MyFileInfo::toString() const
     return CTU::toString(unsafeUsage);
 }
 
+// NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
 static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;

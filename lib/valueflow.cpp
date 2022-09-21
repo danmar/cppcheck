@@ -105,7 +105,6 @@
 #include <array>
 #include <cassert>
 #include <climits>
-#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
@@ -1991,7 +1990,7 @@ static void valueFlowReverse(TokenList* tokenlist,
                              const Settings* = nullptr,
                              SourceLocation loc = SourceLocation::current())
 {
-    std::list<ValueFlow::Value> values = {val};
+    std::list<ValueFlow::Value> values = {std::move(val)};
     if (val2.varId != 0)
         values.push_back(val2);
     valueFlowReverse(tok, nullptr, varToken, values, tokenlist, loc);
@@ -4015,6 +4014,31 @@ private:
     }
 };
 
+static bool isOwningVariables(const std::list<Variable>& vars, int depth = 10)
+{
+    if (depth < 0)
+        return false;
+    return vars.empty() || std::all_of(vars.begin(), vars.end(), [&](const Variable& var) {
+        if (var.isReference() || var.isPointer())
+            return false;
+        const ValueType* vt = var.valueType();
+        if (vt) {
+            if (vt->pointer > 0)
+                return false;
+            if (vt->isPrimitive())
+                return true;
+            if (vt->isEnum())
+                return true;
+            // TODO: Check container inner type
+            if (vt->type == ValueType::CONTAINER && vt->container)
+                return !vt->container->view;
+            if (vt->typeScope)
+                return isOwningVariables(vt->typeScope->varlist, depth - 1);
+        }
+        return false;
+    });
+}
+
 static void valueFlowLifetimeUserConstructor(Token* tok,
                                              const Function* constructor,
                                              const std::string& name,
@@ -4088,7 +4112,7 @@ static void valueFlowLifetimeUserConstructor(Token* tok,
             else
                 ls.byVal(tok, tokenlist, errorLogger, settings);
         });
-    } else if (!constructor->nestedIn->varlist.empty()) {
+    } else if (!isOwningVariables(constructor->nestedIn->varlist)) {
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + name + "'.",
                                ValueFlow::Value::LifetimeKind::SubObject,
@@ -4300,7 +4324,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
     const Scope* scope = t->classScope;
     if (!scope)
         return;
-    // Only support aggregate constructors for now
+    // Aggregate constructor
     if (t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
         std::vector<const Token*> args = getArguments(tok);
         if (scope->numConstructors == 0) {
@@ -4505,7 +4529,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             };
 
             bool update = false;
-            auto captureVariable = [&](const Token* tok2, LifetimeCapture c, std::function<bool(const Token*)> pred) {
+            auto captureVariable = [&](const Token* tok2, LifetimeCapture c, const std::function<bool(const Token*)> &pred) {
                 if (varids.count(tok->varId()) > 0)
                     return;
                 if (c == LifetimeCapture::ByReference) {
@@ -4839,10 +4863,7 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
                 continue;
             if (parent && parent->astOperand1() && parent->astOperand1()->varId() == varId)
                 continue;
-            const Variable *var = varTok->variable();
-            if (!var)
-                continue;
-            const Token * const endOfVarScope = var->scope()->bodyEnd;
+            const Token* const endOfVarScope = getEndOfExprScope(varTok);
 
             const Token * openParentesisOfMove = findOpenParentesisOfMove(varTok);
             const Token * endOfFunctionCall = findEndOfFunctionCallForParameter(openParentesisOfMove);
@@ -5224,16 +5245,11 @@ static void valueFlowSymbolicOperators(TokenList* tokenlist, SymbolDatabase* sym
                         continue;
                     if (value.intvalue != 0)
                         continue;
-                    if (value.bound == ValueFlow::Value::Bound::Upper)
-                        continue;
-                    if (value.isImpossible() && value.bound != ValueFlow::Value::Bound::Lower)
-                        continue;
-                    if (value.isKnown() && value.bound != ValueFlow::Value::Bound::Point)
-                        continue;
                     const Token* strlenTok = isStrlenOf(value.tokvalue, arrayTok);
                     if (!strlenTok)
                         continue;
                     ValueFlow::Value v = value;
+                    v.bound = ValueFlow::Value::Bound::Point;
                     v.valueType = ValueFlow::Value::ValueType::INT;
                     v.errorPath.emplace_back(strlenTok, "Return index of string to the first element that is 0");
                     setTokenValue(tok, v, tokenlist->getSettings());
@@ -6406,7 +6422,7 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
     return ValueFlow::Value{};
 }
 
-ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok)
+ValueFlow::Value inferCondition(const std::string &op, MathLib::bigint val, const Token* varTok)
 {
     if (!varTok)
         return ValueFlow::Value{};
@@ -8866,7 +8882,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
 
     std::size_t values = 0;
     std::size_t n = 4;
-    while (n > 0 && values < getTotalValues(tokenlist)) {
+    while (n > 0 && values != getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
         valueFlowSymbolicOperators(tokenlist, symboldatabase);
@@ -8929,7 +8945,7 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
 
 const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& values,
                                              const Settings* settings,
-                                             std::function<bool(const ValueFlow::Value&)> pred)
+                                             const std::function<bool(const ValueFlow::Value&)> &pred)
 {
     const ValueFlow::Value* ret = nullptr;
     for (const ValueFlow::Value& v : values) {

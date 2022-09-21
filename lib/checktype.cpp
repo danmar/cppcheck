@@ -31,7 +31,6 @@
 
 #include <cmath>
 #include <list>
-#include <ostream>
 #include <sstream>
 #include <vector>
 

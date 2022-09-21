@@ -39,7 +39,6 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <ostream>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -1990,6 +1989,8 @@ void CheckOther::checkZeroDivision()
         if (tok->str() != "%" && tok->str() != "/" && tok->str() != "%=" && tok->str() != "/=")
             continue;
         if (!tok->valueType() || !tok->valueType()->isIntegral())
+            continue;
+        if (tok->scope() && tok->scope()->type == Scope::eEnum) // don't warn for compile-time error
             continue;
 
         // Value flow..

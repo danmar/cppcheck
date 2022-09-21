@@ -32,7 +32,7 @@
 #include <fstream> // IWYU pragma: keep
 #include <iostream>
 #include <iterator>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 
 #include <tinyxml2.h>

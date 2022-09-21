@@ -24,6 +24,7 @@
 
 #include <cstddef>
 #include <map>
+#include <utility>
 
 #include <QObject>
 #include <QString>

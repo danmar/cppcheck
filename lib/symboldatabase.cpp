@@ -41,7 +41,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 #include <type_traits>
