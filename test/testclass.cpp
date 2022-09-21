@@ -3115,11 +3115,14 @@ private:
                       "    std::vector<S> v(5);\n"
                       "    memset(&v[0], 0, sizeof(S) * v.size());\n"
                       "    memset(&v[0], 0, v.size() * sizeof(S));\n"
+                      "    memset(&v[0], 0, 5 * sizeof(S));\n"
+                      "    memset(&v[0], 0, sizeof(S) * 5);\n"
                       "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Using 'memset' on struct that contains a 'std::vector'.\n"
-                           "[test.cpp:5]: (error) Using 'memset' on struct that contains a 'std::vector'.\n",
-                           "[test.cpp:4]: (error) Using 'memset' on struct that contains a 'std::vector'.\n",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Using 'memset' on struct that contains a 'std::vector'.\n"
+                      "[test.cpp:5]: (error) Using 'memset' on struct that contains a 'std::vector'.\n"
+                      "[test.cpp:6]: (error) Using 'memset' on struct that contains a 'std::vector'.\n"
+                      "[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n",
+                      errout.str());
 
         // #1655
         Settings s;
