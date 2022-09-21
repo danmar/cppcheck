@@ -240,7 +240,7 @@ private:
     /** Callback for executing a shell command (exe, args, output) */
     std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> mExecuteCommand;
 
-    std::ofstream plistFile;
+    std::ofstream mPlistFile;
 };
 
 /// @}
