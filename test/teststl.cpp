@@ -3029,7 +3029,7 @@ private:
     }
 
     template<size_t n, typename T>
-    static size_t getArraylength(const T (&)[n]) {
+    static size_t getArraylength(const T (&/*unused*/)[n]) {
         return n;
     }
 
