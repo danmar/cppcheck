@@ -218,6 +218,7 @@ while True:
     source_path, source_found = lib.unpack_package(work_path, tgz, skip_files=skip_files)
     if not source_found:
         print("No files to process")
+        lib.upload_nodata(package)
         continue
     crash = False
     timeout = False

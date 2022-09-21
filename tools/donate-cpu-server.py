@@ -1249,6 +1249,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 connection.close()
                 print_ts('getPackageIdx: index is out of range')
             continue
+        elif cmd.startswith('write_nodata\nftp://'):
+            connection.close()
+            print_ts('write_nodata')
         else:
             if pos_nl < 0:
                 print_ts('invalid command: "' + firstLine + '"')
