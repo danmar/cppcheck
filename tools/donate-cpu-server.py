@@ -1242,6 +1242,9 @@ if __name__ == "__main__":
     os.chdir(workPath)
     print_ts('work path: ' + workPath)
     resultPath = workPath + '/donated-results'
+    if not os.path.isdir(resultPath):
+        print_ts("fatal: result path '{}' is missing".format(resultPath))
+        sys.exit(1)
 
     f = open('packages.txt', 'rt')
     packages = [val.strip() for val in f.readlines()]
