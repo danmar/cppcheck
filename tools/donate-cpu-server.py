@@ -1133,8 +1133,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         time.sleep(0.2)
                         t += 0.2
                 connection.close()
-            except socket.error:
-                pass
+            except socket.error as e:
+                print_ts('Socket error occured (write): {}'.format(e))
+                continue
 
             pos = data.find('\n')
             if pos < 10:
@@ -1202,8 +1203,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         time.sleep(0.2)
                         t += 0.2
                 connection.close()
-            except socket.error:
-                pass
+            except socket.error as e:
+                print_ts('Socket error occured (write_info): {}'.format(e))
+                continue
 
             pos = data.find('\n')
             if pos < 10:
