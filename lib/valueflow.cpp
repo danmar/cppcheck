@@ -6574,8 +6574,8 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
                 setSymbolic(false_value, valuetok);
 
                 Condition cond;
-                cond.true_values = {true_value};
-                cond.false_values = {false_value};
+                cond.true_values = {std::move(true_value)};
+                cond.false_values = {std::move(false_value)};
                 cond.vartok = vartok;
                 cond.inverted = inverted;
                 result.push_back(std::move(cond));
