@@ -2419,7 +2419,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
 
         // function/constructor call, return init list
         else if (const Token* funcTok = getFuncTok(tok1)) {
-            if (isMemberFunc(scope, funcTok) && funcTok->strAt(-1) != ".") {
+            if (isMemberFunc(scope, funcTok) && (funcTok->strAt(-1) != "." || Token::simpleMatch(funcTok->tokAt(-2), "this ."))) {
                 if (!isConstMemberFunc(scope, funcTok))
                     return false;
                 memberAccessed = true;

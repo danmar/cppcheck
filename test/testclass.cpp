@@ -6161,6 +6161,7 @@ private:
                    "    void h();\n"
                    "    void k();\n"
                    "    void m();\n"
+                   "    void n();\n"
                    "    int i;\n"
                    "};\n"
                    "void S::g() const {\n"
@@ -6175,11 +6176,14 @@ private:
                    "}\n"
                    "void S::m() {\n"
                    "        this->B::b();\n"
+                   "}\n"
+                   "void S::n() {\n"
+                   "        this->h();\n"
                    "}\n");
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:13] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'S::h' can be static (but you may consider moving to unnamed namespace).\n"
-                      "[test.cpp:16] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'S::k' can be const.\n"
-                      "[test.cpp:20] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'S::m' can be static (but you may consider moving to unnamed namespace).\n",
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace).\n"
+                      "[test.cpp:14] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'S::h' can be static (but you may consider moving to unnamed namespace).\n"
+                      "[test.cpp:17] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'S::k' can be const.\n"
+                      "[test.cpp:21] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'S::m' can be static (but you may consider moving to unnamed namespace).\n",
                       errout.str());
     }
 
