@@ -36,6 +36,7 @@ class Token;
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE703(703U);   // Improper Check or Handling of Exceptional Conditions
 static const struct CWE CWE480(480U);   // Use of Incorrect Operator
+static const struct CWE CWE390(390U);   // Detection of Error Condition Without Action
 
 
 /// @addtogroup Checks
@@ -71,6 +72,7 @@ public:
         checkExceptionSafety.nothrowThrows();
         checkExceptionSafety.unhandledExceptionSpecification();
         checkExceptionSafety.rethrowNoCurrentException();
+        checkExceptionSafety.throwIsMissing();
     }
 
     /** Don't throw exceptions in destructors */
@@ -94,6 +96,9 @@ public:
     /** @brief %Check for rethrow not from catch scope */
     void rethrowNoCurrentException();
 
+    /** @brief %throw keyword is missing */
+    void throwIsMissing();
+
 private:
     /** Don't throw exceptions in destructors */
     void destructorsError(const Token * const tok, const std::string &className);
@@ -105,6 +110,7 @@ private:
     void unhandledExceptionSpecificationError(const Token * const tok1, const Token * const tok2, const std::string & funcname);
     /** Rethrow without currently handled exception */
     void rethrowNoCurrentExceptionError(const Token *tok);
+    void throwIsMissingError(const Token *tok);
 
     /** Generate all possible errors (for --errorlist) */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
@@ -116,6 +122,7 @@ private:
         c.noexceptThrowError(nullptr);
         c.unhandledExceptionSpecificationError(nullptr, nullptr, "funcname");
         c.rethrowNoCurrentExceptionError(nullptr);
+        c.throwIsMissingError(nullptr);
     }
 
     /** Short description of class (for --doc) */
@@ -132,7 +139,8 @@ private:
                "- Exception caught by value instead of by reference\n"
                "- Throwing exception in noexcept, nothrow(), __attribute__((nothrow)) or __declspec(nothrow) function\n"
                "- Unhandled exception specification when calling function foo()\n"
-               "- Rethrow without currently handled exception\n";
+               "- Rethrow without currently handled exception\n"
+               "- throw keyword is missing\n";
     }
 };
 /// @}
