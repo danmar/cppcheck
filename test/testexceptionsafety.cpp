@@ -60,6 +60,7 @@ private:
         TEST_CASE(throwIsMissing3);
         TEST_CASE(throwIsMissing4);
         TEST_CASE(throwIsMissing5);
+        TEST_CASE(throwIsMissing6);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -439,35 +440,47 @@ private:
 
     void throwIsMissing1() {
         check("void func1(const bool b) {\n"
-              "  if (b) { std::invalid_argument(\"True\"); }\n"
+              "   if (b) {\n"
+              "         std::invalid_argument(\"True\");\n"
+              "   }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) 'throw' keyword is missing\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) 'throw' keyword is missing\n", errout.str());
     }
 
     void throwIsMissing2() {
         check("void func1(const bool b) {\n"
-              "  (b != true) ? std::runtime_error(\"a\") : std::runtime_error(\"b\");\n"
+              "   (b != true) ? std::runtime_error(\"a\") : std::runtime_error(\"b\");\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) 'throw' keyword is missing\n", errout.str());
     }
 
     void throwIsMissing3() {
         check("void func1(const bool b) {\n"
-              "  const auto ex = (b != true) ? std::runtime_error(\"a\") : std::runtime_error(\"b\");\n"
-              "  throw ex;\n"
+              "   const auto ex = (b != true) ? std::runtime_error(\"a\") : std::runtime_error(\"b\");\n"
+              "   throw ex;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void throwIsMissing4() {
         check("void func1() {\n"
-              "  throw std::logic_error(\"b\");\n"
+              "   throw std::logic_error(\"b\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void throwIsMissing5() {
         check("struct MyExcept : std::exception {};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void throwIsMissing6() {
+        check("void notify(const std::exception& ex) {\n"
+              "   throw ex;\n"
+              "}\n"
+              "void func1() {\n"
+              "   notify(std::logic_error(\"b\"));\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

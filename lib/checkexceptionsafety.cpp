@@ -322,7 +322,7 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        // only check functions without exception epecification
+        // only check functions without exception specification
         if (scope->function && !scope->function->isThrow() &&
             scope->className != "main" && scope->className != "wmain" &&
             scope->className != "_tmain" && scope->className != "WinMain") {
@@ -398,21 +398,25 @@ void CheckExceptionSafety::rethrowNoCurrentExceptionError(const Token *tok)
 void CheckExceptionSafety::throwIsMissing()
 {
     static const std::unordered_set<std::string> stdExceptions{"exception",
-        "logic_error", "domain_error", "invalid_argument", "length_error", "out_of_range", "future_error",
-        "runtime_error", "range_error", "overflow_error", "underflow_error", "regex_error", "system_error",
-        "bad_typeid", "bad_cast", "bad_optional_access", "bad_expected_access", "bad_weak_ptr",
-        "bad_function_call", "bad_alloc", "bad_array_new_length", "bad_exception",
-        "ios_base::failure", "filesystem::filesystem_error", "bad_variant_access"};
+                                                               "logic_error", "domain_error", "invalid_argument", "length_error", "out_of_range", "future_error",
+                                                               "runtime_error", "range_error", "overflow_error", "underflow_error", "regex_error", "system_error",
+                                                               "bad_typeid", "bad_cast", "bad_optional_access", "bad_expected_access", "bad_weak_ptr",
+                                                               "bad_function_call", "bad_alloc", "bad_array_new_length", "bad_exception",
+                                                               "ios_base::failure", "filesystem::filesystem_error", "bad_variant_access"};
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "std ::")) {
-                const Token* tokException = tok->tokAt(2);
+                const Token* const tokException = tok->tokAt(2);
                 const bool isException = stdExceptions.find(tokException->str()) != stdExceptions.end();
                 if (isException && Token::simpleMatch(tokException->next(), "(")) {
+                    const Token* const topTok = tokException->astTop();
                     // "(" for nameless exception object; "?" for ternary operator w/o "throw" keyword
-                    if (Token::Match(tokException->astTop(), "(|?")) {
+                    if (Token::simpleMatch(topTok, "(") && topTok == tokException->next()) {
+                        throwIsMissingError(tok);
+                    }
+                    if (Token::simpleMatch(topTok, "?")) {
                         throwIsMissingError(tok);
                     }
                     tok = tokException->next()->link();
