@@ -47,8 +47,8 @@ handler_file.setLevel(logging.ERROR)
 logger.addHandler(handler_file)
 
 
-def print_ts(msg):
-    print('[' + strDateTime() + '] ' + msg)
+def print_ts(msg) -> None:
+    print('[{}] {}'.format(strDateTime(), msg))
 
 
 # Set up an exception hook for all uncaught exceptions so they can be logged
