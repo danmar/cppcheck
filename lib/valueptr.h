@@ -52,7 +52,7 @@ public:
         }
     }
     ValuePtr(ValuePtr&& rhs) : mPtr(std::move(rhs.mPtr)), mClone(std::move(rhs.mClone)) {}
-    
+
     /**
      * Releases the shared_ptr's ownership of the managed object using the .reset() function
      */
