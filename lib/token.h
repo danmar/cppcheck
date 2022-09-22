@@ -59,7 +59,7 @@ struct TokensFrontBack {
 };
 
 struct ScopeInfo2 {
-    ScopeInfo2(const std::string &name_, const Token *bodyEnd_, const std::set<std::string> &usingNamespaces_ = std::set<std::string>()) : name(name_), bodyEnd(bodyEnd_), usingNamespaces(usingNamespaces_) {}
+    ScopeInfo2(std::string name_, const Token *bodyEnd_, std::set<std::string> usingNamespaces_ = std::set<std::string>()) : name(std::move(name_)), bodyEnd(bodyEnd_), usingNamespaces(std::move(usingNamespaces_)) {}
     std::string name;
     const Token * const bodyEnd;
     std::set<std::string> usingNamespaces;
@@ -401,6 +401,9 @@ public:
     bool isEnumerator() const {
         return mTokType == eEnumerator;
     }
+    bool isVariable() const {
+        return mTokType == eVariable;
+    }
     bool isOp() const {
         return (isConstOp() ||
                 isAssignmentOp() ||
@@ -678,6 +681,13 @@ public:
     }
     void isSimplifiedScope(bool b) {
         setFlag(fIsSimplifedScope, b);
+    }
+
+    bool isFinalType() const {
+        return getFlag(fIsFinalType);
+    }
+    void isFinalType(bool b) {
+        setFlag(fIsFinalType, b);
     }
 
     bool isBitfield() const {
@@ -1287,6 +1297,7 @@ private:
         fIsIncompleteConstant   = (1ULL << 36),
         fIsRestrict             = (1ULL << 37), // Is this a restrict pointer type
         fIsSimplifiedTypedef    = (1ULL << 38),
+        fIsFinalType            = (1ULL << 39), // Is this a type with final specifier
     };
 
     Token::Type mTokType;

@@ -110,12 +110,13 @@ public:
     void deallocateTokens();
 
     /** append file name if seen the first time; return its index in any case */
-    int appendFileIfNew(const std::string &fileName);
+    int appendFileIfNew(std::string fileName);
 
     /** get first token of list */
     const Token *front() const {
         return mTokensFrontBack.front;
     }
+    // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *front() {
         return mTokensFrontBack.front;
     }
@@ -124,6 +125,7 @@ public:
     const Token *back() const {
         return mTokensFrontBack.back;
     }
+    // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *back() {
         return mTokensFrontBack.back;
     }

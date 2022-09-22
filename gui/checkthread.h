@@ -95,6 +95,7 @@ signals:
      */
     void done();
 
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void fileChecked(const QString &file);
 protected:
 

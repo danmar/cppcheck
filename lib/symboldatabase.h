@@ -693,7 +693,7 @@ private:
     /** @brief pointer to scope this variable is in */
     const Scope *mScope;
 
-    ValueType *mValueType;
+    const ValueType *mValueType;
 
     /** @brief array dimensions */
     std::vector<Dimension> mDimensions;
@@ -916,7 +916,7 @@ public:
     const ::Type *retType;            ///< function return type
     const Scope *functionScope;       ///< scope of function body
     const Scope* nestedIn;            ///< Scope the function is declared in
-    std::list<Variable> argumentList; ///< argument list
+    std::vector<Variable> argumentList; ///< argument list
     nonneg int initArgCount;        ///< number of args with default values
     Type type;                        ///< constructor, destructor, ...
     const Token *noexceptArg;         ///< noexcept token
@@ -1164,8 +1164,8 @@ public:
 
     const Function *getDestructor() const;
 
-    void addFunction(const Function & func) {
-        functionList.push_back(func);
+    void addFunction(Function func) {
+        functionList.push_back(std::move(func));
 
         const Function * back = &functionList.back();
 
@@ -1304,7 +1304,7 @@ public:
         containerTypeToken(nullptr),
         debugPath()
     {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, std::string otn)
         : sign(s),
         type(t),
         bits(0),
@@ -1316,11 +1316,11 @@ public:
         smartPointer(nullptr),
         container(nullptr),
         containerTypeToken(nullptr),
-        originalTypeName(otn),
+        originalTypeName(std::move(otn)),
         debugPath()
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings *settings);
+    static ValueType parseDecl(const Token *type, const Settings *settings, bool isCpp);
 
     static Type typeFromString(const std::string &typestr, bool longType);
 

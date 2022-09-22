@@ -24,6 +24,7 @@
 
 #include <cstddef>
 #include <map>
+#include <utility>
 
 #include <QObject>
 #include <QString>
@@ -333,6 +334,36 @@ public:
     /** Get tags for a warning */
     QString getWarningTags(std::size_t hash) const;
 
+    /** Bughunting (Cppcheck Premium) */
+    void setBughunting(bool bughunting) {
+        mBughunting = bughunting;
+    }
+    bool getBughunting() const {
+        return mBughunting;
+    }
+
+    /** @brief Get list of coding standards (checked by Cppcheck Premium). */
+    QStringList getCodingStandards() const {
+        return mCodingStandards;
+    }
+
+    /**
+     * @brief Set list of coding standards (checked by Cppcheck Premium).
+     * @param codingStandards List of coding standards.
+     */
+    void setCodingStandards(QStringList codingStandards) {
+        mCodingStandards = std::move(codingStandards);
+    }
+
+    /** Cert C: int precision */
+    void setCertIntPrecision(int p) {
+        mCertIntPrecision = p;
+    }
+    int getCertIntPrecision() const {
+        return mCertIntPrecision;
+    }
+
+
     /**
      * @brief Write project file (to disk).
      * @param filename Filename to use.
@@ -385,9 +416,9 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
-    bool readBool(QXmlStreamReader &reader);
+    static bool readBool(QXmlStreamReader &reader);
 
-    int readInt(QXmlStreamReader &reader, int defaultValue);
+    static int readInt(QXmlStreamReader &reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
@@ -443,7 +474,7 @@ protected:
      * @param reader       XML stream reader
      * @param elementname  elementname for each string
      */
-    void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
+    static void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
 
     /**
      * @brief Write string list
@@ -542,6 +573,15 @@ private:
      * @brief List of addons.
      */
     QStringList mAddons;
+
+    bool mBughunting;
+
+    /**
+     * @brief List of coding standards, checked by Cppcheck Premium.
+     */
+    QStringList mCodingStandards;
+
+    int mCertIntPrecision;
 
     /** @brief Execute clang analyzer? */
     bool mClangAnalyzer;

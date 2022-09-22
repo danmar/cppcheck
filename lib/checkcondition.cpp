@@ -37,7 +37,6 @@
 #include <limits>
 #include <list>
 #include <memory>
-#include <ostream>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -1467,6 +1466,7 @@ void CheckCondition::alwaysTrueFalse()
                 if (f->functionScope && Token::Match(f->functionScope->bodyStart, "{ return true|false ;"))
                     continue;
             }
+            const Token* condition = nullptr;
             {
                 // is this a condition..
                 const Token *parent = tok->astParent();
@@ -1474,29 +1474,46 @@ void CheckCondition::alwaysTrueFalse()
                     parent = parent->astParent();
                 if (!parent)
                     continue;
-                const Token *condition = nullptr;
                 if (parent->str() == "?" && precedes(tok, parent))
-                    condition = parent->astOperand1();
+                    condition = parent;
                 else if (Token::Match(parent->previous(), "if|while ("))
-                    condition = parent->astOperand2();
+                    condition = parent->previous();
                 else if (Token::simpleMatch(parent, "return"))
-                    condition = parent->astOperand1();
-                else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() && Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
-                    condition = parent->astOperand1();
+                    condition = parent;
+                else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
+                         Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
+                    condition = parent->astParent()->astParent()->previous();
                 else
                     continue;
-                (void)condition;
             }
             // Skip already diagnosed values
             if (diag(tok, false))
+                continue;
+            if (condition->isConstexpr())
+                continue;
+            if (!isUsedAsBool(tok))
+                continue;
+            if (Token::simpleMatch(condition, "return") && Token::Match(tok, "%assign%"))
+                continue;
+            if (Token::simpleMatch(tok->astParent(), "return") && Token::Match(tok, ".|%var%"))
                 continue;
             if (Token::Match(tok, "%num%|%bool%|%char%"))
                 continue;
             if (Token::Match(tok, "! %num%|%bool%|%char%"))
                 continue;
-            if (Token::Match(tok, "%oror%|&&|:"))
+            if (Token::Match(tok, "%oror%|&&") &&
+                (tok->astOperand1()->hasKnownIntValue() || tok->astOperand2()->hasKnownIntValue()))
                 continue;
-            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
+            if (Token::simpleMatch(tok, ":"))
+                continue;
+            if (tok->isComparisonOp() && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1()) &&
+                isSameExpression(mTokenizer->isCPP(),
+                                 true,
+                                 tok->astOperand1(),
+                                 tok->astOperand2(),
+                                 mSettings->library,
+                                 true,
+                                 true))
                 continue;
             if (isConstVarExpression(tok, [](const Token* tok) {
                 return Token::Match(tok, "[|(|&|+|-|*|/|%|^|>>|<<") && !Token::simpleMatch(tok, "( )");
@@ -1508,26 +1525,10 @@ void CheckCondition::alwaysTrueFalse()
             {
                 const ValueFlow::Value *zeroValue = nullptr;
                 const Token *nonZeroExpr = nullptr;
-                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) || CheckOther::testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr))
+                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) ||
+                    CheckOther::testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr))
                     continue;
             }
-
-            const bool constIfWhileExpression =
-                tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") && !tok->astTop()->astOperand1()->isConstexpr() &&
-                (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
-            const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
-            const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
-            const bool ternaryExpression = Token::simpleMatch(tok->astParent(), "?");
-            const bool returnExpression = Token::simpleMatch(tok->astTop(), "return") && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
-
-            if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression))
-                continue;
-
-            const Token* expr1 = tok->astOperand1(), *expr2 = tok->astOperand2();
-            const bool isUnknown = (expr1 && expr1->valueType() && expr1->valueType()->type == ValueType::UNKNOWN_TYPE) ||
-                                   (expr2 && expr2->valueType() && expr2->valueType()->type == ValueType::UNKNOWN_TYPE);
-            if (isUnknown)
-                continue;
 
             // Don't warn when there are expanded macros..
             bool isExpandedMacro = false;
@@ -1568,9 +1569,6 @@ void CheckCondition::alwaysTrueFalse()
                 return ChildrenToVisit::none;
             });
             if (hasSizeof)
-                continue;
-
-            if (isIfConstexpr(tok))
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());
@@ -1752,9 +1750,10 @@ void CheckCondition::checkDuplicateConditionalAssign()
                 continue;
             const Token *blockTok = tok->next()->link()->next();
             const Token *condTok = tok->next()->astOperand2();
-            if (!Token::Match(condTok, "==|!="))
+            const bool isBoolVar = Token::Match(condTok, "!| %var%");
+            if (!isBoolVar && !Token::Match(condTok, "==|!="))
                 continue;
-            if (condTok->str() == "!=" && Token::simpleMatch(blockTok->link(), "} else {"))
+            if ((isBoolVar || condTok->str() == "!=") && Token::simpleMatch(blockTok->link(), "} else {"))
                 continue;
             if (!blockTok->next())
                 continue;
@@ -1763,18 +1762,36 @@ void CheckCondition::checkDuplicateConditionalAssign()
                 continue;
             if (nextAfterAstRightmostLeaf(assignTok) != blockTok->link()->previous())
                 continue;
-            if (!isSameExpression(
-                    mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
-                continue;
-            if (!isSameExpression(
-                    mTokenizer->isCPP(), true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
-                continue;
-            duplicateConditionalAssignError(condTok, assignTok);
+            bool isRedundant = false;
+            if (isBoolVar) {
+                const bool isNegation = condTok->str() == "!";
+                const Token* const varTok = isNegation ? condTok->next() : condTok;
+                const ValueType* vt = varTok->variable() ? varTok->variable()->valueType() : nullptr;
+                if (!(vt && vt->type == ValueType::Type::BOOL && !vt->pointer))
+                    continue;
+
+                if (!(assignTok->astOperand1() && assignTok->astOperand1()->varId() == varTok->varId()))
+                    continue;
+                if (!(assignTok->astOperand2() && assignTok->astOperand2()->hasKnownIntValue()))
+                    continue;
+                const MathLib::bigint val = assignTok->astOperand2()->getKnownIntValue();
+                if (val < 0 || val > 1)
+                    continue;
+                isRedundant = (isNegation && val == 0) || (!isNegation && val == 1);
+            } else { // comparison
+                if (!isSameExpression(
+                        mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
+                    continue;
+                if (!isSameExpression(
+                        mTokenizer->isCPP(), true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
+                    continue;
+            }
+            duplicateConditionalAssignError(condTok, assignTok, isRedundant);
         }
     }
 }
 
-void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok)
+void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok, bool isRedundant)
 {
     ErrorPath errors;
     std::string msg = "Duplicate expression for the condition and assignment.";
@@ -1784,7 +1801,8 @@ void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const
             errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "'");
             errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "' is redundant");
         } else {
-            msg = "The statement 'if (" + condTok->expressionString() + ") " + assignTok->expressionString() + "' is logically equivalent to '" + assignTok->expressionString() + "'.";
+            msg = "The statement 'if (" + condTok->expressionString() + ") " + assignTok->expressionString();
+            msg += isRedundant ? "' is redundant." : "' is logically equivalent to '" + assignTok->expressionString() + "'.";
             errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "'");
             errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "' is redundant");
         }

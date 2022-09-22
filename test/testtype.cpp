@@ -24,8 +24,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class TestType : public TestFixture {

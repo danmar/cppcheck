@@ -23,8 +23,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 
 class Test64BitPortability : public TestFixture {
 public:

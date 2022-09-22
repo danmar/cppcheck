@@ -24,9 +24,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <map>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <utility>
 #include <vector>
@@ -2432,6 +2431,24 @@ private:
               "    asm goto(\"assembler code\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE* p = fopen(\"abc.txt\", \"r\");\n"
+              "    if (fclose(p) != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S;\n"
+              "void f(int a, int b, S*& p) {\n"
+              "    if (a == -1) {\n"
+              "        FILE* file = fopen(\"abc.txt\", \"r\");\n"
+              "    }\n"
+              "    if (b) {\n"
+              "        void* buf = malloc(10);\n"
+              "        p = reinterpret_cast<S*>(buf);\n"
+              "    }\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: file\n", errout.str());
     }
 
     void ptrptr() {

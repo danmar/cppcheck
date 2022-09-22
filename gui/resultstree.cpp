@@ -21,6 +21,7 @@
 #include "application.h"
 #include "applicationlist.h"
 #include "common.h"
+#include "config.h"
 #include "erroritem.h"
 #include "path.h"
 #include "projectfile.h"
@@ -1156,7 +1157,7 @@ QString ResultsTree::getFilePath(QStandardItem *target, bool fullPath)
     return QString();
 }
 
-QString ResultsTree::severityToIcon(Severity::SeverityType severity) const
+QString ResultsTree::severityToIcon(Severity::SeverityType severity)
 {
     switch (severity) {
     case Severity::error:

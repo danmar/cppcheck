@@ -24,8 +24,7 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 struct InternalError;
@@ -136,6 +135,7 @@ private:
         TEST_CASE(varid_in_class20);    // #7267
         TEST_CASE(varid_in_class21);    // #7788
         TEST_CASE(varid_in_class22);    // #10872
+        TEST_CASE(varid_in_class23);    // #11293
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -156,6 +156,7 @@ private:
         TEST_CASE(varid_templateParameter); // #7046 set varid for "X":  std::array<int,X> Y;
         TEST_CASE(varid_templateParameterFunctionPointer); // #11050
         TEST_CASE(varid_templateUsing); // #5781 #7273
+        TEST_CASE(varid_templateSpecializationFinal);
         TEST_CASE(varid_not_template_in_condition); // #7988
         TEST_CASE(varid_cppcast); // #6190
         TEST_CASE(varid_variadicFunc);
@@ -1964,6 +1965,28 @@ private:
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
 
+    void varid_in_class23() { // #11293
+        const char code[] = "struct A {\n"
+                            "    struct S {\n"
+                            "        bool b;\n"
+                            "    };\n"
+                            "};\n"
+                            "struct B : A::S {\n"
+                            "    void f() { b = false; }\n"
+                            "};\n";
+
+        const char expected[] = "1: struct A {\n"
+                                "2: struct S {\n"
+                                "3: bool b@1 ;\n"
+                                "4: } ;\n"
+                                "5: } ;\n"
+                                "6: struct B : A :: S {\n"
+                                "7: void f ( ) { b@1 = false ; }\n"
+                                "8: } ;\n";
+
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
     void varid_namespace_1() { // #7272
         const char code[] = "namespace Blah {\n"
                             "  struct foo { int x;};\n"
@@ -2376,6 +2399,19 @@ private:
         const char code[] = "template<class T> using X = Y<T,4>;\n"
                             "X<int> x;";
         ASSERT_EQUALS("2: Y < int , 4 > x@1 ;\n",
+                      tokenize(code));
+    }
+
+    void varid_templateSpecializationFinal() {
+        const char code[] = "template <typename T>\n"
+                            "struct S;\n"
+                            "template <>\n"
+                            "struct S<void> final {};\n";
+        ASSERT_EQUALS("4: struct S<void> ;\n"
+                      "1: template < typename T >\n"
+                      "2: struct S ;\n"
+                      "3:\n"
+                      "4: struct S<void> { } ;\n",
                       tokenize(code));
     }
 

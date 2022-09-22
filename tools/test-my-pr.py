@@ -26,11 +26,16 @@ if __name__ == "__main__":
     group.add_argument('-p', default=256, type=int, help='Count of packages to check')
     group.add_argument('--packages', nargs='+', help='Check specific packages and then stop.')
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
+    parser.add_argument('--c-only', dest='c_only', help='Only process c packages', action='store_true')
     parser.add_argument('--cpp-only', dest='cpp_only', help='Only process c++ packages', action='store_true')
     parser.add_argument('--work-path', '--work-path=', default=lib.work_path, type=str, help='Working directory for reference repo')
     args = parser.parse_args()
 
     print(args)
+
+    if not lib.check_requirements():
+        print("Error: Check requirements")
+        sys.exit(1)
 
     work_path = os.path.abspath(args.work_path)
     if not os.path.exists(work_path):
@@ -119,12 +124,12 @@ if __name__ == "__main__":
             print("No package downloaded")
             continue
 
-        source_path, source_found = lib.unpack_package(work_path, tgz, args.cpp_only)
+        source_path, source_found = lib.unpack_package(work_path, tgz, c_only=args.c_only, cpp_only=args.cpp_only)
         if not source_found:
             print("No files to process")
             continue
 
-        results_to_diff = []
+        results_to_diff = list()
 
         main_crashed = False
         your_crashed = False
@@ -182,14 +187,16 @@ if __name__ == "__main__":
         with open(result_file, 'a') as myfile:
             myfile.write(package + '\n')
             diff = lib.diff_results('main', results_to_diff[0], 'your', results_to_diff[1])
-            if diff != '':
+            if not main_crashed and not your_crashed and diff != '':
+                myfile.write('libraries:' + ','.join(libraries) +'\n')
                 myfile.write('diff:\n' + diff + '\n')
 
-        with open(timing_file, 'a') as myfile:
-            myfile.write('{:{package_width}} {:{timing_width}} {:{timing_width}} {:{timing_width}}\n'.format(
-                package, format_float(time_main),
-                format_float(time_your), format_float(time_your, time_main),
-                package_width=package_width, timing_width=timing_width))
+        if not main_crashed and not your_crashed:
+            with open(timing_file, 'a') as myfile:
+                myfile.write('{:{package_width}} {:{timing_width}} {:{timing_width}} {:{timing_width}}\n'.format(
+                    package, format_float(time_main),
+                    format_float(time_your), format_float(time_your, time_main),
+                    package_width=package_width, timing_width=timing_width))
 
         packages_processed += 1
         print(str(packages_processed) + ' of ' + str(args.p) + ' packages processed\n')

@@ -40,7 +40,7 @@
 #include <iostream>
 #include <list>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 
 #ifdef HAVE_RULES
@@ -65,9 +65,11 @@ static void addFilesToList(const std::string& fileList, std::vector<std::string>
     }
     if (files && *files) {
         std::string fileName;
+        // cppcheck-suppress accessMoved - FP
         while (std::getline(*files, fileName)) { // next line
+            // cppcheck-suppress accessMoved - FP
             if (!fileName.empty()) {
-                pathNames.emplace_back(fileName);
+                pathNames.emplace_back(std::move(fileName));
             }
         }
     }
@@ -78,6 +80,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
     std::ifstream files(fileList);
     if (files) {
         std::string pathName;
+        // cppcheck-suppress accessMoved - FP
         while (std::getline(files, pathName)) { // next line
             if (!pathName.empty()) {
                 pathName = Path::removeQuotationMarks(pathName);
@@ -87,7 +90,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
                 if (!endsWith(pathName, '/'))
                     pathName += '/';
 
-                pathNames->emplace_back(pathName);
+                pathNames->emplace_back(std::move(pathName));
             }
         }
         return true;
@@ -200,7 +203,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (!endsWith(path,'/'))
                     path += '/';
 
-                mSettings->includePaths.emplace_back(path);
+                mSettings->includePaths.emplace_back(std::move(path));
             }
 
             // User undef
@@ -242,11 +245,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->addEnabled("information");
             }
 
-            else if (std::strncmp(argv[i], "--clang", 7) == 0) {
+            else if (std::strcmp(argv[i], "--clang") == 0) {
                 mSettings->clang = true;
-                if (std::strncmp(argv[i], "--clang=", 8) == 0) {
-                    mSettings->clangExecutable = argv[i] + 8;
-                }
+            }
+
+            else if (std::strncmp(argv[i], "--clang=", 8) == 0) {
+                mSettings->clang = true;
+                mSettings->clangExecutable = argv[i] + 8;
             }
 
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
@@ -339,14 +344,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // Exception handling inside cppcheck client
-            else if (std::strcmp(argv[i], "--exception-handling") == 0)
+            else if (std::strcmp(argv[i], "--exception-handling") == 0) {
                 mSettings->exceptionHandling = true;
+            }
 
-            // TODO: only applied with Signal handling i.e. Linux
+            // Exception handling inside cppcheck client
             else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
+                const std::string exceptionOutfilename = argv[i] + 21;
+                if (exceptionOutfilename != "stderr" && exceptionOutfilename != "stdout") {
+                    printError("invalid '--exception-handling' argument");
+                    return false;
+                }
                 mSettings->exceptionHandling = true;
-                const std::string exceptionOutfilename = &(argv[i][21]);
-                CppCheckExecutor::setExceptionOutput((exceptionOutfilename=="stderr") ? stderr : stdout);
+                CppCheckExecutor::setExceptionOutput((exceptionOutfilename == "stderr") ? stderr : stdout);
             }
 
             // Filter errors
@@ -416,7 +426,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         if (!endsWith(path, '/'))
                             path += '/';
                     }
-                    mIgnoredPaths.emplace_back(path);
+                    mIgnoredPaths.emplace_back(std::move(path));
                 }
             }
 
@@ -601,6 +611,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // Special Cppcheck Premium options
+            else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
+                if (!mSettings->premiumArgs.empty())
+                    mSettings->premiumArgs += " ";
+                mSettings->premiumArgs += "--" + std::string(argv[i] + 10);
+            }
+
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
@@ -708,7 +725,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
                 Settings::Rule rule;
                 rule.pattern = 7 + argv[i];
-                mSettings->rules.emplace_back(rule);
+                mSettings->rules.emplace_back(std::move(rule));
             }
 
             // Rule file
@@ -746,7 +763,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         }
 
                         if (!rule.pattern.empty())
-                            mSettings->rules.emplace_back(rule);
+                            mSettings->rules.emplace_back(std::move(rule));
                     }
                 } else {
                     printError("unable to load rule-file: " + std::string(12+argv[i]));
@@ -978,6 +995,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
 void CmdLineParser::printHelp()
 {
+    const std::string manualUrl(isCppcheckPremium() ?
+                                "https://cppcheck.sourceforge.io/manual.pdf" :
+                                "https://files.cppchecksolutions.com/manual.pdf");
+
     std::cout << "Cppcheck - A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
@@ -994,9 +1015,6 @@ void CmdLineParser::printHelp()
         "                         addon json files or through this command line option.\n"
         "                         If not present, Cppcheck will try \"python3\" first and\n"
         "                         then \"python\".\n"
-        "    --bug-hunting\n"
-        "                         Enable noisy and soundy analysis. The normal Cppcheck\n"
-        "                         analysis is turned off.\n"
         "    --cppcheck-build-dir=<dir>\n"
         "                         Cppcheck work folder. Advantages:\n"
         "                          * whole program analysis\n"
@@ -1117,26 +1135,15 @@ void CmdLineParser::printHelp()
     "                         distributed with Cppcheck is loaded automatically.\n"
     "                         For more information about library files, read the\n"
     "                         manual.\n"
-    "    --max-ctu-depth=N    Max depth in whole program analysis. The default value\n"
-    "                         is 2. A larger value will mean more errors can be found\n"
-    "                         but also means the analysis will be slower.\n"
-    "    --output-file=<file> Write results to file, rather than standard error.\n"
-    "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
-    "                         Studio Solution (*.sln), Visual Studio Project\n"
-    "                         (*.vcxproj), compile database (compile_commands.json),\n"
-    "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
-    "                         include paths, defines, platform and undefines in\n"
-    "                         the specified file will be used.\n"
-    "    --project-configuration=<config>\n"
-    "                         If used together with a Visual Studio Solution (*.sln)\n"
-    "                         or Visual Studio Project (*.vcxproj) you can limit\n"
-    "                         the configuration cppcheck should check.\n"
-    "                         For example: '--project-configuration=Release|Win32'\n"
     "    --max-configs=<limit>\n"
     "                         Maximum number of configurations to check in a file\n"
     "                         before skipping it. Default is '12'. If used together\n"
     "                         with '--force', the last option is the one that is\n"
     "                         effective.\n"
+    "    --max-ctu-depth=N    Max depth in whole program analysis. The default value\n"
+    "                         is 2. A larger value will mean more errors can be found\n"
+    "                         but also means the analysis will be slower.\n"
+    "    --output-file=<file> Write results to file, rather than standard error.\n"
     "    --platform=<type>, --platform=<file>\n"
     "                         Specifies platform specific types and sizes. The\n"
     "                         available builtin platforms are:\n"
@@ -1170,17 +1177,43 @@ void CmdLineParser::printHelp()
     "                          * unspecified\n"
     "                                 Unknown type sizes\n"
     "    --plist-output=<path>\n"
-    "                         Generate Clang-plist output files in folder.\n"
-    "    -q, --quiet          Do not show progress reports.\n"
-    "    -rp=<paths>, --relative-paths=<paths>\n"
-    "                         Use relative paths in output. When given, <paths> are\n"
-    "                         used as base. You can separate multiple paths by ';'.\n"
-    "                         Otherwise path where source files are searched is used.\n"
-    "                         We use string comparison to create relative paths, so\n"
-    "                         using e.g. ~ for home folder does not work. It is\n"
-    "                         currently only possible to apply the base paths to\n"
-    "                         files that are on a lower level in the directory tree.\n"
-    "    --report-progress    Report progress messages while checking a file.\n"
+    "                         Generate Clang-plist output files in folder.\n";
+
+    if (isCppcheckPremium()) {
+        std::cout << "    --premium=<option>\n"
+                  << "                         Coding standards:\n"
+                  << "                          * autosar           Autosar (partial)\n"
+                  << "                          * cert-c-2016       Cert C 2016 checking\n"
+                  << "                          * cert-c++-2016     Cert C++ 2016 checking (partial)\n"
+                  << "                          * misra-c-2012      Misra C 2012\n"
+                  << "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
+                  << "                         Other:\n"
+                  << "                          * bughunting        Soundy analysis\n"
+                  << "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
+    }
+
+    std::cout <<
+        "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
+        "                         Studio Solution (*.sln), Visual Studio Project\n"
+        "                         (*.vcxproj), compile database (compile_commands.json),\n"
+        "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
+        "                         include paths, defines, platform and undefines in\n"
+        "                         the specified file will be used.\n"
+        "    --project-configuration=<config>\n"
+        "                         If used together with a Visual Studio Solution (*.sln)\n"
+        "                         or Visual Studio Project (*.vcxproj) you can limit\n"
+        "                         the configuration cppcheck should check.\n"
+        "                         For example: '--project-configuration=Release|Win32'\n"
+        "    -q, --quiet          Do not show progress reports.\n"
+        "    -rp=<paths>, --relative-paths=<paths>\n"
+        "                         Use relative paths in output. When given, <paths> are\n"
+        "                         used as base. You can separate multiple paths by ';'.\n"
+        "                         Otherwise path where source files are searched is used.\n"
+        "                         We use string comparison to create relative paths, so\n"
+        "                         using e.g. ~ for home folder does not work. It is\n"
+        "                         currently only possible to apply the base paths to\n"
+        "                         files that are on a lower level in the directory tree.\n"
+        "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
     "    --rule=<rule>        Match regular expression.\n"
     "    --rule-file=<file>   Use given rule file. For more information, see:\n"
@@ -1258,9 +1291,6 @@ void CmdLineParser::printHelp()
     "    -v, --verbose        Output more detailed error information.\n"
     "    --version            Print out version number.\n"
     "    --xml                Write results in xml format to error stream (stderr).\n"
-    "    --xml-version=<version>\n"
-    "                         Select the XML file version. Also implies --xml.\n"
-    "                         Currently only version 2 is available. The default version is 2.\n"
     "\n"
     "Example usage:\n"
     "  # Recursively check the current folder. Print the progress on the screen and\n"
@@ -1277,11 +1307,17 @@ void CmdLineParser::printHelp()
     "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
     "\n"
     "For more information:\n"
-    "    https://cppcheck.sourceforge.io/manual.pdf\n"
-    "\n"
-    "Many thanks to the 3rd party libraries we use:\n"
-    " * tinyxml2 -- loading project/library/ctu files.\n"
-    " * picojson -- loading compile database.\n"
-    " * pcre -- rules.\n"
-    " * qt -- used in GUI\n";
+    "    " << manualUrl << "\n"
+        "\n"
+        "Many thanks to the 3rd party libraries we use:\n"
+        " * tinyxml2 -- loading project/library/ctu files.\n"
+        " * picojson -- loading compile database.\n"
+        " * pcre -- rules.\n"
+        " * qt -- used in GUI\n";
+}
+
+bool CmdLineParser::isCppcheckPremium() const {
+    if (mSettings->cppcheckCfgProductName.empty())
+        mSettings->loadCppcheckCfg();
+    return mSettings->cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0;
 }

@@ -49,7 +49,7 @@
 #include <memory>
 #include <new>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -89,7 +89,7 @@ namespace {
         std::string args;       // special extra arguments
         std::string python;     // script interpreter
         bool ctu = false;
-        std::string runScript{};
+        std::string runScript;
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
@@ -275,7 +275,8 @@ static void createDumpFile(const Settings& settings,
 static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &file,
-                                std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
+                                const std::string &premiumArgs,
+                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> &executeCommand)
 {
     const std::string redirect = "2>&1";
 
@@ -308,6 +309,8 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     if (addonInfo.executable.empty())
         args = cmdFileName(addonInfo.runScript) + " " + cmdFileName(addonInfo.scriptFile);
     args += std::string(args.empty() ? "" : " ") + "--cli" + addonInfo.args;
+    if (!premiumArgs.empty() && !addonInfo.executable.empty())
+        args += " " + premiumArgs;
 
     const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
     args += fileArg;
@@ -374,7 +377,7 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
-static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMessage&)> reportErr, std::vector<ErrorMessage> *warnings)
+static bool reportClangErrors(std::istream &is, const std::function<void(const ErrorMessage&)>& reportErr, std::vector<ErrorMessage> *warnings)
 {
     std::string line;
     while (std::getline(is, line)) {
@@ -414,7 +417,7 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMe
                             Certainty::normal);
 
         if (line.compare(pos3, 10, ": warning:") == 0) {
-            warnings->push_back(errmsg);
+            warnings->push_back(std::move(errmsg));
             continue;
         }
 
@@ -906,23 +909,23 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 std::list<ErrorMessage::FileLocation> locationList;
                 if (e.token) {
                     ErrorMessage::FileLocation loc(e.token, &tokenizer.list);
-                    locationList.push_back(loc);
+                    locationList.push_back(std::move(loc));
                 } else {
-                    ErrorMessage::FileLocation loc(tokenizer.list.getSourceFilePath(), 0, 0);
                     ErrorMessage::FileLocation loc2(filename, 0, 0);
-                    locationList.push_back(loc2);
-                    if (filename != tokenizer.list.getSourceFilePath())
-                        locationList.push_back(loc);
+                    locationList.push_back(std::move(loc2));
+                    if (filename != tokenizer.list.getSourceFilePath()) {
+                        ErrorMessage::FileLocation loc(tokenizer.list.getSourceFilePath(), 0, 0);
+                        locationList.push_back(std::move(loc));
+                    }
                 }
-                ErrorMessage errmsg(locationList,
+                ErrorMessage errmsg(std::move(locationList),
                                     tokenizer.list.getSourceFilePath(),
                                     Severity::error,
                                     e.errorMessage,
                                     e.id,
                                     Certainty::normal);
 
-                if (errmsg.severity == Severity::error || mSettings.severity.isEnabled(errmsg.severity))
-                    reportErr(errmsg);
+                reportErr(errmsg);
             }
         }
 
@@ -1366,7 +1369,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             continue;
 
         const std::string results =
-            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mExecuteCommand);
+            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
         std::istringstream istr(results);
         std::string line;
 
@@ -1385,18 +1388,18 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             ErrorMessage errmsg;
 
             if (obj.count("file") > 0) {
-                const std::string fileName = obj["file"].get<std::string>();
+                std::string fileName = obj["file"].get<std::string>();
                 const int64_t lineNumber = obj["linenr"].get<int64_t>();
                 const int64_t column = obj["column"].get<int64_t>();
-                errmsg.callStack.emplace_back(fileName, lineNumber, column);
+                errmsg.callStack.emplace_back(std::move(fileName), lineNumber, column);
             } else if (obj.count("loc") > 0) {
                 for (const picojson::value &locvalue: obj["loc"].get<picojson::array>()) {
                     picojson::object loc = locvalue.get<picojson::object>();
-                    const std::string fileName = loc["file"].get<std::string>();
+                    std::string fileName = loc["file"].get<std::string>();
                     const int64_t lineNumber = loc["linenr"].get<int64_t>();
                     const int64_t column = loc["column"].get<int64_t>();
                     const std::string info = loc["info"].get<std::string>();
-                    errmsg.callStack.emplace_back(fileName, info, lineNumber, column);
+                    errmsg.callStack.emplace_back(std::move(fileName), info, lineNumber, column);
                 }
             }
 
@@ -1460,7 +1463,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
     if (!file.empty()) {
         ErrorMessage::FileLocation location;
         location.setfile(file);
-        loclist.push_back(location);
+        loclist.push_back(std::move(location));
     }
 
     std::ostringstream msg;
@@ -1498,7 +1501,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
     if (!file.empty()) {
         ErrorMessage::FileLocation location;
         location.setfile(file);
-        loclist.push_back(location);
+        loclist.push_back(std::move(location));
     }
 
     ErrorMessage errmsg(loclist,

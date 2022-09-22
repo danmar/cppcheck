@@ -93,6 +93,7 @@ signals:
      * @param value Current progress
      * @param description Description of the current stage
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void progress(int value, const QString& description);
 
     /**
@@ -100,6 +101,7 @@ signals:
      *
      * @param item Error data
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void error(const ErrorItem &item);
 
     /**
@@ -107,6 +109,7 @@ signals:
      *
      * @param logline Log line
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void log(const QString &logline);
 
     /**
@@ -114,6 +117,7 @@ signals:
      *
      * @param item Error data
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void debugError(const ErrorItem &item);
 
 protected:

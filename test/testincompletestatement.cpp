@@ -22,9 +22,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <map>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <utility>
 #include <vector>
@@ -689,6 +688,14 @@ private:
               "    auto** elem = &parent.firstChild;\n"
               "}\n", /*inconclusive*/ true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11301
+              "    NULL;\n"
+              "    nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found a statement that begins with NULL constant.\n"
+                      "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with NULL constant.\n",
+                      errout.str());
     }
 
     void vardecl() {
