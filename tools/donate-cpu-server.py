@@ -43,6 +43,7 @@ if logfile:
     logfile += '/'
 logfile += 'donate-cpu-server.log'
 handler_file = logging.handlers.RotatingFileHandler(filename=logfile, maxBytes=100*1024, backupCount=1)
+handler_file.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
 handler_file.setLevel(logging.ERROR)
 logger.addHandler(handler_file)
 
