@@ -2119,6 +2119,16 @@ void CheckClass::checkConst()
     }
 }
 
+// tok should point at "this"
+static const Token* getFuncTokFromThis(const Token* tok) {
+    if (!Token::simpleMatch(tok->next(), "."))
+        return nullptr;
+    tok = tok->tokAt(2);
+    while (Token::Match(tok, "%name% ::"))
+        tok = tok->tokAt(2);
+    return Token::Match(tok, "%name% (") ? tok : nullptr;
+}
+
 bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 {
     bool again = false;
@@ -2128,7 +2138,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         again = false;
 
         if (tok->str() == "this") {
-            return true;
+            return !getFuncTokFromThis(tok); // function calls are handled elsewhere
         } else if (Token::simpleMatch(tok->tokAt(-3), "( * this )")) {
             return true;
         } else if (Token::Match(tok->tokAt(-3), "%name% ) . %name%")) {
@@ -2263,6 +2273,14 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
 {
     if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
         return false;
+
+    auto getFuncTok = [](const Token* tok) -> const Token* {
+        if (Token::simpleMatch(tok, "this"))
+            tok = getFuncTokFromThis(tok);
+        if ((Token::Match(tok, "%name% (|{") || Token::simpleMatch(tok->astParent(), "return {")) && !tok->isStandardType() && !tok->isKeyword())
+            return tok;
+        return nullptr;
+    };
 
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
@@ -2400,18 +2418,17 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
         }
 
         // function/constructor call, return init list
-        else if ((Token::Match(tok1, "%name% (|{") || Token::simpleMatch(tok1->astParent(), "return {")) && !tok1->isStandardType() &&
-                 !Token::Match(tok1, "return|if|string|switch|while|catch|for")) {
-            if (isMemberFunc(scope, tok1) && tok1->strAt(-1) != ".") {
-                if (!isConstMemberFunc(scope, tok1))
+        else if (const Token* funcTok = getFuncTok(tok1)) {
+            if (isMemberFunc(scope, funcTok) && (funcTok->strAt(-1) != "." || Token::simpleMatch(funcTok->tokAt(-2), "this ."))) {
+                if (!isConstMemberFunc(scope, funcTok))
                     return false;
                 memberAccessed = true;
             }
             // Member variable given as parameter
-            const Token *lpar = tok1->next();
+            const Token *lpar = funcTok->next();
             if (Token::simpleMatch(lpar, "( ) ("))
                 lpar = lpar->tokAt(2);
-            for (const Token* tok2 = lpar->next(); tok2 && tok2 != tok1->next()->link(); tok2 = tok2->next()) {
+            for (const Token* tok2 = lpar->next(); tok2 && tok2 != funcTok->next()->link(); tok2 = tok2->next()) {
                 if (tok2->str() == "(")
                     tok2 = tok2->link();
                 else if ((tok2->isName() && isMemberVar(scope, tok2)) || (tok2->isUnaryOp("&") && (tok2 = tok2->astOperand1()))) {

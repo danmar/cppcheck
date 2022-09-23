@@ -196,6 +196,7 @@ private:
         TEST_CASE(const77); // ticket #10307, #10311
         TEST_CASE(const78); // ticket #10315
         TEST_CASE(const79); // ticket #9861
+        TEST_CASE(const80); // ticket #11328
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6149,6 +6150,40 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'A::f' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
+    }
+
+    void const80() { // #11328
+        checkConst("struct B { static void b(); };\n"
+                   "struct S : B {\n"
+                   "    static void f() {}\n"
+                   "    void g() const;\n"
+                   "    void h();\n"
+                   "    void k();\n"
+                   "    void m();\n"
+                   "    void n();\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void S::g() const {\n"
+                   "    this->f();\n"
+                   "}\n"
+                   "void S::h() {\n"
+                   "    this->f();\n"
+                   "}\n"
+                   "void S::k() {\n"
+                   "    if (i)\n"
+                   "        this->f();\n"
+                   "}\n"
+                   "void S::m() {\n"
+                   "        this->B::b();\n"
+                   "}\n"
+                   "void S::n() {\n"
+                   "        this->h();\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:4]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace).\n"
+                      "[test.cpp:14] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'S::h' can be static (but you may consider moving to unnamed namespace).\n"
+                      "[test.cpp:17] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'S::k' can be const.\n"
+                      "[test.cpp:21] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'S::m' can be static (but you may consider moving to unnamed namespace).\n",
                       errout.str());
     }
 
