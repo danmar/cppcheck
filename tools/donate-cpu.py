@@ -219,6 +219,8 @@ while True:
     if not source_found:
         print("No files to process")
         lib.upload_nodata(package)
+        print('Sleep 5 seconds..')
+        time.sleep(5)
         continue
     crash = False
     timeout = False
