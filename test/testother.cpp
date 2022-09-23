@@ -5089,8 +5089,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testMisusedScopeObjectNamespace() { // #4479
-        check("namespace M {\n"
+    void testMisusedScopeObjectNamespace() {
+        check("namespace M {\n" // #4479
               "    namespace N {\n"
               "        struct S {};\n"
               "    }\n"
@@ -5099,7 +5099,18 @@ private:
               "    M::N::S();\n"
               "    return 0;\n"
               "}\n", "test.cpp");
-        ASSERT_EQUALS("[test.cpp:7]: (style) Instance of 'S' object is destroyed immediately.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Instance of 'M::N::S' object is destroyed immediately.\n", errout.str());
+
+        check("void f() {\n" // #10057
+              "    std::string(\"abc\");\n"
+              "    std::string{ \"abc\" };\n"
+              "    std::pair<int, int>(1, 2);\n"
+              "    (void)0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Instance of 'std::string' object is destroyed immediately.\n"
+                      "[test.cpp:3]: (style) Instance of 'std::string' object is destroyed immediately.\n"
+                      "[test.cpp:4]: (style) Instance of 'std::pair' object is destroyed immediately.\n",
+                      errout.str());
     }
 
     void trac2084() {
