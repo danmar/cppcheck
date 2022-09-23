@@ -3146,6 +3146,12 @@ private:
                       "    f<P>(Dst, Src, 2);\n"
                       "}\n", s);
         ASSERT_EQUALS("", errout.str());
+
+        checkNoMemset("void f() {\n"
+                      "    std::array<char, 4> a;\n"
+                      "    std::memset(&a, 0, 4);\n"
+                      "}\n", s);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void memsetOnInvalid() { // Ticket #5425

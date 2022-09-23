@@ -1361,7 +1361,8 @@ void CheckClass::checkMemset()
                         if (numIndirToVariableType == 1)
                             type = var->typeScope();
 
-                        if (!type && !var->isPointer() && mSettings->library.detectContainerOrIterator(var->typeStartToken())) {
+                        if (!type && !var->isPointer() && !Token::simpleMatch(var->typeStartToken(), "std :: array") &&
+                            mSettings->library.detectContainerOrIterator(var->typeStartToken())) {
                             memsetError(tok, tok->str(), var->getTypeName(), {}, /*isContainer*/ true);
                         }
                     }
