@@ -2051,17 +2051,38 @@ void CheckOther::checkMisusedScopedObject()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    auto getConstructorTok = [](const Token* tok) -> const Token* {
+        if (!Token::Match(tok, "[;{}] %name%"))
+            return nullptr;
+        tok = tok->next();
+        while (Token::Match(tok, "%name% ::"))
+            tok = tok->tokAt(2);
+        if (Token::Match(tok, "%name% (|{") && Token::Match(tok->linkAt(1), ")|} ; !!}") &&
+            !Token::simpleMatch(tok->next()->astParent(), ";")) // for loop condition
+            return tok;
+        return nullptr;
+    };
+
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
-            if ((tok->next()->type() || tok->next()->isStandardType() || (tok->next()->function() && tok->next()->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
-                && Token::Match(tok, "[;{}] %name% (|{")
-                && Token::Match(tok->linkAt(2), ")|} ; !!}")
-                && (!tok->next()->function() || // is not a function on this scope
-                    tok->next()->function()->isConstructor()) // or is function in this scope and it's a ctor
-                && (!tok->tokAt(2)->astOperand2() || isConstStatement(tok->tokAt(2)->astOperand2(), mTokenizer->isCPP()))) {
+            const Token* ctorTok = getConstructorTok(tok);
+            if (ctorTok && (ctorTok->type() || ctorTok->isStandardType() || (ctorTok->function() && ctorTok->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
+                && (!ctorTok->function() || ctorTok->function()->isConstructor()) // // is not a function on this scope or is function in this scope and it's a ctor
+                && ctorTok->str() != "void") {
+                if (const Token* arg = ctorTok->next()->astOperand2()) {
+                    if (!isConstStatement(arg, mTokenizer->isCPP()))
+                        continue;
+                    if (ctorTok->strAt(1) == "(") {
+                        if (arg->varId()) // TODO: check if this is a declaration
+                            continue;
+                        const Token* rml = nextAfterAstRightmostLeaf(arg);
+                        if (rml && rml->previous() && rml->previous()->varId())
+                            continue;
+                    }
+                }
                 tok = tok->next();
-                misusedScopeObjectError(tok, tok->str());
+                misusedScopeObjectError(ctorTok, ctorTok->str());
                 tok = tok->next();
             }
         }

@@ -139,6 +139,7 @@ private:
         TEST_CASE(testMisusedScopeObjectInConstructor);
         TEST_CASE(testMisusedScopeObjectNoCodeAfter);
         TEST_CASE(testMisusedScopeObjectStandardType);
+        TEST_CASE(testMisusedScopeObjectNamespace);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -5024,6 +5025,19 @@ private:
                       "[test.cpp:7]: (style) Instance of 'int' object is destroyed immediately.\n"
                       "[test.cpp:8]: (style) Instance of 'int' object is destroyed immediately.\n",
                       errout.str());
+    }
+
+    void testMisusedScopeObjectNamespace() { // #4479
+        check("namespace M {\n"
+              "    namespace N {\n"
+              "        struct S {};\n"
+              "    }\n"
+              "}\n"
+              "int f() {\n"
+              "    M::N::S();\n"
+              "    return 0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Instance of 'S' object is destroyed immediately.\n", errout.str());
     }
 
     void trac2084() {
