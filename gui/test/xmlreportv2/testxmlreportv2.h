@@ -22,5 +22,5 @@ class TestXmlReportV2 : public QObject {
     Q_OBJECT
 
 private slots:
-    void readXml();
+    void readXml() const;
 };

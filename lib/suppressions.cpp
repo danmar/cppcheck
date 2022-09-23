@@ -31,6 +31,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional> // std::bind, std::placeholders
+#include <sstream> // IWYU pragma: keep
+#include <utility>
 
 #include <tinyxml2.h>
 
@@ -165,7 +167,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
             }
         }
 
-        suppressions.push_back(s);
+        suppressions.push_back(std::move(s));
     }
 
     return suppressions;

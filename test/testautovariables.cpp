@@ -23,7 +23,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
+#include <sstream> // IWYU pragma: keep
 
 class TestAutoVariables : public TestFixture {
 public:
@@ -2743,6 +2743,12 @@ private:
               "    return sv;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10993
+              "    std::string_view v = std::string();\n"
+              "    v.data();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3]: (error) Using object that is a temporary.\n", errout.str());
     }
 
     void danglingLifetimeUniquePtr()
@@ -3650,6 +3656,26 @@ private:
               "    return c.get();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7] -> [test.cpp:8]: (error) Using object that is a temporary.\n", errout.str());
+
+        // #11298
+        check("struct S {\n"
+              "    std::string g();  \n"
+              "};\n"
+              "struct T {\n"
+              "  void f(); \n"
+              "  S* p = nullptr;\n"
+              "};\n"
+              "struct U {\n"
+              "  explicit U(const char* s);\n"
+              "  bool h();\n"
+              "  int i;\n"
+              "};\n"
+              "void T::f() {\n"
+              "    U u(p->g().c_str());\n"
+              "    if (u.h()) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()

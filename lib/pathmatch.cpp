@@ -22,6 +22,7 @@
 #include "utils.h"
 
 #include <cstddef>
+#include <utility>
 
 PathMatch::PathMatch(std::vector<std::string> excludedPaths, bool caseSensitive)
     : mExcludedPaths(std::move(excludedPaths)), mCaseSensitive(caseSensitive)

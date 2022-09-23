@@ -4,6 +4,8 @@
 import os
 import re
 import tempfile
+import pytest
+
 from testutils import create_gui_project_file, cppcheck
 
 # Run Cppcheck from project path
@@ -189,6 +191,17 @@ def test_build_dir_dump_output():
             dump = f.read()
             assert '</dump>' in dump, 'invalid dump data: ...' + dump[-100:]
 
+def __test_missing_include_system(use_j):
+    args = '--enable=missingInclude --suppress=zerodiv helloworld'
+    if use_j:
+        args = '-j2 ' + args
 
+    _, _, stderr = cppcheck(args.split())
+    assert stderr == 'nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]\n\n'
 
+def test_missing_include_system():
+    __test_missing_include_system(False)
 
+@pytest.mark.xfail
+def test_missing_include_system_j(): #11283
+    __test_missing_include_system(True)

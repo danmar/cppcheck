@@ -31,9 +31,9 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
-#include <iosfwd>
 #include <list>
 #include <memory>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 
@@ -442,19 +442,19 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 container.itEndPattern = itEndPattern;
             const char* const opLessAllowed = node->Attribute("opLessAllowed");
             if (opLessAllowed)
-                container.opLessAllowed = std::string(opLessAllowed) == "true";
+                container.opLessAllowed = strcmp(opLessAllowed, "true") == 0;
             const char* const hasInitializerListConstructor = node->Attribute("hasInitializerListConstructor");
             if (hasInitializerListConstructor)
-                container.hasInitializerListConstructor = std::string(hasInitializerListConstructor) == "true";
+                container.hasInitializerListConstructor = strcmp(hasInitializerListConstructor, "true") == 0;
             const char* const view = node->Attribute("view");
             if (view)
-                container.view = std::string(view) == "true";
+                container.view = strcmp(view, "true") == 0;
 
             for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
                 const std::string containerNodeName = containerNode->Name();
                 if (containerNodeName == "size" || containerNodeName == "access" || containerNodeName == "other") {
                     for (const tinyxml2::XMLElement *functionNode = containerNode->FirstChildElement(); functionNode; functionNode = functionNode->NextSiblingElement()) {
-                        if (std::string(functionNode->Name()) != "function") {
+                        if (strcmp(functionNode->Name(), "function") != 0) {
                             unknown_elements.insert(functionNode->Name());
                             continue;
                         }
@@ -492,7 +492,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     } else if (containerNodeName == "access") {
                         const char* const indexArg = containerNode->Attribute("indexOperator");
                         if (indexArg)
-                            container.arrayLike_indexOp = std::string(indexArg) == "array-like";
+                            container.arrayLike_indexOp = strcmp(indexArg, "array-like") == 0;
                     }
                 } else if (containerNodeName == "type") {
                     const char* const templateArg = containerNode->Attribute("templateParameter");
@@ -501,10 +501,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
                     const char* const string = containerNode->Attribute("string");
                     if (string)
-                        container.stdStringLike = std::string(string) == "std-like";
+                        container.stdStringLike = strcmp(string, "std-like") == 0;
                     const char* const associative = containerNode->Attribute("associative");
                     if (associative)
-                        container.stdAssociativeLike = std::string(associative) == "std-like";
+                        container.stdAssociativeLike = strcmp(associative, "std-like") == 0;
                     const char* const unstable = containerNode->Attribute("unstable");
                     if (unstable) {
                         std::string unstableType = unstable;
@@ -520,7 +520,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         struct Container::RangeItemRecordTypeItem member;
                         member.name = memberName ? memberName : "";
                         member.templateParameter = memberTemplateParameter ? std::atoi(memberTemplateParameter) : -1;
-                        container.rangeItemRecordType.emplace_back(member);
+                        container.rangeItemRecordType.emplace_back(std::move(member));
                     }
                 } else
                     unknown_elements.insert(containerNodeName);
@@ -782,9 +782,6 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, valueattr);
                         ac.minsizes.emplace_back(type, 0);
                         ac.minsizes.back().value = minsizevalue;
-                        const char* baseTypeAttr = argnode->Attribute("baseType");
-                        if (baseTypeAttr)
-                            ac.minsizes.back().baseType = baseTypeAttr;
                     } else {
                         const char *argattr = argnode->Attribute("arg");
                         if (!argattr)
@@ -803,6 +800,9 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             ac.minsizes.back().arg2 = arg2attr[0] - '0';
                         }
                     }
+                    const char* baseTypeAttr = argnode->Attribute("baseType"); // used by VALUE, ARGVALUE
+                    if (baseTypeAttr)
+                        ac.minsizes.back().baseType = baseTypeAttr;
                 }
 
                 else if (argnodename == "iterator") {
@@ -1121,6 +1121,8 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
         return false;
     }
     if (Token::Match(start,"[;{}]") && Token::Match(funcname, "%name% )| (")) {
+        if (funcname->isKeyword())
+            return false;
         if (funcname->str() == "exit")
             return true;
         if (!isnotnoreturn(funcname)) {
@@ -1132,7 +1134,7 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     return false;
 }
 
-const Library::Container* Library::detectContainer(const Token* typeStart, bool iterator) const
+const Library::Container* Library::detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator) const
 {
     for (const std::pair<const std::string, Library::Container> & c : containers) {
         const Container& container = c.second;
@@ -1142,14 +1144,25 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
         if (!Token::Match(typeStart, container.startPattern2.c_str()))
             continue;
 
-        if (!iterator && container.endPattern.empty()) // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
+        // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
+        if (detect != IteratorOnly && container.endPattern.empty()) {
+            if (isIterator)
+                *isIterator = false;
             return &container;
+        }
 
         for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
             if (tok->link()) {
-                const std::string& endPattern = iterator ? container.itEndPattern : container.endPattern;
-                if (Token::Match(tok->link(), endPattern.c_str()))
+                if (detect != ContainerOnly && Token::Match(tok->link(), container.itEndPattern.c_str())) {
+                    if (isIterator)
+                        *isIterator = true;
                     return &container;
+                }
+                if (detect != IteratorOnly && Token::Match(tok->link(), container.endPattern.c_str())) {
+                    if (isIterator)
+                        *isIterator = false;
+                    return &container;
+                }
                 break;
             }
         }
@@ -1157,17 +1170,22 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
     return nullptr;
 }
 
+const Library::Container* Library::detectContainer(const Token* typeStart) const
+{
+    return detectContainerInternal(typeStart, ContainerOnly);
+}
+
+const Library::Container* Library::detectIterator(const Token* typeStart) const
+{
+    return detectContainerInternal(typeStart, IteratorOnly);
+}
+
 const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator) const
 {
-    const Library::Container* c = detectContainer(typeStart);
-    if (c) {
-        if (isIterator)
-            *isIterator = false;
-        return c;
-    }
-    c = detectContainer(typeStart, true);
+    bool res;
+    const Library::Container* c = detectContainerInternal(typeStart, Both, &res);
     if (c && isIterator)
-        *isIterator = true;
+        *isIterator = res;
     return c;
 }
 

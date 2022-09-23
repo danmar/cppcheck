@@ -114,7 +114,7 @@ public:
     /**
      * Execute a shell command and read the output from it. Returns true if command terminated successfully.
      */
-    static bool executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output_);
+    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output_);
 
     static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
 

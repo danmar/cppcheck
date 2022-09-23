@@ -229,11 +229,11 @@ while True:
             capture_callstack = True
 
             def get_client_version_head():
-                cmd = os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
-                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                cmd = 'python3' + ' ' + os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
+                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True)
                 try:
                     comm = p.communicate()
-                    return comm[0].decode(encoding='utf-8', errors='ignore').strip()
+                    return comm[0]
                 except:
                     return None
 
@@ -284,8 +284,8 @@ while True:
         print(info_output)
         print('=========================================================')
     if do_upload:
-        upload_results(package, output, server_address)
-        upload_info(package, info_output, server_address)
+        if upload_results(package, output, server_address):
+            upload_info(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
         if (client_version_head is not None) and (Version(client_version_head) > Version(get_client_version())):

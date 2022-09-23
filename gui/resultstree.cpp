@@ -21,6 +21,7 @@
 #include "application.h"
 #include "applicationlist.h"
 #include "common.h"
+#include "config.h"
 #include "erroritem.h"
 #include "path.h"
 #include "projectfile.h"
@@ -57,10 +58,8 @@ static const char CWE[] = "cwe";
 static const char ERRORID[] = "id";
 static const char FILENAME[] = "file";
 static const char FILE0[] = "file0";
-static const char FUNCTION[] = "function";
 static const char HASH[] = "hash";
 static const char HIDE[] = "hide";
-static const char INCOMPLETE[] = "incomplete";
 static const char INCONCLUSIVE[] = "inconclusive";
 static const char LINE[] = "line";
 static const char MESSAGE[] = "message";
@@ -182,7 +181,6 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     line.file = realfile;
     line.line = loc.line;
     line.errorId = item.errorId;
-    line.incomplete = item.incomplete;
     line.cwe = item.cwe;
     line.hash = item.hash;
     line.inconclusive = item.inconclusive;
@@ -214,12 +212,10 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data[LINE]  = loc.line;
     data[COLUMN] = loc.column;
     data[ERRORID]  = item.errorId;
-    data[INCOMPLETE] = item.incomplete;
     data[CWE] = item.cwe;
     data[HASH] = item.hash;
     data[INCONCLUSIVE] = item.inconclusive;
     data[FILE0] = stripPath(item.file0, true);
-    data[FUNCTION] = item.function;
     data[SINCEDATE] = item.sinceDate;
     data[SYMBOLNAMES] = item.symbolNames;
     data[TAGS] = line.tags;
@@ -251,7 +247,6 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             child_data[LINE]  = e.line;
             child_data[COLUMN] = e.column;
             child_data[ERRORID]  = line.errorId;
-            child_data[INCOMPLETE] = line.incomplete;
             child_data[CWE] = line.cwe;
             child_data[HASH] = line.hash;
             child_data[INCONCLUSIVE] = line.inconclusive;
@@ -1162,7 +1157,7 @@ QString ResultsTree::getFilePath(QStandardItem *target, bool fullPath)
     return QString();
 }
 
-QString ResultsTree::severityToIcon(Severity::SeverityType severity) const
+QString ResultsTree::severityToIcon(Severity::SeverityType severity)
 {
     switch (severity) {
     case Severity::error:
@@ -1280,7 +1275,6 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
     item->summary = data[SUMMARY].toString();
     item->message = data[MESSAGE].toString();
     item->errorId = data[ERRORID].toString();
-    item->incomplete = data[INCOMPLETE].toBool();
     item->cwe = data[CWE].toInt();
     item->hash = data[HASH].toULongLong();
     item->inconclusive = data[INCONCLUSIVE].toBool();

@@ -126,6 +126,7 @@ private:
         settings2.checkUnusedTemplates = true;
 
         TEST_CASE(array);
+        TEST_CASE(array_ptr);
         TEST_CASE(stlarray1);
         TEST_CASE(stlarray2);
 
@@ -509,6 +510,29 @@ private:
         ASSERT(v->isArray());
         ASSERT_EQUALS(1U, v->dimensions().size());
         ASSERT_EQUALS(12U, v->dimension(0));
+    }
+
+    void array_ptr() {
+        GET_SYMBOL_DB("const char* a[] = { \"abc\" };\n"
+                      "const char* b[] = { \"def\", \"ghijkl\" };");
+        ASSERT(db != nullptr);
+
+        ASSERT(db->variableList().size() == 3); // the first one is not used
+        const Variable* v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+
+        ASSERT(v->isArray());
+        ASSERT(v->isPointerArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(1U, v->dimension(0));
+
+        v = db->getVariableFromVarId(2);
+        ASSERT(v != nullptr);
+
+        ASSERT(v->isArray());
+        ASSERT(v->isPointerArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(2U, v->dimension(0));
     }
 
     void stlarray1() {
@@ -4370,7 +4394,7 @@ private:
                       "struct Foo : Bar {\n"
                       "    virtual std::string get_endpoint_url() const noexcept override final;\n"
                       "};");
-        const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept ;") : nullptr;
+        const Token *f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept ( true ) ;") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 2);
         ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
@@ -4378,7 +4402,7 @@ private:
         ASSERT(f && f->function() && !f->function()->hasFinalSpecifier());
         ASSERT(f && f->function() && f->function()->isConst());
         ASSERT(f && f->function() && f->function()->isNoExcept());
-        f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept override final ;") : nullptr;
+        f = db ? Token::findsimplematch(tokenizer.tokens(), "get_endpoint_url ( ) const noexcept ( true ) override final ;") : nullptr;
         ASSERT(f != nullptr);
         ASSERT(f && f->function() && f->function()->token->linenr() == 5);
         ASSERT(f && f->function() && f->function()->hasVirtualSpecifier());
@@ -5869,12 +5893,14 @@ private:
     }
 
     void findFunction11() {
+        settings1.libraries.emplace_back("qt");
         GET_SYMBOL_DB("class Fred : public QObject {\n"
                       "    Q_OBJECT\n"
                       "private slots:\n"
                       "    void foo();\n"
                       "};\n"
                       "void Fred::foo() { }");
+        settings1.libraries.pop_back();
         ASSERT_EQUALS("", errout.str());
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( ) {");
@@ -6731,7 +6757,7 @@ private:
                       "    return nullptr;\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
-        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "what ( ) const noexcept {");
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "what ( ) const noexcept ( true ) {");
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "what");

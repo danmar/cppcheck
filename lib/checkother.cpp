@@ -39,8 +39,8 @@
 #include <list>
 #include <map>
 #include <memory>
-#include <ostream>
 #include <set>
+#include <sstream>
 #include <utility>
 #include <numeric>
 
@@ -1296,7 +1296,8 @@ void CheckOther::checkPassByReference()
         if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == "...")
             continue; // references could not be used as va_start parameters (#5824)
 
-        if ((var->declEndToken() && var->declEndToken()->isExternC()) ||
+        const Token * const varDeclEndToken = var->declEndToken();
+        if ((varDeclEndToken && varDeclEndToken->isExternC()) ||
             (var->scope() && var->scope()->function && var->scope()->function->tokenDef && var->scope()->function->tokenDef->isExternC()))
             continue; // references cannot be used in functions in extern "C" blocks
 
@@ -1775,6 +1776,10 @@ static bool isBracketAccess(const Token* tok)
     return tok->variable()->nameToken() != tok;
 }
 
+static bool isConstant(const Token* tok) {
+    return Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL");
+}
+
 static bool isConstStatement(const Token *tok, bool cpp)
 {
     if (!tok)
@@ -1783,7 +1788,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (tok->varId() != 0)
         return true;
-    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+    if (isConstant(tok))
         return true;
     if (Token::Match(tok, "*|&|&&") &&
         (Token::Match(tok->previous(), "::|.|const|volatile|restrict") || isVarDeclOp(tok)))
@@ -1866,6 +1871,8 @@ static bool isConstTop(const Token *tok)
         if (!bracTok->astParent())
             return true;
     }
+    if (tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp())
+        return true;
     return false;
 }
 
@@ -1908,7 +1915,8 @@ void CheckOther::checkIncompleteStatement()
             !Token::Match(tok->previous(), ";|}|{ %any% ;") &&
             !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()) &&
             !Token::simpleMatch(tok->tokAt(-2), "for (") &&
-            !Token::Match(tok->tokAt(-1), "%var% ["))
+            !Token::Match(tok->tokAt(-1), "%var% [") &&
+            !(tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp()))
             continue;
         // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
@@ -1939,7 +1947,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "', result is not used.";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else if (Token::Match(valueTok, "%str%|%num%|%bool%|%char%")) {
+    else if (isConstant(valueTok)) {
         std::string typeStr("string");
         if (valueTok->isNumber())
             typeStr = "numeric";
@@ -1947,6 +1955,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
             typeStr = "bool";
         else if (valueTok->tokType() == Token::eChar)
             typeStr = "character";
+        else if (isNullOperand(valueTok))
+            typeStr = "NULL";
         msg = "Redundant code: Found a statement that begins with " + typeStr + " constant.";
     }
     else if (!tok)
@@ -1961,7 +1971,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Redundant code: Found unused member access.";
     else if (tok->str() == "[" && tok->tokType() == Token::Type::eExtendedOp)
         msg = "Redundant code: Found unused array access.";
-    else {
+    else if (mSettings->debugwarnings) {
         reportError(tok, Severity::debug, "debug", "constStatementError not handled.");
         return;
     }
@@ -1979,6 +1989,8 @@ void CheckOther::checkZeroDivision()
         if (tok->str() != "%" && tok->str() != "/" && tok->str() != "%=" && tok->str() != "/=")
             continue;
         if (!tok->valueType() || !tok->valueType()->isIntegral())
+            continue;
+        if (tok->scope() && tok->scope()->type == Scope::eEnum) // don't warn for compile-time error
             continue;
 
         // Value flow..
@@ -3232,6 +3244,8 @@ void CheckOther::checkAccessOfMovedVariable()
                 scopeStart = memberInitializationStart;
         }
         for (const Token* tok = scopeStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!tok->astParent())
+                continue;
             const ValueFlow::Value * movedValue = tok->getMovedValue();
             if (!movedValue || movedValue->moveKind == ValueFlow::Value::MoveKind::NonMovedVariable)
                 continue;
@@ -3246,31 +3260,18 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                const bool variableChanged = isVariableChangedByFunctionCall(tok, 0, mSettings, &inconclusive);
-                accessOfMoved = !variableChanged && checkUninitVar.isVariableUsage(tok, false, CheckUninitVar::NO_ALLOC);
-                if (inconclusive) {
-                    accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);
-                    if (accessOfMoved)
-                        inconclusive = false;
-                }
+                const ExprUsage usage = getExprUsage(tok, 0, mSettings);
+                if (usage == ExprUsage::Used)
+                    accessOfMoved = true;
+                if (usage == ExprUsage::PassedByReference)
+                    accessOfMoved = !isVariableChangedByFunctionCall(tok, 0, mSettings, &inconclusive);
+                else if (usage == ExprUsage::Inconclusive)
+                    inconclusive = true;
             }
             if (accessOfMoved || (inconclusive && reportInconclusive))
                 accessMovedError(tok, tok->str(), movedValue, inconclusive || movedValue->isInconclusive());
         }
     }
-}
-
-bool CheckOther::isMovedParameterAllowedForInconclusiveFunction(const Token * tok)
-{
-    if (Token::simpleMatch(tok->tokAt(-4), "std :: move ("))
-        return false;
-    const Token * tokAtM2 = tok->tokAt(-2);
-    if (Token::simpleMatch(tokAtM2, "> (") && tokAtM2->link()) {
-        const Token * leftAngle = tokAtM2->link();
-        if (Token::simpleMatch(leftAngle->tokAt(-3), "std :: forward <"))
-            return false;
-    }
-    return true;
 }
 
 void CheckOther::accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)

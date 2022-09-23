@@ -27,7 +27,7 @@
 #include "tokenlist.h"
 
 #include <cstring>
-#include <iosfwd>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 
@@ -219,6 +219,7 @@ private:
         TEST_CASE(template174); // #10506 hang
         TEST_CASE(template175); // #10908
         TEST_CASE(template176); // #11146
+        TEST_CASE(template177);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4490,6 +4491,16 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template177() {
+        const char code[] = "template <typename Encoding, typename Allocator>\n"
+                            "class C { xyz<Encoding, Allocator> x; };\n"
+                            "C<UTF8<>, MemoryPoolAllocator<>> c;";
+        const char exp[] = "class C<UTF8<>,MemoryPoolAllocator<>> ; "
+                           "C<UTF8<>,MemoryPoolAllocator<>> c ; "
+                           "class C<UTF8<>,MemoryPoolAllocator<>> { xyz < UTF8 < > , MemoryPoolAllocator < > > x ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -5530,7 +5541,7 @@ private:
                             "private:\n"
                             "    std::basic_ostream<unsigned char> &outputStream_;\n"
                             "};";
-        const char expected[] = "struct OutputU16<unsignedchar> final { "
+        const char expected[] = "struct OutputU16<unsignedchar> { "
                                 "explicit OutputU16<unsignedchar> ( std :: basic_ostream < unsigned char > & t ) : outputStream_ ( t ) { } "
                                 "void operator() ( unsigned short ) const ; "
                                 "private: "

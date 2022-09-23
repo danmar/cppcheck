@@ -1245,7 +1245,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(),
                                             expr->astOperand1()->values().end(),
                                             std::mem_fn(&ValueFlow::Value::isTokValue));
-            if (tokvalue_it == expr->astOperand1()->values().end()) {
+            if (tokvalue_it == expr->astOperand1()->values().end() || !tokvalue_it->isKnown()) {
                 return unknown;
             }
             tokvalue = tokvalue_it->tokvalue;

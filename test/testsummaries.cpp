@@ -22,7 +22,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>       // for istringstream, ostringstream
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 

@@ -14,7 +14,7 @@ include(cmake/compilerDefinitions.cmake)
 include(cmake/buildFiles.cmake)
 include(cmake/cxx11.cmake)
 include(cmake/printInfo.cmake)
-if (BUILD_GUI)
+if(BUILD_GUI)
     include(cmake/qtCompat.cmake)
 endif()
 
@@ -24,7 +24,7 @@ file(GLOB addons "addons/*.py")
 file(GLOB cfgs "cfg/*.cfg")
 file(GLOB platforms "platforms/*.xml")
 
-if (LIBXML2_XMLLINT_EXECUTABLE)
+if(LIBXML2_XMLLINT_EXECUTABLE)
     add_custom_target(validateCFG DEPENDS validateCFG-cmd)
     add_custom_command(OUTPUT validateCFG-cmd
             COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng)
@@ -35,6 +35,13 @@ if (LIBXML2_XMLLINT_EXECUTABLE)
     # this is a symbolic name for a build rule and not an output file
     set_source_files_properties(validateCFG-cmd PROPERTIES SYMBOLIC "true")
 
+    add_custom_target(validatePlatforms ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/platforms/cppcheck-platforms.rng)
+    foreach(platform ${platforms})
+        get_filename_component(platformname ${platform} NAME_WE)
+        add_custom_target(validatePlatforms-${platformname} ${LIBXML2_XMLLINT_EXECUTABLE} --noout --relaxng ${CMAKE_SOURCE_DIR}/platforms/cppcheck-platforms.rng ${platform})
+        add_dependencies(validatePlatforms validatePlatforms-${platformname})
+    endforeach()
+
     add_custom_target(errorlist-xml $<TARGET_FILE:cppcheck> --errorlist > ${CMAKE_BINARY_DIR}/errorlist.xml
             DEPENDS cppcheck)
 
@@ -43,7 +50,7 @@ if (LIBXML2_XMLLINT_EXECUTABLE)
 
     add_custom_target(createXMLExamples DEPENDS errorlist-xml example-xml)
 
-    if (PYTHON_EXECUTABLE)
+    if(PYTHON_EXECUTABLE)
         add_custom_target(checkCWEEntries ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/listErrorsWithoutCWE.py -F ${CMAKE_BINARY_DIR}/errorlist.xml
                 DEPENDS errorlist-xml)
     endif()
@@ -57,7 +64,7 @@ if (LIBXML2_XMLLINT_EXECUTABLE)
     add_custom_target(validateRules ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/rules/*.xml)
 endif()
 
-if (BUILD_TESTS)
+if(BUILD_TESTS)
     enable_testing()
 endif()
 
@@ -76,7 +83,7 @@ if(USE_BUNDLED_TINYXML2)
     add_subdirectory(externals/tinyxml2)
 endif()
 add_subdirectory(externals/simplecpp)
-add_subdirectory(lib)   # CppCheck Library 
+add_subdirectory(lib)   # CppCheck Library
 add_subdirectory(cli)   # Client application
 add_subdirectory(test)  # Tests
 add_subdirectory(gui)   # Graphical application

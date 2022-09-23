@@ -99,12 +99,13 @@ private:
 
         // Alert only about unique errors
         bool reportError = false;
-        const std::string errmsg = msg.toString(mThreadExecutor.mSettings.verbose);
 
         {
+            std::string errmsg = msg.toString(mThreadExecutor.mSettings.verbose);
+
             std::lock_guard<std::mutex> lg(mErrorSync);
             if (std::find(mThreadExecutor.mErrorList.begin(), mThreadExecutor.mErrorList.end(), errmsg) == mThreadExecutor.mErrorList.end()) {
-                mThreadExecutor.mErrorList.emplace_back(errmsg);
+                mThreadExecutor.mErrorList.emplace_back(std::move(errmsg));
                 reportError = true;
             }
         }

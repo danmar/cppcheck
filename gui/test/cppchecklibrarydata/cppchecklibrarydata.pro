@@ -2,8 +2,8 @@ TEMPLATE = app
 TARGET = test-cppchecklibrarydata
 DEPENDPATH += .
 INCLUDEPATH += .
-OBJECTS_DIR = ../build
-MOC_DIR = ../build
+OBJECTS_DIR = ../../temp
+MOC_DIR = ../../temp
 
 QT -= gui
 QT += core

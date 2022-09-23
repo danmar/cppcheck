@@ -27,6 +27,7 @@
 #include <exception>
 #include <limits>
 #include <locale>
+#include <sstream>
 #include <stdexcept>
 
 #include <simplecpp.h>

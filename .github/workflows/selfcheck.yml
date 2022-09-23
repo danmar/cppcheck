@@ -4,6 +4,9 @@ name: selfcheck
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
@@ -14,6 +17,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ runner.os }}
 
       - name: Cache Qt ${{ env.QT_VERSION }}
         id: cache-qt
@@ -32,14 +40,12 @@ jobs:
       # TODO: cache this - perform same build as for the other self check
       - name: Self check (build)
         run: |
-          make clean
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           make -j$(nproc) -s CXXFLAGS="-O2 -w" MATCHCOMPILER=yes
 
       - name: CMake
         run: |
-          mkdir cmake.output
-          pushd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies
         run: |
@@ -54,16 +60,14 @@ jobs:
       - name: Self check (unusedFunction)
         if: false # TODO: fails with preprocessorErrorDirective - see #10667
         run: |
-          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --inconclusive --enable=unusedFunction --exception-handling -rp=. --project=cmake.output/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --enable=unusedFunction --exception-handling -rp=. --project=cmake.output/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
           DISABLE_VALUEFLOW: 1
 
       # the following steps are duplicated from above since setting up the build node in a parallel step takes longer than the actual steps
       - name: CMake (no test)
         run: |
-          mkdir cmake.output.notest
-          pushd cmake.output.notest
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=0 -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
+          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=0 -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies (no test)
         run: |
@@ -76,6 +80,6 @@ jobs:
       # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction / no test)
         run: |
-          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --inconclusive --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
           DISABLE_VALUEFLOW: 1

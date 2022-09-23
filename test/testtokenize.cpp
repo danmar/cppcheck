@@ -57,6 +57,11 @@ private:
         settings2.checkUnusedTemplates = true;
         settings_windows.checkUnusedTemplates = true;
 
+        // library=qt
+        settings0.libraries.emplace_back("qt");
+        settings1.libraries.emplace_back("qt");
+        settings2.libraries.emplace_back("qt");
+
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize4);
@@ -217,6 +222,7 @@ private:
         TEST_CASE(vardecl26);  // #5907 - incorrect handling of extern declarations
         TEST_CASE(vardecl27);  // #7850 - crash on valid C code
         TEST_CASE(vardecl28);
+        TEST_CASE(vardecl29); // #9282
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -349,6 +355,7 @@ private:
         TEST_CASE(simplifyOperatorName29); // spaceship operator
         TEST_CASE(simplifyOperatorName31); // #6342
         TEST_CASE(simplifyOperatorName32); // #10256
+        TEST_CASE(simplifyOperatorName33); // #10138
 
         TEST_CASE(simplifyOverloadedOperators1);
         TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
@@ -364,6 +371,7 @@ private:
         // a = b = 0;
         TEST_CASE(multipleAssignment);
 
+        TEST_CASE(platformWin);
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
         TEST_CASE(platformWin32AStringCat); // ticket #5015
@@ -423,6 +431,8 @@ private:
         TEST_CASE(noCrash2);
         TEST_CASE(noCrash3);
         TEST_CASE(noCrash4);
+        TEST_CASE(noCrash5); // #10603
+        TEST_CASE(noCrash6); // #10212
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -2490,6 +2500,20 @@ private:
                       "return x ;\n"
                       "}",
                       tokenizeAndStringify(code, /*expand=*/ true, Settings::Native, "test.c"));
+    }
+
+    void vardecl29() { // #9282
+        const char* code = "double f1() noexcept, f2(double) noexcept;";
+        ASSERT_EQUALS("double f1 ( ) noexcept ( true ) ; double f2 ( double ) noexcept ( true ) ;",
+                      tokenizeAndStringify(code));
+
+        code = "class C {\n"
+               "    double f1() const noexcept, f2 (double) const noexcept;\n"
+               "};\n";
+        ASSERT_EQUALS("class C {\n"
+                      "double f1 ( ) const noexcept ( true ) ; double f2 ( double ) const noexcept ( true ) ;\n"
+                      "} ;",
+                      tokenizeAndStringify(code));
     }
 
     void volatile_variables() {
@@ -4931,7 +4955,7 @@ private:
         ASSERT_EQUALS(result3, tokenizeAndStringify(code3));
 
         const char code4[] = "value_type * operator += (int) const noexcept ;";
-        const char result4[] = "value_type * operator+= ( int ) const noexcept ;";
+        const char result4[] = "value_type * operator+= ( int ) const noexcept ( true ) ;";
         ASSERT_EQUALS(result4, tokenizeAndStringify(code4));
 
         const char code5[] = "value_type * operator += (int) const noexcept ( true ) ;";
@@ -4967,6 +4991,12 @@ private:
     void simplifyOperatorName32() { // #10256
         const char code[] = "void f(int* = nullptr) {}\n";
         ASSERT_EQUALS("void f ( int * = nullptr ) { }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyOperatorName33() { // #10138
+        const char code[] = "int (operator\"\" _ii)(unsigned long long v) { return v; }\n";
+        ASSERT_EQUALS("int operator\"\"_ii ( unsigned long long v ) { return v ; }", tokenizeAndStringify(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5826,7 +5856,7 @@ private:
             if (tok->astOperand1() && astTop.find(tok->astTop()) == astTop.end()) {
                 astTop.insert(tok->astTop());
                 if (!ret.empty())
-                    ret = ret + " ";
+                    ret += " ";
                 ret += tok->astTop()->astString();
             }
         }
@@ -7070,13 +7100,24 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void a(X<int> x, typename Y1::Y2<int, A::B::C, 2> y, Z z = []{});"));
     }
 
-    void noCrash4()
-    {
+    void noCrash4() {
         ASSERT_NO_THROW(tokenizeAndStringify("static int foo() {\n"
                                              "    zval ref ;\n"
                                              "    p = &(ref).value;\n"
                                              "    return result ;\n"
                                              "}\n"));
+    }
+
+    void noCrash5() { // #10603
+        ASSERT_NO_THROW(tokenizeAndStringify("class B { using shared_ptr = std::shared_ptr<Foo>; };\n"
+                                             "class D : public B { void f(const std::shared_ptr<int>& ptr) {} };\n"));
+    }
+
+    void noCrash6() { // #10212
+        ASSERT_NO_THROW(tokenizeAndStringify("template <long, long a = 0> struct b;\n"
+                                             "template <class, bool> struct c;\n"
+                                             "template <template <class, class> class a, class e, class... d>\n"
+                                             "struct c<a<e, d...>, true> {};\n"));
     }
 
     void checkConfig(const char code[]) {

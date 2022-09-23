@@ -30,6 +30,7 @@
 #include <fstream>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
 /**
@@ -72,8 +73,8 @@ public:
         FileLocation(const std::string &file, int line, unsigned int column)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
 
-        FileLocation(const std::string &file, const std::string &info, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {}
+        FileLocation(const std::string &file, std::string info, int line, unsigned int column)
+            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(std::move(info)) {}
 
         FileLocation(const Token* tok, const TokenList* tokenList);
         FileLocation(const Token* tok, std::string info, const TokenList* tokenList);
@@ -184,10 +185,6 @@ public:
 
     /** For GUI rechecking; source file (not header) */
     std::string file0;
-    /** For GUI bug hunting; function name */
-    std::string function;
-    /** For GUI bug hunting; incomplete analysis */
-    bool incomplete;
 
     Severity::SeverityType severity;
     CWE cwe;

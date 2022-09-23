@@ -4,13 +4,16 @@ name: include-what-you-use
 
 on: workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
     runs-on: ubuntu-22.04
 
     container:
-      image: "kalilinux/kali-rolling"
+      image: "debian:unstable" # use latest debian image to get latest include-what-you-get
 
     steps:
       - uses: actions/checkout@v2

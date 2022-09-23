@@ -24,8 +24,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 
@@ -663,6 +663,12 @@ private:
                                   "    struct fn_traits<decltype(void(&T::operator())), T>\n"
                                   "        : public fn_traits<void, decltype(&T::operator())> {};\n"
                                   "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10594
+        checkDuplInheritedMembers("template<int i> struct A { bool a = true; };\n"
+                                  "struct B { bool a; };\n"
+                                  "template<> struct A<1> : B {};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3101,6 +3107,43 @@ private:
                       "  B b[4];\n"
                       "  memset(b, 0, sizeof(b));\n"
                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8619
+        checkNoMemset("struct S { std::vector<int> m; };\n"
+                      "void f() {\n"
+                      "    std::vector<S> v(5);\n"
+                      "    memset(&v[0], 0, sizeof(S) * v.size());\n"
+                      "    memset(&v[0], 0, v.size() * sizeof(S));\n"
+                      "    memset(&v[0], 0, 5 * sizeof(S));\n"
+                      "    memset(&v[0], 0, sizeof(S) * 5);\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Using 'memset' on struct that contains a 'std::vector'.\n"
+                      "[test.cpp:5]: (error) Using 'memset' on struct that contains a 'std::vector'.\n"
+                      "[test.cpp:6]: (error) Using 'memset' on struct that contains a 'std::vector'.\n"
+                      "[test.cpp:7]: (error) Using 'memset' on struct that contains a 'std::vector'.\n",
+                      errout.str());
+
+        // #1655
+        Settings s;
+        LOAD_LIB_2(s.library, "std.cfg");
+        checkNoMemset("void f() {\n"
+                      "    char c[] = \"abc\";\n"
+                      "    std::string s;\n"
+                      "    memcpy(&s, c, strlen(c) + 1);\n"
+                      "}\n", s);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Using 'memcpy' on std::string.\n", errout.str());
+
+        checkNoMemset("template <typename T>\n"
+                      "    void f(T* dst, const T* src, int N) {\n"
+                      "    std::memcpy(dst, src, N * sizeof(T));\n"
+                      "}\n"
+                      "void g() {\n"
+                      "    typedef std::vector<int>* P;\n"
+                      "    P Src[2]{};\n"
+                      "    P Dst[2];\n"
+                      "    f<P>(Dst, Src, 2);\n"
+                      "}\n", s);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -7438,6 +7481,14 @@ private:
                                  "}\n"
                                  "S::~S() = default;\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("struct Base: { virtual void wibble() = 0; virtual ~Base() {} };\n" // #11167
+                                 "struct D final : public Base {\n"
+                                 "    void wibble() override;\n"
+                                 "    D() {}\n"
+                                 "    virtual ~D() { wibble(); }\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {
@@ -7552,6 +7603,14 @@ private:
                                  "    }\n"
                                  "    virtual void VirtualMethod() = 0;\n"
                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10559
+        checkVirtualFunctionCall("struct S {\n"
+                                 "    S(const int x) : m(std::bind(&S::f, this, x, 42)) {}\n"
+                                 "    virtual int f(const int x, const int y) = 0;\n"
+                                 "    std::function<int()> m;\n"
+                                 "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -277,7 +277,7 @@ bool ThreadHandler::needsReCheck(const QString &filename, std::set<QString> &mod
                 line.remove(i,line.length());
                 line = QFileInfo(filename).absolutePath() + "/" + line;
                 if (needsReCheck(line, modified, unmodified)) {
-                    modified.insert(line);
+                    modified.insert(std::move(line));
                     return true;
                 }
             }

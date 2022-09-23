@@ -22,6 +22,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <random>
 
 #include <QClipboard>
 #include <QDir>
@@ -173,7 +174,7 @@ void MainWindow::filter(const QString& filter)
             if (allErrors[i].indexOf("test") > 0)
                 allErrors.removeAt(i);
         }
-        std::random_shuffle(allErrors.begin(), allErrors.end());
+        std::shuffle(allErrors.begin(), allErrors.end(), std::mt19937(std::random_device()()));
         ui->results->addItems(allErrors.mid(0, MAX_ERRORS));
         ui->results->sortItems();
     } else {

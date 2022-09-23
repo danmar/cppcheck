@@ -40,6 +40,7 @@ public:
     const QColor& getColor();
 
 signals:
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void colorChanged(const QColor& newColor);
 
 public slots:
@@ -61,6 +62,7 @@ public:
     const QFont::Weight& getWeight();
 
 signals:
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void weightChanged(const QFont::Weight& newWeight);
 
 public slots:

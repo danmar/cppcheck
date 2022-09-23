@@ -230,6 +230,8 @@ protected slots:
 
 private:
 
+    bool isCppcheckPremium() const;
+
     /** Get filename for last results */
     QString getLastResults() const;
 
@@ -318,7 +320,7 @@ private:
     void formatAndSetTitle(const QString &text = QString());
 
     /** @brief Show help contents */
-    void openOnlineHelp();
+    static void openOnlineHelp();
 
     /**
      * @brief Enable or disable project file actions.

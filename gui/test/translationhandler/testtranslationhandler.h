@@ -22,5 +22,5 @@ class TestTranslationHandler : public QObject {
     Q_OBJECT
 
 private slots:
-    void construct();
+    void construct() const;
 };

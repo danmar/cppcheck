@@ -87,9 +87,8 @@ public:
         c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
         c.objectIndexError(nullptr, nullptr, true);
         c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
-        c.negativeMemoryAllocationSizeError(nullptr);
+        c.negativeMemoryAllocationSizeError(nullptr, nullptr);
         c.negativeArraySizeError(nullptr);
-        c.negativeMemoryAllocationSizeError(nullptr);
     }
 
     /** @brief Parse current TU and extract file info */
@@ -125,7 +124,7 @@ private:
 
     void negativeArraySize();
     void negativeArraySizeError(const Token* tok);
-    void negativeMemoryAllocationSizeError(const Token* tok); // provide a negative value to memory allocation function
+    void negativeMemoryAllocationSizeError(const Token* tok, const ValueFlow::Value* value); // provide a negative value to memory allocation function
 
     void objectIndex();
     void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);

@@ -556,6 +556,14 @@ void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_
     (void)wcsftime(ptr, maxsize, format, timeptr);
 }
 
+void bufferAccessOutOfBounds_wcsncpy()
+{
+    wchar_t s[16];
+    wcsncpy(s, L"abc", 16);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    wcsncpy(s, L"abc", 17);
+}
+
 int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)
 {
     // cppcheck-suppress nullPointer

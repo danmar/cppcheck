@@ -23,8 +23,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class TestUnusedVar : public TestFixture {
@@ -5472,6 +5472,13 @@ private:
                               "    if(array[value]) {}\n"
                               "    array[value] = 1;\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int fun() {\n" // #11310
+                              "    static int k;\n"
+                              "    k++;\n"
+                              "    return k;\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -46,6 +46,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # use pipes instead of temporary files - greatly reduces I/O usage
+    add_compile_options(-pipe)
+
     add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
@@ -55,7 +58,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # TODO: verify this regression still exists in clang-15
         if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
             # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
-            add_compile_options(-mllvm -inline-deferral)
+            add_compile_options_safe(-mllvm -inline-deferral)
         endif()
 
         # use force DWARF 4 debug format since not all tools might be able to handle DWARF 5 yet - e.g. valgrind on ubuntu 20.04
