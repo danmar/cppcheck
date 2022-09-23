@@ -5089,26 +5089,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void testMisusedScopeObjectStandardType() {
-        check("int g();\n"
-              "void f(int i) {\n"
-              "    int();\n"
-              "    int(0);\n"
-              "    int( g() );\n" // don't warn
-              "    int{};\n"
-              "    int{ 0 };\n"
-              "    int{ i };\n"
-              "    int{ g() };\n" // don't warn
-              "    g();\n"
-              "}\n", "test.cpp");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'int' object is destroyed immediately.\n"
-                      "[test.cpp:4]: (style) Instance of 'int' object is destroyed immediately.\n"
-                      "[test.cpp:6]: (style) Instance of 'int' object is destroyed immediately.\n"
-                      "[test.cpp:7]: (style) Instance of 'int' object is destroyed immediately.\n"
-                      "[test.cpp:8]: (style) Instance of 'int' object is destroyed immediately.\n",
-                      errout.str());
-    }
-
     void testMisusedScopeObjectNamespace() { // #4479
         check("namespace M {\n"
               "    namespace N {\n"
