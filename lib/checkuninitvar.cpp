@@ -49,6 +49,10 @@ namespace tinyxml2 {
 
 //---------------------------------------------------------------------------
 
+// CWE ids used:
+static const struct CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
+static const struct CWE CWE_USE_OF_POTENTIALLY_DANGEROUS_FUNCTION(676U);
+
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckUninitVar instance;

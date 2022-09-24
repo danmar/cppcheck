@@ -39,6 +39,10 @@
 
 //---------------------------------------------------------------------------
 
+// CWE ids used:
+static const struct CWE CWE_NULL_POINTER_DEREFERENCE(476U);
+static const struct CWE CWE_INCORRECT_CALCULATION(682U);
+
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckNullPointer instance;

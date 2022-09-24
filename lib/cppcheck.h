@@ -30,6 +30,7 @@
 #include "settings.h"
 
 #include <cstddef>
+#include <fstream> // IWYU pragma: keep
 #include <functional>
 #include <istream>
 #include <list>
@@ -238,6 +239,8 @@ private:
 
     /** Callback for executing a shell command (exe, args, output) */
     std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> mExecuteCommand;
+
+    std::ofstream mPlistFile;
 };
 
 /// @}

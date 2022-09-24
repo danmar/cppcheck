@@ -45,6 +45,7 @@
 #include <cctype>
 #include <cstdlib>
 #include <exception>
+#include <fstream>
 #include <iostream> // <- TEMPORARY
 #include <memory>
 #include <new>
@@ -365,6 +366,11 @@ CppCheck::~CppCheck()
         mFileInfo.pop_back();
     }
     s_timerResults.showResults(mSettings.showtime);
+
+    if (mPlistFile.is_open()) {
+        mPlistFile << ErrorLogger::plistFooter();
+        mPlistFile.close();
+    }
 }
 
 const char * CppCheck::version()
@@ -606,9 +612,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
     }
 
-    if (plistFile.is_open()) {
-        plistFile << ErrorLogger::plistFooter();
-        plistFile.close();
+    if (mPlistFile.is_open()) {
+        mPlistFile << ErrorLogger::plistFooter();
+        mPlistFile.close();
     }
 
     CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
@@ -669,8 +675,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 filename2 = filename;
             std::size_t fileNameHash = std::hash<std::string> {}(filename);
             filename2 = mSettings.plistOutput + filename2.substr(0, filename2.find('.')) + "_" + std::to_string(fileNameHash) + ".plist";
-            plistFile.open(filename2);
-            plistFile << ErrorLogger::plistHeader(version(), files);
+            mPlistFile.open(filename2);
+            mPlistFile << ErrorLogger::plistHeader(version(), files);
         }
 
         std::ostringstream dumpProlog;
@@ -1551,9 +1557,9 @@ void CppCheck::reportErr(const ErrorMessage &msg)
 
     mErrorLogger.reportErr(msg);
     // check if plistOutput should be populated and the current output file is open and the error is not suppressed
-    if (!mSettings.plistOutput.empty() && plistFile.is_open() && !mSettings.nomsg.isSuppressed(errorMessage)) {
+    if (!mSettings.plistOutput.empty() && mPlistFile.is_open() && !mSettings.nomsg.isSuppressed(errorMessage)) {
         // add error to plist output file
-        plistFile << ErrorLogger::plistData(msg);
+        mPlistFile << ErrorLogger::plistData(msg);
     }
 }
 
