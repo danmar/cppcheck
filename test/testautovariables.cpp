@@ -3517,6 +3517,23 @@ private:
     }
 
     void danglingTemporaryLifetime() {
+        check("struct MyClass\n" // FP - #11091
+              "{\n"
+              "    MyClass(MyClass& rhs);\n"
+              "    explicit MyClass(const wxString& name, const wxString& path = {});\n"
+              "    bool IsAnotherRunning() const;\n"
+              " \n"
+              "    wxString m_fn;\n"
+              "};\n"
+              " \n"
+              "void bar()\n"
+              "{\n"
+              "    MyClass mutex(\"\");\n"
+              "    while (mutex.IsAnotherRunning())\n"
+              "        DoSomething();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("const int& g(const int& x) {\n"
               "    return x;\n"
               "}\n"
