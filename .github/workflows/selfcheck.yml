@@ -45,7 +45,7 @@ jobs:
 
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies
         run: |
@@ -67,7 +67,7 @@ jobs:
       # the following steps are duplicated from above since setting up the build node in a parallel step takes longer than the actual steps
       - name: CMake (no test)
         run: |
-          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=0 -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=0 -DBUILD_GUI=ON -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies (no test)
         run: |

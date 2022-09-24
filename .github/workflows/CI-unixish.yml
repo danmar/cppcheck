@@ -462,7 +462,7 @@ jobs:
           ec=0
           
           # work around missingInclude not being reported with -j and the --check-config requirement for detailed warnings 
-          ./cppcheck $selfcheck_options cli lib --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
+          ./cppcheck $selfcheck_options -DCHECK_INTERNAL cli lib --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
           ./cppcheck $selfcheck_options -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
           ./cppcheck $selfcheck_options -Icli test/*.cpp tools/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
           ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
@@ -474,7 +474,7 @@ jobs:
           
           # self check lib/cli
           mkdir b1
-          ./cppcheck $selfcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli lib || ec=1
+          ./cppcheck $selfcheck_options --cppcheck-build-dir=b1 --addon=naming.json -DCHECK_INTERNAL cli lib || ec=1
           # check gui with qt settings
           mkdir b2
           ./cppcheck $selfcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
