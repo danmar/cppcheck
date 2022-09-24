@@ -696,6 +696,12 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found a statement that begins with NULL constant.\n"
                       "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with NULL constant.\n",
                       errout.str());
+
+        check("struct S { int i; };\n" // #6504
+              "void f(S* s) {\n"
+              "    (*s).i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found unused member access.\n", errout.str());
     }
 
     void vardecl() {

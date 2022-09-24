@@ -63,26 +63,10 @@ if (BUILD_TESTS)
         set(SKIP_TESTS "" CACHE STRING "A list of tests to skip")
 
         function(add_fixture NAME)
-            set(options)
-            set(oneValueArgs WORKING_DIRECTORY)
-            set(multiValueArgs)
-
-            cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
             if (${NAME} IN_LIST SKIP_TESTS)
             elseif(TEST ${NAME})
             else()
-                set(WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-                if (PARSE_WORKING_DIRECTORY)
-                    set(WORKING_DIRECTORY ${PARSE_WORKING_DIRECTORY})
-                endif()
-                add_test(NAME ${NAME} COMMAND testrunner ${NAME} WORKING_DIRECTORY ${WORKING_DIRECTORY})
-            endif()
-        endfunction()
-
-        function(fixture_cost NAME COST)
-            if(TEST ${NAME})
-                set_tests_properties(${NAME} PROPERTIES COST ${COST})
+                add_test(NAME ${NAME} COMMAND testrunner ${NAME} WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
             endif()
         endfunction()
 
@@ -161,6 +145,12 @@ if (BUILD_TESTS)
         add_cfg(windows.cpp INCONCLUSIVE NAME windows32W PLATFORM win32W)
         add_cfg(windows.cpp INCONCLUSIVE NAME windows64 PLATFORM win64)
         add_cfg(wxwidgets.cpp INCONCLUSIVE)
+
+        function(fixture_cost NAME COST)
+            if(TEST ${NAME})
+                set_tests_properties(${NAME} PROPERTIES COST ${COST})
+            endif()
+        endfunction()
 
         # Set cost of the more expensive tests to help improve parallel scheduling
         # of tests
