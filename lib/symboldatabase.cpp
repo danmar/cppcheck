@@ -2860,14 +2860,13 @@ static const Token* getEnableIfReturnType(const Token* start)
 {
     if (!start)
         return nullptr;
-    for(const Token* tok = start->next();precedes(tok, start->link());tok=tok->next()) {
+    for (const Token* tok = start->next(); precedes(tok, start->link()); tok = tok->next()) {
         if (tok->link() && Token::Match(tok, "(|[|{|<")) {
             tok = tok->link();
             continue;
         }
         if (Token::simpleMatch(tok, ","))
             return tok->next();
-
     }
     return nullptr;
 }
@@ -2892,7 +2891,8 @@ static bool checkReturns(const Function* function, bool unknown, bool emptyEnabl
     if (Token::Match(defEnd->tokAt(-1), "*|&|&&"))
         return false;
     // void STDCALL foo()
-    while(defEnd->previous() != defStart && Token::Match(defEnd->tokAt(-2), "%name%|> %name%") && !Token::Match(defEnd->tokAt(-2), "const|volatile"))
+    while (defEnd->previous() != defStart && Token::Match(defEnd->tokAt(-2), "%name%|> %name%") &&
+           !Token::Match(defEnd->tokAt(-2), "const|volatile"))
         defEnd = defEnd->previous();
     // enable_if
     const Token* enableIfEnd = nullptr;
@@ -2900,7 +2900,8 @@ static bool checkReturns(const Function* function, bool unknown, bool emptyEnabl
         enableIfEnd = defEnd->previous();
     else if (Token::simpleMatch(defEnd->tokAt(-3), "> :: type"))
         enableIfEnd = defEnd->tokAt(-3);
-    if (enableIfEnd && enableIfEnd->link() && Token::Match(enableIfEnd->link()->previous(), "enable_if|enable_if_t|EnableIf")) {
+    if (enableIfEnd && enableIfEnd->link() &&
+        Token::Match(enableIfEnd->link()->previous(), "enable_if|enable_if_t|EnableIf")) {
         if (const Token* start = getEnableIfReturnType(enableIfEnd->link())) {
             defStart = start;
             defEnd = enableIfEnd;
