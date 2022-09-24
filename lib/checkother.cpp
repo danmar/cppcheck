@@ -2063,20 +2063,45 @@ void CheckOther::checkMisusedScopedObject()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+    auto getConstructorTok = [](const Token* tok, std::string& typeStr) -> const Token* {
+        if (!Token::Match(tok, "[;{}] %name%"))
+            return nullptr;
+        tok = tok->next();
+        typeStr.clear();
+        while (Token::Match(tok, "%name% ::")) {
+            typeStr += tok->str();
+            typeStr += "::";
+            tok = tok->tokAt(2);
+        }
+        typeStr += tok->str();
+        const Token* endTok = tok;
+        if (Token::Match(endTok, "%name% <"))
+            endTok = endTok->linkAt(1);
+        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ; !!}") &&
+            !Token::simpleMatch(endTok->next()->astParent(), ";")) { // for loop condition
+            return tok;
+        }
+        return nullptr;
+    };
+
+    auto isLibraryConstructor = [&](const Token* tok, const std::string& typeStr) -> bool {
+        if (mSettings->library.getTypeCheck("unusedvar", typeStr) == Library::TypeCheck::check)
+            return true;
+        return mSettings->library.detectContainerOrIterator(tok);
+    };
+
+    const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
+    std::string typeStr;
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
-            if ((tok->next()->type() || tok->next()->isStandardType() || (tok->next()->function() && tok->next()->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
-                && Token::Match(tok, "[;{}] %name% (|{")
-                && Token::Match(tok->linkAt(2), ")|} ; !!}")
-                && (!tok->next()->function() || // is not a function on this scope
-                    tok->next()->function()->isConstructor()) // or is function in this scope and it's a ctor
-                && !Token::simpleMatch(tok->tokAt(2)->astParent(), ";") // for loop condition
-                && tok->next()->str() != "void") {
-                if (const Token* arg = tok->tokAt(2)->astOperand2()) {
+            const Token* ctorTok = getConstructorTok(tok, typeStr);
+            if (ctorTok && (((ctorTok->type() || ctorTok->isStandardType() || (ctorTok->function() && ctorTok->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
+                             && (!ctorTok->function() || ctorTok->function()->isConstructor()) // // is not a function on this scope or is function in this scope and it's a ctor
+                             && ctorTok->str() != "void") || isLibraryConstructor(tok->next(), typeStr))) {
+                if (const Token* arg = ctorTok->next()->astOperand2()) {
                     if (!isConstStatement(arg, mTokenizer->isCPP()))
                         continue;
-                    if (tok->strAt(2) == "(") {
+                    if (ctorTok->strAt(1) == "(") {
                         if (arg->varId()) // TODO: check if this is a declaration
                             continue;
                         const Token* rml = nextAfterAstRightmostLeaf(arg);
@@ -2085,7 +2110,7 @@ void CheckOther::checkMisusedScopedObject()
                     }
                 }
                 tok = tok->next();
-                misusedScopeObjectError(tok, tok->str());
+                misusedScopeObjectError(ctorTok, typeStr);
                 tok = tok->next();
             }
         }
