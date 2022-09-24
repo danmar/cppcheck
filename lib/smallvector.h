@@ -29,6 +29,7 @@ static constexpr std::size_t DefaultSmallVectorSize = 0;
 template<typename T, std::size_t N = DefaultSmallVectorSize>
 using SmallVector = boost::container::small_vector<T, N>;
 #else
+#include <utility>
 #include <vector>
 
 template<class T, std::size_t N>

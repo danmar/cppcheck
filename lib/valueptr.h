@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include <functional>
 #include <memory>
 
 template<class T>
