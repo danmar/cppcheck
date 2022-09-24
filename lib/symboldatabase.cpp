@@ -2919,14 +2919,14 @@ static bool checkReturns(const Function* function, bool unknown, bool emptyEnabl
 
 bool Function::returnsConst(const Function* function, bool unknown)
 {
-    return checkReturns(function, unknown, true, [](const Token* defStart, const Token* defEnd) {
+    return checkReturns(function, unknown, false, [](const Token* defStart, const Token* defEnd) {
         return Token::findsimplematch(defStart, "const", defEnd);
     });
 }
 
 bool Function::returnsReference(const Function* function, bool unknown)
 {
-    return checkReturns(function, unknown, true, [](const Token*, const Token* defEnd) {
+    return checkReturns(function, unknown, false, [](const Token*, const Token* defEnd) {
         return Token::simpleMatch(defEnd->previous(), "&");
     });
 }
