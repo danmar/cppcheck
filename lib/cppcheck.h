@@ -32,7 +32,7 @@
 #include <cstddef>
 #include <fstream> // IWYU pragma: keep
 #include <functional>
-#include <istream>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
