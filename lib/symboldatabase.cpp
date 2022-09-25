@@ -2926,14 +2926,14 @@ bool Function::returnsConst(const Function* function, bool unknown)
 
 bool Function::returnsReference(const Function* function, bool unknown)
 {
-    return checkReturns(function, unknown, false, [](const Token*, const Token* defEnd) {
+    return checkReturns(function, unknown, false, [](UNUSED const Token* defStart, const Token* defEnd) {
         return Token::simpleMatch(defEnd->previous(), "&");
     });
 }
 
 bool Function::returnsVoid(const Function* function, bool unknown)
 {
-    return checkReturns(function, unknown, true, [](const Token*, const Token* defEnd) {
+    return checkReturns(function, unknown, true, [](UNUSED const Token* defStart, const Token* defEnd) {
         return Token::simpleMatch(defEnd->previous(), "void");
     });
 }
