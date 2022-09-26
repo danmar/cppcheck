@@ -958,19 +958,23 @@ class HttpClientThread(Thread):
         self.resultPath = resultPath
         self.latestResults = latestResults
 
+    # TODO: use a proper parser
+    def parse_req(cmd):
+        req_parts = cmd.split(' ')
+        if len(req_parts) != 3 or req_parts[0] != 'GET' or not req_parts[2].startswith('HTTP'):
+            return None, None
+        url_obj = urlparse(req_parts[1])
+        return url_obj.path, dict(urllib.parse.parse_qsl(url_obj.query))
+
     def run(self):
         try:
             cmd = self.cmd
             print_ts(cmd)
-            # TODO: use a proper parser
-            req_parts = cmd.split(' ')
-            if len(req_parts) != 3 or req_parts[0] != 'GET' or not req_parts[2].startswith('HTTP'):
+            url, queryParams = HttpClientThread.parse_req(cmd)
+            if url is None:
                 print_ts('invalid request: {}'.format(cmd))
                 self.connection.close()
                 return
-            url_obj = urlparse(req_parts[1])
-            url = url_obj.path
-            queryParams = dict(urllib.parse.parse_qsl(url_obj.query))
             if url == '/':
                 html = overviewReport()
                 httpGetResponse(self.connection, html, 'text/html')
