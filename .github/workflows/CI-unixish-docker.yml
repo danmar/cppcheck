@@ -74,7 +74,7 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
           cmake --build . -- -j$(nproc)
 
       - name: Run CMake test
