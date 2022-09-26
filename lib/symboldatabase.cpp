@@ -2490,10 +2490,13 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
             tok1 = tok1->link()->previous();
         }
 
-        // Function template
-        else if (tok1->link() && tok1->str() == ">" && Token::simpleMatch(tok1->link()->previous(), "template <")) {
-            templateDef = tok1->link()->previous();
-            break;
+        else if (tok1->link() && tok1->str() == ">") {
+            // Function template
+            if (Token::simpleMatch(tok1->link()->previous(), "template <")) {
+                templateDef = tok1->link()->previous();
+                break;
+            }
+            tok1 = tok1->link();
         }
     }
     return tok1;
@@ -2853,58 +2856,86 @@ static bool isUnknownType(const Token* start, const Token* end)
     return false;
 }
 
-bool Function::returnsConst(const Function* function, bool unknown)
+static const Token* getEnableIfReturnType(const Token* start)
 {
-    if (!function)
-        return false;
-    if (function->type != Function::eFunction)
-        return false;
-    const Token* defEnd = function->returnDefEnd();
-    if (Token::findsimplematch(function->retDef, "const", defEnd))
-        return true;
-    // Check for unknown types, which could be a const
-    if (isUnknownType(function->retDef, defEnd))
-        return unknown;
-    return false;
+    if (!start)
+        return nullptr;
+    for (const Token* tok = start->next(); precedes(tok, start->link()); tok = tok->next()) {
+        if (tok->link() && Token::Match(tok, "(|[|{|<")) {
+            tok = tok->link();
+            continue;
+        }
+        if (Token::simpleMatch(tok, ","))
+            return tok->next();
+    }
+    return nullptr;
 }
 
-bool Function::returnsReference(const Function* function, bool unknown)
-{
-    if (!function)
-        return false;
-    if (function->type != Function::eFunction)
-        return false;
-    const Token* defEnd = function->returnDefEnd();
-    if (defEnd->strAt(-1) == "&")
-        return true;
-    // Check for unknown types, which could be a reference
-    if (isUnknownType(function->retDef, defEnd))
-        return unknown;
-    return false;
-}
-
-bool Function::returnsVoid(const Function* function, bool unknown)
+template<class Predicate>
+static bool checkReturns(const Function* function, bool unknown, bool emptyEnableIf, Predicate pred)
 {
     if (!function)
         return false;
     if (function->type != Function::eFunction && function->type != Function::eOperatorEqual)
         return false;
+    const Token* defStart = function->retDef;
     const Token* defEnd = function->returnDefEnd();
-    if (defEnd->strAt(-1) == "void")
-        return true;
-    // Check for unknown types, which could be a void type
-    if (isUnknownType(function->retDef, defEnd))
+    if (!defStart)
         return unknown;
-    if (unknown) {
-        // void STDCALL foo()
-        const Token *def;
-        bool isVoid = false;
-        for (def = function->retDef; def && def->isName(); def = def->next())
-            isVoid |= (def->str() == "void");
-        if (isVoid && def && !Token::Match(def, "*|&|&&"))
-            return true;
+    if (!defEnd)
+        return unknown;
+    if (defEnd == defStart)
+        return unknown;
+    if (pred(defStart, defEnd))
+        return true;
+    if (Token::Match(defEnd->tokAt(-1), "*|&|&&"))
+        return false;
+    // void STDCALL foo()
+    while (defEnd->previous() != defStart && Token::Match(defEnd->tokAt(-2), "%name%|> %name%") &&
+           !Token::Match(defEnd->tokAt(-2), "const|volatile"))
+        defEnd = defEnd->previous();
+    // enable_if
+    const Token* enableIfEnd = nullptr;
+    if (Token::simpleMatch(defEnd->previous(), ">"))
+        enableIfEnd = defEnd->previous();
+    else if (Token::simpleMatch(defEnd->tokAt(-3), "> :: type"))
+        enableIfEnd = defEnd->tokAt(-3);
+    if (enableIfEnd && enableIfEnd->link() &&
+        Token::Match(enableIfEnd->link()->previous(), "enable_if|enable_if_t|EnableIf")) {
+        if (const Token* start = getEnableIfReturnType(enableIfEnd->link())) {
+            defStart = start;
+            defEnd = enableIfEnd;
+        } else {
+            return emptyEnableIf;
+        }
     }
+    assert(defEnd != defStart);
+    if (pred(defStart, defEnd))
+        return true;
+    if (isUnknownType(defStart, defEnd))
+        return unknown;
     return false;
+}
+
+bool Function::returnsConst(const Function* function, bool unknown)
+{
+    return checkReturns(function, unknown, false, [](const Token* defStart, const Token* defEnd) {
+        return Token::findsimplematch(defStart, "const", defEnd);
+    });
+}
+
+bool Function::returnsReference(const Function* function, bool unknown)
+{
+    return checkReturns(function, unknown, false, [](UNUSED const Token* defStart, const Token* defEnd) {
+        return Token::simpleMatch(defEnd->previous(), "&");
+    });
+}
+
+bool Function::returnsVoid(const Function* function, bool unknown)
+{
+    return checkReturns(function, unknown, true, [](UNUSED const Token* defStart, const Token* defEnd) {
+        return Token::simpleMatch(defEnd->previous(), "void");
+    });
 }
 
 std::vector<const Token*> Function::findReturns(const Function* f)
