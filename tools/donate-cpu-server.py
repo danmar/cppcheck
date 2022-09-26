@@ -1086,10 +1086,13 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.close()
             print_ts('Error: Decoding failed: ' + str(e))
             continue
-        if cmd.find('\n') < 1:
+        pos_nl = cmd.find('\n')
+        if pos_nl < 1:
+            print_ts('No newline found in data.')
             continue
-        firstLine = cmd[:cmd.find('\n')]
+        firstLine = cmd[:pos_nl]
         if re.match('[a-zA-Z0-9./ ]+', firstLine) is None:
+            print_ts('Unsupported characters found in command: {}'.format(firstLine))
             connection.close()
             continue
         if cmd.startswith('GET /'):
@@ -1114,7 +1117,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.close()
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
             # read data
-            data = cmd[cmd.find('\n')+1:]
+            data = cmd[pos_nl+1:]
             try:
                 t = 0.0
                 max_data_size = 2 * 1024 * 1024
@@ -1185,7 +1188,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             generate_package_diff_statistics(filename)
         elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
             # read data
-            data = cmd[cmd.find('\n') + 1:]
+            data = cmd[pos_nl + 1:]
             try:
                 t = 0.0
                 max_data_size = 1024 * 1024
@@ -1250,7 +1253,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 print_ts('getPackageIdx: index is out of range')
             continue
         else:
-            if cmd.find('\n') < 0:
+            if pos_nl < 0:
                 print_ts('invalid command: "' + firstLine + '"')
             else:
                 lines = cmd.split('\n')
