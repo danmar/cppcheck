@@ -4563,7 +4563,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
     }
 
     // skip const|volatile|static|mutable|extern
-    while (tok->isKeyword() && Token::Match(tok, "const|constexpr|volatile|static|mutable|extern")) {
+    while (tok && tok->isKeyword() && Token::Match(tok, "const|constexpr|volatile|static|mutable|extern")) {
         tok = tok->next();
     }
 
@@ -4580,7 +4580,7 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
         return typeend->linkAt(1);
     }
 
-    if (tok->isKeyword() && Token::Match(tok, "class|struct|union|enum")) {
+    while (tok && tok->isKeyword() && Token::Match(tok, "class|struct|union|enum")) {
         tok = tok->next();
     }
 
