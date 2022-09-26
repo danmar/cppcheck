@@ -379,6 +379,7 @@ private:
         TEST_CASE(enum8);
         TEST_CASE(enum9);
         TEST_CASE(enum10); // #11001
+        TEST_CASE(enum11);
 
         TEST_CASE(sizeOfType);
 
@@ -5365,6 +5366,11 @@ private:
         ASSERT(Y);
         ASSERT(Y->value_known);
         ASSERT_EQUALS(Y->value, 1);
+    }
+
+    void enum11() {
+        check("enum class E;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sizeOfType() {
