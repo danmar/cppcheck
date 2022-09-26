@@ -3973,7 +3973,7 @@ void Tokenizer::setVarIdPass1()
              Token::Match(tok, "[;{}]") ||
              (tok->str() == "(" && isFunctionHead(tok,"{")) ||
              (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
-             (tok->str() == "," && (!scopeStack.top().isExecutable || inlineFunction)) ||
+             (tok->str() == "," && (!scopeStack.top().isExecutable || inlineFunction || !tok->previous()->varId())) ||
              (tok->isName() && endsWith(tok->str(), ':')))) {
 
             // No variable declarations in sizeof

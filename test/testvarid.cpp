@@ -2761,6 +2761,16 @@ private:
                                "5: } ;\n";
             ASSERT_EQUALS(exp, tokenize(code));
         }
+        // # 11332
+        {
+            const char code[] = "auto a() {\n"
+                                "    return [](int, int b) {};\n"
+                                "}\n";
+            const char exp[] = "1: auto a ( ) {\n"
+                               "2: return [ ] ( int , int b@1 ) { } ;\n"
+                               "3: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
     }
 
     void varid_lambda_mutable() {
