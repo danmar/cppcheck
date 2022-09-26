@@ -51,7 +51,7 @@ We are not interesting in the size/complexity of a function.
 `readability-redundant-member-init`<br>
 `readability-simplify-boolean-expr`<br>
 
-These do not (always) increase readbility.
+These do not (always) increase readability.
 
 `bugprone-macro-parentheses`<br>
 `readability-implicit-bool-conversion`<br>
@@ -76,7 +76,7 @@ This leads to a mismatch of raw string literals and regular ones and does reduce
 
 `readability-convert-member-functions-to-static`<br>
 
-Disabled because of false postives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
+Disabled because of false positives with Qt `slot` methods (see https://github.com/llvm/llvm-project/issues/57520).
 
 `-clang-analyzer-*`<br>
 
@@ -116,7 +116,7 @@ Produces a lot of false positives since it is too vague in its analysis.
 
 `performance-inefficient-string-concatenation`<br>
 
-Produces many warnings which very much look like false ppsitives (needs to be reported upstream).
+Produces many warnings which very much look like false positives (needs to be reported upstream).
 
 `bugprone-suspicious-include`<br>
 
