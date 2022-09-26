@@ -916,7 +916,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
         const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
         if (isStartOfCpp11Init) {
             tok = tok->previous();
-            while (Token::Match(tok->previous(), ":: %type%"))
+            while (tok && Token::Match(tok->previous(), ":: %type%"))
                 tok = tok->tokAt(-2);
             if (tok && !tok->isKeyword())
                 tok = tok->previous();
