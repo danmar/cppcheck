@@ -924,7 +924,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
         }
         return true;
     };
-    
+
     if (doCompileScope(tok))
         compileScope(tok, state);
     while (tok) {
