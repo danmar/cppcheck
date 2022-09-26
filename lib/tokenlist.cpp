@@ -912,8 +912,20 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
 
 static void compilePrecedence2(Token *&tok, AST_state& state)
 {
-    const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
-    if (!(isStartOfCpp11Init && Token::Match(tok->tokAt(-2), "new %type% {")))
+    auto doCompileScope = [&](const Token* tok) -> bool {
+        const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
+        if (isStartOfCpp11Init) {
+            tok = tok->previous();
+            while (tok && Token::Match(tok->previous(), ":: %type%"))
+                tok = tok->tokAt(-2);
+            if (tok && !tok->isKeyword())
+                tok = tok->previous();
+            return !Token::Match(tok, "new ::| %type%");
+        }
+        return true;
+    };
+
+    if (doCompileScope(tok))
         compileScope(tok, state);
     while (tok) {
         if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
@@ -1069,12 +1081,18 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             }
 
             Token* leftToken = tok;
-            while (Token::Match(tok->next(), ":: %name%")) {
-                Token* scopeToken = tok->next(); //The ::
-                scopeToken->astOperand1(leftToken);
-                scopeToken->astOperand2(scopeToken->next());
-                leftToken = scopeToken;
-                tok = scopeToken->next();
+            if (Token::simpleMatch(tok, "::")) {
+                tok->astOperand1(tok->next());
+                tok = tok->next();
+            }
+            else {
+                while (Token::Match(tok->next(), ":: %name%")) {
+                    Token* scopeToken = tok->next(); //The ::
+                    scopeToken->astOperand1(leftToken);
+                    scopeToken->astOperand2(scopeToken->next());
+                    leftToken = scopeToken;
+                    tok = scopeToken->next();
+                }
             }
 
             state.op.push(tok);
