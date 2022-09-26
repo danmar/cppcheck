@@ -1266,7 +1266,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 if packages[currentIdx] == url:
                     packages[currentIdx] = None
                     print_ts('write_nodata:' + url)
-                    # TODO: persist package
+
+                    with open('packages_nodata.txt', 'at') as f:
+                        f.write(url + '\n')
                     break
                 if currentIdx == 0:
                     currentIdx = len(packages) - 1
@@ -1303,7 +1305,31 @@ if __name__ == "__main__":
     with open('packages.txt', 'rt') as f:
         packages = [val.strip() for val in f.readlines()]
 
-    print_ts('packages: ' + str(len(packages)))
+    print_ts('packages: {}'.format(len(packages)))
+
+    if os.path.isfile('packages_nodata.txt'):
+        with open('packages_nodata.txt', 'rt') as f:
+            packages_nodata = [val.strip() for val in f.readlines()]
+            packages_nodata.sort()
+
+        print_ts('packages_nodata: {}'.format(len(packages_nodata)))
+
+        print_ts('removing packages with no files to process'.format(len(packages_nodata)))
+        packages_nodata_clean = []
+        for pkg_n in packages_nodata:
+            if pkg_n in packages:
+                packages.remove(pkg_n)
+                packages_nodata_clean.append(pkg_n)
+
+        packages_nodata_diff = len(packages_nodata) - len(packages_nodata_clean)
+        if packages_nodata_diff:
+            with open('packages_nodata.txt', 'wt') as f:
+                for pkg in packages_nodata_clean:
+                    f.write(pkg + '\n')
+
+            print_ts('removed {} packages from packages_nodata.txt'.format(packages_nodata_diff))
+
+        print_ts('packages: {}'.format(len(packages)))
 
     if len(packages) == 0:
         print_ts('fatal: there are no packages')
