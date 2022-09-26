@@ -1135,10 +1135,13 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd == 'get\n':
-            pkg = packages[packageIndex]
-            packageIndex += 1
-            if packageIndex >= len(packages):
-                packageIndex = 0
+            while True:
+                pkg = packages[packageIndex]
+                packageIndex += 1
+                if packageIndex >= len(packages):
+                    packageIndex = 0
+                if pkg is not None:
+                    break
 
             with open('package-index.txt', 'wt') as f:
                 f.write(str(packageIndex) + '\n')
@@ -1257,8 +1260,23 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 continue
             url = data[:pos]
 
+            startIdx = packageIndex
+            currentIdx = packageIndex
+            while True:
+                if packages[currentIdx] == url:
+                    packages[currentIdx] = None
+                    print_ts('write_nodata:' + url)
+                    # TODO: persist package
+                    break
+                if currentIdx == 0:
+                    currentIdx = len(packages) - 1
+                else:
+                    currentIdx -= 1
+                if currentIdx == startIdx:
+                    print_ts('write_nodata:' + url + ' - package not found')
+                    break
+
             connection.close()
-            print_ts('write_nodata:' + url)
         else:
             if pos_nl < 0:
                 print_ts('invalid command: "' + firstLine + '"')
