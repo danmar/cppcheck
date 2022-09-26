@@ -17,6 +17,10 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      # TODO: files are cached but are still cache misses on platforms other than ubuntu-22.04
+      CCACHE_SLOPPINESS: pch_defines,time_macros
+
     steps:
       - uses: actions/checkout@v2
 
@@ -61,6 +65,10 @@ jobs:
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
+
+    env:
+      # TODO: files are cached but are still cache misses
+      CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
       - uses: actions/checkout@v2
