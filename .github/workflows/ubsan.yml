@@ -26,7 +26,7 @@ jobs:
       - name: Install missing software on ubuntu
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake make libpcre3-dev
+          sudo apt-get install -y cmake make libpcre3-dev libboost-container-dev
 
       - name: Install clang
         run: |
@@ -36,7 +36,7 @@ jobs:
 
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_UNDEFINED=On -DENABLE_CHECK_INTERNAL=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_UNDEFINED=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
         env:
           CC: clang-15
           CXX: clang++-15

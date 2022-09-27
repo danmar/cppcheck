@@ -878,7 +878,7 @@ void ProjectFileDialog::removeSuppression()
     delete item;
 }
 
-void ProjectFileDialog::editSuppression(const QModelIndex &)
+void ProjectFileDialog::editSuppression(const QModelIndex & /*index*/)
 {
     const int row = mUI->mListSuppressions->currentRow();
     QListWidgetItem *item = mUI->mListSuppressions->item(row);

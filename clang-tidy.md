@@ -55,7 +55,6 @@ These do not (always) increase readability.
 
 `bugprone-macro-parentheses`<br>
 `readability-implicit-bool-conversion`<br>
-`readability-named-parameter`<br>
 
 To be documented.
 
