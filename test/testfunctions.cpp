@@ -1726,7 +1726,37 @@ private:
                       "[test.cpp:10]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
                       errout.str());
 
-        check("std::enable_if_t<sizeof(uint64_t) == 8> f() {}"); // #11171
+        // #11171
+        check("std::enable_if_t<sizeof(uint64_t) == 8> f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::enable_if_t<sizeof(uint64_t) == 8, int> f() {}");
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            errout.str());
+
+        check("template<class T> std::enable_if_t<std::is_same<T, int>{}, int> f(T) {}");
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            errout.str());
+
+        check("template<class T> std::enable_if_t<std::is_same<T, int>{}> f(T) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typename std::enable_if<sizeof(uint64_t) == 8>::type f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typename std::enable_if<sizeof(uint64_t) == 8, int>::type f() {}");
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            errout.str());
+
+        check("template<class T> typename std::enable_if<std::is_same<T, int>{}, int>::type f(T) {}");
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            errout.str());
+
+        check("template<class T> typename std::enable_if<std::is_same<T, int>{}>::type f(T) {}");
         ASSERT_EQUALS("", errout.str());
     }
 
