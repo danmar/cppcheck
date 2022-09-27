@@ -2666,6 +2666,17 @@ private:
               "    Ref<StringBuffer> remove(new StringBuffer());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11039
+              "    delete new int;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11327
+              "    int* p = (new int[3]) + 1;\n"
+              "    delete[] &p[-1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerFunctionParam() {
