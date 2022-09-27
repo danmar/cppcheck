@@ -1719,6 +1719,10 @@ void TokenList::validateAst() const
             tok = tok->link();
             continue;
         }
+        if (tok->isCast() && tok->astOperand1() && tok->link()) { // skip casts (not part of the AST)
+            tok = tok->link();
+            continue;
+        }
 
         // Check binary operators
         if (Token::Match(tok, "%or%|%oror%|%assign%|%comp%")) {
