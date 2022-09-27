@@ -6074,6 +6074,9 @@ private:
         ASSERT_EQUALS("a0[T{new=", testAst("a[0] = new T{};"));
         ASSERT_EQUALS("a0[T::{new=", testAst("a[0] = new ::T{};"));
         ASSERT_EQUALS("a0[ST::{new=", testAst("a[0] = new S::T{};"));
+        ASSERT_EQUALS("intnewdelete", testAst("delete new int;")); // #11039
+        ASSERT_EQUALS("intnewdelete", testAst("void f() { delete new int; }"));
+        ASSERT_EQUALS("pint3[new1+=", testAst("p = (new int[3]) + 1;")); // #11327
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
