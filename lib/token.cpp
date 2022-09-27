@@ -2050,7 +2050,7 @@ static void removeOverlaps(std::list<ValueFlow::Value>& values)
                 return false;
             if (x.valueKind != y.valueKind)
                 return false;
-            // TODO: Remove points coverd in a lower or upper bound
+            // TODO: Remove points covered in a lower or upper bound
             // TODO: Remove lower or upper bound already covered by a lower and upper bound
             if (!x.equalValue(y))
                 return false;
