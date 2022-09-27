@@ -161,7 +161,7 @@ CPPCHECKLIB void strTolower(std::string& str);
  * \return size of array
  * */
 template<typename T, int size>
-std::size_t getArrayLength(const T (&)[size])
+std::size_t getArrayLength(const T (& /*unused*/)[size])
 {
     return size;
 }
