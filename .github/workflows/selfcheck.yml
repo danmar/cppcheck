@@ -31,7 +31,7 @@ jobs:
       - name: Install missing software
         run: |
           sudo apt-get update
-          sudo apt-get install valgrind
+          sudo apt-get install clang-14 valgrind
 
       - name: Cache Qt ${{ env.QT_VERSION }}
         id: cache-qt
@@ -51,7 +51,12 @@ jobs:
       - name: Self check (build)
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) -s CXXFLAGS="-O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes
+          # valgrind cannot handle DWARF 5 yet so force version 4
+          # work around performance regression with -inline-deferral
+          make -j$(nproc) -s CXXFLAGS="-O2 -w -DHAVE_BOOST -gdwarf-4 -mllvm -inline-deferral" MATCHCOMPILER=yes
+        env:
+          CC: clang-14
+          CXX: clang++-14
 
       - name: CMake
         run: |
