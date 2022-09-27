@@ -1041,23 +1041,26 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         // TODO: Use CTU for Clang analysis
         return;
 
-    // Analyse the tokens..
 
-    CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-    if (fi1) {
-        if (mSettings.jobs == 1)
-            mFileInfo.push_back(fi1);
-        if (!mSettings.buildDir.empty())
-            mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
-    }
+    if (mSettings.jobs == 1 || !mSettings.buildDir.empty()) {
+        // Analyse the tokens..
 
-    for (const Check *check : Check::instances()) {
-        Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-        if (fi != nullptr) {
+        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
+        if (fi1) {
             if (mSettings.jobs == 1)
-                mFileInfo.push_back(fi);
+                mFileInfo.push_back(fi1);
             if (!mSettings.buildDir.empty())
-                mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+                mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+        }
+
+        for (const Check *check: Check::instances()) {
+            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
+            if (fi != nullptr) {
+                if (mSettings.jobs == 1)
+                    mFileInfo.push_back(fi);
+                if (!mSettings.buildDir.empty())
+                    mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+            }
         }
     }
 
