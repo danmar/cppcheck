@@ -1045,7 +1045,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
     CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
     if (fi1) {
-        mFileInfo.push_back(fi1);
+        if (mSettings.jobs == 1)
+            mFileInfo.push_back(fi1);
         if (!mSettings.buildDir.empty())
             mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
     }
@@ -1053,7 +1054,8 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     for (const Check *check : Check::instances()) {
         Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
         if (fi != nullptr) {
-            mFileInfo.push_back(fi);
+            if (mSettings.jobs == 1)
+                mFileInfo.push_back(fi);
             if (!mSettings.buildDir.empty())
                 mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
         }
