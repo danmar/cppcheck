@@ -444,13 +444,13 @@ jobs:
       - name: Install missing software on ubuntu
         run: |
           sudo apt-get update
-          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev
+          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev libboost-container-dev
 
       - name: Self check (build)
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           # compile with verification and ast matchers
-          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
+          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2 -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
       - name: Generate UI files
         run: |

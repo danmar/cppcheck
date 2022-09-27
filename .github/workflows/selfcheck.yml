@@ -18,6 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install missing software
+        run: |
+          sudo apt-get update
+          sudo apt-get install libboost-container-dev
+
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
@@ -41,7 +46,7 @@ jobs:
       - name: Self check (build)
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) -s CXXFLAGS="-O2 -w" MATCHCOMPILER=yes
+          make -j$(nproc) -s CXXFLAGS="-O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes
 
       - name: CMake
         run: |
@@ -67,7 +72,7 @@ jobs:
       # the following steps are duplicated from above since setting up the build node in a parallel step takes longer than the actual steps
       - name: CMake (no test)
         run: |
-          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=0 -DBUILD_GUI=ON -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies (no test)
         run: |
