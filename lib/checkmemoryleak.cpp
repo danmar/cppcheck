@@ -274,6 +274,16 @@ bool CheckMemoryLeak::isReopenStandardStream(const Token *tok) const
     return false;
 }
 
+bool CheckMemoryLeak::isOpenDevNull(const Token *tok) const
+{
+    if (mSettings_->posix() && tok->str() == "open" && numberOfArguments(tok) == 2) {
+        const Token* arg = getArguments(tok).at(0);
+        if (Token::simpleMatch(arg, "\"/dev/null\""))
+            return true;
+    }
+    return false;
+}
+
 //--------------------------------------------------------------------------
 
 
@@ -1053,10 +1063,12 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 
         if (isReopenStandardStream(tok))
             continue;
+        if (isOpenDevNull(tok))
+            continue;
 
         // get ast parent, skip casts
         const Token *parent = isNew ? tok->astParent() : tok->next()->astParent();
-        while (parent && parent->str() == "(" && !parent->astOperand2())
+        while (parent && parent->isCast())
             parent = parent->astParent();
 
         bool warn = true;

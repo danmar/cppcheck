@@ -268,9 +268,9 @@ void CheckFunctions::checkIgnoredReturnValue()
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
                 !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
                 const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
-                if (mSettings->severity.isEnabled(Severity::warning) &&
-                    ((retvalTy == Library::UseRetValType::DEFAULT) ||
-                     (tok->function() && tok->function()->isAttributeNodiscard())))
+                const bool warn = (tok->function() && tok->function()->isAttributeNodiscard()) || // avoid duplicate warnings for resource-allocating functions
+                                  (retvalTy == Library::UseRetValType::DEFAULT && mSettings->library.getAllocFuncInfo(tok) == nullptr);
+                if (mSettings->severity.isEnabled(Severity::warning) && warn)
                     ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
                 else if (mSettings->severity.isEnabled(Severity::style) &&
                          retvalTy == Library::UseRetValType::ERROR_CODE)

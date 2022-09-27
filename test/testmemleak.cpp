@@ -2311,6 +2311,7 @@ private:
         TEST_CASE(getAllocationType);
 
         TEST_CASE(crash1); // #10729
+        TEST_CASE(openDevNull); // #9653
     }
 
     void functionParameter() {
@@ -2850,6 +2851,14 @@ private:
         check("void foo() {\n"
               "    extern void *malloc (size_t size);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void openDevNull() {
+        check("void f() {\n" // #9653
+              "    (void)open(\"/dev/null\", O_RDONLY);\n"
+              "    open(\"/dev/null\", O_WRONLY);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
