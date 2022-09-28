@@ -220,6 +220,9 @@
     <ClCompile Include="testtokenrange.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testclangimport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="options.h">

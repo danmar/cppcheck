@@ -40,6 +40,7 @@
 #include <iterator>
 #include <map>
 #include <set>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <unordered_set>
 #include <utility>
@@ -626,7 +627,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_l
     while (*current) {
         const std::size_t length = next - current;
 
-        if (!tok || length != tok->mStr.length() || std::strncmp(current, tok->mStr.c_str(), length))
+        if (!tok || length != tok->mStr.length() || std::strncmp(current, tok->mStr.c_str(), length) != 0)
             return false;
 
         current = next;
@@ -1844,7 +1845,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     return ret;
 }
 
-const Token *Token::getValueTokenMinStrSize(const Settings *settings) const
+const Token *Token::getValueTokenMinStrSize(const Settings *settings, MathLib::bigint* path) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -1857,6 +1858,8 @@ const Token *Token::getValueTokenMinStrSize(const Settings *settings) const
             if (!ret || size < minsize) {
                 minsize = size;
                 ret = it->tokvalue;
+                if (path)
+                    *path = it->path;
             }
         }
     }
@@ -2047,7 +2050,7 @@ static void removeOverlaps(std::list<ValueFlow::Value>& values)
                 return false;
             if (x.valueKind != y.valueKind)
                 return false;
-            // TODO: Remove points coverd in a lower or upper bound
+            // TODO: Remove points covered in a lower or upper bound
             // TODO: Remove lower or upper bound already covered by a lower and upper bound
             if (!x.equalValue(y))
                 return false;
@@ -2143,9 +2146,9 @@ bool Token::addValue(const ValueFlow::Value &value)
             if (v.varId == 0)
                 v.varId = mImpl->mVarId;
             if (v.isKnown() && v.isIntValue())
-                mImpl->mValues->push_front(v);
+                mImpl->mValues->push_front(std::move(v));
             else
-                mImpl->mValues->push_back(v);
+                mImpl->mValues->push_back(std::move(v));
         }
     } else {
         ValueFlow::Value v(value);
@@ -2304,7 +2307,7 @@ std::string Token::typeStr(const Token* tok)
 
 void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo)
 {
-    mImpl->mScopeInfo = newScopeInfo;
+    mImpl->mScopeInfo = std::move(newScopeInfo);
 }
 std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
 {

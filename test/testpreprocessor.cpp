@@ -24,16 +24,17 @@
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "testsuite.h"
 #include "testutils.h"
 
 #include <atomic>
 #include <cstring>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 

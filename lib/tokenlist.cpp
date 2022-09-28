@@ -23,6 +23,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"
+#include "mathlib.h"
 #include "path.h"
 #include "settings.h"
 #include "standards.h"
@@ -30,7 +31,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstring>
 #include <exception>
 #include <functional>
 #include <utility>
@@ -177,7 +177,7 @@ void TokenList::determineCppC()
     }
 }
 
-int TokenList::appendFileIfNew(const std::string &fileName)
+int TokenList::appendFileIfNew(std::string fileName)
 {
     // Has this file been tokenized already?
     for (int i = 0; i < mFiles.size(); ++i)
@@ -185,7 +185,7 @@ int TokenList::appendFileIfNew(const std::string &fileName)
             return i;
 
     // The "mFiles" vector remembers what files have been tokenized..
-    mFiles.push_back(fileName);
+    mFiles.push_back(std::move(fileName));
 
     // Update mIsC and mIsCpp properties
     if (mFiles.size() == 1) { // Update only useful if first file added to _files
@@ -542,6 +542,8 @@ static bool iscast(const Token *tok, bool cpp)
     bool type = false;
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
         if (tok2->varId() != 0)
+            return false;
+        if (cpp && !type && tok2->str() == "new")
             return false;
 
         while (tok2->link() && Token::Match(tok2, "(|[|<"))
@@ -912,8 +914,20 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
 
 static void compilePrecedence2(Token *&tok, AST_state& state)
 {
-    const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
-    if (!(isStartOfCpp11Init && Token::Match(tok->tokAt(-2), "new %type% {")))
+    auto doCompileScope = [&](const Token* tok) -> bool {
+        const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
+        if (isStartOfCpp11Init) {
+            tok = tok->previous();
+            while (tok && Token::Match(tok->previous(), ":: %type%"))
+                tok = tok->tokAt(-2);
+            if (tok && !tok->isKeyword())
+                tok = tok->previous();
+            return !Token::Match(tok, "new ::| %type%");
+        }
+        return true;
+    };
+
+    if (doCompileScope(tok))
         compileScope(tok, state);
     while (tok) {
         if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
@@ -1069,12 +1083,18 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             }
 
             Token* leftToken = tok;
-            while (Token::Match(tok->next(), ":: %name%")) {
-                Token* scopeToken = tok->next(); //The ::
-                scopeToken->astOperand1(leftToken);
-                scopeToken->astOperand2(scopeToken->next());
-                leftToken = scopeToken;
-                tok = scopeToken->next();
+            if (Token::simpleMatch(tok, "::")) {
+                tok->astOperand1(tok->next());
+                tok = tok->next();
+            }
+            else {
+                while (Token::Match(tok->next(), ":: %name%")) {
+                    Token* scopeToken = tok->next(); //The ::
+                    scopeToken->astOperand1(leftToken);
+                    scopeToken->astOperand2(scopeToken->next());
+                    leftToken = scopeToken;
+                    tok = scopeToken->next();
+                }
             }
 
             state.op.push(tok);
@@ -1602,7 +1622,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") ||
         (cpp && Token::Match(tok, "%name% {") && iscpp11init(tok->next())) ||
         Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{") ||
-        Token::Match(tok->previous(), "[;{}] %num%|%str%|%char%")) {
+        Token::Match(tok->previous(), "[;{}] %num%|%str%|%char%") ||
+        Token::Match(tok->previous(), "[;{}] delete new")) {
         if (cpp && (Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%") || Token::Match(tok->tokAt(-3), "[;{}] :: new|delete %name%")))
             tok = tok->previous();
 

@@ -202,7 +202,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
                 return ChildrenToVisit::op1_and_op2;
             });
         }
-    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings)) {
+    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings, path)) {
         Dimension dim;
         dim.tok = nullptr;
         dim.num = Token::getStrArraySize(stringLiteral);
@@ -593,10 +593,16 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
                 return Token::getStrLength(strtoken) < bufferSize;
         }
         break;
-    case Library::ArgumentChecks::MinSize::Type::ARGVALUE:
-        if (arg && arg->hasKnownIntValue())
-            return arg->getKnownIntValue() <= bufferSize;
+    case Library::ArgumentChecks::MinSize::Type::ARGVALUE: {
+        if (arg && arg->hasKnownIntValue()) {
+            MathLib::bigint myMinsize = arg->getKnownIntValue();
+            unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
+            if (baseSize != 0)
+                myMinsize *= baseSize;
+            return myMinsize <= bufferSize;
+        }
         break;
+    }
     case Library::ArgumentChecks::MinSize::Type::SIZEOF:
         // TODO
         break;
@@ -649,7 +655,7 @@ void CheckBufferOverrun::bufferOverflow()
                 if (bufferSize.intvalue <= 0)
                     continue;
                 // buffer size == 1 => do not warn for dynamic memory
-                if (bufferSize.intvalue == 1) {
+                if (bufferSize.intvalue == 1 && Token::simpleMatch(argtok->astParent(), ".")) { // TODO: check if parent was allocated dynamically
                     const Token *tok2 = argtok;
                     while (Token::simpleMatch(tok2->astParent(), "."))
                         tok2 = tok2->astParent();
@@ -667,7 +673,7 @@ void CheckBufferOverrun::bufferOverflow()
                     return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings, mTokenizer);
                 });
                 if (error)
-                    bufferOverflowError(args[argnr], &bufferSize, (bufferSize.intvalue == 1) ? Certainty::inconclusive : Certainty::normal);
+                    bufferOverflowError(args[argnr], &bufferSize, Certainty::normal);
             }
         }
     }
@@ -1141,7 +1147,7 @@ void CheckBufferOverrun::negativeArraySize()
                 continue;
             const ValueFlow::Value* sz = valOperand->getValueLE(-1, mSettings);
             if (sz)
-                negativeMemoryAllocationSizeError(tok);
+                negativeMemoryAllocationSizeError(tok, sz);
         }
     }
 }
@@ -1155,8 +1161,11 @@ void CheckBufferOverrun::negativeArraySizeError(const Token* tok)
                 "Declaration of array '" + arrayName + "' with negative size is undefined behaviour", CWE758, Certainty::safe);
 }
 
-void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok)
+void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok, const ValueFlow::Value* value)
 {
-    reportError(tok, Severity::error, "negativeMemoryAllocationSize",
-                "Memory allocation size is negative.", CWE131, Certainty::safe);
+    const std::string msg = "Memory allocation size is negative.";
+    const ErrorPath errorPath = getErrorPath(tok, value, msg);
+    const bool inconclusive = value != nullptr && !value->isKnown();
+    reportError(errorPath, inconclusive ? Severity::warning : Severity::error, "negativeMemoryAllocationSize",
+                msg, CWE131, inconclusive ? Certainty::inconclusive : Certainty::safe);
 }

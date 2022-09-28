@@ -321,7 +321,7 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        // only check functions without exception epecification
+        // only check functions without exception specification
         if (scope->function && !scope->function->isThrow() &&
             scope->className != "main" && scope->className != "wmain" &&
             scope->className != "_tmain" && scope->className != "WinMain") {

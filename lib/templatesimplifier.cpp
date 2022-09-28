@@ -32,6 +32,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <utility>
 
@@ -227,6 +228,14 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, std::string scope, 
 
 TemplateSimplifier::TokenAndName::TokenAndName(const TokenAndName& other) :
     mToken(other.mToken), mScope(other.mScope), mName(other.mName), mFullName(other.mFullName),
+    mNameToken(other.mNameToken), mParamEnd(other.mParamEnd), mFlags(other.mFlags)
+{
+    if (mToken)
+        mToken->templateSimplifierPointer(this);
+}
+
+TemplateSimplifier::TokenAndName::TokenAndName(TokenAndName&& other) :
+    mToken(other.mToken), mScope(std::move(other.mScope)), mName(std::move(other.mName)), mFullName(std::move(other.mFullName)),
     mNameToken(other.mNameToken), mParamEnd(other.mParamEnd), mFlags(other.mFlags)
 {
     if (mToken)
@@ -695,7 +704,7 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
                                                      instantiation);
 
     if (it == mTemplateInstantiations.end())
-        mTemplateInstantiations.emplace_back(instantiation);
+        mTemplateInstantiations.emplace_back(std::move(instantiation));
 }
 
 static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
@@ -2170,6 +2179,10 @@ void TemplateSimplifier::expandTemplate(
                         continue;
                 }
 
+                // don't add instantiations in template definitions
+                if (!templates.empty())
+                    continue;
+
                 std::string scope;
                 const Token *prev = tok3;
                 for (; Token::Match(prev->tokAt(-2), "%name% ::"); prev = prev->tokAt(-2)) {
@@ -2193,13 +2206,10 @@ void TemplateSimplifier::expandTemplate(
                     }
                 }
 
-                // don't add instantiations in template definitions
-                if (templates.empty()) {
-                    if (copy)
-                        newInstantiations.emplace_back(mTokenList.back(), scope);
-                    else if (!inTemplateDefinition)
-                        newInstantiations.emplace_back(tok3, scope);
-                }
+                if (copy)
+                    newInstantiations.emplace_back(mTokenList.back(), std::move(scope));
+                else if (!inTemplateDefinition)
+                    newInstantiations.emplace_back(tok3, std::move(scope));
             }
 
             // link() newly tokens manually
@@ -2957,7 +2967,7 @@ std::string TemplateSimplifier::getNewName(
             ++indentlevel;
         else if (indentlevel > 0 && Token::Match(tok3, "> ,|>|::"))
             --indentlevel;
-        if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
+        else if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
             mTypesUsedInTemplateInstantiation.emplace_back(tok3, "");
         }
         if (Token::Match(tok3, "(|["))

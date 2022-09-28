@@ -15,6 +15,7 @@
 #include <memory.h>
 #include <mbstring.h>
 #include <wchar.h>
+#include <atlstr.h>
 
 int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
 {
@@ -680,7 +681,6 @@ void ignoredReturnValue()
     // cppcheck-suppress leakReturnValNotUsed
     CreateEventEx(NULL, L"test", CREATE_EVENT_INITIAL_SET, EVENT_MODIFY_STATE);
 
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     _malloca(10);
     // cppcheck-suppress ignoredReturnValue
@@ -692,10 +692,8 @@ void ignoredReturnValue()
 
     // cppcheck-suppress ignoredReturnValue
     GetProcessHeap();
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     HeapAlloc(GetProcessHeap(), 0, 10);
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     HeapReAlloc(GetProcessHeap(), 0, 1, 0);
 
@@ -1102,3 +1100,11 @@ public:
 IMPLEMENT_DYNAMIC(MyClass, CObject)
 IMPLEMENT_DYNCREATE(MyClass, CObject)
 IMPLEMENT_SERIAL(MyClass,CObject, 42)
+
+void invalidPrintfArgType_StructMember(double d) { // #9672
+    typedef struct { CString st; } my_struct_t;
+
+    my_struct_t my_struct;
+    // cppcheck-suppress invalidPrintfArgType_sint
+    my_struct.st.Format("%d", d);
+}

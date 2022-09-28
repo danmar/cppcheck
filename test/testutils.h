@@ -27,10 +27,11 @@
 #include "tokenlist.h"
 
 #include <cstdio>
-#include <iosfwd>
+#include <fstream>
 #include <list>
-#include <ostream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
 
 class Token;
 
@@ -59,7 +60,7 @@ class SimpleSuppressor : public ErrorLogger {
 public:
     SimpleSuppressor(Settings &settings, ErrorLogger *next)
         : settings(settings), next(next) {}
-    void reportOut(const std::string &outmsg, Color = Color::Reset) override {
+    void reportOut(const std::string &outmsg, Color /*c*/ = Color::Reset) override {
         next->reportOut(outmsg);
     }
     void reportErr(const ErrorMessage &msg) override {
@@ -73,7 +74,7 @@ private:
 
 class ScopedFile {
 public:
-    ScopedFile(const std::string &name, const std::string &content) : mName(name) {
+    ScopedFile(std::string name, const std::string &content) : mName(std::move(name)) {
         std::ofstream of(mName);
         of << content;
     }

@@ -23,6 +23,12 @@
 
 #include "config.h"
 
+#include <cstddef>
+#include <iterator>
+#include <type_traits>
+
+class Token;
+
 template<typename T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 class TokenRangeBase {
     T* mFront;

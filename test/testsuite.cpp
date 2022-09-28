@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cctype>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 std::ostringstream errout;
@@ -373,7 +374,7 @@ std::size_t TestFixture::runTests(const options& args)
     return fails_counter;
 }
 
-void TestFixture::reportOut(const std::string & outmsg, Color)
+void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
 {
     output << outmsg << std::endl;
 }

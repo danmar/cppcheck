@@ -188,6 +188,7 @@ private:
         TEST_CASE(simplifyTypedef139);
         TEST_CASE(simplifyTypedef140); // #10798
         TEST_CASE(simplifyTypedef141); // #10144
+        TEST_CASE(simplifyTypedef142); // T() when T is a pointer type
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2622,7 +2623,7 @@ private:
                                 "  constexpr const foo &c_str() const noexcept { return _a; }\n"
                                 "};";
 
-            const char exp[] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
@@ -2633,8 +2634,8 @@ private:
                                 "  constexpr operator foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
-            const char exp[] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
 
@@ -2645,8 +2646,8 @@ private:
                                 "  constexpr operator const foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
-            const char exp[] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
     }
@@ -3049,6 +3050,18 @@ private:
                             "    };\n"
                             "};\n";
         ASSERT_EQUALS("class C { struct I { } ; } ;", tok(code));
+    }
+
+    void simplifyTypedef142() { // T() when T is a pointer type
+        // #11232
+        const char code1[] = "typedef int* T;\n"
+                             "a = T();\n";
+        ASSERT_EQUALS("a = ( int * ) 0 ;", tok(code1));
+
+        // #9479
+        const char code2[] = "typedef int* T;\n"
+                             "void f(T = T()){}\n";
+        ASSERT_EQUALS("void f ( int * = ( int * ) 0 ) { }", tok(code2));
     }
 
     void simplifyTypedefFunction1() {

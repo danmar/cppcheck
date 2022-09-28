@@ -26,7 +26,7 @@
 #include "tokenlist.h"
 
 #include <cstring>
-#include <iosfwd>
+#include <sstream> // IWYU pragma: keep
 
 class TestAstUtils : public TestFixture {
 public:

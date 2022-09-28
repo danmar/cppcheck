@@ -24,7 +24,7 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <istream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 
@@ -140,7 +140,7 @@ private:
         // FIXME Does expression id handle these? TEST_CASE(simplifyKnownVariables29);    // ticket #1811
         TEST_CASE(simplifyKnownVariables30);
         TEST_CASE(simplifyKnownVariables34);
-        TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
+        TEST_CASE(simplifyKnownVariables36);    // ticket #5972
         TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
         TEST_CASE(simplifyKnownVariables43);
         TEST_CASE(simplifyKnownVariables44);    // ticket #3117 - don't simplify static variables
@@ -1676,6 +1676,7 @@ private:
         }
     }
 
+    // cppcheck-suppress unusedPrivateFunction
     void simplifyKnownVariables29() { // ticket #1811
         {
             const char code[] = "int foo(int u, int v)\n"

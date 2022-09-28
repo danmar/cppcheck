@@ -26,9 +26,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
-#include <list>
 #include <map>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -66,6 +65,8 @@ private:
         TEST_CASE(zeroDiv13);
         TEST_CASE(zeroDiv14); // #1169
         TEST_CASE(zeroDiv15); // #8319
+        TEST_CASE(zeroDiv16); // #11158
+        TEST_CASE(zeroDiv17); // #9931
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -138,6 +139,8 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(testMisusedScopeObjectInConstructor);
         TEST_CASE(testMisusedScopeObjectNoCodeAfter);
+        TEST_CASE(testMisusedScopeObjectStandardType);
+        TEST_CASE(testMisusedScopeObjectNamespace);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -256,6 +259,8 @@ private:
         TEST_CASE(partiallyMoved);
         TEST_CASE(moveAndLambda);
         TEST_CASE(moveInLoop);
+        TEST_CASE(moveCallback);
+        TEST_CASE(moveClassVariable);
         TEST_CASE(forwardAndUsed);
 
         TEST_CASE(funcArgNamesDifferent);
@@ -611,6 +616,40 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout.str());
     }
 
+    // #11158
+    void zeroDiv16()
+    {
+        check("int f(int i) {\n"
+              "    int number = 10, a = 0;\n"
+              "    for (int count = 0; count < 2; count++) {\n"
+              "        a += (i / number) % 10;\n"
+              "        number = number / 10;\n"
+              "    }\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+              "    int number = 10, a = 0;\n"
+              "    for (int count = 0; count < 2; count++) {\n"
+              "        int x = number / 10;\n"
+              "        a += (i / number) % 10;\n"
+              "        number = x;\n"
+              "    }\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv17() { // #9931
+        check("int f(int len) {\n"
+              "    int sz = sizeof(void*[255]) / 255;\n"
+              "    int x = len % sz;\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void zeroDivCond() {
         check("void f(unsigned int x) {\n"
               "  int y = 17 / x;\n"
@@ -756,6 +795,14 @@ private:
               "        return quotient;\n"
               "    return remainder;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11315
+        checkP("#define STATIC_ASSERT(c) \\\n"
+               "do { enum { sa = 1/(int)(!!(c)) }; } while (0)\n"
+               "void f() {\n"
+               "    STATIC_ASSERT(sizeof(int) == sizeof(FOO));\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5005,6 +5052,67 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void testMisusedScopeObjectStandardType() {
+        check("int g();\n"
+              "void f(int i) {\n"
+              "    int();\n"
+              "    int(0);\n"
+              "    int( g() );\n" // don't warn
+              "    int{};\n"
+              "    int{ 0 };\n"
+              "    int{ i };\n"
+              "    int{ g() };\n" // don't warn
+              "    g();\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:4]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:6]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:7]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:8]: (style) Instance of 'int' object is destroyed immediately.\n",
+                      errout.str());
+
+        check("void f(int j) {\n"
+              "    for (; bool(j); ) {}\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g() {\n"
+              "    float (f);\n"
+              "    float (*p);\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+              "    void();\n"
+              "    return i;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectNamespace() {
+        check("namespace M {\n" // #4479
+              "    namespace N {\n"
+              "        struct S {};\n"
+              "    }\n"
+              "}\n"
+              "int f() {\n"
+              "    M::N::S();\n"
+              "    return 0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Instance of 'M::N::S' object is destroyed immediately.\n", errout.str());
+
+        check("void f() {\n" // #10057
+              "    std::string(\"abc\");\n"
+              "    std::string{ \"abc\" };\n"
+              "    std::pair<int, int>(1, 2);\n"
+              "    (void)0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Instance of 'std::string' object is destroyed immediately.\n"
+                      "[test.cpp:3]: (style) Instance of 'std::string' object is destroyed immediately.\n"
+                      "[test.cpp:4]: (style) Instance of 'std::pair' object is destroyed immediately.\n",
+                      errout.str());
+    }
+
     void trac2084() {
         check("void f()\n"
               "{\n"
@@ -5891,6 +5999,15 @@ private:
               "   }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The comparison 'Diag == 0' is always true.\n", errout.str());
+
+        // #9744
+        check("void f(const std::vector<int>& ints) {\n"
+              "    int i = 0;\n"
+              "    for (int p = 0; i < ints.size(); ++i) {\n"
+              "        if (p == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The comparison 'p == 0' is always true.\n", errout.str());
     }
 
     void duplicateExpression8() {
@@ -9873,6 +9990,31 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'l'.\n", errout.str());
+    }
+
+    void moveCallback()
+    {
+        check("bool f(std::function<void()>&& callback);\n"
+              "void func(std::function<void()> callback) {\n"
+              "    if(!f(std::move(callback)))\n"
+              "        callback();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'callback'.\n", errout.str());
+    }
+
+    void moveClassVariable()
+    {
+        check("struct B {\n"
+              "    virtual void f();\n"
+              "};\n"
+              "struct D : B {\n"
+              "    void f() override {\n"
+              "        auto p = std::unique_ptr<D>(new D(std::move(m)));\n"
+              "    }\n"
+              "    D(std::unique_ptr<int> c) : m(std::move(c)) {}\n"
+              "    std::unique_ptr<int> m;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void forwardAndUsed() {

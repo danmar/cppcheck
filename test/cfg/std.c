@@ -287,7 +287,6 @@ void pointerLessThanZero_aligned_alloc(void)
 
 void unusedRetVal_aligned_alloc(void)
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     aligned_alloc(8, 16);
 }
@@ -554,6 +553,14 @@ void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_
     // TODO cppcheck-suppress bufferAccessOutOfBounds
     (void)wcsftime(buf, 43, format, timeptr);
     (void)wcsftime(ptr, maxsize, format, timeptr);
+}
+
+void bufferAccessOutOfBounds_wcsncpy()
+{
+    wchar_t s[16];
+    wcsncpy(s, L"abc", 16);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    wcsncpy(s, L"abc", 17);
 }
 
 int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)

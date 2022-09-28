@@ -56,9 +56,7 @@ Settings::Settings()
     inlineSuppressions(false),
     jobs(1),
     jointSuppressionReport(false),
-#ifdef THREADING_MODEL_FORK
     loadAverage(0),
-#endif
     maxConfigs(12),
     maxCtuDepth(2),
     maxTemplateRecursion(100),

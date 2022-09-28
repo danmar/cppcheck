@@ -26,13 +26,15 @@
 #include <set>
 #include <stack>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "config.h"
 #include "errortypes.h"
+#include "library.h"
 #include "symboldatabase.h"
 
-class Library;
 class Settings;
 class Token;
 
@@ -160,6 +162,7 @@ std::string astCanonicalType(const Token *expr);
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
 bool isVariableDecl(const Token* tok);
+bool isStlStringType(const Token* tok);
 
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown = false);
 
@@ -176,6 +179,10 @@ const Token* getParentMember(const Token * tok);
 
 const Token* getParentLifetime(const Token* tok);
 const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library);
+
+std::vector<ValueType> getParentValueTypes(const Token* tok,
+                                           const Settings* settings = nullptr,
+                                           const Token** parent = nullptr);
 
 bool astIsLHS(const Token* tok);
 bool astIsRHS(const Token* tok);
@@ -383,7 +390,11 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 
 bool isCPPCast(const Token* tok);
 
-bool isConstVarExpression(const Token *tok, const char * skipMatch = nullptr);
+bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> skipPredicate = nullptr);
+
+enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
+
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings);
 
 const Variable *getLHSVariable(const Token *tok);
 

@@ -21,12 +21,13 @@
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
+#include "testutils.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <iosfwd>
 #include <map>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -521,7 +522,7 @@ private:
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
             ASSERT(Library::ArgumentChecks::MinSize::Type::VALUE == m.type);
             ASSERT_EQUALS(500, m.value);
-            ASSERT_EQUALS(emptyString, m.baseType);
+            ASSERT_EQUALS("", m.baseType);
         }
 
         // arg5: type=value
@@ -864,6 +865,70 @@ private:
         ASSERT_EQUALS(C.size_templateArgNo, -1);
         ASSERT_EQUALS(C.stdStringLike, true);
         ASSERT_EQUALS(C.arrayLike_indexOp, true);
+
+        {
+            givenACodeSampleToTokenize var("std::A<int> a;");
+            ASSERT_EQUALS(&A, library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&A, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(!isIterator);
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::A<int>::size_type a_s;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::A<int>::iterator a_it;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT_EQUALS(&A, library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&A, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(isIterator);
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::B<int> b;");
+            ASSERT_EQUALS(&B, library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&B, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(!isIterator);
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::B<int>::size_type b_s;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::B<int>::iterator b_it;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT_EQUALS(&B, library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&B, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(isIterator);
+        }
+
+        {
+            givenACodeSampleToTokenize var("C c;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
+
+        {
+            givenACodeSampleToTokenize var("D d;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
     }
 
     void version() const {

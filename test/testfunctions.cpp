@@ -24,8 +24,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 #include <tinyxml2.h>
@@ -101,6 +101,21 @@ private:
         TEST_CASE(negativeMemoryAllocationSizeError); // #389
 
         TEST_CASE(checkLibraryMatchFunctions);
+
+        TEST_CASE(checkUseStandardLibrary1);
+        TEST_CASE(checkUseStandardLibrary2);
+        TEST_CASE(checkUseStandardLibrary3);
+        TEST_CASE(checkUseStandardLibrary4);
+        TEST_CASE(checkUseStandardLibrary5);
+        TEST_CASE(checkUseStandardLibrary6);
+        TEST_CASE(checkUseStandardLibrary7);
+        TEST_CASE(checkUseStandardLibrary8);
+        TEST_CASE(checkUseStandardLibrary9);
+        TEST_CASE(checkUseStandardLibrary10);
+        TEST_CASE(checkUseStandardLibrary11);
+        TEST_CASE(checkUseStandardLibrary12);
+        TEST_CASE(checkUseStandardLibrary13);
+        TEST_CASE(checkUseStandardLibrary14);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -1710,6 +1725,39 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n"
                       "[test.cpp:10]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
                       errout.str());
+
+        // #11171
+        check("std::enable_if_t<sizeof(uint64_t) == 8> f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::enable_if_t<sizeof(uint64_t) == 8, int> f() {}");
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            errout.str());
+
+        check("template<class T> std::enable_if_t<std::is_same<T, int>{}, int> f(T) {}");
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            errout.str());
+
+        check("template<class T> std::enable_if_t<std::is_same<T, int>{}> f(T) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typename std::enable_if<sizeof(uint64_t) == 8>::type f() {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typename std::enable_if<sizeof(uint64_t) == 8, int>::type f() {}");
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            errout.str());
+
+        check("template<class T> typename std::enable_if<std::is_same<T, int>{}, int>::type f(T) {}");
+        ASSERT_EQUALS(
+            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            errout.str());
+
+        check("template<class T> typename std::enable_if<std::is_same<T, int>{}>::type f(T) {}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // NRVO check
@@ -1830,7 +1878,16 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::uint64_t& u) {\n"
+              "    u = std::uint32_t(u) * std::uint64_t(100);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() { throw(1); }\n"); // #8958
+        ASSERT_EQUALS("", errout.str());
+
+        check("using namespace std;\n"
+              "void f() { throw range_error(\"abc\"); }\n");
         ASSERT_EQUALS("", errout.str());
 
         check("class C {\n" // #9002
@@ -1842,6 +1899,127 @@ private:
 
         settings.severity = severity_old;
         settings.checkLibrary = false;
+    }
+
+    void checkUseStandardLibrary1() {
+        check("void f(void* dest, void const* src, const size_t count) {\n"
+              "    size_t i;\n"
+              "    for (i = 0; count > i; ++i)\n"
+              "        (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memcpy instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary2() {
+        check("void f(void* dest, void const* src, const size_t count) {\n"
+              "    for (size_t i = 0; i < count; i++) {\n"
+              "        (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];\n"
+              "}}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memcpy instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary3() {
+        check("void f(void* dst, const void* src, const size_t count) {\n"
+              "    size_t i;\n"
+              "    for (i = 0; count > i; i++)\n"
+              "        ((char*)dst)[i] = ((const char*)src)[i];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memcpy instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary4() {
+        check("void f(void* dst, void* src, const size_t size) {\n"
+              "    for (size_t i = 0; i < size; i += 1) {\n"
+              "        ((int8_t*)dst)[i] = ((int8_t*)src)[i];\n"
+              "}}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memcpy instead of loop.\n", errout.str());
+    }
+
+    // different indexes
+    void checkUseStandardLibrary5() {
+        check("void f(void* dst, void* src, const size_t size, const size_t from_idx) {\n"
+              "    for (size_t i = 0; i < size; ++i) {\n"
+              "        ((int8_t*)dst)[i] = ((int8_t*)src)[from_idx];\n"
+              "}}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // unknown count
+    void checkUseStandardLibrary6() {
+        check("void f(void* dst, void* src, const size_t size) {\n"
+              "    for (size_t i = 0; ((int8_t*)src)[i] != 0; ++i) {\n"
+              "        ((int8_t*)dst)[i] = ((int8_t*)src)[i];\n"
+              "}}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // increment with 2
+    void checkUseStandardLibrary7() {
+        check("void f(void* dst, void* src, const size_t size) {\n"
+              "    for (size_t i = 0; i < size; i += 2) {\n"
+              "        ((int8_t*)dst)[i] = ((int8_t*)src)[i];\n"
+              "}}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // right argument of assignment could be static_cast, functional cast, c-style and implicit cast
+    // functional cast case not covered
+    void checkUseStandardLibrary8() {
+        check("void f(void* dest, const size_t count) {\n"
+              "    size_t i;\n"
+              "    for (i = 0; i < count; ++i)\n"
+              "        (reinterpret_cast<int8_t*>(dest))[i] = static_cast<const int8_t>(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memset instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary9() {
+        check("void f(void* dest, const size_t count) {\n"
+              "    for (size_t i = 0; i < count; i++) {\n"
+              "        (reinterpret_cast<uint8_t*>(dest))[i] = (static_cast<const uint8_t>(0));\n"
+              "}}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary10() {
+        check("void f(void* dst, const size_t size) {\n"
+              "    size_t i;\n"
+              "    for (i = 0; i < size; i++)\n"
+              "        ((char*)dst)[i] = (const char)0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memset instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary11() {
+        check("void f(void* dst, const size_t size) {\n"
+              "    for (size_t i = 0; i < size; i += 1) {\n"
+              "        ((int8_t*)dst)[i] = ((int8_t)0);\n"
+              "}}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary12() {
+        check("void f(void* dst, const size_t size) {\n"
+              "    for (size_t i = 0; i < size; i += 1) {\n"
+              "        ((int8_t*)dst)[i] = 42;\n"
+              "}}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary13() {
+        check("void f(void* dest, const size_t count) {\n"
+              "    for (size_t i = 0; i < count; i++) {\n"
+              "        reinterpret_cast<unsigned char*>(dest)[i] = '0';\n"
+              "}}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary14() {
+        check("void f(void* dest) {\n"
+              "    for (size_t i = 0; i < sizeof(int)*(15 + 42/2 - 7); i++) {\n"
+              "        reinterpret_cast<unsigned char*>(dest)[i] = '0';\n"
+              "}}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
     }
 };
 

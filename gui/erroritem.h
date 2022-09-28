@@ -20,6 +20,7 @@
 #define ERRORITEM_H
 
 #include "errorlogger.h"
+#include "errortypes.h"
 
 #include <QList>
 #include <QMetaType>
@@ -81,10 +82,8 @@ public:
     QString tool() const;
 
     QString file0;
-    QString function;
     QString errorId;
     Severity::SeverityType severity;
-    bool incomplete;
     bool inconclusive;
     QString summary;
     QString message;
@@ -103,6 +102,7 @@ public:
     static bool sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2);
 };
 
+// NOLINTNEXTLINE(performance-no-int-to-ptr)
 Q_DECLARE_METATYPE(ErrorItem)
 
 /**
@@ -114,7 +114,6 @@ public:
     int line;
     QString file0;
     QString errorId;
-    bool incomplete;
     int cwe;
     unsigned long long hash;
     bool inconclusive;

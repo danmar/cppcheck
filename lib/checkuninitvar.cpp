@@ -49,6 +49,10 @@ namespace tinyxml2 {
 
 //---------------------------------------------------------------------------
 
+// CWE ids used:
+static const struct CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
+static const struct CWE CWE_USE_OF_POTENTIALLY_DANGEROUS_FUNCTION(676U);
+
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckUninitVar instance;
@@ -162,8 +166,6 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             continue;
 
         if (var.isArray()) {
-            Alloc alloc = ARRAY;
-            const std::map<nonneg int, VariableValue> variableValue;
             bool init = false;
             for (const Token *parent = var.nameToken(); parent; parent = parent->astParent()) {
                 if (parent->str() == "=") {
@@ -171,8 +173,11 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                     break;
                 }
             }
-            if (!init)
+            if (!init) {
+                Alloc alloc = ARRAY;
+                const std::map<nonneg int, VariableValue> variableValue;
                 checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
+            }
             continue;
         }
         if (stdtype || var.isPointer()) {
@@ -444,8 +449,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             const Token *condVarTok = nullptr;
             if (alwaysFalse)
                 ;
-            else if (Token::simpleMatch(tok, "if (") &&
-                     astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
+            else if (astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
                 const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
                 if (it != variableValue.end() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
@@ -453,7 +457,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     condVarId = condVarTok->varId();
                     condVarValue = !VariableValue(0);
                 }
-            } else if (Token::simpleMatch(tok, "if (") && Token::Match(tok->next()->astOperand2(), "==|!=")) {
+            } else if (Token::Match(tok->next()->astOperand2(), "==|!=")) {
                 const Token *condition = tok->next()->astOperand2();
                 const Token *lhs = condition->astOperand1();
                 const Token *rhs = condition->astOperand2();
@@ -1561,51 +1565,6 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-enum class ExprUsage { None, NotUsed, PassedByReference, Used };
-
-static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
-{
-    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
-
-    int argnr;
-    const Token* ftok = getTokenArgumentFunction(tok, argnr);
-    if (!ftok)
-        return ExprUsage::None;
-    if (ftok->function()) {
-        std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
-        for (const Variable* arg : args) {
-            if (!arg)
-                continue;
-            if (arg->isReference())
-                return ExprUsage::PassedByReference;
-        }
-    } else {
-        const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
-        if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
-            return ExprUsage::Used;
-        bool hasIndirect = false;
-        const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
-        if (isuninitbad && (!addressOf || isnullbad))
-            return ExprUsage::Used;
-    }
-    return ExprUsage::None;
-}
-
-static ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
-{
-    if (indirect > 0 && tok->astParent()) {
-        if (Token::Match(tok->astParent(), "%assign%") && astIsRhs(tok))
-            return ExprUsage::NotUsed;
-        if (tok->astParent()->isConstOp())
-            return ExprUsage::NotUsed;
-        if (tok->astParent()->isCast())
-            return ExprUsage::NotUsed;
-    }
-    if (indirect == 0 && Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && tok->astParent()->str() != "=")
-        return ExprUsage::Used;
-    return getFunctionUsage(tok, indirect, settings);
-}
-
 static bool isLeafDot(const Token* tok)
 {
     if (!tok)
@@ -1704,6 +1663,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
     return checker.getFileInfo();
 }
 
+// NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
 static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;

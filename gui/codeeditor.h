@@ -123,7 +123,7 @@ protected:
 private slots:
     void updateLineNumberAreaWidth(int newBlockCount);
     void highlightErrorLine();
-    void updateLineNumberArea(const QRect &, int);
+    void updateLineNumberArea(const QRect & /*rect*/, int /*dy*/);
 
 private:
     QString generateStyleString();

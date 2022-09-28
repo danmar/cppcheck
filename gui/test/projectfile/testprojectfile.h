@@ -22,8 +22,8 @@ class TestProjectFile : public QObject {
     Q_OBJECT
 
 private slots:
-    void loadInexisting();
-    void loadSimple();
-    void loadSimpleWithIgnore();
-    void loadSimpleNoroot();
+    void loadInexisting() const;
+    void loadSimple() const;
+    void loadSimpleWithIgnore() const;
+    void loadSimpleNoroot() const;
 };

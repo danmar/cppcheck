@@ -19,6 +19,7 @@
 
 #include "analyzerinfo.h"
 #include "testsuite.h"
+
 #include <sstream>
 
 class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
@@ -37,6 +38,8 @@ private:
         ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", ""));
         std::istringstream f2(filesTxt);
         ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", ""));
+        ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "file1.c", ""));
+        ASSERT_EQUALS("builddir/file1.c.analyzerinfo", AnalyzerInformation::getAnalyzerInfoFile("builddir", "some/path/file1.c", ""));
     }
 };
 

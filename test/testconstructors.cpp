@@ -24,8 +24,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 
@@ -4331,6 +4331,14 @@ private:
               "};\n"
               "template<class T1, class T2>\n"
               "A<B<T1, T2>>::A() : m_value(false) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T> struct S;\n" // #11177
+              "template <> struct S<void> final {\n"
+              "    explicit S(int& i);\n"
+              "    int& m;\n"
+              "};\n"
+              "S<void>::S(int& i) : m(i) {}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
