@@ -91,15 +91,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-float-conversion)
    add_compile_options_safe(-Wno-enum-enum-conversion)
    add_compile_options_safe(-Wno-date-time)
-   add_compile_options_safe(-Wno-conditional-uninitialized)
    add_compile_options_safe(-Wno-suggest-override) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-suggest-destructor-override) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-extra-semi-stmt) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-implicitly-unsigned-literal)
    add_compile_options_safe(-Wno-tautological-type-limit-compare)
-   add_compile_options_safe(-Wno-unused-member-function)
    add_compile_options(-Wno-disabled-macro-expansion)
-   add_compile_options_safe(-Wno-bitwise-instead-of-logical) # TODO: fix these
+   add_compile_options_safe(-Wno-bitwise-instead-of-logical)
 
    # warnings we are not interested in
    add_compile_options(-Wno-four-char-constants)
@@ -110,7 +108,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-return-std-move-in-c++11)
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
-      message(FATAL_ERROR "Do not use clang for generate code coverage. Use gcc.")
+      message(FATAL_ERROR "Do not use clang to generate code coverage. Use GCC instead.")
    endif()
 endif()
 
