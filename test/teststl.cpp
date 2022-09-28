@@ -5877,7 +5877,7 @@ private:
               "    std::copy(v1.begin(), v1.end(), v2.begin());\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Using copy with iterator 'v2.begin()' that is always empty.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Using copy with iterator 'v2.begin()' that is always empty.\n", errout.str());
 
         check("void f() {\n"
               "    std::vector<int> v;\n"
