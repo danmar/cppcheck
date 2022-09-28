@@ -8382,6 +8382,15 @@ private:
               "  *reg = 34;\n"
               "}");
         ASSERT_EQUALS("test.cpp:2:style:C-style pointer casting\n", errout.str());
+
+        check("void f(std::map<int, int>& m, int key, int value) {\n" // #6379
+              "    m[key] = value;\n"
+              "    m[key] = value;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:style:Variable 'm[key]' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:2:note:m[key] is assigned\n"
+                      "test.cpp:3:note:m[key] is overwritten\n",
+                      errout.str());
     }
 
     void redundantVarAssignment_trivial() {
