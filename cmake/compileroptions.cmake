@@ -69,7 +69,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
    # TODO: fix and enable these warnings - or move to suppression list below
    add_compile_options_safe(-Wno-deprecated-copy-dtor)
-   add_compile_options_safe(-Wno-non-virtual-dtor)
    add_compile_options_safe(-Wno-inconsistent-missing-destructor-override) # caused by Qt moc code
    add_compile_options_safe(-Wno-unused-exception-parameter)
    add_compile_options_safe(-Wno-old-style-cast)
