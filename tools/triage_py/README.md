@@ -1,11 +1,11 @@
-# triage.py
+# triage_version.py
 
 A script to run a code sample against a given set of Cppcheck versions.
 
 ## Usage
 
 ```
-usage: triage.py [-h] [--compare] [--verbose] [--debug] [--debug-warnings] [--check-library] [--timeout TIMEOUT]
+usage: triage_version.py [-h] [--compare] [--verbose] [--debug] [--debug-warnings] [--check-library] [--timeout TIMEOUT]
                  [--compact]
                  dir infile [repo]
 
