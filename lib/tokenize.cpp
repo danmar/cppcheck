@@ -2806,19 +2806,6 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (!mSettings->buildDir.empty())
         Summaries::create(this, configuration);
 
-    // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
-    const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
-    const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
-
-    if (doValueFlow) {
-        if (mTimerResults) {
-            Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
-        } else {
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
-        }
-    }
-
     // Warn about unhandled character literals
     if (mSettings->severity.isEnabled(Severity::portability)) {
         for (const Token *tok = tokens(); tok; tok = tok->next()) {
@@ -2832,7 +2819,18 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         }
     }
 
+    // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
+    const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
+    const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
+
     if (doValueFlow) {
+        if (mTimerResults) {
+            Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
+            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+        } else {
+            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+        }
+
         mSymbolDatabase->setArrayDimensionsUsingValueFlow();
     }
 
