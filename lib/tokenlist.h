@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "token.h"
 
 #include <cstddef>
 #include <iosfwd>
@@ -31,13 +30,24 @@
 #include <vector>
 
 class Settings;
+class Token;
 
 namespace simplecpp {
     class TokenList;
 }
+class TokenList;
 
 /// @addtogroup Core
 /// @{
+
+/**
+ * @brief This struct stores pointers to the front and back tokens of the list this token is in.
+ */
+struct TokensFrontBack {
+    Token *front;
+    Token *back;
+    const TokenList* list;
+};
 
 class CPPCHECKLIB TokenList {
 public:
