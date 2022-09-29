@@ -559,7 +559,7 @@ public:
                            suppress,
                            checkFiniteLifetime, // (unusedvar) object has side effects, but immediate destruction is wrong
     };
-    TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
+    TypeCheck getTypeCheck(std::string check, std::string typeName) const;
 
 private:
     // load a <function> xml node

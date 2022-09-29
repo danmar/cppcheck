@@ -52,7 +52,7 @@ jobs:
       - name: Run tests
         run: ./cmake.output/bin/testrunner
 
-      # TODO: re-enable - was being killed because of increased memory usage
+      # TODO: this is currently way too slow (~60 minutes) to enable it
       # TODO: only fail the step on sanitizer issues
       - name: Self check
         if: false
