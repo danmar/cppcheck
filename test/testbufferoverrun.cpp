@@ -5395,6 +5395,21 @@ private:
               "    return p[10];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct X {\n" // #2654
+              "    int  a;\n"
+              "    char b;\n"
+              "};\n"
+              "void f() {\n"
+              "    X s;\n"
+              "    int* y = &s.a;\n"
+              "    (void)y[0];\n"
+              "    (void)y[1];\n"
+              "    (void)y[2];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (error) The address of local variable 'a' is accessed at non-zero index.\n"
+                      "[test.cpp:7] -> [test.cpp:10]: (error) The address of local variable 'a' is accessed at non-zero index.\n",
+                      errout.str());
     }
 
     void checkPipeParameterSize() { // #3521

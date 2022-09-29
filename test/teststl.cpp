@@ -5871,6 +5871,14 @@ private:
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Using sort with iterator 'v.begin()' that is always empty.\n", errout.str());
 
+        check("void f() {\n" // #1201
+              "    std::vector<int> v1{ 0, 1 };\n"
+              "    std::vector<int> v2;\n"
+              "    std::copy(v1.begin(), v1.end(), v2.begin());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Using copy with iterator 'v2.begin()' that is always empty.\n", errout.str());
+
         check("void f() {\n"
               "    std::vector<int> v;\n"
               "    v.insert(v.end(), 1);\n"
