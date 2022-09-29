@@ -553,6 +553,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::check;
                     else if (checkTypeName == "suppress")
                         mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::suppress;
+                    else if (checkTypeName == "checkFiniteLifetime")
+                        mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::checkFiniteLifetime;
                 }
             }
         }
