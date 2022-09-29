@@ -2827,7 +2827,8 @@ struct ValueFlowAnalyzer : Analyzer {
         if (invalid())
             return Action::Invalid;
         // Follow references
-        auto refs = followAllReferences(tok);
+        SmallVector<ReferenceToken> refs;
+        followAllReferences(tok, refs);
         const bool inconclusiveRefs = refs.size() != 1;
         if (std::none_of(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
             return tok == ref.token;
@@ -4913,7 +4914,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             }
 
             for (const Token* tok2 : toks) {
-                for (const ReferenceToken& rt : followAllReferences(tok2, false)) {
+                SmallVector<ReferenceToken> refs;
+                followAllReferences(tok2, refs, false);
+                for (const ReferenceToken& rt : refs) {
                     ValueFlow::Value value = master;
                     value.tokvalue = rt.token;
                     value.errorPath.insert(value.errorPath.begin(), rt.errors.cbegin(), rt.errors.cend());
@@ -5566,7 +5569,8 @@ static void valueFlowForwardConst(Token* start,
         } else {
             [&] {
                 // Follow references
-                auto refs = followAllReferences(tok);
+                SmallVector<ReferenceToken> refs;
+                followAllReferences(tok, refs);
                 auto it = std::find_if(refs.cbegin(), refs.cend(), [&](const ReferenceToken& ref) {
                     return ref.token->varId() == var->declarationId();
                 });

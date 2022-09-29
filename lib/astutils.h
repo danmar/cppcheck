@@ -235,11 +235,12 @@ struct ReferenceToken {
     ErrorPath errors;
 };
 
-SmallVector<ReferenceToken> followAllReferences(const Token* tok,
-                                                bool temporary = true,
-                                                bool inconclusive = true,
-                                                ErrorPath errors = ErrorPath{},
-                                                int depth = 20);
+void followAllReferences(const Token* tok,
+                         SmallVectorBase<ReferenceToken>& refs_result,
+                         bool temporary = true,
+                         bool inconclusive = true,
+                         ErrorPath errors = ErrorPath{},
+                         int depth = 20);
 const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 
 CPPCHECKLIB bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);

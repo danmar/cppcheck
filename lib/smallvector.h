@@ -28,6 +28,9 @@ static constexpr std::size_t DefaultSmallVectorSize = 3;
 
 template<typename T, std::size_t N = DefaultSmallVectorSize>
 using SmallVector = boost::container::small_vector<T, N>;
+
+template<typename T>
+using SmallVectorBase = boost::container::small_vector_base<T>;
 #else
 #include <utility>
 #include <vector>
@@ -44,17 +47,20 @@ struct TaggedAllocator : std::allocator<T>
 };
 
 template<typename T, std::size_t N = DefaultSmallVectorSize>
-class SmallVector : public std::vector<T, TaggedAllocator<T, N>>
+class SmallVectorBase : public std::vector<T, TaggedAllocator<T, N>>
 {
 public:
     template<class ... Ts>
     // NOLINTNEXTLINE(google-explicit-constructor)
-    SmallVector(Ts&&... ts)
+    SmallVectorBase(Ts&&... ts)
         : std::vector<T, TaggedAllocator<T, N>>(std::forward<Ts>(ts)...)
     {
         this->reserve(N);
     }
 };
+
+template<typename T, std::size_t N = DefaultSmallVectorSize>
+using SmallVector = SmallVectorBase<T, N>;
 #endif
 
 #endif
