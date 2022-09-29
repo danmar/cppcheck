@@ -2612,6 +2612,16 @@ private:
               "ImageSet *ActorSprite::targetCursorImages[2][10];");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(const std::size_t s) {\n" // #10130
+              "    const char a[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };\n"
+              "    return (s > sizeof(a)) ? 11 : (int)a[s];\n"
+              "}\n"
+              "int g() {\n"
+              "    return f(16);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (warning) Either the condition 's>sizeof(a)' is redundant or the array 'a[16]' is accessed at index 16, which is out of bounds.\n",
+                      errout.str());
+
     }
 
     void array_index_valueflow_pointer() {
