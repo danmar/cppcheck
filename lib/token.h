@@ -1192,7 +1192,7 @@ public:
 
     const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
-        return mImpl->mValues->front().intvalue;
+        return values().front().intvalue;
     }
 
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
