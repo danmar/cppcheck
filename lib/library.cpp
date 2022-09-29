@@ -1141,30 +1141,33 @@ const Library::Container* Library::detectContainerInternal(const Token* typeStar
         if (container.startPattern.empty())
             continue;
 
-        if (!Token::Match(typeStart, container.startPattern2.c_str()))
-            continue;
-
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
+            if (!Token::Match(typeStart, container.startPattern2.c_str()))
+                continue;
+
             if (isIterator)
                 *isIterator = false;
             return &container;
         }
 
         for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
-            if (tok->link()) {
-                if (detect != ContainerOnly && Token::Match(tok->link(), container.itEndPattern.c_str())) {
-                    if (isIterator)
-                        *isIterator = true;
-                    return &container;
-                }
-                if (detect != IteratorOnly && Token::Match(tok->link(), container.endPattern.c_str())) {
-                    if (isIterator)
-                        *isIterator = false;
-                    return &container;
-                }
-                break;
+            if (!tok->link())
+                continue;
+
+            const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str());
+
+            if (detect != ContainerOnly && matchedStartPattern && Token::Match(tok->link(), container.itEndPattern.c_str())) {
+                if (isIterator)
+                    *isIterator = true;
+                return &container;
             }
+            if (detect != IteratorOnly && matchedStartPattern && Token::Match(tok->link(), container.endPattern.c_str())) {
+                if (isIterator)
+                    *isIterator = false;
+                return &container;
+            }
+            break;
         }
     }
     return nullptr;

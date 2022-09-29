@@ -37,6 +37,7 @@
 #include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
+#include <fstream>
 #include <iostream>
 #include <list>
 #include <set>

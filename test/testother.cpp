@@ -140,6 +140,7 @@ private:
         TEST_CASE(testMisusedScopeObjectInConstructor);
         TEST_CASE(testMisusedScopeObjectNoCodeAfter);
         TEST_CASE(testMisusedScopeObjectStandardType);
+        TEST_CASE(testMisusedScopeObjectNamespace);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -259,6 +260,7 @@ private:
         TEST_CASE(moveAndLambda);
         TEST_CASE(moveInLoop);
         TEST_CASE(moveCallback);
+        TEST_CASE(moveClassVariable);
         TEST_CASE(forwardAndUsed);
 
         TEST_CASE(funcArgNamesDifferent);
@@ -793,6 +795,14 @@ private:
               "        return quotient;\n"
               "    return remainder;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11315
+        checkP("#define STATIC_ASSERT(c) \\\n"
+               "do { enum { sa = 1/(int)(!!(c)) }; } while (0)\n"
+               "void f() {\n"
+               "    STATIC_ASSERT(sizeof(int) == sizeof(FOO));\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5079,6 +5089,30 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void testMisusedScopeObjectNamespace() {
+        check("namespace M {\n" // #4479
+              "    namespace N {\n"
+              "        struct S {};\n"
+              "    }\n"
+              "}\n"
+              "int f() {\n"
+              "    M::N::S();\n"
+              "    return 0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Instance of 'M::N::S' object is destroyed immediately.\n", errout.str());
+
+        check("void f() {\n" // #10057
+              "    std::string(\"abc\");\n"
+              "    std::string{ \"abc\" };\n"
+              "    std::pair<int, int>(1, 2);\n"
+              "    (void)0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Instance of 'std::string' object is destroyed immediately.\n"
+                      "[test.cpp:3]: (style) Instance of 'std::string' object is destroyed immediately.\n"
+                      "[test.cpp:4]: (style) Instance of 'std::pair' object is destroyed immediately.\n",
+                      errout.str());
+    }
+
     void trac2084() {
         check("void f()\n"
               "{\n"
@@ -8348,6 +8382,15 @@ private:
               "  *reg = 34;\n"
               "}");
         ASSERT_EQUALS("test.cpp:2:style:C-style pointer casting\n", errout.str());
+
+        check("void f(std::map<int, int>& m, int key, int value) {\n" // #6379
+              "    m[key] = value;\n"
+              "    m[key] = value;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:style:Variable 'm[key]' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:2:note:m[key] is assigned\n"
+                      "test.cpp:3:note:m[key] is overwritten\n",
+                      errout.str());
     }
 
     void redundantVarAssignment_trivial() {
@@ -9966,6 +10009,21 @@ private:
               "        callback();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'callback'.\n", errout.str());
+    }
+
+    void moveClassVariable()
+    {
+        check("struct B {\n"
+              "    virtual void f();\n"
+              "};\n"
+              "struct D : B {\n"
+              "    void f() override {\n"
+              "        auto p = std::unique_ptr<D>(new D(std::move(m)));\n"
+              "    }\n"
+              "    D(std::unique_ptr<int> c) : m(std::move(c)) {}\n"
+              "    std::unique_ptr<int> m;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void forwardAndUsed() {

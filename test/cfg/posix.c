@@ -838,7 +838,6 @@ void nullPointer(char *p, int fd, pthread_mutex_t mutex)
     // cppcheck-suppress unreadVariable
     // cppcheck-suppress nullPointer
     int ret = access(NULL, 0);
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress nullPointer
     fdopen(fd, NULL);
@@ -978,7 +977,6 @@ void noleak(int x, int y, int z)
 
 void ignoredReturnValue(void *addr, int fd)
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     mmap(addr, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress ignoredReturnValue
@@ -1065,7 +1063,6 @@ void uninitvar(int fd)
     // cppcheck-suppress uninitvar
     int access_ret = access("file", x3);
 
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
     fdopen(x4, "rw");

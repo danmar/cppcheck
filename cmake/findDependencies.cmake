@@ -48,7 +48,7 @@ find_package(PythonInterp 3 QUIET)
 if (NOT PYTHONINTERP_FOUND)
     set(PYTHONINTERP_FOUND "")
     find_package(PythonInterp 2.7 QUIET)
-    if (NOT PYTHONINTERP_FOUND)
+    if (NOT PYTHONINTERP_FOUND AND NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
         message(WARNING "No python interpreter found. Therefore, the match compiler is switched off.")
         set(USE_MATCHCOMPILER_OPT "Off")
     endif()
@@ -73,7 +73,8 @@ endif()
 find_package(Threads REQUIRED)
 
 if (USE_BOOST)
-    find_package(Boost COMPONENTS container QUIET)
+    # we are using the header-only "container" component
+    find_package(Boost QUIET)
 endif()
 
 find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)

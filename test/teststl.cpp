@@ -22,6 +22,7 @@
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
+#include "utils.h"
 
 #include <cstddef>
 #include <sstream> // IWYU pragma: keep
@@ -3028,17 +3029,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    template<size_t n, typename T>
-    static size_t getArraylength(const T (&)[n]) {
-        return n;
-    }
-
     void stlBoundaries1() {
         const std::string stlCont[] = {
             "list", "set", "multiset", "map", "multimap"
         };
 
-        for (size_t i = 0; i < getArraylength(stlCont); ++i) {
+        for (size_t i = 0; i < getArrayLength(stlCont); ++i) {
             check("void f()\n"
                   "{\n"
                   "    std::" + stlCont[i] + "<int>::iterator it;\n"
@@ -5874,6 +5870,14 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Using sort with iterator 'v.begin()' that is always empty.\n", errout.str());
+
+        check("void f() {\n" // #1201
+              "    std::vector<int> v1{ 0, 1 };\n"
+              "    std::vector<int> v2;\n"
+              "    std::copy(v1.begin(), v1.end(), v2.begin());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Using copy with iterator 'v2.begin()' that is always empty.\n", errout.str());
 
         check("void f() {\n"
               "    std::vector<int> v;\n"

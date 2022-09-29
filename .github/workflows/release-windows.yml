@@ -97,6 +97,7 @@ jobs:
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
 
+      # TODO: build with boost enabled
       - name: Build CLI x64 release configuration using MSBuild
         run: msbuild -m cppcheck.sln -t:cli -p:Configuration=Release-PCRE -p:Platform=x64 || exit /b !errorlevel!
 

@@ -24,7 +24,6 @@
 #include "config.h"
 #include "mathlib.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <functional>

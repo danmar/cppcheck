@@ -135,6 +135,7 @@ private:
         TEST_CASE(varid_in_class20);    // #7267
         TEST_CASE(varid_in_class21);    // #7788
         TEST_CASE(varid_in_class22);    // #10872
+        TEST_CASE(varid_in_class23);    // #11293
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -1964,6 +1965,28 @@ private:
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
 
+    void varid_in_class23() { // #11293
+        const char code[] = "struct A {\n"
+                            "    struct S {\n"
+                            "        bool b;\n"
+                            "    };\n"
+                            "};\n"
+                            "struct B : A::S {\n"
+                            "    void f() { b = false; }\n"
+                            "};\n";
+
+        const char expected[] = "1: struct A {\n"
+                                "2: struct S {\n"
+                                "3: bool b@1 ;\n"
+                                "4: } ;\n"
+                                "5: } ;\n"
+                                "6: struct B : A :: S {\n"
+                                "7: void f ( ) { b@1 = false ; }\n"
+                                "8: } ;\n";
+
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
     void varid_namespace_1() { // #7272
         const char code[] = "namespace Blah {\n"
                             "  struct foo { int x;};\n"
@@ -2736,6 +2759,16 @@ private:
                                "3: const T * u@3 { } ; const T * v@4 { } ;\n"
                                "4: return 0 ;\n"
                                "5: } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // # 11332
+        {
+            const char code[] = "auto a() {\n"
+                                "    return [](int, int b) {};\n"
+                                "}\n";
+            const char exp[] = "1: auto a ( ) {\n"
+                               "2: return [ ] ( int , int b@1 ) { } ;\n"
+                               "3: }\n";
             ASSERT_EQUALS(exp, tokenize(code));
         }
     }

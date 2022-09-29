@@ -39,6 +39,10 @@
 
 //---------------------------------------------------------------------------
 
+// CWE ids used:
+static const struct CWE CWE_NULL_POINTER_DEREFERENCE(476U);
+static const struct CWE CWE_INCORRECT_CALCULATION(682U);
+
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckNullPointer instance;
@@ -147,9 +151,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
 }
 
 static bool isUnevaluated(const Token* tok) {
-    if (tok && Token::Match(tok->previous(), "sizeof|decltype ("))
-        return true;
-    return false;
+    return tok && Token::Match(tok->previous(), "sizeof|decltype (");
 }
 
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)

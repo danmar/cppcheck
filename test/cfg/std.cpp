@@ -37,6 +37,7 @@
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
+#include <numeric>
 
 int zerodiv_ldexp()
 {
@@ -399,6 +400,13 @@ void uninitvar_std_ofstream_open(std::ofstream &os, const std::string &strFileNa
     os.open(s);
     // TODO cppcheck-suppress uninitvar
     os.open(ptr);
+}
+
+void uninitvar_std_ofstream_precision(std::ofstream& os)
+{
+    std::streamsize s;
+    // cppcheck-suppress uninitvar
+    os.precision(s);
 }
 
 void nullPointer_std_filebuf_open(std::filebuf &fb, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
@@ -3010,6 +3018,13 @@ void uninitvar_copy_n(const std::vector<int>& v)
     std::vector<int>::iterator dst;
     // cppcheck-suppress [uninitvar, invalidFunctionArg]
     std::copy_n(v.begin(), -1, dst);
+}
+
+void uninitvar_iota(std::vector<int>& v)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    std::iota(v.begin(), v.end(), i);
 }
 
 void uninitvar_putc(void)

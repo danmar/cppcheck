@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <initializer_list>
 #include <string>
@@ -97,7 +98,7 @@ inline static bool isPrefixStringCharLiteral(const std::string &str, char q, con
 
 inline static bool isStringCharLiteral(const std::string &str, char q)
 {
-    static const std::vector<std::string> suffixes{"", "u8", "u", "U", "L"};
+    static const std::array<std::string, 5> suffixes{"", "u8", "u", "U", "L"};
     for (const std::string & p: suffixes) {
         if (isPrefixStringCharLiteral(str, q, p))
             return true;
@@ -161,7 +162,7 @@ CPPCHECKLIB void strTolower(std::string& str);
  * \return size of array
  * */
 template<typename T, int size>
-std::size_t getArrayLength(const T (&)[size])
+std::size_t getArrayLength(const T (& /*unused*/)[size])
 {
     return size;
 }

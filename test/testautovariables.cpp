@@ -3517,6 +3517,23 @@ private:
     }
 
     void danglingTemporaryLifetime() {
+        check("struct MyClass\n" // FP - #11091
+              "{\n"
+              "    MyClass(MyClass& rhs);\n"
+              "    explicit MyClass(const wxString& name, const wxString& path = {});\n"
+              "    bool IsAnotherRunning() const;\n"
+              " \n"
+              "    wxString m_fn;\n"
+              "};\n"
+              " \n"
+              "void bar()\n"
+              "{\n"
+              "    MyClass mutex(\"\");\n"
+              "    while (mutex.IsAnotherRunning())\n"
+              "        DoSomething();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("const int& g(const int& x) {\n"
               "    return x;\n"
               "}\n"
@@ -3656,6 +3673,26 @@ private:
               "    return c.get();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7] -> [test.cpp:8]: (error) Using object that is a temporary.\n", errout.str());
+
+        // #11298
+        check("struct S {\n"
+              "    std::string g();  \n"
+              "};\n"
+              "struct T {\n"
+              "  void f(); \n"
+              "  S* p = nullptr;\n"
+              "};\n"
+              "struct U {\n"
+              "  explicit U(const char* s);\n"
+              "  bool h();\n"
+              "  int i;\n"
+              "};\n"
+              "void T::f() {\n"
+              "    U u(p->g().c_str());\n"
+              "    if (u.h()) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()

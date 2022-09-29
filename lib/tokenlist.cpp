@@ -543,6 +543,8 @@ static bool iscast(const Token *tok, bool cpp)
     for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
         if (tok2->varId() != 0)
             return false;
+        if (cpp && !type && tok2->str() == "new")
+            return false;
 
         while (tok2->link() && Token::Match(tok2, "(|[|<"))
             tok2 = tok2->link()->next();
@@ -912,8 +914,20 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
 
 static void compilePrecedence2(Token *&tok, AST_state& state)
 {
-    const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
-    if (!(isStartOfCpp11Init && Token::Match(tok->tokAt(-2), "new %type% {")))
+    auto doCompileScope = [&](const Token* tok) -> bool {
+        const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
+        if (isStartOfCpp11Init) {
+            tok = tok->previous();
+            while (tok && Token::Match(tok->previous(), ":: %type%"))
+                tok = tok->tokAt(-2);
+            if (tok && !tok->isKeyword())
+                tok = tok->previous();
+            return !Token::Match(tok, "new ::| %type%");
+        }
+        return true;
+    };
+
+    if (doCompileScope(tok))
         compileScope(tok, state);
     while (tok) {
         if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
@@ -1069,12 +1083,18 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
             }
 
             Token* leftToken = tok;
-            while (Token::Match(tok->next(), ":: %name%")) {
-                Token* scopeToken = tok->next(); //The ::
-                scopeToken->astOperand1(leftToken);
-                scopeToken->astOperand2(scopeToken->next());
-                leftToken = scopeToken;
-                tok = scopeToken->next();
+            if (Token::simpleMatch(tok, "::")) {
+                tok->astOperand1(tok->next());
+                tok = tok->next();
+            }
+            else {
+                while (Token::Match(tok->next(), ":: %name%")) {
+                    Token* scopeToken = tok->next(); //The ::
+                    scopeToken->astOperand1(leftToken);
+                    scopeToken->astOperand2(scopeToken->next());
+                    leftToken = scopeToken;
+                    tok = scopeToken->next();
+                }
             }
 
             state.op.push(tok);
@@ -1497,6 +1517,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         }
         if (!tok2 || tok2->str() != ";") {
             if (tok2 == endPar && init1) {
+                createAstAtTokenInner(init1->next(), endPar, cpp);
                 tok->next()->astOperand2(init1);
                 tok->next()->astOperand1(tok);
             }
@@ -1602,7 +1623,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token::Match(tok, "%name% %op%|(|[|.|::|<|?|;") ||
         (cpp && Token::Match(tok, "%name% {") && iscpp11init(tok->next())) ||
         Token::Match(tok->previous(), "[;{}] %cop%|++|--|( !!{") ||
-        Token::Match(tok->previous(), "[;{}] %num%|%str%|%char%")) {
+        Token::Match(tok->previous(), "[;{}] %num%|%str%|%char%") ||
+        Token::Match(tok->previous(), "[;{}] delete new")) {
         if (cpp && (Token::Match(tok->tokAt(-2), "[;{}] new|delete %name%") || Token::Match(tok->tokAt(-3), "[;{}] :: new|delete %name%")))
             tok = tok->previous();
 

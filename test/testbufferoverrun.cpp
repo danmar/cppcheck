@@ -2612,6 +2612,16 @@ private:
               "ImageSet *ActorSprite::targetCursorImages[2][10];");
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(const std::size_t s) {\n" // #10130
+              "    const char a[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 };\n"
+              "    return (s > sizeof(a)) ? 11 : (int)a[s];\n"
+              "}\n"
+              "int g() {\n"
+              "    return f(16);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (warning) Either the condition 's>sizeof(a)' is redundant or the array 'a[16]' is accessed at index 16, which is out of bounds.\n",
+                      errout.str());
+
     }
 
     void array_index_valueflow_pointer() {
@@ -5395,6 +5405,21 @@ private:
               "    return p[10];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct X {\n" // #2654
+              "    int  a;\n"
+              "    char b;\n"
+              "};\n"
+              "void f() {\n"
+              "    X s;\n"
+              "    int* y = &s.a;\n"
+              "    (void)y[0];\n"
+              "    (void)y[1];\n"
+              "    (void)y[2];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9]: (error) The address of local variable 'a' is accessed at non-zero index.\n"
+                      "[test.cpp:7] -> [test.cpp:10]: (error) The address of local variable 'a' is accessed at non-zero index.\n",
+                      errout.str());
     }
 
     void checkPipeParameterSize() { // #3521

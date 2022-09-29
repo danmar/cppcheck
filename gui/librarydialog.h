@@ -46,10 +46,10 @@ private slots:
     void addFunction();
     void changeFunction();
     void editArg();
-    void editFunctionName(QListWidgetItem*);
-    void filterFunctions(const QString&);
+    void editFunctionName(QListWidgetItem* /*item*/);
+    void filterFunctions(const QString& /*filter*/);
     void selectFunction();
-    void sortFunctions(bool);
+    void sortFunctions(bool /*sort*/);
 
 private:
     Ui::LibraryDialog *mUi;

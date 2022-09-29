@@ -27,23 +27,10 @@
 #include "color.h"
 
 #include <cstddef>
-#include <fstream>
 #include <list>
 #include <string>
 #include <utility>
 #include <vector>
-
-/**
- * CWE id (Common Weakness Enumeration)
- * See https://cwe.mitre.org/ for further reference.
- * */
-// CWE list: https://cwe.mitre.org/data/published/cwe_v3.4.1.pdf
-static const struct CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
-static const struct CWE CWE_NULL_POINTER_DEREFERENCE(476U);
-static const struct CWE CWE_USE_OF_POTENTIALLY_DANGEROUS_FUNCTION(676U);
-static const struct CWE CWE_INCORRECT_CALCULATION(682U);
-static const struct CWE CWE_EXPIRED_POINTER_DEREFERENCE(825U);
-
 
 class Token;
 class TokenList;
@@ -231,16 +218,9 @@ private:
  * should implement.
  */
 class CPPCHECKLIB ErrorLogger {
-protected:
-    std::ofstream plistFile;
 public:
     ErrorLogger() {}
-    virtual ~ErrorLogger() {
-        if (plistFile.is_open()) {
-            plistFile << ErrorLogger::plistFooter();
-            plistFile.close();
-        }
-    }
+    virtual ~ErrorLogger() {}
 
     /**
      * Information about progress is directed here.

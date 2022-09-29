@@ -52,7 +52,7 @@ jobs:
           key: ${{ github.workflow }}-${{ matrix.image }}
 
       # tests require CMake 3.9 - no ccache available
-      - name: Test CMake build (no tests)
+      - name: CMake build (no tests)
         if: matrix.image == 'ubuntu:14.04'
         run: |
           mkdir cmake.output
@@ -61,7 +61,7 @@ jobs:
           cmake --build . -- -j$(nproc)
 
       # tests require CMake 3.9 - ccache available
-      - name: Test CMake build (no tests)
+      - name: CMake build (no tests)
         if: matrix.image == 'centos:7' || matrix.image == 'ubuntu:16.04'
         run: |
           mkdir cmake.output
@@ -69,13 +69,18 @@ jobs:
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
           cmake --build . -- -j$(nproc)
 
-      - name: Test CMake build
+      - name: CMake build
         if: matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04'
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On ..
-          cmake --build . --target check -- -j$(nproc)
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
+          cmake --build . -- -j$(nproc)
+
+      - name: Run CMake test
+        if: matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04'
+        run: |
+          cmake --build cmake.output --target check -- -j$(nproc)
 
   build_make:
 

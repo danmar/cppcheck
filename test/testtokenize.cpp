@@ -5959,6 +5959,7 @@ private:
         ASSERT_EQUALS("forae*bc.({:(", testAst("for (a *e : {b->c()});"));
         ASSERT_EQUALS("fori0=iasize.(<i++;;( asize.(", testAst("for (decltype(a.size()) i = 0; i < a.size(); ++i);"));
         ASSERT_EQUALS("foria:( asize.(", testAst("for(decltype(a.size()) i:a);"));
+        ASSERT_EQUALS("forec0{([,(:( fb.return", testAst("for (auto e : c(0, [](auto f) { return f->b; }));")); // #10802
 
         // for with initializer (c++20)
         ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
@@ -6071,10 +6072,16 @@ private:
         ASSERT_EQUALS("Aa*A12,{new=", testAst("A* a = new A{ 1, 2 };"));
         ASSERT_EQUALS("Sv0[(new", testAst("new S(v[0]);")); // #10929
         ASSERT_EQUALS("SS::x(px0>intx[{newint1[{new:?(:", testAst("S::S(int x) : p(x > 0 ? new int[x]{} : new int[1]{}) {}")); // #10793
+        ASSERT_EQUALS("a0[T{new=", testAst("a[0] = new T{};"));
+        ASSERT_EQUALS("a0[T::{new=", testAst("a[0] = new ::T{};"));
+        ASSERT_EQUALS("a0[ST::{new=", testAst("a[0] = new S::T{};"));
+        ASSERT_EQUALS("intnewdelete", testAst("delete new int;")); // #11039
+        ASSERT_EQUALS("intnewdelete", testAst("void f() { delete new int; }"));
+        ASSERT_EQUALS("pint3[new1+=", testAst("p = (new int[3]) + 1;")); // #11327
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
-        ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
+        ASSERT_EQUALS("aX::new=", testAst("a = new (b) ::X;"));
         ASSERT_EQUALS("cCnew= abc:?", testAst("c = new(a ? b : c) C;"));
 
         // invalid code (libreoffice), don't hang

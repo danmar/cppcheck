@@ -5,6 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
 
+include(cmake/ccache.cmake)
 include(cmake/compilerCheck.cmake)
 include(cmake/versions.cmake)
 include(cmake/options.cmake)

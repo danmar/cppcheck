@@ -23,11 +23,11 @@ enum class Color;
 
 class DummyErrorLogger : public ErrorLogger {
 public:
-    void reportOut(const std::string&, Color) override {}
-    void reportErr(const ErrorMessage&) override {}
-    void reportProgress(const std::string&,
-                        const char[],
-                        const std::size_t) override {}
+    void reportOut(const std::string& /*outmsg*/, Color /*c*/) override {}
+    void reportErr(const ErrorMessage& /*msg*/) override {}
+    void reportProgress(const std::string& /*filename*/,
+                        const char /*stage*/[],
+                        const std::size_t /*value*/) override {} // FN
 };
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize);

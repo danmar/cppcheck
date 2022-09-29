@@ -3973,7 +3973,7 @@ void Tokenizer::setVarIdPass1()
              Token::Match(tok, "[;{}]") ||
              (tok->str() == "(" && isFunctionHead(tok,"{")) ||
              (tok->str() == "(" && !scopeStack.top().isExecutable && isFunctionHead(tok,";:")) ||
-             (tok->str() == "," && (!scopeStack.top().isExecutable || inlineFunction)) ||
+             (tok->str() == "," && (!scopeStack.top().isExecutable || inlineFunction || !tok->previous()->varId())) ||
              (tok->isName() && endsWith(tok->str(), ':')))) {
 
             // No variable declarations in sizeof
@@ -4389,7 +4389,7 @@ void Tokenizer::setVarIdPass2()
 
         std::map<std::string, nonneg int> &thisClassVars = varsByClass[scopeName2 + classname];
         while (Token::Match(tokStart, ":|::|,|%name%")) {
-            if (Token::Match(tokStart, "%name% <")) {
+            if (Token::Match(tokStart, "%name% <")) { // TODO: why skip templates?
                 tokStart = tokStart->next()->findClosingBracket();
                 if (tokStart)
                     tokStart = tokStart->next();
@@ -4397,6 +4397,11 @@ void Tokenizer::setVarIdPass2()
             }
             if (Token::Match(tokStart, "%name% ,|{")) {
                 std::string baseClassName = tokStart->str();
+                const Token* baseStart = tokStart;
+                while (Token::Match(baseStart->tokAt(-2), "%name% ::")) { // build base class name
+                    baseClassName.insert(0, baseStart->strAt(-2) + " :: ");
+                    baseStart = baseStart->tokAt(-2);
+                }
                 std::string scopeName3(scopeName2);
                 while (!scopeName3.empty()) {
                     const std::string name = scopeName3 + baseClassName;
@@ -5247,6 +5252,8 @@ void Tokenizer::dump(std::ostream &out) const
             else if (tok->tokType() == Token::eLogicalOp)
                 out << " isLogicalOp=\"true\"";
         }
+        if (tok->isCast())
+            out << " isCast=\"true\"";
         if (tok->isExternC())
             out << " externLang=\"C\"";
         if (tok->isExpandedMacro())

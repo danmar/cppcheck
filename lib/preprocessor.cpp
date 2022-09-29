@@ -28,6 +28,7 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <iterator> // back_inserter
 #include <memory>
@@ -417,7 +418,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             if (cmdtok->str() == "ifndef")
                 ifndef = true;
             else {
-                const std::vector<std::string> match{"if", "!", "defined", "(", config, ")"};
+                const std::array<std::string, 6> match{"if", "!", "defined", "(", config, ")"};
                 int i = 0;
                 ifndef = true;
                 for (const simplecpp::Token *t = cmdtok; i < match.size(); t = t->next) {
