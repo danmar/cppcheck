@@ -1517,6 +1517,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         }
         if (!tok2 || tok2->str() != ";") {
             if (tok2 == endPar && init1) {
+                createAstAtTokenInner(init1->next(), endPar, cpp);
                 tok->next()->astOperand2(init1);
                 tok->next()->astOperand1(tok);
             }
