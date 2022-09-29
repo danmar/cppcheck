@@ -49,7 +49,9 @@ TokenList::TokenList(const Settings* settings) :
     mTokensFrontBack(),
     mSettings(settings),
     mIsC(false),
-    mIsCpp(false)
+    mIsCpp(false),
+    mValuesSet(false),
+    mInSetValues(false)
 {
     mTokensFrontBack.list = this;
     mKeywords.insert("asm");

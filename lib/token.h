@@ -1162,6 +1162,8 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
+        if (mTokensFrontBack && !mTokensFrontBack->list->isValuesSet())
+            mTokensFrontBack->list->setValues();
         return mImpl->mValues ? *mImpl->mValues : TokenImpl::mEmptyValueList;
     }
 
