@@ -2695,7 +2695,7 @@ struct ValueFlowAnalyzer : Analyzer {
         if (invalid())
             return Action::Invalid;
         // Follow references
-        std::vector<ReferenceToken> refs = followAllReferences(tok);
+        auto refs = followAllReferences(tok);
         const bool inconclusiveRefs = refs.size() != 1;
         if (std::none_of(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
             return tok == ref.token;
@@ -5331,7 +5331,7 @@ static void valueFlowForwardConst(Token* start,
         } else {
             [&] {
                 // Follow references
-                std::vector<ReferenceToken> refs = followAllReferences(tok);
+                auto refs = followAllReferences(tok);
                 for (const ReferenceToken& ref : refs) {
                     if (ref.token->varId() == var->declarationId()) {
                         for (ValueFlow::Value value : values) {
