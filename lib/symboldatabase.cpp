@@ -3034,7 +3034,7 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
 Function* SymbolDatabase::addGlobalFunctionDecl(Scope*& scope, const Token *tok, const Token *argStart, const Token* funcStart)
 {
     Function function(mTokenizer, tok, scope, funcStart, argStart);
-    scope->addFunction(function);
+    scope->addFunction(std::move(function));
     return &scope->functionList.back();
 }
 

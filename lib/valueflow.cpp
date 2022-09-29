@@ -6389,7 +6389,7 @@ struct SimpleConditionHandler : ConditionHandler {
         cond.false_values.emplace_back(tok, 0LL);
         cond.vartok = vartok;
 
-        return {cond};
+        return {std::move(cond)};
     }
 };
 
@@ -6574,8 +6574,8 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
                 setSymbolic(false_value, valuetok);
 
                 Condition cond;
-                cond.true_values = {true_value};
-                cond.false_values = {false_value};
+                cond.true_values = {std::move(true_value)};
+                cond.false_values = {std::move(false_value)};
                 cond.vartok = vartok;
                 cond.inverted = inverted;
                 result.push_back(std::move(cond));
@@ -7977,7 +7977,7 @@ struct IteratorConditionHandler : SimpleConditionHandler {
             cond.false_values = values;
         }
 
-        return {cond};
+        return {std::move(cond)};
     }
 };
 
@@ -8308,7 +8308,7 @@ struct ContainerConditionHandler : ConditionHandler {
             cond.false_values.emplace_back(std::move(value));
             cond.vartok = vartok;
             cond.inverted = true;
-            return {cond};
+            return {std::move(cond)};
         }
         // String compare
         if (Token::Match(tok, "==|!=")) {
@@ -8331,7 +8331,7 @@ struct ContainerConditionHandler : ConditionHandler {
             cond.true_values.emplace_back(std::move(value));
             cond.vartok = vartok;
             cond.impossible = false;
-            return {cond};
+            return {std::move(cond)};
         }
         return {};
     }
@@ -8965,6 +8965,7 @@ const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& 
     return ret;
 }
 
+// TODO: returns a single value at most - no need for std::vector
 static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& size,
                                                        const Token* indexTok,
                                                        bool condition)
@@ -8996,9 +8997,10 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& s
         return {};
     value.intvalue = size.intvalue;
     value.bound = ValueFlow::Value::Bound::Lower;
-    return {value};
+    return {std::move(value)};
 }
 
+// TODO: return single value at most - no need for std::vector
 std::vector<ValueFlow::Value> ValueFlow::isOutOfBounds(const Value& size, const Token* indexTok, bool possible)
 {
     ValueFlow::Value inBoundsValue = inferCondition("<", indexTok, size.intvalue);
