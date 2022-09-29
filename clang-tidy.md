@@ -117,10 +117,6 @@ Produces a lot of false positives since it is too vague in its analysis.
 
 Produces many warnings which very much look like false positives (needs to be reported upstream).
 
-`bugprone-suspicious-include`<br>
-
-Causes warnings with `*.cpp` includes in Qt generated files.
-
 `modernize-avoid-c-arrays`<br>
 `readability-container-size-empty`<br>
 `bugprone-branch-clone`<br>
