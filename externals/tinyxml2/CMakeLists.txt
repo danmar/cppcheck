@@ -13,5 +13,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options_safe(tinyxml2_objs -Wno-suggest-override)
     target_compile_options_safe(tinyxml2_objs -Wno-suggest-destructor-override)
     target_compile_options_safe(tinyxml2_objs -Wno-zero-as-null-pointer-constant)
+    target_compile_options_safe(tinyxml2_objs -Wno-format-nonliteral)
 endif()
 
