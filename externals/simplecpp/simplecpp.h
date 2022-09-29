@@ -239,8 +239,8 @@ namespace simplecpp {
         void deleteToken(Token *tok) {
             if (!tok)
                 return;
-            Token *prev = tok->previous;
-            Token *next = tok->next;
+            Token * const prev = tok->previous;
+            Token * const next = tok->next;
             if (prev)
                 prev->next = next;
             if (next)
