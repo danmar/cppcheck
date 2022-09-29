@@ -997,9 +997,9 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 
         // check if the output of the function is assigned
         const Token* tok2 = tok->next()->astParent();
-        while (tok2 && tok2->isCast())
+        while (tok2 && (tok2->isCast() || Token::Match(tok2, "?|:")))
             tok2 = tok2->astParent();
-        if (Token::Match(tok2, "%assign%"))
+        if (Token::Match(tok2, "%assign%")) // TODO: check if function returns allocated resource
             continue;
         if (Token::simpleMatch(tok->astTop(), "return"))
             continue;
