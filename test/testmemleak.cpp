@@ -2446,6 +2446,12 @@ private:
               "    u.reset(strcpy(new char[n], s.c_str()));\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char* p; };\n"
+              "void f(S* s, int N) {\n"
+              "    s->p = s->p ? strcpy(new char[N], s->p) : nullptr;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
