@@ -177,7 +177,7 @@ void CheckStl::outOfBounds()
                         return false;
                     const Token* sizeTok = v.tokvalue;
                     if (sizeTok && sizeTok->isCast())
-                        sizeTok = sizeTok->astOperand1();
+                        sizeTok = sizeTok->astOperand2() ? sizeTok->astOperand2() : sizeTok->astOperand1();
                     const Token* containerTok = getContainerFromSize(container, sizeTok);
                     if (!containerTok)
                         return false;
