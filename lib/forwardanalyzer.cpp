@@ -301,7 +301,7 @@ struct ForwardTraversal {
     std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false) {
         if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = fork();
-            return {ft};
+            return {std::move(ft)};
         }
         return std::vector<ForwardTraversal> {};
     }

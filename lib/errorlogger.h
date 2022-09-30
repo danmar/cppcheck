@@ -57,7 +57,7 @@ public:
         FileLocation()
             : fileIndex(0), line(0), column(0) {}
 
-        FileLocation(const std::string &file, int line, unsigned int column)
+        explicit FileLocation(const std::string &file, int line = 0, unsigned int column = 0)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
 
         FileLocation(const std::string &file, std::string info, int line, unsigned int column)

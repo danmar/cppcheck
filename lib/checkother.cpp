@@ -2077,7 +2077,7 @@ void CheckOther::checkMisusedScopedObject()
         const Token* endTok = tok;
         if (Token::Match(endTok, "%name% <"))
             endTok = endTok->linkAt(1);
-        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ; !!}") &&
+        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ;") &&
             !Token::simpleMatch(endTok->next()->astParent(), ";")) { // for loop condition
             return tok;
         }
@@ -2085,7 +2085,8 @@ void CheckOther::checkMisusedScopedObject()
     };
 
     auto isLibraryConstructor = [&](const Token* tok, const std::string& typeStr) -> bool {
-        if (mSettings->library.getTypeCheck("unusedvar", typeStr) == Library::TypeCheck::check)
+        const Library::TypeCheck typeCheck = mSettings->library.getTypeCheck("unusedvar", typeStr);
+        if (typeCheck == Library::TypeCheck::check || typeCheck == Library::TypeCheck::checkFiniteLifetime)
             return true;
         return mSettings->library.detectContainerOrIterator(tok);
     };

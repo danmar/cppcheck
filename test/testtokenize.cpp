@@ -5959,6 +5959,7 @@ private:
         ASSERT_EQUALS("forae*bc.({:(", testAst("for (a *e : {b->c()});"));
         ASSERT_EQUALS("fori0=iasize.(<i++;;( asize.(", testAst("for (decltype(a.size()) i = 0; i < a.size(); ++i);"));
         ASSERT_EQUALS("foria:( asize.(", testAst("for(decltype(a.size()) i:a);"));
+        ASSERT_EQUALS("forec0{([,(:( fb.return", testAst("for (auto e : c(0, [](auto f) { return f->b; }));")); // #10802
 
         // for with initializer (c++20)
         ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
@@ -6225,6 +6226,26 @@ private:
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
         ASSERT_EQUALS("adecltypeac::(,decltypead::(,",
                       testAst("template <typename a> void b(a &, decltype(a::c), decltype(a::d));"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
+                                             "struct B { A* hash; };\n"
+                                             "auto g(A* a) { return [=](void*) { return a; }; }\n"
+                                             "void f(void* p, B* b) {\n"
+                                             "    b->hash = (g(b->hash))(p);\n"
+                                             "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
+                                             "struct B { A* hash; };\n"
+                                             "A* h(void* p);\n"
+                                             "typedef A* (*X)(void*);\n"
+                                             "X g(A*) { return h; }\n"
+                                             "void f(void* p, B * b) {\n"
+                                             "b->hash = (g(b->hash))(p);\n"
+                                             "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
+                                             "struct B { A* hash; };\n"
+                                             "void f(void* p, B* b) {\n"
+                                             "    b->hash = (decltype(b->hash))(p);\n"
+                                             "}\n"));
 
         // #10334: Do not hang!
         tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"

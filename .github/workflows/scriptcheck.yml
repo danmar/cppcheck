@@ -148,6 +148,13 @@ jobs:
         env:
           PYTHONPATH: ./tools
 
+      - name: test donate_cpu_server
+        if: matrix.python-version != '2.7'
+        run: |
+          python -m pytest -v tools/test_donate_cpu_server.py
+        env:
+          PYTHONPATH: ./tools
+
       - name: dmake
         if: matrix.python-version == '3.10'
         run: |
