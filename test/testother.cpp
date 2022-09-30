@@ -138,7 +138,6 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(testMisusedScopeObjectInConstructor);
-        TEST_CASE(testMisusedScopeObjectNoCodeAfter);
         TEST_CASE(testMisusedScopeObjectStandardType);
         TEST_CASE(testMisusedScopeObjectNamespace);
         TEST_CASE(trac2071);
@@ -5044,14 +5043,6 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
     }
 
-    void testMisusedScopeObjectNoCodeAfter() {
-        check("class Foo {};\n"
-              "void f() {\n"
-              "  Foo();\n" // No code after class => don't warn
-              "}", "test.cpp");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void testMisusedScopeObjectStandardType() {
         check("int g();\n"
               "void f(int i) {\n"
@@ -5110,6 +5101,15 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Instance of 'std::string' object is destroyed immediately.\n"
                       "[test.cpp:3]: (style) Instance of 'std::string' object is destroyed immediately.\n"
                       "[test.cpp:4]: (style) Instance of 'std::pair' object is destroyed immediately.\n",
+                      errout.str());
+
+        check("struct S {\n" // #10083
+              "    void f() {\n"
+              "        std::lock_guard<std::mutex>(m);\n"
+              "    }\n"
+              "    std::mutex m;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'std::lock_guard' object is destroyed immediately.\n",
                       errout.str());
     }
 

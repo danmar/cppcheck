@@ -1268,6 +1268,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     case Library::TypeCheck::check:
                         break;
                     case Library::TypeCheck::suppress:
+                    case Library::TypeCheck::checkFiniteLifetime:
                         continue;
                     }
                 }
@@ -1365,6 +1366,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         case Library::TypeCheck::check:
                             break;
                         case Library::TypeCheck::suppress:
+                        case Library::TypeCheck::checkFiniteLifetime:
                             error = false;
                         }
                     }
