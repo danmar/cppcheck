@@ -1062,6 +1062,6 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
             toRemove.push_back(varid);
         }
     }
-    for (int varId : toRemove)
+    for (const int varId : toRemove)
         varInfo.erase(varId);
 }

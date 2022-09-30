@@ -75,7 +75,7 @@ static int findArgumentPosRecursive(const Token* tok, const Token* tokToFind,  b
             return -1;
         if (found)
             return res;
-        int argn = res;
+        const int argn = res;
         res = findArgumentPosRecursive(tok->astOperand2(), tokToFind, found, depth);
         if (res == -1)
             return -1;
@@ -89,7 +89,7 @@ static int findArgumentPosRecursive(const Token* tok, const Token* tokToFind,  b
 
 static int findArgumentPos(const Token* tok, const Token* tokToFind){
     bool found = false;
-    int argn = findArgumentPosRecursive(tok, tokToFind, found, 0);
+    const int argn = findArgumentPosRecursive(tok, tokToFind, found, 0);
     if (found)
         return argn - 1;
     return -1;
@@ -1228,7 +1228,7 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                         return refs_result;
                     }
                     if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-                        int n = getArgumentPos(argvar, f);
+                        const int n = getArgumentPos(argvar, f);
                         if (n < 0) {
                             refs_result.push_back({tok, std::move(errors)});
                             return refs_result;
@@ -1883,7 +1883,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             return true;
         return false;
     } else {
-        bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
+        const bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
         bool constMember = !memberFunction;
         if (Token::Match(ftok->tokAt(-2), "%var% . %name% (")) {
             const Variable* var = ftok->tokAt(-2)->variable();
@@ -3343,7 +3343,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Token *conditionStart = tok->next();
             const Token *condTok = conditionStart->astOperand2();
             if (condTok->hasKnownIntValue()) {
-                bool cond = condTok->values().front().intvalue;
+                const bool cond = condTok->values().front().intvalue;
                 if (cond) {
                     FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
                     if (result.type != Result::Type::NONE)

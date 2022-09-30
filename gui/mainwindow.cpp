@@ -331,7 +331,7 @@ void MainWindow::loadSettings()
     mUI->mActionToolBarFilter->setChecked(showFilterToolbar);
     mUI->mToolBarFilter->setVisible(showFilterToolbar);
 
-    Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    const Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
     if (enforcedLanguage == Settings::CPP)
         mUI->mActionEnforceCpp->setChecked(true);
     else if (enforcedLanguage == Settings::C)
@@ -339,7 +339,7 @@ void MainWindow::loadSettings()
     else
         mUI->mActionAutoDetectLanguage->setChecked(true);
 
-    bool succeeded = mApplications->loadSettings();
+    const bool succeeded = mApplications->loadSettings();
     if (!succeeded) {
         const QString msg = tr("There was a problem with loading the editor application settings.\n\n"
                                "This is probably because the settings were changed between the Cppcheck versions. "
@@ -436,7 +436,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             p.selectOneVsConfig(platform);
         }
     } else {
@@ -689,7 +689,7 @@ void MainWindow::analyzeDirectory()
             msgBox.addButton(QMessageBox::Yes);
             msgBox.addButton(QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::Yes);
-            int dlgResult = msgBox.exec();
+            const int dlgResult = msgBox.exec();
             if (dlgResult == QMessageBox::Yes) {
                 QString path = checkDir.canonicalPath();
                 if (!path.endsWith("/"))
@@ -712,7 +712,7 @@ void MainWindow::analyzeDirectory()
             msgBox.addButton(QMessageBox::Yes);
             msgBox.addButton(QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::Yes);
-            int dlgResult = msgBox.exec();
+            const int dlgResult = msgBox.exec();
             if (dlgResult == QMessageBox::Yes) {
                 doAnalyzeFiles(dir);
             }
@@ -1199,7 +1199,7 @@ void MainWindow::openResults()
         msgBox.addButton(QMessageBox::Yes);
         msgBox.addButton(QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::Yes);
-        int dlgResult = msgBox.exec();
+        const int dlgResult = msgBox.exec();
         if (dlgResult == QMessageBox::No) {
             return;
         }
@@ -1257,7 +1257,7 @@ void MainWindow::enableCheckButtons(bool enable)
 
 void MainWindow::enableResultsButtons()
 {
-    bool enabled = mUI->mResults->hasResults();
+    const bool enabled = mUI->mResults->hasResults();
     mUI->mActionClearResults->setEnabled(enabled);
     mUI->mActionSave->setEnabled(enabled);
     mUI->mActionPrint->setEnabled(enabled);
@@ -1321,7 +1321,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
                         this);
 
         msg.setDefaultButton(QMessageBox::No);
-        int rv = msg.exec();
+        const int rv = msg.exec();
         if (rv == QMessageBox::Yes) {
             // This isn't really very clean way to close threads but since the app is
             // exiting it doesn't matter.
@@ -1781,7 +1781,7 @@ void MainWindow::openRecentProject()
                         this);
 
         msg.setDefaultButton(QMessageBox::No);
-        int rv = msg.exec();
+        const int rv = msg.exec();
         if (rv == QMessageBox::Yes) {
             removeProjectMRU(project);
         }

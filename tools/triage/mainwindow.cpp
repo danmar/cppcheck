@@ -213,7 +213,7 @@ bool MainWindow::runProcess(const QString &programName, const QStringList &argum
         errorstr.append(process.errorString());
         ui->statusBar->showMessage(errorstr);
     } else {
-        int exitCode = process.exitCode();
+        const int exitCode = process.exitCode();
         if (exitCode != 0) {
             success = false;
             const QByteArray stderrOutput = process.readAllStandardError();

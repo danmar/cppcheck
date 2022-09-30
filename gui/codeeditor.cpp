@@ -217,7 +217,7 @@ void Highlighter::highlightBlock(const QString &text)
 
     while (startIndex >= 0) {
         QRegularExpressionMatch match = mCommentEndExpression.match(text, startIndex);
-        int endIndex = match.capturedStart();
+        const int endIndex = match.capturedStart();
         int commentLength = 0;
         if (endIndex == -1) {
             setCurrentBlockState(1);
@@ -353,9 +353,9 @@ int CodeEditor::lineNumberAreaWidth()
     }
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
-    int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+    const int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
 #else
-    int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+    const int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
 #endif
     return space;
 }

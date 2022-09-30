@@ -393,7 +393,7 @@ std::string clangimport::AstNode::getSpelling() const
         int typeIndex = 1;
         while (typeIndex < mExtTokens.size() && mExtTokens[typeIndex][0] != '\'')
             typeIndex++;
-        int nameIndex = typeIndex + 1;
+        const int nameIndex = typeIndex + 1;
         return (nameIndex < mExtTokens.size()) ? unquote(mExtTokens[nameIndex]) : "";
     }
 
@@ -424,17 +424,17 @@ std::string clangimport::AstNode::getType(int index) const
 {
     std::string type = getFullType(index);
     if (type.find(" (") != std::string::npos) {
-        std::string::size_type pos = type.find(" (");
+        const std::string::size_type pos = type.find(" (");
         type[pos] = '\'';
         type.erase(pos+1);
     }
     if (type.find(" *(") != std::string::npos) {
-        std::string::size_type pos = type.find(" *(") + 2;
+        const std::string::size_type pos = type.find(" *(") + 2;
         type[pos] = '\'';
         type.erase(pos+1);
     }
     if (type.find(" &(") != std::string::npos) {
-        std::string::size_type pos = type.find(" &(") + 2;
+        const std::string::size_type pos = type.find(" &(") + 2;
         type[pos] = '\'';
         type.erase(pos+1);
     }
@@ -508,8 +508,8 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
             const std::string::size_type colon = ext.find(':');
             if (colon != std::string::npos) {
                 const bool windowsPath = colon == 2 && ext.size() > 4 && ext[3] == '\\';
-                std::string::size_type sep1 = windowsPath ? ext.find(':', 4) : colon;
-                std::string::size_type sep2 = ext.find(':', sep1 + 1);
+                const std::string::size_type sep1 = windowsPath ? ext.find(':', 4) : colon;
+                const std::string::size_type sep2 = ext.find(':', sep1 + 1);
                 file = tokenList->appendFileIfNew(ext.substr(1, sep1 - 1));
                 line = MathLib::toLongNumber(ext.substr(sep1 + 1, sep2 - sep1 - 1));
             }
@@ -628,7 +628,7 @@ void clangimport::AstNode::setValueType(Token *tok)
         if (!decl.front())
             break;
 
-        ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings, true); // TODO: set isCpp
+        const ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings, true); // TODO: set isCpp
         if (valueType.type != ValueType::Type::UNKNOWN_TYPE) {
             tok->setValueType(new ValueType(valueType));
             break;
@@ -732,7 +732,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == BreakStmt)
         return addtoken(tokenList, "break");
     if (nodeType == CharacterLiteral) {
-        int c = MathLib::toLongNumber(mExtTokens.back());
+        const int c = MathLib::toLongNumber(mExtTokens.back());
         if (c == 0)
             return addtoken(tokenList, "\'\\0\'");
         if (c == '\r')
@@ -1425,7 +1425,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
 
 void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
 {
-    bool isStruct = contains(mExtTokens, "struct");
+    const bool isStruct = contains(mExtTokens, "struct");
     Token * const classToken = addtoken(tokenList, isStruct ? "struct" : "class");
     std::string className;
     if (mExtTokens[mExtTokens.size() - 2] == (isStruct?"struct":"class"))
@@ -1544,7 +1544,7 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
     for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings, tokenizer->isCPP());
-            int sz = vt.typeSize(*settings, true);
+            const int sz = vt.typeSize(*settings, true);
             if (sz <= 0)
                 continue;
             long long mul = 1;

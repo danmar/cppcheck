@@ -102,10 +102,10 @@ struct ForwardTraversal {
             return std::make_pair(false, false);
         std::vector<MathLib::bigint> result = analyzer->evaluate(tok, ctx);
         // TODO: We should convert to bool
-        bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
+        const bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
             return x != 0;
         });
-        bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
+        const bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
             return x == 0;
         });
         return std::make_pair(checkThen, checkElse);
@@ -185,7 +185,7 @@ struct ForwardTraversal {
             std::swap(firstOp, secondOp);
         if (firstOp && traverseRecursive(firstOp, f, traverseUnknown, recursion+1) == Progress::Break)
             return Break();
-        Progress p = tok->isAssignmentOp() ? Progress::Continue : traverseTok(tok, f, traverseUnknown);
+        const Progress p = tok->isAssignmentOp() ? Progress::Continue : traverseTok(tok, f, traverseUnknown);
         if (p == Progress::Break)
             return Break();
         if (p == Progress::Continue && secondOp && traverseRecursive(secondOp, f, traverseUnknown, recursion+1) == Progress::Break)
@@ -325,7 +325,7 @@ struct ForwardTraversal {
         for (const Token* tok=start; tok != end; tok = tok->previous()) {
             if (Token::simpleMatch(tok, "}")) {
                 const Token* ftok = nullptr;
-                bool r = isReturnScope(tok, &settings->library, &ftok);
+                const bool r = isReturnScope(tok, &settings->library, &ftok);
                 if (r)
                     return true;
             }
@@ -335,7 +335,7 @@ struct ForwardTraversal {
 
     bool isEscapeScope(const Token* endBlock, bool& unknown) const {
         const Token* ftok = nullptr;
-        bool r = isReturnScope(endBlock, &settings->library, &ftok);
+        const bool r = isReturnScope(endBlock, &settings->library, &ftok);
         if (!r && ftok)
             unknown = true;
         return r;
@@ -367,7 +367,7 @@ struct ForwardTraversal {
         Analyzer::Action a = analyzeScope(branch.endBlock);
         branch.action = a;
         std::vector<ForwardTraversal> ft1 = tryForkUpdateScope(branch.endBlock, a.isModified());
-        bool bail = hasGoto(branch.endBlock);
+        const bool bail = hasGoto(branch.endBlock);
         if (!a.isModified() && !bail) {
             if (ft1.empty()) {
                 // Traverse into the branch to see if there is a conditional escape
@@ -696,7 +696,7 @@ struct ForwardTraversal {
                     std::tie(thenBranch.check, elseBranch.check) = evalCond(condTok);
                     if (!thenBranch.check && !elseBranch.check && analyzer->stopOnCondition(condTok) && stopUpdates())
                         return Break(Analyzer::Terminate::Conditional);
-                    bool hasElse = Token::simpleMatch(endBlock, "} else {");
+                    const bool hasElse = Token::simpleMatch(endBlock, "} else {");
                     bool bail = false;
 
                     // Traverse then block
@@ -715,7 +715,7 @@ struct ForwardTraversal {
                         elseBranch.escape = isEscapeScope(endBlock->linkAt(2), elseBranch.escapeUnknown);
                         if (elseBranch.check) {
                             elseBranch.active = true;
-                            Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2), depth - 1);
+                            const Progress result = updateRange(endBlock->tokAt(2), endBlock->linkAt(2), depth - 1);
                             if (result == Progress::Break)
                                 return Break();
                         } else if (!thenBranch.check) {
@@ -855,7 +855,7 @@ struct ForwardTraversal {
     static Token* skipTo(Token* tok, const Token* dest, const Token* end = nullptr) {
         if (end && dest->index() > end->index())
             return nullptr;
-        int i = dest->index() - tok->index();
+        const int i = dest->index() - tok->index();
         if (i > 0)
             return tok->tokAt(dest->index() - tok->index());
         return nullptr;

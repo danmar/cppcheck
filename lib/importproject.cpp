@@ -259,7 +259,7 @@ static std::string unescape(const std::string &in)
 {
     std::string out;
     bool escape = false;
-    for (char c: in) {
+    for (const char c: in) {
         if (escape) {
             escape = false;
             if (!std::strchr("\\\"\'",c))
@@ -875,7 +875,7 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
     {
         std::string arg;
 
-        for (char i : cflag1) {
+        for (const char i : cflag1) {
             if (i == ' ' && !arg.empty()) {
                 cflags.insert(arg);
                 arg.clear();

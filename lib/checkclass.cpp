@@ -3076,9 +3076,9 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
             continue;
 
         // the full definition must be compared
-        bool fullDefinition = std::all_of(classScope->functionList.begin(),
-                                          classScope->functionList.end(),
-                                          [](const Function& f) {
+        const bool fullDefinition = std::all_of(classScope->functionList.begin(),
+                                                classScope->functionList.end(),
+                                                [](const Function& f) {
             return f.hasBody();
         });
         if (!fullDefinition)

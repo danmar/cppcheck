@@ -2200,7 +2200,7 @@ namespace {
         // scopes didn't match so try higher scopes
         index = newScope1.size();
         while (!newScope1.empty()) {
-            std::string::size_type separator = newScope1.rfind(" :: ", index - 1);
+            const std::string::size_type separator = newScope1.rfind(" :: ", index - 1);
             if (separator != std::string::npos)
                 newScope1.resize(separator);
             else
@@ -5664,7 +5664,7 @@ void Tokenizer::simplifyEmptyNamespaces()
         }
         if (!Token::Match(tok, "namespace %name%| {"))
             continue;
-        bool isAnonymousNS = tok->strAt(1) == "{";
+        const bool isAnonymousNS = tok->strAt(1) == "{";
         if (tok->strAt(3 - isAnonymousNS) == "}") {
             tok->deleteNext(3 - isAnonymousNS); // remove '%name%| { }'
             if (!tok->previous()) {

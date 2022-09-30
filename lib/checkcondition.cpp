@@ -665,7 +665,7 @@ void CheckCondition::multiCondition2()
         std::vector<MULTICONDITIONTYPE> types = {MULTICONDITIONTYPE::INNER};
         if (Token::Match(scope.bodyStart, "{ return|throw|continue|break"))
             types.push_back(MULTICONDITIONTYPE::AFTER);
-        for (MULTICONDITIONTYPE type:types) {
+        for (const MULTICONDITIONTYPE type:types) {
             if (type == MULTICONDITIONTYPE::AFTER) {
                 tok = scope.bodyEnd->next();
             } else {
@@ -753,7 +753,7 @@ void CheckCondition::multiCondition2()
                         break;
                     }
                     bool changed = false;
-                    for (int varid : vars) {
+                    for (const int varid : vars) {
                         if (isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP())) {
                             changed = true;
                             break;

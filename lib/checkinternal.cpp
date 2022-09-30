@@ -149,7 +149,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
             // Check for [xyz] usage - but exclude standalone square brackets
             unsigned int char_count = 0;
-            for (char c : pattern) {
+            for (const char c : pattern) {
                 if (c == ' ') {
                     char_count = 0;
                 } else if (c == ']') {
@@ -164,7 +164,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
             // Check | usage: Count characters before the symbol
             char_count = 0;
-            for (char c : pattern) {
+            for (const char c : pattern) {
                 if (c == ' ') {
                     char_count = 0;
                 } else if (c == '|') {
