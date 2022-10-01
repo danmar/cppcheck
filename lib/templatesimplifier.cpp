@@ -3330,7 +3330,7 @@ void TemplateSimplifier::replaceTemplateUsage(
                 std::list<TokenAndName>::iterator ti;
                 for (ti = mTemplateInstantiations.begin(); ti != mTemplateInstantiations.end();) {
                     if (ti->token() == tok) {
-                        mTemplateInstantiations.erase(ti++);
+                        ti = mTemplateInstantiations.erase(ti);
                         break;
                     } else {
                         ++ti;
