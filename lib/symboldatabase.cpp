@@ -826,7 +826,7 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
 void SymbolDatabase::createSymbolDatabaseFunctionScopes()
 {
     // fill in function scopes
-    for (Scope & scope : scopeList) {
+    for (const Scope & scope : scopeList) {
         if (scope.type == Scope::eFunction)
             functionScopes.push_back(&scope);
     }
@@ -835,7 +835,7 @@ void SymbolDatabase::createSymbolDatabaseFunctionScopes()
 void SymbolDatabase::createSymbolDatabaseClassAndStructScopes()
 {
     // fill in class and struct scopes
-    for (Scope& scope : scopeList) {
+    for (const Scope& scope : scopeList) {
         if (scope.isClassOrStruct())
             classAndStructScopes.push_back(&scope);
     }
@@ -1058,7 +1058,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
     };
 
     // Set scope pointers
-    for (Scope& scope: scopeList) {
+    for (const Scope& scope: scopeList) {
         if (scope.type == Scope::eGlobal)
             setScopePointers(scope, mTokenizer->list.front(), mTokenizer->list.back());
         else {
@@ -1310,22 +1310,22 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 void SymbolDatabase::createSymbolDatabaseEnums()
 {
     // fill in enumerators in enum
-    for (Scope &scope : scopeList) {
+    for (const Scope &scope : scopeList) {
         if (scope.type != Scope::eEnum)
             continue;
 
         // add enumerators to enumerator tokens
-        for (Enumerator & i : scope.enumeratorList)
+        for (const Enumerator & i : scope.enumeratorList)
             const_cast<Token *>(i.name)->enumerator(&i);
     }
 
     std::set<std::string> tokensThatAreNotEnumeratorValues;
 
-    for (Scope &scope : scopeList) {
+    for (const Scope &scope : scopeList) {
         if (scope.type != Scope::eEnum)
             continue;
 
-        for (Enumerator & enumerator : scope.enumeratorList) {
+        for (const Enumerator & enumerator : scope.enumeratorList) {
             // look for initialization tokens that can be converted to enumerators and convert them
             if (enumerator.start) {
                 if (!enumerator.end)

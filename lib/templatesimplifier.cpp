@@ -1243,7 +1243,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
 void TemplateSimplifier::simplifyTemplateAliases()
 {
     for (std::list<TokenAndName>::iterator it1 = mTemplateDeclarations.begin(); it1 != mTemplateDeclarations.end();) {
-        TokenAndName &aliasDeclaration = *it1;
+        const TokenAndName &aliasDeclaration = *it1;
 
         if (!aliasDeclaration.isAlias()) {
             ++it1;
@@ -1260,7 +1260,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
         // Look for alias usages..
         bool found = false;
         for (std::list<TokenAndName>::iterator it2 = mTemplateInstantiations.begin(); it2 != mTemplateInstantiations.end();) {
-            TokenAndName &aliasUsage = *it2;
+            const TokenAndName &aliasUsage = *it2;
             if (!aliasUsage.token() || aliasUsage.fullName() != aliasDeclaration.fullName()) {
                 ++it2;
                 continue;

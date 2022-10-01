@@ -5988,7 +5988,7 @@ void Tokenizer::simplifyFunctionParameters()
             if (argumentNames.size() != argumentNames2.size()) {
                 //move back 'tok1' to the last ';'
                 tok1 = tok1->previous();
-                for (std::pair<const std::string, Token *>& argumentName : argumentNames) {
+                for (const std::pair<const std::string, Token *>& argumentName : argumentNames) {
                     if (argumentNames2.find(argumentName.first) == argumentNames2.end()) {
                         //add the missing parameter argument declaration
                         tok1->insertToken(";");
