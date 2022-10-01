@@ -35,7 +35,7 @@
 Check::Check(const std::string &aname)
     : mTokenizer(nullptr), mSettings(nullptr), mErrorLogger(nullptr), mName(aname)
 {
-    for (std::list<Check*>::iterator i = instances().begin(); i != instances().end(); ++i) {
+    for (std::list<Check*>::const_iterator i = instances().begin(); i != instances().end(); ++i) {
         if ((*i)->name() > aname) {
             instances().insert(i, this);
             return;

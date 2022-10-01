@@ -60,7 +60,7 @@ private:
         ASSERT(err.empty());
 
         // In case there are leading "./"..
-        for (std::map<std::string, std::size_t>::iterator i = files.begin(); i != files.end();) {
+        for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end();) {
             if (i->first.compare(0,2,"./") == 0) {
                 files[i->first.substr(2)] = i->second;
                 files.erase(i++);

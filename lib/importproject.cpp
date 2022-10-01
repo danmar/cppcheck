@@ -49,7 +49,7 @@ ImportProject::ImportProject()
 
 void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 {
-    for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+    for (std::list<FileSettings>::const_iterator it = fileSettings.begin(); it != fileSettings.end();) {
         bool ignore = false;
         for (std::string i : ipaths) {
             if (it->filename.size() > i.size() && it->filename.compare(0,i.size(),i)==0) {
@@ -77,7 +77,7 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
 
 void ImportProject::ignoreOtherConfigs(const std::string &cfg)
 {
-    for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+    for (std::list<FileSettings>::const_iterator it = fileSettings.begin(); it != fileSettings.end();) {
         if (it->cfg != cfg)
             fileSettings.erase(it++);
         else
@@ -1270,7 +1270,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
 {
     std::set<std::string> filenames;
-    for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+    for (std::list<ImportProject::FileSettings>::const_iterator it = fileSettings.begin(); it != fileSettings.end();) {
         if (it->cfg.empty()) {
             ++it;
             continue;

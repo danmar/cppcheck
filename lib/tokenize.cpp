@@ -3663,7 +3663,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
                 tok = tok->link();
             if (Token::Match(tok->previous(), "[,{] . %name% =|{")) {
                 tok = tok->next();
-                const std::map<std::string, nonneg int>::iterator it = members.find(tok->str());
+                const std::map<std::string, nonneg int>::const_iterator it = members.find(tok->str());
                 if (it == members.end()) {
                     members[tok->str()] = ++(*varId);
                     tok->varId(*varId);
@@ -3697,7 +3697,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
             break;
 
         std::map<std::string, nonneg int>& members = structMembers[struct_varid];
-        const std::map<std::string, nonneg int>::iterator it = members.find(tok->str());
+        const std::map<std::string, nonneg int>::const_iterator it = members.find(tok->str());
         if (it == members.end()) {
             members[tok->str()] = ++(*varId);
             tok->varId(*varId);
@@ -4315,7 +4315,7 @@ void Tokenizer::setVarIdPass2()
             }
 
             if (tok->str() == "}") {
-                const std::map<const Token *, std::string>::iterator it = endOfScope.find(tok);
+                const std::map<const Token *, std::string>::const_iterator it = endOfScope.find(tok);
                 if (it != endOfScope.end())
                     scope.remove(it->second);
             }

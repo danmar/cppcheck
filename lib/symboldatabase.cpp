@@ -3081,11 +3081,11 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         path.insert(0, ":: ");
     }
 
-    std::list<Scope>::iterator it1;
+    std::list<Scope>::const_iterator it1;
 
     // search for match
     for (it1 = scopeList.begin(); it1 != scopeList.end(); ++it1) {
-        Scope *scope1 = &(*it1);
+        const Scope *scope1 = &(*it1);
 
         bool match = false;
 
@@ -3143,7 +3143,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                         continue;
                 }
 
-                Scope *scope2 = scope1;
+                const Scope *scope2 = scope1;
 
                 while (scope2 && count > 1) {
                     count--;

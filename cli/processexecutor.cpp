@@ -301,13 +301,13 @@ unsigned int ProcessExecutor::check()
             int r = select(*std::max_element(rpipes.begin(), rpipes.end()) + 1, &rfds, nullptr, nullptr, &tv);
 
             if (r > 0) {
-                std::list<int>::iterator rp = rpipes.begin();
+                std::list<int>::const_iterator rp = rpipes.begin();
                 while (rp != rpipes.end()) {
                     if (FD_ISSET(*rp, &rfds)) {
                         int readRes = handleRead(*rp, result);
                         if (readRes == -1) {
                             std::size_t size = 0;
-                            std::map<int, std::string>::iterator p = pipeFile.find(*rp);
+                            std::map<int, std::string>::const_iterator p = pipeFile.find(*rp);
                             if (p != pipeFile.end()) {
                                 std::string name = p->second;
                                 pipeFile.erase(p);
@@ -336,7 +336,7 @@ unsigned int ProcessExecutor::check()
             pid_t child = waitpid(0, &stat, WNOHANG);
             if (child > 0) {
                 std::string childname;
-                std::map<pid_t, std::string>::iterator c = childFile.find(child);
+                std::map<pid_t, std::string>::const_iterator c = childFile.find(child);
                 if (c != childFile.end()) {
                     childname = c->second;
                     childFile.erase(c);
