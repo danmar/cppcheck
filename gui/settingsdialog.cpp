@@ -257,7 +257,7 @@ void SettingsDialog::removeApplication()
 void SettingsDialog::editApplication()
 {
     for (QListWidgetItem *item : mUI->mListWidget->selectedItems()) {
-        int row = mUI->mListWidget->row(item);
+        const int row = mUI->mListWidget->row(item);
         Application& app = mTempApplications->getApplication(row);
         ApplicationDialog dialog(tr("Modify an application"), app, this);
 
@@ -274,7 +274,7 @@ void SettingsDialog::defaultApplication()
 {
     QList<QListWidgetItem *> selected = mUI->mListWidget->selectedItems();
     if (!selected.isEmpty()) {
-        int index = mUI->mListWidget->row(selected[0]);
+        const int index = mUI->mListWidget->row(selected[0]);
         mTempApplications->setDefault(index);
         mUI->mListWidget->clear();
         populateApplicationList();
@@ -372,7 +372,7 @@ void SettingsDialog::setCodeEditorStyleDefault()
 void SettingsDialog::editCodeEditorStyle()
 {
     StyleEditDialog dlg(*mCurrentStyle, this);
-    int nResult = dlg.exec();
+    const int nResult = dlg.exec();
     if (nResult == QDialog::Accepted) {
         *mCurrentStyle = dlg.getStyle();
         manageStyleControls();
@@ -392,9 +392,9 @@ void SettingsDialog::browseClangPath()
 
 void SettingsDialog::manageStyleControls()
 {
-    bool isSystemTheme = mCurrentStyle->isSystemTheme();
-    bool isDefaultLight = !isSystemTheme && *mCurrentStyle == defaultStyleLight;
-    bool isDefaultDark =  !isSystemTheme && *mCurrentStyle == defaultStyleDark;
+    const bool isSystemTheme = mCurrentStyle->isSystemTheme();
+    const bool isDefaultLight = !isSystemTheme && *mCurrentStyle == defaultStyleLight;
+    const bool isDefaultDark =  !isSystemTheme && *mCurrentStyle == defaultStyleDark;
     mUI->mThemeSystem->setChecked(isSystemTheme);
     mUI->mThemeLight->setChecked(isDefaultLight && !isDefaultDark);
     mUI->mThemeDark->setChecked(!isDefaultLight && isDefaultDark);

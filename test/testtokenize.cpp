@@ -1867,11 +1867,11 @@ private:
                              "char &(b); "
                              "const static char *(c); "
                              "} ;";
-        static char exp[] = "struct S { "
-                            "char * a ; "
-                            "char & b ; "
-                            "static const char * c ; "
-                            "} ;";
+        static const char exp[] = "struct S { "
+                                  "char * a ; "
+                                  "char & b ; "
+                                  "static const char * c ; "
+                                  "} ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
@@ -1879,48 +1879,48 @@ private:
         // Reported case
         {
             static char code[] = "; * * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
-            static char exp[] = "; * * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
+            static const char exp[] = "; * * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         // Various valid cases
         {
             static char code[] = "int * f [ 1 ] = { new ( int ) } ;";
-            static char exp[] = "int * f [ 1 ] = { new int } ;";
+            static const char exp[] = "int * f [ 1 ] = { new int } ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         {
             static char code[] = "int * * f [ 1 ] = { new ( int ) [ 1 ] } ;";
-            static char exp[] = "int * * f [ 1 ] = { new int [ 1 ] } ;";
+            static const char exp[] = "int * * f [ 1 ] = { new int [ 1 ] } ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         {
             static char code[] = "list < int > * f [ 1 ] = { new ( list < int > ) } ;";
-            static char exp[] = "list < int > * f [ 1 ] = { new list < int > } ;";
+            static const char exp[] = "list < int > * f [ 1 ] = { new list < int > } ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         // don't remove parentheses in operator new overload
         {
             static char code[] = "void *operator new(__SIZE_TYPE__, int);";
-            static char exp[] = "void * operatornew ( __SIZE_TYPE__ , int ) ;";
+            static const char exp[] = "void * operatornew ( __SIZE_TYPE__ , int ) ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
     }
 
     void removeParentheses24() { // Ticket #7040
         static char code[] = "std::hash<decltype(t._data)>()(t._data);";
-        static char exp[] = "std :: hash < decltype ( t . _data ) > ( ) ( t . _data ) ;";
+        static const char exp[] = "std :: hash < decltype ( t . _data ) > ( ) ( t . _data ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
     void removeParentheses25() { // daca@home - a=(b,c)
         static char code[] = "a=(b,c);";
-        static char exp[] = "a = ( b , c ) ;";
+        static const char exp[] = "a = ( b , c ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
     void removeParentheses26() { // Ticket #8875 a[0](0)
         static char code[] = "a[0](0);";
-        static char exp[] = "a [ 0 ] ( 0 ) ;";
+        static const char exp[] = "a [ 0 ] ( 0 ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 

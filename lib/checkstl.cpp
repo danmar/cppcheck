@@ -75,7 +75,7 @@ static bool isElementAccessYield(const Library::Container::Yield& yield)
 static bool containerAppendsElement(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
-        Library::Container::Action action = container->getAction(parent->strAt(1));
+        const Library::Container::Action action = container->getAction(parent->strAt(1));
         if (contains({Library::Container::Action::INSERT,
                       Library::Container::Action::CHANGE,
                       Library::Container::Action::CHANGE_INTERNAL,
@@ -90,7 +90,7 @@ static bool containerAppendsElement(const Library::Container* container, const T
 static bool containerYieldsElement(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
-        Library::Container::Yield yield = container->getYield(parent->strAt(1));
+        const Library::Container::Yield yield = container->getYield(parent->strAt(1));
         if (isElementAccessYield(yield))
             return true;
     }
@@ -100,7 +100,7 @@ static bool containerYieldsElement(const Library::Container* container, const To
 static const Token* getContainerIndex(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
-        Library::Container::Yield yield = container->getYield(parent->strAt(1));
+        const Library::Container::Yield yield = container->getYield(parent->strAt(1));
         if (yield == Library::Container::Yield::AT_INDEX && !Token::simpleMatch(parent->tokAt(2), "( )"))
             return parent->tokAt(2)->astOperand2();
     }
@@ -116,7 +116,7 @@ static const Token* getContainerFromSize(const Library::Container* container, co
     if (!tok)
         return nullptr;
     if (Token::Match(tok->tokAt(-2), ". %name% (")) {
-        Library::Container::Yield yield = container->getYield(tok->strAt(-1));
+        const Library::Container::Yield yield = container->getYield(tok->strAt(-1));
         if (yield == Library::Container::Yield::SIZE)
             return tok->tokAt(-2)->astOperand1();
     }
@@ -858,7 +858,7 @@ void CheckStl::mismatchingContainerIterator()
             const std::vector<const Token *> args = getArguments(ftok);
 
             const Library::Container * c = tok->valueType()->container;
-            Library::Container::Action action = c->getAction(tok->strAt(2));
+            const Library::Container::Action action = c->getAction(tok->strAt(2));
             const Token* iterTok = nullptr;
             if (action == Library::Container::Action::INSERT && args.size() == 2) {
                 // Skip if iterator pair
@@ -901,7 +901,7 @@ static const Token* getInvalidMethod(const Token* tok)
     if (!ftok)
         return nullptr;
     if (const Library::Container * c = tok->valueType()->container) {
-        Library::Container::Action action = c->getAction(ftok->str());
+        const Library::Container::Action action = c->getAction(ftok->str());
         if (c->unstableErase) {
             if (action == Library::Container::Action::ERASE)
                 return ftok;
@@ -987,7 +987,7 @@ struct InvalidContainerAnalyzer {
                     if (!var)
                         continue;
                     if (var->isArgument()) {
-                        int n = getArgumentPos(var, f);
+                        const int n = getArgumentPos(var, f);
                         const Token* tok2 = nullptr;
                         if (n >= 0 && n < args.size())
                             tok2 = args[n];
@@ -1125,7 +1125,7 @@ void CheckStl::invalidContainer()
                     // Skip if the variable is assigned to
                     const Token* assignExpr = tok;
                     while (assignExpr->astParent()) {
-                        bool isRHS = astIsRHS(assignExpr);
+                        const bool isRHS = astIsRHS(assignExpr);
                         assignExpr = assignExpr->astParent();
                         if (Token::Match(assignExpr, "%assign%")) {
                             if (!isRHS)
@@ -2720,7 +2720,7 @@ void CheckStl::useStlAlgorithm()
             bool useLoopVarInAssign;
             const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
             if (assignTok) {
-                int assignVarId = assignTok->astOperand1()->varId();
+                const int assignVarId = assignTok->astOperand1()->varId();
                 std::string algo;
                 if (assignVarId == loopVar->varId()) {
                     if (useLoopVarInAssign)

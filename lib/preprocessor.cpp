@@ -892,8 +892,8 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
                 continue;
             if (mu.macroName != macroName)
                 continue;
-            bool directiveLocation = std::any_of(mDirectives.cbegin(), mDirectives.cend(),
-                                                 [=](const Directive &dir) {
+            const bool directiveLocation = std::any_of(mDirectives.cbegin(), mDirectives.cend(),
+                                                       [=](const Directive &dir) {
                 return mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr;
             });
 

@@ -826,7 +826,7 @@ void SymbolDatabase::createSymbolDatabaseCopyAndMoveConstructors()
 void SymbolDatabase::createSymbolDatabaseFunctionScopes()
 {
     // fill in function scopes
-    for (Scope & scope : scopeList) {
+    for (const Scope & scope : scopeList) {
         if (scope.type == Scope::eFunction)
             functionScopes.push_back(&scope);
     }
@@ -835,7 +835,7 @@ void SymbolDatabase::createSymbolDatabaseFunctionScopes()
 void SymbolDatabase::createSymbolDatabaseClassAndStructScopes()
 {
     // fill in class and struct scopes
-    for (Scope& scope : scopeList) {
+    for (const Scope& scope : scopeList) {
         if (scope.isClassOrStruct())
             classAndStructScopes.push_back(&scope);
     }
@@ -1058,7 +1058,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
     };
 
     // Set scope pointers
-    for (Scope& scope: scopeList) {
+    for (const Scope& scope: scopeList) {
         if (scope.type == Scope::eGlobal)
             setScopePointers(scope, mTokenizer->list.front(), mTokenizer->list.back());
         else {
@@ -1310,22 +1310,22 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 void SymbolDatabase::createSymbolDatabaseEnums()
 {
     // fill in enumerators in enum
-    for (Scope &scope : scopeList) {
+    for (const Scope &scope : scopeList) {
         if (scope.type != Scope::eEnum)
             continue;
 
         // add enumerators to enumerator tokens
-        for (Enumerator & i : scope.enumeratorList)
+        for (const Enumerator & i : scope.enumeratorList)
             const_cast<Token *>(i.name)->enumerator(&i);
     }
 
     std::set<std::string> tokensThatAreNotEnumeratorValues;
 
-    for (Scope &scope : scopeList) {
+    for (const Scope &scope : scopeList) {
         if (scope.type != Scope::eEnum)
             continue;
 
-        for (Enumerator & enumerator : scope.enumeratorList) {
+        for (const Enumerator & enumerator : scope.enumeratorList) {
             // look for initialization tokens that can be converted to enumerators and convert them
             if (enumerator.start) {
                 if (!enumerator.end)
@@ -1583,7 +1583,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                         continue;
                     if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings->library, false, false))
                         continue;
-                    nonneg int cid = std::min(tok1->exprId(), tok2->exprId());
+                    nonneg int const cid = std::min(tok1->exprId(), tok2->exprId());
                     tok1->exprId(cid);
                     tok2->exprId(cid);
                 }
@@ -5140,7 +5140,7 @@ std::vector<const Scope*> Scope::findAssociatedScopes() const
 static void checkVariableCallMatch(const Variable* callarg, const Variable* funcarg, size_t& same, size_t& fallback1, size_t& fallback2)
 {
     if (callarg) {
-        ValueType::MatchResult res = ValueType::matchParameter(callarg->valueType(), callarg, funcarg);
+        const ValueType::MatchResult res = ValueType::matchParameter(callarg->valueType(), callarg, funcarg);
         if (res == ValueType::MatchResult::SAME) {
             same++;
             return;
@@ -5156,8 +5156,8 @@ static void checkVariableCallMatch(const Variable* callarg, const Variable* func
         if (res == ValueType::MatchResult::NOMATCH)
             return;
 
-        bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
-        bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
+        const bool ptrequals = callarg->isArrayOrPointer() == funcarg->isArrayOrPointer();
+        const bool constEquals = !callarg->isArrayOrPointer() || ((callarg->typeStartToken()->strAt(-1) == "const") == (funcarg->typeStartToken()->strAt(-1) == "const"));
         if (ptrequals && constEquals &&
             callarg->typeStartToken()->str() == funcarg->typeStartToken()->str() &&
             callarg->typeStartToken()->isUnsigned() == funcarg->typeStartToken()->isUnsigned() &&
@@ -5330,7 +5330,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                         callArgType.sign = funcArgType.sign = ValueType::Sign::SIGNED;
                         callArgType.type = funcArgType.type = ValueType::Type::INT;
 
-                        ValueType::MatchResult res = ValueType::matchParameter(&callArgType, &funcArgType);
+                        const ValueType::MatchResult res = ValueType::matchParameter(&callArgType, &funcArgType);
                         if (res == ValueType::MatchResult::SAME)
                             ++same;
                         else if (res == ValueType::MatchResult::FALLBACK1)
@@ -5377,7 +5377,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     else
                         unknownDeref = true;
                 }
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), var, funcarg);
+                const ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), var, funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
                 else if (res == ValueType::MatchResult::FALLBACK1)
@@ -6529,7 +6529,7 @@ static const Token* parsedecl(const Token* type,
             TokenList typeTokens(settings);
             std::string::size_type pos1 = 0;
             do {
-                std::string::size_type pos2 = type->str().find("::", pos1);
+                const std::string::size_type pos2 = type->str().find("::", pos1);
                 if (pos2 == std::string::npos) {
                     typeTokens.addtoken(type->str().substr(pos1), 0, 0, 0, false);
                     break;
@@ -6597,7 +6597,7 @@ static const Token* parsedecl(const Token* type,
             if (valuetype->fromLibraryType(typestr, settings))
                 type = end;
         } else if (ValueType::Type::UNKNOWN_TYPE != ValueType::typeFromString(type->str(), type->isLong())) {
-            ValueType::Type t0 = valuetype->type;
+            const ValueType::Type t0 = valuetype->type;
             valuetype->type = ValueType::typeFromString(type->str(), type->isLong());
             if (t0 == ValueType::Type::LONG) {
                 if (valuetype->type == ValueType::Type::LONG)
@@ -6760,8 +6760,8 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
         } else if (tok->isBoolean()) {
             setValueType(tok, ValueType(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::BOOL, 0U));
         } else if (tok->tokType() == Token::eChar || tok->tokType() == Token::eString) {
-            nonneg int pointer = tok->tokType() == Token::eChar ? 0U : 1U;
-            nonneg int constness = tok->tokType() == Token::eChar ? 0U : 1U;
+            nonneg int const pointer = tok->tokType() == Token::eChar ? 0U : 1U;
+            nonneg int const constness = tok->tokType() == Token::eChar ? 0U : 1U;
             ValueType valuetype(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::CHAR, pointer, constness);
 
             if (mIsCpp && mSettings->standards.cpp >= Standards::CPP20 && tok->isUtf8()) {
@@ -7439,7 +7439,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
             ++vt.pointer;
         pvt = &vt;
     }
-    ValueType::MatchResult res = ValueType::matchParameter(call, pvt);
+    const ValueType::MatchResult res = ValueType::matchParameter(call, pvt);
     if (callVar && ((res == ValueType::MatchResult::SAME && call->container) || res == ValueType::MatchResult::UNKNOWN)) {
         const std::string type1 = getTypeString(callVar->typeStartToken());
         const std::string type2 = getTypeString(funcVar->typeStartToken());

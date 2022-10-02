@@ -180,7 +180,7 @@ static std::string readAttrString(const tinyxml2::XMLElement *e, const char *att
 static long long readAttrInt(const tinyxml2::XMLElement *e, const char *attr, bool *error)
 {
     int64_t value = 0;
-    bool err = (e->QueryInt64Attribute(attr, &value) != tinyxml2::XML_SUCCESS);
+    const bool err = (e->QueryInt64Attribute(attr, &value) != tinyxml2::XML_SUCCESS);
     if (error)
         *error = err;
     return value;
@@ -483,7 +483,7 @@ std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *token
         for (int argnr = 0; argnr < function->argCount(); ++argnr) {
             for (const std::pair<const Token *, MathLib::bigint> &v : getUnsafeFunction(tokenizer, settings, &scope, argnr, check, isUnsafeUsage)) {
                 const Token *tok = v.first;
-                MathLib::bigint val = v.second;
+                const MathLib::bigint val = v.second;
                 unsafeUsage.emplace_back(CTU::getFunctionId(tokenizer, function), argnr+1, tok->str(), CTU::FileInfo::Location(tokenizer,tok), val);
             }
         }
