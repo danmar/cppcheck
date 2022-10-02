@@ -1257,7 +1257,7 @@ void CheckClass::privateFunctions()
             // Check virtual functions
             for (std::list<const Function*>::iterator it = privateFuncs.begin(); it != privateFuncs.end();) {
                 if ((*it)->isImplicitlyVirtual(true)) // Give true as default value to be returned if we don't see all base classes
-                    privateFuncs.erase(it++);
+                    it = privateFuncs.erase(it);
                 else
                     ++it;
             }

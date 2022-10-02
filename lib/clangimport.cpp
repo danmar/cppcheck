@@ -674,7 +674,7 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
         std::list<Variable> &varlist = const_cast<Scope *>(def->scope())->varlist;
         for (std::list<Variable>::iterator var = varlist.begin(); var != varlist.end();) {
             if (replaceVar.find(&(*var)) != replaceVar.end())
-                varlist.erase(var++);
+                var = varlist.erase(var);
             else
                 ++var;
         }

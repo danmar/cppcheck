@@ -69,7 +69,7 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
             }
         }
         if (ignore)
-            fileSettings.erase(it++);
+            it = fileSettings.erase(it);
         else
             ++it;
     }
@@ -79,7 +79,7 @@ void ImportProject::ignoreOtherConfigs(const std::string &cfg)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         if (it->cfg != cfg)
-            fileSettings.erase(it++);
+            it = fileSettings.erase(it);
         else
             ++it;
     }
