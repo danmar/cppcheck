@@ -63,7 +63,7 @@ private:
         for (std::map<std::string, std::size_t>::iterator i = files.begin(); i != files.end();) {
             if (i->first.compare(0,2,"./") == 0) {
                 files[i->first.substr(2)] = i->second;
-                files.erase(i++);
+                i = files.erase(i);
             } else
                 ++i;
         }

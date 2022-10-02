@@ -1319,7 +1319,7 @@ private:
     void isVariablePointerToConstPointer() {
         reset();
         GET_SYMBOL_DB("char* const * s;");
-        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1330,7 +1330,7 @@ private:
     void isVariablePointerToVolatilePointer() {
         reset();
         GET_SYMBOL_DB("char* volatile * s;");
-        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1341,7 +1341,7 @@ private:
     void isVariablePointerToConstVolatilePointer() {
         reset();
         GET_SYMBOL_DB("char* const volatile * s;");
-        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1352,7 +1352,7 @@ private:
     void isVariableMultiplePointersAndQualifiers() {
         reset();
         GET_SYMBOL_DB("const char* const volatile * const volatile * const volatile * const volatile s;");
-        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens()->next(), vartok, typetok);
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -2137,9 +2137,9 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.begin();
         ASSERT(it->varlist.size() == 1);
-        std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.begin();
         ASSERT(var->name() == "i");
         ASSERT(var->typeStartToken()->str() == "int");
     }
@@ -2149,10 +2149,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.begin();
         ASSERT(it->varlist.size() == 1);
 
-        std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.begin();
         ASSERT(var->name() == "array");
         ASSERT(var->typeStartToken()->str() == "int");
     }
@@ -2162,10 +2162,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.begin();
         ASSERT(it->varlist.size() == 1);
 
-        std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.begin();
         ASSERT(var->name() == "array");
         ASSERT(var->typeStartToken()->str() == "int");
     }

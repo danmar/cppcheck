@@ -554,8 +554,12 @@ public:
     static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback=emptyString);
 
     /** Suppress/check a type */
-    enum class TypeCheck { def, check, suppress };
-    TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
+    enum class TypeCheck { def,
+                           check,
+                           suppress,
+                           checkFiniteLifetime, // (unusedvar) object has side effects, but immediate destruction is wrong
+    };
+    TypeCheck getTypeCheck(std::string check, std::string typeName) const;
 
 private:
     // load a <function> xml node

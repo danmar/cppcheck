@@ -43,7 +43,7 @@ bool isValidGlobPattern(const std::string& pattern)
 {
     for (std::string::const_iterator i = pattern.begin(); i != pattern.end(); ++i) {
         if (*i == '*' || *i == '?') {
-            std::string::const_iterator j = i + 1;
+            const std::string::const_iterator j = i + 1;
             if (j != pattern.end() && (*j == '*' || *j == '?')) {
                 return false;
             }

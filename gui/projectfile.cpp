@@ -625,7 +625,7 @@ void ProjectFile::readTagWarnings(QXmlStreamReader &reader, const QString &tag)
         case QXmlStreamReader::StartElement:
             // Read library-elements
             if (reader.name().toString() == CppcheckXml::WarningElementName) {
-                std::size_t hash = reader.attributes().value(QString(), CppcheckXml::HashAttributeName).toULongLong();
+                const std::size_t hash = reader.attributes().value(QString(), CppcheckXml::HashAttributeName).toULongLong();
                 mWarningTags[hash] = tag;
             }
             break;

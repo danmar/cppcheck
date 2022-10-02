@@ -377,7 +377,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
                 maxval = nullptr;
 
             if (minval || maxval) {
-                bool not0or1 = (minval && minval->intvalue < 0) || (maxval && maxval->intvalue > 1);
+                const bool not0or1 = (minval && minval->intvalue < 0) || (maxval && maxval->intvalue > 1);
                 comparisonOfBoolExpressionWithIntError(tok, not0or1);
             }
         }

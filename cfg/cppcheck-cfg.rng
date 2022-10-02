@@ -551,6 +551,9 @@
                 <element name="suppress">
                   <ref name="DATA-EXTNAME"/>
                 </element>
+                <element name="checkFiniteLifetime">
+                  <ref name="DATA-EXTNAME"/>
+                </element>
               </choice>
             </zeroOrMore>
           </element>

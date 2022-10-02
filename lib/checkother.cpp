@@ -1484,7 +1484,7 @@ void CheckOther::checkConstVariable()
                         castToNonConst = true; // safe guess
                         break;
                     }
-                    bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
+                    const bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
                     if (!isConst) {
                         castToNonConst = true;
                         break;
@@ -1928,7 +1928,7 @@ void CheckOther::checkIncompleteStatement()
         if (mTokenizer->isCPP() && tok->str() == "&" && !(tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
             // Possible archive
             continue;
-        bool inconclusive = tok->isConstOp();
+        const bool inconclusive = tok->isConstOp();
         if (mSettings->certainty.isEnabled(Certainty::inconclusive) || !inconclusive)
             constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);
     }
@@ -2077,7 +2077,7 @@ void CheckOther::checkMisusedScopedObject()
         const Token* endTok = tok;
         if (Token::Match(endTok, "%name% <"))
             endTok = endTok->linkAt(1);
-        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ; !!}") &&
+        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ;") &&
             !Token::simpleMatch(endTok->next()->astParent(), ";")) { // for loop condition
             return tok;
         }
@@ -2085,7 +2085,8 @@ void CheckOther::checkMisusedScopedObject()
     };
 
     auto isLibraryConstructor = [&](const Token* tok, const std::string& typeStr) -> bool {
-        if (mSettings->library.getTypeCheck("unusedvar", typeStr) == Library::TypeCheck::check)
+        const Library::TypeCheck typeCheck = mSettings->library.getTypeCheck("unusedvar", typeStr);
+        if (typeCheck == Library::TypeCheck::check || typeCheck == Library::TypeCheck::checkFiniteLifetime)
             return true;
         return mSettings->library.detectContainerOrIterator(tok);
     };

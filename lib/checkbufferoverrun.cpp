@@ -557,7 +557,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (!var)
         return ValueFlow::Value(-1);
 
-    MathLib::bigint dim = std::accumulate(var->dimensions().begin(), var->dimensions().end(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
+    const MathLib::bigint dim = std::accumulate(var->dimensions().begin(), var->dimensions().end(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
         return i1 * dim.num;
     });
 
@@ -596,7 +596,7 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
     case Library::ArgumentChecks::MinSize::Type::ARGVALUE: {
         if (arg && arg->hasKnownIntValue()) {
             MathLib::bigint myMinsize = arg->getKnownIntValue();
-            unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
+            const unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
             if (baseSize != 0)
                 myMinsize *= baseSize;
             return myMinsize <= bufferSize;
@@ -612,7 +612,7 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
         break;
     case Library::ArgumentChecks::MinSize::Type::VALUE: {
         MathLib::bigint myMinsize = minsize.value;
-        unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
+        const unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
         if (baseSize != 0)
             myMinsize *= baseSize;
         return myMinsize <= bufferSize;

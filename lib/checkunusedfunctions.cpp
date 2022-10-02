@@ -341,10 +341,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        ErrorMessage::FileLocation fileLoc;
-        fileLoc.setfile(filename);
-        fileLoc.line = lineNumber;
-        locationList.push_back(std::move(fileLoc));
+        locationList.emplace_back(filename, lineNumber);
     }
 
     const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);

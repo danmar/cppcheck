@@ -574,7 +574,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         return temp.check(Path::simplifyPath(fs.filename));
     }
     std::ifstream fin(fs.filename);
-    unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
+    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
     mSettings.nomsg.addSuppressions(temp.mSettings.nomsg.getSuppressions());
     return returnValue;
 }
@@ -673,7 +673,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 filename2 = filename.substr(filename.rfind('/') + 1);
             else
                 filename2 = filename;
-            std::size_t fileNameHash = std::hash<std::string> {}(filename);
+            const std::size_t fileNameHash = std::hash<std::string> {}(filename);
             filename2 = mSettings.plistOutput + filename2.substr(0, filename2.find('.')) + "_" + std::to_string(fileNameHash) + ".plist";
             mPlistFile.open(filename2);
             mPlistFile << ErrorLogger::plistHeader(version(), files);
@@ -863,7 +863,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
                 Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults);
-                bool result = tokenizer.simplifyTokens1(mCurrentConfig);
+                const bool result = tokenizer.simplifyTokens1(mCurrentConfig);
                 timer2.stop();
                 if (!result)
                     continue;
@@ -1476,9 +1476,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
 
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        ErrorMessage::FileLocation location;
-        location.setfile(file);
-        loclist.push_back(std::move(location));
+        loclist.emplace_back(file);
     }
 
     std::ostringstream msg;
@@ -1514,9 +1512,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        ErrorMessage::FileLocation location;
-        location.setfile(file);
-        loclist.push_back(std::move(location));
+        loclist.emplace_back(file);
     }
 
     ErrorMessage errmsg(loclist,

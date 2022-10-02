@@ -209,7 +209,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
     if (strcmp(rootnode->Name(),"def") != 0)
         return Error(ErrorCode::UNSUPPORTED_FORMAT, rootnode->Name());
 
-    int format = rootnode->IntAttribute("format", 1); // Assume format version 1 if nothing else is specified (very old .cfg files had no 'format' attribute)
+    const int format = rootnode->IntAttribute("format", 1); // Assume format version 1 if nothing else is specified (very old .cfg files had no 'format' attribute)
 
     if (format > 2 || format <= 0)
         return Error(ErrorCode::UNSUPPORTED_FORMAT);
@@ -553,6 +553,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::check;
                     else if (checkTypeName == "suppress")
                         mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::suppress;
+                    else if (checkTypeName == "checkFiniteLifetime")
+                        mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::checkFiniteLifetime;
                 }
             }
         }
@@ -1248,7 +1250,7 @@ const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    std::map<std::string, WarnInfo>::const_iterator i = functionwarn.find(getFunctionName(ftok));
+    const std::map<std::string, WarnInfo>::const_iterator i = functionwarn.find(getFunctionName(ftok));
     if (i == functionwarn.cend())
         return nullptr;
     return &i->second;
@@ -1645,9 +1647,9 @@ const Library::Container * getLibraryContainer(const Token * tok)
     return tok->valueType()->container;
 }
 
-Library::TypeCheck Library::getTypeCheck(const std::string &check, const std::string &typeName) const
+Library::TypeCheck Library::getTypeCheck(std::string check,  std::string typeName) const
 {
-    auto it = mTypeChecks.find(std::pair<std::string, std::string>(check, typeName));
+    auto it = mTypeChecks.find(std::pair<std::string, std::string>(std::move(check), std::move(typeName)));
     return it == mTypeChecks.end() ? TypeCheck::def : it->second;
 }
 
@@ -1685,7 +1687,7 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
     for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
         if (tok2->str().compare(0, 3, "arg") != 0)
             continue;
-        nonneg int id = std::atoi(tok2->str().c_str() + 3);
+        nonneg int const id = std::atoi(tok2->str().c_str() + 3);
         tok2->varId(id);
         if (lookupVarId)
             (*lookupVarId)[id] = tok2;
