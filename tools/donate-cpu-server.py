@@ -1055,6 +1055,33 @@ class HttpClientThread(Thread):
             self.connection.close()
 
 
+def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, timeout=10):
+    data = cmd[pos_nl+1:]
+    try:
+        t = 0.0
+        while (len(data) < max_data_size) and (not check_done or not data.endswith('\nDONE')) and (timeout > 0 and t < timeout):
+            bytes_received = connection.recv(1024)
+            if bytes_received:
+                try:
+                    text_received = bytes_received.decode('utf-8', 'ignore')
+                except UnicodeDecodeError as e:
+                    print_ts('Error: Decoding failed ({}): {}'.format(cmd_name, e))
+                    data = None
+                    break
+                t = 0.0
+                data += text_received
+            elif not check_done:
+                break
+            else:
+                time.sleep(0.2)
+                t += 0.2
+        connection.close()
+    except socket.error as e:
+        print_ts('Socket error occured ({}): {}'.format(cmd_name, e))
+        data = None
+
+    return data
+
 def server(server_address_port: int, packages: list, packageIndex: int, resultPath: str) -> None:
     socket.setdefaulttimeout(30)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1116,28 +1143,8 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
-            # read data
-            data = cmd[pos_nl+1:]
-            try:
-                t = 0.0
-                max_data_size = 2 * 1024 * 1024
-                while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
-                    bytes_received = connection.recv(1024)
-                    if bytes_received:
-                        try:
-                            text_received = bytes_received.decode('utf-8', 'ignore')
-                        except UnicodeDecodeError as e:
-                            print_ts('Error: Decoding failed (write): ' + str(e))
-                            data = ''
-                            break
-                        t = 0.0
-                        data += text_received
-                    else:
-                        time.sleep(0.2)
-                        t += 0.2
-                connection.close()
-            except socket.error as e:
-                print_ts('Socket error occured (write): {}'.format(e))
+            data = read_data(connection, cmd, pos_nl, max_data_size=2 * 1024 * 1024, check_done=True, cmd_name='write')
+            if data is None:
                 continue
 
             pos = data.find('\n')
@@ -1187,28 +1194,8 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             # generate package.diff..
             generate_package_diff_statistics(filename)
         elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
-            # read data
-            data = cmd[pos_nl + 1:]
-            try:
-                t = 0.0
-                max_data_size = 1024 * 1024
-                while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
-                    bytes_received = connection.recv(1024)
-                    if bytes_received:
-                        try:
-                            text_received = bytes_received.decode('utf-8', 'ignore')
-                        except UnicodeDecodeError as e:
-                            print_ts('Error: Decoding failed (write_info): ' + str(e))
-                            data = ''
-                            break
-                        t = 0.0
-                        data += text_received
-                    else:
-                        time.sleep(0.2)
-                        t += 0.2
-                connection.close()
-            except socket.error as e:
-                print_ts('Socket error occured (write_info): {}'.format(e))
+            data = read_data(connection, cmd, pos_nl, max_data_size=1024 * 1024, check_done=True, cmd_name='write_info')
+            if data is None:
                 continue
 
             pos = data.find('\n')
