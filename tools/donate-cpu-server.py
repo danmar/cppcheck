@@ -1080,6 +1080,10 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
         print_ts('Socket error occured ({}): {}'.format(cmd_name, e))
         data = None
 
+    if (timeout > 0 and t >= timeout):
+        print_ts('Timeout occurred ({}).'.format(cmd_name))
+        data = None
+
     return data
 
 def server(server_address_port: int, packages: list, packageIndex: int, resultPath: str) -> None:
