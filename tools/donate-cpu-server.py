@@ -1258,6 +1258,9 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 continue
 
             pos = data.find('\n')
+            if pos == -1:
+                print_ts('No newline found in data. Ignoring no-data data.')
+                continue
             if pos < 10:
                 print_ts('Data is less than 10 characters ({}). Ignoring no-data data.'.format(pos))
                 continue
