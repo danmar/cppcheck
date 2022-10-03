@@ -1253,12 +1253,12 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 print_ts('getPackageIdx: index is out of range')
             continue
         elif cmd.startswith('write_nodata\nftp://'):
-            print(cmd)
-            data = cmd[pos_nl + 1:]
+            data = read_data(connection, cmd, pos_nl, max_data_size=8 * 1024, check_done=False, cmd_name='write_nodata')
+            if data is None:
+                continue
+
             pos = data.find('\n')
             if pos < 10:
-                # TODO: need to read until the second \n
-                # ftp://ftp.de.debian.org/debian/pool/main/a/android-platform-external-doclava/android-platform-external-doclava_9.0.0+r42.orig.tar.xz
                 print_ts('Data is less than 10 characters ({}). Ignoring no-data data.'.format(pos))
                 continue
             url = data[:pos]
