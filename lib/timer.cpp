@@ -25,7 +25,6 @@
 /*
     TODO:
     - rename "file" to "single"
-    - synchronise map access in multithreaded mode or disable timing
     - add unit tests
         - for --showtime (needs input file)
         - for Timer* classes
