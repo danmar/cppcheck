@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include <ctime>
+#include <functional>
 #include <map>
 #include <mutex>
 #include <string>
@@ -76,6 +77,11 @@ public:
     Timer& operator=(const Timer&) = delete;
 
     void stop();
+
+    static void run(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults, const std::function<void()>& f) {
+        Timer t(std::move(str), showtimeMode, timerResults);
+        f();
+    }
 
 private:
     const std::string mStr;
