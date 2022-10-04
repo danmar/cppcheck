@@ -157,8 +157,8 @@ packages_processed = 0
 print('Get Cppcheck..')
 try:
     lib.try_retry(lib.clone_cppcheck, fargs=(repo_path, migrate_repo_path))
-except:
-    print('Error: Failed to clone Cppcheck, retry later')
+except Exception as e:
+    print('Error: Failed to clone Cppcheck ({}), retry later'.format(e))
     sys.exit(1)
 
 while True:
@@ -190,8 +190,8 @@ while True:
         except KeyboardInterrupt as e:
             # Passthrough for user abort
             raise e
-        except:
-            print('Failed to update Cppcheck, retry later')
+        except Exception as e:
+            print('Failed to update Cppcheck ({}), retry later'.format(e))
             sys.exit(1)
         if ver == 'main':
             if not lib.compile_cppcheck(current_cppcheck_dir):
