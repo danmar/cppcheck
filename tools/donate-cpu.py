@@ -70,7 +70,7 @@ for arg in sys.argv[1:]:
             print('work path does not exist!')
             sys.exit(1)
     elif arg == '--test':
-        server_address = ('localhost', 8001)
+        set_server_address(('localhost', 8001))
     elif arg.startswith('--bandwidth-limit='):
         bandwidth_limit = arg[arg.find('=')+1:]
     elif arg.startswith('--max-packages='):
@@ -163,7 +163,7 @@ while True:
         if stop_time < time.strftime('%H:%M'):
             print('Stopping. Thank you!')
             sys.exit(0)
-    cppcheck_versions = get_cppcheck_versions(server_address)
+    cppcheck_versions = get_cppcheck_versions()
     if cppcheck_versions is None:
         print('Failed to communicate with server, retry later')
         sys.exit(1)
@@ -194,7 +194,7 @@ while True:
     if package_urls:
         package = package_urls[packages_processed-1]
     else:
-        package = get_package(server_address)
+        package = get_package()
     tgz = download_package(work_path, package, bandwidth_limit)
     if tgz is None:
         print("No package downloaded")
@@ -284,8 +284,8 @@ while True:
         print(info_output)
         print('=========================================================')
     if do_upload:
-        if upload_results(package, output, server_address):
-            upload_info(package, info_output, server_address)
+        if upload_results(package, output):
+            upload_info(package, info_output)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
         if (client_version_head is not None) and (Version(client_version_head) > Version(get_client_version())):

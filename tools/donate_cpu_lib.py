@@ -206,11 +206,11 @@ def compile_cppcheck(cppcheck_path, jobs):
     return True
 
 
-def get_cppcheck_versions(server_address):
+def get_cppcheck_versions():
     print('Connecting to server to get Cppcheck versions..')
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(server_address)
+            sock.connect(__server_address)
             sock.send(b'GetCppcheckVersions\n')
             versions = sock.recv(256)
     except socket.error as err:
@@ -219,11 +219,11 @@ def get_cppcheck_versions(server_address):
     return versions.decode('utf-8').split()
 
 
-def get_packages_count(server_address):
+def get_packages_count():
     print('Connecting to server to get count of packages..')
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(server_address)
+            sock.connect(__server_address)
             sock.send(b'getPackagesCount\n')
             packages = int(sock.recv(64))
     except socket.error as err:
@@ -232,13 +232,13 @@ def get_packages_count(server_address):
     return packages
 
 
-def get_package(server_address, package_index=None):
+def get_package(package_index=None):
     package = b''
     while not package:
         print('Connecting to server to get assigned work..')
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(server_address)
+                sock.connect(__server_address)
                 if package_index is None:
                     sock.send(b'get\n')
                 else:
@@ -584,7 +584,7 @@ def __send_all(connection, data):
             bytes_ = None
 
 
-def upload_results(package, results, server_address):
+def upload_results(package, results):
     if not __make_cmd == 'make':
         print('Error: Result upload not performed - only make build binaries are currently fully supported')
         return False
@@ -594,7 +594,7 @@ def upload_results(package, results, server_address):
     for retry in range(max_retries):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(server_address)
+                sock.connect(__server_address)
                 cmd = 'write\n'
                 __send_all(sock, cmd + package + '\n' + results + '\nDONE')
             print('Results have been successfully uploaded.')
@@ -608,7 +608,7 @@ def upload_results(package, results, server_address):
     return False
 
 
-def upload_info(package, info_output, server_address):
+def upload_info(package, info_output):
     if not __make_cmd == 'make':
         print('Error: Information upload not performed - only make build binaries are currently fully supported')
         return False
@@ -618,7 +618,7 @@ def upload_info(package, info_output, server_address):
     for retry in range(max_retries):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(server_address)
+                sock.connect(__server_address)
                 __send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
             print('Information output has been successfully uploaded.')
             return True
@@ -721,12 +721,17 @@ def get_client_version():
     return CLIENT_VERSION
 
 
+def set_server_address(server_address):
+    global __server_address
+    __server_address = server_address
+
+
 my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 jobs = '-j1'
 stop_time = None
 work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + my_script_name + '-workfolder'))
 package_url = None
-server_address = ('cppcheck1.osuosl.org', 8000)
+__server_address = ('cppcheck1.osuosl.org', 8000)
 bandwidth_limit = None
 max_packages = None
 do_upload = True

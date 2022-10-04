@@ -101,7 +101,7 @@ if __name__ == "__main__":
         args.p = len(args.packages)
         packages_idxs = []
     else:
-        packages_count = lib.get_packages_count(lib.server_address)
+        packages_count = lib.get_packages_count()
         if not packages_count:
             print("network or server might be temporarily down..")
             sys.exit(1)
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         if args.packages:
             package = args.packages.pop()
         else:
-            package = lib.get_package(lib.server_address, packages_idxs.pop())
+            package = lib.get_package(packages_idxs.pop())
 
         tgz = lib.download_package(work_path, package, None)
         if tgz is None:
