@@ -37,6 +37,7 @@ from donate_cpu_lib import *
 
 max_packages = None
 package_urls = []
+do_upload = True
 
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
