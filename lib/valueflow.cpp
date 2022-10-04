@@ -8860,6 +8860,12 @@ static std::size_t getTotalValues(TokenList *tokenlist)
     return n;
 }
 
+static std::uint64_t getValueFlowStopTime(const Settings* settings) {
+    if (settings->performanceValueFlowMaxTime >= 0)
+        return std::time(nullptr) + settings->performanceValueFlowMaxTime;
+    return ~0ULL;
+}
+
 void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
@@ -8881,7 +8887,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     valueFlowSameExpressions(tokenlist);
     valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, settings);
 
-    const std::time_t stopTime = (settings->performanceValueFlowMaxTime >= 0) ? (std::time(nullptr) + settings->performanceValueFlowMaxTime) : (~0ULL/2);
+    const std::uint64_t stopTime = getValueFlowStopTime(settings);
 
     std::size_t values = 0;
     std::size_t n = 4;
