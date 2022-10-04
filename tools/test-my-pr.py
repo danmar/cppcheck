@@ -20,6 +20,9 @@ def format_float(a, b=1):
 
 
 if __name__ == "__main__":
+    __my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+    __work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + __my_script_name + '-workfolder'))
+
     parser = argparse.ArgumentParser(description='Run this script from your branch with proposed Cppcheck patch to verify your patch against current main. It will compare output of testing bunch of opensource packages')
     parser.add_argument('-j', default=1, type=int, help='Concurency execution threads')
     group = parser.add_mutually_exclusive_group()
@@ -28,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
     parser.add_argument('--c-only', dest='c_only', help='Only process c packages', action='store_true')
     parser.add_argument('--cpp-only', dest='cpp_only', help='Only process c++ packages', action='store_true')
-    parser.add_argument('--work-path', '--work-path=', default=lib.work_path, type=str, help='Working directory for reference repo')
+    parser.add_argument('--work-path', '--work-path=', default=__work_path, type=str, help='Working directory for reference repo')
     args = parser.parse_args()
 
     print(args)
