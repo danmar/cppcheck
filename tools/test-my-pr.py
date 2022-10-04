@@ -44,7 +44,7 @@ if __name__ == "__main__":
     old_repo_dir = os.path.join(work_path, 'cppcheck')
     main_dir = os.path.join(work_path, 'tree-main')
 
-    jobs = '-j' + str(args.j)
+    lib.set_jobs('-j' + str(args.j))
     result_file = os.path.join(work_path, args.o)
     (f, ext) = os.path.splitext(result_file)
     timing_file = f + '_timing' + ext
@@ -88,12 +88,12 @@ if __name__ == "__main__":
         print('Failed to switch to common ancestor of your branch and main')
         sys.exit(1)
 
-    if not lib.compile_cppcheck(main_dir, jobs):
+    if not lib.compile_cppcheck(main_dir):
         print('Failed to compile main of Cppcheck')
         sys.exit(1)
 
     print('Testing your PR from directory: ' + your_repo_dir)
-    if not lib.compile_cppcheck(your_repo_dir, jobs):
+    if not lib.compile_cppcheck(your_repo_dir):
         print('Failed to compile your version of Cppcheck')
         sys.exit(1)
 
@@ -138,7 +138,7 @@ if __name__ == "__main__":
         your_timeout = False
 
         libraries = lib.library_includes.get_libraries(source_path)
-        c, errout, info, time_main, cppcheck_options, timing_info = lib.scan_package(main_dir, source_path, jobs, libraries)
+        c, errout, info, time_main, cppcheck_options, timing_info = lib.scan_package(main_dir, source_path, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -151,7 +151,7 @@ if __name__ == "__main__":
                 main_crashed = True
         results_to_diff.append(errout)
 
-        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(your_repo_dir, source_path, jobs, libraries)
+        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(your_repo_dir, source_path, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)

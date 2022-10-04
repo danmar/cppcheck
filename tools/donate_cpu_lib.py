@@ -146,7 +146,7 @@ def get_cppcheck_info(cppcheck_path):
         return ''
 
 
-def compile_version(cppcheck_path, jobs):
+def compile_version(cppcheck_path):
     if __make_cmd == "msbuild.exe":
         if os.path.isfile(os.path.join(cppcheck_path, 'bin', 'cppcheck.exe')):
             return True
@@ -156,7 +156,7 @@ def compile_version(cppcheck_path, jobs):
     elif os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
         return True
     # Build
-    ret = compile_cppcheck(cppcheck_path, jobs)
+    ret = compile_cppcheck(cppcheck_path)
     # Clean intermediate build files
     if __make_cmd == "msbuild.exe":
         exclude_bin = 'bin'
@@ -169,18 +169,18 @@ def compile_version(cppcheck_path, jobs):
     return ret
 
 
-def compile_cppcheck(cppcheck_path, jobs):
+def compile_cppcheck(cppcheck_path):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         if __make_cmd == 'msbuild.exe':
             subprocess.check_call(['python3', os.path.join('tools', 'matchcompiler.py'), '--write-dir', 'lib'], cwd=cppcheck_path)
             build_env = os.environ
             # append to cl.exe options - need to omit dash or slash since a dash is being prepended
-            build_env["_CL_"] = jobs.replace('j', 'MP', 1)
+            build_env["_CL_"] = __jobs.replace('j', 'MP', 1)
             # TODO: processes still exhaust all threads of the system
             subprocess.check_call([__make_cmd, '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release;Platform=x64'], cwd=cppcheck_path, env=build_env)
         else:
-            build_cmd = [__make_cmd, jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w']
+            build_cmd = [__make_cmd, __jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w']
             build_env = os.environ
             if __make_cmd == 'mingw32-make':
                 # TODO: MinGW will always link even if no changes are present
@@ -396,7 +396,7 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=True):
+def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
     print('Analyze..')
     libs = ''
     for library in libraries:
@@ -412,13 +412,13 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
         cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
-        cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+        cmd = cppcheck_cmd + ' ' + __jobs + ' ' + dir_to_scan
     else:
         nice_cmd = 'nice'
         if __make_cmd == 'mingw32-make':
             nice_cmd = ''
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options_rp
-        cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+        cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + __jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
     # collect messages
@@ -471,7 +471,7 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
             break
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
 
-    options_j = options + ' ' + jobs
+    options_j = options + ' ' + __jobs
 
     if returncode == RETURN_CODE_TIMEOUT:
         print('Timeout!')
@@ -726,8 +726,12 @@ def set_server_address(server_address):
     __server_address = server_address
 
 
+def set_jobs(jobs: str):
+    global __jobs
+    __jobs = jobs
+
 __my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-jobs = '-j1'
+__jobs = '-j1'
 stop_time = None
 work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + __my_script_name + '-workfolder'))
 __server_address = ('cppcheck1.osuosl.org', 8000)

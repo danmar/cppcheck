@@ -49,8 +49,8 @@ for arg in sys.argv[1:]:
             print('Argument "{}" is invalid.'.format(arg))
             print('"-j" must be followed by a positive number.')
             sys.exit(1)
-        jobs = arg
-        print('Jobs:' + jobs[2:])
+        print('Jobs:' + arg[2:])
+        set_jobs(arg)
     elif arg.startswith('--package='):
         pkg = arg[arg.find('=')+1:]
         package_urls.append(pkg)
@@ -185,11 +185,11 @@ while True:
             print('Failed to update Cppcheck, retry later')
             sys.exit(1)
         if ver == 'main':
-            if not compile_cppcheck(current_cppcheck_dir, jobs):
+            if not compile_cppcheck(current_cppcheck_dir):
                 print('Failed to compile Cppcheck-{}, retry later'.format(ver))
                 sys.exit(1)
         else:
-            if not compile_version(current_cppcheck_dir, jobs):
+            if not compile_version(current_cppcheck_dir):
                 print('Failed to compile Cppcheck-{}, retry later'.format(ver))
                 sys.exit(1)
     if package_urls:
@@ -239,7 +239,7 @@ while True:
                     return None
 
             client_version_head = get_client_version_head()
-        c, errout, info, t, cppcheck_options, timing_info = scan_package(tree_path, source_path, jobs, libraries, capture_callstack)
+        c, errout, info, t, cppcheck_options, timing_info = scan_package(tree_path, source_path, libraries, capture_callstack)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
