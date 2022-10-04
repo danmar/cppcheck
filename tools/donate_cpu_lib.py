@@ -730,8 +730,6 @@ def set_jobs(jobs: str):
     global __jobs
     __jobs = jobs
 
-__my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 __jobs = '-j1'
-work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + __my_script_name + '-workfolder'))
 __server_address = ('cppcheck1.osuosl.org', 8000)
 library_includes = LibraryIncludes()

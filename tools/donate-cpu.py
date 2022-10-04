@@ -31,10 +31,13 @@
 # Quick start: just run this script without any arguments
 
 import platform
+import os
 
 from packaging.version import Version
 from donate_cpu_lib import *
 
+__my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + __my_script_name + '-workfolder'))
 max_packages = None
 package_urls = []
 do_upload = True
