@@ -25,6 +25,8 @@ CPPCHECK_REPO_URL = "https://github.com/danmar/cppcheck.git"
 # Return code that is used to mark a timed out analysis
 RETURN_CODE_TIMEOUT = -999
 
+__jobs = '-j1'
+__server_address = ('cppcheck1.osuosl.org', 8000)
 __make_cmd = None
 
 def detect_make():
@@ -730,6 +732,4 @@ def set_jobs(jobs: str):
     global __jobs
     __jobs = jobs
 
-__jobs = '-j1'
-__server_address = ('cppcheck1.osuosl.org', 8000)
 library_includes = LibraryIncludes()
