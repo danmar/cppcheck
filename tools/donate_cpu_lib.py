@@ -362,7 +362,7 @@ def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None
 def __run_command(cmd, print_cmd=True):
     if print_cmd:
         print(cmd)
-    start_time = time.time()
+    time_start = time.time()
     comm = None
     if sys.platform == 'win32':
         p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -390,9 +390,9 @@ def __run_command(cmd, print_cmd=True):
         if p:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
             comm = p.communicate()
-    stop_time = time.time()
+    time_stop = time.time()
     stdout, stderr = comm
-    elapsed_time = stop_time - start_time
+    elapsed_time = time_stop - time_start
     return return_code, stdout, stderr, elapsed_time
 
 
@@ -732,7 +732,6 @@ def set_jobs(jobs: str):
 
 __my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 __jobs = '-j1'
-stop_time = None
 work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + __my_script_name + '-workfolder'))
 __server_address = ('cppcheck1.osuosl.org', 8000)
 library_includes = LibraryIncludes()
