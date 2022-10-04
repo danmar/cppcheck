@@ -735,5 +735,4 @@ __jobs = '-j1'
 stop_time = None
 work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + __my_script_name + '-workfolder'))
 __server_address = ('cppcheck1.osuosl.org', 8000)
-bandwidth_limit = None
 library_includes = LibraryIncludes()
