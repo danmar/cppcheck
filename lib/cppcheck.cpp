@@ -779,8 +779,9 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
         // Get configurations..
         std::set<std::string> configurations;
         if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
-            Timer t("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults);
-            configurations = preprocessor.getConfigs(tokens1);
+            Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
+                configurations = preprocessor.getConfigs(tokens1);
+            });
         } else {
             configurations.insert(mSettings.userDefines);
         }
@@ -843,9 +844,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
             }
 
             if (mSettings.preprocessOnly) {
-                Timer t("Preprocessor::getcode", mSettings.showtime, &s_timerResults);
-                std::string codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
-                t.stop();
+                std::string codeWithoutCfg;
+                Timer::run("Preprocessor::getcode", mSettings.showtime, &s_timerResults, [&]() {
+                    codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
+                });
 
                 if (startsWith(codeWithoutCfg,"#file"))
                     codeWithoutCfg.insert(0U, "//");
@@ -869,11 +871,10 @@ unsigned int CppCheck::checkFile(const FileWithDetails& file, const std::string 
 
             try {
                 // Create tokens, skip rest of iteration if failed
-                {
-                    Timer timer("Tokenizer::createTokens", mSettings.showtime, &s_timerResults);
+                Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
                     simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
                     tokenizer.list.createTokens(std::move(tokensP));
-                }
+                });
                 hasValidConfig = true;
 
                 // locations macros
@@ -1075,8 +1076,9 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                 return;
             }
 
-            Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
-            check->runChecks(tokenizer, this);
+            Timer::run(check->name() + "::runChecks", mSettings.showtime, &s_timerResults, [&]() {
+                check->runChecks(tokenizer, this);
+            });
         }
     }
 
