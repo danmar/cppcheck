@@ -1508,14 +1508,14 @@ bool Library::reportErrors(const std::string &path) const
 
 bool Library::isexecutableblock(const std::string &file, const std::string &token) const
 {
-    const std::map<std::string, CodeBlock>::const_iterator it = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
+    const std::unordered_map<std::string, CodeBlock>::const_iterator it = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mExecutableBlocks.end() && it->second.isBlock(token));
 }
 
 int Library::blockstartoffset(const std::string &file) const
 {
     int offset = -1;
-    const std::map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
         = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mExecutableBlocks.end()) {
@@ -1526,7 +1526,7 @@ int Library::blockstartoffset(const std::string &file) const
 
 const std::string& Library::blockstart(const std::string &file) const
 {
-    const std::map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
         = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mExecutableBlocks.end()) {
@@ -1537,7 +1537,7 @@ const std::string& Library::blockstart(const std::string &file) const
 
 const std::string& Library::blockend(const std::string &file) const
 {
-    const std::map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
         = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mExecutableBlocks.end()) {

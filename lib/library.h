@@ -483,7 +483,7 @@ public:
         bool unique = false;
     };
 
-    std::map<std::string, SmartPointer> smartPointers;
+    std::unordered_map<std::string, SmartPointer> smartPointers;
     bool isSmartPointer(const Token *tok) const;
     const SmartPointer* detectSmartPointer(const Token* tok) const;
 
@@ -634,7 +634,7 @@ private:
     std::map<std::string, bool> mProcessAfterCode;
     std::set<std::string> mMarkupExtensions; // file extensions of markup files
     std::map<std::string, std::set<std::string>> mKeywords;  // keywords for code in the library
-    std::map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
+    std::unordered_map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::map<std::string, std::set<std::string>> mImporters;  // keywords that import variables/functions
     std::map<std::string, int> mReflection; // invocation of reflection
