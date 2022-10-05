@@ -1269,7 +1269,7 @@ const Token* followReferences(const Token* tok, ErrorPath* errors)
     auto refs = followAllReferences(tok, true, false);
     if (refs.size() == 1) {
         if (errors)
-            *errors = refs.front().errors;
+            *errors = std::move(refs.front().errors);
         return refs.front().token;
     }
     return nullptr;

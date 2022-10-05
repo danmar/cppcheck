@@ -199,7 +199,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 if (index == argIndex) {
                     value = value.substr(1, value.length() - 2);
                     mFunctions[value].usedOtherFile = true;
-                    mFunctionCalls.insert(value);
+                    mFunctionCalls.insert(std::move(value));
                 }
             }
         }
