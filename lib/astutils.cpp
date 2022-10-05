@@ -2328,16 +2328,17 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
 
     if (!tok->function() && !tok->variable() && tok->isName()) {
         if (settings) {
-            const bool requireInit = settings->library.isuninitargbad(tok, 1 + argnr);
-            const bool requireNonNull = settings->library.isnullargbad(tok, 1 + argnr);
             // Check if direction (in, out, inout) is specified in the library configuration and use that
             const Library::ArgumentChecks::Direction argDirection = settings->library.getArgDirection(tok, 1 + argnr);
             if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
                 return false;
-            else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
-                     argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
+
+            const bool requireNonNull = settings->library.isnullargbad(tok, 1 + argnr);
+            if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
+                argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
                 if (indirect == 0 && isArray(tok1))
                     return true;
+                const bool requireInit = settings->library.isuninitargbad(tok, 1 + argnr);
                 // Assume that if the variable must be initialized then the indirection is 1
                 if (indirect > 0 && requireInit && requireNonNull)
                     return true;
