@@ -80,8 +80,7 @@ def check_requirements():
 
 
 # Try and retry with exponential backoff if an exception is raised
-def try_retry(fun, fargs=(), max_tries=5):
-    sleep_duration = 5.0
+def try_retry(fun, fargs=(), max_tries=5, sleep_duration=5.0, sleep_factor=2.0):
     for i in range(max_tries):
         try:
             return fun(*fargs)
@@ -93,7 +92,7 @@ def try_retry(fun, fargs=(), max_tries=5):
                 print("{} in {}: {}".format(type(e).__name__, fun.__name__, str(e)))
                 print("Trying {} again in {} seconds".format(fun.__name__, sleep_duration))
                 time.sleep(sleep_duration)
-                sleep_duration *= 2.0
+                sleep_duration *= sleep_factor
             else:
                 print("Maximum number of tries reached for {}".format(fun.__name__))
                 raise e
