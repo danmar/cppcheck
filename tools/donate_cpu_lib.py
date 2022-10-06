@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.36"
+CLIENT_VERSION = "1.3.37"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -25,6 +25,8 @@ CPPCHECK_REPO_URL = "https://github.com/danmar/cppcheck.git"
 # Return code that is used to mark a timed out analysis
 RETURN_CODE_TIMEOUT = -999
 
+__jobs = '-j1'
+__server_address = ('cppcheck1.osuosl.org', 8000)
 __make_cmd = None
 
 def detect_make():
@@ -146,7 +148,7 @@ def get_cppcheck_info(cppcheck_path):
         return ''
 
 
-def compile_version(cppcheck_path, jobs):
+def compile_version(cppcheck_path):
     if __make_cmd == "msbuild.exe":
         if os.path.isfile(os.path.join(cppcheck_path, 'bin', 'cppcheck.exe')):
             return True
@@ -156,7 +158,7 @@ def compile_version(cppcheck_path, jobs):
     elif os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
         return True
     # Build
-    ret = compile_cppcheck(cppcheck_path, jobs)
+    ret = compile_cppcheck(cppcheck_path)
     # Clean intermediate build files
     if __make_cmd == "msbuild.exe":
         exclude_bin = 'bin'
@@ -169,18 +171,18 @@ def compile_version(cppcheck_path, jobs):
     return ret
 
 
-def compile_cppcheck(cppcheck_path, jobs):
+def compile_cppcheck(cppcheck_path):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         if __make_cmd == 'msbuild.exe':
             subprocess.check_call(['python3', os.path.join('tools', 'matchcompiler.py'), '--write-dir', 'lib'], cwd=cppcheck_path)
             build_env = os.environ
             # append to cl.exe options - need to omit dash or slash since a dash is being prepended
-            build_env["_CL_"] = jobs.replace('j', 'MP', 1)
+            build_env["_CL_"] = __jobs.replace('j', 'MP', 1)
             # TODO: processes still exhaust all threads of the system
             subprocess.check_call([__make_cmd, '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release;Platform=x64'], cwd=cppcheck_path, env=build_env)
         else:
-            build_cmd = [__make_cmd, jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w']
+            build_cmd = [__make_cmd, __jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w']
             build_env = os.environ
             if __make_cmd == 'mingw32-make':
                 # TODO: MinGW will always link even if no changes are present
@@ -206,11 +208,11 @@ def compile_cppcheck(cppcheck_path, jobs):
     return True
 
 
-def get_cppcheck_versions(server_address):
+def get_cppcheck_versions():
     print('Connecting to server to get Cppcheck versions..')
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(server_address)
+            sock.connect(__server_address)
             sock.send(b'GetCppcheckVersions\n')
             versions = sock.recv(256)
     except socket.error as err:
@@ -219,11 +221,11 @@ def get_cppcheck_versions(server_address):
     return versions.decode('utf-8').split()
 
 
-def get_packages_count(server_address):
+def get_packages_count():
     print('Connecting to server to get count of packages..')
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(server_address)
+            sock.connect(__server_address)
             sock.send(b'getPackagesCount\n')
             packages = int(sock.recv(64))
     except socket.error as err:
@@ -232,13 +234,13 @@ def get_packages_count(server_address):
     return packages
 
 
-def get_package(server_address, package_index=None):
+def get_package(package_index=None):
     package = b''
     while not package:
         print('Connecting to server to get assigned work..')
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(server_address)
+                sock.connect(__server_address)
                 if package_index is None:
                     sock.send(b'get\n')
                 else:
@@ -362,7 +364,7 @@ def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None
 def __run_command(cmd, print_cmd=True):
     if print_cmd:
         print(cmd)
-    start_time = time.time()
+    time_start = time.time()
     comm = None
     if sys.platform == 'win32':
         p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
@@ -390,13 +392,13 @@ def __run_command(cmd, print_cmd=True):
         if p:
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
             comm = p.communicate()
-    stop_time = time.time()
+    time_stop = time.time()
     stdout, stderr = comm
-    elapsed_time = stop_time - start_time
+    elapsed_time = time_stop - time_start
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=True):
+def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
     print('Analyze..')
     libs = ''
     for library in libraries:
@@ -412,13 +414,13 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
         cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
-        cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+        cmd = cppcheck_cmd + ' ' + __jobs + ' ' + dir_to_scan
     else:
         nice_cmd = 'nice'
         if __make_cmd == 'mingw32-make':
             nice_cmd = ''
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options_rp
-        cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+        cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + __jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
     # collect messages
@@ -471,7 +473,7 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
             break
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
 
-    options_j = options + ' ' + jobs
+    options_j = options + ' ' + __jobs
 
     if returncode == RETURN_CODE_TIMEOUT:
         print('Timeout!')
@@ -584,7 +586,7 @@ def __send_all(connection, data):
             bytes_ = None
 
 
-def upload_results(package, results, server_address):
+def upload_results(package, results):
     if not __make_cmd == 'make':
         print('Error: Result upload not performed - only make build binaries are currently fully supported')
         return False
@@ -594,7 +596,7 @@ def upload_results(package, results, server_address):
     for retry in range(max_retries):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(server_address)
+                sock.connect(__server_address)
                 cmd = 'write\n'
                 __send_all(sock, cmd + package + '\n' + results + '\nDONE')
             print('Results have been successfully uploaded.')
@@ -608,7 +610,7 @@ def upload_results(package, results, server_address):
     return False
 
 
-def upload_info(package, info_output, server_address):
+def upload_info(package, info_output):
     if not __make_cmd == 'make':
         print('Error: Information upload not performed - only make build binaries are currently fully supported')
         return False
@@ -618,7 +620,7 @@ def upload_info(package, info_output, server_address):
     for retry in range(max_retries):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(server_address)
+                sock.connect(__server_address)
                 __send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
             print('Information output has been successfully uploaded.')
             return True
@@ -721,13 +723,13 @@ def get_client_version():
     return CLIENT_VERSION
 
 
-my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
-jobs = '-j1'
-stop_time = None
-work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + my_script_name + '-workfolder'))
-package_url = None
-server_address = ('cppcheck1.osuosl.org', 8000)
-bandwidth_limit = None
-max_packages = None
-do_upload = True
+def set_server_address(server_address):
+    global __server_address
+    __server_address = server_address
+
+
+def set_jobs(jobs: str):
+    global __jobs
+    __jobs = jobs
+
 library_includes = LibraryIncludes()
