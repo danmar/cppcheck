@@ -209,46 +209,41 @@ def compile_cppcheck(cppcheck_path):
 
 def get_cppcheck_versions():
     print('Connecting to server to get Cppcheck versions..')
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(__server_address)
-            sock.send(b'GetCppcheckVersions\n')
-            versions = sock.recv(256)
-    except socket.error as err:
-        print('Failed to get cppcheck versions: ' + str(err))
-        return None
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        sock.send(b'GetCppcheckVersions\n')
+        versions = sock.recv(256)
+    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+    if not versions:
+        raise Exception('received empty response')
     return versions.decode('utf-8').split()
 
 
 def get_packages_count():
     print('Connecting to server to get count of packages..')
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(__server_address)
-            sock.send(b'getPackagesCount\n')
-            packages = int(sock.recv(64))
-    except socket.error as err:
-        print('Failed to get count of packages: ' + str(err))
-        return None
-    return packages
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        sock.send(b'getPackagesCount\n')
+        packages = sock.recv(64)
+    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+    if not packages:
+        raise Exception('received empty response')
+    return int(packages)
 
 
 def get_package(package_index=None):
-    package = b''
-    while not package:
-        print('Connecting to server to get assigned work..')
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(__server_address)
-                if package_index is None:
-                    sock.send(b'get\n')
-                else:
-                    request = 'getPackageIdx:' + str(package_index) + '\n'
-                    sock.send(request.encode())
-                package = sock.recv(256)
-        except socket.error:
-            print("network or server might be temporarily down.. will try again in 30 seconds..")
-            time.sleep(30)
+    print('Connecting to server to get assigned work..')
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        if package_index is None:
+            sock.send(b'get\n')
+        else:
+            request = 'getPackageIdx:' + str(package_index) + '\n'
+            sock.send(request.encode())
+        package = sock.recv(256)
+    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+    if not package:
+        raise Exception('received empty response')
     return package.decode('utf-8')
 
 
