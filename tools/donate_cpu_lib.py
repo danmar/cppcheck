@@ -580,28 +580,27 @@ def __send_all(connection, data):
             bytes_ = None
 
 
+def __upload(cmd, data, cmd_info):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        __send_all(sock, '{}\n{}'.format(cmd, data))
+    print('{} has been successfully uploaded.'.format(cmd_info))
+    return True
+
+
 def upload_results(package, results):
     if not __make_cmd == 'make':
         print('Error: Result upload not performed - only make build binaries are currently fully supported')
         return False
 
     print('Uploading results.. ' + str(len(results)) + ' bytes')
-    max_retries = 4
-    for retry in range(max_retries):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(__server_address)
-                cmd = 'write\n'
-                __send_all(sock, cmd + package + '\n' + results + '\nDONE')
-            print('Results have been successfully uploaded.')
-            return True
-        except socket.error as err:
-            print('Upload error: ' + str(err))
-            if retry < (max_retries - 1):
-                print('Retrying upload in 30 seconds')
-                time.sleep(30)
-    print('Upload permanently failed!')
-    return False
+    try:
+        try_retry(__upload, fargs=('write\n' + package, results + '\nDONE', 'Result'), max_tries=4, sleep_duration=30, sleep_factor=1)
+    except Exception as e:
+        print('Result upload permanently failed ({})!'.format(e))
+        return False
+
+    return True
 
 
 def upload_info(package, info_output):
@@ -610,21 +609,13 @@ def upload_info(package, info_output):
         return False
 
     print('Uploading information output.. ' + str(len(info_output)) + ' bytes')
-    max_retries = 3
-    for retry in range(max_retries):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(__server_address)
-                __send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
-            print('Information output has been successfully uploaded.')
-            return True
-        except socket.error as err:
-            print('Upload error: ' + str(err))
-            if retry < (max_retries - 1):
-                print('Retrying upload in 30 seconds')
-                time.sleep(30)
-    print('Upload permanently failed!')
-    return False
+    try:
+        try_retry(__upload, fargs=('write_info\n' + package, info_output + '\nDONE', 'Information'), max_tries=3, sleep_duration=30, sleep_factor=1)
+    except Exception as e:
+        print('Information upload permanently failed ({})!'.format(e))
+        return False
+
+    return True
 
 
 class LibraryIncludes:
