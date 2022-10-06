@@ -78,6 +78,7 @@ jobs:
           ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --enable=unusedFunction --exception-handling -rp=. --project=cmake.output/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
           DISABLE_VALUEFLOW: 1
+          UNUSEDFUNCTION_ONLY: 1
 
       # the following steps are duplicated from above since setting up the build node in a parallel step takes longer than the actual steps
       - name: CMake (no test)
@@ -98,6 +99,7 @@ jobs:
           ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
           DISABLE_VALUEFLOW: 1
+          UNUSEDFUNCTION_ONLY: 1
 
       - name: Fetch corpus
         run: |
@@ -126,6 +128,7 @@ jobs:
           head -50 callgrind.annotated.log
         env:
           DISABLE_VALUEFLOW: 1
+          UNUSEDFUNCTION_ONLY: 1
 
       - uses: actions/upload-artifact@v2
         with:
