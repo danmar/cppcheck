@@ -3167,18 +3167,17 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                 Function * func = const_cast<Function *>(it->second);
                 if (!func->hasBody()) {
                     if (func->argsMatch(scope1, func->argDef, (*tok)->next(), path, path_length)) {
-                        if (func->type == Function::eDestructor && destructor) {
-                            func->hasBody(true);
-                        } else if (func->type != Function::eDestructor && !destructor) {
-                            // normal function?
-                            const Token *closeParen = (*tok)->next()->link();
-                            if (closeParen) {
-                                const Token *eq = mTokenizer->isFunctionHead(closeParen, ";");
-                                if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
-                                    func->isDefault(true);
-                                    return;
-                                }
-
+                        const Token *closeParen = (*tok)->next()->link();
+                        if (closeParen) {
+                            const Token *eq = mTokenizer->isFunctionHead(closeParen, ";");
+                            if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
+                                func->isDefault(true);
+                                return;
+                            }
+                            if (func->type == Function::eDestructor && destructor) {
+                                func->hasBody(true);
+                            } else if (func->type != Function::eDestructor && !destructor) {
+                                // normal function?
                                 const bool hasConstKeyword = closeParen->next()->str() == "const";
                                 if ((func->isConst() == hasConstKeyword) &&
                                     (func->hasLvalRefQualifier() == lval) &&

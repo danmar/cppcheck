@@ -4581,6 +4581,25 @@ private:
             ASSERT(db->scopeList.back().functionList.size() == 1);
             ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
         }
+        {
+            GET_SYMBOL_DB("class C { ~C(); };\n"
+                          "C::~C() = default;");
+            ASSERT(db->scopeList.size() == 2);
+            ASSERT(db->scopeList.back().functionList.size() == 1);
+            ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+            ASSERT(db->scopeList.back().functionList.front().isDestructor() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "class C { ~C(); };\n"
+                          "}\n"
+                          "using namespace ns;\n"
+                          "C::~C() = default;");
+            ASSERT(db->scopeList.size() == 3);
+            ASSERT(db->scopeList.back().functionList.size() == 1);
+            ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+            ASSERT(db->scopeList.back().functionList.front().isDestructor() == true);
+        }
     }
 
     void symboldatabase80() { // #9389
