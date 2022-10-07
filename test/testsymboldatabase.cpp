@@ -5037,8 +5037,9 @@ private:
         GET_SYMBOL_DB("std::string f() = delete;\n"
                       "void g() {}");
         ASSERT(db);
-        ASSERT(db->scopeList.size() == 1); // no scope for g! (and hence no analysis for g)
+        ASSERT(db->scopeList.size() == 2);
         ASSERT(db->scopeList.front().type == Scope::eGlobal);
+        ASSERT(db->scopeList.back().className == "g");
     }
 
     void createSymbolDatabaseFindAllScopes1() {
