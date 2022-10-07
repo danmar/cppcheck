@@ -110,6 +110,10 @@ inline static bool isPrefixStringCharLiteral(const std::string &str, char q, con
 
 inline static bool isStringCharLiteral(const std::string &str, char q)
 {
+    // early out to avoid the loop
+    if (!endsWith(str, q))
+        return false;
+
     static const std::array<std::string, 5> suffixes{"", "u8", "u", "U", "L"};
     for (const std::string & p: suffixes) {
         if (isPrefixStringCharLiteral(str, q, p))
