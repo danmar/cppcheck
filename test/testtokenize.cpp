@@ -6321,6 +6321,13 @@ private:
         ASSERT_EQUALS("1f23,(+4+", testAst("1+f(2,3)+4"));
         ASSERT_EQUALS("1f2a&,(+", testAst("1+f(2,&a)"));
         ASSERT_EQUALS("argv[", testAst("int f(char argv[]);"));
+        ASSERT_EQUALS("", testAst("void f();"));
+        ASSERT_EQUALS("", testAst("void f() {}"));
+        ASSERT_EQUALS("f(delete=", testAst("int f() = delete;"));
+        ASSERT_EQUALS("", testAst("a::b f();"));
+        ASSERT_EQUALS("", testAst("a::b f() {}"));
+        ASSERT_EQUALS("af::(delete=", testAst("a::b f() = delete;")); // where did b go? I'd expect at least `ab::` somewhere...
+        ASSERT_EQUALS("constdelete=", testAst("int f() const = delete;"));
         ASSERT_EQUALS("", testAst("extern unsigned f(const char *);"));
         ASSERT_EQUALS("charformat*...,", testAst("extern void f(const char *format, ...);"));
         ASSERT_EQUALS("int((void,", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));

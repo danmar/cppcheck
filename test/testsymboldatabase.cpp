@@ -363,6 +363,7 @@ private:
         TEST_CASE(symboldatabase99); // #10864
         TEST_CASE(symboldatabase100); // #10174
         TEST_CASE(symboldatabase101);
+        TEST_CASE(symboldatabase102);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5030,6 +5031,14 @@ private:
         ASSERT(it);
         ASSERT(it->tokAt(2));
         ASSERT(it->tokAt(2)->variable());
+    }
+
+    void symboldatabase102() {
+        GET_SYMBOL_DB("std::string f() = delete;\n"
+                      "void g() {}");
+        ASSERT(db);
+        ASSERT(db->scopeList.size() == 1); // no scope for g! (and hence no analysis for g)
+        ASSERT(db->scopeList.front().type == Scope::eGlobal);
     }
 
     void createSymbolDatabaseFindAllScopes1() {
