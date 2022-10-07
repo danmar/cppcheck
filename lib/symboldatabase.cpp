@@ -3246,7 +3246,6 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     } else {
         scopeList.pop_back();
         *scope = nullptr;
-        tok1 = nullptr;
     }
     *tok = tok1;
 }
