@@ -3237,18 +3237,16 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
             while (tok1->next())
                 tok1 = tok1->next();
             *scope = nullptr;
-            *tok = tok1;
-            return;
+        } else {
+            (*scope)->nestedList.push_back(newScope);
+            *scope = newScope;
         }
-
-        (*scope)->nestedList.push_back(newScope);
-        *scope = newScope;
-        *tok = tok1;
     } else {
         scopeList.pop_back();
         *scope = nullptr;
-        *tok = nullptr;
+        tok1 = nullptr;
     }
+    *tok = tok1;
 }
 
 bool Type::isClassType() const
