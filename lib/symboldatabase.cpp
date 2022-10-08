@@ -3241,7 +3241,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
             (*scope)->nestedList.push_back(newScope);
             *scope = newScope;
         }
-    } else if (tok1 && tok1->tokAt(-2) && Token::Match(tok1->tokAt(-2), "= default|delete ;")) {
+    } else if (tok1 && Token::Match(tok1->tokAt(-2), "= default|delete ;")) {
         scopeList.pop_back();
     } else {
         scopeList.pop_back();
