@@ -86,6 +86,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 {
     {
         Settings tempSettings;
+        tempSettings.exename = QCoreApplication::applicationFilePath().toStdString();
         tempSettings.loadCppcheckCfg();
         mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
         mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
