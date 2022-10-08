@@ -472,11 +472,10 @@ private:
     }
 
     void lineNumber() {
-        check("void foo() {}\n"
+        check("void foo();\n"
               "void bar() {}\n"
-              "int main()");
-        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'bar' is never used.\n"
-                      "[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
+              "int main() {}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The function 'bar' is never used.\n", errout.str());
     }
 
     void ignore_declaration() {

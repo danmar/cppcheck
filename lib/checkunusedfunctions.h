@@ -26,9 +26,9 @@
 #include "config.h"
 
 #include <list>
-#include <map>
 #include <set>
 #include <string>
+#include <unordered_map>
 
 class ErrorLogger;
 class Function;
@@ -111,7 +111,7 @@ private:
         bool usedOtherFile;
     };
 
-    std::map<std::string, FunctionUsage> mFunctions;
+    std::unordered_map<std::string, FunctionUsage> mFunctions;
 
     class CPPCHECKLIB FunctionDecl {
     public:
