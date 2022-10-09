@@ -2176,29 +2176,43 @@ void CheckOther::checkDuplicateBranch()
             if (macro)
                 continue;
 
-            // save if branch code
-            const std::string branch1 = scope.bodyStart->next()->stringifyList(scope.bodyEnd);
+            const Token * const tokIf = scope.bodyStart->next();
+            const Token * const tokElse = scope.bodyEnd->tokAt(3);
 
-            if (branch1.empty())
+            // compare first tok before stringifying the whole blocks
+            const std::string tokIfStr = tokIf->stringify(false, true, false);
+            if (tokIfStr.empty())
                 continue;
 
-            // save else branch code
-            const std::string branch2 = scope.bodyEnd->tokAt(3)->stringifyList(scope.bodyEnd->linkAt(2));
+            const std::string tokElseStr = tokElse->stringify(false, true, false);
 
-            ErrorPath errorPath;
-            // check for duplicates
-            if (branch1 == branch2) {
-                duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);
-                continue;
+            if (tokIfStr == tokElseStr) {
+                // save if branch code
+                const std::string branch1 = tokIf->stringifyList(scope.bodyEnd);
+
+                if (branch1.empty())
+                    continue;
+
+                // save else branch code
+                const std::string branch2 = tokElse->stringifyList(scope.bodyEnd->linkAt(2));
+
+                // check for duplicates
+                if (branch1 == branch2) {
+                    duplicateBranchError(scope.classDef, scope.bodyEnd->next(), ErrorPath{});
+                    continue;
+                }
             }
 
             // check for duplicates using isSameExpression
-            const Token * branchTop1 = getSingleExpressionInBlock(scope.bodyStart->next());
-            const Token * branchTop2 = getSingleExpressionInBlock(scope.bodyEnd->tokAt(3));
-            if (!branchTop1 || !branchTop2)
+            const Token * branchTop1 = getSingleExpressionInBlock(tokIf);
+            if (!branchTop1)
+                continue;
+            const Token * branchTop2 = getSingleExpressionInBlock(tokElse);
+            if (!branchTop2)
                 continue;
             if (branchTop1->str() != branchTop2->str())
                 continue;
+            ErrorPath errorPath;
             if (isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand1(), branchTop2->astOperand1(), mSettings->library, true, true, &errorPath) &&
                 isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand2(), branchTop2->astOperand2(), mSettings->library, true, true, &errorPath))
                 duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);
