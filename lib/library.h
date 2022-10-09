@@ -549,7 +549,7 @@ public:
     /**
      * Get function name for function call
      */
-    std::string getFunctionName(const Token *ftok) const;
+    const std::string& getFunctionName(const Token *ftok) const;
 
     static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback=emptyString);
 

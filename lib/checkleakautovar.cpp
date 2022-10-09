@@ -661,7 +661,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
                 if (ftok->isKeyword())
                     continue;
-                const std::string functionName(mSettings->library.getFunctionName(ftok));
+                const std::string& functionName(mSettings->library.getFunctionName(ftok));
                 bool unknown = false;
                 if (mTokenizer->isScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)

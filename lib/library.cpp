@@ -980,31 +980,44 @@ std::string Library::getFunctionName(const Token *ftok, bool *error) const
     return "";
 }
 
-std::string Library::getFunctionName(const Token *ftok) const
+const std::string& Library::getFunctionName(const Token * const ftok) const
 {
-    if (!Token::Match(ftok, "%name% (") && (ftok->strAt(-1) != "&" || ftok->previous()->astOperand2()))
-        return "";
+    if (!ftok)
+        return emptyString;
+
+    thread_local static auto lastFuncName = std::pair<const Token*, std::string>(nullptr, "");
+    if (lastFuncName.first == ftok)
+        return lastFuncName.second;
+
+    std::string ret;
+    if (!Token::Match(ftok, "%name% (") && (ftok->strAt(-1) != "&" || ftok->previous()->astOperand2())) {
+    }
 
     // Lookup function name using AST..
-    if (ftok->astParent()) {
+    else if (ftok->astParent()) {
         bool error = false;
         const Token * tok = ftok->astParent()->isUnaryOp("&") ? ftok->astParent()->astOperand1() : ftok->next()->astOperand1();
-        const std::string ret = getFunctionName(tok, &error);
-        return error ? std::string() : ret;
+        std::string tmp = getFunctionName(tok, &error);
+        if (!error)
+            ret = std::move(tmp);
     }
 
     // Lookup function name without using AST..
-    if (Token::simpleMatch(ftok->previous(), "."))
-        return "";
-    if (!Token::Match(ftok->tokAt(-2), "%name% ::"))
-        return ftok->str();
-    std::string ret(ftok->str());
-    ftok = ftok->tokAt(-2);
-    while (Token::Match(ftok, "%name% ::")) {
-        ret = ftok->str() + "::" + ret;
-        ftok = ftok->tokAt(-2);
+    else if (Token::simpleMatch(ftok->previous(), ".")) {
     }
-    return ret;
+    else if (!Token::Match(ftok->tokAt(-2), "%name% ::"))
+        ret = ftok->str();
+    else {
+        ret = ftok->str();
+        const Token *tok = ftok->tokAt(-2);
+        while (Token::Match(tok, "%name% ::")) {
+            ret = tok->str() + "::" + ret;
+            tok = tok->tokAt(-2);
+        }
+    }
+    lastFuncName.first = ftok;
+    lastFuncName.second = std::move(ret);
+    return lastFuncName.second;
 }
 
 bool Library::isnullargbad(const Token *ftok, int argnr) const
@@ -1012,7 +1025,7 @@ bool Library::isnullargbad(const Token *ftok, int argnr) const
     const ArgumentChecks *arg = getarg(ftok, argnr);
     if (!arg) {
         // scan format string argument should not be null
-        const std::string funcname = getFunctionName(ftok);
+        const std::string& funcname = getFunctionName(ftok);
         const std::unordered_map<std::string, Function>::const_iterator it = functions.find(funcname);
         if (it != functions.cend() && it->second.formatstr && it->second.formatstr_scan)
             return true;
@@ -1025,7 +1038,7 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *h
     const ArgumentChecks *arg = getarg(ftok, argnr);
     if (!arg) {
         // non-scan format string argument should not be uninitialized
-        const std::string funcname = getFunctionName(ftok);
+        const std::string& funcname = getFunctionName(ftok);
         const std::unordered_map<std::string, Function>::const_iterator it = functions.find(funcname);
         if (it != functions.cend() && it->second.formatstr && !it->second.formatstr_scan)
             return true;
@@ -1039,21 +1052,21 @@ bool Library::isuninitargbad(const Token *ftok, int argnr, int indirect, bool *h
 /** get allocation info for function */
 const Library::AllocFunc* Library::getAllocFuncInfo(const Token *tok) const
 {
-    const std::string funcname = getFunctionName(tok);
+    const std::string& funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mAlloc, funcname);
 }
 
 /** get deallocation info for function */
 const Library::AllocFunc* Library::getDeallocFuncInfo(const Token *tok) const
 {
-    const std::string funcname = getFunctionName(tok);
+    const std::string& funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mDealloc, funcname);
 }
 
 /** get reallocation info for function */
 const Library::AllocFunc* Library::getReallocFuncInfo(const Token *tok) const
 {
-    const std::string funcname = getFunctionName(tok);
+    const std::string& funcname = getFunctionName(tok);
     return isNotLibraryFunction(tok) && functions.find(funcname) != functions.end() ? nullptr : getAllocDealloc(mRealloc, funcname);
 }
 
