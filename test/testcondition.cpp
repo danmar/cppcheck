@@ -1309,7 +1309,7 @@ private:
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
               "}", "test.cpp", false);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'c>='z'' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return 'c>='z'' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator7() { // opposite expressions
@@ -1885,7 +1885,7 @@ private:
               "    return a % 5 > 5;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:7]: (style) Condition 'a%5>5' is always false\n"
+            "[test.cpp:7]: (style) Return 'a%5>5' is always false\n"
             "[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
@@ -3205,7 +3205,7 @@ private:
               "  if(x == 0) { x++; return x == 0; }\n"
               "  return false;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'x==0' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return 'x==0' is always false\n", errout.str());
 
         check("void f() {\n" // #6898 (Token::expressionString)
               "  int x = 0;\n"
@@ -3426,7 +3426,7 @@ private:
               "    const int b = 52;\n"
               "    return a+b;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'a+b' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Return 'a+b' is always true\n", errout.str());
 
         check("int f() {\n"
               "    int a = 50;\n"
@@ -3990,7 +3990,7 @@ private:
         check("bool f(bool a, bool b) {\n"
               "    return a || ! b || ! a;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return '!a' is always true\n", errout.str());
 
         // #10148
         check("void f(int i) {\n"
@@ -4419,7 +4419,7 @@ private:
                       "[test.cpp:4]: (style) Condition 's.empty()' is always true\n"
                       "[test.cpp:5]: (style) Condition 's.empty()' is always true\n"
                       "[test.cpp:6]: (style) Condition '(bool)0' is always false\n"
-                      "[test.cpp:7]: (style) Condition 's.empty()' is always true\n",
+                      "[test.cpp:7]: (style) Return 's.empty()' is always true\n",
                       errout.str());
 
         check("int f(bool b) {\n"
@@ -4430,8 +4430,8 @@ private:
               "    if (b) return static_cast<int>(1);\n"
               "    return (int)0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'static_cast<int>(1)' is always true\n"
-                      "[test.cpp:7]: (style) Condition '(int)0' is always false\n",
+        ASSERT_EQUALS("[test.cpp:6]: (style) Return 'static_cast<int>(1)' is always true\n"
+                      "[test.cpp:7]: (style) Return '(int)0' is always false\n",
                       errout.str());
 
         check("int f() { return 3; }\n"
@@ -4439,7 +4439,7 @@ private:
               "int h() { if (f()) {} }\n"
               "int i() { return f() == 3; }\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f()' is always true\n"
-                      "[test.cpp:4]: (style) Condition 'f()==3' is always true\n",
+                      "[test.cpp:4]: (style) Return 'f()==3' is always true\n",
                       errout.str());
 
         check("int f() {\n"
@@ -4489,7 +4489,7 @@ private:
               "        return (index++) >= s;\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) Condition '(index++)>=s' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) Return '(index++)>=s' is always false\n", errout.str());
 
         check("struct a {\n"
               "  a *b() const;\n"
@@ -4818,7 +4818,7 @@ private:
         check("bool f(const int *p, const int *q) {\n"
               "    return p != NULL && q != NULL && p == NULL;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'p==NULL' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Return 'p==NULL' is always false\n", errout.str());
     }
 
     void alwaysTrueContainer() {
@@ -5370,7 +5370,7 @@ private:
         check("bool f(const std::string &s) {\n"
               "        return s.size()>2U && s[0]=='4' && s[0]=='2';\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 's[0]=='2'' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return 's[0]=='2'' is always false\n", errout.str());
     }
 
     void pointerAdditionResultNotNull() {
