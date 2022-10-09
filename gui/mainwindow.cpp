@@ -66,6 +66,8 @@
 #include <QRegularExpression>
 #include <QSettings>
 #include <QTimer>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -246,6 +248,24 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 #endif
     Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
+
+    mNetworkAccessManager = new QNetworkAccessManager(this);
+    connect(mNetworkAccessManager, &QNetworkAccessManager::finished,
+            this, &MainWindow::replyFinished);
+
+    mUI->mLabelInformation->setVisible(false);
+    mUI->mButtonHideInformation->setVisible(false);
+    connect(mUI->mButtonHideInformation, &QPushButton::clicked,
+            this, &MainWindow::hideInformation);
+
+    // Is there a new version?
+    if (isCppcheckPremium()) {
+        const QUrl url("https://files.cppchecksolutions.com/version.txt");
+        mNetworkAccessManager->get(QNetworkRequest(url));
+    } else {
+        const QUrl url("https://cppcheck.sourceforge.io/version.txt");
+        mNetworkAccessManager->get(QNetworkRequest(url));
+    }
 }
 
 MainWindow::~MainWindow()
@@ -1880,6 +1900,63 @@ void MainWindow::suppressIds(QStringList ids)
     mProjectFile->write();
 }
 
+static int getVersion(const QString& nameWithVersion) {
+    int ret = 0;
+    int v = 0;
+    int dot = 0;
+    for (const auto c: nameWithVersion) {
+        if (c == '\n' || c == '\r')
+            break;
+        else if (c == ' ')
+            dot = ret = v = 0;
+        else if (c == '.') {
+            ++dot;
+            ret = ret * 1000 + v;
+            v = 0;
+        } else if (c >= '0' && c <= '9')
+            v = v * 10 + (c.toLatin1() - '0');
+    }
+    ret = ret * 1000 + v;
+    while (dot < 2) {
+        ++dot;
+        ret *= 1000;
+    }
+    return ret;
+}
+
+void MainWindow::replyFinished(QNetworkReply *reply) {
+    reply->deleteLater();
+    if (reply->error()) {
+        // TODO?
+        qDebug() << "Response: ERROR";
+        return;
+    }
+    const QString str = reply->readAll();
+    qDebug() << "Response: " << str;
+    if (reply->url().fileName() == "version.txt") {
+        QString nameWithVersion = QString("Cppcheck %1").arg(CppCheck::version());
+        if (!mCppcheckCfgProductName.isEmpty())
+            nameWithVersion = mCppcheckCfgProductName;
+        const int appVersion = getVersion(nameWithVersion);
+        const int latestVersion = getVersion(str.trimmed());
+        if (appVersion < latestVersion) {
+            if (mSettings->value(SETTINGS_CHECK_VERSION, 0).toInt() != latestVersion) {
+                mUI->mButtonHideInformation->setVisible(true);
+                mUI->mLabelInformation->setVisible(true);
+                mUI->mLabelInformation->setText(tr("New version available: %1").arg(str.trimmed()));
+            }
+        }
+    }
+}
+
+void MainWindow::hideInformation() {
+    int version = getVersion(mUI->mLabelInformation->text());
+    mSettings->setValue(SETTINGS_CHECK_VERSION, version);
+    mUI->mLabelInformation->setVisible(false);
+    mUI->mButtonHideInformation->setVisible(false);
+}
+
 bool MainWindow::isCppcheckPremium() const {
     return mCppcheckCfgProductName.startsWith("Cppcheck Premium ");
 }
+

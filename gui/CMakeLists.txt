@@ -47,7 +47,7 @@ CheckOptions:
     if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
         target_link_libraries(cppcheck-gui ${tinyxml2_LIBRARIES})
     endif()
-    target_link_libraries(cppcheck-gui ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB} ${QT_PRINTSUPPORT_LIB} ${QT_HELP_LIB})
+    target_link_libraries(cppcheck-gui ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB} ${QT_PRINTSUPPORT_LIB} ${QT_HELP_LIB} ${QT_NETWORK_LIB})
     if(WITH_QCHART)
         target_compile_definitions (cppcheck-gui PRIVATE HAVE_QCHART)
         target_link_libraries(cppcheck-gui ${QT_CHARTS_LIB})
