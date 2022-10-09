@@ -128,7 +128,6 @@ jobs:
           head -50 callgrind.annotated.log
         env:
           DISABLE_VALUEFLOW: 1
-          UNUSEDFUNCTION_ONLY: 1
 
       - uses: actions/upload-artifact@v2
         with:
