@@ -1005,8 +1005,6 @@ const std::string& Library::getFunctionName(const Token * const ftok) const
     // Lookup function name without using AST..
     else if (Token::simpleMatch(ftok->previous(), ".")) {
     }
-    else if (!Token::Match(ftok->tokAt(-2), "%name% ::"))
-        ret = ftok->str();
     else {
         ret = ftok->str();
         const Token *tok = ftok->tokAt(-2);
