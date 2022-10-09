@@ -10,6 +10,7 @@ INCLUDEPATH += . \
 QT += widgets
 QT += printsupport
 QT += help
+QT += network
 
 # Build online help
 onlinehelp.target = online-help.qhc
