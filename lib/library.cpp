@@ -1645,9 +1645,9 @@ const Library::Container * getLibraryContainer(const Token * tok)
     return tok->valueType()->container;
 }
 
-Library::TypeCheck Library::getTypeCheck(const std::string &check, const std::string &typeName) const
+Library::TypeCheck Library::getTypeCheck(std::string check,  std::string typeName) const
 {
-    auto it = mTypeChecks.find(std::pair<std::string, std::string>(check, typeName));
+    auto it = mTypeChecks.find(std::pair<std::string, std::string>(std::move(check), std::move(typeName)));
     return it == mTypeChecks.end() ? TypeCheck::def : it->second;
 }
 
