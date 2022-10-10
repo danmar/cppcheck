@@ -6226,53 +6226,33 @@ private:
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
         ASSERT_EQUALS("adecltypeac::(,decltypead::(,",
                       testAst("template <typename a> void b(a &, decltype(a::c), decltype(a::d));"));
-        
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
+                                             "struct B { A* hash; };\n"
+                                             "auto g(A* a) { return [=](void*) { return a; }; }\n"
+                                             "void f(void* p, B* b) {\n"
+                                             "    b->hash = (g(b->hash))(p);\n"
+                                             "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
+                                             "struct B { A* hash; };\n"
+                                             "A* h(void* p);\n"
+                                             "typedef A* (*X)(void*);\n"
+                                             "X g(A*) { return h; }\n"
+                                             "void f(void* p, B * b) {\n"
+                                             "b->hash = (g(b->hash))(p);\n"
+                                             "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
+                                             "struct B { A* hash; };\n"
+                                             "void f(void* p, B* b) {\n"
+                                             "    b->hash = (decltype(b->hash))(p);\n"
+                                             "}\n"));
+                
         ASSERT_NO_THROW(tokenizeAndStringify("void a(int);\n" // #10801
                                              "    struct b {\n"
                                              "    static int c();\n"
                                              "} d;\n"
                                              "void f() {\n"
                                              "    (decltype (&a)(d.c))(0);\n"
-                                             "}\n"));
-
-        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
-                                             "struct B { A* hash; };\n"
-                                             "auto g(A* a) { return [=](void*) { return a; }; }\n"
-                                             "void f(void* p, B* b) {\n"
-                                             "    b->hash = (g(b->hash))(p);\n"
-                                             "}\n"));
-        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
-                                             "struct B { A* hash; };\n"
-                                             "A* h(void* p);\n"
-                                             "typedef A* (*X)(void*);\n"
-                                             "X g(A*) { return h; }\n"
-                                             "void f(void* p, B * b) {\n"
-                                             "b->hash = (g(b->hash))(p);\n"
-                                             "}\n"));
-        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
-                                             "struct B { A* hash; };\n"
-                                             "void f(void* p, B* b) {\n"
-                                             "    b->hash = (decltype(b->hash))(p);\n"
-                                             "}\n"));
-
-        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
-                                             "struct B { A* hash; };\n"
-                                             "auto g(A* a) { return [=](void*) { return a; }; }\n"
-                                             "void f(void* p, B* b) {\n"
-                                             "    b->hash = (g(b->hash))(p);\n"
-                                             "}\n"));
-        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
-                                             "struct B { A* hash; };\n"
-                                             "A* h(void* p);\n"
-                                             "typedef A* (*X)(void*);\n"
-                                             "X g(A*) { return h; }\n"
-                                             "void f(void* p, B * b) {\n"
-                                             "b->hash = (g(b->hash))(p);\n"
-                                             "}\n"));
-        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
-                                             "struct B { A* hash; };\n"
-                                             "void f(void* p, B* b) {\n"
-                                             "    b->hash = (decltype(b->hash))(p);\n"
                                              "}\n"));
 
         // #10334: Do not hang!
