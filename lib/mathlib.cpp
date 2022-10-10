@@ -1193,8 +1193,8 @@ bool MathLib::isNullValue(const std::string &str)
 
     if (!isInt(str) && !isFloat(str))
         return false;
-    bool isHex = isIntHex(str) || isFloatHex(str);
-    for (char i : str) {
+    const bool isHex = isIntHex(str) || isFloatHex(str);
+    for (const char i : str) {
         if (std::isdigit(static_cast<unsigned char>(i)) && i != '0') // May not contain digits other than 0
             return false;
         if (i == 'p' || i == 'P' || (!isHex && (i == 'E' || i == 'e')))

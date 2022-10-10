@@ -152,6 +152,8 @@ private:
         TEST_CASE(duplicateBranch2); // empty macro
         TEST_CASE(duplicateBranch3);
         TEST_CASE(duplicateBranch4);
+        TEST_CASE(duplicateBranch5); // make sure the Token attributes are compared
+        TEST_CASE(duplicateBranch6);
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
@@ -5436,6 +5438,72 @@ private:
               "        return new A::Y(true);\n"
               "    } else {\n"
               "        return new A::Z(true);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateBranch5() {
+        check("void f(bool b) {\n"
+              "    int j;\n"
+              "    if (b) {\n"
+              "        unsigned int i = 0;\n"
+              "        j = i;\n"
+              "    } else {\n"
+              "        unsigned int i = 0;\n"
+              "        j = i;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+
+        check("void f(bool b) {\n"
+              "    int j;\n"
+              "    if (b) {\n"
+              "        unsigned int i = 0;\n"
+              "        j = i;\n"
+              "    } else {\n"
+              "        unsigned int i = 0;\n"
+              "        j = 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "    int j;\n"
+              "    if (b) {\n"
+              "        unsigned int i = 0;\n"
+              "    } else {\n"
+              "        int i = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "    int j;\n"
+              "    if (b) {\n"
+              "        unsigned int i = 0;\n"
+              "        j = i;\n"
+              "    } else {\n"
+              "        int i = 0;\n"
+              "        j = i;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateBranch6() {
+        check("void f(bool b) {\n"
+              "    if (b) {\n"
+              "    } else {\n"
+              "        int i = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "    if (b) {\n"
+              "        int i = 0;\n"
+              "    } else {\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());

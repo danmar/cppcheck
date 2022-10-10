@@ -86,9 +86,10 @@ public:
     /**
      * @brief Get an extension of the filename.
      * @param path Path containing filename.
+     * @param lowercase Return the extension in lower case
      * @return Filename extension (containing the dot, e.g. ".h" or ".CPP").
      */
-    static std::string getFilenameExtension(const std::string &path);
+    static std::string getFilenameExtension(const std::string &path, bool lowercase = false);
 
     /**
      * @brief Get an extension of the filename in lower case.

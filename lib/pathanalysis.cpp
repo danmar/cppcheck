@@ -151,7 +151,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             if (Token::simpleMatch(endBlock, "} else {")) {
                 if (checkElse) {
                     i.errorPath.back().second = "Assuming condition is false.";
-                    Progress result = forwardRange(endCond->next(), endBlock, i, f);
+                    const Progress result = forwardRange(endCond->next(), endBlock, i, f);
                     if (result == Progress::Break)
                         return Progress::Break;
                 }

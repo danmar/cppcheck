@@ -826,7 +826,7 @@ private:
 
         Library::Container& A = library.containers["A"];
         Library::Container& B = library.containers["B"];
-        Library::Container& C = library.containers["C"];
+        const Library::Container& C = library.containers["C"];
 
         ASSERT_EQUALS(A.type_templateArgNo, 1);
         ASSERT_EQUALS(A.size_templateArgNo, 4);

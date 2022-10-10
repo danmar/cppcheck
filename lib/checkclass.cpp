@@ -1244,7 +1244,7 @@ void CheckClass::privateFunctions()
             // Check virtual functions
             for (std::list<const Function*>::iterator it = privateFuncs.begin(); it != privateFuncs.end();) {
                 if ((*it)->isImplicitlyVirtual(true)) // Give true as default value to be returned if we don't see all base classes
-                    privateFuncs.erase(it++);
+                    it = privateFuncs.erase(it);
                 else
                     ++it;
             }
@@ -3063,9 +3063,9 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
             continue;
 
         // the full definition must be compared
-        bool fullDefinition = std::all_of(classScope->functionList.begin(),
-                                          classScope->functionList.end(),
-                                          [](const Function& f) {
+        const bool fullDefinition = std::all_of(classScope->functionList.begin(),
+                                                classScope->functionList.end(),
+                                                [](const Function& f) {
             return f.hasBody();
         });
         if (!fullDefinition)

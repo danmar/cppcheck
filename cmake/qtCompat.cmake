@@ -28,6 +28,7 @@ if (QT_VERSION VERSION_LESS 5.15)
     set(QT_HELP_LIB Qt5::Help)
     set(QT_PRINTSUPPORT_LIB Qt5::PrintSupport)
     set(QT_CHARTS_LIB Qt5::Charts)
+    set(QT_NETWORK_LIB Qt5::Network)
 else()
     # use "versionless" targets - no need for wrapper functions
 
@@ -38,4 +39,5 @@ else()
     set(QT_HELP_LIB Qt::Help)
     set(QT_PRINTSUPPORT_LIB Qt::PrintSupport)
     set(QT_CHARTS_LIB Qt::Charts)
+    set(QT_NETWORK_LIB Qt::Network)
 endif()

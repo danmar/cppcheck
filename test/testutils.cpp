@@ -30,6 +30,8 @@ private:
     void run() override {
         TEST_CASE(isValidGlobPattern);
         TEST_CASE(matchglob);
+        TEST_CASE(isStringLiteral);
+        TEST_CASE(isCharLiteral);
     }
 
     void isValidGlobPattern() const {
@@ -67,6 +69,114 @@ private:
         ASSERT_EQUALS(false, ::matchglob("?z", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("?y?", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("?/?/?", "x/y/z"));
+    }
+
+    void isStringLiteral() const {
+        // empty
+        ASSERT_EQUALS(false, ::isStringLiteral(""));
+
+        // no literals
+        ASSERT_EQUALS(false, ::isStringLiteral("u8"));
+        ASSERT_EQUALS(false, ::isStringLiteral("u"));
+        ASSERT_EQUALS(false, ::isStringLiteral("U"));
+        ASSERT_EQUALS(false, ::isStringLiteral("L"));
+
+        // incomplete string literals
+        ASSERT_EQUALS(false, ::isStringLiteral("\""));
+        ASSERT_EQUALS(false, ::isStringLiteral("u8\""));
+        ASSERT_EQUALS(false, ::isStringLiteral("u\""));
+        ASSERT_EQUALS(false, ::isStringLiteral("U\""));
+        ASSERT_EQUALS(false, ::isStringLiteral("L\""));
+
+        // valid string literals
+        ASSERT_EQUALS(true, ::isStringLiteral("\"\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("u8\"\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("u\"\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("U\"\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("L\"\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("\"t\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("u8\"t\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("u\"t\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("U\"t\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("L\"t\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("\"test\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("u8\"test\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("u\"test\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("U\"test\""));
+        ASSERT_EQUALS(true, ::isStringLiteral("L\"test\""));
+
+        // incomplete char literals
+        ASSERT_EQUALS(false, ::isStringLiteral("'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("u8'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("u'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("U'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("L'"));
+
+        // valid char literals
+        ASSERT_EQUALS(false, ::isStringLiteral("'t'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("u8't'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("u't'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("U't'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("L't'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("'test'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("u8'test'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("u'test'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("U'test'"));
+        ASSERT_EQUALS(false, ::isStringLiteral("L'test'"));
+    }
+
+    void isCharLiteral() const {
+        // empty
+        ASSERT_EQUALS(false, ::isCharLiteral(""));
+
+        // no literals
+        ASSERT_EQUALS(false, ::isCharLiteral("u8"));
+        ASSERT_EQUALS(false, ::isCharLiteral("u"));
+        ASSERT_EQUALS(false, ::isCharLiteral("U"));
+        ASSERT_EQUALS(false, ::isCharLiteral("L"));
+
+        // incomplete string literals
+        ASSERT_EQUALS(false, ::isCharLiteral("\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("u8\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("u\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("U\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("L\""));
+
+        // valid string literals
+        ASSERT_EQUALS(false, ::isCharLiteral("\"\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("u8\"\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("u\"\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("U\"\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("L\"\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("\"t\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("u8\"t\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("u\"t\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("U\"t\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("L\"t\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("\"test\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("u8\"test\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("u\"test\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("U\"test\""));
+        ASSERT_EQUALS(false, ::isCharLiteral("L\"test\""));
+
+        // incomplete char literals
+        ASSERT_EQUALS(false, ::isCharLiteral("'"));
+        ASSERT_EQUALS(false, ::isCharLiteral("u8'"));
+        ASSERT_EQUALS(false, ::isCharLiteral("u'"));
+        ASSERT_EQUALS(false, ::isCharLiteral("U'"));
+        ASSERT_EQUALS(false, ::isCharLiteral("L'"));
+
+        // valid char literals
+        ASSERT_EQUALS(true, ::isCharLiteral("'t'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("u8't'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("u't'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("U't'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("L't'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("'test'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("u8'test'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("u'test'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("U'test'"));
+        ASSERT_EQUALS(true, ::isCharLiteral("L'test'"));
     }
 };
 

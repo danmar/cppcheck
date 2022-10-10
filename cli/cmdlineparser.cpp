@@ -567,6 +567,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
                 mSettings->outputFile = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 14));
 
+            // Experimental: limit execution time for extended valueflow analysis. basic valueflow analysis
+            // is always executed.
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0)
+                mSettings->performanceValueFlowMaxTime = std::atoi(argv[i] + 33);
+
             // Specify platform
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
                 const std::string platform(11+argv[i]);

@@ -574,7 +574,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         return temp.check(Path::simplifyPath(fs.filename));
     }
     std::ifstream fin(fs.filename);
-    unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
+    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
     mSettings.nomsg.addSuppressions(temp.mSettings.nomsg.getSuppressions());
     return returnValue;
 }
@@ -673,7 +673,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 filename2 = filename.substr(filename.rfind('/') + 1);
             else
                 filename2 = filename;
-            std::size_t fileNameHash = std::hash<std::string> {}(filename);
+            const std::size_t fileNameHash = std::hash<std::string> {}(filename);
             filename2 = mSettings.plistOutput + filename2.substr(0, filename2.find('.')) + "_" + std::to_string(fileNameHash) + ".plist";
             mPlistFile.open(filename2);
             mPlistFile << ErrorLogger::plistHeader(version(), files);
@@ -863,7 +863,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
                 Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults);
-                bool result = tokenizer.simplifyTokens1(mCurrentConfig);
+                const bool result = tokenizer.simplifyTokens1(mCurrentConfig);
                 timer2.stop();
                 if (!result)
                     continue;
@@ -1025,6 +1025,10 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
+    // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
+    const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
+    const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
+
     // call all "runChecks" in all registered Check classes
     for (Check *check : Check::instances()) {
         if (Settings::terminated())
@@ -1032,6 +1036,9 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
         if (Tokenizer::isMaxTime())
             return;
+
+        if (doUnusedFunctionOnly && dynamic_cast<CheckUnusedFunctions*>(check) == nullptr)
+            continue;
 
         Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
         check->runChecks(&tokenizer, &mSettings, this);
@@ -1053,7 +1060,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
         }
 
-        for (const Check *check: Check::instances()) {
+        for (const Check *check : Check::instances()) {
+            if (doUnusedFunctionOnly && dynamic_cast<const CheckUnusedFunctions*>(check) == nullptr)
+                continue;
+
             Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
             if (fi != nullptr) {
                 if (mSettings.jobs == 1)

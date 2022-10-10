@@ -665,7 +665,7 @@ void CheckCondition::multiCondition2()
         std::vector<MULTICONDITIONTYPE> types = {MULTICONDITIONTYPE::INNER};
         if (Token::Match(scope.bodyStart, "{ return|throw|continue|break"))
             types.push_back(MULTICONDITIONTYPE::AFTER);
-        for (MULTICONDITIONTYPE type:types) {
+        for (const MULTICONDITIONTYPE type:types) {
             if (type == MULTICONDITIONTYPE::AFTER) {
                 tok = scope.bodyEnd->next();
             } else {
@@ -1567,16 +1567,17 @@ void CheckCondition::alwaysTrueFalse()
             if (hasSizeof)
                 continue;
 
-            alwaysTrueFalseError(tok, &tok->values().front());
+            alwaysTrueFalseError(tok, condition, &tok->values().front());
         }
     }
 }
 
-void CheckCondition::alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value)
+void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value)
 {
     const bool alwaysTrue = value && (value->intvalue != 0);
     const std::string expr = tok ? tok->expressionString() : std::string("x");
-    const std::string errmsg = "Condition '" + expr + "' is always " + (alwaysTrue ? "true" : "false");
+    const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return" : "Condition");
+    const std::string errmsg = conditionStr + " '" + expr + "' is always " + (alwaysTrue ? "true" : "false");
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath,
                 Severity::style,

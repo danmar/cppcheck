@@ -61,7 +61,7 @@ void visitAstNodes(T *ast, const TFunc &visitor)
     std::stack<T *, SmallVector<T *, 8 + 1>> tokens;
     T *tok = ast;
     do {
-        ChildrenToVisit c = visitor(tok);
+        const ChildrenToVisit c = visitor(tok);
 
         if (c == ChildrenToVisit::done)
             break;
