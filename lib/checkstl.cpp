@@ -2803,6 +2803,8 @@ void CheckStl::useStlAlgorithm()
                 if (assignTok) {
                     if (astIsContainer(assignTok->astOperand1())) // don't warn for containers, where overloaded operators can be costly
                         continue;
+                    if (astIsBool(assignTok->astOperand1())) // std::accumulate is not a good fit for bool values, std::all/any/none_of return early
+                        continue;
                     const int assignVarId = assignTok->astOperand1()->varId();
                     std::string algo;
                     if (assignVarId == loopVar->varId()) {
