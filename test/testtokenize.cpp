@@ -6246,7 +6246,7 @@ private:
                                              "void f(void* p, B* b) {\n"
                                              "    b->hash = (decltype(b->hash))(p);\n"
                                              "}\n"));
-                
+
         ASSERT_NO_THROW(tokenizeAndStringify("void a(int);\n" // #10801
                                              "    struct b {\n"
                                              "    static int c();\n"
