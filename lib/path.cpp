@@ -19,12 +19,14 @@
 #if defined(__GNUC__) && (defined(_WIN32) || defined(__CYGWIN__))
 #undef __STRICT_ANSI__
 #endif
+
 #include "path.h"
 #include "utils.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
+#include <utility>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -240,4 +242,12 @@ bool Path::fileExists(const std::string &file)
 {
     std::ifstream f(file.c_str());
     return f.is_open();
+}
+
+std::string Path::join(std::string path1, std::string path2) {
+    if (path1.empty() || path2.empty())
+        return path1 + path2;
+    if (path2.front() == '/')
+        return path2;
+    return ((path1.back() == '/') ? path1 : (path1 + "/")) + path2;
 }

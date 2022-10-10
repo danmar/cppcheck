@@ -1,5 +1,14 @@
 if (BUILD_GUI AND BUILD_TESTS)
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
+    # disable all clang-tidy checks for Qt generated files
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy"
+"---
+Checks:          '-*,misc-definitions-in-headers'
+WarningsAsErrors: '*'
+CheckOptions:
+  - { key: HeaderFileExtensions,          value: 'x' }
+")
+
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
         add_definitions(-DQT_NO_WARNING_OUTPUT)

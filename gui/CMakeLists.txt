@@ -1,6 +1,15 @@
 if (BUILD_GUI)
 
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
+    # disable all clang-tidy checks for Qt generated files
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy"
+"---
+Checks:          '-*,misc-definitions-in-headers'
+WarningsAsErrors: '*'
+CheckOptions:
+  - { key: HeaderFileExtensions,          value: 'x' }
+")
+
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
         add_definitions(-DQT_NO_WARNING_OUTPUT)
@@ -29,6 +38,8 @@ if (BUILD_GUI)
     target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/)
     if(USE_BUNDLED_TINYXML2)
         target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
+    else()
+        target_include_directories(cppcheck-gui SYSTEM PRIVATE ${tinyxml2_INCLUDE_DIRS})
     endif()
     if (HAVE_RULES)
         target_link_libraries(cppcheck-gui ${PCRE_LIBRARY})

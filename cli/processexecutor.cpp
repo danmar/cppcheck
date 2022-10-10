@@ -18,7 +18,7 @@
 
 #include "processexecutor.h"
 
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(WIN32) && !defined(__MINGW32__)
 
 #include "color.h"
 #include "config.h"
@@ -31,6 +31,7 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <numeric>
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
@@ -38,9 +39,7 @@
 #include <functional>
 #include <iostream>
 #include <list>
-#include <utility>
-#include <numeric>
-
+#include <sstream> // IWYU pragma: keep
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -84,14 +83,14 @@ public:
         report(msg, MessageType::REPORT_INFO);
     }
 
-    void writeEnd(const std::string& str) {
+    void writeEnd(const std::string& str) const {
         writeToPipe(CHILD_END, str);
     }
 
 private:
     enum class MessageType {REPORT_ERROR, REPORT_INFO};
 
-    void report(const ErrorMessage &msg, MessageType msgType) {
+    void report(const ErrorMessage &msg, MessageType msgType) const {
         PipeSignal pipeSignal;
         switch (msgType) {
         case MessageType::REPORT_ERROR:
@@ -105,7 +104,7 @@ private:
         writeToPipe(pipeSignal, msg.serialize());
     }
 
-    void writeToPipe(PipeSignal type, const std::string &data)
+    void writeToPipe(PipeSignal type, const std::string &data) const
     {
         unsigned int len = static_cast<unsigned int>(data.length() + 1);
         char *out = new char[len + 1 + sizeof(len)];
@@ -173,7 +172,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
             // Alert only about unique errors
             std::string errmsg = msg.toString(mSettings.verbose);
             if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-                mErrorList.emplace_back(errmsg);
+                mErrorList.emplace_back(std::move(errmsg));
                 if (type == PipeWriter::REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
                 else
@@ -195,7 +194,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
 
 bool ProcessExecutor::checkLoadAverage(size_t nchildren)
 {
-#if defined(__CYGWIN__) || defined(__QNX__) || defined(__HAIKU__)  // getloadavg() is unsupported on Cygwin, Qnx, Haiku.
+#if defined(__QNX__) || defined(__HAIKU__)  // getloadavg() is unsupported on Qnx, Haiku.
     (void)nchildren;
     return true;
 #else
@@ -239,8 +238,8 @@ unsigned int ProcessExecutor::check()
                 std::exit(EXIT_FAILURE);
             }
 
-            int flags = 0;
-            if ((flags = fcntl(pipes[0], F_GETFL, 0)) < 0) {
+            int flags = fcntl(pipes[0], F_GETFL, 0);
+            if (flags < 0) {
                 std::cerr << "#### ThreadExecutor::check, fcntl(F_GETFL) failed: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             }

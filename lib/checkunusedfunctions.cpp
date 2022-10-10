@@ -34,9 +34,9 @@
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
-#include <istream>
+#include <fstream> // IWYU pragma: keep
 #include <memory>
-
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 #include <vector>
 
@@ -73,6 +73,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
         if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction || func->isOperator())
+            continue;
+
+        if (func->isExtern())
             continue;
 
         // Don't care about templates
@@ -118,9 +121,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             while ((scope || start) && markupVarToken) {
                 if (markupVarToken->str() == settings->library.blockstart(FileName)) {
                     scope++;
-                    if (start) {
-                        start = false;
-                    }
+                    start = false;
                 } else if (markupVarToken->str() == settings->library.blockend(FileName))
                     scope--;
                 else if (!settings->library.iskeyword(FileName, markupVarToken->str())) {
@@ -340,10 +341,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        ErrorMessage::FileLocation fileLoc;
-        fileLoc.setfile(filename);
-        fileLoc.line = lineNumber;
-        locationList.push_back(fileLoc);
+        locationList.emplace_back(filename, lineNumber);
     }
 
     const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
@@ -390,7 +388,7 @@ std::string CheckUnusedFunctions::analyzerInfo() const
 namespace {
     struct Location {
         Location() : lineNumber(0) {}
-        Location(const std::string &f, const int l) : fileName(f), lineNumber(l) {}
+        Location(std::string f, const int l) : fileName(std::move(f)), lineNumber(l) {}
         std::string fileName;
         int lineNumber;
     };

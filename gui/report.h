@@ -39,7 +39,7 @@ public:
         CSV,
     };
 
-    explicit Report(const QString &filename);
+    explicit Report(QString filename);
     ~Report() override;
 
     /**

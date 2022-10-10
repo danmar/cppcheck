@@ -25,8 +25,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <map>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <utility>
 #include <vector>
@@ -104,6 +104,7 @@ private:
         TEST_CASE(oppositeInnerCondition2);
         TEST_CASE(oppositeInnerCondition3);
         TEST_CASE(oppositeInnerConditionAnd);
+        TEST_CASE(oppositeInnerConditionOr);
         TEST_CASE(oppositeInnerConditionEmpty);
         TEST_CASE(oppositeInnerConditionFollowVar);
 
@@ -667,6 +668,17 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("class B { virtual void v() {} };\n" // #11037
+              "class D1 : public B {};\n"
+              "class D2 : public B {};\n"
+              "void f(const std::shared_ptr<B>&p) {\n"
+              "    const auto d1 = dynamic_cast<D1*>(p.get());\n"
+              "    const auto d2 = dynamic_cast<D2*>(p.get());\n"
+              "    if (d1) {}\n"
+              "    else if (d2) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int x) {\n" // #6482
               "  if (x & 1) {}\n"
               "  else if (x == 0) {}\n"
@@ -892,7 +904,7 @@ private:
               "    int j = 0;\n"
               "    if (i | j) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Operator '|' with one operand equal to zero is redundant.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Operator '|' with one operand equal to zero is redundant.\n", errout.str());
 
         check("#define EIGHTTOIS(x) (((x) << 8) | (x))\n"
               "int f() {\n"
@@ -904,6 +916,16 @@ private:
               "void f(const char* s, int* pFd) {\n"
               "    *pFd = open(s, O_RDONLY | O_BINARY, 0);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const int FEATURE_BITS = x |\n"
+              "#if FOO_ENABLED\n"
+              "    FEATURE_FOO |\n"
+              "#endif\n"
+              "#if BAR_ENABLED\n"
+              "    FEATURE_BAR |\n"
+              "#endif\n"
+              "    0;");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1141,7 +1163,7 @@ private:
               "   if((x==3) && (x!=4))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x != 4' is redundant since 'x == 3' is sufficient.\n", errout.str());
 
         check("void f(const std::string &s) {\n" // #8860
               "    const std::size_t p = s.find(\"42\");\n"
@@ -1154,19 +1176,19 @@ private:
               "    if ((x!=4) && (x==3))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x != 4' is redundant since 'x == 3' is sufficient.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x==3) || (x!=4))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x == 3' is redundant since 'x != 4' is sufficient.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x!=4) || (x==3))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 3', the comparison 'x != 4' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x == 3' is redundant since 'x != 4' is sufficient.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x==3) && (x!=3))\n"
@@ -1196,7 +1218,7 @@ private:
               "    if (x > 5 && x == 6)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 6', the comparison 'x > 5' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x > 5' is redundant since 'x == 6' is sufficient.\n", errout.str());
 
         // #3419
         check("void f() {\n"
@@ -1260,7 +1282,7 @@ private:
         check("void f(int x) {\n"
               "  if (x+3 > 2 || x+3 < 10) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: EXPR > 2 || EXPR < 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x+3 > 2 || x+3 < 10.\n", errout.str());
     }
 
     void incorrectLogicOperator6() { // char literals
@@ -1287,7 +1309,7 @@ private:
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
               "}", "test.cpp", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'c>='z'' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator7() { // opposite expressions
@@ -1367,6 +1389,52 @@ private:
         check("struct A {\n"
               "    void f() const;\n"
               "};\n"
+              "void foo(A a, A b) {\n"
+              "  A x = b;\n"
+              "  A y = b;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    void f();\n"
+              "};\n"
+              "void foo(A a, A b) {\n"
+              "  A x = b;\n"
+              "  A y = b;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a, A b) {\n"
+              "  A x = b;\n"
+              "  A y = b;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a, A b) {\n"
+              "  const A x = b;\n"
+              "  const A y = b;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    void f() const;\n"
+              "};\n"
               "void foo(A a) {\n"
               "  A x = a;\n"
               "  A y = a;\n"
@@ -1374,7 +1442,9 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Condition 'a>x' is always false\n"
+                      "[test.cpp:8]: (style) Condition 'a<y' is always false\n",
+                      errout.str());
 
         check("struct A {\n"
               "    void f();\n"
@@ -1386,7 +1456,7 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Condition 'a>x' is always false\n", errout.str());
 
         check("void foo(A a) {\n"
               "  A x = a;\n"
@@ -1395,7 +1465,7 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'a>x' is always false\n", errout.str());
 
         check("void foo(A a) {\n"
               "  const A x = a;\n"
@@ -1404,7 +1474,9 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'a>x' is always false\n"
+                      "[test.cpp:5]: (style) Condition 'a<y' is always false\n",
+                      errout.str());
     }
 
     void incorrectLogicOperator13() {
@@ -1670,7 +1742,7 @@ private:
               "    if (x > 5 && x != 1)\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x != 1' is redundant since 'x > 5' is sufficient.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if (x > 5 && x != 6)\n"
@@ -1682,7 +1754,7 @@ private:
               "    if ((x > 5) && (x != 1))\n"
               "        a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x != 1' is redundant since 'x > 5' is sufficient.\n", errout.str());
 
         check("void f(int x) {\n"
               "    if ((x > 5) && (x != 6))\n"
@@ -1696,10 +1768,11 @@ private:
               "    d = x >= 3 || x == 4;\n"
               "    e = x <= 5 || x == 4;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x == 4', the comparison 'x > 3' is always true.\n"
-                      "[test.cpp:3]: (style) Redundant condition: If 'x == 4', the comparison 'x < 5' is always true.\n"
-                      "[test.cpp:4]: (style) Redundant condition: If 'x == 4', the comparison 'x >= 3' is always true.\n"
-                      "[test.cpp:5]: (style) Redundant condition: If 'x == 4', the comparison 'x <= 5' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x == 4' is redundant since 'x > 3' is sufficient.\n"
+                      "[test.cpp:3]: (style) Redundant condition: The condition 'x == 4' is redundant since 'x < 5' is sufficient.\n"
+                      "[test.cpp:4]: (style) Redundant condition: The condition 'x == 4' is redundant since 'x >= 3' is sufficient.\n"
+                      "[test.cpp:5]: (style) Redundant condition: The condition 'x == 4' is redundant since 'x <= 5' is sufficient.\n",
+                      errout.str());
 
         check("void f(int x, bool& b) {\n"
               "    b = x > 5 || x != 1;\n"
@@ -1707,10 +1780,11 @@ private:
               "    d = x >= 5 || x != 1;\n"
               "    e = x <= 1 || x != 3;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x > 5', the comparison 'x != 1' is always true.\n"
-                      "[test.cpp:3]: (style) Redundant condition: If 'x < 1', the comparison 'x != 3' is always true.\n"
-                      "[test.cpp:4]: (style) Redundant condition: If 'x >= 5', the comparison 'x != 1' is always true.\n"
-                      "[test.cpp:5]: (style) Redundant condition: If 'x <= 1', the comparison 'x != 3' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x > 5' is redundant since 'x != 1' is sufficient.\n"
+                      "[test.cpp:3]: (style) Redundant condition: The condition 'x < 1' is redundant since 'x != 3' is sufficient.\n"
+                      "[test.cpp:4]: (style) Redundant condition: The condition 'x >= 5' is redundant since 'x != 1' is sufficient.\n"
+                      "[test.cpp:5]: (style) Redundant condition: The condition 'x <= 1' is redundant since 'x != 3' is sufficient.\n",
+                      errout.str());
 
         check("void f(int x, bool& b) {\n"
               "    b = x > 6 && x > 5;\n"
@@ -1718,10 +1792,29 @@ private:
               "    d = x < 6 && x < 5;\n"
               "    e = x < 5 || x < 6;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: If 'x > 6', the comparison 'x > 5' is always true.\n"
-                      "[test.cpp:3]: (style) Redundant condition: If 'x > 6', the comparison 'x > 5' is always true.\n"
-                      "[test.cpp:4]: (style) Redundant condition: If 'x < 5', the comparison 'x < 6' is always true.\n"
-                      "[test.cpp:5]: (style) Redundant condition: If 'x < 5', the comparison 'x < 6' is always true.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x > 5' is redundant since 'x > 6' is sufficient.\n"
+                      "[test.cpp:3]: (style) Redundant condition: The condition 'x > 6' is redundant since 'x > 5' is sufficient.\n"
+                      "[test.cpp:4]: (style) Redundant condition: The condition 'x < 6' is redundant since 'x < 5' is sufficient.\n"
+                      "[test.cpp:5]: (style) Redundant condition: The condition 'x < 5' is redundant since 'x < 6' is sufficient.\n",
+                      errout.str());
+
+        check("void f(double x, bool& b) {\n"
+              "    b = x > 6.5 && x > 5.5;\n"
+              "    c = x > 5.5 || x > 6.5;\n"
+              "    d = x < 6.5 && x < 5.5;\n"
+              "    e = x < 5.5 || x < 6.5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x > 5.5' is redundant since 'x > 6.5' is sufficient.\n"
+                      "[test.cpp:3]: (style) Redundant condition: The condition 'x > 6.5' is redundant since 'x > 5.5' is sufficient.\n"
+                      "[test.cpp:4]: (style) Redundant condition: The condition 'x < 6.5' is redundant since 'x < 5.5' is sufficient.\n"
+                      "[test.cpp:5]: (style) Redundant condition: The condition 'x < 5.5' is redundant since 'x < 6.5' is sufficient.\n",
+                      errout.str());
+
+        check("void f(const char *p) {\n" // #10320
+              "    if (!p || !*p || *p != 'x') {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition '!*p' is redundant since '*p != 'x'' is sufficient.\n",
+                      errout.str());
     }
 
     void incorrectLogicOp_condSwapping() {
@@ -2444,6 +2537,46 @@ private:
               "            if( x && a > b){}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+    }
+
+    void oppositeInnerConditionOr()
+    {
+        check("void f(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 3) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 2) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string x) {\n"
+              "    if (x == \"1\" || x == \"2\") {\n"
+              "        if (x == \"1\") {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x < 1 || x > 3) {\n"
+              "        if (x == 3) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
     }
 
     void oppositeInnerConditionEmpty() {
@@ -3293,7 +3426,7 @@ private:
               "    const int b = 52;\n"
               "    return a+b;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'a+b' is always true\n", errout.str());
 
         check("int f() {\n"
               "    int a = 50;\n"
@@ -3940,21 +4073,21 @@ private:
               "    if (init)\n"
               "        init = false;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) The statement 'if (init) init=false' is logically equivalent to 'init=false'.\n", errout.str());
 
         check("void f() {\n"
               "    static bool init(true);\n"
               "    if (init)\n"
               "        init = false;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) The statement 'if (init) init=false' is logically equivalent to 'init=false'.\n", errout.str());
 
         check("void f() {\n"
               "    static bool init{ true };\n"
               "    if (init)\n"
               "        init = false;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) The statement 'if (init) init=false' is logically equivalent to 'init=false'.\n", errout.str());
 
         // #10248
         check("void f() {\n"
@@ -4219,6 +4352,102 @@ private:
               "    if (i == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:20]: (style) Condition 'i==1' is always true\n", errout.str());
+
+        check("typedef struct { bool x; } s_t;\n" // #8446
+              "unsigned f(bool a, bool b) {\n"
+              "    s_t s;\n"
+              "    const unsigned col = a ? (s.x = false) : (b = true);\n"
+              "    if (!s.x) {}\n"
+              "    return col;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #11233
+              "    static std::string m;\n"
+              "    static void f() { m = \"abc\"; }\n"
+              "    static void g() {\n"
+              "        m.clear();\n"
+              "        f();\n"
+              "        if (m.empty()) {}\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11203
+        check("void f() {\n"
+              "    int i = 10;\n"
+              "    if(i > 9.9){}\n"
+              "    float f = 9.9f;\n"
+              "    if(f < 10) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i>9.9' is always true\n"
+                      "[test.cpp:5]: (style) Condition 'f<10' is always true\n",
+                      errout.str());
+        check("constexpr int f() {\n" // #11238
+              "    return 1;\n"
+              "}\n"
+              "constexpr bool g() {\n"
+              "    return f() == 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g() { return -1; }\n"
+              "void f() {\n"
+              "    if (g() == 1 && g() == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'g()==1' is always false\n"
+                      "[test.cpp:3]: (style) Condition 'g()==-1' is always true\n",
+                      errout.str());
+
+        // #9817
+        check("void f(float x) {\n"
+              "    if (x <= 0) {}\n"
+              "    else if (x < 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10426
+        check("int f() {\n"
+              "    std::string s;\n"
+              "    for (; !s.empty();) {}\n"
+              "    for (; s.empty();) {}\n"
+              "    if (s.empty()) {}\n"
+              "    if ((bool)0) {}\n"
+              "    return s.empty();"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!s.empty()' is always false\n"
+                      "[test.cpp:4]: (style) Condition 's.empty()' is always true\n"
+                      "[test.cpp:5]: (style) Condition 's.empty()' is always true\n"
+                      "[test.cpp:6]: (style) Condition '(bool)0' is always false\n"
+                      "[test.cpp:7]: (style) Condition 's.empty()' is always true\n",
+                      errout.str());
+
+        check("int f(bool b) {\n"
+              "    if (b) return static_cast<int>(1);\n"
+              "    return (int)0;\n"
+              "}\n"
+              "bool g(bool b) {\n"
+              "    if (b) return static_cast<int>(1);\n"
+              "    return (int)0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'static_cast<int>(1)' is always true\n"
+                      "[test.cpp:7]: (style) Condition '(int)0' is always false\n",
+                      errout.str());
+
+        check("int f() { return 3; }\n"
+              "int g() { return f(); }\n"
+              "int h() { if (f()) {} }\n"
+              "int i() { return f() == 3; }\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f()' is always true\n"
+                      "[test.cpp:4]: (style) Condition 'f()==3' is always true\n",
+                      errout.str());
+
+        check("int f() {\n"
+              "    const char *n;\n"
+              "    return((n=42) &&\n"
+              "           *n == 'A');\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4581,6 +4810,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11098
+        check("void f(unsigned int x) { if (x == -1u) {} }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(const int *p, const int *q) {\n"
+              "    return p != NULL && q != NULL && p == NULL;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'p==NULL' is always false\n", errout.str());
     }
 
     void alwaysTrueContainer() {
@@ -5193,6 +5431,45 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool b) {\n"
+              "    if (b)\n"
+              "        b = false;\n"
+              "    else\n"
+              "        g();\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int& i) {\n"
+              "    if (!i)\n"
+              "        i = 1; \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #9406
+              "    S() : b(false) {}\n"
+              "    void f() {\n"
+              "        if (b) b = true;\n"
+              "        if (b) b = false;\n"
+              "        if (!b) b = true;\n"
+              "        if (!b) b = false;\n"
+              "    }\n"
+              "    bool b;\n"
+              "};\n");
+        ASSERT_EQUALS("test.cpp:4:style:The statement 'if (b) b=true' is redundant.\n"
+                      "test.cpp:4:note:Assignment 'b=true'\n"
+                      "test.cpp:4:note:Condition 'b' is redundant\n"
+                      "test.cpp:5:style:The statement 'if (b) b=false' is logically equivalent to 'b=false'.\n"
+                      "test.cpp:5:note:Assignment 'b=false'\n"
+                      "test.cpp:5:note:Condition 'b' is redundant\n"
+                      "test.cpp:6:style:The statement 'if (!b) b=true' is logically equivalent to 'b=true'.\n"
+                      "test.cpp:6:note:Assignment 'b=true'\n"
+                      "test.cpp:6:note:Condition '!b' is redundant\n"
+                      "test.cpp:7:style:The statement 'if (!b) b=false' is redundant.\n"
+                      "test.cpp:7:note:Assignment 'b=false'\n"
+                      "test.cpp:7:note:Condition '!b' is redundant\n",
+                      errout.str());
     }
 
     void checkAssignmentInCondition() {

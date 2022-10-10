@@ -57,6 +57,11 @@ private:
         settings2.checkUnusedTemplates = true;
         settings_windows.checkUnusedTemplates = true;
 
+        // library=qt
+        settings0.libraries.emplace_back("qt");
+        settings1.libraries.emplace_back("qt");
+        settings2.libraries.emplace_back("qt");
+
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize4);
@@ -217,6 +222,7 @@ private:
         TEST_CASE(vardecl26);  // #5907 - incorrect handling of extern declarations
         TEST_CASE(vardecl27);  // #7850 - crash on valid C code
         TEST_CASE(vardecl28);
+        TEST_CASE(vardecl29); // #9282
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -349,6 +355,7 @@ private:
         TEST_CASE(simplifyOperatorName29); // spaceship operator
         TEST_CASE(simplifyOperatorName31); // #6342
         TEST_CASE(simplifyOperatorName32); // #10256
+        TEST_CASE(simplifyOperatorName33); // #10138
 
         TEST_CASE(simplifyOverloadedOperators1);
         TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
@@ -358,13 +365,13 @@ private:
 
         // Some simple cleanups of unhandled macros in the global scope
         TEST_CASE(removeMacrosInGlobalScope);
-        TEST_CASE(removeMacroInVarDecl);
 
         TEST_CASE(addSemicolonAfterUnknownMacro);
 
         // a = b = 0;
         TEST_CASE(multipleAssignment);
 
+        TEST_CASE(platformWin);
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
         TEST_CASE(platformWin32AStringCat); // ticket #5015
@@ -424,6 +431,8 @@ private:
         TEST_CASE(noCrash2);
         TEST_CASE(noCrash3);
         TEST_CASE(noCrash4);
+        TEST_CASE(noCrash5); // #10603
+        TEST_CASE(noCrash6); // #10212
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -2491,6 +2500,20 @@ private:
                       "return x ;\n"
                       "}",
                       tokenizeAndStringify(code, /*expand=*/ true, Settings::Native, "test.c"));
+    }
+
+    void vardecl29() { // #9282
+        const char* code = "double f1() noexcept, f2(double) noexcept;";
+        ASSERT_EQUALS("double f1 ( ) noexcept ( true ) ; double f2 ( double ) noexcept ( true ) ;",
+                      tokenizeAndStringify(code));
+
+        code = "class C {\n"
+               "    double f1() const noexcept, f2 (double) const noexcept;\n"
+               "};\n";
+        ASSERT_EQUALS("class C {\n"
+                      "double f1 ( ) const noexcept ( true ) ; double f2 ( double ) const noexcept ( true ) ;\n"
+                      "} ;",
+                      tokenizeAndStringify(code));
     }
 
     void volatile_variables() {
@@ -4932,7 +4955,7 @@ private:
         ASSERT_EQUALS(result3, tokenizeAndStringify(code3));
 
         const char code4[] = "value_type * operator += (int) const noexcept ;";
-        const char result4[] = "value_type * operator+= ( int ) const noexcept ;";
+        const char result4[] = "value_type * operator+= ( int ) const noexcept ( true ) ;";
         ASSERT_EQUALS(result4, tokenizeAndStringify(code4));
 
         const char code5[] = "value_type * operator += (int) const noexcept ( true ) ;";
@@ -4968,6 +4991,12 @@ private:
     void simplifyOperatorName32() { // #10256
         const char code[] = "void f(int* = nullptr) {}\n";
         ASSERT_EQUALS("void f ( int * = nullptr ) { }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyOperatorName33() { // #10138
+        const char code[] = "int (operator\"\" _ii)(unsigned long long v) { return v; }\n";
+        ASSERT_EQUALS("int operator\"\"_ii ( unsigned long long v ) { return v ; }", tokenizeAndStringify(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5316,19 +5345,6 @@ private:
                                           "\n"
                                           "BOOL CSetProgsAdvDlg::OnInitDialog() {}"),
                      InternalError);
-    }
-
-    void removeMacroInVarDecl() { // #4304
-        // only remove macros with parentheses (those hurt most)
-        ASSERT_EQUALS("void f ( ) { PROGMEM int x ; }", tokenizeAndStringify("void f() { PROGMEM int x ; }"));
-        ASSERT_EQUALS("void f ( ) { int x ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") int x ; }"));
-
-        // various variable declarations
-        ASSERT_EQUALS("void f ( ) { CONST int x ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") CONST int x ; }"));
-        ASSERT_EQUALS("void f ( ) { char a [ 4 ] ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") char a[4]; }"));
-        ASSERT_EQUALS("void f ( ) { const char a [ 4 ] ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") const char a[4]; }"));
-        ASSERT_EQUALS("void f ( ) { struct ABC abc ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") struct ABC abc; }"));
-        ASSERT_EQUALS("void f ( ) { CONST struct ABC abc ; }", tokenizeAndStringify("void f() { SECTION(\".data.ro\") CONST struct ABC abc; }"));
     }
 
     void addSemicolonAfterUnknownMacro() {
@@ -5840,7 +5856,7 @@ private:
             if (tok->astOperand1() && astTop.find(tok->astTop()) == astTop.end()) {
                 astTop.insert(tok->astTop());
                 if (!ret.empty())
-                    ret = ret + " ";
+                    ret += " ";
                 ret += tok->astTop()->astString();
             }
         }
@@ -5943,6 +5959,7 @@ private:
         ASSERT_EQUALS("forae*bc.({:(", testAst("for (a *e : {b->c()});"));
         ASSERT_EQUALS("fori0=iasize.(<i++;;( asize.(", testAst("for (decltype(a.size()) i = 0; i < a.size(); ++i);"));
         ASSERT_EQUALS("foria:( asize.(", testAst("for(decltype(a.size()) i:a);"));
+        ASSERT_EQUALS("forec0{([,(:( fb.return", testAst("for (auto e : c(0, [](auto f) { return f->b; }));")); // #10802
 
         // for with initializer (c++20)
         ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
@@ -6055,10 +6072,16 @@ private:
         ASSERT_EQUALS("Aa*A12,{new=", testAst("A* a = new A{ 1, 2 };"));
         ASSERT_EQUALS("Sv0[(new", testAst("new S(v[0]);")); // #10929
         ASSERT_EQUALS("SS::x(px0>intx[{newint1[{new:?(:", testAst("S::S(int x) : p(x > 0 ? new int[x]{} : new int[1]{}) {}")); // #10793
+        ASSERT_EQUALS("a0[T{new=", testAst("a[0] = new T{};"));
+        ASSERT_EQUALS("a0[T::{new=", testAst("a[0] = new ::T{};"));
+        ASSERT_EQUALS("a0[ST::{new=", testAst("a[0] = new S::T{};"));
+        ASSERT_EQUALS("intnewdelete", testAst("delete new int;")); // #11039
+        ASSERT_EQUALS("intnewdelete", testAst("void f() { delete new int; }"));
+        ASSERT_EQUALS("pint3[new1+=", testAst("p = (new int[3]) + 1;")); // #11327
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
-        ASSERT_EQUALS("a::new=", testAst("a = new (b) ::X;"));
+        ASSERT_EQUALS("aX::new=", testAst("a = new (b) ::X;"));
         ASSERT_EQUALS("cCnew= abc:?", testAst("c = new(a ? b : c) C;"));
 
         // invalid code (libreoffice), don't hang
@@ -6203,6 +6226,26 @@ private:
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
         ASSERT_EQUALS("adecltypeac::(,decltypead::(,",
                       testAst("template <typename a> void b(a &, decltype(a::c), decltype(a::d));"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
+                                             "struct B { A* hash; };\n"
+                                             "auto g(A* a) { return [=](void*) { return a; }; }\n"
+                                             "void f(void* p, B* b) {\n"
+                                             "    b->hash = (g(b->hash))(p);\n"
+                                             "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
+                                             "struct B { A* hash; };\n"
+                                             "A* h(void* p);\n"
+                                             "typedef A* (*X)(void*);\n"
+                                             "X g(A*) { return h; }\n"
+                                             "void f(void* p, B * b) {\n"
+                                             "b->hash = (g(b->hash))(p);\n"
+                                             "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
+                                             "struct B { A* hash; };\n"
+                                             "void f(void* p, B* b) {\n"
+                                             "    b->hash = (decltype(b->hash))(p);\n"
+                                             "}\n"));
 
         // #10334: Do not hang!
         tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"
@@ -6574,6 +6617,18 @@ private:
         // C++ try/catch in global scope
         ASSERT_THROW_EQUALS(tokenizeAndStringify("try { }"), InternalError, "syntax error: keyword 'try' is not allowed in global scope");
         ASSERT_NO_THROW(tokenizeAndStringify("void f() try { } catch (int) { }"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct S {\n" // #9716
+                                             "    S();\n"
+                                             "    int x, y;\n"
+                                             "};\n"
+                                             "S::S()\n"
+                                             "    try : x(1), y{ 2 } { f(); }\n"
+                                             "    catch (const std::exception& e) { g(); }\n"
+                                             "    catch (...) { g(); }\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("void f()\n"
+                                             "    try { g(); }\n"
+                                             "    catch (const std::exception& e) { h(); }\n"
+                                             "    catch (...) { h(); }\n"));
 
         // before if|for|while|switch
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"));
@@ -7072,13 +7127,24 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void a(X<int> x, typename Y1::Y2<int, A::B::C, 2> y, Z z = []{});"));
     }
 
-    void noCrash4()
-    {
+    void noCrash4() {
         ASSERT_NO_THROW(tokenizeAndStringify("static int foo() {\n"
                                              "    zval ref ;\n"
                                              "    p = &(ref).value;\n"
                                              "    return result ;\n"
                                              "}\n"));
+    }
+
+    void noCrash5() { // #10603
+        ASSERT_NO_THROW(tokenizeAndStringify("class B { using shared_ptr = std::shared_ptr<Foo>; };\n"
+                                             "class D : public B { void f(const std::shared_ptr<int>& ptr) {} };\n"));
+    }
+
+    void noCrash6() { // #10212
+        ASSERT_NO_THROW(tokenizeAndStringify("template <long, long a = 0> struct b;\n"
+                                             "template <class, bool> struct c;\n"
+                                             "template <template <class, class> class a, class e, class... d>\n"
+                                             "struct c<a<e, d...>, true> {};\n"));
     }
 
     void checkConfig(const char code[]) {

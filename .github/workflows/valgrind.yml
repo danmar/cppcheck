@@ -2,8 +2,10 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: valgrind
 
-# on: [push, pull_request]
-on: workflow_dispatch
+on: [push, pull_request]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -12,7 +14,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ runner.os }}
+
       - name: Prepare
         run: |
           sudo apt-get update
@@ -32,14 +39,17 @@ jobs:
           sudo apt-get install libxml2-utils
           sudo apt-get install valgrind
           sudo apt-get install libc6-dbg-amd64-cross
+          sudo apt-get install libboost-container-dev
 
       - name: Build cppcheck
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          CXXFLAGS="-O1 -g -DHAVE_BOOST" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Build test
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          CXXFLAGS="-O1 -g -DHAVE_BOOST" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run valgrind
         run: |

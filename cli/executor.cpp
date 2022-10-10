@@ -25,6 +25,3 @@ Executor::Executor(const std::map<std::string, std::size_t> &files, Settings &se
 Executor::~Executor()
 {}
 
-bool Executor::isEnabled() {
-    return true;
-}

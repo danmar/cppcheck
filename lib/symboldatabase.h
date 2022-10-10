@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "sourcelocation.h"
@@ -593,7 +594,8 @@ public:
         return getFlag(fIsSmartPointer);
     }
 
-    const Type *smartPointerType() const;
+    const Type* smartPointerType() const;
+    const Type* iteratorType() const;
 
     /**
      * Checks if the variable is of any of the STL types passed as arguments ('std::')
@@ -691,7 +693,7 @@ private:
     /** @brief pointer to scope this variable is in */
     const Scope *mScope;
 
-    ValueType *mValueType;
+    const ValueType *mValueType;
 
     /** @brief array dimensions */
     std::vector<Dimension> mDimensions;
@@ -914,14 +916,14 @@ public:
     const ::Type *retType;            ///< function return type
     const Scope *functionScope;       ///< scope of function body
     const Scope* nestedIn;            ///< Scope the function is declared in
-    std::list<Variable> argumentList; ///< argument list
+    std::vector<Variable> argumentList; ///< argument list
     nonneg int initArgCount;        ///< number of args with default values
     Type type;                        ///< constructor, destructor, ...
-    AccessControl access;             ///< public/protected/private
     const Token *noexceptArg;         ///< noexcept token
     const Token *throwArg;            ///< throw token
     const Token *templateDef;         ///< points to 'template <' before function
     const Token *functionPointerUsage; ///< function pointer usage
+    AccessControl access;             ///< public/protected/private
 
     bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
@@ -1161,8 +1163,8 @@ public:
 
     const Function *getDestructor() const;
 
-    void addFunction(const Function & func) {
-        functionList.push_back(func);
+    void addFunction(Function func) {
+        functionList.push_back(std::move(func));
 
         const Function * back = &functionList.back();
 
@@ -1301,7 +1303,7 @@ public:
         containerTypeToken(nullptr),
         debugPath()
     {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, std::string otn)
         : sign(s),
         type(t),
         bits(0),
@@ -1313,11 +1315,11 @@ public:
         smartPointer(nullptr),
         container(nullptr),
         containerTypeToken(nullptr),
-        originalTypeName(otn),
+        originalTypeName(std::move(otn)),
         debugPath()
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings *settings);
+    static ValueType parseDecl(const Token *type, const Settings *settings, bool isCpp);
 
     static Type typeFromString(const std::string &typestr, bool longType);
 
@@ -1488,8 +1490,8 @@ private:
     Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
-    typedef std::map<unsigned int, unsigned int> MemberIdMap;
-    typedef std::map<unsigned int, MemberIdMap> VarIdMap;
+    using MemberIdMap = std::map<unsigned int, unsigned int>;
+    using VarIdMap = std::map<unsigned int, MemberIdMap>;
 
     void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
 

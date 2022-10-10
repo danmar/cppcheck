@@ -28,11 +28,11 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
-#include <cstdint>
-#include <functional>
 #include <iterator> // back_inserter
 #include <memory>
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 
 #include <simplecpp.h>
@@ -56,8 +56,8 @@ static std::string trim(const std::string& s)
     return s.substr(beg, end - beg + 1);
 }
 
-Directive::Directive(const std::string &_file, const int _linenr, const std::string &_str) :
-    file(_file),
+Directive::Directive(std::string _file, const int _linenr, const std::string &_str) :
+    file(std::move(_file)),
     linenr(_linenr),
     str(trim(_str))
 {}
@@ -78,7 +78,7 @@ Preprocessor::~Preprocessor()
 
 namespace {
     struct BadInlineSuppression {
-        BadInlineSuppression(const simplecpp::Location &l, const std::string &msg) : location(l), errmsg(msg) {}
+        BadInlineSuppression(const simplecpp::Location &l, std::string msg) : location(l), errmsg(std::move(msg)) {}
         simplecpp::Location location;
         std::string errmsg;
     };
@@ -110,7 +110,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         std::vector<Suppressions::Suppression> suppressions = Suppressions::parseMultiSuppressComment(comment, &errmsg);
 
         if (!errmsg.empty())
-            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+            bad->emplace_back(tok->location, std::move(errmsg));
 
         std::copy_if(suppressions.begin(), suppressions.end(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
             return !s.errorId.empty();
@@ -123,10 +123,10 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             return false;
 
         if (!s.errorId.empty())
-            inlineSuppressions.push_back(s);
+            inlineSuppressions.push_back(std::move(s));
 
         if (!errmsg.empty())
-            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+            bad->emplace_back(tok->location, std::move(errmsg));
     }
 
     return true;
@@ -231,7 +231,7 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
                 else
                     directive.str += tok2->str();
             }
-            mDirectives.push_back(directive);
+            mDirectives.push_back(std::move(directive));
         }
     }
 }
@@ -417,7 +417,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             if (cmdtok->str() == "ifndef")
                 ifndef = true;
             else {
-                const std::vector<std::string> match{"if", "!", "defined", "(", config, ")"};
+                const std::array<std::string, 6> match{"if", "!", "defined", "(", config, ")"};
                 int i = 0;
                 ifndef = true;
                 for (const simplecpp::Token *t = cmdtok; i < match.size(); t = t->next) {
@@ -438,8 +438,8 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                     }
                 }
                 if (includeGuard) {
-                    configs_if.emplace_back(std::string());
-                    configs_ifndef.emplace_back(std::string());
+                    configs_if.emplace_back(/*std::string()*/);
+                    configs_ifndef.emplace_back(/*std::string()*/);
                     continue;
                 }
             }
@@ -474,7 +474,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 std::string config = readcondition(cmdtok, defined, undefined);
                 if (isUndefined(config,undefined))
                     config.clear();
-                configs_if.push_back(config);
+                configs_if.push_back(std::move(config));
                 ret.insert(cfg(configs_if, userDefines));
             } else if (!configs_ifndef.empty()) {
                 configs_if.push_back(configs_ifndef.back());
@@ -524,7 +524,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
         }
     }
     if (!elseError.empty())
-        ret.insert(elseError);
+        ret.insert(std::move(elseError));
 }
 
 
@@ -588,7 +588,7 @@ static void splitcfg(const std::string &cfg, std::list<std::string> &defines, co
         std::string def = (defineEndPos == std::string::npos) ? cfg.substr(defineStartPos) : cfg.substr(defineStartPos, defineEndPos - defineStartPos);
         if (!defaultValue.empty() && def.find('=') == std::string::npos)
             def += '=' + defaultValue;
-        defines.push_back(def);
+        defines.push_back(std::move(def));
         if (defineEndPos == std::string::npos)
             break;
         defineStartPos = defineEndPos + 1U;
@@ -615,7 +615,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         } else {
             s[s.find(')')+1] = '=';
         }
-        dui.defines.push_back(s);
+        dui.defines.push_back(std::move(s));
     }
 
     dui.undefined = mSettings.userUndefs; // -U
@@ -825,8 +825,8 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
         if (mSettings.relativePaths)
             file = Path::getRelativePath(file, mSettings.basePaths);
 
-        const ErrorMessage::FileLocation loc(file, linenr, 0);
-        locationList.push_back(loc);
+        ErrorMessage::FileLocation loc(file, linenr, 0);
+        locationList.push_back(std::move(loc));
     }
     mErrorLogger->reportErr(ErrorMessage(locationList,
                                          mFile0,
@@ -865,7 +865,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
             ErrorMessage::FileLocation loc;
             loc.line = linenr;
             loc.setfile(Path::toNativeSeparators(filename));
-            locationList.push_back(loc);
+            locationList.push_back(std::move(loc));
         }
         ErrorMessage errmsg(locationList, mFile0, Severity::information,
                             (headerType==SystemHeader) ?
@@ -910,10 +910,8 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
 void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro)
 {
     const std::string id = "ConfigurationNotChecked";
-    std::list<ErrorMessage::FileLocation> locationList;
-    const ErrorMessage::FileLocation loc(file, line, 0);
-    locationList.push_back(loc);
-    const ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, Certainty::normal);
+    ErrorMessage::FileLocation loc(file, line, 0);
+    const ErrorMessage errmsg({std::move(loc)}, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, Certainty::normal);
     mErrorLogger->reportInfo(errmsg);
 }
 

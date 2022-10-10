@@ -6,6 +6,9 @@ name: CI-mingw
 
 on: [push,pull_request]
 
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: cmd
@@ -14,7 +17,7 @@ jobs:
   build_mingw:
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2019] # fails to download with "windows-2022"
         arch: [x64] # TODO: fix x86 build?
       fail-fast: false
 
@@ -28,14 +31,7 @@ jobs:
         with:
           platform: ${{ matrix.arch }}
 
-      - name: Build cppcheck
+      # MinGW will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
+      - name: Build all and run test
         run: |
-          mingw32-make -j2
-
-      - name: Build test
-        run: |
-          mingw32-make -j2 testrunner
-
-      - name: Run test
-        run: |
-          mingw32-make -j2 check
+          mingw32-make VERBOSE=1 -j2 check

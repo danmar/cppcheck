@@ -23,7 +23,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
+#include <sstream> // IWYU pragma: keep
 
 class TestBool : public TestFixture {
 public:
@@ -56,6 +56,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt7); // #4846 - (!x == true)
         TEST_CASE(comparisonOfBoolWithInt8); // #9165
         TEST_CASE(comparisonOfBoolWithInt9); // #9304
+        TEST_CASE(comparisonOfBoolWithInt10); // #10935
 
         TEST_CASE(checkComparisonOfFuncReturningBool1);
         TEST_CASE(checkComparisonOfFuncReturningBool2);
@@ -932,6 +933,29 @@ private:
               "    return b | g() | c;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'c' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+
+        check("void f(int i) {\n" // #4233
+              "    bool b = true, c = false;\n"
+              "    b &= i;\n"
+              "    c |= i;\n"
+              "    if (b || c) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'b' is used in bitwise operation.\n"
+                      "[test.cpp:4]: (style, inconclusive) Boolean expression 'c' is used in bitwise operation.\n",
+                      errout.str());
+
+        check("void f(int i, int j, bool b) {\n"
+              "    i &= b;\n"
+              "    j |= b;\n"
+              "    if (b || c) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool b, int i) {\n"
+              "    b &= (i == 5);\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incrementBoolean() {

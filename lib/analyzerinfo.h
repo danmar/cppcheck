@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "config.h"
 #include "importproject.h"
 
+#include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>
@@ -58,6 +59,8 @@ public:
     void reportErr(const ErrorMessage &msg, bool verbose);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
     static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg);
+protected:
+    static std::string getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg);
 private:
     std::ofstream mOutputStream;
     std::string mAnalyzerInfoFile;

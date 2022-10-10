@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,12 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     std::cout << std::endl;
     TimerResultsData overallData;
 
-    std::vector<dataElementType> data(mResults.begin(), mResults.end());
+    std::vector<dataElementType> data;
+    data.reserve(mResults.size());
+    {
+        std::lock_guard<std::mutex> l(mResultsSync);
+        data.insert(data.begin(), mResults.begin(), mResults.end());
+    }
     std::sort(data.begin(), data.end(), more_second_sec);
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
@@ -67,12 +72,14 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
 
 void TimerResults::addResults(const std::string& str, std::clock_t clocks)
 {
+    std::lock_guard<std::mutex> l(mResultsSync);
+
     mResults[str].mClocks += clocks;
     mResults[str].mNumberOfResults++;
 }
 
-Timer::Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
-    : mStr(str)
+Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
+    : mStr(std::move(str))
     , mTimerResults(timerResults)
     , mStart(0)
     , mShowTimeMode(showtimeMode)

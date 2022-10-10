@@ -27,6 +27,7 @@
 #include <istream>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 
 /// @addtogroup Core
@@ -57,7 +58,7 @@ public:
         Suppression(const Suppression &other) {
             *this = other;
         }
-        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
+        Suppression(std::string id, std::string file, int line=NO_LINE) : errorId(std::move(id)), fileName(std::move(file)), lineNumber(line), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
 
         Suppression & operator=(const Suppression &other) {
             errorId = other.errorId;

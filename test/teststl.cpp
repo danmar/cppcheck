@@ -22,9 +22,10 @@
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
+#include "utils.h"
 
 #include <cstddef>
-#include <iosfwd>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 
@@ -896,6 +897,11 @@ private:
                     "  s[x*s.size()] = 1;\n"
                     "}");
         ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 'x*s.size()' is out of bounds.\n", errout.str());
+
+        checkNormal("bool f(std::string_view& sv) {\n" // #10031
+                    "    return sv[sv.size()] == '\\0';\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of sv, index 'sv.size()' is out of bounds.\n", errout.str());
     }
     void outOfBoundsIterator() {
         check("int f() {\n"
@@ -1574,6 +1580,17 @@ private:
               "}\n");
         ASSERT_EQUALS(
             "[test.cpp:6] -> [test.cpp:6]: (error) Same iterator is used with containers 'g()' that are temporaries or defined in different scopes.\n",
+            errout.str());
+
+        check("std::set<long> f() {\n" // #5804
+              "    std::set<long> s;\n"
+              "    return s;\n"
+              "}\n"
+              "void g() {\n"
+              "    for (std::set<long>::iterator it = f().begin(); it != f().end(); ++it) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6]: (error) Same iterator is used with containers 'f()' that are temporaries or defined in different scopes.\n",
             errout.str());
     }
 
@@ -3014,17 +3031,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    template<size_t n, typename T>
-    static size_t getArraylength(const T (&)[n]) {
-        return n;
-    }
-
     void stlBoundaries1() {
         const std::string stlCont[] = {
             "list", "set", "multiset", "map", "multimap"
         };
 
-        for (size_t i = 0; i < getArraylength(stlCont); ++i) {
+        for (size_t i = 0; i < getArrayLength(stlCont); ++i) {
             check("void f()\n"
                   "{\n"
                   "    std::" + stlCont[i] + "<int>::iterator it;\n"
@@ -3879,6 +3891,30 @@ private:
                       "[test.cpp:11]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n",
                       errout.str());
 
+        check("void f(const std::string& s);\n" // #8336
+              "struct T {\n"
+              "    std::string g();\n"
+              "    std::string a[1];\n"
+              "    struct U { std::string s; } u;"
+              "};\n"
+              "namespace N { namespace O { std::string s; } }\n"
+              "void g(const std::vector<std::string>& v, T& t) {\n"
+              "    for (std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
+              "        f(it->c_str());\n"
+              "    f(v.begin()->c_str());\n"
+              "    f(t.g().c_str());\n"
+              "    f(t.a[0].c_str());\n"
+              "    f(t.u.s.c_str());\n"
+              "    f(N::O::s.c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:10]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:11]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:12]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:13]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n"
+                      "[test.cpp:14]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n",
+                      errout.str());
+
         check("void svgFile(const std::string &content, const std::string &fileName, const double end = 1000., const double start = 0.);\n"
               "void Bar(std::string filename) {\n"
               "    std::string str = \"bar\";\n"
@@ -4045,6 +4081,37 @@ private:
               "    return a.c_str() + b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant.\n", errout.str());
+
+        check("std::vector<double> v;\n" // don't crash
+              "int i;\n"
+              "void f() {\n"
+              "    const double* const QM_R__ buf(v.data() + i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n" // #7515
+              "    std::string g();\n"
+              "    std::string a[1];\n"
+              "    std::vector<std::string> v;\n"
+              "};\n"
+              "void f(std::stringstream& strm, const std::string& s, T& t) {\n"
+              "    strm << s.c_str();\n"
+              "    strm << \"abc\" << s.c_str();\n"
+              "    strm << \"abc\" << s.c_str() << \"def\";\n"
+              "    strm << \"abc\" << t.g().c_str() << \"def\";\n"
+              "    strm << t.a[0].c_str();\n"
+              "    strm << t.v.begin()->c_str();\n"
+              "    auto it = t.v.begin()\n"
+              "    strm << it->c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:8]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:9]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:10]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:11]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:12]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:14]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n",
+                      errout.str());
     }
 
     void uselessCalls() {
@@ -4163,6 +4230,56 @@ private:
               "    for (;s.empty();) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #11166
+        check("std::string f(std::string s) {\n"
+              "    s = s.substr(0, s.size() - 1);\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n",
+                      errout.str());
+
+        check("std::string f(std::string s, std::size_t start, std::size_t end, const std::string& i) {\n"
+              "    s = s.substr(0, start) + i + s.substr(end + 1);\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use replace() instead.\n",
+                      errout.str());
+
+        check("std::string f(std::string s, std::size_t end) {\n"
+              "    s = { s.begin(), s.begin() + end };\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
+
+        check("std::list<int> f(std::list<int> l, std::size_t end) {\n"
+              "    l = { l.begin(), l.begin() + end };\n"
+              "    return l;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 'l' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
+
+        check("std::string f(std::string s, std::size_t end) {\n"
+              "    s = std::string{ s.begin(), s.begin() + end };\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
+
+        check("std::string f(std::string s, std::size_t end) {\n"
+              "    s = std::string(s.begin(), s.begin() + end);\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
+
+        check("std::vector<int> f(std::vector<int> v, std::size_t end) {\n"
+              "    v = std::vector<int>(v.begin(), v.begin() + end);\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 'v' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
     }
 
     void stabilityOfChecks() {
@@ -5451,6 +5568,18 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        // #11147
+        check("void f(std::string& s) {\n"
+              "    if (!s.empty()) {\n"
+              "        std::string::iterator it = s.begin();\n"
+              "        s = s.substr(it - s.begin());\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n",
+            errout.str());
     }
 
     void invalidContainerLoop() {
@@ -5800,6 +5929,14 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:3]: (style) Using sort with iterator 'v.begin()' that is always empty.\n", errout.str());
+
+        check("void f() {\n" // #1201
+              "    std::vector<int> v1{ 0, 1 };\n"
+              "    std::vector<int> v2;\n"
+              "    std::copy(v1.begin(), v1.end(), v2.begin());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (style) Using copy with iterator 'v2.begin()' that is always empty.\n", errout.str());
 
         check("void f() {\n"
               "    std::vector<int> v;\n"

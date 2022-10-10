@@ -33,43 +33,20 @@
 #include <cstring>
 #include <iomanip>
 #include <memory>
+#include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
 
 #include <tinyxml2.h>
 
-InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
-    token(tok), errorMessage(errorMsg), type(type)
-{
-    switch (type) {
-    case AST:
-        id = "internalAstError";
-        break;
-    case SYNTAX:
-        id = "syntaxError";
-        break;
-    case UNKNOWN_MACRO:
-        id = "unknownMacro";
-        break;
-    case INTERNAL:
-        id = "cppcheckError";
-        break;
-    case LIMIT:
-        id = "cppcheckLimit";
-        break;
-    case INSTANTIATION:
-        id = "instantiationError";
-        break;
-    }
-}
 ErrorMessage::ErrorMessage()
-    : incomplete(false), severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
+    : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {}
 
-ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, Certainty::CertaintyLevel certainty) :
-    callStack(callStack), // locations for this error message
-    id(id),               // set the message id
-    file0(file1),
-    incomplete(false),
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, Certainty::CertaintyLevel certainty) :
+    callStack(std::move(callStack)), // locations for this error message
+    id(std::move(id)),               // set the message id
+    file0(std::move(file1)),
     severity(severity),   // severity for this error message
     cwe(0U),
     certainty(certainty),
@@ -81,11 +58,10 @@ ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::
 
 
 
-ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, Certainty::CertaintyLevel certainty) :
-    callStack(callStack), // locations for this error message
-    id(id),               // set the message id
-    file0(file1),
-    incomplete(false),
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, const CWE &cwe, Certainty::CertaintyLevel certainty) :
+    callStack(std::move(callStack)), // locations for this error message
+    id(std::move(id)),               // set the message id
+    file0(std::move(file1)),
     severity(severity),   // severity for this error message
     cwe(cwe.id),
     certainty(certainty),
@@ -95,8 +71,8 @@ ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::
     setmsg(msg);
 }
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, Certainty::CertaintyLevel certainty)
-    : id(id), incomplete(false), severity(severity), cwe(0U), certainty(certainty), hash(0)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, Certainty::CertaintyLevel certainty)
+    : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -114,8 +90,8 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
-    : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
+    : id(std::move(id)), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
     for (const Token *tok: callstack) {
@@ -135,7 +111,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
-    : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
+    : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
     for (const ErrorPathItem& e: errorPath) {
@@ -162,8 +138,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
-    : incomplete(false),
-    severity(Severity::none),
+    : severity(Severity::none),
     cwe(0U),
     certainty(Certainty::normal)
 {
@@ -359,7 +334,7 @@ bool ErrorMessage::deserialize(const std::string &data)
         if (substrings.size() == 5)
             loc.setinfo(substrings[4]);
 
-        callStack.push_back(loc);
+        callStack.push_back(std::move(loc));
 
         if (callStack.size() >= stackSize)
             break;
@@ -651,8 +626,8 @@ ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* toke
     : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
 {}
 
-ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(info)
+ErrorMessage::FileLocation::FileLocation(const Token* tok, std::string info, const TokenList* tokenList)
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(std::move(info))
 {}
 
 std::string ErrorMessage::FileLocation::getfile(bool convert) const
@@ -843,7 +818,7 @@ std::string replaceStr(std::string s, const std::string &from, const std::string
             pos1++;
             continue;
         }
-        s = s.substr(0,pos1) + to + s.substr(pos2);
+        s.replace(pos1, from.size(), to);
         pos1 += to.size();
     }
     return s;

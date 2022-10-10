@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ public:
          * \param token template instantiation name token "name<...>"
          * \param scope full qualification of template(scope)
          */
-        TokenAndName(Token *token, const std::string &scope);
+        TokenAndName(Token *token, std::string scope);
         /**
          * Constructor used for declarations.
          * \param token template declaration token "template < ... >"
@@ -146,8 +146,9 @@ public:
          * \param nameToken template name token "template < ... > class name"
          * \param paramEnd template parameter end token ">"
          */
-        TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd);
+        TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
+        TokenAndName(TokenAndName&& other);
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
@@ -242,7 +243,7 @@ public:
         bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
             // Make sure a family flag is set and matches.
             // This works because at most only one flag will be set.
-            return ((mFlags & fFamilyMask) & (decl.mFlags & fFamilyMask)) != 0;
+            return ((mFlags & fFamilyMask) && (decl.mFlags & fFamilyMask));
         }
     };
 

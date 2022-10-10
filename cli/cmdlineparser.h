@@ -98,7 +98,7 @@ protected:
     /**
      * Print help text to the console.
      */
-    static void printHelp();
+    void printHelp();
 
     /**
      * Print message (to stdout).
@@ -111,6 +111,8 @@ protected:
     static void printError(const std::string &message);
 
 private:
+    bool isCppcheckPremium() const;
+
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;
     Settings *mSettings;

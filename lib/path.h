@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -179,6 +179,11 @@ public:
      * @return true if given path is a File
      */
     static bool fileExists(const std::string &file);
+
+    /**
+     * join 2 paths with '/' separators
+     */
+    static std::string join(std::string path1, std::string path2);
 };
 
 /// @}

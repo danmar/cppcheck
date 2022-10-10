@@ -59,7 +59,7 @@ struct TokensFrontBack {
 };
 
 struct ScopeInfo2 {
-    ScopeInfo2(const std::string &name_, const Token *bodyEnd_, const std::set<std::string> &usingNamespaces_ = std::set<std::string>()) : name(name_), bodyEnd(bodyEnd_), usingNamespaces(usingNamespaces_) {}
+    ScopeInfo2(std::string name_, const Token *bodyEnd_, std::set<std::string> usingNamespaces_ = std::set<std::string>()) : name(std::move(name_)), bodyEnd(bodyEnd_), usingNamespaces(std::move(usingNamespaces_)) {}
     std::string name;
     const Token * const bodyEnd;
     std::set<std::string> usingNamespaces;
@@ -74,6 +74,20 @@ struct TokenImpl {
     nonneg int mColumn;
     nonneg int mExprId;
 
+    /**
+     * A value from 0-100 that provides a rough idea about where in the token
+     * list this token is located.
+     */
+    nonneg int mProgressValue;
+
+    /**
+     * Token index. Position in token list
+     */
+    nonneg int mIndex;
+
+    /** Bitfield bit count. */
+    unsigned char mBits;
+
     // AST..
     Token *mAstOperand1;
     Token *mAstOperand2;
@@ -87,17 +101,6 @@ struct TokenImpl {
         const ::Type* mType;
         const Enumerator *mEnumerator;
     };
-
-    /**
-     * A value from 0-100 that provides a rough idea about where in the token
-     * list this token is located.
-     */
-    nonneg int mProgressValue;
-
-    /**
-     * Token index. Position in token list
-     */
-    nonneg int mIndex;
 
     // original name like size_t
     std::string* mOriginalName;
@@ -126,9 +129,6 @@ struct TokenImpl {
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
 
-    /** Bitfield bit count. */
-    unsigned char mBits;
-
     TokenDebug mDebug;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
@@ -140,14 +140,14 @@ struct TokenImpl {
         mLineNumber(0),
         mColumn(0),
         mExprId(0),
+        mProgressValue(0),
+        mIndex(0),
+        mBits(0),
         mAstOperand1(nullptr),
         mAstOperand2(nullptr),
         mAstParent(nullptr),
         mScope(nullptr),
-        mFunction(nullptr)   // Initialize whole union
-        ,
-        mProgressValue(0),
-        mIndex(0),
+        mFunction(nullptr),   // Initialize whole union
         mOriginalName(nullptr),
         mValueType(nullptr),
         mValues(nullptr),
@@ -155,7 +155,6 @@ struct TokenImpl {
         mScopeInfo(nullptr),
         mCppcheckAttributes(nullptr),
         mCpp11init(Cpp11init::UNKNOWN),
-        mBits(0),
         mDebug(TokenDebug::None)
     {}
 
@@ -401,6 +400,9 @@ public:
     }
     bool isEnumerator() const {
         return mTokType == eEnumerator;
+    }
+    bool isVariable() const {
+        return mTokType == eVariable;
     }
     bool isOp() const {
         return (isConstOp() ||
@@ -679,6 +681,13 @@ public:
     }
     void isSimplifiedScope(bool b) {
         setFlag(fIsSimplifedScope, b);
+    }
+
+    bool isFinalType() const {
+        return getFlag(fIsFinalType);
+    }
+    void isFinalType(bool b) {
+        setFlag(fIsFinalType, b);
     }
 
     bool isBitfield() const {
@@ -1200,7 +1209,7 @@ public:
     const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
 
     const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize(const Settings *settings) const;
+    const Token *getValueTokenMinStrSize(const Settings *settings, MathLib::bigint* path = nullptr) const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
@@ -1288,6 +1297,7 @@ private:
         fIsIncompleteConstant   = (1ULL << 36),
         fIsRestrict             = (1ULL << 37), // Is this a restrict pointer type
         fIsSimplifiedTypedef    = (1ULL << 38),
+        fIsFinalType            = (1ULL << 39), // Is this a type with final specifier
     };
 
     Token::Type mTokType;
@@ -1394,10 +1404,6 @@ public:
      * @return returns true if current token is a calculation
      */
     bool isCalculation() const;
-
-    void clearAst() {
-        mImpl->mAstOperand1 = mImpl->mAstOperand2 = mImpl->mAstParent = nullptr;
-    }
 
     void clearValueFlow() {
         delete mImpl->mValues;

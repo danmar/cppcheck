@@ -75,6 +75,11 @@ char * invalidFunctionArgStr_strpbrk( const char *p )
 
 int invalidFunctionArgStr_strncmp( const char *p )
 {
+    const char string[] = "foo";
+    char other[5] = { 0 };
+    memcpy(other, "foo", 4);
+    if (strncmp(other, string, 5) != 0) {}
+
     // No warning is expected for:
     const char emdash[3] = { -42, -43, -44 };
     return strncmp( p, emdash, 3 );
@@ -282,7 +287,6 @@ void pointerLessThanZero_aligned_alloc(void)
 
 void unusedRetVal_aligned_alloc(void)
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     aligned_alloc(8, 16);
 }
@@ -549,6 +553,14 @@ void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_
     // TODO cppcheck-suppress bufferAccessOutOfBounds
     (void)wcsftime(buf, 43, format, timeptr);
     (void)wcsftime(ptr, maxsize, format, timeptr);
+}
+
+void bufferAccessOutOfBounds_wcsncpy()
+{
+    wchar_t s[16];
+    wcsncpy(s, L"abc", 16);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    wcsncpy(s, L"abc", 17);
 }
 
 int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)
@@ -3921,9 +3933,7 @@ void bufferAccessOutOfBounds_strncmp(void)
     const char src[3] = "abc";
     char dest[1] = "a";
     (void)strncmp(dest,src,1);
-    // cppcheck-suppress bufferAccessOutOfBounds
     (void)strncmp(dest,src,2);
-    // cppcheck-suppress bufferAccessOutOfBounds
     (void)strncmp(dest,src,3);
 }
 

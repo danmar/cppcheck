@@ -32,6 +32,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <utility>
 
@@ -74,7 +75,7 @@ namespace {
 
     class FindName {
     public:
-        explicit FindName(const std::string &name) : mName(name) {}
+        explicit FindName(std::string name) : mName(std::move(name)) {}
         bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
             return tokenAndName.name() == mName;
         }
@@ -84,7 +85,7 @@ namespace {
 
     class FindFullName {
     public:
-        explicit FindFullName(const std::string &fullName) : mFullName(fullName) {}
+        explicit FindFullName(std::string fullName) : mFullName(std::move(fullName)) {}
         bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
             return tokenAndName.fullName() == mFullName;
         }
@@ -93,8 +94,8 @@ namespace {
     };
 }
 
-TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &scope) :
-    mToken(token), mScope(scope), mName(mToken ? mToken->str() : ""),
+TemplateSimplifier::TokenAndName::TokenAndName(Token *token, std::string scope) :
+    mToken(token), mScope(std::move(scope)), mName(mToken ? mToken->str() : ""),
     mFullName(mScope.empty() ? mName : (mScope + " :: " + mName)),
     mNameToken(nullptr), mParamEnd(nullptr), mFlags(0)
 {
@@ -109,8 +110,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
     }
 }
 
-TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd) :
-    mToken(token), mScope(scope), mName(nameToken->str()),
+TemplateSimplifier::TokenAndName::TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd) :
+    mToken(token), mScope(std::move(scope)), mName(nameToken->str()),
     mFullName(mScope.empty() ? mName : (mScope + " :: " + mName)),
     mNameToken(nameToken), mParamEnd(paramEnd), mFlags(0)
 {
@@ -227,6 +228,14 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
 
 TemplateSimplifier::TokenAndName::TokenAndName(const TokenAndName& other) :
     mToken(other.mToken), mScope(other.mScope), mName(other.mName), mFullName(other.mFullName),
+    mNameToken(other.mNameToken), mParamEnd(other.mParamEnd), mFlags(other.mFlags)
+{
+    if (mToken)
+        mToken->templateSimplifierPointer(this);
+}
+
+TemplateSimplifier::TokenAndName::TokenAndName(TokenAndName&& other) :
+    mToken(other.mToken), mScope(std::move(other.mScope)), mName(std::move(other.mName)), mFullName(std::move(other.mFullName)),
     mNameToken(other.mNameToken), mParamEnd(other.mParamEnd), mFlags(other.mFlags)
 {
     if (mToken)
@@ -695,7 +704,7 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
                                                      instantiation);
 
     if (it == mTemplateInstantiations.end())
-        mTemplateInstantiations.emplace_back(instantiation);
+        mTemplateInstantiations.emplace_back(std::move(instantiation));
 }
 
 static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
@@ -1066,7 +1075,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
         // default parameter value?
         else if (Token::Match(tok, "= !!>")) {
             if (defaultedArgPos.insert(templatepar).second) {
-                eq.push_back(Default{tok, nullptr});
+                eq.emplace_back(Default{tok, nullptr});
             } else {
                 // Ticket #5605: Syntax error (two equal signs for the same parameter), bail out
                 eq.clear();
@@ -1585,7 +1594,7 @@ void TemplateSimplifier::expandTemplate(
     const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
     struct newInstantiation {
-        newInstantiation(Token *t, const std::string &s) : token(t), scope(s) {}
+        newInstantiation(Token *t, std::string s) : token(t), scope(std::move(s)) {}
         Token *token;
         std::string scope;
     };
@@ -2166,6 +2175,10 @@ void TemplateSimplifier::expandTemplate(
                         continue;
                 }
 
+                // don't add instantiations in template definitions
+                if (!templates.empty())
+                    continue;
+
                 std::string scope;
                 const Token *prev = tok3;
                 for (; Token::Match(prev->tokAt(-2), "%name% ::"); prev = prev->tokAt(-2)) {
@@ -2189,13 +2202,10 @@ void TemplateSimplifier::expandTemplate(
                     }
                 }
 
-                // don't add instantiations in template definitions
-                if (templates.empty()) {
-                    if (copy)
-                        newInstantiations.emplace_back(mTokenList.back(), scope);
-                    else if (!inTemplateDefinition)
-                        newInstantiations.emplace_back(tok3, scope);
-                }
+                if (copy)
+                    newInstantiations.emplace_back(mTokenList.back(), std::move(scope));
+                else if (!inTemplateDefinition)
+                    newInstantiations.emplace_back(tok3, std::move(scope));
             }
 
             // link() newly tokens manually
@@ -2953,7 +2963,7 @@ std::string TemplateSimplifier::getNewName(
             ++indentlevel;
         else if (indentlevel > 0 && Token::Match(tok3, "> ,|>|::"))
             --indentlevel;
-        if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
+        else if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
             mTypesUsedInTemplateInstantiation.emplace_back(tok3, "");
         }
         if (Token::Match(tok3, "(|["))

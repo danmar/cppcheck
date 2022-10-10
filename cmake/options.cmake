@@ -21,8 +21,8 @@ option(WARNINGS_ARE_ERRORS  "Treat warnings as errors"                          
 
 set(USE_MATCHCOMPILER "Auto" CACHE STRING "Usage of match compiler")
 set_property(CACHE USE_MATCHCOMPILER PROPERTY STRINGS Auto Off On Verify) 
-if (USE_MATCHCOMPILER MATCHES "Auto")
-    if (NOT CMAKE_BUILD_TYPE MATCHES "Debug")
+if (USE_MATCHCOMPILER STREQUAL "Auto")
+    if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(USE_MATCHCOMPILER_OPT "On")
     else()
         set(USE_MATCHCOMPILER_OPT "Off")
@@ -45,7 +45,11 @@ option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                 
 option(CPPCHK_GLIBCXX_DEBUG "Usage of _GLIBCXX_DEBUG in Debug build"                        ON)
 option(USE_THREADS          "Usage of threads instead of fork() for -j"                     OFF)
 option(USE_BOOST            "Usage of Boost"                                                OFF)
+
 option(DISABLE_CRTDBG_MAP_ALLOC "Disable usage of Visual Studio C++ memory leak detection in Debug build" OFF)
+option(NO_UNIX_SIGNAL_HANDLING "Disable usage of Unix Signal Handling"                      OFF)
+option(NO_UNIX_BACKTRACE_SUPPORT "Disable usage of Unix Backtrace support"                  OFF)
+option(NO_WINDOWS_SEH       "Disable usage of Windows SEH"                                  OFF)
 
 if (CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")

@@ -27,22 +27,10 @@
 #include "color.h"
 
 #include <cstddef>
-#include <fstream>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
-
-/**
- * CWE id (Common Weakness Enumeration)
- * See https://cwe.mitre.org/ for further reference.
- * */
-// CWE list: https://cwe.mitre.org/data/published/cwe_v3.4.1.pdf
-static const struct CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
-static const struct CWE CWE_NULL_POINTER_DEREFERENCE(476U);
-static const struct CWE CWE_USE_OF_POTENTIALLY_DANGEROUS_FUNCTION(676U);
-static const struct CWE CWE_INCORRECT_CALCULATION(682U);
-static const struct CWE CWE_EXPIRED_POINTER_DEREFERENCE(825U);
-
 
 class Token;
 class TokenList;
@@ -69,14 +57,14 @@ public:
         FileLocation()
             : fileIndex(0), line(0), column(0) {}
 
-        FileLocation(const std::string &file, int line, unsigned int column)
+        explicit FileLocation(const std::string &file, int line = 0, unsigned int column = 0)
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
 
-        FileLocation(const std::string &file, const std::string &info, int line, unsigned int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {}
+        FileLocation(const std::string &file, std::string info, int line, unsigned int column)
+            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(std::move(info)) {}
 
         FileLocation(const Token* tok, const TokenList* tokenList);
-        FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
+        FileLocation(const Token* tok, std::string info, const TokenList* tokenList);
 
         /**
          * Return the filename.
@@ -120,28 +108,28 @@ public:
         std::string mInfo;
     };
 
-    ErrorMessage(const std::list<FileLocation> &callStack,
-                 const std::string& file1,
+    ErrorMessage(std::list<FileLocation> callStack,
+                 std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 const std::string &id, Certainty::CertaintyLevel certainty);
-    ErrorMessage(const std::list<FileLocation> &callStack,
-                 const std::string& file1,
+                 std::string id, Certainty::CertaintyLevel certainty);
+    ErrorMessage(std::list<FileLocation> callStack,
+                 std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 const std::string &id,
+                 std::string id,
                  const CWE &cwe,
                  Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
-                 const std::string& id,
+                 std::string id,
                  const std::string& msg,
                  Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
-                 const std::string& id,
+                 std::string id,
                  const std::string& msg,
                  const CWE &cwe,
                  Certainty::CertaintyLevel certainty);
@@ -184,10 +172,6 @@ public:
 
     /** For GUI rechecking; source file (not header) */
     std::string file0;
-    /** For GUI bug hunting; function name */
-    std::string function;
-    /** For GUI bug hunting; incomplete analysis */
-    bool incomplete;
 
     Severity::SeverityType severity;
     CWE cwe;
@@ -234,16 +218,9 @@ private:
  * should implement.
  */
 class CPPCHECKLIB ErrorLogger {
-protected:
-    std::ofstream plistFile;
 public:
     ErrorLogger() {}
-    virtual ~ErrorLogger() {
-        if (plistFile.is_open()) {
-            plistFile << ErrorLogger::plistFooter();
-            plistFile.close();
-        }
-    }
+    virtual ~ErrorLogger() {}
 
     /**
      * Information about progress is directed here.

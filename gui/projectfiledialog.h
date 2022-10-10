@@ -44,7 +44,7 @@ class ProjectFile;
 class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = nullptr);
+    explicit ProjectFileDialog(ProjectFile *projectFile, bool premium, QWidget *parent = nullptr);
     ~ProjectFileDialog() override;
 
 private:
@@ -316,7 +316,7 @@ protected:
     int getSuppressionIndex(const QString &shortText) const;
 
 private:
-    QStringList getProjectConfigs(const QString &fileName);
+    static QStringList getProjectConfigs(const QString &fileName);
 
     Ui::ProjectFile *mUI;
 
@@ -324,6 +324,9 @@ private:
      * @brief Projectfile path.
      */
     ProjectFile *mProjectFile;
+
+    /** Is this Cppcheck Premium? */
+    bool mPremium;
 
     QString getExistingDirectory(const QString &caption, bool trailingSlash);
 

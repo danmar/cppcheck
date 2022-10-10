@@ -26,9 +26,9 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
 #include <map>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -138,6 +138,7 @@ private:
         TEST_CASE(nullpointer92);
         TEST_CASE(nullpointer93); // #3929
         TEST_CASE(nullpointer94); // #11040
+        TEST_CASE(nullpointer95); // #11142
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -993,6 +994,11 @@ private:
               "    if (p);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { struct T { char c; } *p; };\n" // #6541
+              "char f(S* s) { return s->p ? 'a' : s->p->c; }\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (warning) Either the condition 's->p' is redundant or there is possible null pointer dereference: p.\n",
+                      errout.str());
     }
 
     void nullpointer5() {
@@ -2746,6 +2752,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nullpointer95() // #11142
+    {
+        check("void f(std::vector<int*>& v) {\n"
+              "    for (auto& p : v)\n"
+              "        if (*p < 2)\n"
+              "            p = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -4324,6 +4340,15 @@ private:
             "    if (x)\n"
             "        g(x);\n"
             "}");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("size_t f(int* p) {\n"
+            "    size_t len = sizeof(*p);\n"
+            "    return len;\n"
+            "}\n"
+            "void g() {\n"
+            "    f(NULL);\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

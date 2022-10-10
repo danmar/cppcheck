@@ -24,7 +24,7 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <istream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 
@@ -84,10 +84,6 @@ private:
         TEST_CASE(cAlternativeTokens);
 
         TEST_CASE(comma_keyword);
-        TEST_CASE(remove_comma);
-
-        // Simplify "?:"
-        TEST_CASE(simplifyConditionOperator);
 
         TEST_CASE(simplifyOperator1);
         TEST_CASE(simplifyOperator2);
@@ -144,7 +140,7 @@ private:
         // FIXME Does expression id handle these? TEST_CASE(simplifyKnownVariables29);    // ticket #1811
         TEST_CASE(simplifyKnownVariables30);
         TEST_CASE(simplifyKnownVariables34);
-        TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
+        TEST_CASE(simplifyKnownVariables36);    // ticket #5972
         TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
         TEST_CASE(simplifyKnownVariables43);
         TEST_CASE(simplifyKnownVariables44);    // ticket #3117 - don't simplify static variables
@@ -188,8 +184,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        if (simplify)
-            tokenizer.simplifyTokenList2();
+        (void)simplify;
 
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
@@ -201,23 +196,10 @@ private:
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
-        if (simplify)
-            tokenizer.simplifyTokenList2();
+
+        (void)simplify;
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
-    }
-
-#define tokWithNewlines(code) tokWithNewlines_(code, __FILE__, __LINE__)
-    std::string tokWithNewlines_(const char code[], const char* file, int line) {
-        errout.str("");
-
-        Tokenizer tokenizer(&settings0, this);
-
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-        tokenizer.simplifyTokenList2();
-
-        return tokenizer.tokens()->stringifyList(false, false, false, true, false);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -232,8 +214,8 @@ private:
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
-        if (simplify)
-            tokenizer.simplifyTokenList2();
+
+        (void)simplify;
 
         // filter out ValueFlow messages..
         const std::string debugwarnings = errout.str();
@@ -259,1343 +241,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
-        if (simplify)
-            tokenizer.simplifyTokenList2();
+        (void)simplify;
 
         // result..
         return tokenizer.tokens()->stringifyList(true);
-    }
-
-
-    void simplifyMathFunctions_erfc() {
-        // verify erfc(), erfcf(), erfcl() - simplifcation
-        const char code_erfc[] ="void f(int x) {\n"
-                                 " std::cout << erfc(x);\n" // do not simplify
-                                 " std::cout << erfc(0L);\n" // simplify to 1
-                                 "}";
-        const char expected_erfc[] = "void f ( int x ) {\n"
-                                     "std :: cout << erfc ( x ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_erfc, tokWithNewlines(code_erfc));
-
-        const char code_erfcf[] ="void f(float x) {\n"
-                                  " std::cout << erfcf(x);\n" // do not simplify
-                                  " std::cout << erfcf(0.0f);\n" // simplify to 1
-                                  "}";
-        const char expected_erfcf[] = "void f ( float x ) {\n"
-                                      "std :: cout << erfcf ( x ) ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_erfcf, tokWithNewlines(code_erfcf));
-
-        const char code_erfcl[] ="void f(long double x) {\n"
-                                  " std::cout << erfcl(x);\n" // do not simplify
-                                  " std::cout << erfcl(0.0f);\n" // simplify to 1
-                                  "}";
-        const char expected_erfcl[] = "void f ( double x ) {\n"
-                                      "std :: cout << erfcl ( x ) ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_erfcl, tokWithNewlines(code_erfcl));
-    }
-
-    void simplifyMathFunctions_cos() {
-        // verify cos(), cosf(), cosl() - simplifcation
-        const char code_cos[] ="void f(int x) {\n"
-                                " std::cout << cos(x);\n" // do not simplify
-                                " std::cout << cos(0L);\n" // simplify to 1
-                                "}";
-        const char expected_cos[] = "void f ( int x ) {\n"
-                                    "std :: cout << cos ( x ) ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "}";
-        ASSERT_EQUALS(expected_cos, tokWithNewlines(code_cos));
-
-        const char code_cosf[] ="void f(float x) {\n"
-                                 " std::cout << cosf(x);\n" // do not simplify
-                                 " std::cout << cosf(0.0f);\n" // simplify to 1
-                                 "}";
-        const char expected_cosf[] = "void f ( float x ) {\n"
-                                     "std :: cout << cosf ( x ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_cosf, tokWithNewlines(code_cosf));
-
-        const char code_cosl[] ="void f(long double x) {\n"
-                                 " std::cout << cosl(x);\n" // do not simplify
-                                 " std::cout << cosl(0.0f);\n" // simplify to 1
-                                 "}";
-        const char expected_cosl[] = "void f ( double x ) {\n"
-                                     "std :: cout << cosl ( x ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_cosl, tokWithNewlines(code_cosl));
-    }
-
-    void simplifyMathFunctions_cosh() {
-        // verify cosh(), coshf(), coshl() - simplifcation
-        const char code_cosh[] ="void f(int x) {\n"
-                                 " std::cout << cosh(x);\n" // do not simplify
-                                 " std::cout << cosh(0L);\n" // simplify to 1
-                                 "}";
-        const char expected_cosh[] = "void f ( int x ) {\n"
-                                     "std :: cout << cosh ( x ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_cosh, tokWithNewlines(code_cosh));
-
-        const char code_coshf[] ="void f(float x) {\n"
-                                  " std::cout << coshf(x);\n" // do not simplify
-                                  " std::cout << coshf(0.0f);\n" // simplify to 1
-                                  "}";
-        const char expected_coshf[] = "void f ( float x ) {\n"
-                                      "std :: cout << coshf ( x ) ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_coshf, tokWithNewlines(code_coshf));
-
-        const char code_coshl[] ="void f(long double x) {\n"
-                                  " std::cout << coshl(x);\n" // do not simplify
-                                  " std::cout << coshl(0.0f);\n" // simplify to 1
-                                  "}";
-        const char expected_coshl[] = "void f ( double x ) {\n"
-                                      "std :: cout << coshl ( x ) ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_coshl, tokWithNewlines(code_coshl));
-    }
-
-    void simplifyMathFunctions_acos() {
-        // verify acos(), acosf(), acosl() - simplifcation
-        const char code_acos[] ="void f(int x) {\n"
-                                 " std::cout << acos(x);\n" // do not simplify
-                                 " std::cout << acos(1L);\n" // simplify to 0
-                                 "}";
-        const char expected_acos[] = "void f ( int x ) {\n"
-                                     "std :: cout << acos ( x ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_acos, tokWithNewlines(code_acos));
-
-        const char code_acosf[] ="void f(float x) {\n"
-                                  " std::cout << acosf(x);\n" // do not simplify
-                                  " std::cout << acosf(1.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_acosf[] = "void f ( float x ) {\n"
-                                      "std :: cout << acosf ( x ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_acosf, tokWithNewlines(code_acosf));
-
-        const char code_acosl[] ="void f(long double x) {\n"
-                                  " std::cout << acosl(x);\n" // do not simplify
-                                  " std::cout << acosl(1.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_acosl[] = "void f ( double x ) {\n"
-                                      "std :: cout << acosl ( x ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_acosl, tokWithNewlines(code_acosl));
-    }
-
-    void simplifyMathFunctions_acosh() {
-        // verify acosh(), acoshf(), acoshl() - simplifcation
-        const char code_acosh[] ="void f(int x) {\n"
-                                  " std::cout << acosh(x);\n" // do not simplify
-                                  " std::cout << acosh(1L);\n" // simplify to 0
-                                  "}";
-        const char expected_acosh[] = "void f ( int x ) {\n"
-                                      "std :: cout << acosh ( x ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_acosh, tokWithNewlines(code_acosh));
-
-        const char code_acoshf[] ="void f(float x) {\n"
-                                   " std::cout << acoshf(x);\n" // do not simplify
-                                   " std::cout << acoshf(1.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_acoshf[] = "void f ( float x ) {\n"
-                                       "std :: cout << acoshf ( x ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_acoshf, tokWithNewlines(code_acoshf));
-
-        const char code_acoshl[] ="void f(long double x) {\n"
-                                   " std::cout << acoshl(x);\n" // do not simplify
-                                   " std::cout << acoshl(1.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_acoshl[] = "void f ( double x ) {\n"
-                                       "std :: cout << acoshl ( x ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_acoshl, tokWithNewlines(code_acoshl));
-    }
-
-    void simplifyMathFunctions_sqrt() {
-        // verify sqrt(), sqrtf(), sqrtl() - simplifcation
-        const char code_sqrt[] ="void f(int x) {\n"
-                                 " std::cout << sqrt(x);\n" // do not simplify
-                                 " std::cout << sqrt(-1);\n" // do not simplify
-                                 " std::cout << sqrt(0L);\n" // simplify to 0
-                                 " std::cout << sqrt(1L);\n" // simplify to 1
-                                 "}";
-        const char expected_sqrt[] = "void f ( int x ) {\n"
-                                     "std :: cout << sqrt ( x ) ;\n"
-                                     "std :: cout << sqrt ( -1 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_sqrt, tokWithNewlines(code_sqrt));
-
-        const char code_sqrtf[] ="void f(float x) {\n"
-                                  " std::cout << sqrtf(x);\n" // do not simplify
-                                  " std::cout << sqrtf(-1.0f);\n" // do not simplify
-                                  " std::cout << sqrtf(0.0f);\n" // simplify to 0
-                                  " std::cout << sqrtf(1.0);\n" // simplify to 1
-                                  "}";
-        const char expected_sqrtf[] = "void f ( float x ) {\n"
-                                      "std :: cout << sqrtf ( x ) ;\n"
-                                      "std :: cout << sqrtf ( -1.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_sqrtf, tokWithNewlines(code_sqrtf));
-
-        const char code_sqrtl[] ="void f(long double x) {\n"
-                                  " std::cout << sqrtf(x);\n" // do not simplify
-                                  " std::cout << sqrtf(-1.0);\n" // do not simplify
-                                  " std::cout << sqrtf(0.0);\n" // simplify to 0
-                                  " std::cout << sqrtf(1.0);\n" // simplify to 1
-                                  "}";
-        const char expected_sqrtl[] = "void f ( double x ) {\n"
-                                      "std :: cout << sqrtf ( x ) ;\n"
-                                      "std :: cout << sqrtf ( -1.0 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_sqrtl, tokWithNewlines(code_sqrtl));
-    }
-
-    void simplifyMathFunctions_cbrt() {
-        // verify cbrt(), cbrtf(), cbrtl() - simplifcation
-        const char code_cbrt[] ="void f(int x) {\n"
-                                 " std::cout << cbrt(x);\n" // do not simplify
-                                 " std::cout << cbrt(-1);\n" // do not simplify
-                                 " std::cout << cbrt(0L);\n" // simplify to 0
-                                 " std::cout << cbrt(1L);\n" // simplify to 1
-                                 "}";
-        const char expected_cbrt[] = "void f ( int x ) {\n"
-                                     "std :: cout << cbrt ( x ) ;\n"
-                                     "std :: cout << cbrt ( -1 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_cbrt, tokWithNewlines(code_cbrt));
-
-        const char code_cbrtf[] ="void f(float x) {\n"
-                                  " std::cout << cbrtf(x);\n" // do not simplify
-                                  " std::cout << cbrtf(-1.0f);\n" // do not simplify
-                                  " std::cout << cbrtf(0.0f);\n" // simplify to 0
-                                  " std::cout << cbrtf(1.0);\n" // simplify to 1
-                                  "}";
-        const char expected_cbrtf[] = "void f ( float x ) {\n"
-                                      "std :: cout << cbrtf ( x ) ;\n"
-                                      "std :: cout << cbrtf ( -1.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_cbrtf, tokWithNewlines(code_cbrtf));
-
-        const char code_cbrtl[] ="void f(long double x) {\n"
-                                  " std::cout << cbrtl(x);\n" // do not simplify
-                                  " std::cout << cbrtl(-1.0);\n" // do not simplify
-                                  " std::cout << cbrtl(0.0);\n" // simplify to 0
-                                  " std::cout << cbrtl(1.0);\n" // simplify to 1
-                                  "}";
-        const char expected_cbrtl[] = "void f ( double x ) {\n"
-                                      "std :: cout << cbrtl ( x ) ;\n"
-                                      "std :: cout << cbrtl ( -1.0 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_cbrtl, tokWithNewlines(code_cbrtl));
-    }
-
-    void simplifyMathFunctions_exp2() {
-        // verify exp2(), exp2f(), exp2l() - simplifcation
-        const char code_exp2[] ="void f(int x) {\n"
-                                 " std::cout << exp2(x);\n" // do not simplify
-                                 " std::cout << exp2(-1);\n" // do not simplify
-                                 " std::cout << exp2(0L);\n" // simplify to 0
-                                 " std::cout << exp2(1L);\n" // do not simplify
-                                 "}";
-        const char expected_exp2[] = "void f ( int x ) {\n"
-                                     "std :: cout << exp2 ( x ) ;\n"
-                                     "std :: cout << exp2 ( -1 ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "std :: cout << exp2 ( 1L ) ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_exp2, tokWithNewlines(code_exp2));
-
-        const char code_exp2f[] ="void f(float x) {\n"
-                                  " std::cout << exp2f(x);\n" // do not simplify
-                                  " std::cout << exp2f(-1.0);\n" // do not simplify
-                                  " std::cout << exp2f(0.0);\n" // simplify to 1
-                                  " std::cout << exp2f(1.0);\n" // do not simplify
-                                  "}";
-        const char expected_exp2f[] = "void f ( float x ) {\n"
-                                      "std :: cout << exp2f ( x ) ;\n"
-                                      "std :: cout << exp2f ( -1.0 ) ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "std :: cout << exp2f ( 1.0 ) ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_exp2f, tokWithNewlines(code_exp2f));
-
-        const char code_exp2l[] ="void f(long double x) {\n"
-                                  " std::cout << exp2l(x);\n" // do not simplify
-                                  " std::cout << exp2l(-1.0);\n" // do not simplify
-                                  " std::cout << exp2l(0.0);\n" // simplify to 1
-                                  " std::cout << exp2l(1.0);\n" // do not simplify
-                                  "}";
-        const char expected_exp2l[] = "void f ( double x ) {\n"
-                                      "std :: cout << exp2l ( x ) ;\n"
-                                      "std :: cout << exp2l ( -1.0 ) ;\n"
-                                      "std :: cout << 1 ;\n"
-                                      "std :: cout << exp2l ( 1.0 ) ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_exp2l, tokWithNewlines(code_exp2l));
-    }
-
-    void simplifyMathFunctions_exp() {
-        // verify exp(), expf(), expl() - simplifcation
-        const char code_exp[] ="void f(int x) {\n"
-                                " std::cout << exp(x);\n" // do not simplify
-                                " std::cout << exp(-1);\n" // do not simplify
-                                " std::cout << exp(0L);\n" // simplify to 1
-                                " std::cout << exp(1L);\n" // do not simplify
-                                "}";
-        const char expected_exp[] = "void f ( int x ) {\n"
-                                    "std :: cout << exp ( x ) ;\n"
-                                    "std :: cout << exp ( -1 ) ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "std :: cout << exp ( 1L ) ;\n"
-                                    "}";
-        ASSERT_EQUALS(expected_exp, tokWithNewlines(code_exp));
-
-        const char code_expf[] ="void f(float x) {\n"
-                                 " std::cout << expf(x);\n" // do not simplify
-                                 " std::cout << expf(-1.0);\n" // do not simplify
-                                 " std::cout << expf(0.0);\n" // simplify to 1
-                                 " std::cout << expf(1.0);\n" // do not simplify
-                                 "}";
-        const char expected_expf[] = "void f ( float x ) {\n"
-                                     "std :: cout << expf ( x ) ;\n"
-                                     "std :: cout << expf ( -1.0 ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "std :: cout << expf ( 1.0 ) ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_expf, tokWithNewlines(code_expf));
-
-        const char code_expl[] ="void f(long double x) {\n"
-                                 " std::cout << expl(x);\n" // do not simplify
-                                 " std::cout << expl(-1.0);\n" // do not simplify
-                                 " std::cout << expl(0.0);\n" // simplify to 1
-                                 " std::cout << expl(1.0);\n" // do not simplify
-                                 "}";
-        const char expected_expl[] = "void f ( double x ) {\n"
-                                     "std :: cout << expl ( x ) ;\n"
-                                     "std :: cout << expl ( -1.0 ) ;\n"
-                                     "std :: cout << 1 ;\n"
-                                     "std :: cout << expl ( 1.0 ) ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_expl, tokWithNewlines(code_expl));
-    }
-
-    void simplifyMathFunctions_erf() {
-        // verify erf(), erff(), erfl() - simplifcation
-        const char code_erf[] ="void f(int x) {\n"
-                                " std::cout << erf(x);\n" // do not simplify
-                                " std::cout << erf(10);\n" // do not simplify
-                                " std::cout << erf(0L);\n" // simplify to 0
-                                "}";
-        const char expected_erf[] = "void f ( int x ) {\n"
-                                    "std :: cout << erf ( x ) ;\n"
-                                    "std :: cout << erf ( 10 ) ;\n"
-                                    "std :: cout << 0 ;\n"
-                                    "}";
-        ASSERT_EQUALS(expected_erf, tokWithNewlines(code_erf));
-
-        const char code_erff[] ="void f(float x) {\n"
-                                 " std::cout << erff(x);\n" // do not simplify
-                                 " std::cout << erff(10);\n" // do not simplify
-                                 " std::cout << erff(0.0f);\n" // simplify to 0
-                                 "}";
-        const char expected_erff[] = "void f ( float x ) {\n"
-                                     "std :: cout << erff ( x ) ;\n"
-                                     "std :: cout << erff ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_erff, tokWithNewlines(code_erff));
-
-        const char code_erfl[] ="void f(long double x) {\n"
-                                 " std::cout << erfl(x);\n" // do not simplify
-                                 " std::cout << erfl(10.0f);\n" // do not simplify
-                                 " std::cout << erfl(0.0f);\n" // simplify to 0
-                                 "}";
-        const char expected_erfl[] = "void f ( double x ) {\n"
-                                     "std :: cout << erfl ( x ) ;\n"
-                                     "std :: cout << erfl ( 10.0f ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_erfl, tokWithNewlines(code_erfl));
-    }
-
-    void simplifyMathFunctions_atanh() {
-        // verify atanh(), atanhf(), atanhl() - simplifcation
-        const char code_atanh[] ="void f(int x) {\n"
-                                  " std::cout << atanh(x);\n" // do not simplify
-                                  " std::cout << atanh(10);\n" // do not simplify
-                                  " std::cout << atanh(0L);\n" // simplify to 0
-                                  "}";
-        const char expected_atanh[] = "void f ( int x ) {\n"
-                                      "std :: cout << atanh ( x ) ;\n"
-                                      "std :: cout << atanh ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_atanh, tokWithNewlines(code_atanh));
-
-        const char code_atanhf[] ="void f(float x) {\n"
-                                   " std::cout << atanhf(x);\n" // do not simplify
-                                   " std::cout << atanhf(10);\n" // do not simplify
-                                   " std::cout << atanhf(0.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_atanhf[] = "void f ( float x ) {\n"
-                                       "std :: cout << atanhf ( x ) ;\n"
-                                       "std :: cout << atanhf ( 10 ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_atanhf, tokWithNewlines(code_atanhf));
-
-        const char code_atanhl[] ="void f(long double x) {\n"
-                                   " std::cout << atanhl(x);\n" // do not simplify
-                                   " std::cout << atanhl(10.0f);\n" // do not simplify
-                                   " std::cout << atanhl(0.0d);\n" // do not simplify - invalid number!
-                                   " std::cout << atanhl(0.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_atanhl[] = "void f ( double x ) {\n"
-                                       "std :: cout << atanhl ( x ) ;\n"
-                                       "std :: cout << atanhl ( 10.0f ) ;\n"
-                                       "std :: cout << atanhl ( 0.0d ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_atanhl, tokWithNewlines(code_atanhl));
-    }
-
-    void simplifyMathFunctions_atan() {
-        // verify atan(), atanf(), atanl() - simplifcation
-        const char code_atan[] ="void f(int x) {\n"
-                                 " std::cout << atan(x);\n" // do not simplify
-                                 " std::cout << atan(10);\n" // do not simplify
-                                 " std::cout << atan(0L);\n" // simplify to 0
-                                 "}";
-        const char expected_atan[] = "void f ( int x ) {\n"
-                                     "std :: cout << atan ( x ) ;\n"
-                                     "std :: cout << atan ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_atan, tokWithNewlines(code_atan));
-
-        const char code_atanf[] ="void f(float x) {\n"
-                                  " std::cout << atanf(x);\n" // do not simplify
-                                  " std::cout << atanf(10);\n" // do not simplify
-                                  " std::cout << atanf(0.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_atanf[] = "void f ( float x ) {\n"
-                                      "std :: cout << atanf ( x ) ;\n"
-                                      "std :: cout << atanf ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_atanf, tokWithNewlines(code_atanf));
-
-        const char code_atanl[] ="void f(long double x) {\n"
-                                  " std::cout << atanl(x);\n" // do not simplify
-                                  " std::cout << atanl(10.0f);\n" // do not simplify
-                                  " std::cout << atanl(0.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_atanl[] = "void f ( double x ) {\n"
-                                      "std :: cout << atanl ( x ) ;\n"
-                                      "std :: cout << atanl ( 10.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_atanl, tokWithNewlines(code_atanl));
-    }
-
-    void simplifyMathFunctions_tanh() {
-        // verify tanh(), tanhf(), tanhl() - simplifcation
-        const char code_tanh[] ="void f(int x) {\n"
-                                 " std::cout << tanh(x);\n" // do not simplify
-                                 " std::cout << tanh(10);\n" // do not simplify
-                                 " std::cout << tanh(0L);\n" // simplify to 0
-                                 "}";
-        const char expected_tanh[] = "void f ( int x ) {\n"
-                                     "std :: cout << tanh ( x ) ;\n"
-                                     "std :: cout << tanh ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_tanh, tokWithNewlines(code_tanh));
-
-        const char code_tanhf[] ="void f(float x) {\n"
-                                  " std::cout << tanhf(x);\n" // do not simplify
-                                  " std::cout << tanhf(10);\n" // do not simplify
-                                  " std::cout << tanhf(0.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_tanhf[] = "void f ( float x ) {\n"
-                                      "std :: cout << tanhf ( x ) ;\n"
-                                      "std :: cout << tanhf ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_tanhf, tokWithNewlines(code_tanhf));
-
-        const char code_tanhl[] ="void f(long double x) {\n"
-                                  " std::cout << tanhl(x);\n" // do not simplify
-                                  " std::cout << tanhl(10.0f);\n" // do not simplify
-                                  " std::cout << tanhl(0.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_tanhl[] = "void f ( double x ) {\n"
-                                      "std :: cout << tanhl ( x ) ;\n"
-                                      "std :: cout << tanhl ( 10.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_tanhl, tokWithNewlines(code_tanhl));
-    }
-
-    void simplifyMathFunctions_tan() {
-        // verify tan(), tanf(), tanl() - simplifcation
-        const char code_tan[] ="void f(int x) {\n"
-                                " std::cout << tan(x);\n" // do not simplify
-                                " std::cout << tan(10);\n" // do not simplify
-                                " std::cout << tan(0L);\n" // simplify to 0
-                                "}";
-        const char expected_tan[] = "void f ( int x ) {\n"
-                                    "std :: cout << tan ( x ) ;\n"
-                                    "std :: cout << tan ( 10 ) ;\n"
-                                    "std :: cout << 0 ;\n"
-                                    "}";
-        ASSERT_EQUALS(expected_tan, tokWithNewlines(code_tan));
-
-        const char code_tanf[] ="void f(float x) {\n"
-                                 " std::cout << tanf(x);\n" // do not simplify
-                                 " std::cout << tanf(10);\n" // do not simplify
-                                 " std::cout << tanf(0.0f);\n" // simplify to 0
-                                 "}";
-        const char expected_tanf[] = "void f ( float x ) {\n"
-                                     "std :: cout << tanf ( x ) ;\n"
-                                     "std :: cout << tanf ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_tanf, tokWithNewlines(code_tanf));
-
-        const char code_tanl[] ="void f(long double x) {\n"
-                                 " std::cout << tanl(x);\n" // do not simplify
-                                 " std::cout << tanl(10.0f);\n" // do not simplify
-                                 " std::cout << tanl(0.0f);\n" // simplify to 0
-                                 "}";
-        const char expected_tanl[] = "void f ( double x ) {\n"
-                                     "std :: cout << tanl ( x ) ;\n"
-                                     "std :: cout << tanl ( 10.0f ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_tanl, tokWithNewlines(code_tanl));
-    }
-
-    void simplifyMathFunctions_expm1() {
-        // verify expm1(), expm1f(), expm1l() - simplifcation
-        const char code_expm1[] ="void f(int x) {\n"
-                                  " std::cout << expm1(x);\n" // do not simplify
-                                  " std::cout << expm1(10);\n" // do not simplify
-                                  " std::cout << expm1(0L);\n" // simplify to 0
-                                  "}";
-        const char expected_expm1[] = "void f ( int x ) {\n"
-                                      "std :: cout << expm1 ( x ) ;\n"
-                                      "std :: cout << expm1 ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_expm1, tokWithNewlines(code_expm1));
-
-        const char code_expm1f[] ="void f(float x) {\n"
-                                   " std::cout << expm1f(x);\n" // do not simplify
-                                   " std::cout << expm1f(10);\n" // do not simplify
-                                   " std::cout << expm1f(0.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_expm1f[] = "void f ( float x ) {\n"
-                                       "std :: cout << expm1f ( x ) ;\n"
-                                       "std :: cout << expm1f ( 10 ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_expm1f, tokWithNewlines(code_expm1f));
-
-        const char code_expm1l[] ="void f(long double x) {\n"
-                                   " std::cout << expm1l(x);\n" // do not simplify
-                                   " std::cout << expm1l(10.0f);\n" // do not simplify
-                                   " std::cout << expm1l(0.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_expm1l[] = "void f ( double x ) {\n"
-                                       "std :: cout << expm1l ( x ) ;\n"
-                                       "std :: cout << expm1l ( 10.0f ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_expm1l, tokWithNewlines(code_expm1l));
-    }
-
-    void simplifyMathFunctions_asinh() {
-        // verify asinh(), asinhf(), asinhl() - simplifcation
-        const char code_asinh[] ="void f(int x) {\n"
-                                  " std::cout << asinh(x);\n" // do not simplify
-                                  " std::cout << asinh(10);\n" // do not simplify
-                                  " std::cout << asinh(0L);\n" // simplify to 0
-                                  "}";
-        const char expected_asinh[] = "void f ( int x ) {\n"
-                                      "std :: cout << asinh ( x ) ;\n"
-                                      "std :: cout << asinh ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_asinh, tokWithNewlines(code_asinh));
-
-        const char code_asinhf[] ="void f(float x) {\n"
-                                   " std::cout << asinhf(x);\n" // do not simplify
-                                   " std::cout << asinhf(10);\n" // do not simplify
-                                   " std::cout << asinhf(0.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_asinhf[] = "void f ( float x ) {\n"
-                                       "std :: cout << asinhf ( x ) ;\n"
-                                       "std :: cout << asinhf ( 10 ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_asinhf, tokWithNewlines(code_asinhf));
-
-        const char code_asinhl[] ="void f(long double x) {\n"
-                                   " std::cout << asinhl(x);\n" // do not simplify
-                                   " std::cout << asinhl(10.0f);\n" // do not simplify
-                                   " std::cout << asinhl(0.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_asinhl[] = "void f ( double x ) {\n"
-                                       "std :: cout << asinhl ( x ) ;\n"
-                                       "std :: cout << asinhl ( 10.0f ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_asinhl, tokWithNewlines(code_asinhl));
-    }
-
-    void simplifyMathFunctions_asin() {
-        // verify asin(), asinf(), asinl() - simplifcation
-        const char code_asin[] ="void f(int x) {\n"
-                                 " std::cout << asin(x);\n" // do not simplify
-                                 " std::cout << asin(10);\n" // do not simplify
-                                 " std::cout << asin(0L);\n" // simplify to 0
-                                 "}";
-        const char expected_asin[] = "void f ( int x ) {\n"
-                                     "std :: cout << asin ( x ) ;\n"
-                                     "std :: cout << asin ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_asin, tokWithNewlines(code_asin));
-
-        const char code_asinf[] ="void f(float x) {\n"
-                                  " std::cout << asinf(x);\n" // do not simplify
-                                  " std::cout << asinf(10);\n" // do not simplify
-                                  " std::cout << asinf(0.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_asinf[] = "void f ( float x ) {\n"
-                                      "std :: cout << asinf ( x ) ;\n"
-                                      "std :: cout << asinf ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_asinf, tokWithNewlines(code_asinf));
-
-        const char code_asinl[] ="void f(long double x) {\n"
-                                  " std::cout << asinl(x);\n" // do not simplify
-                                  " std::cout << asinl(10.0f);\n" // do not simplify
-                                  " std::cout << asinl(0.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_asinl[] = "void f ( double x ) {\n"
-                                      "std :: cout << asinl ( x ) ;\n"
-                                      "std :: cout << asinl ( 10.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_asinl, tokWithNewlines(code_asinl));
-    }
-
-    void simplifyMathFunctions_sinh() {
-        // verify sinh(), sinhf(), sinhl() - simplifcation
-        const char code_sinh[] ="void f(int x) {\n"
-                                 " std::cout << sinh(x);\n" // do not simplify
-                                 " std::cout << sinh(10);\n" // do not simplify
-                                 " std::cout << sinh(0L);\n" // simplify to 0
-                                 "}";
-        const char expected_sinh[] = "void f ( int x ) {\n"
-                                     "std :: cout << sinh ( x ) ;\n"
-                                     "std :: cout << sinh ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_sinh, tokWithNewlines(code_sinh));
-
-        const char code_sinhf[] ="void f(float x) {\n"
-                                  " std::cout << sinhf(x);\n" // do not simplify
-                                  " std::cout << sinhf(10);\n" // do not simplify
-                                  " std::cout << sinhf(0.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_sinhf[] = "void f ( float x ) {\n"
-                                      "std :: cout << sinhf ( x ) ;\n"
-                                      "std :: cout << sinhf ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_sinhf, tokWithNewlines(code_sinhf));
-
-        const char code_sinhl[] ="void f(long double x) {\n"
-                                  " std::cout << sinhl(x);\n" // do not simplify
-                                  " std::cout << sinhl(10.0f);\n" // do not simplify
-                                  " std::cout << sinhl(0.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_sinhl[] = "void f ( double x ) {\n"
-                                      "std :: cout << sinhl ( x ) ;\n"
-                                      "std :: cout << sinhl ( 10.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_sinhl, tokWithNewlines(code_sinhl));
-    }
-
-    void simplifyMathFunctions_sin() {
-        // verify sin(), sinf(), sinl() - simplifcation
-        const char code_sin[] ="void f(int x) {\n"
-                                " std::cout << sin(x);\n" // do not simplify
-                                " std::cout << sin(10);\n" // do not simplify
-                                " std::cout << sin(0L);\n" // simplify to 0
-                                "}";
-        const char expected_sin[] = "void f ( int x ) {\n"
-                                    "std :: cout << sin ( x ) ;\n"
-                                    "std :: cout << sin ( 10 ) ;\n"
-                                    "std :: cout << 0 ;\n"
-                                    "}";
-        ASSERT_EQUALS(expected_sin, tokWithNewlines(code_sin));
-
-        const char code_sinf[] ="void f(float x) {\n"
-                                 " std::cout << sinf(x);\n" // do not simplify
-                                 " std::cout << sinf(10);\n" // do not simplify
-                                 " std::cout << sinf(0.0f);\n" // simplify to 0
-                                 "}";
-        const char expected_sinf[] = "void f ( float x ) {\n"
-                                     "std :: cout << sinf ( x ) ;\n"
-                                     "std :: cout << sinf ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_sinf, tokWithNewlines(code_sinf));
-
-        const char code_sinl[] ="void f(long double x) {\n"
-                                 " std::cout << sinl(x);\n" // do not simplify
-                                 " std::cout << sinl(10.0f);\n" // do not simplify
-                                 " std::cout << sinl(0.0f);\n" // simplify to 0
-                                 "}";
-        const char expected_sinl[] = "void f ( double x ) {\n"
-                                     "std :: cout << sinl ( x ) ;\n"
-                                     "std :: cout << sinl ( 10.0f ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_sinl, tokWithNewlines(code_sinl));
-
-        // #6629
-        const char code[] = "class Foo { int sinf; Foo() : sinf(0) {} };";
-        const char expected[] = "class Foo { int sinf ; Foo ( ) : sinf ( 0 ) { } } ;";
-        ASSERT_EQUALS(expected, tokWithNewlines(code));
-    }
-
-    void simplifyMathFunctions_ilogb() {
-        // verify ilogb(), ilogbf(), ilogbl() - simplifcation
-        const char code_ilogb[] ="void f(int x) {\n"
-                                  " std::cout << ilogb(x);\n" // do not simplify
-                                  " std::cout << ilogb(10);\n" // do not simplify
-                                  " std::cout << ilogb(1L);\n" // simplify to 0
-                                  "}";
-        const char expected_ilogb[] = "void f ( int x ) {\n"
-                                      "std :: cout << ilogb ( x ) ;\n"
-                                      "std :: cout << ilogb ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_ilogb, tokWithNewlines(code_ilogb));
-
-        const char code_ilogbf[] ="void f(float x) {\n"
-                                   " std::cout << ilogbf(x);\n" // do not simplify
-                                   " std::cout << ilogbf(10);\n" // do not simplify
-                                   " std::cout << ilogbf(1.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_ilogbf[] = "void f ( float x ) {\n"
-                                       "std :: cout << ilogbf ( x ) ;\n"
-                                       "std :: cout << ilogbf ( 10 ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_ilogbf, tokWithNewlines(code_ilogbf));
-
-        const char code_ilogbl[] ="void f(long double x) {\n"
-                                   " std::cout << ilogbl(x);\n" // do not simplify
-                                   " std::cout << ilogbl(10.0f);\n" // do not simplify
-                                   " std::cout << ilogbl(1.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_ilogbl[] = "void f ( double x ) {\n"
-                                       "std :: cout << ilogbl ( x ) ;\n"
-                                       "std :: cout << ilogbl ( 10.0f ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_ilogbl, tokWithNewlines(code_ilogbl));
-    }
-
-    void simplifyMathFunctions_logb() {
-        // verify logb(), logbf(), logbl() - simplifcation
-        const char code_logb[] ="void f(int x) {\n"
-                                 " std::cout << logb(x);\n" // do not simplify
-                                 " std::cout << logb(10);\n" // do not simplify
-                                 " std::cout << logb(1L);\n" // simplify to 0
-                                 "}";
-        const char expected_logb[] = "void f ( int x ) {\n"
-                                     "std :: cout << logb ( x ) ;\n"
-                                     "std :: cout << logb ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_logb, tokWithNewlines(code_logb));
-
-        const char code_logbf[] ="void f(float x) {\n"
-                                  " std::cout << logbf(x);\n" // do not simplify
-                                  " std::cout << logbf(10);\n" // do not simplify
-                                  " std::cout << logbf(1.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_logbf[] = "void f ( float x ) {\n"
-                                      "std :: cout << logbf ( x ) ;\n"
-                                      "std :: cout << logbf ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_logbf, tokWithNewlines(code_logbf));
-
-        const char code_logbl[] ="void f(long double x) {\n"
-                                  " std::cout << logbl(x);\n" // do not simplify
-                                  " std::cout << logbl(10.0f);\n" // do not simplify
-                                  " std::cout << logbl(1.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_logbl[] = "void f ( double x ) {\n"
-                                      "std :: cout << logbl ( x ) ;\n"
-                                      "std :: cout << logbl ( 10.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_logbl, tokWithNewlines(code_logbl));
-    }
-
-    void simplifyMathFunctions_log1p() {
-        // verify log1p(), log1pf(), log1pl() - simplifcation
-        const char code_log1p[] ="void f(int x) {\n"
-                                  " std::cout << log1p(x);\n" // do not simplify
-                                  " std::cout << log1p(10);\n" // do not simplify
-                                  " std::cout << log1p(0L);\n" // simplify to 0
-                                  "}";
-        const char expected_log1p[] = "void f ( int x ) {\n"
-                                      "std :: cout << log1p ( x ) ;\n"
-                                      "std :: cout << log1p ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_log1p, tokWithNewlines(code_log1p));
-
-        const char code_log1pf[] ="void f(float x) {\n"
-                                   " std::cout << log1pf(x);\n" // do not simplify
-                                   " std::cout << log1pf(10);\n" // do not simplify
-                                   " std::cout << log1pf(0.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_log1pf[] = "void f ( float x ) {\n"
-                                       "std :: cout << log1pf ( x ) ;\n"
-                                       "std :: cout << log1pf ( 10 ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_log1pf, tokWithNewlines(code_log1pf));
-
-        const char code_log1pl[] ="void f(long double x) {\n"
-                                   " std::cout << log1pl(x);\n" // do not simplify
-                                   " std::cout << log1pl(10.0f);\n" // do not simplify
-                                   " std::cout << log1pl(0.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_log1pl[] = "void f ( double x ) {\n"
-                                       "std :: cout << log1pl ( x ) ;\n"
-                                       "std :: cout << log1pl ( 10.0f ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_log1pl, tokWithNewlines(code_log1pl));
-    }
-
-    void simplifyMathFunctions_log10() {
-        // verify log10(), log10f(), log10l() - simplifcation
-        const char code_log10[] ="void f(int x) {\n"
-                                  " std::cout << log10(x);\n" // do not simplify
-                                  " std::cout << log10(10);\n" // do not simplify
-                                  " std::cout << log10(1L);\n" // simplify to 0
-                                  "}";
-        const char expected_log10[] = "void f ( int x ) {\n"
-                                      "std :: cout << log10 ( x ) ;\n"
-                                      "std :: cout << log10 ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_log10, tokWithNewlines(code_log10));
-
-        const char code_log10f[] ="void f(float x) {\n"
-                                   " std::cout << log10f(x);\n" // do not simplify
-                                   " std::cout << log10f(10);\n" // do not simplify
-                                   " std::cout << log10f(1.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_log10f[] = "void f ( float x ) {\n"
-                                       "std :: cout << log10f ( x ) ;\n"
-                                       "std :: cout << log10f ( 10 ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_log10f, tokWithNewlines(code_log10f));
-
-        const char code_log10l[] ="void f(long double x) {\n"
-                                   " std::cout << log10l(x);\n" // do not simplify
-                                   " std::cout << log10l(10.0f);\n" // do not simplify
-                                   " std::cout << log10l(1.0f);\n" // simplify to 0
-                                   "}";
-        const char expected_log10l[] = "void f ( double x ) {\n"
-                                       "std :: cout << log10l ( x ) ;\n"
-                                       "std :: cout << log10l ( 10.0f ) ;\n"
-                                       "std :: cout << 0 ;\n"
-                                       "}";
-        ASSERT_EQUALS(expected_log10l, tokWithNewlines(code_log10l));
-
-    }
-    void simplifyMathFunctions_log() {
-        // verify log(), logf(), logl() - simplifcation
-        const char code_log[] ="void f(int x) {\n"
-                                " std::cout << log(x);\n" // do not simplify
-                                " std::cout << log(10);\n" // do not simplify
-                                " std::cout << log(1L);\n" // simplify to 0
-                                "}";
-        const char expected_log[] = "void f ( int x ) {\n"
-                                    "std :: cout << log ( x ) ;\n"
-                                    "std :: cout << log ( 10 ) ;\n"
-                                    "std :: cout << 0 ;\n"
-                                    "}";
-        ASSERT_EQUALS(expected_log, tokWithNewlines(code_log));
-
-        const char code_logf[] ="void f(float x) {\n"
-                                 " std::cout << logf(x);\n" // do not simplify
-                                 " std::cout << logf(10);\n" // do not simplify
-                                 " std::cout << logf(1.0f);\n" // simplify to 0
-                                 "}";
-        const char expected_logf[] = "void f ( float x ) {\n"
-                                     "std :: cout << logf ( x ) ;\n"
-                                     "std :: cout << logf ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_logf, tokWithNewlines(code_logf));
-
-        const char code_logl[] ="void f(long double x) {\n"
-                                 " std::cout << logl(x);\n" // do not simplify
-                                 " std::cout << logl(10.0f);\n" // do not simplify
-                                 " std::cout << logl(1.0f);\n" // simplify to 0
-                                 "}";
-        const char expected_logl[] = "void f ( double x ) {\n"
-                                     "std :: cout << logl ( x ) ;\n"
-                                     "std :: cout << logl ( 10.0f ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_logl, tokWithNewlines(code_logl));
-    }
-
-    void simplifyMathFunctions_log2() {
-        // verify log2(), log2f(), log2l() - simplifcation
-        const char code_log2[] ="void f(int x) {\n"
-                                 " std::cout << log2(x);\n" // do not simplify
-                                 " std::cout << log2(10);\n" // do not simplify
-                                 " std::cout << log2(1L);\n" // simplify to 0
-                                 "}";
-        const char expected_log2[] = "void f ( int x ) {\n"
-                                     "std :: cout << log2 ( x ) ;\n"
-                                     "std :: cout << log2 ( 10 ) ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_log2, tokWithNewlines(code_log2));
-
-        const char code_log2f[] ="void f(float x) {\n"
-                                  " std::cout << log2f(x);\n" // do not simplify
-                                  " std::cout << log2f(10);\n" // do not simplify
-                                  " std::cout << log2f(1.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_log2f[] = "void f ( float x ) {\n"
-                                      "std :: cout << log2f ( x ) ;\n"
-                                      "std :: cout << log2f ( 10 ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_log2f, tokWithNewlines(code_log2f));
-
-        const char code_log2l[] ="void f(long double x) {\n"
-                                  " std::cout << log2l(x);\n" // do not simplify
-                                  " std::cout << log2l(10.0f);\n" // do not simplify
-                                  " std::cout << log2l(1.0f);\n" // simplify to 0
-                                  "}";
-        const char expected_log2l[] = "void f ( double x ) {\n"
-                                      "std :: cout << log2l ( x ) ;\n"
-                                      "std :: cout << log2l ( 10.0f ) ;\n"
-                                      "std :: cout << 0 ;\n"
-                                      "}";
-        ASSERT_EQUALS(expected_log2l, tokWithNewlines(code_log2l));
-    }
-
-    void simplifyMathFunctions_pow() {
-        // verify pow(),pow(),powl() - simplifcation
-        const char code_pow[] ="void f() {\n"
-                                " std::cout << pow(-1.0,1);\n"
-                                " std::cout << pow(1.0,1);\n"
-                                " std::cout << pow(0,1);\n"
-                                " std::cout << pow(1,-6);\n"
-                                " std::cout << powf(-1.0,1.0f);\n"
-                                " std::cout << powf(1.0,1.0f);\n"
-                                " std::cout << powf(0,1.0f);\n"
-                                " std::cout << powf(1.0,-6.0f);\n"
-                                " std::cout << powl(-1.0,1.0);\n"
-                                " std::cout << powl(1.0,1.0);\n"
-                                " std::cout << powl(0,1.0);\n"
-                                " std::cout << powl(1.0,-6.0d);\n"
-                                "}";
-
-        const char expected_pow[] = "void f ( ) {\n"
-                                    "std :: cout << -1.0 ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "std :: cout << 0 ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "std :: cout << -1.0 ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "std :: cout << 0 ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "std :: cout << -1.0 ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "std :: cout << 0 ;\n"
-                                    "std :: cout << 1 ;\n"
-                                    "}";
-        ASSERT_EQUALS(expected_pow, tokWithNewlines(code_pow));
-
-        // verify if code is simplified correctly.
-        // Do not simplify class members.
-        const char code_pow1[] = "int f(const Fred &fred) {return fred.pow(12,3);}";
-        const char expected_pow1[] = "int f ( const Fred & fred ) { return fred . pow ( 12 , 3 ) ; }";
-        ASSERT_EQUALS(expected_pow1, tokWithNewlines(code_pow1));
-
-        const char code_pow2[] = "int f() {return pow(0,0);}";
-        const char expected_pow2[] = "int f ( ) { return 1 ; }";
-        ASSERT_EQUALS(expected_pow2, tokWithNewlines(code_pow2));
-
-        const char code_pow3[] = "int f() {return pow(0,1);}";
-        const char expected_pow3[] = "int f ( ) { return 0 ; }";
-        ASSERT_EQUALS(expected_pow3, tokWithNewlines(code_pow3));
-
-        const char code_pow4[] = "int f() {return pow(1,0);}";
-        const char expected_pow4[] = "int f ( ) { return 1 ; }";
-        ASSERT_EQUALS(expected_pow4, tokWithNewlines(code_pow4));
-    }
-
-    void simplifyMathFunctions_fmin() {
-        // verify fmin,fminl,fminl simplifcation
-        const char code_fmin[] ="void f() {\n"
-                                 " std::cout << fmin(-1.0,0);\n"
-                                 " std::cout << fmin(1.0,0);\n"
-                                 " std::cout << fmin(0,0);\n"
-                                 " std::cout << fminf(-1.0,0);\n"
-                                 " std::cout << fminf(1.0,0);\n"
-                                 " std::cout << fminf(0,0);\n"
-                                 " std::cout << fminl(-1.0,0);\n"
-                                 " std::cout << fminl(1.0,0);\n"
-                                 " std::cout << fminl(0,0);\n"
-                                 "}";
-
-        const char expected_fmin[] = "void f ( ) {\n"
-                                     "std :: cout << -1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << -1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << -1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_fmin, tokWithNewlines(code_fmin));
-
-        // do not simplify this case
-        const char code_fmin1[] = "float f(float f) { return fmin(f,0);}";
-        const char expected_fmin1[] = "float f ( float f ) { return fmin ( f , 0 ) ; }";
-        ASSERT_EQUALS(expected_fmin1, tokWithNewlines(code_fmin1));
-    }
-
-    void simplifyMathFunctions_fmax() {
-        // verify fmax(),fmax(),fmaxl() simplifcation
-        const char code_fmax[] ="void f() {\n"
-                                 " std::cout << fmax(-1.0,0);\n"
-                                 " std::cout << fmax(1.0,0);\n"
-                                 " std::cout << fmax(0,0);\n"
-                                 " std::cout << fmaxf(-1.0,0);\n"
-                                 " std::cout << fmaxf(1.0,0);\n"
-                                 " std::cout << fmaxf(0,0);\n"
-                                 " std::cout << fmaxl(-1.0,0);\n"
-                                 " std::cout << fmaxl(1.0,0);\n"
-                                 " std::cout << fmaxl(0,0);\n"
-                                 "}";
-
-        const char expected_fmax[] = "void f ( ) {\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "std :: cout << 1.0 ;\n"
-                                     "std :: cout << 0 ;\n"
-                                     "}";
-        ASSERT_EQUALS(expected_fmax, tokWithNewlines(code_fmax));
-
-        // do not simplify this case
-        const char code_fmax1[] = "float f(float f) { return fmax(f,0);}";
-        const char expected_fmax1[] = "float f ( float f ) { return fmax ( f , 0 ) ; }";
-        ASSERT_EQUALS(expected_fmax1, tokWithNewlines(code_fmax1));
-    }
-
-    void simplifyMathExpressions() { //#1620
-        const char code1[] = "void foo() {\n"
-                             "    std::cout<<pow(sin(x),2)+pow(cos(x),2);\n"
-                             "    std::cout<<pow(sin(pow(sin(y),2)+pow(cos(y),2)),2)+pow(cos(pow(sin(y),2)+pow(cos(y),2)),2);\n"
-                             "    std::cout<<pow(sin(x),2.0)+pow(cos(x),2.0);\n"
-                             "    std::cout<<pow(sin(x*y+z),2.0)+pow(cos(x*y+z),2.0);\n"
-                             "    std::cout<<pow(sin(x*y+z),2)+pow(cos(x*y+z),2);\n"
-                             "    std::cout<<pow(cos(x),2)+pow(sin(x),2);\n"
-                             "    std::cout<<pow(cos(x),2.0)+pow(sin(x),2.0);\n"
-                             "    std::cout<<pow(cos(x*y+z),2.0)+pow(sin(x*y+z),2.0);\n"
-                             "    std::cout<<pow(cos(x*y+z),2)+pow(sin(x*y+z),2);\n"
-                             "    std::cout<<pow(sinh(x*y+z),2)-pow(cosh(x*y+z),2);\n"
-                             "    std::cout<<pow(sinh(x),2)-pow(cosh(x),2);\n"
-                             "    std::cout<<pow(sinh(x*y+z),2.0)-pow(cosh(x*y+z),2.0);\n"
-                             "    std::cout<<pow(sinh(x),2.0)-pow(cosh(x),2.0);\n"
-                             "    std::cout<<pow(cosh(x*y+z),2)-pow(sinh(x*y+z),2);\n"
-                             "    std::cout<<pow(cosh(x),2)-pow(sinh(x),2);\n"
-                             "    std::cout<<pow(cosh(x*y+z),2.0)-pow(sinh(x*y+z),2.0);\n"
-                             "    std::cout<<pow(cosh(x),2.0)-pow(sinh(x),2.0);\n"
-                             "    std::cout<<pow(cosh(pow(x,1)),2.0)-pow(sinh(pow(x,1)),2.0);\n"
-                             "}";
-
-        const char expected1[] = "void foo ( ) {\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "}";
-        ASSERT_EQUALS(expected1, tokWithNewlines(code1));
-
-        const char code2[] = "void f ( ) {\n"
-                             "a = pow ( sin ( x ) , 2 ) + pow ( cos ( y ) , 2 ) ;\n"
-                             "b = pow ( sinh ( x ) , 2 ) - pow ( cosh ( y ) , 2 ) ;\n"
-                             "c = pow ( sin ( x ) , 2.0 ) + pow ( cos ( y ) , 2.0 ) ;\n"
-                             "d = pow ( sinh ( x ) , 2.0 ) - pow ( cosh ( y ) , 2.0 ) ;\n"
-                             "e = pow ( cos ( x ) , 2 ) + pow ( sin ( y ) , 2 ) ;\n"
-                             "f = pow ( cosh ( x ) , 2 ) - pow ( sinh ( y ) , 2 ) ;\n"
-                             "g = pow ( cos ( x ) , 2.0 ) + pow ( sin ( y ) , 2.0 ) ;\n"
-                             "h = pow ( cosh ( x ) , 2.0 ) - pow ( sinh ( y ) , 2.0 ) ;\n"
-                             "}";
-        ASSERT_EQUALS(code2, tokWithNewlines(code2));
-
-        const char code3[] = "void foo() {\n"
-                             "    std::cout<<powf(sinf(x),2)+powf(cosf(x),2);\n"
-                             "    std::cout<<powf(sinf(powf(sinf(y),2)+powf(cosf(y),2)),2)+powf(cosf(powf(sinf(y),2)+powf(cosf(y),2)),2);\n"
-                             "    std::cout<<powf(sinf(x),2.0)+powf(cosf(x),2.0);\n"
-                             "    std::cout<<powf(sinf(x*y+z),2.0)+powf(cosf(x*y+z),2.0);\n"
-                             "    std::cout<<powf(sinf(x*y+z),2)+powf(cosf(x*y+z),2);\n"
-                             "    std::cout<<powf(cosf(x),2)+powf(sinf(x),2);\n"
-                             "    std::cout<<powf(cosf(x),2.0)+powf(sinf(x),2.0);\n"
-                             "    std::cout<<powf(cosf(x*y+z),2.0)+powf(sinf(x*y+z),2.0);\n"
-                             "    std::cout<<powf(cosf(x*y+z),2)+powf(sinf(x*y+z),2);\n"
-                             "    std::cout<<powf(sinhf(x*y+z),2)-powf(coshf(x*y+z),2);\n"
-                             "    std::cout<<powf(sinhf(x),2)-powf(coshf(x),2);\n"
-                             "    std::cout<<powf(sinhf(x*y+z),2.0)-powf(coshf(x*y+z),2.0);\n"
-                             "    std::cout<<powf(sinhf(x),2.0)-powf(coshf(x),2.0);\n"
-                             "    std::cout<<powf(coshf(x*y+z),2)-powf(sinhf(x*y+z),2);\n"
-                             "    std::cout<<powf(coshf(x),2)-powf(sinhf(x),2);\n"
-                             "    std::cout<<powf(coshf(x*y+z),2.0)-powf(sinhf(x*y+z),2.0);\n"
-                             "    std::cout<<powf(coshf(x),2.0)-powf(sinhf(x),2.0);\n"
-                             "    std::cout<<powf(coshf(powf(x,1)),2.0)-powf(sinhf(powf(x,1)),2.0);\n"
-                             "}";
-
-        const char expected3[] = "void foo ( ) {\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "}";
-        ASSERT_EQUALS(expected3, tokWithNewlines(code3));
-
-        const char code4[] = "void f ( ) {\n"
-                             "a = powf ( sinf ( x ) , 2 ) + powf ( cosf ( y ) , 2 ) ;\n"
-                             "b = powf ( sinhf ( x ) , 2 ) - powf ( coshf ( y ) , 2 ) ;\n"
-                             "c = powf ( sinf ( x ) , 2.0 ) + powf ( cosf ( y ) , 2.0 ) ;\n"
-                             "d = powf ( sinhf ( x ) , 2.0 ) - powf ( coshf ( y ) , 2.0 ) ;\n"
-                             "e = powf ( cosf ( x ) , 2 ) + powf ( sinf ( y ) , 2 ) ;\n"
-                             "f = powf ( coshf ( x ) , 2 ) - powf ( sinhf ( y ) , 2 ) ;\n"
-                             "g = powf ( cosf ( x ) , 2.0 ) + powf ( sinf ( y ) , 2.0 ) ;\n"
-                             "h = powf ( coshf ( x ) , 2.0 ) - powf ( sinhf ( y ) , 2.0 ) ;\n"
-                             "}";
-        ASSERT_EQUALS(code4, tokWithNewlines(code4));
-
-        const char code5[] = "void foo() {\n"
-                             "    std::cout<<powf(sinl(x),2)+powl(cosl(x),2);\n"
-                             "    std::cout<<pow(sinl(powl(sinl(y),2)+powl(cosl(y),2)),2)+powl(cosl(powl(sinl(y),2)+powl(cosl(y),2)),2);\n"
-                             "    std::cout<<powl(sinl(x),2.0)+powl(cosl(x),2.0);\n"
-                             "    std::cout<<powl(sinl(x*y+z),2.0)+powl(cosl(x*y+z),2.0);\n"
-                             "    std::cout<<powl(sinl(x*y+z),2)+powl(cosl(x*y+z),2);\n"
-                             "    std::cout<<powl(cosl(x),2)+powl(sinl(x),2);\n"
-                             "    std::cout<<powl(cosl(x),2.0)+powl(sinl(x),2.0);\n"
-                             "    std::cout<<powl(cosl(x*y+z),2.0)+powl(sinl(x*y+z),2.0);\n"
-                             "    std::cout<<powl(cosl(x*y+z),2)+powl(sinl(x*y+z),2);\n"
-                             "    std::cout<<powl(sinhl(x*y+z),2)-powl(coshl(x*y+z),2);\n"
-                             "    std::cout<<powl(sinhl(x),2)-powl(coshl(x),2);\n"
-                             "    std::cout<<powl(sinhl(x*y+z),2.0)-powl(coshl(x*y+z),2.0);\n"
-                             "    std::cout<<powl(sinhl(x),2.0)-powl(coshl(x),2.0);\n"
-                             "    std::cout<<powl(coshl(x*y+z),2)-powl(sinhl(x*y+z),2);\n"
-                             "    std::cout<<powl(coshl(x),2)-powl(sinhl(x),2);\n"
-                             "    std::cout<<powl(coshl(x*y+z),2.0)-powl(sinhl(x*y+z),2.0);\n"
-                             "    std::cout<<powl(coshl(x),2.0)-powl(sinhl(x),2.0);\n"
-                             "    std::cout<<powl(coshl(powl(x,1)),2.0)-powl(sinhl(powl(x,1)),2.0);\n"
-                             "}";
-
-        const char expected5[] = "void foo ( ) {\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << 1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "std :: cout << -1 ;\n"
-                                 "}";
-        ASSERT_EQUALS(expected5, tokWithNewlines(code5));
-
-
-        const char code6[] = "void f ( ) {\n"
-                             "a = powl ( sinl ( x ) , 2 ) + powl ( cosl ( y ) , 2 ) ;\n"
-                             "b = powl ( sinhl ( x ) , 2 ) - powl ( coshl ( y ) , 2 ) ;\n"
-                             "c = powl ( sinl ( x ) , 2.0 ) + powl ( cosl ( y ) , 2.0 ) ;\n"
-                             "d = powl ( sinhl ( x ) , 2.0 ) - powl ( coshl ( y ) , 2.0 ) ;\n"
-                             "e = powl ( cosl ( x ) , 2 ) + powl ( sinl ( y ) , 2 ) ;\n"
-                             "f = powl ( coshl ( x ) , 2 ) - powl ( sinhl ( y ) , 2 ) ;\n"
-                             "g = powl ( cosl ( x ) , 2.0 ) + powl ( sinl ( y ) , 2.0 ) ;\n"
-                             "h = powl ( coshl ( x ) , 2.0 ) - powl ( sinhl ( y ) , 2.0 ) ;\n"
-                             "}";
-        ASSERT_EQUALS(code6, tokWithNewlines(code6));
-    }
-
-
-    void simplifyCompoundAssignment() {
-        ASSERT_EQUALS("; x = x + y ;", tok("; x += y;"));
-        ASSERT_EQUALS("; x = x - y ;", tok("; x -= y;"));
-        ASSERT_EQUALS("; x = x * y ;", tok("; x *= y;"));
-        ASSERT_EQUALS("; x = x / y ;", tok("; x /= y;"));
-        ASSERT_EQUALS("; x = x % y ;", tok("; x %= y;"));
-        ASSERT_EQUALS("; x = x & y ;", tok("; x &= y;"));
-        ASSERT_EQUALS("; x = x | y ;", tok("; x |= y;"));
-        ASSERT_EQUALS("; x = x ^ y ;", tok("; x ^= y;"));
-        ASSERT_EQUALS("; x = x << y ;", tok("; x <<= y;"));
-        ASSERT_EQUALS("; x = x >> y ;", tok("; x >>= y;"));
-
-        ASSERT_EQUALS("{ x = x + y ; }", tok("{ x += y;}"));
-        ASSERT_EQUALS("{ x = x - y ; }", tok("{ x -= y;}"));
-        ASSERT_EQUALS("{ x = x * y ; }", tok("{ x *= y;}"));
-        ASSERT_EQUALS("{ x = x / y ; }", tok("{ x /= y;}"));
-        ASSERT_EQUALS("{ x = x % y ; }", tok("{ x %= y;}"));
-        ASSERT_EQUALS("{ x = x & y ; }", tok("{ x &= y;}"));
-        ASSERT_EQUALS("{ x = x | y ; }", tok("{ x |= y;}"));
-        ASSERT_EQUALS("{ x = x ^ y ; }", tok("{ x ^= y;}"));
-        ASSERT_EQUALS("{ x = x << y ; }", tok("{ x <<= y;}"));
-        ASSERT_EQUALS("{ x = x >> y ; }", tok("{ x >>= y;}"));
-
-        ASSERT_EQUALS("; * p = * p + y ;", tok("; *p += y;"));
-        ASSERT_EQUALS("; ( * p ) = ( * p ) + y ;", tok("; (*p) += y;"));
-        ASSERT_EQUALS("; * ( p [ 0 ] ) = * ( p [ 0 ] ) + y ;", tok("; *(p[0]) += y;"));
-        ASSERT_EQUALS("; p [ { 1 , 2 } ] = p [ { 1 , 2 } ] + y ;", tok("; p[{1,2}] += y;"));
-
-        ASSERT_EQUALS("void foo ( ) { switch ( n ) { case 0 : ; x = x + y ; break ; } }", tok("void foo() { switch (n) { case 0: x += y; break; } }"));
-
-        ASSERT_EQUALS("; x . y = x . y + 1 ;", tok("; x.y += 1;"));
-
-        ASSERT_EQUALS("; x [ 0 ] = x [ 0 ] + 1 ;", tok("; x[0] += 1;"));
-        ASSERT_EQUALS("; x [ y - 1 ] = x [ y - 1 ] + 1 ;", tok("; x[y-1] += 1;"));
-        ASSERT_EQUALS("; x [ y ] = x [ y ++ ] + 1 ;", tok("; x[y++] += 1;"));
-        ASSERT_EQUALS("; x [ ++ y ] = x [ y ] + 1 ;", tok("; x[++y] += 1;"));
-
-        ASSERT_EQUALS(";", tok(";x += 0;"));
-        TODO_ASSERT_EQUALS(";", "; x = x + '\\0' ;", tok("; x += '\\0'; "));
-        ASSERT_EQUALS(";", tok(";x -= 0;"));
-        ASSERT_EQUALS(";", tok(";x |= 0;"));
-        ASSERT_EQUALS(";", tok(";x *= 1;"));
-        ASSERT_EQUALS(";", tok(";x /= 1;"));
-
-        ASSERT_EQUALS("; a . x ( ) = a . x ( ) + 1 ;", tok("; a.x() += 1;"));
-        ASSERT_EQUALS("; x ( 1 ) = x ( 1 ) + 1 ;", tok("; x(1) += 1;"));
-
-        // #2368
-        ASSERT_EQUALS("{ j = j - i ; }", tok("{if (false) {} else { j -= i; }}"));
-
-        // #2714 - wrong simplification of "a += b?c:d;"
-        ASSERT_EQUALS("; a = a + ( b ? c : d ) ;", tok("; a+=b?c:d;"));
-        ASSERT_EQUALS("; a = a * ( b + 1 ) ;", tok("; a*=b+1;"));
-
-        ASSERT_EQUALS("; a = a + ( b && c ) ;", tok("; a+=b&&c;"));
-        ASSERT_EQUALS("; a = a * ( b || c ) ;", tok("; a*=b||c;"));
-        ASSERT_EQUALS("; a = a | ( b == c ) ;", tok("; a|=b==c;"));
-
-        // #3469
-        ASSERT_EQUALS("; a = a + ( b = 1 ) ;", tok("; a += b = 1;"));
-
-        // #7571
-        ASSERT_EQUALS("; foo = foo + [ & ] ( ) { } ;", tok("; foo += [&]() {int i;};"));
-
-        // #8796
-        ASSERT_EQUALS("{ return ( a = b ) += c ; }", tok("{ return (a = b) += c; }"));
     }
 
 
@@ -1998,71 +647,71 @@ private:
     }
 
     void not1() {
-        ASSERT_EQUALS("void f ( ) { if ( ! p ) { ; } }", tok("void f() { if (not p); }", "test.c", false));
-        ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }", tok("void f() { if (p && not q); }", "test.c", false));
-        ASSERT_EQUALS("void f ( ) { a = ! ( p && q ) ; }", tok("void f() { a = not(p && q); }", "test.c", false));
+        ASSERT_EQUALS("void f ( ) { if ( ! p ) { ; } }", tok("void f() { if (not p); }", "test.c"));
+        ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }", tok("void f() { if (p && not q); }", "test.c"));
+        ASSERT_EQUALS("void f ( ) { a = ! ( p && q ) ; }", tok("void f() { a = not(p && q); }", "test.c"));
         // Don't simplify 'not' or 'compl' if they are defined as a type;
         // in variable declaration and in function declaration/definition
-        ASSERT_EQUALS("struct not { int x ; } ;", tok("struct not { int x; };", "test.c", false));
-        ASSERT_EQUALS("void f ( ) { not p ; compl c ; }", tok(" void f() { not p; compl c; }", "test.c", false));
-        ASSERT_EQUALS("void foo ( not i ) ;", tok("void foo(not i);", "test.c", false));
-        ASSERT_EQUALS("int foo ( not i ) { return g ( i ) ; }", tok("int foo(not i) { return g(i); }", "test.c", false));
+        ASSERT_EQUALS("struct not { int x ; } ;", tok("struct not { int x; };", "test.c"));
+        ASSERT_EQUALS("void f ( ) { not p ; compl c ; }", tok(" void f() { not p; compl c; }", "test.c"));
+        ASSERT_EQUALS("void foo ( not i ) ;", tok("void foo(not i);", "test.c"));
+        ASSERT_EQUALS("int foo ( not i ) { return g ( i ) ; }", tok("int foo(not i) { return g(i); }", "test.c"));
     }
 
     void and1() {
         ASSERT_EQUALS("void f ( ) { if ( p && q ) { ; } }",
-                      tok("void f() { if (p and q) ; }", "test.c", false));
+                      tok("void f() { if (p and q) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) && q ) { ; } }",
-                      tok("void f() { if (foo() and q) ; }", "test.c", false));
+                      tok("void f() { if (foo() and q) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) && bar ( ) ) { ; } }",
-                      tok("void f() { if (foo() and bar()) ; }", "test.c", false));
+                      tok("void f() { if (foo() and bar()) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( p && bar ( ) ) { ; } }",
-                      tok("void f() { if (p and bar()) ; }", "test.c", false));
+                      tok("void f() { if (p and bar()) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( p && ! q ) { ; } }",
-                      tok("void f() { if (p and not q) ; }", "test.c", false));
+                      tok("void f() { if (p and not q) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { r = a && b ; }",
-                      tok("void f() { r = a and b; }", "test.c", false));
+                      tok("void f() { r = a and b; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { r = ( a || b ) && ( c || d ) ; }",
-                      tok("void f() { r = (a || b) and (c || d); }", "test.c", false));
+                      tok("void f() { r = (a || b) and (c || d); }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( test1 [ i ] == 'A' && test2 [ i ] == 'C' ) { } }",
-                      tok("void f() { if (test1[i] == 'A' and test2[i] == 'C') {} }", "test.c", false));
+                      tok("void f() { if (test1[i] == 'A' and test2[i] == 'C') {} }", "test.c"));
     }
 
     void or1() {
         ASSERT_EQUALS("void f ( ) { if ( p || q ) { ; } }",
-                      tok("void f() { if (p or q) ; }", "test.c", false));
+                      tok("void f() { if (p or q) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) || q ) { ; } }",
-                      tok("void f() { if (foo() or q) ; }", "test.c", false));
+                      tok("void f() { if (foo() or q) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( foo ( ) || bar ( ) ) { ; } }",
-                      tok("void f() { if (foo() or bar()) ; }", "test.c", false));
+                      tok("void f() { if (foo() or bar()) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( p || bar ( ) ) { ; } }",
-                      tok("void f() { if (p or bar()) ; }", "test.c", false));
+                      tok("void f() { if (p or bar()) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { if ( p || ! q ) { ; } }",
-                      tok("void f() { if (p or not q) ; }", "test.c", false));
+                      tok("void f() { if (p or not q) ; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { r = a || b ; }",
-                      tok("void f() { r = a or b; }", "test.c", false));
+                      tok("void f() { r = a or b; }", "test.c"));
 
         ASSERT_EQUALS("void f ( ) { r = ( a && b ) || ( c && d ) ; }",
-                      tok("void f() { r = (a && b) or (c && d); }", "test.c", false));
+                      tok("void f() { r = (a && b) or (c && d); }", "test.c"));
     }
 
     void cAlternativeTokens() {
         ASSERT_EQUALS("void f ( ) { err |= ( ( r & s ) && ! t ) ; }",
-                      tok("void f() { err or_eq ((r bitand s) and not t); }", "test.c", false));
+                      tok("void f() { err or_eq ((r bitand s) and not t); }", "test.c"));
         ASSERT_EQUALS("void f ( ) const { r = f ( a [ 4 ] | 0x0F , ~ c , ! d ) ; }",
-                      tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", "test.c", false));
+                      tok("void f() const { r = f(a[4] bitor 0x0F, compl c, not d) ; }", "test.c"));
 
     }
 
@@ -2073,7 +722,7 @@ private:
                                 "    char *a, *b;\n"
                                 "    delete a, delete b;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; delete a ; delete b ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; delete a , delete b ; }", tok(code));
         }
 
         {
@@ -2098,7 +747,7 @@ private:
                                 "    char *a, *b;\n"
                                 "    delete a, b;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; delete a ; b ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; delete a , b ; }", tok(code));
         }
 
         {
@@ -2108,7 +757,7 @@ private:
                                 "    delete a, b, c;\n"
                                 "}\n";
             // delete a; b; c; would be better but this will do too
-            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; char * c ; delete a ; b , c ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; char * c ; delete a , b , c ; }", tok(code));
         }
 
         {
@@ -2118,7 +767,7 @@ private:
                                 "    if (x)\n"
                                 "        delete a, b;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; if ( x ) { delete a ; b ; } }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; if ( x ) { delete a , b ; } }", tok(code));
         }
 
         {
@@ -2129,7 +778,7 @@ private:
                                 "        delete a, b, c;\n"
                                 "}\n";
             // delete a; b; c; would be better but this will do too
-            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; char * c ; if ( x ) { delete a ; b , c ; } }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; char * c ; if ( x ) { delete a , b , c ; } }", tok(code));
         }
 
         {
@@ -2141,32 +790,11 @@ private:
         }
 
         {
-            const char code[] = "int f()\n"
-                                "{\n"
-                                "    if (something)\n"
-                                "        return a(2, c(3, 4)), b(3), 10;\n"
-                                "    return a(), b(0, 0, 0), 10;\n"
-                                "}\n";
-            ASSERT_EQUALS("int f ( )"
-                          " {"
-                          " if ( something )"
-                          " {"
-                          " a ( 2 , c ( 3 , 4 ) ) ;"
-                          " b ( 3 ) ;"
-                          " return 10 ;"
-                          " }"
-                          " a ( ) ;"
-                          " b ( 0 , 0 , 0 ) ;"
-                          " return 10 ; "
-                          "}", tok(code));
-        }
-
-        {
             const char code[] = "void foo()\n"
                                 "{\n"
                                 "    delete [] a, a = 0;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { delete [ ] a ; a = 0 ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { delete [ ] a , a = 0 ; }", tok(code));
         }
 
         {
@@ -2174,7 +802,7 @@ private:
                                 "{\n"
                                 "    delete a, a = 0;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { delete a ; a = 0 ; }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { delete a , a = 0 ; }", tok(code));
         }
 
         {
@@ -2182,7 +810,7 @@ private:
                                 "{\n"
                                 "    if( x ) delete a, a = 0;\n"
                                 "}\n";
-            ASSERT_EQUALS("void foo ( ) { if ( x ) { delete a ; a = 0 ; } }", tok(code));
+            ASSERT_EQUALS("void foo ( ) { if ( x ) { delete a , a = 0 ; } }", tok(code));
         }
 
         {
@@ -2206,172 +834,6 @@ private:
             // #4786 - don't replace , with ; in ".. : public B, C .." code
             const char code[] = "template < class T = X > class A : public B , C { } ;";
             ASSERT_EQUALS(code, tok(code));
-        }
-    }
-
-    void remove_comma() {
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  int a,b;\n"
-                                "  if( a )\n"
-                                "  a=0,\n"
-                                "  b=0;\n"
-                                "}\n";
-            ASSERT_EQUALS("void f ( ) { int a ; int b ; if ( a ) { a = 0 ; b = 0 ; } }", tok(code));
-        }
-
-        {
-            ASSERT_EQUALS("a ? ( b = c , d ) : e ;", tok("a ? b = c , d : e ;")); // Keep comma
-        }
-
-        {
-            ASSERT_EQUALS("{ return a ? ( b = c , d ) : e ; }", tok("{ return a ? b = c , d : e ; }")); // Keep comma
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  A a,b;\n"
-                                "  if( a.f )\n"
-                                "  a.f=b.f,\n"
-                                "  a.g=b.g;\n"
-                                "}\n";
-            ASSERT_EQUALS("void f ( ) { A a ; A b ; if ( a . f ) { a . f = b . f ; a . g = b . g ; } }", tok(code));
-        }
-
-        // keep the comma in template specifiers..
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  int a = b<T<char,3>, int>();\n"
-                                "}\n";
-            ASSERT_EQUALS("void f ( ) { int a ; a = b < T < char , 3 > , int > ( ) ; }", tok(code));
-        }
-
-        {
-            const char code[] = "void f() {\n"
-                                "  a = new std::map<std::string, std::string>;\n"
-                                "}\n";
-            ASSERT_EQUALS("void f ( ) { a = new std :: map < std :: string , std :: string > ; }", tok(code));
-        }
-
-        {
-            // ticket #1327
-            const char code[] = "const C<1,2,3> foo ()\n"
-                                "{\n"
-                                "    return C<1,2,3>(x,y);\n"
-                                "}\n";
-            const char expected[]  = "const C < 1 , 2 , 3 > foo ( ) "
-                                     "{"
-                                     " return C < 1 , 2 , 3 > ( x , y ) ; "
-                                     "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "int foo ()\n"
-                                "{\n"
-                                "    return doSomething(), 0;\n"
-                                "}\n";
-            const char expected[]  = "int foo ( ) "
-                                     "{"
-                                     " doSomething ( ) ; return 0 ; "
-                                     "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "int foo ()\n"
-                                "{\n"
-                                "    return a=1, b=2;\n"
-                                "}\n";
-            const char expected[]  = "int foo ( ) "
-                                     "{"
-                                     " a = 1 ; return b = 2 ; "
-                                     "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[]     = "tr = (struct reg){ .a = (1), .c = (2) };";
-            const char expected[] = "tr = ( struct reg ) { . a = 1 , . c = ( 2 ) } ;";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-    }
-
-    void simplifyConditionOperator() {
-        {
-            const char code[] = "(0?(false?1:2):3);";
-            ASSERT_EQUALS("( 3 ) ;", tok(code));
-        }
-
-        {
-            const char code[] = "(1?(false?1:2):3);";
-            ASSERT_EQUALS("( ( 2 ) ) ;", tok(code));
-        }
-
-        {
-            const char code[] = "int a = (1?0:1 == 1?0:1);";
-            ASSERT_EQUALS("int a ; a = 0 ;", tok(code));
-        }
-
-        {
-            const char code[] = "(1?0:foo());";
-            ASSERT_EQUALS("( 0 ) ;", tok(code));
-        }
-
-        {
-            const char code[] = "void f () { switch(n) { case 1?0:foo(): break; }}";
-            // TODO Do not throw AST validation exception
-            TODO_ASSERT_THROW(tok(code), InternalError);
-            //ASSERT_EQUALS("void f ( ) { switch ( n ) { case 0 : ; break ; } }", tok(code));
-        }
-
-        {
-            const char code[] = "void f () { switch(n) { case 1?0?1:0:foo(): break; }}";
-            // TODO Do not throw AST validation exception
-            TODO_ASSERT_THROW(tok(code), InternalError);
-        }
-
-        {
-            const char code[] = "void f () { switch(n) { case 0?foo():1: break; }}";
-            // TODO Do not throw AST validation exception
-            TODO_ASSERT_THROW(tok(code), InternalError);
-        }
-
-        {
-            const char code[] = "( true ? a ( ) : b ( ) );";
-            ASSERT_EQUALS("( a ( ) ) ;", tok(code));
-        }
-
-        {
-            const char code[] = "( true ? abc . a : abc . b );";
-            ASSERT_EQUALS("( abc . a ) ;", tok(code));
-        }
-
-
-        //GNU extension: "x ?: y" <-> "x ? x : y"
-        {
-            const char code[] = "; a = 1 ? : x; b = 0 ? : 2;";
-            ASSERT_EQUALS("; a = 1 ; b = 2 ;", tok(code));
-        }
-
-        // Ticket #3572 (segmentation fault)
-        ASSERT_EQUALS("0 ; x = { ? y : z ; }", tok("0; x = { ? y : z; }"));
-
-        {
-            // #3922 - (true)
-            ASSERT_EQUALS("; x = 2 ;", tok("; x = (true)?2:4;"));
-            ASSERT_EQUALS("; x = 4 ;", tok("; x = (false)?2:4;"));
-            ASSERT_EQUALS("; x = * a ;", tok("; x = (true)?*a:*b;"));
-            ASSERT_EQUALS("; x = * b ;", tok("; x = (false)?*a:*b;"));
-        }
-
-        {
-            // TODO Do not throw AST validation exception
-            TODO_ASSERT_THROW(tok("; type = decay_t<decltype(true ? declval<T>() : declval<U>())>;"), InternalError);
-            TODO_ASSERT_THROW(tok("; type = decay_t<decltype(false ? declval<T>() : declval<U>())>;"), InternalError);
         }
     }
 
@@ -2476,288 +938,288 @@ private:
         {
             const char code[] = "struct ABC { } abc;";
             const char expected[] = "struct ABC { } ; struct ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct ABC { } * pabc;";
             const char expected[] = "struct ABC { } ; struct ABC * pabc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct ABC { } abc[4];";
             const char expected[] = "struct ABC { } ; struct ABC abc [ 4 ] ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct ABC { } abc, def;";
             const char expected[] = "struct ABC { } ; struct ABC abc ; struct ABC def ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct ABC { } abc, * pabc;";
             const char expected[] = "struct ABC { } ; struct ABC abc ; struct ABC * pabc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct ABC { struct DEF {} def; } abc;";
             const char expected[] = "struct ABC { struct DEF { } ; struct DEF def ; } ; struct ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { } abc;";
             const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { } * pabc;";
             const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 * pabc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { } abc[4];";
             const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 abc [ 4 ] ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct {int a;} const array[3] = {0};";
             const char expected[] = "struct Anonymous0 { int a ; } ; struct Anonymous0 const array [ 3 ] = { 0 } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "static struct {int a;} const array[3] = {0};";
             const char expected[] = "struct Anonymous0 { int a ; } ; static struct Anonymous0 const array [ 3 ] = { 0 } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { } abc, def;";
             const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 abc ; struct Anonymous0 def ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { } abc, * pabc;";
             const char expected[] = "struct Anonymous0 { } ; struct Anonymous0 abc ; struct Anonymous0 * pabc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { struct DEF {} def; } abc;";
             const char expected[] = "struct Anonymous0 { struct DEF { } ; struct DEF def ; } ; struct Anonymous0 abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct ABC { struct {} def; } abc;";
             const char expected[] = "struct ABC { struct Anonymous0 { } ; struct Anonymous0 def ; } ; struct ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { struct {} def; } abc;";
             const char expected[] = "struct Anonymous0 { struct Anonymous1 { } ; struct Anonymous1 def ; } ; struct Anonymous0 abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "union ABC { int i; float f; } abc;";
             const char expected[] = "union ABC { int i ; float f ; } ; union ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct ABC { struct {} def; };";
             const char expected[] = "struct ABC { struct Anonymous0 { } ; struct Anonymous0 def ; } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct ABC : public XYZ { struct {} def; };";
             const char expected[] = "struct ABC : public XYZ { struct Anonymous0 { } ; struct Anonymous0 def ; } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { int x; }; int y;";
             const char expected[] = "int x ; int y ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { int x; };";
             const char expected[] = "int x ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { };";
             const char expected[] = ";";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { struct { struct { } ; } ; };";
             const char expected[] = ";";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         // ticket 2464
         {
             const char code[] = "static struct ABC { } abc ;";
             const char expected[] = "struct ABC { } ; static struct ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         // ticket #980
         {
             const char code[] = "void f() { int A(1),B(2),C=3,D,E(5),F=6; }";
             const char expected[] = "void f ( ) { int A ; A = 1 ; int B ; B = 2 ; int C ; C = 3 ; int D ; int E ; E = 5 ; int F ; F = 6 ; }";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         // ticket #8284
         {
             const char code[] = "void f() { class : foo<int> { } abc; }";
             const char expected[] = "void f ( ) { class Anonymous0 : foo < int > { } ; Anonymous0 abc ; }";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
     void simplifyStructDecl2() { // ticket #2479 (segmentation fault)
         const char code[] = "struct { char c; }";
         const char expected[] = "struct { char c ; }";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyStructDecl3() {
         {
             const char code[] = "class ABC { } abc;";
             const char expected[] = "class ABC { } ; ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class ABC { } * pabc;";
             const char expected[] = "class ABC { } ; ABC * pabc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class ABC { } abc[4];";
             const char expected[] = "class ABC { } ; ABC abc [ 4 ] ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class ABC { } abc, def;";
             const char expected[] = "class ABC { } ; ABC abc ; ABC def ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class ABC { } abc, * pabc;";
             const char expected[] = "class ABC { } ; ABC abc ; ABC * pabc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class ABC { class DEF {} def; } abc;";
             const char expected[] = "class ABC { class DEF { } ; DEF def ; } ; ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { } abc;";
             const char expected[] = "class { } abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { } * pabc;";
             const char expected[] = "class { } * pabc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { } abc[4];";
             const char expected[] = "class { } abc [ 4 ] ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { } abc, def;";
             const char expected[] = "class { } abc , def ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { } abc, * pabc;";
             const char expected[] = "class { } abc , * pabc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "struct { class DEF {} def; } abc;";
             const char expected[] = "struct Anonymous0 { class DEF { } ; DEF def ; } ; struct Anonymous0 abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class ABC { struct {} def; } abc;";
             const char expected[] = "class ABC { struct Anonymous0 { } ; struct Anonymous0 def ; } ; ABC abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { class {} def; } abc;";
             const char expected[] = "class { class { } def ; } abc ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class ABC { struct {} def; };";
             const char expected[] = "class ABC { struct Anonymous0 { } ; struct Anonymous0 def ; } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class ABC : public XYZ { struct {} def; };";
             const char expected[] = "class ABC : public XYZ { struct Anonymous0 { } ; struct Anonymous0 def ; } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { int x; }; int y;";
             const char expected[] = "class { int x ; } ; int y ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { int x; };";
             const char expected[] = "class { int x ; } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { };";
             const char expected[] = "class { } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
             const char code[] = "class { struct { struct { } ; } ; };";
             const char expected[] = "class { } ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
@@ -2782,11 +1244,11 @@ private:
                                 "struct Fee { } ; struct Fee fee ; "
                                 "} "
                                 "union { "
-                                "long long ll ; "
+                                "long ll ; "
                                 "double d ; "
                                 "} ; "
                                 "} ; ABC abc ;";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyStructDecl6() {
@@ -2795,40 +1257,40 @@ private:
                       "} ; struct A arrays ; arrays = { { 0 } } ;",
                       tok("struct A {\n"
                           "    char integers[X];\n"
-                          "} arrays = {{0}};", false));
+                          "} arrays = {{0}};"));
     }
 
     void simplifyStructDecl7() {
         ASSERT_EQUALS("struct Anonymous0 { char x ; } ; struct Anonymous0 a [ 2 ] ;",
-                      tok("struct { char x; } a[2];", false));
+                      tok("struct { char x; } a[2];"));
         ASSERT_EQUALS("struct Anonymous0 { char x ; } ; static struct Anonymous0 a [ 2 ] ;",
-                      tok("static struct { char x; } a[2];", false));
+                      tok("static struct { char x; } a[2];"));
     }
 
     void simplifyStructDecl8() {
-        ASSERT_EQUALS("enum A { x , y , z } ; enum A a ; a = x ;", tok("enum A { x, y, z } a(x);", false));
-        ASSERT_EQUALS("enum B { x , y , z } ; enum B b ; b = x ;", tok("enum B { x , y, z } b{x};", false));
-        ASSERT_EQUALS("struct C { int i ; } ; struct C c ; c = { 0 } ;", tok("struct C { int i; } c{0};", false));
-        ASSERT_EQUALS("enum Anonymous0 { x , y , z } ; enum Anonymous0 d ; d = x ;", tok("enum { x, y, z } d(x);", false));
-        ASSERT_EQUALS("enum Anonymous0 { x , y , z } ; enum Anonymous0 e ; e = x ;", tok("enum { x, y, z } e{x};", false));
-        ASSERT_EQUALS("struct Anonymous0 { int i ; } ; struct Anonymous0 f ; f = { 0 } ;", tok("struct { int i; } f{0};", false));
-        ASSERT_EQUALS("struct Anonymous0 { } ; struct Anonymous0 x ; x = { 0 } ;", tok("struct {} x = {0};", false));
-        ASSERT_EQUALS("enum G : short { x , y , z } ; enum G g ; g = x ;", tok("enum G : short { x, y, z } g(x);", false));
-        ASSERT_EQUALS("enum H : short { x , y , z } ; enum H h ; h = x ;", tok("enum H : short { x, y, z } h{x};", false));
-        ASSERT_EQUALS("enum class I : short { x , y , z } ; enum I i ; i = x ;", tok("enum class I : short { x, y, z } i(x);", false));
-        ASSERT_EQUALS("enum class J : short { x , y , z } ; enum J j ; j = x ;", tok("enum class J : short { x, y, z } j{x};", false));
+        ASSERT_EQUALS("enum A { x , y , z } ; enum A a ; a = x ;", tok("enum A { x, y, z } a(x);"));
+        ASSERT_EQUALS("enum B { x , y , z } ; enum B b ; b = x ;", tok("enum B { x , y, z } b{x};"));
+        ASSERT_EQUALS("struct C { int i ; } ; struct C c ; c = { 0 } ;", tok("struct C { int i; } c{0};"));
+        ASSERT_EQUALS("enum Anonymous0 { x , y , z } ; enum Anonymous0 d ; d = x ;", tok("enum { x, y, z } d(x);"));
+        ASSERT_EQUALS("enum Anonymous0 { x , y , z } ; enum Anonymous0 e ; e = x ;", tok("enum { x, y, z } e{x};"));
+        ASSERT_EQUALS("struct Anonymous0 { int i ; } ; struct Anonymous0 f ; f = { 0 } ;", tok("struct { int i; } f{0};"));
+        ASSERT_EQUALS("struct Anonymous0 { } ; struct Anonymous0 x ; x = { 0 } ;", tok("struct {} x = {0};"));
+        ASSERT_EQUALS("enum G : short { x , y , z } ; enum G g ; g = x ;", tok("enum G : short { x, y, z } g(x);"));
+        ASSERT_EQUALS("enum H : short { x , y , z } ; enum H h ; h = x ;", tok("enum H : short { x, y, z } h{x};"));
+        ASSERT_EQUALS("enum class I : short { x , y , z } ; enum I i ; i = x ;", tok("enum class I : short { x, y, z } i(x);"));
+        ASSERT_EQUALS("enum class J : short { x , y , z } ; enum J j ; j = x ;", tok("enum class J : short { x, y, z } j{x};"));
     }
 
     void removeUnwantedKeywords() {
-        ASSERT_EQUALS("int var ;", tok("register int var ;", true));
-        ASSERT_EQUALS("short var ;", tok("register short int var ;", true));
-        ASSERT_EQUALS("int foo ( ) { }", tok("inline int foo ( ) { }", true));
-        ASSERT_EQUALS("int foo ( ) { }", tok("__inline int foo ( ) { }", true));
-        ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }", true));
-        ASSERT_EQUALS("constexpr int foo ( ) { }", tok("constexpr int foo() { }", true));
-        ASSERT_EQUALS("constexpr int foo ( ) { }", tok("consteval int foo() { }", true));
-        ASSERT_EQUALS("int x ; x = 0 ;", tok("constinit int x = 0;", true));
-        ASSERT_EQUALS("void f ( ) { int final [ 10 ] ; }", tok("void f() { int final[10]; }", true));
+        ASSERT_EQUALS("int var ;", tok("register int var ;"));
+        ASSERT_EQUALS("short var ;", tok("register short int var ;"));
+        ASSERT_EQUALS("int foo ( ) { }", tok("inline int foo ( ) { }"));
+        ASSERT_EQUALS("int foo ( ) { }", tok("__inline int foo ( ) { }"));
+        ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }"));
+        ASSERT_EQUALS("constexpr int foo ( ) { }", tok("constexpr int foo() { }"));
+        ASSERT_EQUALS("constexpr int foo ( ) { }", tok("consteval int foo() { }"));
+        ASSERT_EQUALS("int x ; x = 0 ;", tok("constinit int x = 0;"));
+        ASSERT_EQUALS("void f ( ) { int final [ 10 ] ; }", tok("void f() { int final[10]; }"));
         ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", "test.c"));
         ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", "test.c"));
         ASSERT_EQUALS("void foo ( float * a , float * b ) ;", tok("void foo(float * __restrict__ a, float * __restrict__ b);", "test.c"));
@@ -2839,29 +1301,29 @@ private:
         ASSERT_EQUALS("int * p ;", tok("typedef int * __restrict__ rint; rint p;", "test.c"));
 
         // don't remove struct members:
-        ASSERT_EQUALS("a = b . _inline ;", tok("a = b._inline;", true));
+        ASSERT_EQUALS("a = b . _inline ;", tok("a = b._inline;"));
 
         ASSERT_EQUALS("int i ; i = 0 ;", tok("auto int i = 0;", "test.c"));
         ASSERT_EQUALS("auto i ; i = 0 ;", tok("auto i = 0;", "test.cpp"));
     }
 
     void simplifyCallingConvention() {
-        ASSERT_EQUALS("int f ( ) ;", tok("int __cdecl f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __stdcall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __fastcall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __clrcall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __thiscall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __syscall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __pascal f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __fortran f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __far __cdecl f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __far __stdcall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __far __fastcall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __far __clrcall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __far __thiscall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __far __syscall f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __far __pascal f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("int __far __fortran f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __cdecl f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __stdcall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __fastcall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __clrcall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __thiscall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __syscall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __pascal f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __fortran f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __far __cdecl f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __far __stdcall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __far __fastcall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __far __clrcall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __far __thiscall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __far __syscall f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __far __pascal f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("int __far __fortran f();"));
         ASSERT_EQUALS("int f ( ) ;", tok("int WINAPI f();", true, Settings::Win32A));
         ASSERT_EQUALS("int f ( ) ;", tok("int APIENTRY f();", true, Settings::Win32A));
         ASSERT_EQUALS("int f ( ) ;", tok("int CALLBACK f();", true, Settings::Win32A));
@@ -2871,22 +1333,22 @@ private:
     }
 
     void simplifyAttribute() {
-        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) int f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__((visibility(\"default\"))) int f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("__attribute ((visibility(\"default\"))) int f();", true));
-        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) __attribute__ ((warn_unused_result)) int f();", true));
-        ASSERT_EQUALS("blah :: blah f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) blah::blah f();", true));
-        ASSERT_EQUALS("template < T > Result < T > f ( ) ;", tok("template<T> __attribute__ ((warn_unused_result)) Result<T> f();", true));
-        ASSERT_EQUALS("template < T , U > Result < T , U > f ( ) ;", tok("template<T, U> __attribute__ ((warn_unused_result)) Result<T, U> f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) int f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__((visibility(\"default\"))) int f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute ((visibility(\"default\"))) int f();"));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) __attribute__ ((warn_unused_result)) int f();"));
+        ASSERT_EQUALS("blah :: blah f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) blah::blah f();"));
+        ASSERT_EQUALS("template < T > Result < T > f ( ) ;", tok("template<T> __attribute__ ((warn_unused_result)) Result<T> f();"));
+        ASSERT_EQUALS("template < T , U > Result < T , U > f ( ) ;", tok("template<T, U> __attribute__ ((warn_unused_result)) Result<T, U> f();"));
     }
 
     void simplifyFunctorCall() {
-        ASSERT_EQUALS("IncrementFunctor ( ) ( a ) ;", tok("IncrementFunctor()(a);", true));
+        ASSERT_EQUALS("IncrementFunctor ( ) ( a ) ;", tok("IncrementFunctor()(a);"));
     }
 
     // #ticket #5339 (simplify function pointer after comma)
     void simplifyFunctionPointer() {
-        ASSERT_EQUALS("f ( double x , double ( * y ) ( ) ) ;", tok("f (double x, double (*y) ());", true));
+        ASSERT_EQUALS("f ( double x , double ( * y ) ( ) ) ;", tok("f (double x, double (*y) ());"));
     }
 
     void simplifyFunctionReturn() {
@@ -2906,7 +1368,7 @@ private:
                                     "void * get3 ( ) ; "
                                     "void * get4 ( ) ; "
                                     "} ;";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
         {
             const char code[] = "class Fred {\n"
@@ -2919,7 +1381,7 @@ private:
                                     "const std :: string & foo ( ) ; "
                                     "} ; "
                                     "const std :: string & Fred :: foo ( ) { return \"\" ; }";
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
         {
             // Ticket #7916
@@ -2948,10 +1410,10 @@ private:
     }
 
     void consecutiveBraces() {
-        ASSERT_EQUALS("void f ( ) { }", tok("void f(){{}}", true));
-        ASSERT_EQUALS("void f ( ) { }", tok("void f(){{{}}}", true));
-        ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f () { for(;;){} }", true));
-        ASSERT_EQUALS("void f ( ) { { scope_lock lock ; foo ( ) ; } { scope_lock lock ; bar ( ) ; } }", tok("void f () { {scope_lock lock; foo();} {scope_lock lock; bar();} }", true));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f(){{}}"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f(){{{}}}"));
+        ASSERT_EQUALS("void f ( ) { for ( ; ; ) { } }", tok("void f () { for(;;){} }"));
+        ASSERT_EQUALS("void f ( ) { { scope_lock lock ; foo ( ) ; } { scope_lock lock ; bar ( ) ; } }", tok("void f () { {scope_lock lock; foo();} {scope_lock lock; bar();} }"));
     }
 
     void simplifyOverride() { // ticket #5069
@@ -2960,7 +1422,7 @@ private:
                             "    doSomething(override, sizeof(override));\n"
                             "}\n";
         ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 0x01 , 0x02 } ; doSomething ( override , sizeof ( override ) ) ; }",
-                      tok(code, true));
+                      tok(code));
     }
 
     void simplifyNestedNamespace() {
@@ -3214,6 +1676,7 @@ private:
         }
     }
 
+    // cppcheck-suppress unusedPrivateFunction
     void simplifyKnownVariables29() { // ticket #1811
         {
             const char code[] = "int foo(int u, int v)\n"
@@ -4114,7 +2577,7 @@ private:
         }
         {
             const char code[] = "bool b = true ? false : 1 > 2 ;";
-            const char exp[] = "bool b ; b = false ;";
+            const char exp[] = "bool b ; b = true ? false : 1 > 2 ;";
             ASSERT_EQUALS(exp, tok(code));
         }
     }

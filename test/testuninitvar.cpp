@@ -84,6 +84,7 @@ private:
         TEST_CASE(uninitvar_cpp11ArrayInit); // #7010
         TEST_CASE(uninitvar_rangeBasedFor); // #7078
         TEST_CASE(uninitvar_static); // #8734
+        TEST_CASE(uninitvar_configuration);
         TEST_CASE(checkExpr);
         TEST_CASE(trac_4871);
         TEST_CASE(syntax_error); // Ticket #5073
@@ -4596,6 +4597,23 @@ private:
                        "  result.push_back(P); "
                        "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_configuration() {
+        const auto oldSettings = settings;
+        settings.severity.enable(Severity::information);
+        settings.checkLibrary = true;
+
+        checkUninitVar("int f() {\n"
+                       "    int i, j;\n"
+                       "    do {\n"
+                       "        i = 0;\n"
+                       "        return i;\n"
+                       "    } while (0);\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        settings = oldSettings;
     }
 
     void checkExpr() {

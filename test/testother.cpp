@@ -26,9 +26,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
-#include <list>
 #include <map>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -65,6 +64,9 @@ private:
         TEST_CASE(zeroDiv12);
         TEST_CASE(zeroDiv13);
         TEST_CASE(zeroDiv14); // #1169
+        TEST_CASE(zeroDiv15); // #8319
+        TEST_CASE(zeroDiv16); // #11158
+        TEST_CASE(zeroDiv17); // #9931
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -116,6 +118,7 @@ private:
         TEST_CASE(switchRedundantOperationTest);
         TEST_CASE(switchRedundantBitwiseOperationTest);
         TEST_CASE(unreachableCode);
+        TEST_CASE(redundantContinue);
 
         TEST_CASE(suspiciousCase);
         TEST_CASE(suspiciousEqualityComparison);
@@ -135,7 +138,8 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(testMisusedScopeObjectInConstructor);
-        TEST_CASE(testMisusedScopeObjectNoCodeAfter);
+        TEST_CASE(testMisusedScopeObjectStandardType);
+        TEST_CASE(testMisusedScopeObjectNamespace);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -254,6 +258,8 @@ private:
         TEST_CASE(partiallyMoved);
         TEST_CASE(moveAndLambda);
         TEST_CASE(moveInLoop);
+        TEST_CASE(moveCallback);
+        TEST_CASE(moveClassVariable);
         TEST_CASE(forwardAndUsed);
 
         TEST_CASE(funcArgNamesDifferent);
@@ -599,6 +605,50 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Division by zero.\n", errout.str());
     }
 
+    void zeroDiv15() { // #8319
+        check("int f(int i) { return i - 1; }\n"
+              "int f() {\n"
+              "    const int d = 1;\n"
+              "    const int r = 1 / f(d);\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout.str());
+    }
+
+    // #11158
+    void zeroDiv16()
+    {
+        check("int f(int i) {\n"
+              "    int number = 10, a = 0;\n"
+              "    for (int count = 0; count < 2; count++) {\n"
+              "        a += (i / number) % 10;\n"
+              "        number = number / 10;\n"
+              "    }\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+              "    int number = 10, a = 0;\n"
+              "    for (int count = 0; count < 2; count++) {\n"
+              "        int x = number / 10;\n"
+              "        a += (i / number) % 10;\n"
+              "        number = x;\n"
+              "    }\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv17() { // #9931
+        check("int f(int len) {\n"
+              "    int sz = sizeof(void*[255]) / 255;\n"
+              "    int x = len % sz;\n"
+              "    return x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void zeroDivCond() {
         check("void f(unsigned int x) {\n"
               "  int y = 17 / x;\n"
@@ -744,6 +794,14 @@ private:
               "        return quotient;\n"
               "    return remainder;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11315
+        checkP("#define STATIC_ASSERT(c) \\\n"
+               "do { enum { sa = 1/(int)(!!(c)) }; } while (0)\n"
+               "void f() {\n"
+               "    STATIC_ASSERT(sizeof(int) == sizeof(FOO));\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4419,6 +4477,43 @@ private:
               "    enum : uint8_t { A, B } var = A;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkP("#define INB(x) __extension__ ({ u_int tmp = (x); inb(tmp); })\n" // #4739
+               "static unsigned char cmos_hal_read(unsigned index) {\n"
+               "    unsigned short port_0, port_1;\n"
+               "    assert(!verify_cmos_byte_index(index));\n"
+               "    if (index < 128) {\n"
+               "      port_0 = 0x70;\n"
+               "      port_1 = 0x71;\n"
+               "    }\n"
+               "    else {\n"
+               "      port_0 = 0x72;\n"
+               "      port_1 = 0x73;\n"
+               "    }\n"
+               "    OUTB(index, port_0);\n"
+               "    return INB(port_1);\n"
+               "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantContinue() {
+        check("void f() {\n" // #11195
+              "    for (int i = 0; i < 10; ++i) {\n"
+              "        printf(\"i = %d\\n\", i);\n"
+              "        continue;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout.str());
+
+        check("void f() {\n"
+              "    int i = 0;"
+              "    do {\n"
+              "        ++i;\n"
+              "        printf(\"i = %d\\n\", i);\n"
+              "        continue;\n"
+              "    } while (i < 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout.str());
     }
 
 
@@ -4901,6 +4996,17 @@ private:
               "    do_something();\n"
               "}");
         ASSERT_EQUALS("",errout.str());
+
+        check("struct AMethodObject {\n" // #4336
+              "    AMethodObject(double, double, double);\n"
+              "};\n"
+              "struct S {\n"
+              "    static void A(double, double, double);\n"
+              "};\n"
+              "void S::A(double const a1, double const a2, double const a3) {\n"
+              "    AMethodObject(a1, a2, a3);\n"
+              "}\n");
+        ASSERT_EQUALS("",errout.str());
     }
 
     void testMisusedScopeObjectDoesNotPickNestedClass() {
@@ -4937,12 +5043,74 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
     }
 
-    void testMisusedScopeObjectNoCodeAfter() {
-        check("class Foo {};\n"
-              "void f() {\n"
-              "  Foo();\n" // No code after class => don't warn
-              "}", "test.cpp");
+    void testMisusedScopeObjectStandardType() {
+        check("int g();\n"
+              "void f(int i) {\n"
+              "    int();\n"
+              "    int(0);\n"
+              "    int( g() );\n" // don't warn
+              "    int{};\n"
+              "    int{ 0 };\n"
+              "    int{ i };\n"
+              "    int{ g() };\n" // don't warn
+              "    g();\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:4]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:6]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:7]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:8]: (style) Instance of 'int' object is destroyed immediately.\n",
+                      errout.str());
+
+        check("void f(int j) {\n"
+              "    for (; bool(j); ) {}\n"
+              "}\n", "test.cpp");
         ASSERT_EQUALS("", errout.str());
+
+        check("void g() {\n"
+              "    float (f);\n"
+              "    float (*p);\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+              "    void();\n"
+              "    return i;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectNamespace() {
+        check("namespace M {\n" // #4479
+              "    namespace N {\n"
+              "        struct S {};\n"
+              "    }\n"
+              "}\n"
+              "int f() {\n"
+              "    M::N::S();\n"
+              "    return 0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Instance of 'M::N::S' object is destroyed immediately.\n", errout.str());
+
+        check("void f() {\n" // #10057
+              "    std::string(\"abc\");\n"
+              "    std::string{ \"abc\" };\n"
+              "    std::pair<int, int>(1, 2);\n"
+              "    (void)0;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Instance of 'std::string' object is destroyed immediately.\n"
+                      "[test.cpp:3]: (style) Instance of 'std::string' object is destroyed immediately.\n"
+                      "[test.cpp:4]: (style) Instance of 'std::pair' object is destroyed immediately.\n",
+                      errout.str());
+
+        check("struct S {\n" // #10083
+              "    void f() {\n"
+              "        std::lock_guard<std::mutex>(m);\n"
+              "    }\n"
+              "    std::mutex m;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'std::lock_guard' object is destroyed immediately.\n",
+                      errout.str());
     }
 
     void trac2084() {
@@ -5831,6 +5999,15 @@ private:
               "   }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The comparison 'Diag == 0' is always true.\n", errout.str());
+
+        // #9744
+        check("void f(const std::vector<int>& ints) {\n"
+              "    int i = 0;\n"
+              "    for (int p = 0; i < ints.size(); ++i) {\n"
+              "        if (p == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The comparison 'p == 0' is always true.\n", errout.str());
     }
 
     void duplicateExpression8() {
@@ -7714,6 +7891,16 @@ private:
             "[test.cpp:4]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memcpy()' with 'sizeof(*a)'?\n"
             "[test.cpp:5]: (warning, inconclusive) Array 'a' is filled incompletely. Did you forget to multiply the size given to 'memmove()' with 'sizeof(*a)'?\n", errout.str());
 
+        check("int a[5];\n"
+              "namespace Z { struct B { int a[5]; } b; }\n"
+              "void f() {\n"
+              "    memset(::a, 123, 5);\n"
+              "    memset(Z::b.a, 123, 5);\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Array '::a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*::a)'?\n"
+                           "[test.cpp:5]: (warning, inconclusive) Array 'Z::b.a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*Z::b.a)'?\n",
+                           "[test.cpp:4]: (warning, inconclusive) Array '::a' is filled incompletely. Did you forget to multiply the size given to 'memset()' with 'sizeof(*::a)'?\n", errout.str());
+
         check("void f() {\n"
               "    Foo* a[5];\n"
               "    memset(a, 'a', 5);\n"
@@ -8195,6 +8382,15 @@ private:
               "  *reg = 34;\n"
               "}");
         ASSERT_EQUALS("test.cpp:2:style:C-style pointer casting\n", errout.str());
+
+        check("void f(std::map<int, int>& m, int key, int value) {\n" // #6379
+              "    m[key] = value;\n"
+              "    m[key] = value;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:style:Variable 'm[key]' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:2:note:m[key] is assigned\n"
+                      "test.cpp:3:note:m[key] is overwritten\n",
+                      errout.str());
     }
 
     void redundantVarAssignment_trivial() {
@@ -9805,6 +10001,31 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'l'.\n", errout.str());
     }
 
+    void moveCallback()
+    {
+        check("bool f(std::function<void()>&& callback);\n"
+              "void func(std::function<void()> callback) {\n"
+              "    if(!f(std::move(callback)))\n"
+              "        callback();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'callback'.\n", errout.str());
+    }
+
+    void moveClassVariable()
+    {
+        check("struct B {\n"
+              "    virtual void f();\n"
+              "};\n"
+              "struct D : B {\n"
+              "    void f() override {\n"
+              "        auto p = std::unique_ptr<D>(new D(std::move(m)));\n"
+              "    }\n"
+              "    D(std::unique_ptr<int> c) : m(std::move(c)) {}\n"
+              "    std::unique_ptr<int> m;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void forwardAndUsed() {
         Settings keepTemplates;
         keepTemplates.checkUnusedTemplates = true;
@@ -10276,6 +10497,12 @@ private:
               "    int y = 100 % x;\n"
               "  }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i, int j) {\n" // #11191
+              "    const int c = pow(2, i);\n"
+              "    if (j % c) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

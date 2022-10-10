@@ -34,6 +34,7 @@
 #include "checkclass.h"
 
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <initializer_list>
 #include <iterator>
@@ -50,9 +51,9 @@ const Token* findExpression(const nonneg int exprid,
                             const Token* end,
                             const std::function<bool(const Token*)>& pred)
 {
-    if (!precedes(start, end))
-        return nullptr;
     if (exprid == 0)
+        return nullptr;
+    if (!precedes(start, end))
         return nullptr;
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->exprId() != exprid)
@@ -340,14 +341,14 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
         } else if (tok->str() == comp && tok->astOperand2() && match(tok->astOperand2(), rhs)) {
             ret = tok->astOperand1();
         }
-    } else if (comp == "!=" && rhs == std::string("0")) {
+    } else if (comp == "!=" && rhs == "0") {
         if (tok->str() == "!") {
             ret = tok->astOperand1();
             // handle (!(x==0)) as (x!=0)
             astIsVariableComparison(ret, "==", "0", &ret);
         } else
             ret = tok;
-    } else if (comp == "==" && rhs == std::string("0")) {
+    } else if (comp == "==" && rhs == "0") {
         if (tok->str() == "!") {
             ret = tok->astOperand1();
             // handle (!(x!=0)) as (x==0)
@@ -374,9 +375,16 @@ bool isVariableDecl(const Token* tok)
         return false;
     if (var->nameToken() == tok)
         return true;
-    if (Token::Match(var->declEndToken(), "; %var%") && var->declEndToken()->next() == tok)
+    const Token * const varDeclEndToken = var->declEndToken();
+    if (Token::Match(varDeclEndToken, "; %var%") && varDeclEndToken->next() == tok)
         return true;
     return false;
+}
+
+bool isStlStringType(const Token* tok)
+{
+    return Token::Match(tok, "std :: string|wstring|u16string|u32string !!::") ||
+           (Token::simpleMatch(tok, "std :: basic_string <") && !Token::simpleMatch(tok->linkAt(3), "> ::"));
 }
 
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown)
@@ -568,7 +576,7 @@ static std::vector<const Token*> getParentMembers(const Token* tok)
         return {};
     if (!Token::simpleMatch(tok->astParent(), "."))
         return {tok};
-    const Token* parent = tok;
+    const Token* parent = tok->astParent();
     while (Token::simpleMatch(parent->astParent(), "."))
         parent = parent->astParent();
     std::vector<const Token*> result;
@@ -624,6 +632,89 @@ const Token* getParentLifetime(bool cpp, const Token* tok, const Library* librar
     }))
         return nullptr;
     return *it;
+}
+
+static bool isInConstructorList(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!astIsRHS(tok))
+        return false;
+    const Token* parent = tok->astParent();
+    if (!Token::Match(parent, "{|("))
+        return false;
+    if (!Token::Match(parent->previous(), "%var% {|("))
+        return false;
+    if (!parent->astOperand1() || !parent->astOperand2())
+        return false;
+    do {
+        parent = parent->astParent();
+    } while (Token::simpleMatch(parent, ","));
+    return Token::simpleMatch(parent, ":") && !Token::simpleMatch(parent->astParent(), "?");
+}
+
+std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* settings, const Token** parent)
+{
+    if (!tok)
+        return {};
+    if (!tok->astParent())
+        return {};
+    if (isInConstructorList(tok)) {
+        if (parent)
+            *parent = tok->astParent()->astOperand1();
+        if (tok->astParent()->astOperand1()->valueType())
+            return {*tok->astParent()->astOperand1()->valueType()};
+        return {};
+    } else if (Token::Match(tok->astParent(), "(|{|,")) {
+        int argn = -1;
+        const Token* ftok = getTokenArgumentFunction(tok, argn);
+        const Token* typeTok = nullptr;
+        if (ftok && argn >= 0) {
+            if (ftok->function()) {
+                std::vector<ValueType> result;
+                const Token* nameTok = nullptr;
+                for (const Variable* var : getArgumentVars(ftok, argn)) {
+                    if (!var)
+                        continue;
+                    if (!var->valueType())
+                        continue;
+                    nameTok = var->nameToken();
+                    result.push_back(*var->valueType());
+                }
+                if (result.size() == 1 && nameTok && parent) {
+                    *parent = nameTok;
+                }
+                return result;
+            } else if (const Type* t = Token::typeOf(ftok, &typeTok)) {
+                if (astIsPointer(typeTok))
+                    return {*typeTok->valueType()};
+                const Scope* scope = t->classScope;
+                // Check for aggregate constructors
+                if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
+                    (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) < scope->varlist.size()) {
+                    assert(argn < scope->varlist.size());
+                    auto it = std::next(scope->varlist.begin(), argn);
+                    if (it->valueType())
+                        return {*it->valueType()};
+                }
+            }
+        }
+    }
+    if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
+        astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
+        const Token* contTok = tok->astParent()->tokAt(-2)->astOperand1();
+        const ValueType* vtCont = contTok->valueType();
+        if (!vtCont->containerTypeToken)
+            return {};
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings, true); // TODO: set isCpp
+        return {std::move(vtParent)};
+    }
+    if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
+        *parent = tok->astParent();
+    }
+    if (tok->astParent()->valueType())
+        return {*tok->astParent()->valueType()};
+    return {};
 }
 
 bool astIsLHS(const Token* tok)
@@ -878,7 +969,7 @@ bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
                                 [&](const Token* aliasTok) {
                     return aliasTok->exprId() == childTok->exprId();
                 })) {
-                    if (val.isInconclusive() && inconclusive) { // NOLINT
+                    if (val.isInconclusive() && inconclusive != nullptr) {
                         value = &val;
                     } else {
                         return true;
@@ -945,7 +1036,7 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
         return false;
     } else if (onVar && expr->variable()) {
         const Variable* var = expr->variable();
-        return (var->isPrivate() || var->isPublic() || var->isProtected());
+        return ((var->isPrivate() || var->isPublic() || var->isProtected()) && !var->isStatic());
     }
     if (Token::simpleMatch(expr, "."))
         return exprDependsOnThis(expr->astOperand1(), onVar, depth);
@@ -1045,10 +1136,10 @@ static void followVariableExpressionError(const Token *tok1, const Token *tok2, 
     ErrorPathItem item = std::make_pair(tok2, "'" + tok1->str() + "' is assigned value '" + tok2->expressionString() + "' here.");
     if (std::find(errors->begin(), errors->end(), item) != errors->end())
         return;
-    errors->push_back(item);
+    errors->push_back(std::move(item));
 }
 
-std::vector<ReferenceToken> followAllReferences(const Token* tok,
+SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                                                 bool temporary,
                                                 bool inconclusive,
                                                 ErrorPath errors,
@@ -1059,55 +1150,71 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
             return x.token < y.token;
         }
     };
+    SmallVector<ReferenceToken> refs_result;
     if (!tok)
-        return std::vector<ReferenceToken> {};
-    if (depth < 0)
-        return {{tok, std::move(errors)}};
+        return refs_result;
+    if (depth < 0) {
+        refs_result.push_back({tok, std::move(errors)});
+        return refs_result;
+    }
     const Variable *var = tok->variable();
     if (var && var->declarationId() == tok->varId()) {
         if (var->nameToken() == tok || isStructuredBindingVariable(var)) {
-            return {{tok, std::move(errors)}};
+            refs_result.push_back({tok, std::move(errors)});
+            return refs_result;
         } else if (var->isReference() || var->isRValueReference()) {
-            if (!var->declEndToken())
-                return {{tok, std::move(errors)}};
+            const Token * const varDeclEndToken = var->declEndToken();
+            if (!varDeclEndToken) {
+                refs_result.push_back({tok, std::move(errors)});
+                return refs_result;
+            }
             if (var->isArgument()) {
-                errors.emplace_back(var->declEndToken(), "Passed to reference.");
-                return {{tok, std::move(errors)}};
-            } else if (Token::simpleMatch(var->declEndToken(), "=")) {
-                if (astHasToken(var->declEndToken(), tok))
-                    return std::vector<ReferenceToken>{};
-                errors.emplace_back(var->declEndToken(), "Assigned to reference.");
-                const Token *vartok = var->declEndToken()->astOperand2();
+                errors.emplace_back(varDeclEndToken, "Passed to reference.");
+                refs_result.push_back({tok, std::move(errors)});
+                return refs_result;
+            } else if (Token::simpleMatch(varDeclEndToken, "=")) {
+                if (astHasToken(varDeclEndToken, tok))
+                    return refs_result;
+                errors.emplace_back(varDeclEndToken, "Assigned to reference.");
+                const Token *vartok = varDeclEndToken->astOperand2();
                 if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) &&
-                                      (var->isConst() || var->isRValueReference())))
-                    return {{tok, std::move(errors)}};
+                                      (var->isConst() || var->isRValueReference()))) {
+                    refs_result.push_back({tok, std::move(errors)});
+                    return refs_result;
+                }
                 if (vartok)
                     return followAllReferences(vartok, temporary, inconclusive, std::move(errors), depth - 1);
             } else {
-                return {{tok, std::move(errors)}};
+                refs_result.push_back({tok, std::move(errors)});
+                return refs_result;
             }
         }
     } else if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) {
         std::set<ReferenceToken, ReferenceTokenLess> result;
         const Token* tok2 = tok->astOperand2();
 
-        std::vector<ReferenceToken> refs;
-        refs = followAllReferences(tok2->astOperand1(), temporary, inconclusive, errors, depth - 1);
+        auto refs = followAllReferences(tok2->astOperand1(), temporary, inconclusive, errors, depth - 1);
         result.insert(refs.begin(), refs.end());
         refs = followAllReferences(tok2->astOperand2(), temporary, inconclusive, errors, depth - 1);
         result.insert(refs.begin(), refs.end());
 
-        if (!inconclusive && result.size() != 1)
-            return {{tok, std::move(errors)}};
+        if (!inconclusive && result.size() != 1) {
+            refs_result.push_back({tok, std::move(errors)});
+            return refs_result;
+        }
 
-        if (!result.empty())
-            return std::vector<ReferenceToken>(result.begin(), result.end());
+        if (!result.empty()) {
+            refs_result.insert(refs_result.end(), result.begin(), result.end());
+            return refs_result;
+        }
 
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
         if (f) {
-            if (!Function::returnsReference(f))
-                return {{tok, std::move(errors)}};
+            if (!Function::returnsReference(f)) {
+                refs_result.push_back({tok, std::move(errors)});
+                return refs_result;
+            }
             std::set<ReferenceToken, ReferenceTokenLess> result;
             std::vector<const Token*> returns = Function::findReturns(f);
             for (const Token* returnTok : returns) {
@@ -1116,39 +1223,50 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
                 for (const ReferenceToken& rt :
                      followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
                     const Variable* argvar = rt.token->variable();
-                    if (!argvar)
-                        return {{tok, std::move(errors)}};
+                    if (!argvar) {
+                        refs_result.push_back({tok, std::move(errors)});
+                        return refs_result;
+                    }
                     if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
                         int n = getArgumentPos(argvar, f);
-                        if (n < 0)
-                            return {{tok, std::move(errors)}};
+                        if (n < 0) {
+                            refs_result.push_back({tok, std::move(errors)});
+                            return refs_result;
+                        }
                         std::vector<const Token*> args = getArguments(tok->previous());
-                        if (n >= args.size())
-                            return {{tok, std::move(errors)}};
+                        if (n >= args.size()) {
+                            refs_result.push_back({tok, std::move(errors)});
+                            return refs_result;
+                        }
                         const Token* argTok = args[n];
                         ErrorPath er = errors;
                         er.emplace_back(returnTok, "Return reference.");
                         er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                        std::vector<ReferenceToken> refs =
+                        auto refs =
                             followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
                         result.insert(refs.begin(), refs.end());
-                        if (!inconclusive && result.size() > 1)
-                            return {{tok, std::move(errors)}};
+                        if (!inconclusive && result.size() > 1) {
+                            refs_result.push_back({tok, std::move(errors)});
+                            return refs_result;
+                        }
                     }
                 }
             }
-            if (!result.empty())
-                return std::vector<ReferenceToken>(result.begin(), result.end());
+            if (!result.empty()) {
+                refs_result.insert(refs_result.end(), result.begin(), result.end());
+                return refs_result;
+            }
         }
     }
-    return {{tok, std::move(errors)}};
+    refs_result.push_back({tok, std::move(errors)});
+    return refs_result;
 }
 
 const Token* followReferences(const Token* tok, ErrorPath* errors)
 {
     if (!tok)
         return nullptr;
-    std::vector<ReferenceToken> refs = followAllReferences(tok, true, false);
+    auto refs = followAllReferences(tok, true, false);
     if (refs.size() == 1) {
         if (errors)
             *errors = refs.front().errors;
@@ -1160,13 +1278,15 @@ const Token* followReferences(const Token* tok, ErrorPath* errors)
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 {
     ValueFlow::Value v1 = getLifetimeObjValue(tok1);
+    if (!v1.isLifetimeValue())
+        return false;
     ValueFlow::Value v2 = getLifetimeObjValue(tok2);
-    if (!v1.isLifetimeValue() || !v2.isLifetimeValue())
+    if (!v2.isLifetimeValue())
         return false;
     return v1.tokvalue == v2.tokvalue;
 }
 
-static bool compareKnownValue(const Token * const tok1, const Token * const tok2, std::function<bool(const ValueFlow::Value&, const ValueFlow::Value&, bool)> compare)
+static bool compareKnownValue(const Token * const tok1, const Token * const tok2, const std::function<bool(const ValueFlow::Value&, const ValueFlow::Value&, bool)> &compare)
 {
     static const auto isKnownFn = std::mem_fn(&ValueFlow::Value::isKnown);
 
@@ -1215,14 +1335,16 @@ static inline bool isSameConstantValue(bool macro, const Token* tok1, const Toke
         return false;
 
     auto adjustForCast = [](const Token* tok) {
-        if (Token::Match(tok->previous(), "%type% (|{") && tok->previous()->isStandardType() && tok->astOperand2())
+        if (tok->astOperand2() && Token::Match(tok->previous(), "%type% (|{") && tok->previous()->isStandardType())
             return tok->astOperand2();
         return tok;
     };
-    tok1 = adjustForCast(tok1);
-    tok2 = adjustForCast(tok2);
 
-    if (!tok1->isNumber() || !tok2->isNumber())
+    tok1 = adjustForCast(tok1);
+    if (!tok1->isNumber())
+        return false;
+    tok2 = adjustForCast(tok2);
+    if (!tok2->isNumber())
         return false;
 
     if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
@@ -1249,69 +1371,39 @@ static bool isForLoopCondition(const Token * const tok)
            parent->astParent()->astParent()->astOperand1()->str() == "for";
 }
 
-static bool isZeroConstant(const Token *tok)
-{
-    while (tok && tok->isCast())
-        tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
-    return Token::simpleMatch(tok, "0") && !tok->isExpandedMacro();
-}
-
-/**
- * Is token used a boolean (cast to a bool, or used as a condition somewhere)
- * @param tok the token to check
- * @param checkingParent true if we are checking a parent. This is used to know
- * what we are checking. For instance in `if (i == 2)`, isUsedAsBool("==") is
- * true whereas isUsedAsBool("i") is false, but it might call
- * isUsedAsBool_internal("==") which must not return true
- */
-static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
+bool isUsedAsBool(const Token* const tok)
 {
     if (!tok)
         return false;
-    const Token::Type type = tok->tokType();
-    if (type == Token::eBitOp || type == Token::eIncDecOp || (type == Token::eArithmeticalOp && !tok->isUnaryOp("*")))
-        // those operators don't return a bool
-        return false;
-    if (type == Token::eComparisonOp) {
-        if (!checkingParent)
-            // this operator returns a bool
-            return true;
-        if (Token::Match(tok, "==|!="))
-            return isZeroConstant(tok->astOperand1()) || isZeroConstant(tok->astOperand2());
-        return false;
-    }
-    if (type == Token::eLogicalOp)
-        return true;
     if (astIsBool(tok))
         return true;
-
-    const Token * const parent = tok->astParent();
+    if (Token::Match(tok, "!|&&|%oror%|%comp%"))
+        return true;
+    const Token* parent = tok->astParent();
     if (!parent)
         return false;
-    if (parent->str() == "(" && parent->astOperand2() == tok) {
-        if (Token::Match(parent->astOperand1(), "if|while"))
-            return true;
-
-        if (!parent->isCast()) { // casts are handled via the recursive call, as astIsBool will be true
-            // is it a call to a function ?
-            int argnr;
-            const Token *const func = getTokenArgumentFunction(tok, argnr);
-            if (!func || !func->function())
-                return false;
-            const Variable *var = func->function()->getArgumentVar(argnr);
-            return var && (var->getTypeName() == "bool");
-        }
-    } else if (isForLoopCondition(tok))
+    if (Token::Match(parent, "&&|!|%oror%"))
         return true;
-    else if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
+    if (parent->isCast())
+        return isUsedAsBool(parent);
+    if (parent->isUnaryOp("*"))
+        return isUsedAsBool(parent);
+    if (Token::Match(parent, "==|!=") && tok->astSibling()->hasKnownIntValue() &&
+        tok->astSibling()->values().front().intvalue == 0)
         return true;
-
-    return isUsedAsBool_internal(parent, true);
-}
-
-bool isUsedAsBool(const Token * const tok)
-{
-    return isUsedAsBool_internal(tok, false);
+    if (parent->str() == "(" && astIsRHS(tok) && Token::Match(parent->astOperand1(), "if|while"))
+        return true;
+    if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
+        return true;
+    if (isForLoopCondition(tok))
+        return true;
+    if (!Token::Match(parent, "%cop%")) {
+        std::vector<ValueType> vtParents = getParentValueTypes(tok);
+        return std::any_of(vtParents.begin(), vtParents.end(), [&](const ValueType& vt) {
+            return vt.pointer == 0 && vt.type == ValueType::BOOL;
+        });
+    }
+    return false;
 }
 
 static bool astIsBoolLike(const Token* tok)
@@ -1395,20 +1487,20 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                 value = &condTok->astOperand2()->values().front();
                 varTok1 = condTok->astOperand1();
             }
-            if (Token::simpleMatch(exprTok, "!"))
+            const bool exprIsNot = Token::simpleMatch(exprTok, "!");
+            if (exprIsNot)
                 varTok2 = exprTok->astOperand1();
             bool compare = false;
             if (value) {
-                if (value->intvalue == 0 && Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "==")) {
+                if (value->intvalue == 0 && exprIsNot && Token::simpleMatch(condTok, "==")) {
                     compare = true;
-                } else if (value->intvalue == 0 && !Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "!=")) {
+                } else if (value->intvalue == 0 && !exprIsNot && Token::simpleMatch(condTok, "!=")) {
                     compare = true;
-                } else if (value->intvalue != 0 && Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "!=")) {
+                } else if (value->intvalue != 0 && exprIsNot && Token::simpleMatch(condTok, "!=")) {
                     compare = true;
-                } else if (value->intvalue != 0 && !Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "==")) {
+                } else if (value->intvalue != 0 && !exprIsNot && Token::simpleMatch(condTok, "==")) {
                     compare = true;
                 }
-
             }
             if (compare && astIsBoolLike(varTok1) && astIsBoolLike(varTok2))
                 return isSameExpression(cpp, macro, varTok1, varTok2, library, pure, followVar, errors);
@@ -1551,6 +1643,9 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (!cond1 || !cond2)
         return false;
 
+    if (isSameExpression(cpp, true, cond1, cond2, library, pure, followVar, errors))
+        return false;
+
     if (!isNot && cond1->str() == "&&" && cond2->str() == "&&") {
         for (const Token* tok1: {
             cond1->astOperand1(), cond1->astOperand2()
@@ -1564,6 +1659,21 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
                 }
             }
         }
+    }
+
+    if (cond1->str() != cond2->str() && (cond1->str() == "||" || cond2->str() == "||")) {
+        const Token* orCond = nullptr;
+        const Token* otherCond = nullptr;
+        if (cond1->str() == "||") {
+            orCond = cond1;
+            otherCond = cond2;
+        }
+        if (cond2->str() == "||") {
+            orCond = cond2;
+            otherCond = cond1;
+        }
+        return isOppositeCond(isNot, cpp, orCond->astOperand1(), otherCond, library, pure, followVar, errors) &&
+               isOppositeCond(isNot, cpp, orCond->astOperand2(), otherCond, library, pure, followVar, errors);
     }
 
     if (cond1->str() == "!") {
@@ -1716,6 +1826,8 @@ static bool functionModifiesArguments(const Function* f)
 
 bool isConstFunctionCall(const Token* ftok, const Library& library)
 {
+    if (isSizeOfEtc(ftok))
+        return true;
     if (!Token::Match(ftok, "%name% ("))
         return false;
     if (const Function* f = ftok->function()) {
@@ -1857,22 +1969,21 @@ bool isUniqueExpression(const Token* tok)
         const Type * varType = var->type();
         // Iterate over the variables in scope and the parameters of the function if possible
         const Function * fun = scope->function;
-        const std::list<Variable>* setOfVars[] = {&scope->varlist, fun ? &fun->argumentList : nullptr};
 
-        for (const std::list<Variable>* vars:setOfVars) {
-            if (!vars)
-                continue;
-            bool other = std::any_of(vars->cbegin(), vars->cend(), [=](const Variable &v) {
-                if (varType)
-                    return v.type() && v.type()->name() == varType->name() && v.name() != var->name();
-                return v.isFloatingType() == var->isFloatingType() &&
-                v.isEnumType() == var->isEnumType() &&
-                v.isClass() == var->isClass() &&
-                v.isArray() == var->isArray() &&
-                v.isPointer() == var->isPointer() &&
-                v.name() != var->name();
-            });
-            if (other)
+        auto pred = [=](const Variable& v) {
+            if (varType)
+                return v.type() && v.type()->name() == varType->name() && v.name() != var->name();
+            return v.isFloatingType() == var->isFloatingType() &&
+                   v.isEnumType() == var->isEnumType() &&
+                   v.isClass() == var->isClass() &&
+                   v.isArray() == var->isArray() &&
+                   v.isPointer() == var->isPointer() &&
+                   v.name() != var->name();
+        };
+        if (std::any_of(scope->varlist.cbegin(), scope->varlist.cend(), pred))
+            return false;
+        if (fun) {
+            if (std::any_of(fun->argumentList.cbegin(), fun->argumentList.cend(), pred))
                 return false;
         }
     } else if (!isUniqueExpression(tok->astOperand1())) {
@@ -2126,20 +2237,21 @@ std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
         else
             return result;
     }
-    if (Token::Match(tok->previous(), "%type% (|{") || Token::simpleMatch(tok, "{") || tok->variable()) {
-        const bool constructor = Token::simpleMatch(tok, "{") || (tok->variable() && tok->variable()->nameToken() == tok);
+    if (tok->variable() || Token::simpleMatch(tok, "{") || Token::Match(tok->previous(), "%type% (|{")) {
         const Type* type = Token::typeOf(tok);
         if (!type)
             return result;
         const Scope* typeScope = type->classScope;
         if (!typeScope)
             return result;
+        const bool tokIsBrace = Token::simpleMatch(tok, "{");
         // Aggregate constructor
-        if (Token::simpleMatch(tok, "{") && typeScope->numConstructors == 0 && argnr < typeScope->varlist.size()) {
+        if (tokIsBrace && typeScope->numConstructors == 0 && argnr < typeScope->varlist.size()) {
             auto it = std::next(typeScope->varlist.begin(), argnr);
             return {&*it};
         }
         const int argCount = numberOfArguments(tok);
+        const bool constructor = tokIsBrace || (tok->variable() && tok->variable()->nameToken() == tok);
         for (const Function &function : typeScope->functionList) {
             if (function.argCount() < argCount)
                 continue;
@@ -2482,10 +2594,11 @@ static bool isExpressionChangedAt(const F& getExprTok,
             return true;
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
-        if (!getExprTok())
+        auto expr = getExprTok();
+        if (!expr)
             aliased = true;
         if (!aliased)
-            aliased = isAliasOf(tok, getExprTok());
+            aliased = isAliasOf(tok, expr);
         if (!aliased)
             return false;
         if (isVariableChanged(tok, 1, settings, cpp, depth))
@@ -2578,7 +2691,7 @@ bool isThisChanged(const Token* tok, int indirect, const Settings* settings, boo
     if ((Token::Match(tok->previous(), "%name% (") && !Token::simpleMatch(tok->astOperand1(), ".")) ||
         Token::Match(tok->tokAt(-3), "this . %name% (")) {
         if (tok->previous()->function()) {
-            return (!tok->previous()->function()->isConst());
+            return (!tok->previous()->function()->isConst() && !tok->previous()->function()->isStatic());
         } else if (!tok->previous()->isKeyword()) {
             return true;
         }
@@ -2768,35 +2881,37 @@ bool isCPPCast(const Token* tok)
     return tok && Token::simpleMatch(tok->previous(), "> (") && tok->astOperand2() && tok->astOperand1() && isCPPCastKeyword(tok->astOperand1());
 }
 
-bool isConstVarExpression(const Token *tok, const char* skipMatch)
+bool isConstVarExpression(const Token *tok, std::function<bool(const Token*)> skipPredicate)
 {
     if (!tok)
         return false;
     if (tok->str() == "?" && tok->astOperand2() && tok->astOperand2()->str() == ":") // ternary operator
         return isConstVarExpression(tok->astOperand2()->astOperand1()) && isConstVarExpression(tok->astOperand2()->astOperand2()); // left and right of ":"
-    if (skipMatch && Token::Match(tok, skipMatch))
+    if (skipPredicate && skipPredicate(tok))
         return false;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
     if (Token::Match(tok->previous(), "%name% (")) {
-        if (Token::simpleMatch(tok->astOperand1(), ".") && !isConstVarExpression(tok->astOperand1(), skipMatch))
+        if (Token::simpleMatch(tok->astOperand1(), ".") && !isConstVarExpression(tok->astOperand1(), skipPredicate))
             return false;
         std::vector<const Token *> args = getArguments(tok);
-        return std::all_of(args.begin(), args.end(), [&](const Token* t) {
-            return isConstVarExpression(t, skipMatch);
+        if (args.empty() && tok->previous()->function() && tok->previous()->function()->isConstexpr())
+            return true;
+        return !args.empty() && std::all_of(args.begin(), args.end(), [&](const Token* t) {
+            return isConstVarExpression(t, skipPredicate);
         });
     }
     if (isCPPCast(tok)) {
-        return isConstVarExpression(tok->astOperand2(), skipMatch);
+        return isConstVarExpression(tok->astOperand2(), skipPredicate);
     }
     if (Token::Match(tok, "( %type%"))
-        return isConstVarExpression(tok->astOperand1(), skipMatch);
+        return isConstVarExpression(tok->astOperand1(), skipPredicate);
     if (tok->str() == "::" && tok->hasKnownValue())
-        return isConstVarExpression(tok->astOperand2(), skipMatch);
+        return isConstVarExpression(tok->astOperand2(), skipPredicate);
     if (Token::Match(tok, "%cop%|[|.")) {
-        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1(), skipMatch))
+        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1(), skipPredicate))
             return false;
-        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2(), skipMatch))
+        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2(), skipPredicate))
             return false;
         return true;
     }
@@ -2807,6 +2922,60 @@ bool isConstVarExpression(const Token *tok, const char* skipMatch)
     if (tok->variable())
         return tok->variable()->isConst() && tok->variable()->nameToken() && tok->variable()->nameToken()->hasKnownValue();
     return false;
+}
+
+static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
+{
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+
+    int argnr;
+    const Token* ftok = getTokenArgumentFunction(tok, argnr);
+    if (!ftok)
+        return ExprUsage::None;
+    if (ftok->function()) {
+        std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
+        for (const Variable* arg : args) {
+            if (!arg)
+                continue;
+            if (arg->isReference())
+                return ExprUsage::PassedByReference;
+        }
+        if (!args.empty() && indirect == 0 && !addressOf)
+            return ExprUsage::Used;
+    } else {
+        const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
+        if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
+            return ExprUsage::Used;
+        bool hasIndirect = false;
+        const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
+        if (isuninitbad && (!addressOf || isnullbad))
+            return ExprUsage::Used;
+    }
+    return ExprUsage::Inconclusive;
+}
+
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
+{
+    if (indirect > 0 && tok->astParent()) {
+        if (Token::Match(tok->astParent(), "%assign%") && astIsRHS(tok))
+            return ExprUsage::NotUsed;
+        if (tok->astParent()->isConstOp())
+            return ExprUsage::NotUsed;
+        if (tok->astParent()->isCast())
+            return ExprUsage::NotUsed;
+    }
+    if (indirect == 0) {
+        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") &&
+            !tok->astParent()->isUnaryOp("&"))
+            return ExprUsage::Used;
+        if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok))
+            return ExprUsage::Used;
+        // Function call or index
+        if (Token::Match(tok->astParent(), "(|[") && !tok->astParent()->isCast() &&
+            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
+            return ExprUsage::Used;
+    }
+    return getFunctionUsage(tok, indirect, settings);
 }
 
 static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const Token* tok)
@@ -3346,9 +3515,9 @@ static bool hasVolatileCastOrVar(const Token *expr)
     bool ret = false;
     visitAstNodes(expr,
                   [&ret](const Token *tok) {
-        if (Token::simpleMatch(tok, "( volatile"))
+        if (tok->variable() && tok->variable()->isVolatile())
             ret = true;
-        else if (tok->variable() && tok->variable()->isVolatile())
+        else if (Token::simpleMatch(tok, "( volatile"))
             ret = true;
         return ret ? ChildrenToVisit::none : ChildrenToVisit::op1_and_op2;
     });

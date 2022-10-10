@@ -715,7 +715,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
-                     mSettings->library.detectContainer(i->typeStartToken(), /*iterator*/ false) ||
+                     mSettings->library.detectContainer(i->typeStartToken()) ||
                      i->isStlType())
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
@@ -1077,7 +1077,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
         // function
         else if (Token::Match(tok, "%name% (")) {
-            variables.read(tok->varId(), tok);
+            if (tok->varId() && !tok->function()) // operator()
+                variables.use(tok->varId(), tok);
+            else
+                variables.read(tok->varId(), tok);
             useFunctionArgs(tok->next()->astOperand2(), variables);
         } else if (Token::Match(tok, "std :: ref ( %var% )")) {
             variables.eraseAll(tok->tokAt(4)->varId());
@@ -1198,7 +1201,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (tok->str() == "=" && !(tok->valueType() && tok->valueType()->pointer) && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                 continue;
 
-            const bool isPointer = tok->valueType() && tok->valueType()->pointer;
+            const bool isPointer = tok->valueType() && (tok->valueType()->pointer || tok->valueType()->type == ValueType::SMART_POINTER);
 
             if (tok->isName()) {
                 if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
@@ -1264,6 +1267,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     case Library::TypeCheck::check:
                         break;
                     case Library::TypeCheck::suppress:
+                    case Library::TypeCheck::checkFiniteLifetime:
                         continue;
                     }
                 }
@@ -1333,9 +1337,11 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 }
             }
             // variable has not been written but has been modified
-            else if (usage._modified && !usage._write && !usage._allocateMemory && var && !var->isStlType())
+            else if (usage._modified && !usage._write && !usage._allocateMemory && var && !var->isStlType()) {
+                if (var->isStatic()) // static variables are initialized by default
+                    continue;
                 unassignedVariableError(usage._var->nameToken(), varname);
-
+            }
             // variable has been read but not written
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
                 unassignedVariableError(usage._var->nameToken(), varname);
@@ -1359,6 +1365,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         case Library::TypeCheck::check:
                             break;
                         case Library::TypeCheck::suppress:
+                        case Library::TypeCheck::checkFiniteLifetime:
                             error = false;
                         }
                     }
@@ -1459,6 +1466,9 @@ void CheckUnusedVar::checkStructMemberUsage()
                         addrTok = addrTok->next();
                 } while (addrTok);
             }
+
+            if (bailout)
+                break;
         }
         if (bailout)
             continue;

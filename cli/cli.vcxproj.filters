@@ -26,7 +26,16 @@
     <ClInclude Include="cppcheckexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="cppcheckexecutorseh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="cppcheckexecutorsig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="filelister.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stacktrace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -40,10 +49,19 @@
     <ClCompile Include="cppcheckexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="cppcheckexecutorseh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cppcheckexecutorsig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="filelister.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cmdlineparser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stacktrace.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -24,7 +24,6 @@
 #include "config.h"
 #include "mathlib.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstdlib>
 #include <functional>
@@ -83,8 +82,8 @@ namespace ValueFlow {
     };
     class CPPCHECKLIB Value {
     public:
-        typedef std::pair<const Token *, std::string> ErrorPathItem;
-        typedef std::list<ErrorPathItem> ErrorPath;
+        using ErrorPathItem = std::pair<const Token *, std::string>;
+        using ErrorPath = std::list<ErrorPathItem>;
         enum class Bound { Upper, Lower, Point };
 
         explicit Value(long long val = 0, Bound b = Bound::Point)
@@ -93,7 +92,6 @@ namespace ValueFlow {
             intvalue(val),
             tokvalue(nullptr),
             floatValue(0.0),
-            moveKind(MoveKind::NonMovedVariable),
             varvalue(val),
             condition(nullptr),
             varId(0U),
@@ -102,6 +100,7 @@ namespace ValueFlow {
             macro(false),
             defaultArg(false),
             indirect(0),
+            moveKind(MoveKind::NonMovedVariable),
             path(0),
             wideintvalue(val),
             subexpressions(),
@@ -331,9 +330,6 @@ namespace ValueFlow {
         /** float value */
         double floatValue;
 
-        /** kind of moved  */
-        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
-
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
 
@@ -360,6 +356,9 @@ namespace ValueFlow {
         bool defaultArg;
 
         int indirect;
+
+        /** kind of moved  */
+        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
 
         /** Path id */
         MathLib::bigint path;
@@ -461,7 +460,7 @@ namespace ValueFlow {
 
     const ValueFlow::Value* findValue(const std::list<ValueFlow::Value>& values,
                                       const Settings* settings,
-                                      std::function<bool(const ValueFlow::Value&)> pred);
+                                      const std::function<bool(const ValueFlow::Value&)> &pred);
 
     std::vector<ValueFlow::Value> isOutOfBounds(const Value& size, const Token* indexTok, bool possible = true);
 }
@@ -472,18 +471,18 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr
 
 struct LifetimeToken {
     const Token* token;
-    bool addressOf;
     ValueFlow::Value::ErrorPath errorPath;
+    bool addressOf;
     bool inconclusive;
 
-    LifetimeToken() : token(nullptr), addressOf(false), errorPath(), inconclusive(false) {}
+    LifetimeToken() : token(nullptr), errorPath(), addressOf(false), inconclusive(false) {}
 
     LifetimeToken(const Token* token, ValueFlow::Value::ErrorPath errorPath)
-        : token(token), addressOf(false), errorPath(std::move(errorPath)), inconclusive(false)
+        : token(token), errorPath(std::move(errorPath)), addressOf(false), inconclusive(false)
     {}
 
     LifetimeToken(const Token* token, bool addressOf, ValueFlow::Value::ErrorPath errorPath)
-        : token(token), addressOf(addressOf), errorPath(std::move(errorPath)), inconclusive(false)
+        : token(token), errorPath(std::move(errorPath)), addressOf(addressOf), inconclusive(false)
     {}
 
     static std::vector<LifetimeToken> setAddressOf(std::vector<LifetimeToken> v, bool b) {
@@ -502,7 +501,7 @@ struct LifetimeToken {
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate);
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value);
 
-ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok);
+ValueFlow::Value inferCondition(const std::string& op, MathLib::bigint val, const Token* varTok);
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
 CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
@@ -534,5 +533,7 @@ CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
                                                                MathLib::bigint path = 0);
 
 const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr, bool smallest = true);
+
+void combineValueProperties(const ValueFlow::Value& value1, const ValueFlow::Value& value2, ValueFlow::Value* result);
 
 #endif // valueflowH

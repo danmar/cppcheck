@@ -24,7 +24,7 @@
 #include <QString>
 #include <QTest>
 
-void TestFileList::addFile()
+void TestFileList::addFile() const
 {
     // Accepted extensions: *.cpp, *.cxx, *.cc, *.c, *.c++, *.txx, *.tpp, *.ipp, *.ixx"
     FileList list;
@@ -41,7 +41,7 @@ void TestFileList::addFile()
     QCOMPARE(files.size(), 9);
 }
 
-void TestFileList::addPathList()
+void TestFileList::addPathList() const
 {
     // Accepted extensions: *.cpp, *.cxx, *.cc, *.c, *.c++, *.txx, *.tpp, *.ipp, *.ixx"
     QStringList paths;
@@ -60,7 +60,7 @@ void TestFileList::addPathList()
     QCOMPARE(files.size(), 9);
 }
 
-void TestFileList::addFile_notexist()
+void TestFileList::addFile_notexist() const
 {
     FileList list;
     list.addFile(QString(SRCDIR) + "/../data/files/bar1.cpp");
@@ -68,7 +68,7 @@ void TestFileList::addFile_notexist()
     QCOMPARE(files.size(), 0);
 }
 
-void TestFileList::addFile_unknown()
+void TestFileList::addFile_unknown() const
 {
     FileList list;
     list.addFile(QString(SRCDIR) + "/../data/files/bar1");
@@ -77,7 +77,7 @@ void TestFileList::addFile_unknown()
     QCOMPARE(files.size(), 0);
 }
 
-void TestFileList::addDirectory()
+void TestFileList::addDirectory() const
 {
     FileList list;
     list.addDirectory(QString(SRCDIR) + "/../data/files");
@@ -85,7 +85,7 @@ void TestFileList::addDirectory()
     QCOMPARE(files.size(), 7);
 }
 
-void TestFileList::addDirectory_recursive()
+void TestFileList::addDirectory_recursive() const
 {
     FileList list;
     list.addDirectory(QString(SRCDIR) + "/../data/files", true);
@@ -98,7 +98,7 @@ void TestFileList::addDirectory_recursive()
     QVERIFY(files.contains(base + "/dir2/foo1.cpp"));
 }
 
-void TestFileList::filterFiles()
+void TestFileList::filterFiles() const
 {
     FileList list;
     QStringList filters;
@@ -121,7 +121,7 @@ void TestFileList::filterFiles()
     QVERIFY(!files.contains(base + "/foo3.cpp"));
 }
 
-void TestFileList::filterFiles2()
+void TestFileList::filterFiles2() const
 {
     FileList list;
     QStringList filters;
@@ -136,7 +136,7 @@ void TestFileList::filterFiles2()
     QVERIFY(!files.contains(base + "/foo3.cpp"));
 }
 
-void TestFileList::filterFiles3()
+void TestFileList::filterFiles3() const
 {
     FileList list;
     QStringList filters;
@@ -153,7 +153,7 @@ void TestFileList::filterFiles3()
     QVERIFY(!files.contains(base + "/dir2/foo1.cpp"));
 }
 
-void TestFileList::filterFiles4()
+void TestFileList::filterFiles4() const
 {
     FileList list;
     QStringList filters;

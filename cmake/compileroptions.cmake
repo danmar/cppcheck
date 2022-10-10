@@ -20,8 +20,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Weverything)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
         # "Release" uses -O3 by default
         add_compile_options(-O2)
     endif()
@@ -45,16 +45,20 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     add_compile_options(-Wno-multichar)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # use pipes instead of temporary files - greatly reduces I/O usage
+    add_compile_options(-pipe)
+
     add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14)
-        if (CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
+        # TODO: verify this regression still exists in clang-15
+        if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
             # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
-            add_compile_options(-mllvm -inline-deferral)
+            add_compile_options_safe(-mllvm -inline-deferral)
         endif()
 
         # use force DWARF 4 debug format since not all tools might be able to handle DWARF 5 yet - e.g. valgrind on ubuntu 20.04
@@ -65,7 +69,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
    # TODO: fix and enable these warnings - or move to suppression list below
    add_compile_options_safe(-Wno-deprecated-copy-dtor)
-   add_compile_options_safe(-Wno-non-virtual-dtor)
    add_compile_options_safe(-Wno-inconsistent-missing-destructor-override) # caused by Qt moc code
    add_compile_options_safe(-Wno-unused-exception-parameter)
    add_compile_options_safe(-Wno-old-style-cast)
@@ -76,7 +79,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-covered-switch-default)
    add_compile_options_safe(-Wno-shorten-64-to-32)
    add_compile_options_safe(-Wno-zero-as-null-pointer-constant) # TODO: enable when warnings are fixed in in simplecpp and tinyxml2
-   add_compile_options_safe(-Wno-format-nonliteral)
    add_compile_options_safe(-Wno-implicit-int-conversion)
    add_compile_options_safe(-Wno-double-promotion)
    add_compile_options_safe(-Wno-shadow-field)
@@ -87,15 +89,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-float-conversion)
    add_compile_options_safe(-Wno-enum-enum-conversion)
    add_compile_options_safe(-Wno-date-time)
-   add_compile_options_safe(-Wno-conditional-uninitialized)
    add_compile_options_safe(-Wno-suggest-override) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-suggest-destructor-override) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-extra-semi-stmt) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-implicitly-unsigned-literal)
    add_compile_options_safe(-Wno-tautological-type-limit-compare)
-   add_compile_options_safe(-Wno-unused-member-function)
    add_compile_options(-Wno-disabled-macro-expansion)
-   add_compile_options_safe(-Wno-bitwise-instead-of-logical) # TODO: fix these
+   add_compile_options_safe(-Wno-bitwise-instead-of-logical)
 
    # warnings we are not interested in
    add_compile_options(-Wno-four-char-constants)
@@ -106,7 +106,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-return-std-move-in-c++11)
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
-      message(FATAL_ERROR "Do not use clang for generate code coverage. Use gcc.")
+      message(FATAL_ERROR "Do not use clang to generate code coverage. Use GCC instead.")
    endif()
 endif()
 
@@ -124,7 +124,7 @@ if (MSVC)
     # No Whole Program Optimization
 
     # C/C++ - Optimization
-    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         add_compile_options(/O2) # Optimization - Maximum Optimization (Favor Speed)
         add_compile_options(/Ob2) # Inline Function Expansion - Any Suitable
         add_compile_options(/Oi) # Enable Intrinsic Functions
@@ -135,7 +135,7 @@ if (MSVC)
     endif()
 
     # C/C++ - Code Generation
-    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         add_compile_options(/GF) # Enable String Pooling
         add_compile_options(/MD) # Runtime Library - Multi-threaded DLL
         add_compile_options(/GS-) # Disable Security Check
@@ -172,7 +172,7 @@ if (MSVC)
     add_compile_options(/Zc:throwingNew /Zc:__cplusplus) # Additional Options
 
     # Linker - General
-    if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_link_options(/INCREMENTAL) # Enable Incremental Linking - Yes
     endif()
     add_link_options(/NOLOGO) # SUppress Startup Banner - Yes
@@ -191,13 +191,13 @@ if (MSVC)
     add_link_options(/OPT:ICF) # Enable COMDAT Folding - Yes
 
     # Linker - Advanced
-    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         add_link_options(/RELEASE) # Set Checksum - Yes
     endif()
 endif()
 
 # TODO: check if this can be enabled again - also done in Makefile
-if (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
     CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     add_compile_options(-U_GLIBCXX_DEBUG)

@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cctype>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 std::ostringstream errout;
@@ -175,8 +176,8 @@ std::string TestFixture::deleteLineNumber(const std::string &message)
     while ((pos = result.find(':', pos)) != std::string::npos) {
         // get number
         if (pos + 1 == result.find_first_of("0123456789", pos + 1)) {
-            std::string::size_type after;
-            if ((after = result.find_first_not_of("0123456789", pos + 1)) != std::string::npos
+            std::string::size_type after = result.find_first_not_of("0123456789", pos + 1);
+            if (after != std::string::npos
                 && result.at(after) == ':') {
                 // erase NUMBER
                 result.erase(pos + 1, after - pos - 1);
@@ -373,7 +374,7 @@ std::size_t TestFixture::runTests(const options& args)
     return fails_counter;
 }
 
-void TestFixture::reportOut(const std::string & outmsg, Color)
+void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
 {
     output << outmsg << std::endl;
 }

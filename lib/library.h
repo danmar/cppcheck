@@ -283,7 +283,8 @@ public:
         static Action actionFrom(const std::string& actionName);
     };
     std::map<std::string, Container> containers;
-    const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
+    const Container* detectContainer(const Token* typeStart) const;
+    const Container* detectIterator(const Token* typeStart) const;
     const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
 
     class ArgumentChecks {
@@ -478,7 +479,7 @@ public:
     std::vector<std::string> defines; // to provide some library defines
 
     struct SmartPointer {
-        std::string name = "";
+        std::string name;
         bool unique = false;
     };
 
@@ -553,8 +554,12 @@ public:
     static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback=emptyString);
 
     /** Suppress/check a type */
-    enum class TypeCheck { def, check, suppress };
-    TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
+    enum class TypeCheck { def,
+                           check,
+                           suppress,
+                           checkFiniteLifetime, // (unusedvar) object has side effects, but immediate destruction is wrong
+    };
+    TypeCheck getTypeCheck(std::string check, std::string typeName) const;
 
 private:
     // load a <function> xml node
@@ -562,11 +567,11 @@ private:
 
     class ExportedFunctions {
     public:
-        void addPrefix(const std::string& prefix) {
-            mPrefixes.insert(prefix);
+        void addPrefix(std::string prefix) {
+            mPrefixes.insert(std::move(prefix));
         }
-        void addSuffix(const std::string& suffix) {
-            mSuffixes.insert(suffix);
+        void addSuffix(std::string suffix) {
+            mSuffixes.insert(std::move(suffix));
         }
         bool isPrefix(const std::string& prefix) const {
             return (mPrefixes.find(prefix) != mPrefixes.end());
@@ -647,6 +652,9 @@ private:
         const std::map<std::string, AllocFunc>::const_iterator it = data.find(name);
         return (it == data.end()) ? nullptr : &it->second;
     }
+
+    enum DetectContainer { ContainerOnly, IteratorOnly, Both };
+    const Library::Container* detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator = nullptr) const;
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);

@@ -809,7 +809,7 @@ void CheckStl::mismatchingContainers()
                 if (!i)
                     continue;
                 const Token * const argTok = args[argnr - 1];
-                containers[i->container].push_back({argTok, i});
+                containers[i->container].emplace_back(ArgIteratorInfo{argTok, i});
             }
 
             // Lambda is used to escape the nested loops
@@ -1002,7 +1002,7 @@ struct InvalidContainerAnalyzer {
                 ep.emplace_front(ftok,
                                  "After calling '" + ftok->expressionString() +
                                  "', iterators or references to the container's data may be invalid .");
-                result.push_back(Info::Reference{tok, ep, ftok});
+                result.emplace_back(Info::Reference{tok, ep, ftok});
             }
         }
         return result;
@@ -1068,6 +1068,21 @@ static const ValueFlow::Value* getInnerLifetime(const Token* tok,
     return nullptr;
 }
 
+static const Token* endOfExpression(const Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    const Token* parent = tok->astParent();
+    while (Token::simpleMatch(parent, "."))
+        parent = parent->astParent();
+    if (!parent)
+        return tok->next();
+    const Token* endToken = nextAfterAstRightmostLeaf(parent);
+    if (!endToken)
+        return parent->next();
+    return endToken;
+}
+
 void CheckStl::invalidContainer()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1120,9 +1135,7 @@ void CheckStl::invalidContainer()
                     }
                     if (Token::Match(assignExpr, "%assign%") && Token::Match(assignExpr->astOperand1(), "%var%"))
                         skipVarIds.insert(assignExpr->astOperand1()->varId());
-                    const Token* endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
-                    if (!endToken)
-                        endToken = tok->next();
+                    const Token* endToken = endOfExpression(tok);
                     const ValueFlow::Value* v = nullptr;
                     ErrorPath errorPath;
                     PathAnalysis::Info info =
@@ -1408,7 +1421,7 @@ void CheckStl::stlBoundaries()
         if (!var || !var->scope() || !var->scope()->isExecutable())
             continue;
 
-        const Library::Container* container = mSettings->library.detectContainer(var->typeStartToken(), true);
+        const Library::Container* container = mSettings->library.detectIterator(var->typeStartToken());
         if (!container || container->opLessAllowed)
             continue;
 
@@ -1923,6 +1936,16 @@ void CheckStl::string_c_str()
         }
     }
 
+    auto isString = [](const Token* str) -> bool {
+        while (Token::Match(str, "::|."))
+            str = str->astOperand2();
+        if (Token::Match(str, "(|[") && !(str->valueType() && str->valueType()->type == ValueType::ITERATOR))
+            str = str->previous();
+        return str && ((str->variable() && str->variable()->isStlStringType()) || // variable
+                       (str->function() && isStlStringType(str->function()->retDef)) || // function returning string
+                       (str->valueType() && str->valueType()->type == ValueType::ITERATOR && isStlStringType(str->valueType()->containerTypeToken))); // iterator pointing to string
+    };
+
     // Try to detect common problems when using string::c_str()
     for (const Scope &scope : symbolDatabase->scopeList) {
         if (scope.type != Scope::eFunction || !scope.function)
@@ -1954,7 +1977,7 @@ void CheckStl::string_c_str()
                     if (var->isPointer())
                         string_c_strError(tok);
                 } else if (printPerformance && Token::Match(tok->tokAt(2), "%var% . c_str|data ( ) ;")) {
-                    if (tok->variable()->isStlStringType() && tok->tokAt(2)->variable()->isStlStringType())
+                    if (tok->variable() && tok->variable()->isStlStringType() && tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType())
                         string_c_strAssignment(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
@@ -1978,23 +2001,31 @@ void CheckStl::string_c_str()
                     else
                         break;
                     if (tok2 && Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
-                        const Variable* var = tok2->tokAt(-5)->variable();
-                        if (var && var->isStlStringType()) {
+                        if (isString(tok2->tokAt(-4)->astOperand1())) {
                             string_c_strParam(tok, i->second);
                         } else if (Token::Match(tok2->tokAt(-9), "%name% . str ( )")) { // Check ss.str().c_str() as parameter
                             const Variable* ssVar = tok2->tokAt(-9)->variable();
                             if (ssVar && ssVar->isStlType(stl_string_stream))
                                 string_c_strParam(tok, i->second);
                         }
-
                     }
                 }
-            } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") && tok->variable()->isStlStringType() && tok->tokAt(2)->variable()->isStlStringType()) {
+            } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") &&
+                       tok->variable() && tok->variable()->isStlStringType() && tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType()) {
                 string_c_strConstructor(tok);
             } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER &&
-                       ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable()->isStlStringType()) ||
-                        (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable()->isStlStringType()))) {
+                       ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable() && tok->previous()->variable()->isStlStringType()) ||
+                        (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable() && tok->tokAt(-5)->variable()->isStlStringType()))) {
                 string_c_strConcat(tok);
+            } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::Match(tok->astOperand2()->astOperand1(), ". c_str|data ( )")) {
+                const Token* str = tok->astOperand2()->astOperand1()->astOperand1();
+                if (isString(str)) {
+                    const Token* strm = tok;
+                    while (Token::simpleMatch(strm, "<<"))
+                        strm = strm->astOperand1();
+                    if (strm && strm->variable() && strm->variable()->isStlType())
+                        string_c_strStream(tok);
+                }
             }
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
@@ -2104,20 +2135,30 @@ void CheckStl::string_c_strParam(const Token* tok, nonneg int number)
 
 void CheckStl::string_c_strConstructor(const Token* tok)
 {
-    std::string msg = "Constructing a std::string from the result of c_str() is slow and redundant.\nSolve that by directly passing the string.";
+    std::string msg = "Constructing a std::string from the result of c_str() is slow and redundant.\n"
+                      "Constructing a std::string from const char* requires a call to strlen(). Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrConstructor", msg, CWE704, Certainty::normal);
 }
 
 void CheckStl::string_c_strAssignment(const Token* tok)
 {
-    std::string msg = "Assigning the result of c_str() to a std::string is slow and redundant.\nSolve that by directly assigning the string.";
+    std::string msg = "Assigning the result of c_str() to a std::string is slow and redundant.\n"
+                      "Assigning a const char* to a std::string requires a call to strlen(). Solve that by directly assigning the string.";
     reportError(tok, Severity::performance, "stlcstrAssignment", msg, CWE704, Certainty::normal);
 }
 
 void CheckStl::string_c_strConcat(const Token* tok)
 {
-    std::string msg = "Concatenating the result of c_str() and a std::string is slow and redundant.\nSolve that by directly concatenating the strings.";
+    std::string msg = "Concatenating the result of c_str() and a std::string is slow and redundant.\n"
+                      "Concatenating a const char* with a std::string requires a call to strlen(). Solve that by directly concatenating the strings.";
     reportError(tok, Severity::performance, "stlcstrConcat", msg, CWE704, Certainty::normal);
+}
+
+void CheckStl::string_c_strStream(const Token* tok)
+{
+    std::string msg = "Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "Passing a const char* to a stream requires a call to strlen(). Solve that by directly passing the string.";
+    reportError(tok, Severity::performance, "stlcstrStream", msg, CWE704, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -2156,21 +2197,38 @@ void CheckStl::uselessCalls()
                 if (!var || !var->isStlType())
                     continue;
                 uselessCallsSwapError(tok, tok->str());
-            } else if (printPerformance && Token::Match(tok, "%var% . substr (") &&
-                       tok->variable() && tok->variable()->isStlStringType()) {
-                if (Token::Match(tok->tokAt(4), "0| )")) {
-                    uselessCallsSubstrError(tok, false);
-                } else if (tok->strAt(4) == "0" && tok->linkAt(3)->strAt(-1) == "npos") {
-                    if (!tok->linkAt(3)->previous()->variable()) // Make sure that its no variable
-                        uselessCallsSubstrError(tok, false);
-                } else if (Token::simpleMatch(tok->linkAt(3)->tokAt(-2), ", 0 )"))
-                    uselessCallsSubstrError(tok, true);
+            } else if (printPerformance && Token::Match(tok, "%var% . substr (") && tok->variable() && tok->variable()->isStlStringType()) {
+                const Token* funcTok = tok->tokAt(3);
+                const std::vector<const Token*> args = getArguments(funcTok);
+                if (Token::Match(tok->tokAt(-2), "%var% =") && tok->varId() == tok->tokAt(-2)->varId() &&
+                    !args.empty() && args[0]->hasKnownIntValue() && args[0]->getKnownIntValue() == 0) {
+                    uselessCallsSubstrError(tok, Token::simpleMatch(funcTok->astParent(), "=") ? SubstrErrorType::PREFIX : SubstrErrorType::PREFIX_CONCAT);
+                } else if (args.empty() || (args[0]->hasKnownIntValue() && args[0]->getKnownIntValue() == 0 &&
+                                            (args.size() == 1 || (args.size() == 2 && tok->linkAt(3)->strAt(-1) == "npos" && !tok->linkAt(3)->previous()->variable())))) {
+                    uselessCallsSubstrError(tok, SubstrErrorType::COPY);
+                } else if (args.size() == 2 && args[1]->hasKnownIntValue() && args[1]->getKnownIntValue() == 0) {
+                    uselessCallsSubstrError(tok, SubstrErrorType::EMPTY);
+                }
             } else if (printWarning && Token::Match(tok, "[{};] %var% . empty ( ) ;") &&
                        !tok->tokAt(4)->astParent() &&
                        tok->next()->variable() && tok->next()->variable()->isStlType(stl_containers_with_empty_and_clear))
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
                 uselessCallsRemoveError(tok->next(), tok->strAt(3));
+            else if (printPerformance && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
+                if (Token::Match(tok, "%var% = { %var% . begin ( ) ,") && tok->varId() == tok->tokAt(3)->varId())
+                    uselessCallsConstructorError(tok);
+                else if (const Variable* var = tok->variable()) {
+                    std::string pattern = "%var% = ";
+                    for (const Token* t = var->typeStartToken(); t != var->typeEndToken()->next(); t = t->next()) {
+                        pattern += t->str();
+                        pattern += ' ';
+                    }
+                    pattern += "{|( %varid% . begin ( ) ,";
+                    if (Token::Match(tok, pattern.c_str(), tok->varId()))
+                        uselessCallsConstructorError(tok);
+                }
+            }
         }
     }
 }
@@ -2199,12 +2257,30 @@ void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varnam
                 "code is inefficient. Is the object or the parameter wrong here?", CWE628, Certainty::normal);
 }
 
-void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
+void CheckStl::uselessCallsSubstrError(const Token *tok, SubstrErrorType type)
 {
-    if (empty)
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns an empty string.", CWE398, Certainty::normal);
-    else
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns a copy of the object. Use operator= instead.", CWE398, Certainty::normal);
+    std::string msg = "Ineffective call of function 'substr' because ";
+    switch (type) {
+    case SubstrErrorType::EMPTY:
+        msg += "it returns an empty string.";
+        break;
+    case SubstrErrorType::COPY:
+        msg += "it returns a copy of the object. Use operator= instead.";
+        break;
+    case SubstrErrorType::PREFIX:
+        msg += "a prefix of the string is assigned to itself. Use resize() or pop_back() instead.";
+        break;
+    case SubstrErrorType::PREFIX_CONCAT:
+        msg += "a prefix of the string is assigned to itself. Use replace() instead.";
+        break;
+    }
+    reportError(tok, Severity::performance, "uselessCallsSubstr", msg, CWE398, Certainty::normal);
+}
+
+void CheckStl::uselessCallsConstructorError(const Token *tok)
+{
+    const std::string msg = "Inefficient constructor call: container '" + tok->str() + "' is assigned a partial copy of itself. Use erase() or resize() instead.";
+    reportError(tok, Severity::performance, "uselessCallsConstructor", msg, CWE398, Certainty::normal);
 }
 
 void CheckStl::uselessCallsEmptyError(const Token *tok)

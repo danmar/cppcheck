@@ -22,8 +22,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <map>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <utility>
 #include <vector>
@@ -357,12 +357,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // #8827
     void commaoperator1() {
-        check("void foo(int,const char*,int);\n"
+        check("void foo(int,const char*,int);\n" // #8827
               "void f(int value) {\n"
               "    foo(42,\"test\",42),(value&42);\n"
               "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ',', result is not used.\n", errout.str());
+
+        check("int f() {\n" // #11257
+              "    int y;\n"
+              "    y = (3, 4);\n"
+              "    return y;\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ',', result is not used.\n", errout.str());
     }
 
@@ -667,6 +673,35 @@ private:
               "    *new int;\n"
               "}\n", /*inconclusive*/ true);
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n", errout.str());
+
+        check("void f() {\n" // #5475
+              "    std::string(\"a\") + \"a\";\n"
+              "}\n"
+              "void f(std::string& a) {\n"
+              "    a.erase(3) + \"suf\";\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
+                      "[test.cpp:5]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n",
+                      errout.str());
+
+        check("void f(XMLElement& parent) {\n" // #11234
+              "    auto** elem = &parent.firstChild;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11301
+              "    NULL;\n"
+              "    nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found a statement that begins with NULL constant.\n"
+                      "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with NULL constant.\n",
+                      errout.str());
+
+        check("struct S { int i; };\n" // #6504
+              "void f(S* s) {\n"
+              "    (*s).i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found unused member access.\n", errout.str());
     }
 
     void vardecl() {

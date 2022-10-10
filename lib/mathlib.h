@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include <sstream>
 #include <string>
 
 /// @addtogroup Core
@@ -66,17 +65,15 @@ public:
         value shiftRight(const value &v) const;
     };
 
-    typedef long long bigint;
-    typedef unsigned long long biguint;
+    using bigint = long long;
+    using biguint = unsigned long long;
     static const int bigint_bits;
 
     static bigint toLongNumber(const std::string & str);
     static biguint toULongNumber(const std::string & str);
 
     template<class T> static std::string toString(T value) {
-        std::ostringstream result;
-        result << value;
-        return result.str();
+        return std::to_string(value);
     }
     static double toDoubleNumber(const std::string & str);
 

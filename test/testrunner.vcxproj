@@ -26,6 +26,7 @@
   <ItemGroup>
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
+    <ClCompile Include="..\cli\cppcheckexecutorseh.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\executor.cpp" />
     <ClCompile Include="..\cli\processexecutor.cpp" />
@@ -33,6 +34,7 @@
     <ClCompile Include="..\lib\astutils.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
+    <ClCompile Include="testanalyzerinformation.cpp" />
     <ClCompile Include="testassert.cpp" />
     <ClCompile Include="testastutils.cpp" />
     <ClCompile Include="testautovariables.cpp" />
@@ -40,6 +42,7 @@
     <ClCompile Include="testboost.cpp" />
     <ClCompile Include="testbufferoverrun.cpp" />
     <ClCompile Include="testcharvar.cpp" />
+    <ClCompile Include="testclangimport.cpp" />
     <ClCompile Include="testclass.cpp" />
     <ClCompile Include="testcmdlineparser.cpp" />
     <ClCompile Include="testcondition.cpp" />

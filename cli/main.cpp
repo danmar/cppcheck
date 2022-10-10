@@ -20,7 +20,7 @@
 /**
  *
  * @mainpage Cppcheck
- * @version 2.7
+ * @version 2.10.99
  *
  * @section overview_sec Overview
  * Cppcheck is a simple tool for static analysis of C/C++ code.
@@ -52,8 +52,6 @@
  *   - Macros are expanded
  * -# Tokenize the file (see Tokenizer)
  * -# Run the runChecks of all check classes.
- * -# Simplify the tokenlist (Tokenizer::simplifyTokenList2)
- * -# Run the runSimplifiedChecks of all check classes
  *
  * When errors are found, they are reported back to the CppCheckExecutor through the ErrorLogger interface.
  */

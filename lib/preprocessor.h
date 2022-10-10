@@ -24,13 +24,15 @@
 #include "config.h"
 
 #include <atomic>
-#include <simplecpp.h>
+#include <cstddef>
 #include <istream>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+
+#include <simplecpp.h>
 
 class ErrorLogger;
 class Settings;
@@ -56,7 +58,7 @@ public:
     std::string str;
 
     /** record a directive (possibly filtering src) */
-    Directive(const std::string &_file, const int _linenr, const std::string &_str);
+    Directive(std::string _file, const int _linenr, const std::string &_str);
 };
 
 /// @addtogroup Core

@@ -24,9 +24,9 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
 #include <memory>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class TestMemleakInClass;
@@ -1570,6 +1570,18 @@ private:
               "    delete [] pkt_buffer;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
+
+        check("struct S {\n" // 5678
+              "    ~S();\n"
+              "    void f();\n"
+              "    int* p;\n"
+              "};\n"
+              "void S::f() {\n"
+              "    p = new char[1];\n"
+              "    delete p;\n"
+              "    p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Mismatching allocation and deallocation: S::p\n", errout.str());
     }
 
     void mismatch2() { // #5659
@@ -2299,6 +2311,7 @@ private:
         TEST_CASE(getAllocationType);
 
         TEST_CASE(crash1); // #10729
+        TEST_CASE(openDevNull); // #9653
     }
 
     void functionParameter() {
@@ -2431,6 +2444,12 @@ private:
         check("void f(const std::string& s, int n) {\n"
               "    std::unique_ptr<char[]> u;\n"
               "    u.reset(strcpy(new char[n], s.c_str()));\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char* p; };\n"
+              "void f(S* s, int N) {\n"
+              "    s->p = s->p ? strcpy(new char[N], s->p) : nullptr;\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2654,6 +2673,17 @@ private:
               "    Ref<StringBuffer> remove(new StringBuffer());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11039
+              "    delete new int;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11327
+              "    int* p = (new int[3]) + 1;\n"
+              "    delete[] &p[-1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerFunctionParam() {
@@ -2827,6 +2857,14 @@ private:
         check("void foo() {\n"
               "    extern void *malloc (size_t size);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void openDevNull() {
+        check("void f() {\n" // #9653
+              "    (void)open(\"/dev/null\", O_RDONLY);\n"
+              "    open(\"/dev/null\", O_WRONLY);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
