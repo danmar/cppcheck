@@ -6469,6 +6469,9 @@ private:
                               "    const auto y = z;\n"
                               "    switch (y) {}\n"
                               "};"));
+
+        // #10831
+        ASSERT_EQUALS("f{([= x{([=", testAst("void foo() { F f = [](t x = []() {}) {}; }"));
     }
 
     void astcase() {
