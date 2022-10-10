@@ -1613,7 +1613,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             Token::Match(typetok->previous(), "%name% ( !!*") &&
             typetok->previous()->varId() == 0 &&
             !typetok->previous()->isKeyword() &&
-            Token::Match(typetok->link(), ") const|;|{"))
+            (Token::Match(typetok->link(), ") const|;|{") || Token::Match(typetok->link(), ") const| = delete ;")))
             return typetok;
     }
 

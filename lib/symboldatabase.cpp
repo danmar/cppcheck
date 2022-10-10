@@ -3167,18 +3167,17 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
                 Function * func = const_cast<Function *>(it->second);
                 if (!func->hasBody()) {
                     if (func->argsMatch(scope1, func->argDef, (*tok)->next(), path, path_length)) {
-                        if (func->type == Function::eDestructor && destructor) {
-                            func->hasBody(true);
-                        } else if (func->type != Function::eDestructor && !destructor) {
-                            // normal function?
-                            const Token *closeParen = (*tok)->next()->link();
-                            if (closeParen) {
-                                const Token *eq = mTokenizer->isFunctionHead(closeParen, ";");
-                                if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
-                                    func->isDefault(true);
-                                    return;
-                                }
-
+                        const Token *closeParen = (*tok)->next()->link();
+                        if (closeParen) {
+                            const Token *eq = mTokenizer->isFunctionHead(closeParen, ";");
+                            if (eq && Token::simpleMatch(eq->tokAt(-2), "= default ;")) {
+                                func->isDefault(true);
+                                return;
+                            }
+                            if (func->type == Function::eDestructor && destructor) {
+                                func->hasBody(true);
+                            } else if (func->type != Function::eDestructor && !destructor) {
+                                // normal function?
                                 const bool hasConstKeyword = closeParen->next()->str() == "const";
                                 if ((func->isConst() == hasConstKeyword) &&
                                     (func->hasLvalRefQualifier() == lval) &&
@@ -3234,22 +3233,17 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
 
         // syntax error?
         if (!newScope->bodyEnd) {
-            scopeList.pop_back();
-            while (tok1->next())
-                tok1 = tok1->next();
-            *scope = nullptr;
-            *tok = tok1;
-            return;
+            mTokenizer->unmatchedToken(tok1);
+        } else {
+            (*scope)->nestedList.push_back(newScope);
+            *scope = newScope;
         }
-
-        (*scope)->nestedList.push_back(newScope);
-        *scope = newScope;
-        *tok = tok1;
-    } else {
+    } else if (tok1 && Token::Match(tok1->tokAt(-2), "= default|delete ;")) {
         scopeList.pop_back();
-        *scope = nullptr;
-        *tok = nullptr;
+    } else {
+        throw InternalError(*tok, "Analysis failed (function not recognized). If the code is valid then please report this failure.");
     }
+    *tok = tok1;
 }
 
 bool Type::isClassType() const
