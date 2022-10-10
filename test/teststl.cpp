@@ -5097,7 +5097,7 @@ private:
               "    return true;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool pred(int x);\n"
               "bool foo() {\n"
@@ -5110,7 +5110,7 @@ private:
               "    return true;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool pred(int x);\n"
               "bool foo() {\n"
@@ -5123,7 +5123,7 @@ private:
               "    return true;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool pred(int x);\n"
               "bool foo() {\n"

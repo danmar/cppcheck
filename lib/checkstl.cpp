@@ -2701,6 +2701,13 @@ void CheckStl::useStlAlgorithm()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    auto checkAssignee = [](const Token* tok) {
+        if (astIsBool(tok)) // std::accumulate is not a good fit for bool values, std::all/any/none_of return early
+            return false;
+        return !astIsContainer(tok); // don't warn for containers, where overloaded operators can be costly
+    };
+
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
             // Parse range-based for loop
@@ -2737,6 +2744,8 @@ void CheckStl::useStlAlgorithm()
             bool useLoopVarInAssign;
             const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
             if (assignTok) {
+                if (!checkAssignee(assignTok->astOperand1()))
+                    continue;
                 const int assignVarId = assignTok->astOperand1()->varId();
                 std::string algo;
                 if (assignVarId == loopVar->varId()) {
@@ -2801,9 +2810,7 @@ void CheckStl::useStlAlgorithm()
                 // Check for single assign
                 assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign);
                 if (assignTok) {
-                    if (astIsContainer(assignTok->astOperand1())) // don't warn for containers, where overloaded operators can be costly
-                        continue;
-                    if (astIsBool(assignTok->astOperand1())) // std::accumulate is not a good fit for bool values, std::all/any/none_of return early
+                    if (!checkAssignee(assignTok->astOperand1()))
                         continue;
                     const int assignVarId = assignTok->astOperand1()->varId();
                     std::string algo;
