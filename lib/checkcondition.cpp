@@ -1580,7 +1580,7 @@ void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* conditi
 {
     const bool alwaysTrue = value && (value->intvalue != 0);
     const std::string expr = tok ? tok->expressionString() : std::string("x");
-    const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return" : "Condition");
+    const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return value" : "Condition");
     const std::string errmsg = conditionStr + " '" + expr + "' is always " + (alwaysTrue ? "true" : "false");
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath,
