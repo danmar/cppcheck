@@ -3233,10 +3233,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
 
         // syntax error?
         if (!newScope->bodyEnd) {
-            scopeList.pop_back();
-            while (tok1->next())
-                tok1 = tok1->next();
-            *scope = nullptr;
+            mTokenizer->unmatchedToken(tok1);
         } else {
             (*scope)->nestedList.push_back(newScope);
             *scope = newScope;
@@ -3244,8 +3241,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     } else if (tok1 && Token::Match(tok1->tokAt(-2), "= default|delete ;")) {
         scopeList.pop_back();
     } else {
-        scopeList.pop_back();
-        *scope = nullptr;
+        throw InternalError(*tok, "Analysis failed (function not recognized). If the code is valid then please report this failure.");
     }
     *tok = tok1;
 }
