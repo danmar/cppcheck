@@ -125,11 +125,11 @@ void StatsDialog::setScanDuration(double seconds)
 {
     // Factor the duration into units (days/hours/minutes/seconds)
     int secs = seconds;
-    int days = secs / (24 * 60 * 60);
+    const int days = secs / (24 * 60 * 60);
     secs -= days * (24 * 60 * 60);
-    int hours = secs / (60 * 60);
+    const int hours = secs / (60 * 60);
     secs -= hours * (60 * 60);
-    int mins = secs / 60;
+    const int mins = secs / 60;
     secs -= mins * 60;
 
     // Concatenate the two most significant units (e.g. "1 day and 3 hours")
@@ -412,9 +412,9 @@ QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString
             static const QRegularExpression rxdate("^\\[(\\d\\d)\\.(\\d\\d)\\.(\\d\\d\\d\\d)\\]$");
             const QRegularExpressionMatch matchRes = rxdate.match(line);
             if (matchRes.hasMatch()) {
-                int y = matchRes.captured(3).toInt();
-                int m = matchRes.captured(2).toInt();
-                int d = matchRes.captured(1).toInt();
+                const int y = matchRes.captured(3).toInt();
+                const int m = matchRes.captured(2).toInt();
+                const int d = matchRes.captured(1).toInt();
                 QDateTime dt;
                 dt.setDate(QDate(y,m,d));
                 if (t == dt.toMSecsSinceEpoch())
@@ -423,7 +423,7 @@ QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString
                     t = dt.toMSecsSinceEpoch();
             }
             if (line.startsWith(severity + ':')) {
-                int y = line.mid(1+severity.length()).toInt();
+                const int y = line.mid(1+severity.length()).toInt();
                 series->append(t, y);
             }
         }

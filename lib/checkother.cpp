@@ -1484,7 +1484,7 @@ void CheckOther::checkConstVariable()
                         castToNonConst = true; // safe guess
                         break;
                     }
-                    bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
+                    const bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
                     if (!isConst) {
                         castToNonConst = true;
                         break;
@@ -1928,7 +1928,7 @@ void CheckOther::checkIncompleteStatement()
         if (mTokenizer->isCPP() && tok->str() == "&" && !(tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
             // Possible archive
             continue;
-        bool inconclusive = tok->isConstOp();
+        const bool inconclusive = tok->isConstOp();
         if (mSettings->certainty.isEnabled(Certainty::inconclusive) || !inconclusive)
             constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);
     }
@@ -2077,7 +2077,7 @@ void CheckOther::checkMisusedScopedObject()
         const Token* endTok = tok;
         if (Token::Match(endTok, "%name% <"))
             endTok = endTok->linkAt(1);
-        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ; !!}") &&
+        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ;") &&
             !Token::simpleMatch(endTok->next()->astParent(), ";")) { // for loop condition
             return tok;
         }
@@ -2085,7 +2085,8 @@ void CheckOther::checkMisusedScopedObject()
     };
 
     auto isLibraryConstructor = [&](const Token* tok, const std::string& typeStr) -> bool {
-        if (mSettings->library.getTypeCheck("unusedvar", typeStr) == Library::TypeCheck::check)
+        const Library::TypeCheck typeCheck = mSettings->library.getTypeCheck("unusedvar", typeStr);
+        if (typeCheck == Library::TypeCheck::check || typeCheck == Library::TypeCheck::checkFiniteLifetime)
             return true;
         return mSettings->library.detectContainerOrIterator(tok);
     };
@@ -2175,29 +2176,43 @@ void CheckOther::checkDuplicateBranch()
             if (macro)
                 continue;
 
-            // save if branch code
-            const std::string branch1 = scope.bodyStart->next()->stringifyList(scope.bodyEnd);
+            const Token * const tokIf = scope.bodyStart->next();
+            const Token * const tokElse = scope.bodyEnd->tokAt(3);
 
-            if (branch1.empty())
+            // compare first tok before stringifying the whole blocks
+            const std::string tokIfStr = tokIf->stringify(false, true, false);
+            if (tokIfStr.empty())
                 continue;
 
-            // save else branch code
-            const std::string branch2 = scope.bodyEnd->tokAt(3)->stringifyList(scope.bodyEnd->linkAt(2));
+            const std::string tokElseStr = tokElse->stringify(false, true, false);
 
-            ErrorPath errorPath;
-            // check for duplicates
-            if (branch1 == branch2) {
-                duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);
-                continue;
+            if (tokIfStr == tokElseStr) {
+                // save if branch code
+                const std::string branch1 = tokIf->stringifyList(scope.bodyEnd);
+
+                if (branch1.empty())
+                    continue;
+
+                // save else branch code
+                const std::string branch2 = tokElse->stringifyList(scope.bodyEnd->linkAt(2));
+
+                // check for duplicates
+                if (branch1 == branch2) {
+                    duplicateBranchError(scope.classDef, scope.bodyEnd->next(), ErrorPath{});
+                    continue;
+                }
             }
 
             // check for duplicates using isSameExpression
-            const Token * branchTop1 = getSingleExpressionInBlock(scope.bodyStart->next());
-            const Token * branchTop2 = getSingleExpressionInBlock(scope.bodyEnd->tokAt(3));
-            if (!branchTop1 || !branchTop2)
+            const Token * branchTop1 = getSingleExpressionInBlock(tokIf);
+            if (!branchTop1)
+                continue;
+            const Token * branchTop2 = getSingleExpressionInBlock(tokElse);
+            if (!branchTop2)
                 continue;
             if (branchTop1->str() != branchTop2->str())
                 continue;
+            ErrorPath errorPath;
             if (isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand1(), branchTop2->astOperand1(), mSettings->library, true, true, &errorPath) &&
                 isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand2(), branchTop2->astOperand2(), mSettings->library, true, true, &errorPath))
                 duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);

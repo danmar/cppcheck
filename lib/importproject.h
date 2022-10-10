@@ -86,6 +86,7 @@ public:
     Type projectType;
 
     ImportProject();
+    virtual ~ImportProject() = default;
 
     void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
 

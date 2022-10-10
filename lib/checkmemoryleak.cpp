@@ -398,7 +398,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
 
     // Check if return pointer is allocated..
     AllocType allocType = No;
-    nonneg int varid = var->declarationId();
+    nonneg int const varid = var->declarationId();
     for (const Token* tok = func->functionScope->bodyStart; tok != func->functionScope->bodyEnd; tok = tok->next()) {
         if (Token::Match(tok, "%varid% =", varid)) {
             allocType = getAllocationType(tok->tokAt(2), varid, callstack);
@@ -997,9 +997,9 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 
         // check if the output of the function is assigned
         const Token* tok2 = tok->next()->astParent();
-        while (tok2 && tok2->isCast())
+        while (tok2 && (tok2->isCast() || Token::Match(tok2, "?|:")))
             tok2 = tok2->astParent();
-        if (Token::Match(tok2, "%assign%"))
+        if (Token::Match(tok2, "%assign%")) // TODO: check if function returns allocated resource
             continue;
         if (Token::simpleMatch(tok->astTop(), "return"))
             continue;

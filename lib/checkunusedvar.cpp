@@ -295,7 +295,7 @@ void Variables::readAliases(nonneg int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        for (nonneg int aliases : usage->_aliases) {
+        for (nonneg int const aliases : usage->_aliases) {
             VariableUsage *aliased = find(aliases);
 
             if (aliased) {
@@ -389,7 +389,7 @@ void Variables::modified(nonneg int varid, const Token* tok)
 Variables::VariableUsage *Variables::find(nonneg int varid)
 {
     if (varid) {
-        std::map<nonneg int, VariableUsage>::iterator i = mVarUsage.find(varid);
+        const std::map<nonneg int, VariableUsage>::iterator i = mVarUsage.find(varid);
         if (i != mVarUsage.end())
             return &i->second;
     }
@@ -1268,6 +1268,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     case Library::TypeCheck::check:
                         break;
                     case Library::TypeCheck::suppress:
+                    case Library::TypeCheck::checkFiniteLifetime:
                         continue;
                     }
                 }
@@ -1365,6 +1366,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         case Library::TypeCheck::check:
                             break;
                         case Library::TypeCheck::suppress:
+                        case Library::TypeCheck::checkFiniteLifetime:
                             error = false;
                         }
                     }
@@ -1619,7 +1621,7 @@ bool CheckUnusedVar::isVariableWithoutSideEffects(const Variable& var)
     } else {
         if (WRONG_DATA(!var.valueType(), var.typeStartToken()))
             return false;
-        ValueType::Type valueType = var.valueType()->type;
+        const ValueType::Type valueType = var.valueType()->type;
         if ((valueType == ValueType::Type::UNKNOWN_TYPE) || (valueType == ValueType::Type::NONSTD))
             return false;
     }

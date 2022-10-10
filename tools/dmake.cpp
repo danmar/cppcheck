@@ -101,7 +101,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
 
         pos1 += 10;
 
-        std::string::size_type pos2 = line.find(rightBracket, pos1);
+        const std::string::size_type pos2 = line.find(rightBracket, pos1);
         std::string hfile = path + line.substr(pos1, pos2 - pos1);
 
         if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
@@ -113,7 +113,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
 static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
 {
     for (const std::string &file : files) {
-        bool external(file.compare(0,10,"externals/") == 0);
+        const bool external(file.compare(0,10,"externals/") == 0);
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);

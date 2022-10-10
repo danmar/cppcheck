@@ -47,7 +47,7 @@ void SelectColorButton::changeColor()
 {
     QColorDialog pDlg(mColor);
     pDlg.setModal(true);
-    int nResult = pDlg.exec();
+    const int nResult = pDlg.exec();
     if (nResult == QDialog::Accepted) {
         setColor(pDlg.selectedColor());
         emit colorChanged(mColor);
@@ -95,7 +95,7 @@ SelectFontWeightCombo::SelectFontWeightCombo(QWidget* parent) :
 
 void SelectFontWeightCombo::updateWeight()
 {
-    int nResult = findData(QVariant(static_cast<int>(mWeight)));
+    const int nResult = findData(QVariant(static_cast<int>(mWeight)));
 
     if (nResult != -1) {
         setCurrentIndex(nResult);

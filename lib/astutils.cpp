@@ -75,7 +75,7 @@ static int findArgumentPosRecursive(const Token* tok, const Token* tokToFind,  b
             return -1;
         if (found)
             return res;
-        int argn = res;
+        const int argn = res;
         res = findArgumentPosRecursive(tok->astOperand2(), tokToFind, found, depth);
         if (res == -1)
             return -1;
@@ -89,7 +89,7 @@ static int findArgumentPosRecursive(const Token* tok, const Token* tokToFind,  b
 
 static int findArgumentPos(const Token* tok, const Token* tokToFind){
     bool found = false;
-    int argn = findArgumentPosRecursive(tok, tokToFind, found, 0);
+    const int argn = findArgumentPosRecursive(tok, tokToFind, found, 0);
     if (found)
         return argn - 1;
     return -1;
@@ -1228,7 +1228,7 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                         return refs_result;
                     }
                     if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-                        int n = getArgumentPos(argvar, f);
+                        const int n = getArgumentPos(argvar, f);
                         if (n < 0) {
                             refs_result.push_back({tok, std::move(errors)});
                             return refs_result;
@@ -1269,7 +1269,7 @@ const Token* followReferences(const Token* tok, ErrorPath* errors)
     auto refs = followAllReferences(tok, true, false);
     if (refs.size() == 1) {
         if (errors)
-            *errors = refs.front().errors;
+            *errors = std::move(refs.front().errors);
         return refs.front().token;
     }
     return nullptr;
@@ -1883,7 +1883,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             return true;
         return false;
     } else {
-        bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
+        const bool memberFunction = Token::Match(ftok->previous(), ". %name% (");
         bool constMember = !memberFunction;
         if (Token::Match(ftok->tokAt(-2), "%var% . %name% (")) {
             const Variable* var = ftok->tokAt(-2)->variable();
@@ -2328,16 +2328,17 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
 
     if (!tok->function() && !tok->variable() && tok->isName()) {
         if (settings) {
-            const bool requireInit = settings->library.isuninitargbad(tok, 1 + argnr);
-            const bool requireNonNull = settings->library.isnullargbad(tok, 1 + argnr);
             // Check if direction (in, out, inout) is specified in the library configuration and use that
             const Library::ArgumentChecks::Direction argDirection = settings->library.getArgDirection(tok, 1 + argnr);
             if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
                 return false;
-            else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
-                     argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
+
+            const bool requireNonNull = settings->library.isnullargbad(tok, 1 + argnr);
+            if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
+                argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
                 if (indirect == 0 && isArray(tok1))
                     return true;
+                const bool requireInit = settings->library.isuninitargbad(tok, 1 + argnr);
                 // Assume that if the variable must be initialized then the indirection is 1
                 if (indirect > 0 && requireInit && requireNonNull)
                     return true;
@@ -3343,7 +3344,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Token *conditionStart = tok->next();
             const Token *condTok = conditionStart->astOperand2();
             if (condTok->hasKnownIntValue()) {
-                bool cond = condTok->values().front().intvalue;
+                const bool cond = condTok->values().front().intvalue;
                 if (cond) {
                     FwdAnalysis::Result result = checkRecursive(expr, bodyStart, bodyStart->link(), exprVarIds, local, true, depth);
                     if (result.type != Result::Type::NONE)

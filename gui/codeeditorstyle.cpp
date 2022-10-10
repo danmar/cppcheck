@@ -183,8 +183,8 @@ void CodeEditorStyle::saveSettings(QSettings *settings,
     }
 
     settings->beginGroup(SETTINGS_STYLE_GROUP);
-    bool isDefaultLight = (defaultStyleLight == theStyle);
-    bool isDefaultDark = (defaultStyleDark == theStyle);
+    const bool isDefaultLight = (defaultStyleLight == theStyle);
+    const bool isDefaultDark = (defaultStyleDark == theStyle);
     if (isDefaultLight && !isDefaultDark) {
         settings->setValue(SETTINGS_STYLE_TYPE,
                            SETTINGS_STYLE_TYPE_LIGHT);

@@ -97,14 +97,14 @@ std::string Path::removeQuotationMarks(std::string path)
     return path;
 }
 
-std::string Path::getFilenameExtension(const std::string &path)
+std::string Path::getFilenameExtension(const std::string &path, bool lowercase)
 {
     const std::string::size_type dotLocation = path.find_last_of('.');
     if (dotLocation == std::string::npos)
         return "";
 
     std::string extension = path.substr(dotLocation);
-    if (caseInsensitiveFilesystem()) {
+    if (lowercase || caseInsensitiveFilesystem()) {
         // on a case insensitive filesystem the case doesn't matter so
         // let's return the extension in lowercase
         strTolower(extension);
@@ -114,9 +114,7 @@ std::string Path::getFilenameExtension(const std::string &path)
 
 std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
 {
-    std::string extension = getFilenameExtension(path);
-    strTolower(extension);
-    return extension;
+    return getFilenameExtension(path, true);
 }
 
 std::string Path::getCurrentPath()

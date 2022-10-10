@@ -179,7 +179,7 @@ void LibraryDialog::addFunction()
 
         CppcheckLibraryData::Function f;
         f.name = d->functionName();
-        int args = d->numberOfArguments();
+        const int args = d->numberOfArguments();
 
         for (int i = 1; i <= args; i++) {
             CppcheckLibraryData::Function::Arg arg;
@@ -321,7 +321,7 @@ void LibraryDialog::editArg()
 
     LibraryEditArgDialog d(nullptr, arg);
     if (d.exec() == QDialog::Accepted) {
-        unsigned number = arg.nr;
+        const unsigned number = arg.nr;
         arg = d.getArg();
         arg.nr = number;
         mUi->arguments->selectedItems().first()->setText(getArgText(arg));

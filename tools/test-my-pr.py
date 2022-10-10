@@ -20,6 +20,9 @@ def format_float(a, b=1):
 
 
 if __name__ == "__main__":
+    __my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
+    __work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + __my_script_name + '-workfolder'))
+
     parser = argparse.ArgumentParser(description='Run this script from your branch with proposed Cppcheck patch to verify your patch against current main. It will compare output of testing bunch of opensource packages')
     parser.add_argument('-j', default=1, type=int, help='Concurency execution threads')
     group = parser.add_mutually_exclusive_group()
@@ -28,7 +31,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
     parser.add_argument('--c-only', dest='c_only', help='Only process c packages', action='store_true')
     parser.add_argument('--cpp-only', dest='cpp_only', help='Only process c++ packages', action='store_true')
-    parser.add_argument('--work-path', '--work-path=', default=lib.work_path, type=str, help='Working directory for reference repo')
+    parser.add_argument('--work-path', '--work-path=', default=__work_path, type=str, help='Working directory for reference repo')
     args = parser.parse_args()
 
     print(args)
@@ -44,7 +47,7 @@ if __name__ == "__main__":
     old_repo_dir = os.path.join(work_path, 'cppcheck')
     main_dir = os.path.join(work_path, 'tree-main')
 
-    jobs = '-j' + str(args.j)
+    lib.set_jobs('-j' + str(args.j))
     result_file = os.path.join(work_path, args.o)
     (f, ext) = os.path.splitext(result_file)
     timing_file = f + '_timing' + ext
@@ -58,15 +61,15 @@ if __name__ == "__main__":
     try:
         lib.clone_cppcheck(repo_dir, old_repo_dir)
         pass
-    except:
-        print('Failed to clone Cppcheck repository, retry later')
+    except Exception as e:
+        print('Failed to clone Cppcheck repository ({}), retry later'.format(e))
         sys.exit(1)
 
     try:
         lib.checkout_cppcheck_version(repo_dir, 'main', main_dir)
         pass
-    except:
-        print('Failed to checkout main, retry later')
+    except Exception as e:
+        print('Failed to checkout main ({}), retry later'.format(e))
         sys.exit(1)
 
     try:
@@ -88,12 +91,12 @@ if __name__ == "__main__":
         print('Failed to switch to common ancestor of your branch and main')
         sys.exit(1)
 
-    if not lib.compile_cppcheck(main_dir, jobs):
+    if not lib.compile_cppcheck(main_dir):
         print('Failed to compile main of Cppcheck')
         sys.exit(1)
 
     print('Testing your PR from directory: ' + your_repo_dir)
-    if not lib.compile_cppcheck(your_repo_dir, jobs):
+    if not lib.compile_cppcheck(your_repo_dir):
         print('Failed to compile your version of Cppcheck')
         sys.exit(1)
 
@@ -101,7 +104,7 @@ if __name__ == "__main__":
         args.p = len(args.packages)
         packages_idxs = []
     else:
-        packages_count = lib.get_packages_count(lib.server_address)
+        packages_count = lib.get_packages_count()
         if not packages_count:
             print("network or server might be temporarily down..")
             sys.exit(1)
@@ -117,7 +120,7 @@ if __name__ == "__main__":
         if args.packages:
             package = args.packages.pop()
         else:
-            package = lib.get_package(lib.server_address, packages_idxs.pop())
+            package = lib.get_package(packages_idxs.pop())
 
         tgz = lib.download_package(work_path, package, None)
         if tgz is None:
@@ -138,7 +141,7 @@ if __name__ == "__main__":
         your_timeout = False
 
         libraries = lib.library_includes.get_libraries(source_path)
-        c, errout, info, time_main, cppcheck_options, timing_info = lib.scan_package(main_dir, source_path, jobs, libraries)
+        c, errout, info, time_main, cppcheck_options, timing_info = lib.scan_package(main_dir, source_path, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -151,7 +154,7 @@ if __name__ == "__main__":
                 main_crashed = True
         results_to_diff.append(errout)
 
-        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(your_repo_dir, source_path, jobs, libraries)
+        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(your_repo_dir, source_path, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)

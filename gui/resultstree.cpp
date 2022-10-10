@@ -469,7 +469,7 @@ void ResultsTree::showHiddenResults()
 {
     //Clear the "hide" flag for each item
     mHiddenMessageId.clear();
-    int filecount = mModel.rowCount();
+    const int filecount = mModel.rowCount();
     for (int i = 0; i < filecount; i++) {
         QStandardItem *fileItem = mModel.item(i, 0);
         if (!fileItem)
@@ -479,7 +479,7 @@ void ResultsTree::showHiddenResults()
         data[HIDE] = false;
         fileItem->setData(QVariant(data));
 
-        int errorcount = fileItem->rowCount();
+        const int errorcount = fileItem->rowCount();
         for (int j = 0; j < errorcount; j++) {
             QStandardItem *child = fileItem->child(j, 0);
             if (child) {
@@ -498,7 +498,7 @@ void ResultsTree::refreshTree()
 {
     mVisibleErrors = false;
     //Get the amount of files in the tree
-    int filecount = mModel.rowCount();
+    const int filecount = mModel.rowCount();
 
     for (int i = 0; i < filecount; i++) {
         //Get file i
@@ -508,7 +508,7 @@ void ResultsTree::refreshTree()
         }
 
         //Get the amount of errors this file contains
-        int errorcount = fileItem->rowCount();
+        const int errorcount = fileItem->rowCount();
 
         //By default it shouldn't be visible
         bool show = false;
@@ -820,7 +820,7 @@ void ResultsTree::startApplication(QStandardItem *target, int application)
         const QString cmdLine = QString("%1 %2").arg(program).arg(params);
 
         // this is reported as deprecated in Qt 5.15.2 but no longer in Qt 6
-        bool success = SUPPRESS_DEPRECATED_WARNING(QProcess::startDetached(cmdLine));
+        const bool success = SUPPRESS_DEPRECATED_WARNING(QProcess::startDetached(cmdLine));
         if (!success) {
             QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(program);
 
@@ -983,7 +983,7 @@ void ResultsTree::hideAllIdResult()
     mHiddenMessageId.append(messageId);
 
     // hide all errors with that message Id
-    int filecount = mModel.rowCount();
+    const int filecount = mModel.rowCount();
     for (int i = 0; i < filecount; i++) {
         //Get file i
         QStandardItem *file = mModel.item(i, 0);
@@ -992,7 +992,7 @@ void ResultsTree::hideAllIdResult()
         }
 
         //Get the amount of errors this file contains
-        int errorcount = file->rowCount();
+        const int errorcount = file->rowCount();
 
         for (int j = 0; j < errorcount; j++) {
             //Get the error itself
@@ -1239,7 +1239,7 @@ void ResultsTree::updateFromOldReport(const QString &filename)
             QStandardItem *error = fileItem->child(j,0);
             ErrorItem errorItem;
             readErrorItem(error, &errorItem);
-            int oldErrorIndex = indexOf(oldErrors, errorItem);
+            const int oldErrorIndex = indexOf(oldErrors, errorItem);
             QVariantMap data = error->data().toMap();
 
             // New error .. set the "sinceDate" property

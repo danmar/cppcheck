@@ -69,7 +69,7 @@ void ImportProject::ignorePaths(const std::vector<std::string> &ipaths)
             }
         }
         if (ignore)
-            fileSettings.erase(it++);
+            it = fileSettings.erase(it);
         else
             ++it;
     }
@@ -79,7 +79,7 @@ void ImportProject::ignoreOtherConfigs(const std::string &cfg)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         if (it->cfg != cfg)
-            fileSettings.erase(it++);
+            it = fileSettings.erase(it);
         else
             ++it;
     }
@@ -259,7 +259,7 @@ static std::string unescape(const std::string &in)
 {
     std::string out;
     bool escape = false;
-    for (char c: in) {
+    for (const char c: in) {
         if (escape) {
             escape = false;
             if (!std::strchr("\\\"\'",c))
@@ -875,7 +875,7 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
     {
         std::string arg;
 
-        for (char i : cflag1) {
+        for (const char i : cflag1) {
             if (i == ' ' && !arg.empty()) {
                 cflags.insert(arg);
                 arg.clear();

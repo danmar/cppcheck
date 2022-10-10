@@ -66,6 +66,8 @@
 #include <QRegularExpression>
 #include <QSettings>
 #include <QTimer>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -86,6 +88,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 {
     {
         Settings tempSettings;
+        tempSettings.exename = QCoreApplication::applicationFilePath().toStdString();
         tempSettings.loadCppcheckCfg();
         mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
         mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
@@ -245,6 +248,24 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 #endif
     Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
+
+    mNetworkAccessManager = new QNetworkAccessManager(this);
+    connect(mNetworkAccessManager, &QNetworkAccessManager::finished,
+            this, &MainWindow::replyFinished);
+
+    mUI->mLabelInformation->setVisible(false);
+    mUI->mButtonHideInformation->setVisible(false);
+    connect(mUI->mButtonHideInformation, &QPushButton::clicked,
+            this, &MainWindow::hideInformation);
+
+    // Is there a new version?
+    if (isCppcheckPremium()) {
+        const QUrl url("https://files.cppchecksolutions.com/version.txt");
+        mNetworkAccessManager->get(QNetworkRequest(url));
+    } else {
+        const QUrl url("https://cppcheck.sourceforge.io/version.txt");
+        mNetworkAccessManager->get(QNetworkRequest(url));
+    }
 }
 
 MainWindow::~MainWindow()
@@ -331,7 +352,7 @@ void MainWindow::loadSettings()
     mUI->mActionToolBarFilter->setChecked(showFilterToolbar);
     mUI->mToolBarFilter->setVisible(showFilterToolbar);
 
-    Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    const Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
     if (enforcedLanguage == Settings::CPP)
         mUI->mActionEnforceCpp->setChecked(true);
     else if (enforcedLanguage == Settings::C)
@@ -339,7 +360,7 @@ void MainWindow::loadSettings()
     else
         mUI->mActionAutoDetectLanguage->setChecked(true);
 
-    bool succeeded = mApplications->loadSettings();
+    const bool succeeded = mApplications->loadSettings();
     if (!succeeded) {
         const QString msg = tr("There was a problem with loading the editor application settings.\n\n"
                                "This is probably because the settings were changed between the Cppcheck versions. "
@@ -436,7 +457,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             p.selectOneVsConfig(platform);
         }
     } else {
@@ -689,7 +710,7 @@ void MainWindow::analyzeDirectory()
             msgBox.addButton(QMessageBox::Yes);
             msgBox.addButton(QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::Yes);
-            int dlgResult = msgBox.exec();
+            const int dlgResult = msgBox.exec();
             if (dlgResult == QMessageBox::Yes) {
                 QString path = checkDir.canonicalPath();
                 if (!path.endsWith("/"))
@@ -712,7 +733,7 @@ void MainWindow::analyzeDirectory()
             msgBox.addButton(QMessageBox::Yes);
             msgBox.addButton(QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::Yes);
-            int dlgResult = msgBox.exec();
+            const int dlgResult = msgBox.exec();
             if (dlgResult == QMessageBox::Yes) {
                 doAnalyzeFiles(dir);
             }
@@ -1199,7 +1220,7 @@ void MainWindow::openResults()
         msgBox.addButton(QMessageBox::Yes);
         msgBox.addButton(QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::Yes);
-        int dlgResult = msgBox.exec();
+        const int dlgResult = msgBox.exec();
         if (dlgResult == QMessageBox::No) {
             return;
         }
@@ -1257,7 +1278,7 @@ void MainWindow::enableCheckButtons(bool enable)
 
 void MainWindow::enableResultsButtons()
 {
-    bool enabled = mUI->mResults->hasResults();
+    const bool enabled = mUI->mResults->hasResults();
     mUI->mActionClearResults->setEnabled(enabled);
     mUI->mActionSave->setEnabled(enabled);
     mUI->mActionPrint->setEnabled(enabled);
@@ -1321,7 +1342,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
                         this);
 
         msg.setDefaultButton(QMessageBox::No);
-        int rv = msg.exec();
+        const int rv = msg.exec();
         if (rv == QMessageBox::Yes) {
             // This isn't really very clean way to close threads but since the app is
             // exiting it doesn't matter.
@@ -1781,7 +1802,7 @@ void MainWindow::openRecentProject()
                         this);
 
         msg.setDefaultButton(QMessageBox::No);
-        int rv = msg.exec();
+        const int rv = msg.exec();
         if (rv == QMessageBox::Yes) {
             removeProjectMRU(project);
         }
@@ -1879,6 +1900,63 @@ void MainWindow::suppressIds(QStringList ids)
     mProjectFile->write();
 }
 
+static int getVersion(const QString& nameWithVersion) {
+    int ret = 0;
+    int v = 0;
+    int dot = 0;
+    for (const auto c: nameWithVersion) {
+        if (c == '\n' || c == '\r')
+            break;
+        else if (c == ' ')
+            dot = ret = v = 0;
+        else if (c == '.') {
+            ++dot;
+            ret = ret * 1000 + v;
+            v = 0;
+        } else if (c >= '0' && c <= '9')
+            v = v * 10 + (c.toLatin1() - '0');
+    }
+    ret = ret * 1000 + v;
+    while (dot < 2) {
+        ++dot;
+        ret *= 1000;
+    }
+    return ret;
+}
+
+void MainWindow::replyFinished(QNetworkReply *reply) {
+    reply->deleteLater();
+    if (reply->error()) {
+        // TODO?
+        qDebug() << "Response: ERROR";
+        return;
+    }
+    const QString str = reply->readAll();
+    qDebug() << "Response: " << str;
+    if (reply->url().fileName() == "version.txt") {
+        QString nameWithVersion = QString("Cppcheck %1").arg(CppCheck::version());
+        if (!mCppcheckCfgProductName.isEmpty())
+            nameWithVersion = mCppcheckCfgProductName;
+        const int appVersion = getVersion(nameWithVersion);
+        const int latestVersion = getVersion(str.trimmed());
+        if (appVersion < latestVersion) {
+            if (mSettings->value(SETTINGS_CHECK_VERSION, 0).toInt() != latestVersion) {
+                mUI->mButtonHideInformation->setVisible(true);
+                mUI->mLabelInformation->setVisible(true);
+                mUI->mLabelInformation->setText(tr("New version available: %1").arg(str.trimmed()));
+            }
+        }
+    }
+}
+
+void MainWindow::hideInformation() {
+    int version = getVersion(mUI->mLabelInformation->text());
+    mSettings->setValue(SETTINGS_CHECK_VERSION, version);
+    mUI->mLabelInformation->setVisible(false);
+    mUI->mButtonHideInformation->setVisible(false);
+}
+
 bool MainWindow::isCppcheckPremium() const {
     return mCppcheckCfgProductName.startsWith("Cppcheck Premium ");
 }
+

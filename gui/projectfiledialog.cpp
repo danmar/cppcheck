@@ -173,7 +173,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
 
     // Platforms..
     Platforms platforms;
-    for (cppcheck::Platform::PlatformType builtinPlatform : builtinPlatforms)
+    for (const cppcheck::Platform::PlatformType builtinPlatform : builtinPlatforms)
         mUI->mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
     for (QString sp : searchPaths) {
@@ -411,7 +411,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     if (mUI->mComboBoxPlatform->currentText().endsWith(".xml"))
         projectFile->setPlatform(mUI->mComboBoxPlatform->currentText());
     else {
-        int i = mUI->mComboBoxPlatform->currentIndex();
+        const int i = mUI->mComboBoxPlatform->currentIndex();
         if (i < numberOfBuiltinPlatforms)
             projectFile->setPlatform(cppcheck::Platform::platformString(builtinPlatforms[i]));
         else
@@ -504,8 +504,8 @@ void ProjectFileDialog::browseBuildDir()
 void ProjectFileDialog::updatePathsAndDefines()
 {
     const QString &fileName = mUI->mEditImportProject->text();
-    bool importProject = !fileName.isEmpty();
-    bool hasConfigs = fileName.endsWith(".sln") || fileName.endsWith(".vcxproj");
+    const bool importProject = !fileName.isEmpty();
+    const bool hasConfigs = fileName.endsWith(".sln") || fileName.endsWith(".vcxproj");
     mUI->mBtnClearImportProject->setEnabled(importProject);
     mUI->mListCheckPaths->setEnabled(!importProject);
     mUI->mListIncludeDirs->setEnabled(!importProject);
@@ -730,7 +730,7 @@ void ProjectFileDialog::setLibraries(const QStringList &libraries)
 void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &suppression)
 {
     QString suppression_name;
-    static char sep = QDir::separator().toLatin1();
+    static const char sep = QDir::separator().toLatin1();
     bool found_relative = false;
 
     // Replace relative file path in the suppression with the absolute one
@@ -872,7 +872,7 @@ void ProjectFileDialog::removeSuppression()
     if (!item)
         return;
 
-    int suppressionIndex = getSuppressionIndex(item->text());
+    const int suppressionIndex = getSuppressionIndex(item->text());
     if (suppressionIndex >= 0)
         mSuppressions.removeAt(suppressionIndex);
     delete item;
@@ -882,7 +882,7 @@ void ProjectFileDialog::editSuppression(const QModelIndex & /*index*/)
 {
     const int row = mUI->mListSuppressions->currentRow();
     QListWidgetItem *item = mUI->mListSuppressions->item(row);
-    int suppressionIndex = getSuppressionIndex(item->text());
+    const int suppressionIndex = getSuppressionIndex(item->text());
     if (suppressionIndex >= 0) { // TODO what if suppression is not found?
         NewSuppressionDialog dlg;
         dlg.setSuppression(mSuppressions[suppressionIndex]);

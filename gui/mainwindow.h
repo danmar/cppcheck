@@ -40,6 +40,8 @@ class QLineEdit;
 class ImportProject;
 class QCloseEvent;
 class QObject;
+class QNetworkAccessManager;
+class QNetworkReply;
 namespace Ui {
     class MainWindow;
 }
@@ -228,6 +230,10 @@ protected slots:
     /** Suppress error ids */
     void suppressIds(QStringList ids);
 
+private slots:
+    void replyFinished(QNetworkReply *reply);
+
+    void hideInformation();
 private:
 
     bool isCppcheckPremium() const;
@@ -465,6 +471,8 @@ private:
 
     QString mCppcheckCfgAbout;
     QString mCppcheckCfgProductName;
+
+    QNetworkAccessManager *mNetworkAccessManager = nullptr;
 };
 /// @}
 #endif // MAINWINDOW_H
