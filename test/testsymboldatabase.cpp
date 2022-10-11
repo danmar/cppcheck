@@ -184,6 +184,7 @@ private:
 
         TEST_CASE(rangeBasedFor);
 
+        TEST_CASE(memberVar1);
         TEST_CASE(arrayMemberVar1);
         TEST_CASE(arrayMemberVar2);
         TEST_CASE(arrayMemberVar3);
@@ -1415,6 +1416,22 @@ private:
         ASSERT_EQUALS("c", c->name());
         ASSERT(c->valueType());
         ASSERT_EQUALS("signed int *", c->valueType()->str());
+    }
+
+    void memberVar1() {
+        GET_SYMBOL_DB("struct Foo {\n"
+                      "    int x;\n"
+                      "};\n"
+                      "struct Bar : public Foo {};\n"
+                      "void f() {\n"
+                      "    struct Bar bar;\n"
+                      "    bar.x = 123;\n"  // <- x should get a variable() pointer
+                      "}");
+
+        ASSERT(db != nullptr);
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "x =");
+        ASSERT(tok->variable());
+        ASSERT(Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
     }
 
     void arrayMemberVar1() {

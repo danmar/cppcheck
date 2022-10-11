@@ -1002,24 +1002,24 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
     }
 
     // fill in missing variables if possible
-    const std::size_t functions = functionScopes.size();
-    for (std::size_t i = 0; i < functions; ++i) {
-        const Scope *func = functionScopes[i];
+    for (const Scope *func: functionScopes) {
         for (const Token *tok = func->bodyStart->next(); tok && tok != func->bodyEnd; tok = tok->next()) {
             // check for member variable
-            if (tok->varId() && tok->next() &&
-                (tok->next()->str() == "." ||
-                 (tok->next()->str() == "[" && tok->linkAt(1)->strAt(1) == "."))) {
-                const Token *tok1 = tok->next()->str() == "." ? tok->tokAt(2) : tok->linkAt(1)->tokAt(2);
-                if (tok1 && tok1->varId() && mVariableList[tok1->varId()] == nullptr) {
-                    const Variable *var = mVariableList[tok->varId()];
-                    if (var && var->typeScope()) {
-                        // find the member variable of this variable
-                        const Variable *var1 = var->typeScope()->getVariable(tok1->str());
-                        if (var1) {
-                            // add this variable to the look up table
-                            mVariableList[tok1->varId()] = var1;
-                        }
+            if (!Token::Match(tok, "%var% .|["))
+                continue;
+            const Token* tokDot = tok->next();
+            while (Token::simpleMatch(tokDot, "["))
+                tokDot = tokDot->link()->next();
+            if (!Token::Match(tokDot, ". %var%"))
+                continue;
+            const Token *member = tokDot->next();
+            if (mVariableList[member->varId()] == nullptr) {
+                const Variable *var1 = mVariableList[tok->varId()];
+                if (var1 && var1->typeScope()) {
+                    const Variable* memberVar = var1->typeScope()->getVariable(member->str());
+                    if (memberVar) {
+                        // add this variable to the look up table
+                        mVariableList[member->varId()] = memberVar;
                     }
                 }
             }
@@ -4442,7 +4442,6 @@ void Scope::getVariableList(const Settings* settings, const Token* start, const 
 
         // Is it a function?
         else if (tok->str() == "{") {
-
             tok = tok->link();
             continue;
         }
@@ -4614,13 +4613,18 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
 
 const Variable *Scope::getVariable(const std::string &varname) const
 {
-    std::list<Variable>::const_iterator iter;
-
-    for (iter = varlist.begin(); iter != varlist.end(); ++iter) {
-        if (iter->name() == varname)
-            return &*iter;
+    for (const Variable& var: varlist) {
+        if (var.name() == varname)
+            return &var;
     }
-
+    if (definedType) {
+        for (const Type::BaseInfo& baseInfo: definedType->derivedFrom) {
+            if (baseInfo.type && baseInfo.type->classScope) {
+                if (const Variable* var = baseInfo.type->classScope->getVariable(varname))
+                    return var;
+            }
+        }
+    }
     return nullptr;
 }
 
