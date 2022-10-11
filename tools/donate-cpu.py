@@ -245,7 +245,7 @@ while True:
                 p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True)
                 try:
                     comm = p.communicate()
-                    return comm[0]
+                    return comm[0].strip()
                 except:
                     return None
 
