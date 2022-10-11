@@ -40,9 +40,11 @@ struct ExprIdToken {
 
     ExprIdToken() = default;
     // cppcheck-suppress noExplicitConstructor
+    // NOLINTNEXTLINE(google-explicit-constructor)
     ExprIdToken(const Token* tok) : tok(tok) {}
     // TODO: Make this constructor only available from ProgramMemory
     // cppcheck-suppress noExplicitConstructor
+    // NOLINTNEXTLINE(google-explicit-constructor)
     ExprIdToken(nonneg int exprid) : exprid(exprid) {}
 
     nonneg int getExpressionId() const;

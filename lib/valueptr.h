@@ -42,6 +42,7 @@ public:
 
     template<class U>
     // cppcheck-suppress noExplicitConstructor
+    // NOLINTNEXTLINE(google-explicit-constructor)
     ValuePtr(const U& value) : mPtr(cloner<U>::apply(&value)), mClone(&cloner<U>::apply)
     {}
 
@@ -91,6 +92,7 @@ public:
         return *this;
     }
 
+    // NOLINTNEXTLINE(google-explicit-constructor)
     operator bool() const NOEXCEPT {
         return !!mPtr;
     }
