@@ -21,7 +21,7 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install missing software on CentOS 7
         if: matrix.image == 'centos:7'
@@ -95,7 +95,7 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install missing software on CentOS 7
         if: matrix.image == 'centos:7'

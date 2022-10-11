@@ -31,14 +31,14 @@ jobs:
       QT_VERSION: 5.15.2
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
 
       - name: Cache PCRE
         id: cache-pcre
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             externals\pcre.h
@@ -128,12 +128,12 @@ jobs:
           echo ProductVersion="%PRODUCTVER%" || exit /b !errorlevel!
           msbuild -m cppcheck.wixproj -p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: installer
           path: win_installer/Build/
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: deploy
           path: win_installer\files

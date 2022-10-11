@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -22,7 +22,7 @@ jobs:
           key: ${{ github.workflow }}-${{ runner.os }}
 
       - name: Cache Cppcheck
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: cppcheck
           key: ${{ runner.os }}-scriptcheck-cppcheck-${{ github.sha }}
@@ -44,16 +44,16 @@ jobs:
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Restore Cppcheck
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: cppcheck
           key: ${{ runner.os }}-scriptcheck-cppcheck-${{ github.sha }}
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
