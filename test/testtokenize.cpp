@@ -6247,6 +6247,14 @@ private:
                                              "    b->hash = (decltype(b->hash))(p);\n"
                                              "}\n"));
 
+        ASSERT_NO_THROW(tokenizeAndStringify("void a(int);\n" // #10801
+                                             "    struct b {\n"
+                                             "    static int c();\n"
+                                             "} d;\n"
+                                             "void f() {\n"
+                                             "    (decltype (&a)(d.c))(0);\n"
+                                             "}\n"));
+
         // #10334: Do not hang!
         tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"
                              "    for (int i = 0; i <= 123; ++i)\n"
