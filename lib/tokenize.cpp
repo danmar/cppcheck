@@ -2796,6 +2796,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         createSymbolDatabase();
     }
 
+    // TODO: this accesses ValueFlow information before it has been generated
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::setValueType", mSettings->showtime, mTimerResults);
         mSymbolDatabase->setValueTypeInTokenList(true);
@@ -2805,19 +2806,6 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
 
     if (!mSettings->buildDir.empty())
         Summaries::create(this, configuration);
-
-    // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
-    const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
-    const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
-
-    if (doValueFlow) {
-        if (mTimerResults) {
-            Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
-        } else {
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
-        }
-    }
 
     // Warn about unhandled character literals
     if (mSettings->severity.isEnabled(Severity::portability)) {
@@ -2832,8 +2820,24 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         }
     }
 
-    if (doValueFlow) {
+    auto setValues = [&](){
+        if (mTimerResults) {
+            Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
+            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+        } else {
+            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+        }
+
         mSymbolDatabase->setArrayDimensionsUsingValueFlow();
+    };
+
+    const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
+    const bool doLazyValueFlow = disableValueflowEnv && (std::strcmp(disableValueflowEnv, "2") == 0);
+    const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
+    if (doLazyValueFlow) {
+        list.setValuesFunc(std::move(setValues));
+    } else if (doValueFlow) {
+        setValues();
     }
 
     printDebugOutput(1);

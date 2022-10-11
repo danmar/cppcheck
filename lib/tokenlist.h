@@ -22,22 +22,33 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "token.h"
 
 #include <cstddef>
 #include <iosfwd>
+#include <functional>
 #include <string>
 #include <unordered_set>
 #include <vector>
 
 class Settings;
+class Token;
 
 namespace simplecpp {
     class TokenList;
 }
+class TokenList;
 
 /// @addtogroup Core
 /// @{
+
+/**
+ * @brief This struct stores pointers to the front and back tokens of the list this token is in.
+ */
+struct TokensFrontBack {
+    Token *front;
+    Token *back;
+    const TokenList* list;
+};
 
 class CPPCHECKLIB TokenList {
 public:
@@ -197,6 +208,23 @@ public:
 
     bool isKeyword(const std::string &str) const;
 
+    void setValuesFunc(std::function<void()> f) {
+        mValuesFunc = std::move(f);
+    }
+
+    void setValues() const {
+        if (!mInSetValues && !mValuesSet && mValuesFunc) {
+            mInSetValues = true;
+            mValuesFunc();
+            mValuesSet = true;
+            mInSetValues = false;
+        }
+    }
+
+    bool isValuesSet() const {
+        return mValuesSet;
+    }
+
 private:
     void determineCppC();
 
@@ -217,6 +245,10 @@ private:
     /** File is known to be C/C++ code */
     bool mIsC;
     bool mIsCpp;
+
+    std::function<void()> mValuesFunc;
+    mutable bool mValuesSet;
+    mutable bool mInSetValues;
 };
 
 /// @}

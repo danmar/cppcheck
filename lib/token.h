@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "mathlib.h"
+#include "tokenlist.h"
 #include "valueflow.h"
 #include "templatesimplifier.h"
 #include "utils.h"
@@ -45,18 +46,8 @@ class Settings;
 class Type;
 class ValueType;
 class Variable;
-class TokenList;
 class ConstTokenRange;
 class Token;
-
-/**
- * @brief This struct stores pointers to the front and back tokens of the list this token is in.
- */
-struct TokensFrontBack {
-    Token *front;
-    Token *back;
-    const TokenList* list;
-};
 
 struct ScopeInfo2 {
     ScopeInfo2(std::string name_, const Token *bodyEnd_, std::set<std::string> usingNamespaces_ = std::set<std::string>()) : name(std::move(name_)), bodyEnd(bodyEnd_), usingNamespaces(std::move(usingNamespaces_)) {}
@@ -1171,6 +1162,8 @@ public:
     }
 
     const std::list<ValueFlow::Value>& values() const {
+        if (mTokensFrontBack && !mTokensFrontBack->list->isValuesSet())
+            mTokensFrontBack->list->setValues();
         return mImpl->mValues ? *mImpl->mValues : TokenImpl::mEmptyValueList;
     }
 
@@ -1192,7 +1185,7 @@ public:
 
     const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
-        return mImpl->mValues->front().intvalue;
+        return values().front().intvalue;
     }
 
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
