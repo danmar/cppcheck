@@ -7424,6 +7424,8 @@ static bool needsInitialization(const Variable* var, bool cpp)
 {
     if (!var)
         return false;
+    if (var->hasDefault())
+        return false;
     if (var->isPointer())
         return true;
     if (var->type() && var->type()->isUnionType())
