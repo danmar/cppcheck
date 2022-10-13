@@ -3251,6 +3251,20 @@ private:
         }
 
         {
+            // #11319
+            const char code[] = "using std::same_as;\n"
+                                "template<same_as<int> T>\n"
+                                "void f();";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "template <");
+            const Token *tok2 = Token ::findsimplematch(tokenizer.tokens(), "same_as <");
+            ASSERT(tok1->next()->link() == tok1->tokAt(7));
+            ASSERT(tok2->next()->link() == tok2->tokAt(3));
+        }
+
+        {
             // #9131 - template usage or comparison?
             const char code[] = "using std::list; list<t *> l;";
             Tokenizer tokenizer(&settings0, this);
