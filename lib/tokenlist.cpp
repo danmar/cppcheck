@@ -642,7 +642,8 @@ static bool iscpp11init_impl(const Token * const tok)
 
     const Token *endtok = nullptr;
     if (Token::Match(nameToken, "%name%|return|: {") &&
-        (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
+        (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))) &&
+        !Token::simpleMatch(nameToken->tokAt(-2), ") .") && !Token::Match(nameToken->tokAt(-3), ") &|&& .")) // trailing return type, where -> is replaced by .
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
@@ -668,7 +669,7 @@ static bool iscpp11init_impl(const Token * const tok)
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
     const Token *prev = nameToken;
-    while (Token::Match(prev, "%name%|::|:|<|>")) {
+    while (Token::Match(prev, "%name%|::|:|<|>|,")) {
         if (Token::Match(prev, "class|struct"))
             return false;
 
