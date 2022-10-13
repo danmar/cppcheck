@@ -785,10 +785,15 @@ static void compileTerm(Token *&tok, AST_state& state)
                 tok = tok->link()->next();
 
             if (Token::Match(tok, "{ . %name% =|{")) {
+                const Token* end = tok->link();
                 const int inArrayAssignment = state.inArrayAssignment;
                 state.inArrayAssignment = 1;
                 compileBinOp(tok, state, compileExpression);
                 state.inArrayAssignment = inArrayAssignment;
+                if (tok == end)
+                    tok = tok->next();
+                else
+                    throw InternalError(tok, "Syntax error. Unexpected tokens in designated initializer.", InternalError::AST); // unexpected throw? It might indicate a bug with iscpp11init...
             } else if (Token::simpleMatch(tok, "{ }")) {
                 tok->astOperand1(state.op.top());
                 state.op.pop();
@@ -834,8 +839,8 @@ static void compileTerm(Token *&tok, AST_state& state)
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
         } else if (state.cpp && iscpp11init(tok)) {
+            Token *const end = tok->link();
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
-                Token *const end = tok->link();
                 if (Token::Match(tok, "{ . %name% =|{")) {
                     const int inArrayAssignment = state.inArrayAssignment;
                     state.inArrayAssignment = 1;
@@ -843,15 +848,17 @@ static void compileTerm(Token *&tok, AST_state& state)
                     state.inArrayAssignment = inArrayAssignment;
                 } else if (Token::simpleMatch(tok, "{ }")) {
                     state.op.push(tok);
-                    tok = tok->tokAt(2);
+                    tok = tok->next();
                 } else {
                     compileUnaryOp(tok, state, compileExpression);
+                    if (precedes(tok,end)) // typically for something like `MACRO(x, { if (c) { ... } })`, where end is the last curly, and tok is the open curly for the if
+                        tok = end;
                 }
-                if (precedes(tok,end))
-                    tok = end;
             } else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::Match(tok, "} ,|:|)"))
+            if (tok != end)
+                throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST); // unexpected throw? It might indicate a bug with iscpp11init...
+            if (tok->next())
                 tok = tok->next();
         } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {") && !Token::findsimplematch(tok, ";", tok->link())) {
             if (Token::simpleMatch(tok, "{ }"))
@@ -1023,12 +1030,20 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             cast->astOperand1(tok1);
             tok = tok1->link()->next();
         } else if (state.cpp && tok->str() == "{" && iscpp11init(tok)) {
+            const Token* end = tok->link();
             if (Token::simpleMatch(tok, "{ }"))
-                compileUnaryOp(tok, state, compileExpression);
-            else
-                compileBinOp(tok, state, compileExpression);
-            while (Token::simpleMatch(tok, "}"))
+            {
+                compileUnaryOp(tok, state, nullptr);
                 tok = tok->next();
+            }
+            else
+            {
+                compileBinOp(tok, state, compileExpression);
+            }
+            if (tok == end)
+                tok = end->next();
+            else
+                throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST); // unexpected throw? It might indicate a bug with iscpp11init...
         } else break;
     }
 }
