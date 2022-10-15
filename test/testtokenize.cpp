@@ -6453,7 +6453,7 @@ private:
                               "}"));
         ASSERT_EQUALS("{(=[{return ab=",
                       testAst("return {\n"
-                              "  [=]() mutable -> int {\n"
+                              "  [=]() mutable consteval -> int {\n"
                               "    a=b;\n"
                               "  }\n"
                               "}"));

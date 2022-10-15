@@ -972,7 +972,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 if (Token::simpleMatch(squareBracket->link(), "] (")) {
                     Token* const roundBracket = squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
-                    while (Token::Match(curlyBracket, "mutable|const|constexpr"))
+                    while (Token::Match(curlyBracket, "mutable|const|constexpr|consteval"))
                         curlyBracket = curlyBracket->next();
                     if (Token::simpleMatch(curlyBracket, "noexcept ("))
                         curlyBracket = curlyBracket->linkAt(1)->next();
