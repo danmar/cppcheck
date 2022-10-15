@@ -7413,8 +7413,14 @@ private:
         testIsCpp11init("auto f() & -> void {}",
                         "void {",
                         TokenImpl::Cpp11init::NOINIT);
-        testIsCpp11init("auto f() && -> void {}",
+        testIsCpp11init("auto f() const noexcept(false) -> void {}",
                         "void {",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "{ return",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "std ::",
                         TokenImpl::Cpp11init::NOINIT);
 
         testIsCpp11init("class X{};",

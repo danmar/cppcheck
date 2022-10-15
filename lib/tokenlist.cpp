@@ -642,8 +642,7 @@ static bool iscpp11init_impl(const Token * const tok)
 
     const Token *endtok = nullptr;
     if (Token::Match(nameToken, "%name%|return|: {") &&
-        (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))) &&
-        !Token::simpleMatch(nameToken->tokAt(-2), ") .") && !Token::Match(nameToken->tokAt(-3), ") &|&& .")) // trailing return type, where -> is replaced by .
+        (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
@@ -653,6 +652,8 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (Token::Match(nameToken, "else|try|do|const|constexpr|override|volatile|&|&&"))
         return false;
+    if (Token::simpleMatch(nameToken->previous(), ". void {") && nameToken->previous()->originalName() == "->")
+        return false; // trailing return type. The only function body that can contain no semicolon is a void function.
     if (Token::simpleMatch(nameToken->previous(), "namespace"))
         return false;
     if (Token::Match(nameToken, "%any% {") && !Token::Match(nameToken, "return|:")) {
