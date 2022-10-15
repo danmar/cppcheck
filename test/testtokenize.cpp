@@ -7420,6 +7420,9 @@ private:
                         "{ return",
                         TokenImpl::Cpp11init::NOINIT);
         testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "vector",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
                         "std ::",
                         TokenImpl::Cpp11init::NOINIT);
 
