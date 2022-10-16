@@ -1638,33 +1638,33 @@ Options:
     <message>
         <location filename="projectfile.ui" line="788"/>
         <source>Misra C 2012</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA C 2012</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="820"/>
         <source>Cert C</source>
-        <translation type="unfinished"></translation>
+        <translation>CERT C</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="829"/>
         <source>CERT-INT35-C:  int precision (if size equals precision, you can leave empty)</source>
-        <translation type="unfinished"></translation>
+        <translation>CERT-INT35-C:  int型の精度 (もしサイズが精度と一致する場合空のままにしてください)</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="841"/>
         <source>Misra C++ 2008</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA C++ 2008</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="848"/>
         <source>Autosar</source>
-        <translation type="unfinished"></translation>
+        <translation>AUTOSAR</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="858"/>
         <location filename="projectfile.ui" line="864"/>
         <source>Bug hunting</source>
-        <translation type="unfinished"></translation>
+        <translation>バグハント</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="887"/>

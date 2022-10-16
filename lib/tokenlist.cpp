@@ -489,6 +489,8 @@ struct AST_state {
     explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
 };
 
+static Token * createAstAtToken(Token *tok, bool cpp);
+
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
     if (!Token::Match(tok->previous(), "( %name%"))
@@ -974,6 +976,9 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                         squareBracket->astOperand1(roundBracket);
                         roundBracket->astOperand1(curlyBracket);
                         state.op.push(squareBracket);
+                        for (tok = roundBracket->next(); precedes(tok, roundBracket->link()); tok = tok->next()) {
+                            tok = createAstAtToken(tok, state.cpp);
+                        }
                         tok = curlyBracket->link()->next();
                         continue;
                     }
@@ -1361,8 +1366,6 @@ static bool isLambdaCaptureList(const Token * tok)
     return true;
 }
 
-static Token * createAstAtToken(Token *tok, bool cpp);
-
 // Compile inner expressions inside inner ({..}) and lambda bodies
 static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
 {
@@ -1613,7 +1616,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             Token::Match(typetok->previous(), "%name% ( !!*") &&
             typetok->previous()->varId() == 0 &&
             !typetok->previous()->isKeyword() &&
-            Token::Match(typetok->link(), ") const|;|{"))
+            (Token::Match(typetok->link(), ") const|;|{") || Token::Match(typetok->link(), ") const| = delete ;")))
             return typetok;
     }
 

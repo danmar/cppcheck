@@ -6247,6 +6247,14 @@ private:
                                              "    b->hash = (decltype(b->hash))(p);\n"
                                              "}\n"));
 
+        ASSERT_NO_THROW(tokenizeAndStringify("void a(int);\n" // #10801
+                                             "    struct b {\n"
+                                             "    static int c();\n"
+                                             "} d;\n"
+                                             "void f() {\n"
+                                             "    (decltype (&a)(d.c))(0);\n"
+                                             "}\n"));
+
         // #10334: Do not hang!
         tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"
                              "    for (int i = 0; i <= 123; ++i)\n"
@@ -6321,6 +6329,13 @@ private:
         ASSERT_EQUALS("1f23,(+4+", testAst("1+f(2,3)+4"));
         ASSERT_EQUALS("1f2a&,(+", testAst("1+f(2,&a)"));
         ASSERT_EQUALS("argv[", testAst("int f(char argv[]);"));
+        ASSERT_EQUALS("", testAst("void f();"));
+        ASSERT_EQUALS("", testAst("void f() {}"));
+        ASSERT_EQUALS("", testAst("int f() = delete;"));
+        ASSERT_EQUALS("", testAst("a::b f();"));
+        ASSERT_EQUALS("", testAst("a::b f() {}"));
+        ASSERT_EQUALS("", testAst("a::b f() = delete;"));
+        ASSERT_EQUALS("constdelete=", testAst("int f() const = delete;"));
         ASSERT_EQUALS("", testAst("extern unsigned f(const char *);"));
         ASSERT_EQUALS("charformat*...,", testAst("extern void f(const char *format, ...);"));
         ASSERT_EQUALS("int((void,", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
@@ -6462,6 +6477,9 @@ private:
                               "    const auto y = z;\n"
                               "    switch (y) {}\n"
                               "};"));
+
+        // #10831
+        ASSERT_EQUALS("f{([= x{([=", testAst("void foo() { F f = [](t x = []() {}) {}; }"));
     }
 
     void astcase() {

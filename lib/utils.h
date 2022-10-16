@@ -89,15 +89,31 @@ bool endsWith(const std::string& str, const char (&end)[N])
 
 inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)
 {
+    // str must be at least the prefix plus the start and end quote
+    if (str.length() < p.length() + 2)
+        return false;
+
+    // check for end quote
     if (!endsWith(str, q))
         return false;
-    if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, p + q) == 0))
-        return true;
-    return false;
+
+    // check for start quote
+    if (str[p.size()] != q)
+        return false;
+
+    // check for prefix
+    if (str.compare(0, p.size(), p) != 0)
+        return false;
+
+    return true;
 }
 
 inline static bool isStringCharLiteral(const std::string &str, char q)
 {
+    // early out to avoid the loop
+    if (!endsWith(str, q))
+        return false;
+
     static const std::array<std::string, 5> suffixes{"", "u8", "u", "U", "L"};
     for (const std::string & p: suffixes) {
         if (isPrefixStringCharLiteral(str, q, p))

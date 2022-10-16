@@ -577,14 +577,12 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
         const bool constructor = func.isConstructor();
         const bool destructor = func.isDestructor();
         if (!func.hasBody()) {
-            if (destructor) { // implementation for destructor is not seen => assume it deallocates all variables properly
+            if (destructor && !func.isDefault()) { // implementation for destructor is not seen and not defaulted => assume it deallocates all variables properly
                 deallocInDestructor = true;
                 memberDealloc = CheckMemoryLeak::Many;
             }
             continue;
         }
-        if (!func.functionScope) // defaulted destructor
-            continue;
         bool body = false;
         const Token *end = func.functionScope->bodyEnd;
         for (const Token *tok = func.arg->link(); tok != end; tok = tok->next()) {

@@ -16,7 +16,7 @@ jobs:
       image: "debian:unstable" # use latest debian image to get latest include-what-you-get
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
       - name: Install missing software
@@ -52,12 +52,12 @@ jobs:
           # do not fail for now so the output is being saved
           iwyu_tool -p cmake.output -j $(nproc) -- -w > iwyu.log || true
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Qt Mappings
           path: ./qt5.imp
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Logs
           path: ./*.log

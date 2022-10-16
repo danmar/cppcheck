@@ -6127,7 +6127,7 @@ private:
                         "    int a = ab.a;\n"
                         "    int b = ab.b;\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: ab.a\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab.b\n", "", errout.str());
 
         // STL class member
         valueFlowUninit("struct A {\n"
@@ -6227,6 +6227,17 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n",
                       errout.str());
+
+        valueFlowUninit("struct S {\n" // #11321
+                        "    int a = 0;\n"
+                        "    int b;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    S s1;\n"
+                        "    s1.b = 1;\n"
+                        "    S s2 = s1;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {

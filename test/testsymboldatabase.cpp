@@ -184,6 +184,7 @@ private:
 
         TEST_CASE(rangeBasedFor);
 
+        TEST_CASE(memberVar1);
         TEST_CASE(arrayMemberVar1);
         TEST_CASE(arrayMemberVar2);
         TEST_CASE(arrayMemberVar3);
@@ -363,6 +364,7 @@ private:
         TEST_CASE(symboldatabase99); // #10864
         TEST_CASE(symboldatabase100); // #10174
         TEST_CASE(symboldatabase101);
+        TEST_CASE(symboldatabase102);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -1414,6 +1416,22 @@ private:
         ASSERT_EQUALS("c", c->name());
         ASSERT(c->valueType());
         ASSERT_EQUALS("signed int *", c->valueType()->str());
+    }
+
+    void memberVar1() {
+        GET_SYMBOL_DB("struct Foo {\n"
+                      "    int x;\n"
+                      "};\n"
+                      "struct Bar : public Foo {};\n"
+                      "void f() {\n"
+                      "    struct Bar bar;\n"
+                      "    bar.x = 123;\n"  // <- x should get a variable() pointer
+                      "}");
+
+        ASSERT(db != nullptr);
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "x =");
+        ASSERT(tok->variable());
+        ASSERT(Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
     }
 
     void arrayMemberVar1() {
@@ -4581,6 +4599,25 @@ private:
             ASSERT(db->scopeList.back().functionList.size() == 1);
             ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
         }
+        {
+            GET_SYMBOL_DB("class C { ~C(); };\n"
+                          "C::~C() = default;");
+            ASSERT(db->scopeList.size() == 2);
+            ASSERT(db->scopeList.back().functionList.size() == 1);
+            ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+            ASSERT(db->scopeList.back().functionList.front().isDestructor() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "class C { ~C(); };\n"
+                          "}\n"
+                          "using namespace ns;\n"
+                          "C::~C() = default;");
+            ASSERT(db->scopeList.size() == 3);
+            ASSERT(db->scopeList.back().functionList.size() == 1);
+            ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+            ASSERT(db->scopeList.back().functionList.front().isDestructor() == true);
+        }
     }
 
     void symboldatabase80() { // #9389
@@ -5011,6 +5048,15 @@ private:
         ASSERT(it);
         ASSERT(it->tokAt(2));
         ASSERT(it->tokAt(2)->variable());
+    }
+
+    void symboldatabase102() {
+        GET_SYMBOL_DB("std::string f() = delete;\n"
+                      "void g() {}");
+        ASSERT(db);
+        ASSERT(db->scopeList.size() == 2);
+        ASSERT(db->scopeList.front().type == Scope::eGlobal);
+        ASSERT(db->scopeList.back().className == "g");
     }
 
     void createSymbolDatabaseFindAllScopes1() {

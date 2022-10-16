@@ -133,6 +133,17 @@ private:
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Geometry {\n"
+              "    int nbv;\n"
+              "    int empty() { return (nbv == 0); }\n"
+              "    void ReadGeometry();\n"
+              "};\n"
+              "\n"
+              "void Geometry::ReadGeometry() {\n"
+              "    assert(empty());\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void memberFunctionCallInAssert() {
@@ -145,7 +156,7 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) Assert statement calls a function which may have desired side effects: 'Foo'.\n", errout.str());
 
         check("struct SquarePack {\n"
-              "   void Foo() const;\n"
+              "   int Foo() const;\n"
               "};\n"
               "void foo(SquarePack* s) {\n"
               "   assert( s->Foo() );\n"
@@ -153,7 +164,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("struct SquarePack {\n"
-              "   static void Foo();\n"
+              "   static int Foo();\n"
               "};\n"
               "void foo(SquarePack* s) {\n"
               "   assert( s->Foo() );\n"
