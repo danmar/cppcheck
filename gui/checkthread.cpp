@@ -398,9 +398,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
             continue;
 
         std::list<ErrorMessage::FileLocation> callstack;
-        for (const QErrorPathItem &path : e.errorPath) {
-            callstack.emplace_back(path.file.toStdString(), path.info.toStdString(), path.line, path.column);
-        }
+        std::transform(e.errorPath.begin(), e.errorPath.end(), std::back_inserter(callstack), [](const QErrorPathItem& path) {
+            return ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column);
+        });
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();
         const std::string id = e.errorId.toStdString();
@@ -411,11 +411,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
 bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
 {
-    for (const Suppressions::Suppression &suppression : mSuppressions) {
-        if (suppression.isSuppressed(errorMessage))
-            return true;
-    }
-    return false;
+    return std::any_of(mSuppressions.begin(), mSuppressions.end(), [&](const Suppressions::Suppression& s) {
+        return s.isSuppressed(errorMessage);
+    });
 }
 
 QString CheckThread::clangCmd()

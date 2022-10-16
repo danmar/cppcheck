@@ -1689,24 +1689,21 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
     else
         out << "\n\n##Value flow" << std::endl;
     for (const Token *tok = this; tok; tok = tok->next()) {
-        if (!tok->mImpl->mValues)
+        const auto* const values = tok->mImpl->mValues;
+        if (!values)
             continue;
-        if (tok->mImpl->mValues->empty()) // Values might be removed by removeContradictions
+        if (values->empty()) // Values might be removed by removeContradictions
             continue;
         if (xml)
-            out << "    <values id=\"" << tok->mImpl->mValues << "\">" << std::endl;
+            out << "    <values id=\"" << values << "\">" << std::endl;
         else if (line != tok->linenr())
             out << "Line " << tok->linenr() << std::endl;
         line = tok->linenr();
         if (!xml) {
-            const ValueFlow::Value::ValueKind valueKind = tok->mImpl->mValues->front().valueKind;
-            bool same = true;
-            for (const ValueFlow::Value &value : *tok->mImpl->mValues) {
-                if (value.valueKind != valueKind) {
-                    same = false;
-                    break;
-                }
-            }
+            ValueFlow::Value::ValueKind valueKind = values->front().valueKind;
+            const bool same = std::all_of(values->begin(), values->end(), [&](const ValueFlow::Value& value) {
+                return value.valueKind == valueKind;
+            });
             out << "  " << tok->str() << " ";
             if (same) {
                 switch (valueKind) {
@@ -1722,10 +1719,10 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 }
             }
-            if (tok->mImpl->mValues->size() > 1U)
+            if (values->size() > 1U)
                 out << '{';
         }
-        for (const ValueFlow::Value &value : *tok->mImpl->mValues) {
+        for (const ValueFlow::Value& value : *values) {
             if (xml) {
                 out << "      <value ";
                 switch (value.valueType) {
@@ -1785,14 +1782,14 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             }
 
             else {
-                if (&value != &tok->mImpl->mValues->front())
+                if (&value != &values->front())
                     out << ",";
                 out << value.toString();
             }
         }
         if (xml)
             out << "    </values>" << std::endl;
-        else if (tok->mImpl->mValues->size() > 1U)
+        else if (values->size() > 1U)
             out << '}' << std::endl;
         else
             out << std::endl;

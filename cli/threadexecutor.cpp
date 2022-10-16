@@ -49,15 +49,16 @@ class ThreadExecutor::SyncLogForwarder : public ErrorLogger
 {
 public:
     explicit SyncLogForwarder(ThreadExecutor &threadExecutor)
-        : mThreadExecutor(threadExecutor), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0), mTotalFileSize(0) {
+        : mThreadExecutor(threadExecutor), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0) {
 
-        mItNextFile = mThreadExecutor.mFiles.begin();
+        const std::map<std::string, std::size_t>& files = mThreadExecutor.mFiles;
+        mItNextFile = files.begin();
         mItNextFileSettings = mThreadExecutor.mSettings.project.fileSettings.begin();
 
-        mTotalFiles = mThreadExecutor.mFiles.size() + mThreadExecutor.mSettings.project.fileSettings.size();
-        for (std::map<std::string, std::size_t>::const_iterator i = mThreadExecutor.mFiles.begin(); i != mThreadExecutor.mFiles.end(); ++i) {
-            mTotalFileSize += i->second;
-        }
+        mTotalFiles = files.size() + mThreadExecutor.mSettings.project.fileSettings.size();
+        mTotalFileSize = std::accumulate(files.begin(), files.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
+            return v + p.second;
+        });
     }
 
     void reportOut(const std::string &outmsg, Color c) override

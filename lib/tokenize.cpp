@@ -1877,11 +1877,9 @@ namespace {
         }
 
         bool hasChild(const std::string &childName) const {
-            for (const auto & child : children) {
-                if (child.name == childName)
-                    return true;
-            }
-            return false;
+            return std::any_of(children.begin(), children.end(), [&](const ScopeInfo3& child) {
+                return child.name == childName;
+            });
         }
 
         const ScopeInfo3 * findInChildren(const std::string & scope) const {
@@ -1901,10 +1899,11 @@ namespace {
             const ScopeInfo3 * tempScope = this;
             while (tempScope) {
                 // check children
-                for (const auto & child : tempScope->children) {
-                    if (&child != this && child.type == Record && (child.name == scope || child.fullName == scope))
-                        return &child;
-                }
+                auto it = std::find_if(tempScope->children.begin(), tempScope->children.end(), [&](const ScopeInfo3& child) {
+                    return &child != this && child.type == Record && (child.name == scope || child.fullName == scope);
+                });
+                if (it != tempScope->children.end())
+                    return &*it;
                 // check siblings for same name
                 if (tempScope->parent) {
                     for (const auto &sibling : tempScope->parent->children) {
@@ -2181,15 +2180,17 @@ namespace {
         const ScopeInfo3 * tempScope = scopeInfo;
         while (tempScope) {
             //if (!tempScope->parent->usingNamespaces.empty()) {
-            if (!tempScope->usingNamespaces.empty()) {
+            const std::set<std::string>& usingNS = tempScope->usingNamespaces;
+            if (!usingNS.empty()) {
                 if (qualification.empty()) {
-                    if (tempScope->usingNamespaces.find(scope) != tempScope->usingNamespaces.end())
+                    if (usingNS.find(scope) != usingNS.end())
                         return true;
                 } else {
-                    for (const auto &ns : tempScope->usingNamespaces) {
-                        if (scope == ns + " :: " + qualification)
-                            return true;
-                    }
+                    const std::string suffix = " :: " + qualification;
+                    if (std::any_of(usingNS.begin(), usingNS.end(), [&](const std::string& ns) {
+                        return scope == ns + suffix;
+                    }))
+                        return true;
                 }
             }
             tempScope = tempScope->parent;
@@ -4427,8 +4428,9 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // What member variables are there in this class?
-        for (const Token *it : classnameTokens)
-            scopeInfo.emplace_back(it->str(), tokStart->link());
+        std::transform(classnameTokens.begin(), classnameTokens.end(), std::back_inserter(scopeInfo), [&](const Token* tok) {
+            return ScopeInfo2(tok->str(), tokStart->link());
+        });
 
         for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
             // skip parentheses..
@@ -9811,13 +9813,11 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
     if (!mPreprocessor)
         return false;
-    for (const Directive &d: mPreprocessor->getDirectives()) {
-        if (d.linenr >= start->linenr() &&
-            d.linenr <= end->linenr() &&
-            d.str.compare(0,3,"#if") == 0 &&
-            start->fileIndex() < list.getFiles().size() &&
-            d.file == list.getFiles()[start->fileIndex()])
-            return true;
-    }
-    return false;
+    return std::any_of(mPreprocessor->getDirectives().begin(), mPreprocessor->getDirectives().end(), [&](const Directive& d) {
+        return d.str.compare(0, 3, "#if") == 0 &&
+        d.linenr >= start->linenr() &&
+        d.linenr <= end->linenr() &&
+        start->fileIndex() < list.getFiles().size() &&
+        d.file == list.getFiles()[start->fileIndex()];
+    });
 }

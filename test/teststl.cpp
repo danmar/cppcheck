@@ -1784,7 +1784,7 @@ private:
               "    }\n"
               "    return 0;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
     }
 
     void iteratorExpression() {
@@ -1988,7 +1988,7 @@ private:
               "        }\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
 
         // #10012
         check("struct a {\n"
@@ -2856,7 +2856,9 @@ private:
               "        sum += *it;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:8]: (error) Using iterator to local container 'ints' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n"
+                      "[test.cpp:4] -> [test.cpp:5] -> [test.cpp:3] -> [test.cpp:8]: (error) Using iterator to local container 'ints' that may be invalid.\n",
+                      errout.str());
     }
 
     void pushback9() {
@@ -3702,7 +3704,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
 
         check("function f1(std::list<int> &l1) {\n"
               "    for(std::list<int>::iterator i = l1.begin(); i != l1.end(); i++) {\n"
@@ -3712,7 +3714,7 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
     }
 
     void missingInnerComparison5() {
@@ -4629,7 +4631,7 @@ private:
               "        return s.erase(it);\n"
               "    return s.end();\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
@@ -4769,7 +4771,7 @@ private:
               "        b &= f(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool f(int);\n"
               "void foo() {\n"
@@ -4778,7 +4780,7 @@ private:
               "        b |= f(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool f(int);\n"
               "void foo() {\n"
@@ -4787,7 +4789,7 @@ private:
               "        b = b && f(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool f(int);\n"
               "void foo() {\n"
@@ -4796,7 +4798,7 @@ private:
               "        b = b || f(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
               "    int n = 0;\n"
@@ -4804,6 +4806,63 @@ private:
               "        n = ++x;\n"
               "}\n",
               true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::size_t f(const std::map<std::string, std::size_t>& m) {\n" // #10412
+              "    std::size_t t = 0;\n"
+              "    for (std::map<std::string, std::size_t>::const_iterator i = m.begin(); i != m.end(); ++i) {\n"
+              "        t += i->second;\n"
+              "    }\n"
+              "    for (std::map<std::string, std::size_t>::const_iterator i = m.begin(); i != m.end(); i++) {\n"
+              "        t += i->second;\n"
+              "    }\n"
+              "    return t; \n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n"
+                      "[test.cpp:7]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n",
+                      errout.str());
+
+        check("int g(const std::vector<int>& v) {\n"
+              "    int t = 0;\n"
+              "    for (auto i = v.begin(); i != v.end(); ++i) {\n"
+              "        t += *i;\n"
+              "    }\n"
+              "    return t;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("auto g(const std::vector<int>& v) {\n"
+              "    std::vector<std::vector<int>::iterator> r;\n"
+              "    for (auto i = v.begin(); i != v.end(); ++i) {\n"
+              "        r.push_back(i);\n"
+              "    }\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::vector<std::string> v) {\n"
+              "    std::string ret;\n"
+              "    for (const std::string& s : v)\n"
+              "        ret += s + '\\n';\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(const std::string& s) {\n"
+              "    std::string ret;\n"
+              "    for (char c : s)\n"
+              "        if (c != ' ')\n"
+              "            ret += i;\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int sum = 0;\n"
+              "    for (auto it = v.begin(); it != v.end(); it += 2)\n"
+              "        sum += *it;\n"
+              "    return sum;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5038,7 +5097,7 @@ private:
               "    return true;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool pred(int x);\n"
               "bool foo() {\n"
@@ -5051,7 +5110,7 @@ private:
               "    return true;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool pred(int x);\n"
               "bool foo() {\n"
@@ -5064,7 +5123,7 @@ private:
               "    return true;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:6]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool pred(int x);\n"
               "bool foo() {\n"

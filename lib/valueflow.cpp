@@ -3408,10 +3408,11 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                !Token::simpleMatch(getArgumentStart(tok), ",") && getArgumentStart(tok)->valueType()) {
         const Token* vartok = getArgumentStart(tok);
         auto vts = getParentValueTypes(tok);
-        for (const ValueType& vt : vts) {
-            if (vt.isTypeEqual(vartok->valueType()))
-                return getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1);
-        }
+        auto it = std::find_if(vts.begin(), vts.end(), [&](const ValueType& vt) {
+            return vt.isTypeEqual(vartok->valueType());
+        });
+        if (it != vts.end())
+            return getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1);
     }
     return {{tok, std::move(errorPath)}};
 }
@@ -5333,16 +5334,17 @@ static void valueFlowForwardConst(Token* start,
             [&] {
                 // Follow references
                 auto refs = followAllReferences(tok);
-                for (const ReferenceToken& ref : refs) {
-                    if (ref.token->varId() == var->declarationId()) {
-                        for (ValueFlow::Value value : values) {
-                            if (refs.size() > 1)
-                                value.setInconclusive();
-                            value.errorPath.insert(value.errorPath.end(), ref.errors.begin(), ref.errors.end());
-                            setTokenValue(tok, value, settings);
-                        }
-                        return;
+                auto it = std::find_if(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
+                    return ref.token->varId() == var->declarationId();
+                });
+                if (it != refs.end()) {
+                    for (ValueFlow::Value value : values) {
+                        if (refs.size() > 1)
+                            value.setInconclusive();
+                        value.errorPath.insert(value.errorPath.end(), it->errors.begin(), it->errors.end());
+                        setTokenValue(tok, value, settings);
                     }
+                    return;
                 }
                 // Follow symbolic vaues
                 for (const ValueFlow::Value& v : tok->values()) {
@@ -6949,11 +6951,9 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         if (!scope)
             return false;
         if (scope->type == Scope::eLambda) {
-            for (const auto& p:values) {
-                if (!p.second.isLifetimeValue())
-                    return false;
-            }
-            return true;
+            return std::all_of(values.begin(), values.end(), [](const std::pair<nonneg int, ValueFlow::Value>& p) {
+                return p.second.isLifetimeValue();
+            });
         } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
                    scope->type == Scope::eFor) {
             auto pred = [](const ValueFlow::Value& value) {
@@ -7033,16 +7033,11 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
     for (const auto& arg:args) {
         if (arg.empty())
             continue;
-        bool skip = false;
         // Make sure all arguments are the same path
         const MathLib::bigint path = arg.begin()->second.path;
-        for (const auto& p:arg) {
-            if (p.second.path != path) {
-                skip = true;
-                break;
-            }
-        }
-        if (skip)
+        if (std::any_of(arg.begin(), arg.end(), [&](const std::pair<Key, ValueFlow::Value>& p) {
+            return p.second.path != path;
+        }))
             continue;
         f(arg);
     }

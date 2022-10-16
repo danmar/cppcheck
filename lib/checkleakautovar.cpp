@@ -82,11 +82,9 @@ template<std::size_t N>
 static bool isVarTokComparison(const Token * tok, const Token ** vartok,
                                const std::array<std::pair<std::string, std::string>, N>& ops)
 {
-    for (const auto & op : ops) {
-        if (astIsVariableComparison(tok, op.first, op.second, vartok))
-            return true;
-    }
-    return false;
+    return std::any_of(ops.begin(), ops.end(), [&](const std::pair<std::string, std::string>& op) {
+        return astIsVariableComparison(tok, op.first, op.second, vartok);
+    });
 }
 
 //---------------------------------------------------------------------------

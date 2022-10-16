@@ -450,12 +450,10 @@ void CheckOther::checkRedundantAssignment()
                     // If there is a custom assignment operator => this is inconclusive
                     if (tok->astOperand1()->valueType()->typeScope) {
                         const std::string op = "operator" + tok->str();
-                        for (const Function& f : tok->astOperand1()->valueType()->typeScope->functionList) {
-                            if (f.name() == op) {
-                                inconclusive = true;
-                                break;
-                            }
-                        }
+                        const std::list<Function>& fList = tok->astOperand1()->valueType()->typeScope->functionList;
+                        inconclusive = std::any_of(fList.begin(), fList.end(), [&](const Function& f) {
+                            return f.name() == op;
+                        });
                     }
                     // assigning a smart pointer has side effects
                     if (tok->astOperand1()->valueType()->type == ValueType::SMART_POINTER)
@@ -1181,11 +1179,11 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
 
         accumulateSize(cumulatedSize, size, isUnion);
     }
-    for (const Type::BaseInfo &baseInfo : type->derivedFrom) {
+    return std::accumulate(type->derivedFrom.begin(), type->derivedFrom.end(), cumulatedSize, [&](int v, const Type::BaseInfo& baseInfo) {
         if (baseInfo.type && baseInfo.type->classScope)
-            cumulatedSize += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth+1);
-    }
-    return cumulatedSize;
+            v += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth + 1);
+        return v;
+    });
 }
 
 static bool canBeConst(const Variable *var, const Settings* settings)
@@ -3463,10 +3461,12 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
         if (var.name() == varname)
             return var.nameToken();
     }
-    for (const Function &f : scope->functionList) {
-        if (f.type == Function::Type::eFunction && f.name() == varname)
-            return f.tokenDef;
-    }
+    auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
+        return f.type == Function::Type::eFunction && f.name() == varname;
+    });
+    if (it != scope->functionList.end())
+        return it->tokenDef;
+
     if (scope->type == Scope::eLambda)
         return nullptr;
     const Token* shadowed = findShadowed(scope->nestedIn, varname, linenr);
@@ -3491,16 +3491,14 @@ void CheckOther::checkShadowVariables()
                 continue;
 
             if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
-                bool shadowArg = false;
-                for (const Variable &arg : functionScope->function->argumentList) {
-                    if (arg.nameToken() && var.name() == arg.name()) {
-                        shadowError(var.nameToken(), arg.nameToken(), "argument");
-                        shadowArg = true;
-                        break;
-                    }
-                }
-                if (shadowArg)
+                const auto argList = functionScope->function->argumentList;
+                auto it = std::find_if(argList.begin(), argList.end(), [&](const Variable& arg) {
+                    return arg.nameToken() && var.name() == arg.name();
+                });
+                if (it != argList.end()) {
+                    shadowError(var.nameToken(), it->nameToken(), "argument");
                     continue;
+                }
             }
 
             const Token *shadowed = findShadowed(scope.nestedIn, var.name(), var.nameToken()->linenr());

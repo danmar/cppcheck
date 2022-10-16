@@ -57,11 +57,13 @@ int main(int argc, char *argv[])
     QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
 
     // Set data dir..
-    for (const QString& arg : QApplication::arguments()) {
-        if (arg.startsWith("--data-dir=")) {
-            settings->setValue("DATADIR", arg.mid(11));
-            return 0;
-        }
+    const QStringList args = QApplication::arguments();
+    auto it = std::find_if(args.begin(), args.end(), [](const QString& arg) {
+        return arg.startsWith("--data-dir=");
+    });
+    if (it != args.end()) {
+        settings->setValue("DATADIR", it->mid(11));
+        return 0;
     }
 
     TranslationHandler* th = new TranslationHandler(&app);
