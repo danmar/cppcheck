@@ -795,7 +795,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 if (tok == end)
                     tok = tok->next();
                 else
-                    throw InternalError(tok, "Syntax error. Unexpected tokens in designated initializer.", InternalError::AST); // unexpected throw? It might indicate a bug with iscpp11init...
+                    throw InternalError(tok, "Syntax error. Unexpected tokens in designated initializer.", InternalError::AST);
             } else if (Token::simpleMatch(tok, "{ }")) {
                 tok->astOperand1(state.op.top());
                 state.op.pop();
@@ -859,7 +859,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             } else
                 compileBinOp(tok, state, compileExpression);
             if (tok != end)
-                throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST); // unexpected throw? It might indicate a bug with iscpp11init...
+                throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST);
             if (tok->next())
                 tok = tok->next();
         } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {") && !Token::findsimplematch(tok, ";", tok->link())) {
@@ -1045,7 +1045,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             if (tok == end)
                 tok = end->next();
             else
-                throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST); // unexpected throw? It might indicate a bug with iscpp11init...
+                throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST);
         } else break;
     }
 }
