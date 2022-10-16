@@ -1074,11 +1074,10 @@ public:
     }
 
     const Enumerator * findEnumerator(const std::string & name) const {
-        for (const Enumerator & i : enumeratorList) {
-            if (i.name->str() == name)
-                return &i;
-        }
-        return nullptr;
+        auto it = std::find_if(enumeratorList.begin(), enumeratorList.end(), [&](const Enumerator& i) {
+            return i.name->str() == name;
+        });
+        return it == enumeratorList.end() ? nullptr : &*it;
     }
 
     bool isNestedIn(const Scope * outer) const {

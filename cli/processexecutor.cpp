@@ -31,11 +31,11 @@
 #include "suppressions.h"
 
 #include <algorithm>
+#include <numeric>
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
-#include <fcntl.h>
 #include <functional>
 #include <iostream>
 #include <list>
@@ -43,7 +43,8 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <utility>
+#include <fcntl.h>
+
 
 #ifdef __SVR4  // Solaris
 #include <sys/loadavg.h>
@@ -217,10 +218,9 @@ unsigned int ProcessExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    std::size_t totalfilesize = 0;
-    for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-        totalfilesize += i->second;
-    }
+    const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
+        return v + p.second;
+    });
 
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;

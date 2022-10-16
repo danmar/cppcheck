@@ -5482,6 +5482,13 @@ private:
               "    if (p=foo()){}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(uint32_t u) {\n" // #2490
+              "    if ((u = 0x00000000) || (u = 0xffffffff)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'u=0x00000000' is always false\n"
+                      "[test.cpp:2]: (style) Condition 'u=0xffffffff' is always true\n",
+                      errout.str());
     }
 
     void compareOutOfTypeRange() {

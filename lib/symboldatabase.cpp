@@ -3421,13 +3421,9 @@ bool Type::hasCircularDependencies(std::set<BaseInfo>* ancestors) const
 
 bool Type::findDependency(const Type* ancestor) const
 {
-    if (this==ancestor)
-        return true;
-    for (std::vector<BaseInfo>::const_iterator parent=derivedFrom.begin(); parent!=derivedFrom.end(); ++parent) {
-        if (parent->type && (parent->type == this || parent->type->findDependency(ancestor)))
-            return true;
-    }
-    return false;
+    return this == ancestor || std::any_of(derivedFrom.begin(), derivedFrom.end(), [&](const BaseInfo& d) {
+        return d.type && (d.type == this || d.type->findDependency(ancestor));
+    });
 }
 
 bool Type::isDerivedFrom(const std::string & ancestor) const
@@ -5570,11 +5566,10 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
 
 const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 {
-    for (const Scope &scope: scopeList) {
-        if (scope.className == name)
-            return &scope;
-    }
-    return nullptr;
+    auto it = std::find_if(scopeList.begin(), scopeList.end(), [&](const Scope& s) {
+        return s.className == name;
+    });
+    return it == scopeList.end() ? nullptr : &*it;
 }
 
 //---------------------------------------------------------------------------
@@ -5634,10 +5629,11 @@ const Type* Scope::findType(const std::string & name) const
 
 Scope *Scope::findInNestedListRecursive(const std::string & name)
 {
-    for (Scope *scope: nestedList) {
-        if (scope->className == name)
-            return scope;
-    }
+    auto it = std::find_if(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
+        return s->className == name;
+    });
+    if (it != nestedList.end())
+        return *it;
 
     for (Scope* scope: nestedList) {
         Scope *child = scope->findInNestedListRecursive(name);
@@ -5651,11 +5647,10 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 const Function *Scope::getDestructor() const
 {
-    for (const Function &f: functionList) {
-        if (f.type == Function::eDestructor)
-            return &f;
-    }
-    return nullptr;
+    auto it = std::find_if(functionList.begin(), functionList.end(), [](const Function& f) {
+        return f.type == Function::eDestructor;
+    });
+    return it == functionList.end() ? nullptr : &*it;
 }
 
 //---------------------------------------------------------------------------

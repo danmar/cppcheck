@@ -1313,12 +1313,10 @@ bool Library::formatstr_function(const Token* ftok) const
 int Library::formatstr_argno(const Token* ftok) const
 {
     const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = functions.at(getFunctionName(ftok)).argumentChecks;
-    for (const std::pair<const int, Library::ArgumentChecks> & argCheckFunc : argumentChecksFunc) {
-        if (argCheckFunc.second.formatstr) {
-            return argCheckFunc.first - 1;
-        }
-    }
-    return -1;
+    auto it = std::find_if(argumentChecksFunc.begin(), argumentChecksFunc.end(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
+        return a.second.formatstr;
+    });
+    return it == argumentChecksFunc.end() ? -1 : it->first - 1;
 }
 
 bool Library::formatstr_scan(const Token* ftok) const
@@ -1396,14 +1394,12 @@ bool Library::hasminsize(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::unordered_map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
-    if (it1 == functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
+    if (it == functions.cend())
         return false;
-    for (const std::pair<const int, Library::ArgumentChecks> & argCheck : it1->second.argumentChecks) {
-        if (!argCheck.second.minsizes.empty())
-            return true;
-    }
-    return false;
+    return std::any_of(it->second.argumentChecks.begin(), it->second.argumentChecks.end(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
+        return !a.second.minsizes.empty();
+    });
 }
 
 Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr) const

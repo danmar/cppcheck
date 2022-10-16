@@ -775,12 +775,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         tok = scope->classDef->next();
     for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok != scope->bodyStart && !tok->previous()->varId()) {
-            for (const Scope *i : scope->nestedList) {
-                if (i->bodyStart == tok) { // Find associated scope
-                    checkFunctionVariableUsage_iterateScopes(tok->scope(), variables); // Scan child scope
-                    tok = tok->link();
-                    break;
-                }
+            if (std::any_of(scope->nestedList.begin(), scope->nestedList.end(), [&](const Scope* s) {
+                return s->bodyStart == tok;
+            })) {
+                checkFunctionVariableUsage_iterateScopes(tok->scope(), variables); // Scan child scope
+                tok = tok->link();
             }
             if (!tok)
                 break;
@@ -1422,13 +1421,10 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (scope.bodyEnd->isAttributePacked())
             continue;
         if (const Preprocessor *preprocessor = mTokenizer->getPreprocessor()) {
-            bool isPacked = false;
-            for (const Directive &d: preprocessor->getDirectives()) {
-                if (d.str == "#pragma pack(1)" && d.file == mTokenizer->list.getFiles().front() && d.linenr < scope.bodyStart->linenr()) {
-                    isPacked=true;
-                    break;
-                }
-            }
+            const auto& directives = preprocessor->getDirectives();
+            const bool isPacked = std::any_of(directives.begin(), directives.end(), [&](const Directive& d) {
+                return d.linenr < scope.bodyStart->linenr() && d.str == "#pragma pack(1)" && d.file == mTokenizer->list.getFiles().front();
+            });
             if (isPacked)
                 continue;
         }
@@ -1442,20 +1438,12 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // bail out if struct is inherited
-        bool bailout = false;
-        for (const Scope &derivedScope : symbolDatabase->scopeList) {
-            if (derivedScope.definedType) {
-                for (const Type::BaseInfo &derivedFrom : derivedScope.definedType->derivedFrom) {
-                    if (derivedFrom.type == scope.definedType) {
-                        bailout = true;
-                        break;
-                    }
-                }
-            }
-
-            if (bailout)
-                break;
-        }
+        bool bailout = std::any_of(symbolDatabase->scopeList.begin(), symbolDatabase->scopeList.end(), [&](const Scope& derivedScope) {
+            const Type* dType = derivedScope.definedType;
+            return dType && std::any_of(dType->derivedFrom.begin(), dType->derivedFrom.end(), [&](const Type::BaseInfo& derivedFrom) {
+                return derivedFrom.type == scope.definedType;
+            });
+        });
         if (bailout)
             continue;
 
@@ -1592,10 +1580,10 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     }
 
     // Derived from type that has side effects?
-    for (const Type::BaseInfo& derivedFrom : type->derivedFrom) {
-        if (!isRecordTypeWithoutSideEffects(derivedFrom.type))
-            return (withoutSideEffects = false);
-    }
+    if (std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [this](const Type::BaseInfo& derivedFrom) {
+        return !isRecordTypeWithoutSideEffects(derivedFrom.type);
+    }))
+        return (withoutSideEffects = false);
 
     // Is there a member variable with possible side effects
     for (const Variable& var : type->classScope->varlist) {
@@ -1641,18 +1629,13 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 
     if (type && type->classScope && type->classScope->numConstructors == 0 &&
         (type->classScope->varlist.empty())) {
-        for (std::vector<Type::BaseInfo>::const_iterator i = type->derivedFrom.begin(); i != type->derivedFrom.end(); ++i) {
-            if (!isEmptyType(i->type)) {
-                emptyType=false;
-                return emptyType;
-            }
-        }
-        emptyType=true;
-        return emptyType;
+        return (emptyType = std::all_of(type->derivedFrom.begin(), type->derivedFrom.end(), [this](const Type::BaseInfo& bi) {
+            return isEmptyType(bi.type);
+        }));
     }
 
-    emptyType=false;   // unknown types are assumed to be nonempty
-    return emptyType;
+    // unknown types are assumed to be nonempty
+    return (emptyType = false);
 }
 
 bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
