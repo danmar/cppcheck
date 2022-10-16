@@ -37,6 +37,7 @@ struct Analyzer {
         template<class T,
                  REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),
                  REQUIRES("T must not be a bool", !std::is_same<T, bool> )>
+        // NOLINTNEXTLINE(google-explicit-constructor)
         Action(T f) : mFlag(f) // cppcheck-suppress noExplicitConstructor
         {}
 
