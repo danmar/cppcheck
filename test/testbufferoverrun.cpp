@@ -1908,7 +1908,7 @@ private:
               "    static const char a[] = ((\"test\"));\n"
               "    printf(\"%c\", a[5]);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[5]' accessed at index 5, which is out of bounds.\n, errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[5]' accessed at index 5, which is out of bounds.\n", errout.str());
     }
 
     void array_index_multidim() {
