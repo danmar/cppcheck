@@ -3159,6 +3159,26 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 
 void Tokenizer::arraySize()
 {
+    auto getStrTok = [](Token* tok, bool addLength, Token** endStmt) -> Token* {
+        if (addLength) {
+            *endStmt = tok->tokAt(6);
+            return tok->tokAt(4);
+        }
+        if (Token::Match(tok, "%var% [ ] =")) {
+            tok = tok->tokAt(4);
+            int parCount = 0;
+            while (Token::simpleMatch(tok, "(")) {
+                ++parCount;
+                tok = tok->next();
+            }
+            if (Token::Match(tok, "%str%")) {
+                *endStmt = tok->tokAt(parCount + 1);
+                return tok;
+            }
+        }
+        return nullptr;
+    };
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!tok->isName() || !Token::Match(tok, "%var% [ ] ="))
             continue;
@@ -3170,11 +3190,11 @@ void Tokenizer::arraySize()
             addlength = true;
         }
 
-        if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
-            tok = tok->next();
-            const int sz = Token::getStrArraySize(tok->tokAt(3));
-            tok->insertToken(MathLib::toString(sz));
-            tok = tok->tokAt(5);
+        Token* endStmt{};
+        if (const Token* strTok = getStrTok(tok, addlength, &endStmt)) {
+            const int sz = Token::getStrArraySize(strTok);
+            tok->next()->insertToken(MathLib::toString(sz));
+            tok = endStmt;
         }
 
         else if (Token::Match(tok, "%var% [ ] = {")) {
