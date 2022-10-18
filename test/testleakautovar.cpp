@@ -169,6 +169,7 @@ private:
         TEST_CASE(ifelse25); // #9966
         TEST_CASE(ifelse26);
         TEST_CASE(ifelse27);
+        TEST_CASE(ifelse28); // #11038
 
         // switch
         TEST_CASE(switch1);
@@ -1905,6 +1906,17 @@ private:
               "    }\n"
               "    *handle = key;\n"
               "    return 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse28() { // #11038
+        check("char * f(void) {\n"
+              "   char *buf = (char*)malloc(42*sizeof(char));\n"
+              "   char *temp;\n"
+              "   if ((temp = (char*)realloc(buf, 16)) != NULL)\n"
+              "   {  buf = temp;  }\n"
+              "   return buf;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
