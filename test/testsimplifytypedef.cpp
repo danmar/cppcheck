@@ -2545,11 +2545,12 @@ private:
 
     void simplifyTypedef124() { // ticket #7792
         const char code[] = "typedef long unsigned int size_t;\n"
-                            "typedef size_t (my_func)(char *, size_t, size_t, void *);";
+                            "typedef size_t (my_func)(char *, size_t, size_t, void *);"
+                            "size_t f(size_t s);";
 
-        // Check for output..
-        checkSimplifyTypedef(code);
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:1]: (debug) Failed to parse 'typedef long unsigned int size_t ;'. The checking continues anyway.\n", errout.str());
+        const char exp[] = "long f ( long s ) ;";
+        ASSERT_EQUALS(exp, tok(code, /*simplify*/ true));
+        ASSERT_EQUALS("", errout.str());
 
         const char code1[] = "typedef long unsigned int uint32_t;\n"
                              "typedef uint32_t (my_func)(char *, uint32_t, uint32_t, void *);";
