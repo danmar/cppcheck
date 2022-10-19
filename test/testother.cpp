@@ -4291,7 +4291,7 @@ private:
               "    return 0;\n"
               "    foo();\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Statements following 'return' will never be executed.\n", errout.str());
 
         check("int foo(int unused) {\n"
               "    return 0;\n"
@@ -4312,7 +4312,7 @@ private:
               "    (void)unused2;\n"
               "    foo();\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Statements following 'return' will never be executed.\n", errout.str());
 
         check("int foo() {\n"
               "    if(bar)\n"
@@ -4349,7 +4349,7 @@ private:
               "    return 0;\n"
               "    j=2;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:7]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Statements following 'return' will never be executed.\n", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"
@@ -4496,6 +4496,13 @@ private:
                "    return INB(port_1);\n"
                "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        check("[[noreturn]] void n();\n"
+              "void f() {\n"
+              "    n();\n"
+              "    g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Statements following noreturn function 'n()' will never be executed.\n", errout.str());
     }
 
     void redundantContinue() {
