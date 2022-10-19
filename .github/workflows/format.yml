@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Cache uncrustify
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         id: cache-uncrustify
         with:
           path: |

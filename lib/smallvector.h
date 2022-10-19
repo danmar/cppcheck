@@ -21,7 +21,7 @@
 
 #include <cstddef>
 
-static constexpr std::size_t DefaultSmallVectorSize = 0;
+static constexpr std::size_t DefaultSmallVectorSize = 3;
 
 #ifdef HAVE_BOOST
 #include <boost/container/small_vector.hpp>
@@ -37,6 +37,7 @@ struct TaggedAllocator : std::allocator<T>
 {
     template<class ... Ts>
     // cppcheck-suppress noExplicitConstructor
+    // NOLINTNEXTLINE(google-explicit-constructor)
     TaggedAllocator(Ts&&... ts)
         : std::allocator<T>(std::forward<Ts>(ts)...)
     {}
@@ -47,6 +48,7 @@ class SmallVector : public std::vector<T, TaggedAllocator<T, N>>
 {
 public:
     template<class ... Ts>
+    // NOLINTNEXTLINE(google-explicit-constructor)
     SmallVector(Ts&&... ts)
         : std::vector<T, TaggedAllocator<T, N>>(std::forward<Ts>(ts)...)
     {

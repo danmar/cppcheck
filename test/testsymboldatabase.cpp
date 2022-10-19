@@ -108,10 +108,11 @@ private:
                 currScope = currScope->nestedIn;
         }
         while (currScope) {
-            for (const Function & i : currScope->functionList) {
-                if (i.tokenDef->str() == str)
-                    return &i;
-            }
+            auto it = std::find_if(currScope->functionList.begin(), currScope->functionList.end(), [&](const Function& f) {
+                return f.tokenDef->str() == str;
+            });
+            if (it != currScope->functionList.end())
+                return &*it;
             currScope = currScope->nestedIn;
         }
         return nullptr;
@@ -184,6 +185,7 @@ private:
 
         TEST_CASE(rangeBasedFor);
 
+        TEST_CASE(memberVar1);
         TEST_CASE(arrayMemberVar1);
         TEST_CASE(arrayMemberVar2);
         TEST_CASE(arrayMemberVar3);
@@ -363,6 +365,7 @@ private:
         TEST_CASE(symboldatabase99); // #10864
         TEST_CASE(symboldatabase100); // #10174
         TEST_CASE(symboldatabase101);
+        TEST_CASE(symboldatabase102);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -1319,7 +1322,7 @@ private:
     void isVariablePointerToConstPointer() {
         reset();
         GET_SYMBOL_DB("char* const * s;");
-        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1330,7 +1333,7 @@ private:
     void isVariablePointerToVolatilePointer() {
         reset();
         GET_SYMBOL_DB("char* volatile * s;");
-        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1341,7 +1344,7 @@ private:
     void isVariablePointerToConstVolatilePointer() {
         reset();
         GET_SYMBOL_DB("char* const volatile * s;");
-        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1352,7 +1355,7 @@ private:
     void isVariableMultiplePointersAndQualifiers() {
         reset();
         GET_SYMBOL_DB("const char* const volatile * const volatile * const volatile * const volatile s;");
-        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens()->next(), vartok, typetok);
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1414,6 +1417,22 @@ private:
         ASSERT_EQUALS("c", c->name());
         ASSERT(c->valueType());
         ASSERT_EQUALS("signed int *", c->valueType()->str());
+    }
+
+    void memberVar1() {
+        GET_SYMBOL_DB("struct Foo {\n"
+                      "    int x;\n"
+                      "};\n"
+                      "struct Bar : public Foo {};\n"
+                      "void f() {\n"
+                      "    struct Bar bar;\n"
+                      "    bar.x = 123;\n"  // <- x should get a variable() pointer
+                      "}");
+
+        ASSERT(db != nullptr);
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "x =");
+        ASSERT(tok->variable());
+        ASSERT(Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
     }
 
     void arrayMemberVar1() {
@@ -2137,9 +2156,9 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.begin();
         ASSERT(it->varlist.size() == 1);
-        std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.begin();
         ASSERT(var->name() == "i");
         ASSERT(var->typeStartToken()->str() == "int");
     }
@@ -2149,10 +2168,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.begin();
         ASSERT(it->varlist.size() == 1);
 
-        std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.begin();
         ASSERT(var->name() == "array");
         ASSERT(var->typeStartToken()->str() == "int");
     }
@@ -2162,10 +2181,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.begin();
         ASSERT(it->varlist.size() == 1);
 
-        std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.begin();
         ASSERT(var->name() == "array");
         ASSERT(var->typeStartToken()->str() == "int");
     }
@@ -2634,13 +2653,10 @@ private:
                       "namespace barney { X::X(int) { } }");
 
         // Locate the scope for the class..
-        const Scope *scope = nullptr;
-        for (const Scope & it : db->scopeList) {
-            if (it.isClassOrStruct()) {
-                scope = &it;
-                break;
-            }
-        }
+        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+            return s.isClassOrStruct();
+        });
+        const Scope *scope = (it == db->scopeList.end()) ? nullptr : &*it;
 
         ASSERT(scope != nullptr);
         if (!scope)
@@ -2668,13 +2684,10 @@ private:
                       "}");
 
         // Locate the scope for the class..
-        const Scope *scope = nullptr;
-        for (const Scope & it : db->scopeList) {
-            if (it.isClassOrStruct()) {
-                scope = &it;
-                break;
-            }
-        }
+        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+            return s.isClassOrStruct();
+        });
+        const Scope* scope = (it == db->scopeList.end()) ? nullptr : &*it;
 
         ASSERT(scope != nullptr);
         if (!scope)
@@ -2957,11 +2970,10 @@ private:
         ASSERT_EQUALS(4U, db->scopeList.size());
 
         // Find the scope for the Fred struct..
-        const Scope *fredScope = nullptr;
-        for (const Scope & scope : db->scopeList) {
-            if (scope.isClassOrStruct() && scope.className == "Fred")
-                fredScope = &scope;
-        }
+        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [&](const Scope& scope) {
+            return scope.isClassOrStruct() && scope.className == "Fred";
+        });
+        const Scope* fredScope = (it == db->scopeList.end()) ? nullptr : &*it;
         ASSERT(fredScope != nullptr);
 
         // The struct Fred has two functions, a constructor and a destructor
@@ -2970,11 +2982,11 @@ private:
         // Get linenumbers where the bodies for the constructor and destructor are..
         unsigned int constructor = 0;
         unsigned int destructor = 0;
-        for (const Function & it : fredScope->functionList) {
-            if (it.type == Function::eConstructor)
-                constructor = it.token->linenr();  // line number for constructor body
-            if (it.type == Function::eDestructor)
-                destructor = it.token->linenr();  // line number for destructor body
+        for (const Function& f : fredScope->functionList) {
+            if (f.type == Function::eConstructor)
+                constructor = f.token->linenr();  // line number for constructor body
+            if (f.type == Function::eDestructor)
+                destructor = f.token->linenr();  // line number for destructor body
         }
 
         // The body for the constructor is located at line 5..
@@ -4581,6 +4593,25 @@ private:
             ASSERT(db->scopeList.back().functionList.size() == 1);
             ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
         }
+        {
+            GET_SYMBOL_DB("class C { ~C(); };\n"
+                          "C::~C() = default;");
+            ASSERT(db->scopeList.size() == 2);
+            ASSERT(db->scopeList.back().functionList.size() == 1);
+            ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+            ASSERT(db->scopeList.back().functionList.front().isDestructor() == true);
+        }
+        {
+            GET_SYMBOL_DB("namespace ns {\n"
+                          "class C { ~C(); };\n"
+                          "}\n"
+                          "using namespace ns;\n"
+                          "C::~C() = default;");
+            ASSERT(db->scopeList.size() == 3);
+            ASSERT(db->scopeList.back().functionList.size() == 1);
+            ASSERT(db->scopeList.back().functionList.front().isDefault() == true);
+            ASSERT(db->scopeList.back().functionList.front().isDestructor() == true);
+        }
     }
 
     void symboldatabase80() { // #9389
@@ -5013,6 +5044,15 @@ private:
         ASSERT(it->tokAt(2)->variable());
     }
 
+    void symboldatabase102() {
+        GET_SYMBOL_DB("std::string f() = delete;\n"
+                      "void g() {}");
+        ASSERT(db);
+        ASSERT(db->scopeList.size() == 2);
+        ASSERT(db->scopeList.front().type == Scope::eGlobal);
+        ASSERT(db->scopeList.back().className == "g");
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -5053,9 +5093,9 @@ private:
         ASSERT_EQUALS(1, db->scopeList.front().varlist.size());
         auto list = db->scopeList;
         list.pop_front();
-        for (const auto &scope : list) {
-            ASSERT_EQUALS(0, scope.varlist.size());
-        }
+        ASSERT_EQUALS(true, std::all_of(list.begin(), list.end(), [](const Scope& scope) {
+            return scope.varlist.empty();
+        }));
     }
 
     void createSymbolDatabaseFindAllScopes4()

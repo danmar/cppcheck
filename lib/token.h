@@ -1216,7 +1216,7 @@ public:
 
     void removeValues(std::function<bool(const ValueFlow::Value &)> pred) {
         if (mImpl->mValues)
-            mImpl->mValues->remove_if(pred);
+            mImpl->mValues->remove_if(std::move(pred));
     }
 
     nonneg int index() const {

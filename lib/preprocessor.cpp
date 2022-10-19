@@ -112,10 +112,9 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!errmsg.empty())
             bad->emplace_back(tok->location, std::move(errmsg));
 
-        for (const Suppressions::Suppression &s : suppressions) {
-            if (!s.errorId.empty())
-                inlineSuppressions.push_back(s);
-        }
+        std::copy_if(suppressions.begin(), suppressions.end(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
+            return !s.errorId.empty();
+        });
     } else {
         //single suppress format
         std::string errmsg;
@@ -892,8 +891,8 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
                 continue;
             if (mu.macroName != macroName)
                 continue;
-            bool directiveLocation = std::any_of(mDirectives.cbegin(), mDirectives.cend(),
-                                                 [=](const Directive &dir) {
+            const bool directiveLocation = std::any_of(mDirectives.cbegin(), mDirectives.cend(),
+                                                       [=](const Directive &dir) {
                 return mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr;
             });
 

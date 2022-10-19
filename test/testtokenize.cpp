@@ -461,6 +461,8 @@ private:
         TEST_CASE(simplifyIfSwitchForInit5);
 
         TEST_CASE(cpp20_default_bitfield_initializer);
+
+        TEST_CASE(cpp11init);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -1867,11 +1869,11 @@ private:
                              "char &(b); "
                              "const static char *(c); "
                              "} ;";
-        static char exp[] = "struct S { "
-                            "char * a ; "
-                            "char & b ; "
-                            "static const char * c ; "
-                            "} ;";
+        static const char exp[] = "struct S { "
+                                  "char * a ; "
+                                  "char & b ; "
+                                  "static const char * c ; "
+                                  "} ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
@@ -1879,48 +1881,48 @@ private:
         // Reported case
         {
             static char code[] = "; * * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
-            static char exp[] = "; * * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
+            static const char exp[] = "; * * p f ( ) int = { new int ( * [ 2 ] ) ; void }";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         // Various valid cases
         {
             static char code[] = "int * f [ 1 ] = { new ( int ) } ;";
-            static char exp[] = "int * f [ 1 ] = { new int } ;";
+            static const char exp[] = "int * f [ 1 ] = { new int } ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         {
             static char code[] = "int * * f [ 1 ] = { new ( int ) [ 1 ] } ;";
-            static char exp[] = "int * * f [ 1 ] = { new int [ 1 ] } ;";
+            static const char exp[] = "int * * f [ 1 ] = { new int [ 1 ] } ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         {
             static char code[] = "list < int > * f [ 1 ] = { new ( list < int > ) } ;";
-            static char exp[] = "list < int > * f [ 1 ] = { new list < int > } ;";
+            static const char exp[] = "list < int > * f [ 1 ] = { new list < int > } ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
         // don't remove parentheses in operator new overload
         {
             static char code[] = "void *operator new(__SIZE_TYPE__, int);";
-            static char exp[] = "void * operatornew ( __SIZE_TYPE__ , int ) ;";
+            static const char exp[] = "void * operatornew ( __SIZE_TYPE__ , int ) ;";
             ASSERT_EQUALS(exp, tokenizeAndStringify(code));
         }
     }
 
     void removeParentheses24() { // Ticket #7040
         static char code[] = "std::hash<decltype(t._data)>()(t._data);";
-        static char exp[] = "std :: hash < decltype ( t . _data ) > ( ) ( t . _data ) ;";
+        static const char exp[] = "std :: hash < decltype ( t . _data ) > ( ) ( t . _data ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
     void removeParentheses25() { // daca@home - a=(b,c)
         static char code[] = "a=(b,c);";
-        static char exp[] = "a = ( b , c ) ;";
+        static const char exp[] = "a = ( b , c ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
     void removeParentheses26() { // Ticket #8875 a[0](0)
         static char code[] = "a[0](0);";
-        static char exp[] = "a [ 0 ] ( 0 ) ;";
+        static const char exp[] = "a [ 0 ] ( 0 ) ;";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
@@ -3248,6 +3250,20 @@ private:
             std::istringstream istr(code);
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(nullptr == Token::findsimplematch(tokenizer.tokens(), "<")->link());
+        }
+
+        {
+            // #11319
+            const char code[] = "using std::same_as;\n"
+                                "template<same_as<int> T>\n"
+                                "void f();";
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token *tok1 = Token::findsimplematch(tokenizer.tokens(), "template <");
+            const Token *tok2 = Token ::findsimplematch(tokenizer.tokens(), "same_as <");
+            ASSERT(tok1->next()->link() == tok1->tokAt(7));
+            ASSERT(tok2->next()->link() == tok2->tokAt(3));
         }
 
         {
@@ -5960,6 +5976,7 @@ private:
         ASSERT_EQUALS("forae*bc.({:(", testAst("for (a *e : {b->c()});"));
         ASSERT_EQUALS("fori0=iasize.(<i++;;( asize.(", testAst("for (decltype(a.size()) i = 0; i < a.size(); ++i);"));
         ASSERT_EQUALS("foria:( asize.(", testAst("for(decltype(a.size()) i:a);"));
+        ASSERT_EQUALS("forec0{([,(:( fb.return", testAst("for (auto e : c(0, [](auto f) { return f->b; }));")); // #10802
 
         // for with initializer (c++20)
         ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
@@ -6214,8 +6231,8 @@ private:
         ASSERT_EQUALS("abR{{,P(,((", testAst("a(b(R{},{},P()));"));
         ASSERT_EQUALS("f1{2{,3{,{x,(", testAst("f({{1},{2},{3}},x);"));
         ASSERT_EQUALS("a1{ b2{", testAst("auto a{1}; auto b{2};"));
-        ASSERT_EQUALS("var1ab::23,{,4ab::56,{,{,{{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
-        ASSERT_EQUALS("var{{,{,{{", testAst("auto var{ {{},{}}, {} };"));
+        ASSERT_EQUALS("var1ab::23,{,{4ab::56,{,{,{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
+        ASSERT_EQUALS("var{{,{{,{", testAst("auto var{ {{},{}}, {} };"));
         ASSERT_EQUALS("fXYabcfalse==CD:?,{,{(", testAst("f({X, {Y, abc == false ? C : D}});"));
         ASSERT_EQUALS("stdvector::p0[{(return", testAst("return std::vector<int>({ p[0] });"));
 
@@ -6226,6 +6243,34 @@ private:
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
         ASSERT_EQUALS("adecltypeac::(,decltypead::(,",
                       testAst("template <typename a> void b(a &, decltype(a::c), decltype(a::d));"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
+                                             "struct B { A* hash; };\n"
+                                             "auto g(A* a) { return [=](void*) { return a; }; }\n"
+                                             "void f(void* p, B* b) {\n"
+                                             "    b->hash = (g(b->hash))(p);\n"
+                                             "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
+                                             "struct B { A* hash; };\n"
+                                             "A* h(void* p);\n"
+                                             "typedef A* (*X)(void*);\n"
+                                             "X g(A*) { return h; }\n"
+                                             "void f(void* p, B * b) {\n"
+                                             "b->hash = (g(b->hash))(p);\n"
+                                             "}\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n"
+                                             "struct B { A* hash; };\n"
+                                             "void f(void* p, B* b) {\n"
+                                             "    b->hash = (decltype(b->hash))(p);\n"
+                                             "}\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("void a(int);\n" // #10801
+                                             "    struct b {\n"
+                                             "    static int c();\n"
+                                             "} d;\n"
+                                             "void f() {\n"
+                                             "    (decltype (&a)(d.c))(0);\n"
+                                             "}\n"));
 
         // #10334: Do not hang!
         tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"
@@ -6301,6 +6346,13 @@ private:
         ASSERT_EQUALS("1f23,(+4+", testAst("1+f(2,3)+4"));
         ASSERT_EQUALS("1f2a&,(+", testAst("1+f(2,&a)"));
         ASSERT_EQUALS("argv[", testAst("int f(char argv[]);"));
+        ASSERT_EQUALS("", testAst("void f();"));
+        ASSERT_EQUALS("", testAst("void f() {}"));
+        ASSERT_EQUALS("", testAst("int f() = delete;"));
+        ASSERT_EQUALS("", testAst("a::b f();"));
+        ASSERT_EQUALS("", testAst("a::b f() {}"));
+        ASSERT_EQUALS("", testAst("a::b f() = delete;"));
+        ASSERT_EQUALS("constdelete=", testAst("int f() const = delete;"));
         ASSERT_EQUALS("", testAst("extern unsigned f(const char *);"));
         ASSERT_EQUALS("charformat*...,", testAst("extern void f(const char *format, ...);"));
         ASSERT_EQUALS("int((void,", testAst("extern int for_each_commit_graft(int (*)(int*), void *);"));
@@ -6416,7 +6468,7 @@ private:
                               "}"));
         ASSERT_EQUALS("{(=[{return ab=",
                       testAst("return {\n"
-                              "  [=]() mutable -> int {\n"
+                              "  [=]() mutable consteval -> int {\n"
                               "    a=b;\n"
                               "  }\n"
                               "}"));
@@ -6442,6 +6494,9 @@ private:
                               "    const auto y = z;\n"
                               "    switch (y) {}\n"
                               "};"));
+
+        // #10831
+        ASSERT_EQUALS("f{([= x{([=", testAst("void foo() { F f = [](t x = []() {}) {}; }"));
     }
 
     void astcase() {
@@ -6638,11 +6693,30 @@ private:
                                              "}; "
                                              "struct poc p = { .port[0] = {.d = 3} };"));
 
-        // op op
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
-
         // Ticket #9664
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x { 2 }, .y[0] { 3 } };"));
+
+        // Ticket #11134
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; }; "
+                                             "std::string s; "
+                                             "func(my_struct{ .x=42 }, s.size());"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; int y; }; "
+                                             "std::string s; "
+                                             "func(my_struct{ .x{42}, .y=3 }, s.size());"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; int y; }; "
+                                             "std::string s; "
+                                             "func(my_struct{ .x=42, .y{3} }, s.size());"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; }; "
+                                             "void h() { "
+                                             "  for (my_struct ms : { my_struct{ .x=5 } }) {} "
+                                             "}"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; int y; }; "
+                                             "void h() { "
+                                             "  for (my_struct ms : { my_struct{ .x=5, .y{42} } }) {} "
+                                             "}"));
+
+        // op op
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a==()); }"), InternalError, "syntax error: ==()");
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a+()); }"), InternalError, "syntax error: +()");
@@ -7329,6 +7403,51 @@ private:
         ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, settings));
         settings.standards.cpp = Standards::CPP17;
         ASSERT_THROW(tokenizeAndStringify(code, settings), InternalError);
+    }
+
+    void cpp11init() {
+        #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
+        auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+
+            const Token* tok = Token::findsimplematch(tokenizer.tokens(), find, strlen(find));
+            ASSERT_LOC(tok, file, line);
+            ASSERT_LOC(tok->isCpp11init() == expected, file, line);
+        };
+
+        testIsCpp11init("class X : public A<int>, C::D {};",
+                        "D {",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("auto f() -> void {}",
+                        "void {",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() & -> void {}",
+                        "void {",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() const noexcept(false) -> void {}",
+                        "void {",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "{ return",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "vector",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "std ::",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("class X{};",
+                        "{ }",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("class X{}", // forgotten ; so not properly recognized as a class
+                        "{ }",
+                        TokenImpl::Cpp11init::CPP11INIT);
+        #undef testIsCpp11init
     }
 };
 

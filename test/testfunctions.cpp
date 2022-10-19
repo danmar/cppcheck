@@ -763,6 +763,9 @@ private:
 
         check("size_t f() { wchar_t x = L'x'; return wcslen(&x); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid wcslen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("void f() { char a[10] = \"1234567890\"; puts(a); }", "test.c"); // #1770
+        ASSERT_EQUALS("[test.c:1]: (error) Invalid puts() argument nr 1. A nul-terminated string is required.\n", errout.str());
     }
 
     void mathfunctionCall_sqrt() {

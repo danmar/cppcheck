@@ -2,8 +2,7 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: valgrind
 
-# on: [push, pull_request]
-on: workflow_dispatch
+on: [push, pull_request]
 
 permissions:
   contents: read
@@ -14,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -25,8 +24,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
-          # the key expired and the ubuntu-dbgsym-keyring package does not yet include the latest one - see https://bugs.launchpad.net/ubuntu/+source/ubuntu-keyring/+bug/1920640
-          wget -O - http://ddebs.ubuntu.com/dbgsym-release-key.asc | sudo apt-key add -
 
       - name: Add debug repos on ubuntu
         run:  |
@@ -57,7 +54,7 @@ jobs:
           valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log
           cat memcheck.log
           
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Logs
           path: ./*.log

@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -47,7 +47,7 @@ jobs:
           lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
           genhtml lcov.info -o coverage_report --frame --legend --demangle-cpp
           
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
          name: Coverage results
          path: coverage_report

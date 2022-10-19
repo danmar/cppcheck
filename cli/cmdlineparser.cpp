@@ -567,6 +567,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
                 mSettings->outputFile = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 14));
 
+            // Experimental: limit execution time for extended valueflow analysis. basic valueflow analysis
+            // is always executed.
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0)
+                mSettings->performanceValueFlowMaxTime = std::atoi(argv[i] + 33);
+
             // Specify platform
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
                 const std::string platform(11+argv[i]);
@@ -630,8 +635,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     for (const std::string &lib : mSettings->project.guiProject.libraries)
                         mSettings->libraries.emplace_back(lib);
 
-                    for (const std::string &ignorePath : mSettings->project.guiProject.excludedPaths)
-                        mIgnoredPaths.emplace_back(ignorePath);
+                    const auto& excludedPaths = mSettings->project.guiProject.excludedPaths;
+                    std::copy(excludedPaths.begin(), excludedPaths.end(), std::back_inserter(mIgnoredPaths));
 
                     const std::string platform(mSettings->project.guiProject.platform);
 

@@ -450,12 +450,10 @@ void CheckOther::checkRedundantAssignment()
                     // If there is a custom assignment operator => this is inconclusive
                     if (tok->astOperand1()->valueType()->typeScope) {
                         const std::string op = "operator" + tok->str();
-                        for (const Function& f : tok->astOperand1()->valueType()->typeScope->functionList) {
-                            if (f.name() == op) {
-                                inconclusive = true;
-                                break;
-                            }
-                        }
+                        const std::list<Function>& fList = tok->astOperand1()->valueType()->typeScope->functionList;
+                        inconclusive = std::any_of(fList.begin(), fList.end(), [&](const Function& f) {
+                            return f.name() == op;
+                        });
                     }
                     // assigning a smart pointer has side effects
                     if (tok->astOperand1()->valueType()->type == ValueType::SMART_POINTER)
@@ -1181,11 +1179,11 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
 
         accumulateSize(cumulatedSize, size, isUnion);
     }
-    for (const Type::BaseInfo &baseInfo : type->derivedFrom) {
+    return std::accumulate(type->derivedFrom.begin(), type->derivedFrom.end(), cumulatedSize, [&](int v, const Type::BaseInfo& baseInfo) {
         if (baseInfo.type && baseInfo.type->classScope)
-            cumulatedSize += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth+1);
-    }
-    return cumulatedSize;
+            v += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth + 1);
+        return v;
+    });
 }
 
 static bool canBeConst(const Variable *var, const Settings* settings)
@@ -1484,7 +1482,7 @@ void CheckOther::checkConstVariable()
                         castToNonConst = true; // safe guess
                         break;
                     }
-                    bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
+                    const bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
                     if (!isConst) {
                         castToNonConst = true;
                         break;
@@ -1928,7 +1926,7 @@ void CheckOther::checkIncompleteStatement()
         if (mTokenizer->isCPP() && tok->str() == "&" && !(tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
             // Possible archive
             continue;
-        bool inconclusive = tok->isConstOp();
+        const bool inconclusive = tok->isConstOp();
         if (mSettings->certainty.isEnabled(Certainty::inconclusive) || !inconclusive)
             constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);
     }
@@ -2077,7 +2075,7 @@ void CheckOther::checkMisusedScopedObject()
         const Token* endTok = tok;
         if (Token::Match(endTok, "%name% <"))
             endTok = endTok->linkAt(1);
-        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ; !!}") &&
+        if (Token::Match(endTok, "%name%|> (|{") && Token::Match(endTok->linkAt(1), ")|} ;") &&
             !Token::simpleMatch(endTok->next()->astParent(), ";")) { // for loop condition
             return tok;
         }
@@ -2085,7 +2083,8 @@ void CheckOther::checkMisusedScopedObject()
     };
 
     auto isLibraryConstructor = [&](const Token* tok, const std::string& typeStr) -> bool {
-        if (mSettings->library.getTypeCheck("unusedvar", typeStr) == Library::TypeCheck::check)
+        const Library::TypeCheck typeCheck = mSettings->library.getTypeCheck("unusedvar", typeStr);
+        if (typeCheck == Library::TypeCheck::check || typeCheck == Library::TypeCheck::checkFiniteLifetime)
             return true;
         return mSettings->library.detectContainerOrIterator(tok);
     };
@@ -2175,29 +2174,43 @@ void CheckOther::checkDuplicateBranch()
             if (macro)
                 continue;
 
-            // save if branch code
-            const std::string branch1 = scope.bodyStart->next()->stringifyList(scope.bodyEnd);
+            const Token * const tokIf = scope.bodyStart->next();
+            const Token * const tokElse = scope.bodyEnd->tokAt(3);
 
-            if (branch1.empty())
+            // compare first tok before stringifying the whole blocks
+            const std::string tokIfStr = tokIf->stringify(false, true, false);
+            if (tokIfStr.empty())
                 continue;
 
-            // save else branch code
-            const std::string branch2 = scope.bodyEnd->tokAt(3)->stringifyList(scope.bodyEnd->linkAt(2));
+            const std::string tokElseStr = tokElse->stringify(false, true, false);
 
-            ErrorPath errorPath;
-            // check for duplicates
-            if (branch1 == branch2) {
-                duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);
-                continue;
+            if (tokIfStr == tokElseStr) {
+                // save if branch code
+                const std::string branch1 = tokIf->stringifyList(scope.bodyEnd);
+
+                if (branch1.empty())
+                    continue;
+
+                // save else branch code
+                const std::string branch2 = tokElse->stringifyList(scope.bodyEnd->linkAt(2));
+
+                // check for duplicates
+                if (branch1 == branch2) {
+                    duplicateBranchError(scope.classDef, scope.bodyEnd->next(), ErrorPath{});
+                    continue;
+                }
             }
 
             // check for duplicates using isSameExpression
-            const Token * branchTop1 = getSingleExpressionInBlock(scope.bodyStart->next());
-            const Token * branchTop2 = getSingleExpressionInBlock(scope.bodyEnd->tokAt(3));
-            if (!branchTop1 || !branchTop2)
+            const Token * branchTop1 = getSingleExpressionInBlock(tokIf);
+            if (!branchTop1)
+                continue;
+            const Token * branchTop2 = getSingleExpressionInBlock(tokElse);
+            if (!branchTop2)
                 continue;
             if (branchTop1->str() != branchTop2->str())
                 continue;
+            ErrorPath errorPath;
             if (isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand1(), branchTop2->astOperand1(), mSettings->library, true, true, &errorPath) &&
                 isSameExpression(mTokenizer->isCPP(), false, branchTop1->astOperand2(), branchTop2->astOperand2(), mSettings->library, true, true, &errorPath))
                 duplicateBranchError(scope.classDef, scope.bodyEnd->next(), errorPath);
@@ -3448,10 +3461,12 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
         if (var.name() == varname)
             return var.nameToken();
     }
-    for (const Function &f : scope->functionList) {
-        if (f.type == Function::Type::eFunction && f.name() == varname)
-            return f.tokenDef;
-    }
+    auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
+        return f.type == Function::Type::eFunction && f.name() == varname;
+    });
+    if (it != scope->functionList.end())
+        return it->tokenDef;
+
     if (scope->type == Scope::eLambda)
         return nullptr;
     const Token* shadowed = findShadowed(scope->nestedIn, varname, linenr);
@@ -3476,16 +3491,14 @@ void CheckOther::checkShadowVariables()
                 continue;
 
             if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
-                bool shadowArg = false;
-                for (const Variable &arg : functionScope->function->argumentList) {
-                    if (arg.nameToken() && var.name() == arg.name()) {
-                        shadowError(var.nameToken(), arg.nameToken(), "argument");
-                        shadowArg = true;
-                        break;
-                    }
-                }
-                if (shadowArg)
+                const auto argList = functionScope->function->argumentList;
+                auto it = std::find_if(argList.begin(), argList.end(), [&](const Variable& arg) {
+                    return arg.nameToken() && var.name() == arg.name();
+                });
+                if (it != argList.end()) {
+                    shadowError(var.nameToken(), it->nameToken(), "argument");
                     continue;
+                }
             }
 
             const Token *shadowed = findShadowed(scope.nestedIn, var.name(), var.nameToken()->linenr());

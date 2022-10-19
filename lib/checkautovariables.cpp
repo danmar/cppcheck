@@ -418,10 +418,10 @@ static bool isInScope(const Token * tok, const Scope * scope)
         const Scope * tokScope = tok->scope();
         if (!tokScope)
             return false;
-        for (const Scope * argScope:tokScope->nestedList) {
-            if (argScope && argScope->isNestedIn(scope))
-                return true;
-        }
+        if (std::any_of(tokScope->nestedList.begin(), tokScope->nestedList.end(), [&](const Scope* argScope) {
+            return argScope && argScope->isNestedIn(scope);
+        }))
+            return true;
     }
     return false;
 }
@@ -538,7 +538,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     // If the scope is not set correctly then skip checking it
     if (scope->bodyStart != start)
         return;
-    bool returnRef = Function::returnsReference(scope->function);
+    const bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {

@@ -75,7 +75,7 @@ static bool isElementAccessYield(const Library::Container::Yield& yield)
 static bool containerAppendsElement(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
-        Library::Container::Action action = container->getAction(parent->strAt(1));
+        const Library::Container::Action action = container->getAction(parent->strAt(1));
         if (contains({Library::Container::Action::INSERT,
                       Library::Container::Action::CHANGE,
                       Library::Container::Action::CHANGE_INTERNAL,
@@ -90,7 +90,7 @@ static bool containerAppendsElement(const Library::Container* container, const T
 static bool containerYieldsElement(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
-        Library::Container::Yield yield = container->getYield(parent->strAt(1));
+        const Library::Container::Yield yield = container->getYield(parent->strAt(1));
         if (isElementAccessYield(yield))
             return true;
     }
@@ -100,7 +100,7 @@ static bool containerYieldsElement(const Library::Container* container, const To
 static const Token* getContainerIndex(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
-        Library::Container::Yield yield = container->getYield(parent->strAt(1));
+        const Library::Container::Yield yield = container->getYield(parent->strAt(1));
         if (yield == Library::Container::Yield::AT_INDEX && !Token::simpleMatch(parent->tokAt(2), "( )"))
             return parent->tokAt(2)->astOperand2();
     }
@@ -116,7 +116,7 @@ static const Token* getContainerFromSize(const Library::Container* container, co
     if (!tok)
         return nullptr;
     if (Token::Match(tok->tokAt(-2), ". %name% (")) {
-        Library::Container::Yield yield = container->getYield(tok->strAt(-1));
+        const Library::Container::Yield yield = container->getYield(tok->strAt(-1));
         if (yield == Library::Container::Yield::SIZE)
             return tok->tokAt(-2)->astOperand1();
     }
@@ -177,7 +177,7 @@ void CheckStl::outOfBounds()
                         return false;
                     const Token* sizeTok = v.tokvalue;
                     if (sizeTok && sizeTok->isCast())
-                        sizeTok = sizeTok->astOperand1();
+                        sizeTok = sizeTok->astOperand2() ? sizeTok->astOperand2() : sizeTok->astOperand1();
                     const Token* containerTok = getContainerFromSize(container, sizeTok);
                     if (!containerTok)
                         return false;
@@ -858,7 +858,7 @@ void CheckStl::mismatchingContainerIterator()
             const std::vector<const Token *> args = getArguments(ftok);
 
             const Library::Container * c = tok->valueType()->container;
-            Library::Container::Action action = c->getAction(tok->strAt(2));
+            const Library::Container::Action action = c->getAction(tok->strAt(2));
             const Token* iterTok = nullptr;
             if (action == Library::Container::Action::INSERT && args.size() == 2) {
                 // Skip if iterator pair
@@ -901,7 +901,7 @@ static const Token* getInvalidMethod(const Token* tok)
     if (!ftok)
         return nullptr;
     if (const Library::Container * c = tok->valueType()->container) {
-        Library::Container::Action action = c->getAction(ftok->str());
+        const Library::Container::Action action = c->getAction(ftok->str());
         if (c->unstableErase) {
             if (action == Library::Container::Action::ERASE)
                 return ftok;
@@ -987,7 +987,7 @@ struct InvalidContainerAnalyzer {
                     if (!var)
                         continue;
                     if (var->isArgument()) {
-                        int n = getArgumentPos(var, f);
+                        const int n = getArgumentPos(var, f);
                         const Token* tok2 = nullptr;
                         if (n >= 0 && n < args.size())
                             tok2 = args[n];
@@ -1125,7 +1125,7 @@ void CheckStl::invalidContainer()
                     // Skip if the variable is assigned to
                     const Token* assignExpr = tok;
                     while (assignExpr->astParent()) {
-                        bool isRHS = astIsRHS(assignExpr);
+                        const bool isRHS = astIsRHS(assignExpr);
                         assignExpr = assignExpr->astParent();
                         if (Token::Match(assignExpr, "%assign%")) {
                             if (!isRHS)
@@ -2701,6 +2701,13 @@ void CheckStl::useStlAlgorithm()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    auto checkAssignee = [](const Token* tok) {
+        if (astIsBool(tok)) // std::accumulate is not a good fit for bool values, std::all/any/none_of return early
+            return false;
+        return !astIsContainer(tok); // don't warn for containers, where overloaded operators can be costly
+    };
+
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
             // Parse range-based for loop
@@ -2710,17 +2717,36 @@ void CheckStl::useStlAlgorithm()
                 continue;
             const Token *bodyTok = tok->next()->link()->next();
             const Token *splitTok = tok->next()->astOperand2();
-            if (!Token::simpleMatch(splitTok, ":"))
-                continue;
-            const Token *loopVar = splitTok->previous();
-            if (loopVar->varId() == 0)
-                continue;
+            const Token* loopVar{};
+            bool isIteratorLoop = false;
+            if (Token::simpleMatch(splitTok, ":")) {
+                loopVar = splitTok->previous();
+                if (loopVar->varId() == 0)
+                    continue;
+            }
+            else { // iterator-based loop?
+                const Token* initTok = getInitTok(tok);
+                const Token* condTok = getCondTok(tok);
+                const Token* stepTok = getStepTok(tok);
+                if (!initTok || !condTok || !stepTok)
+                    continue;
+                loopVar = Token::Match(condTok, "%comp%") ? condTok->astOperand1() : nullptr;
+                if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
+                    continue;
+                if (!Token::simpleMatch(initTok, "=") || !Token::Match(initTok->astOperand1(), "%varid%", loopVar->varId()))
+                    continue;
+                if (!stepTok->isIncDecOp())
+                    continue;
+                isIteratorLoop = true;
+            }
 
             // Check for single assignment
             bool useLoopVarInAssign;
             const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
             if (assignTok) {
-                int assignVarId = assignTok->astOperand1()->varId();
+                if (!checkAssignee(assignTok->astOperand1()))
+                    continue;
+                const int assignVarId = assignTok->astOperand1()->varId();
                 std::string algo;
                 if (assignVarId == loopVar->varId()) {
                     if (useLoopVarInAssign)
@@ -2747,7 +2773,7 @@ void CheckStl::useStlAlgorithm()
             // Check for container calls
             bool useLoopVarInMemCall;
             const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall);
-            if (memberAccessTok) {
+            if (memberAccessTok && !isIteratorLoop) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
                 if (contVarId == loopVar->varId())
@@ -2784,6 +2810,8 @@ void CheckStl::useStlAlgorithm()
                 // Check for single assign
                 assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign);
                 if (assignTok) {
+                    if (!checkAssignee(assignTok->astOperand1()))
+                        continue;
                     const int assignVarId = assignTok->astOperand1()->varId();
                     std::string algo;
                     if (assignVarId == loopVar->varId()) {

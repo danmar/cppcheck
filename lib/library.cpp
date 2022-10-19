@@ -209,7 +209,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
     if (strcmp(rootnode->Name(),"def") != 0)
         return Error(ErrorCode::UNSUPPORTED_FORMAT, rootnode->Name());
 
-    int format = rootnode->IntAttribute("format", 1); // Assume format version 1 if nothing else is specified (very old .cfg files had no 'format' attribute)
+    const int format = rootnode->IntAttribute("format", 1); // Assume format version 1 if nothing else is specified (very old .cfg files had no 'format' attribute)
 
     if (format > 2 || format <= 0)
         return Error(ErrorCode::UNSUPPORTED_FORMAT);
@@ -553,6 +553,8 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::check;
                     else if (checkTypeName == "suppress")
                         mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::suppress;
+                    else if (checkTypeName == "checkFiniteLifetime")
+                        mTypeChecks[std::pair<std::string,std::string>(checkName, typeName)] = TypeCheck::checkFiniteLifetime;
                 }
             }
         }
@@ -1248,7 +1250,7 @@ const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return nullptr;
-    std::map<std::string, WarnInfo>::const_iterator i = functionwarn.find(getFunctionName(ftok));
+    const std::map<std::string, WarnInfo>::const_iterator i = functionwarn.find(getFunctionName(ftok));
     if (i == functionwarn.cend())
         return nullptr;
     return &i->second;
@@ -1311,12 +1313,10 @@ bool Library::formatstr_function(const Token* ftok) const
 int Library::formatstr_argno(const Token* ftok) const
 {
     const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = functions.at(getFunctionName(ftok)).argumentChecks;
-    for (const std::pair<const int, Library::ArgumentChecks> & argCheckFunc : argumentChecksFunc) {
-        if (argCheckFunc.second.formatstr) {
-            return argCheckFunc.first - 1;
-        }
-    }
-    return -1;
+    auto it = std::find_if(argumentChecksFunc.begin(), argumentChecksFunc.end(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
+        return a.second.formatstr;
+    });
+    return it == argumentChecksFunc.end() ? -1 : it->first - 1;
 }
 
 bool Library::formatstr_scan(const Token* ftok) const
@@ -1394,14 +1394,12 @@ bool Library::hasminsize(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok))
         return false;
-    const std::unordered_map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
-    if (it1 == functions.cend())
+    const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
+    if (it == functions.cend())
         return false;
-    for (const std::pair<const int, Library::ArgumentChecks> & argCheck : it1->second.argumentChecks) {
-        if (!argCheck.second.minsizes.empty())
-            return true;
-    }
-    return false;
+    return std::any_of(it->second.argumentChecks.begin(), it->second.argumentChecks.end(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
+        return !a.second.minsizes.empty();
+    });
 }
 
 Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, int argnr) const
@@ -1506,14 +1504,14 @@ bool Library::reportErrors(const std::string &path) const
 
 bool Library::isexecutableblock(const std::string &file, const std::string &token) const
 {
-    const std::map<std::string, CodeBlock>::const_iterator it = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
+    const std::unordered_map<std::string, CodeBlock>::const_iterator it = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
     return (it != mExecutableBlocks.end() && it->second.isBlock(token));
 }
 
 int Library::blockstartoffset(const std::string &file) const
 {
     int offset = -1;
-    const std::map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
         = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mExecutableBlocks.end()) {
@@ -1524,7 +1522,7 @@ int Library::blockstartoffset(const std::string &file) const
 
 const std::string& Library::blockstart(const std::string &file) const
 {
-    const std::map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
         = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mExecutableBlocks.end()) {
@@ -1535,7 +1533,7 @@ const std::string& Library::blockstart(const std::string &file) const
 
 const std::string& Library::blockend(const std::string &file) const
 {
-    const std::map<std::string, CodeBlock>::const_iterator map_it
+    const std::unordered_map<std::string, CodeBlock>::const_iterator map_it
         = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
 
     if (map_it != mExecutableBlocks.end()) {
@@ -1645,9 +1643,9 @@ const Library::Container * getLibraryContainer(const Token * tok)
     return tok->valueType()->container;
 }
 
-Library::TypeCheck Library::getTypeCheck(const std::string &check, const std::string &typeName) const
+Library::TypeCheck Library::getTypeCheck(std::string check,  std::string typeName) const
 {
-    auto it = mTypeChecks.find(std::pair<std::string, std::string>(check, typeName));
+    auto it = mTypeChecks.find(std::pair<std::string, std::string>(std::move(check), std::move(typeName)));
     return it == mTypeChecks.end() ? TypeCheck::def : it->second;
 }
 
@@ -1685,7 +1683,7 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
     for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
         if (tok2->str().compare(0, 3, "arg") != 0)
             continue;
-        nonneg int id = std::atoi(tok2->str().c_str() + 3);
+        nonneg int const id = std::atoi(tok2->str().c_str() + 3);
         tok2->varId(id);
         if (lookupVarId)
             (*lookupVarId)[id] = tok2;

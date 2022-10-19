@@ -16,7 +16,7 @@ jobs:
       QT_VERSION: 5.15.2
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Install missing software
         run: |

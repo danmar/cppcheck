@@ -16,10 +16,10 @@ jobs:
       ASAN_OPTIONS: detect_stack_use_after_return=1
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python 3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
@@ -52,7 +52,7 @@ jobs:
       - name: Run tests
         run: ./cmake.output/bin/testrunner
 
-      # TODO: re-enable - was being killed because of increased memory usage
+      # TODO: this is currently way too slow (~60 minutes) to enable it
       # TODO: only fail the step on sanitizer issues
       - name: Self check
         if: false

@@ -138,7 +138,6 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickPureC);
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(testMisusedScopeObjectInConstructor);
-        TEST_CASE(testMisusedScopeObjectNoCodeAfter);
         TEST_CASE(testMisusedScopeObjectStandardType);
         TEST_CASE(testMisusedScopeObjectNamespace);
         TEST_CASE(trac2071);
@@ -153,6 +152,8 @@ private:
         TEST_CASE(duplicateBranch2); // empty macro
         TEST_CASE(duplicateBranch3);
         TEST_CASE(duplicateBranch4);
+        TEST_CASE(duplicateBranch5); // make sure the Token attributes are compared
+        TEST_CASE(duplicateBranch6);
         TEST_CASE(duplicateExpression1);
         TEST_CASE(duplicateExpression2); // ticket #2730
         TEST_CASE(duplicateExpression3); // ticket #3317
@@ -5044,14 +5045,6 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Instance of 'Foo' object is destroyed immediately.\n", errout.str());
     }
 
-    void testMisusedScopeObjectNoCodeAfter() {
-        check("class Foo {};\n"
-              "void f() {\n"
-              "  Foo();\n" // No code after class => don't warn
-              "}", "test.cpp");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void testMisusedScopeObjectStandardType() {
         check("int g();\n"
               "void f(int i) {\n"
@@ -5110,6 +5103,15 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Instance of 'std::string' object is destroyed immediately.\n"
                       "[test.cpp:3]: (style) Instance of 'std::string' object is destroyed immediately.\n"
                       "[test.cpp:4]: (style) Instance of 'std::pair' object is destroyed immediately.\n",
+                      errout.str());
+
+        check("struct S {\n" // #10083
+              "    void f() {\n"
+              "        std::lock_guard<std::mutex>(m);\n"
+              "    }\n"
+              "    std::mutex m;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'std::lock_guard' object is destroyed immediately.\n",
                       errout.str());
     }
 
@@ -5436,6 +5438,72 @@ private:
               "        return new A::Y(true);\n"
               "    } else {\n"
               "        return new A::Z(true);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateBranch5() {
+        check("void f(bool b) {\n"
+              "    int j;\n"
+              "    if (b) {\n"
+              "        unsigned int i = 0;\n"
+              "        j = i;\n"
+              "    } else {\n"
+              "        unsigned int i = 0;\n"
+              "        j = i;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+
+        check("void f(bool b) {\n"
+              "    int j;\n"
+              "    if (b) {\n"
+              "        unsigned int i = 0;\n"
+              "        j = i;\n"
+              "    } else {\n"
+              "        unsigned int i = 0;\n"
+              "        j = 1;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "    int j;\n"
+              "    if (b) {\n"
+              "        unsigned int i = 0;\n"
+              "    } else {\n"
+              "        int i = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "    int j;\n"
+              "    if (b) {\n"
+              "        unsigned int i = 0;\n"
+              "        j = i;\n"
+              "    } else {\n"
+              "        int i = 0;\n"
+              "        j = i;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateBranch6() {
+        check("void f(bool b) {\n"
+              "    if (b) {\n"
+              "    } else {\n"
+              "        int i = 0;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) {\n"
+              "    if (b) {\n"
+              "        int i = 0;\n"
+              "    } else {\n"
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -8382,6 +8450,15 @@ private:
               "  *reg = 34;\n"
               "}");
         ASSERT_EQUALS("test.cpp:2:style:C-style pointer casting\n", errout.str());
+
+        check("void f(std::map<int, int>& m, int key, int value) {\n" // #6379
+              "    m[key] = value;\n"
+              "    m[key] = value;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:style:Variable 'm[key]' is reassigned a value before the old one has been used.\n"
+                      "test.cpp:2:note:m[key] is assigned\n"
+                      "test.cpp:3:note:m[key] is overwritten\n",
+                      errout.str());
     }
 
     void redundantVarAssignment_trivial() {

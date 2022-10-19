@@ -667,7 +667,7 @@ std::string ErrorMessage::FileLocation::stringify() const
 std::string ErrorLogger::toxml(const std::string &str)
 {
     std::ostringstream xml;
-    for (unsigned char c : str) {
+    for (const unsigned char c : str) {
         switch (c) {
         case '<':
             xml << "&lt;";

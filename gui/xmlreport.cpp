@@ -56,7 +56,7 @@ int XmlReport::determineVersion(const QString &filename)
 {
     QFile file;
     file.setFileName(filename);
-    bool succeed = file.open(QIODevice::ReadOnly | QIODevice::Text);
+    const bool succeed = file.open(QIODevice::ReadOnly | QIODevice::Text);
     if (!succeed)
         return 0;
 
@@ -67,7 +67,7 @@ int XmlReport::determineVersion(const QString &filename)
             if (reader.name() == QString(ResultElementName)) {
                 QXmlStreamAttributes attribs = reader.attributes();
                 if (attribs.hasAttribute(QString(VersionAttribute))) {
-                    int ver = attribs.value(QString(), VersionAttribute).toString().toInt();
+                    const int ver = attribs.value(QString(), VersionAttribute).toString().toInt();
                     return ver;
                 } else
                     return 1;

@@ -489,6 +489,8 @@ struct AST_state {
     explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
 };
 
+static Token * createAstAtToken(Token *tok, bool cpp);
+
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
     if (!Token::Match(tok->previous(), "( %name%"))
@@ -650,9 +652,11 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (Token::Match(nameToken, "else|try|do|const|constexpr|override|volatile|&|&&"))
         return false;
+    if (Token::simpleMatch(nameToken->previous(), ". void {") && nameToken->previous()->originalName() == "->")
+        return false; // trailing return type. The only function body that can contain no semicolon is a void function.
     if (Token::simpleMatch(nameToken->previous(), "namespace"))
         return false;
-    if (Token::Match(nameToken, "%any% {") && !Token::Match(nameToken, "return|:")) {
+    if (endtok != nullptr && !Token::Match(nameToken, "return|:")) {
         // If there is semicolon between {..} this is not a initlist
         for (const Token *tok2 = nameToken->next(); tok2 != endtok; tok2 = tok2->next()) {
             if (tok2->str() == ";")
@@ -666,7 +670,7 @@ static bool iscpp11init_impl(const Token * const tok)
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
     const Token *prev = nameToken;
-    while (Token::Match(prev, "%name%|::|:|<|>")) {
+    while (Token::Match(prev, "%name%|::|:|<|>|,")) {
         if (Token::Match(prev, "class|struct"))
             return false;
 
@@ -783,10 +787,15 @@ static void compileTerm(Token *&tok, AST_state& state)
                 tok = tok->link()->next();
 
             if (Token::Match(tok, "{ . %name% =|{")) {
+                const Token* end = tok->link();
                 const int inArrayAssignment = state.inArrayAssignment;
                 state.inArrayAssignment = 1;
                 compileBinOp(tok, state, compileExpression);
                 state.inArrayAssignment = inArrayAssignment;
+                if (tok == end)
+                    tok = tok->next();
+                else
+                    throw InternalError(tok, "Syntax error. Unexpected tokens in designated initializer.", InternalError::AST);
             } else if (Token::simpleMatch(tok, "{ }")) {
                 tok->astOperand1(state.op.top());
                 state.op.pop();
@@ -832,26 +841,26 @@ static void compileTerm(Token *&tok, AST_state& state)
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
         } else if (state.cpp && iscpp11init(tok)) {
+            Token *const end = tok->link();
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
-                if (Token::Match(tok, "{ !!}")) {
-                    Token *const end = tok->link();
-                    if (Token::Match(tok, "{ . %name% =|{")) {
-                        const int inArrayAssignment = state.inArrayAssignment;
-                        state.inArrayAssignment = 1;
-                        compileBinOp(tok, state, compileExpression);
-                        state.inArrayAssignment = inArrayAssignment;
-                    } else {
-                        compileUnaryOp(tok, state, compileExpression);
-                    }
-                    if (precedes(tok,end))
-                        tok = end;
-                } else {
+                if (Token::Match(tok, "{ . %name% =|{")) {
+                    const int inArrayAssignment = state.inArrayAssignment;
+                    state.inArrayAssignment = 1;
+                    compileBinOp(tok, state, compileExpression);
+                    state.inArrayAssignment = inArrayAssignment;
+                } else if (Token::simpleMatch(tok, "{ }")) {
                     state.op.push(tok);
-                    tok = tok->tokAt(2);
+                    tok = tok->next();
+                } else {
+                    compileUnaryOp(tok, state, compileExpression);
+                    if (precedes(tok,end)) // typically for something like `MACRO(x, { if (c) { ... } })`, where end is the last curly, and tok is the open curly for the if
+                        tok = end;
                 }
             } else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::Match(tok, "} ,|:|)"))
+            if (tok != end)
+                throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST);
+            if (tok->next())
                 tok = tok->next();
         } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {") && !Token::findsimplematch(tok, ";", tok->link())) {
             if (Token::simpleMatch(tok, "{ }"))
@@ -964,7 +973,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 if (Token::simpleMatch(squareBracket->link(), "] (")) {
                     Token* const roundBracket = squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
-                    while (Token::Match(curlyBracket, "mutable|const|constexpr"))
+                    while (Token::Match(curlyBracket, "mutable|const|constexpr|consteval"))
                         curlyBracket = curlyBracket->next();
                     if (Token::simpleMatch(curlyBracket, "noexcept ("))
                         curlyBracket = curlyBracket->linkAt(1)->next();
@@ -974,6 +983,9 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                         squareBracket->astOperand1(roundBracket);
                         roundBracket->astOperand1(curlyBracket);
                         state.op.push(squareBracket);
+                        for (tok = roundBracket->next(); precedes(tok, roundBracket->link()); tok = tok->next()) {
+                            tok = createAstAtToken(tok, state.cpp);
+                        }
                         tok = curlyBracket->link()->next();
                         continue;
                     }
@@ -1020,12 +1032,20 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             cast->astOperand1(tok1);
             tok = tok1->link()->next();
         } else if (state.cpp && tok->str() == "{" && iscpp11init(tok)) {
+            const Token* end = tok->link();
             if (Token::simpleMatch(tok, "{ }"))
-                compileUnaryOp(tok, state, compileExpression);
-            else
-                compileBinOp(tok, state, compileExpression);
-            while (Token::simpleMatch(tok, "}"))
+            {
+                compileUnaryOp(tok, state, nullptr);
                 tok = tok->next();
+            }
+            else
+            {
+                compileBinOp(tok, state, compileExpression);
+            }
+            if (tok == end)
+                tok = end->next();
+            else
+                throw InternalError(tok, "Syntax error. Unexpected tokens in initializer.", InternalError::AST);
         } else break;
     }
 }
@@ -1361,8 +1381,6 @@ static bool isLambdaCaptureList(const Token * tok)
     return true;
 }
 
-static Token * createAstAtToken(Token *tok, bool cpp);
-
 // Compile inner expressions inside inner ({..}) and lambda bodies
 static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
 {
@@ -1517,6 +1535,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         }
         if (!tok2 || tok2->str() != ";") {
             if (tok2 == endPar && init1) {
+                createAstAtTokenInner(init1->next(), endPar, cpp);
                 tok->next()->astOperand2(init1);
                 tok->next()->astOperand1(tok);
             }
@@ -1612,7 +1631,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             Token::Match(typetok->previous(), "%name% ( !!*") &&
             typetok->previous()->varId() == 0 &&
             !typetok->previous()->isKeyword() &&
-            Token::Match(typetok->link(), ") const|;|{"))
+            (Token::Match(typetok->link(), ") const|;|{") || Token::Match(typetok->link(), ") const| = delete ;")))
             return typetok;
     }
 
@@ -1716,6 +1735,10 @@ void TokenList::validateAst() const
 
         // Don't check templates
         if (tok->str() == "<" && tok->link()) {
+            tok = tok->link();
+            continue;
+        }
+        if (tok->isCast() && tok->astOperand1() && tok->link()) { // skip casts (not part of the AST)
             tok = tok->link();
             continue;
         }

@@ -19,13 +19,13 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.2.4, 6.3.1]
+        qt_ver: [5.15.2, 6.2.4, 6.3.2, 6.4.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -85,10 +85,10 @@ jobs:
       PCRE_VERSION: 8.45
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python 3.10
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
@@ -99,7 +99,7 @@ jobs:
 
       - name: Cache PCRE
         id: cache-pcre
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             externals\pcre.h

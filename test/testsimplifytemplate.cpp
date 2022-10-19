@@ -4854,14 +4854,14 @@ private:
         //         "no constructor" false positives
         const char code[] = "class Fred {\n"
                             "    template<class T> explicit Fred(T t) { }\n"
-                            "}";
-        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } }", tok(code));
+                            "};";
+        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } } ;", tok(code));
 
         // #3532
         const char code2[] = "class Fred {\n"
                              "    template<class T> Fred(T t) { }\n"
-                             "}";
-        ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } }", tok(code2));
+                             "};";
+        ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } } ;", tok(code2));
     }
 
     void syntax_error_templates_1() {
@@ -5297,6 +5297,7 @@ private:
         ASSERT_EQUALS(4U, templateParameters("template<template<typename>...Foo,int,template<template<template<typename>>>,int> x;"));
         ASSERT_EQUALS(2U, templateParameters("template<typename S, enable_if_t<(is_compile_string<S>::value), int>> void i(S s);"));
         ASSERT_EQUALS(2U, templateParameters("template<typename c, b<(c::d), int>> void e();"));
+        ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args&...>> constexpr void f() {}")); // #11351
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition

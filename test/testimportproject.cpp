@@ -352,7 +352,7 @@ private:
         ASSERT_EQUALS("lib/", s.includePaths.front());
     }
 
-    void ignorePaths() {
+    void ignorePaths() const {
         ImportProject::FileSettings fs1, fs2;
         fs1.filename = "foo/bar";
         fs2.filename = "qwe/rty";
