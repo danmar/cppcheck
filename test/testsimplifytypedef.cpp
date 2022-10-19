@@ -1427,14 +1427,14 @@ private:
                             "typedef const Class & Const_Reference;\n"
                             "void some_method (Const_Reference x) const {}\n"
                             "void another_method (Const_Reference x) const {}\n"
-                            "}";
+                            "};";
 
         // The expected result..
         const char expected[] = "class Class2 { "
                                 ""
                                 "void some_method ( const Class & x ) const { } "
                                 "void another_method ( const Class & x ) const { } "
-                                "}";
+                                "} ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

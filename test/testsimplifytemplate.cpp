@@ -4854,14 +4854,14 @@ private:
         //         "no constructor" false positives
         const char code[] = "class Fred {\n"
                             "    template<class T> explicit Fred(T t) { }\n"
-                            "}";
-        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } }", tok(code));
+                            "};";
+        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } } ;", tok(code));
 
         // #3532
         const char code2[] = "class Fred {\n"
                              "    template<class T> Fred(T t) { }\n"
-                             "}";
-        ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } }", tok(code2));
+                             "};";
+        ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } } ;", tok(code2));
     }
 
     void syntax_error_templates_1() {

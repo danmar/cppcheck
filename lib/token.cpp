@@ -2482,7 +2482,7 @@ Token* findLambdaEndScope(Token* tok)
     if (!Token::simpleMatch(tok, ")"))
         return nullptr;
     tok = tok->next();
-    while (Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
+    while (Token::Match(tok, "mutable|constexpr|consteval|noexcept|.")) {
         if (Token::simpleMatch(tok, "noexcept ("))
             tok = tok->linkAt(1);
         if (Token::simpleMatch(tok, ".")) {

@@ -461,6 +461,8 @@ private:
         TEST_CASE(simplifyIfSwitchForInit5);
 
         TEST_CASE(cpp20_default_bitfield_initializer);
+
+        TEST_CASE(cpp11init);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -6228,8 +6230,8 @@ private:
         ASSERT_EQUALS("abR{{,P(,((", testAst("a(b(R{},{},P()));"));
         ASSERT_EQUALS("f1{2{,3{,{x,(", testAst("f({{1},{2},{3}},x);"));
         ASSERT_EQUALS("a1{ b2{", testAst("auto a{1}; auto b{2};"));
-        ASSERT_EQUALS("var1ab::23,{,4ab::56,{,{,{{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
-        ASSERT_EQUALS("var{{,{,{{", testAst("auto var{ {{},{}}, {} };"));
+        ASSERT_EQUALS("var1ab::23,{,{4ab::56,{,{,{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
+        ASSERT_EQUALS("var{{,{{,{", testAst("auto var{ {{},{}}, {} };"));
         ASSERT_EQUALS("fXYabcfalse==CD:?,{,{(", testAst("f({X, {Y, abc == false ? C : D}});"));
         ASSERT_EQUALS("stdvector::p0[{(return", testAst("return std::vector<int>({ p[0] });"));
 
@@ -6465,7 +6467,7 @@ private:
                               "}"));
         ASSERT_EQUALS("{(=[{return ab=",
                       testAst("return {\n"
-                              "  [=]() mutable -> int {\n"
+                              "  [=]() mutable consteval -> int {\n"
                               "    a=b;\n"
                               "  }\n"
                               "}"));
@@ -6690,11 +6692,30 @@ private:
                                              "}; "
                                              "struct poc p = { .port[0] = {.d = 3} };"));
 
-        // op op
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
-
         // Ticket #9664
         ASSERT_NO_THROW(tokenizeAndStringify("S s = { .x { 2 }, .y[0] { 3 } };"));
+
+        // Ticket #11134
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; }; "
+                                             "std::string s; "
+                                             "func(my_struct{ .x=42 }, s.size());"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; int y; }; "
+                                             "std::string s; "
+                                             "func(my_struct{ .x{42}, .y=3 }, s.size());"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; int y; }; "
+                                             "std::string s; "
+                                             "func(my_struct{ .x=42, .y{3} }, s.size());"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; }; "
+                                             "void h() { "
+                                             "  for (my_struct ms : { my_struct{ .x=5 } }) {} "
+                                             "}"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct my_struct { int x; int y; }; "
+                                             "void h() { "
+                                             "  for (my_struct ms : { my_struct{ .x=5, .y{42} } }) {} "
+                                             "}"));
+
+        // op op
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a==()); }"), InternalError, "syntax error: ==()");
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { assert(a+()); }"), InternalError, "syntax error: +()");
@@ -7381,6 +7402,51 @@ private:
         ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, settings));
         settings.standards.cpp = Standards::CPP17;
         ASSERT_THROW(tokenizeAndStringify(code, settings), InternalError);
+    }
+
+    void cpp11init() {
+        #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
+        auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
+            Settings settings;
+            Tokenizer tokenizer(&settings, this);
+            std::istringstream istr(code);
+            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+
+            const Token* tok = Token::findsimplematch(tokenizer.tokens(), find, strlen(find));
+            ASSERT_LOC(tok, file, line);
+            ASSERT_LOC(tok->isCpp11init() == expected, file, line);
+        };
+
+        testIsCpp11init("class X : public A<int>, C::D {};",
+                        "D {",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("auto f() -> void {}",
+                        "void {",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() & -> void {}",
+                        "void {",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() const noexcept(false) -> void {}",
+                        "void {",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "{ return",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "vector",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("auto f() -> std::vector<int> { return {}; }",
+                        "std ::",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("class X{};",
+                        "{ }",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("class X{}", // forgotten ; so not properly recognized as a class
+                        "{ }",
+                        TokenImpl::Cpp11init::CPP11INIT);
+        #undef testIsCpp11init
     }
 };
 

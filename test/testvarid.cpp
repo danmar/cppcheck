@@ -790,14 +790,14 @@ private:
                              "        : ExecutionPath(c, id)\n"
                              "    {\n"
                              "    }\n"
-                             "}\n";
+                             "};\n";
         const char expected3[] = "1: class Nullpointer : public ExecutionPath\n"
                                  "2: {\n"
                                  "3: Nullpointer ( Check * c@1 , const unsigned int id@2 , const std :: string & name@3 )\n"
                                  "4: : ExecutionPath ( c@1 , id@2 )\n"
                                  "5: {\n"
                                  "6: }\n"
-                                 "7: }\n";
+                                 "7: } ;\n";
         ASSERT_EQUALS(expected3, tokenize(code3));
     }
 
