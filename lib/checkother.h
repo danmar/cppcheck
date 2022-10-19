@@ -259,7 +259,7 @@ private:
     void duplicateValueTernaryError(const Token *tok);
     void duplicateExpressionTernaryError(const Token *tok, ErrorPath errors);
     void duplicateBreakError(const Token *tok, bool inconclusive);
-    void unreachableCodeError(const Token* tok, bool inconclusive);
+    void unreachableCodeError(const Token* tok, const Token* noreturn, bool inconclusive);
     void redundantContinueError(const Token* tok);
     void unsignedLessThanZeroError(const Token *tok, const ValueFlow::Value *v, const std::string &varname);
     void pointerLessThanZeroError(const Token *tok, const ValueFlow::Value *v);
@@ -327,7 +327,7 @@ private:
         c.duplicateValueTernaryError(nullptr);
         c.duplicateExpressionTernaryError(nullptr, errorPath);
         c.duplicateBreakError(nullptr,  false);
-        c.unreachableCodeError(nullptr,  false);
+        c.unreachableCodeError(nullptr, nullptr,  false);
         c.unsignedLessThanZeroError(nullptr, nullptr, "varname");
         c.unsignedPositiveError(nullptr, nullptr, "varname");
         c.pointerLessThanZeroError(nullptr, nullptr);

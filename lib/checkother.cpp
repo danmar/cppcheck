@@ -825,7 +825,7 @@ void CheckOther::checkUnreachableCode()
                         secondBreak = silencedWarning;
 
                     if (!labelInFollowingLoop && !silencedCompilerWarningOnly)
-                        unreachableCodeError(secondBreak, inconclusive);
+                        unreachableCodeError(secondBreak, tok, inconclusive);
                     tok = Token::findmatch(secondBreak, "[}:]");
                 } else if (secondBreak->scope() && secondBreak->scope()->isLoopScope() && secondBreak->str() == "}" && tok->str() == "continue") {
                     redundantContinueError(tok);
@@ -849,10 +849,18 @@ void CheckOther::duplicateBreakError(const Token *tok, bool inconclusive)
                 "The second statement can never be executed, and so should be removed.", CWE561, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
+void CheckOther::unreachableCodeError(const Token *tok, const Token* noreturn, bool inconclusive)
 {
+    std::string msg = "Statements following ";
+    if (noreturn && noreturn->function())
+        msg += "noreturn function '" + noreturn->str() + "()'";
+    else if (noreturn && noreturn->isKeyword())
+        msg += "'" + noreturn->str() + "'";
+    else
+        msg += "return, break, continue, goto or throw";
+    msg += " will never be executed.";
     reportError(tok, Severity::style, "unreachableCode",
-                "Statements following return, break, continue, goto or throw will never be executed.", CWE561, inconclusive ? Certainty::inconclusive : Certainty::normal);
+                msg, CWE561, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckOther::redundantContinueError(const Token *tok)
