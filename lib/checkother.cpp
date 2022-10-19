@@ -852,7 +852,7 @@ void CheckOther::duplicateBreakError(const Token *tok, bool inconclusive)
 void CheckOther::unreachableCodeError(const Token *tok, const Token* noreturn, bool inconclusive)
 {
     std::string msg = "Statements following ";
-    if (noreturn && noreturn->function())
+    if (noreturn && (noreturn->function() || mSettings->library.isnoreturn(noreturn)))
         msg += "noreturn function '" + noreturn->str() + "()'";
     else if (noreturn && noreturn->isKeyword())
         msg += "'" + noreturn->str() + "'";

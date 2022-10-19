@@ -4503,6 +4503,20 @@ private:
               "    g();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Statements following noreturn function 'n()' will never be executed.\n", errout.str());
+
+        check("void f() {\n"
+              "    exit(1);\n"
+              "    g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Statements following noreturn function 'exit()' will never be executed.\n", errout.str());
+
+        check("void f() {\n"
+              "    do {\n"
+              "        break;\n"
+              "        g();\n"
+              "    } while (0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Statements following 'break' will never be executed.\n", errout.str());
     }
 
     void redundantContinue() {
