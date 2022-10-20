@@ -418,6 +418,13 @@ private:
               "    (*this)[0] << a, b, c;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11359
+              "    struct S {\n"
+              "        S(int x, int y) {}\n"
+              "    } s(1, 2);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #8451
