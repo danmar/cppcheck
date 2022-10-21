@@ -410,7 +410,7 @@ static bool isInScope(const Token * tok, const Scope * scope)
     const Variable * var = tok->variable();
     if (var && (var->isGlobal() || var->isStatic() || var->isExtern()))
         return false;
-    if (tok->scope() && tok->scope()->isNestedIn(scope))
+    if (tok->scope() && !tok->scope()->isClassOrStructOrUnion() && tok->scope()->isNestedIn(scope))
         return true;
     if (!var)
         return false;
@@ -603,7 +603,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||
                             isDeadTemporary(mTokenizer->isCPP(), tokvalue, nullptr, &mSettings->library)) {
                             errorReturnDanglingLifetime(tok, &val);
-                            break;
+                            //break;
                         }
                     } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
                         errorInvalidLifetime(tok, &val);

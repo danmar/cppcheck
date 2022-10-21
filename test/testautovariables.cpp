@@ -3050,6 +3050,13 @@ private:
               "    return std::tie(xs[i]...);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11362
+        check("int* f() {\n"
+              "    static struct { int x; } a[] = { { 1 } };\n"
+              "    return &a[0].x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
