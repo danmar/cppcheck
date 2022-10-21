@@ -117,6 +117,7 @@ jobs:
           xcopy /s gui\help win_installer\files\help || exit /b !errorlevel!
           del win_installer\files\translations\*.qm || exit /b !errorlevel!
           move gui\*.qm win_installer\files\translations || exit /b !errorlevel!
+          copy win_installer\dlls\*.dll win_installer\files || exit /b !errorlevel!
 
       - name: Build Installer
         run: |
