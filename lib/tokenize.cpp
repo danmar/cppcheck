@@ -8022,8 +8022,13 @@ void Tokenizer::simplifyStructDecl()
                 if (tok && (tok->next()->str() == "(" || tok->next()->str() == "{")) {
                     tok->insertToken("=");
                     tok = tok->next();
+                    const bool isEnum = start->str() == "enum";
+                    if (!isEnum && cpp) {
+                        tok->insertToken(type->str());
+                        tok = tok->next();
+                    }
 
-                    if (start->str() == "enum") {
+                    if (isEnum) {
                         if (tok->next()->str() == "{") {
                             tok->next()->str("(");
                             tok->linkAt(1)->str(")");
