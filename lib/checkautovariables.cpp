@@ -603,7 +603,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||
                             isDeadTemporary(mTokenizer->isCPP(), tokvalue, nullptr, &mSettings->library)) {
                             errorReturnDanglingLifetime(tok, &val);
-                            //break;
+                            break;
                         }
                     } else if (tokvalue->variable() && isDeadScope(tokvalue->variable()->nameToken(), tok->scope())) {
                         errorInvalidLifetime(tok, &val);
