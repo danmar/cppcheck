@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:22.10"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
@@ -52,7 +52,7 @@ jobs:
           key: ${{ github.workflow }}-${{ matrix.image }}
 
       # tests require CMake 3.9 - no ccache available
-      - name: CMake build (no tests)
+      - name: CMake build (no tests / no ccache)
         if: matrix.image == 'ubuntu:14.04'
         run: |
           mkdir cmake.output
@@ -86,7 +86,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:22.10"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
