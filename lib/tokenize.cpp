@@ -742,14 +742,16 @@ void Tokenizer::simplifyTypedef()
             typeStart = tokOffset;
 
             while (Token::Match(tokOffset, "const|struct|enum %type%") ||
-                   (tokOffset->next() && tokOffset->next()->isStandardType()))
+                   (tokOffset->next() && tokOffset->next()->isStandardType() && !Token::Match(tokOffset->next(), "%name% ;")))
                 tokOffset = tokOffset->next();
 
             typeEnd = tokOffset;
-            tokOffset = tokOffset->next();
+            if (!Token::Match(tokOffset->next(), "%name% ;"))
+                tokOffset = tokOffset->next();
 
             while (Token::Match(tokOffset, "%type%") &&
-                   (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed"))) {
+                   (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed")) &&
+                   !Token::Match(tokOffset->next(), "%name% ;")) {
                 typeEnd = tokOffset;
                 tokOffset = tokOffset->next();
             }
