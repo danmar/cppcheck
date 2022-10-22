@@ -60,6 +60,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI->mEnableInconclusive->setCheckState(boolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
     mUI->mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
     mUI->mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
+    mUI->mCheckForUpdates->setCheckState(boolToCheckState(settings.value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()));
     mUI->mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
     validateEditPythonPath();
     mUI->mEditMisraFile->setText(settings.value(SETTINGS_MISRA_FILE, QString()).toString());
@@ -182,6 +183,7 @@ void SettingsDialog::saveSettingValues() const
     saveCheckboxValue(&settings, mUI->mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
     saveCheckboxValue(&settings, mUI->mShowStatistics, SETTINGS_SHOW_STATISTICS);
     saveCheckboxValue(&settings, mUI->mShowErrorId, SETTINGS_SHOW_ERROR_ID);
+    saveCheckboxValue(&settings, mUI->mCheckForUpdates, SETTINGS_CHECK_FOR_UPDATES);
     settings.setValue(SETTINGS_PYTHON_PATH, mUI->mEditPythonPath->text());
     settings.setValue(SETTINGS_MISRA_FILE, mUI->mEditMisraFile->text());
 

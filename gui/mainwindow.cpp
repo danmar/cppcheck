@@ -258,13 +258,20 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI->mButtonHideInformation, &QPushButton::clicked,
             this, &MainWindow::hideInformation);
 
-    // Is there a new version?
-    if (isCppcheckPremium()) {
-        const QUrl url("https://files.cppchecksolutions.com/version.txt");
-        mNetworkAccessManager->get(QNetworkRequest(url));
+    if (!mSettings->contains(SETTINGS_CHECK_FOR_UPDATES))
+        mSettings->setValue(SETTINGS_CHECK_FOR_UPDATES, isCppcheckPremium());
+
+    if (mSettings->value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()) {
+        // Is there a new version?
+        if (isCppcheckPremium()) {
+            const QUrl url("https://files.cppchecksolutions.com/version.txt");
+            mNetworkAccessManager->get(QNetworkRequest(url));
+        } else {
+            const QUrl url("https://cppcheck.sourceforge.io/version.txt");
+            mNetworkAccessManager->get(QNetworkRequest(url));
+        }
     } else {
-        const QUrl url("https://cppcheck.sourceforge.io/version.txt");
-        mNetworkAccessManager->get(QNetworkRequest(url));
+        delete mUI->mLayoutInformation;
     }
 }
 
@@ -1956,6 +1963,7 @@ void MainWindow::hideInformation() {
     mSettings->setValue(SETTINGS_CHECK_VERSION, version);
     mUI->mLabelInformation->setVisible(false);
     mUI->mButtonHideInformation->setVisible(false);
+    mUI->mLayoutInformation->deleteLater();
 }
 
 bool MainWindow::isCppcheckPremium() const {
