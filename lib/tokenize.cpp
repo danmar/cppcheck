@@ -742,14 +742,16 @@ void Tokenizer::simplifyTypedef()
             typeStart = tokOffset;
 
             while (Token::Match(tokOffset, "const|struct|enum %type%") ||
-                   (tokOffset->next() && tokOffset->next()->isStandardType()))
+                   (tokOffset->next() && tokOffset->next()->isStandardType() && !Token::Match(tokOffset->next(), "%name% ;")))
                 tokOffset = tokOffset->next();
 
             typeEnd = tokOffset;
-            tokOffset = tokOffset->next();
+            if (!Token::Match(tokOffset->next(), "%name% ;"))
+                tokOffset = tokOffset->next();
 
             while (Token::Match(tokOffset, "%type%") &&
-                   (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed"))) {
+                   (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed")) &&
+                   !Token::Match(tokOffset->next(), "%name% ;")) {
                 typeEnd = tokOffset;
                 tokOffset = tokOffset->next();
             }
@@ -1877,11 +1879,9 @@ namespace {
         }
 
         bool hasChild(const std::string &childName) const {
-            for (const auto & child : children) {
-                if (child.name == childName)
-                    return true;
-            }
-            return false;
+            return std::any_of(children.begin(), children.end(), [&](const ScopeInfo3& child) {
+                return child.name == childName;
+            });
         }
 
         const ScopeInfo3 * findInChildren(const std::string & scope) const {
@@ -1901,10 +1901,11 @@ namespace {
             const ScopeInfo3 * tempScope = this;
             while (tempScope) {
                 // check children
-                for (const auto & child : tempScope->children) {
-                    if (&child != this && child.type == Record && (child.name == scope || child.fullName == scope))
-                        return &child;
-                }
+                auto it = std::find_if(tempScope->children.begin(), tempScope->children.end(), [&](const ScopeInfo3& child) {
+                    return &child != this && child.type == Record && (child.name == scope || child.fullName == scope);
+                });
+                if (it != tempScope->children.end())
+                    return &*it;
                 // check siblings for same name
                 if (tempScope->parent) {
                     for (const auto &sibling : tempScope->parent->children) {
@@ -2181,15 +2182,17 @@ namespace {
         const ScopeInfo3 * tempScope = scopeInfo;
         while (tempScope) {
             //if (!tempScope->parent->usingNamespaces.empty()) {
-            if (!tempScope->usingNamespaces.empty()) {
+            const std::set<std::string>& usingNS = tempScope->usingNamespaces;
+            if (!usingNS.empty()) {
                 if (qualification.empty()) {
-                    if (tempScope->usingNamespaces.find(scope) != tempScope->usingNamespaces.end())
+                    if (usingNS.find(scope) != usingNS.end())
                         return true;
                 } else {
-                    for (const auto &ns : tempScope->usingNamespaces) {
-                        if (scope == ns + " :: " + qualification)
-                            return true;
-                    }
+                    const std::string suffix = " :: " + qualification;
+                    if (std::any_of(usingNS.begin(), usingNS.end(), [&](const std::string& ns) {
+                        return scope == ns + suffix;
+                    }))
+                        return true;
                 }
             }
             tempScope = tempScope->parent;
@@ -3158,6 +3161,26 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 
 void Tokenizer::arraySize()
 {
+    auto getStrTok = [](Token* tok, bool addLength, Token** endStmt) -> Token* {
+        if (addLength) {
+            *endStmt = tok->tokAt(5);
+            return tok->tokAt(4);
+        }
+        if (Token::Match(tok, "%var% [ ] =")) {
+            tok = tok->tokAt(4);
+            int parCount = 0;
+            while (Token::simpleMatch(tok, "(")) {
+                ++parCount;
+                tok = tok->next();
+            }
+            if (Token::Match(tok, "%str%")) {
+                *endStmt = tok->tokAt(parCount + 1);
+                return tok;
+            }
+        }
+        return nullptr;
+    };
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!tok->isName() || !Token::Match(tok, "%var% [ ] ="))
             continue;
@@ -3169,11 +3192,11 @@ void Tokenizer::arraySize()
             addlength = true;
         }
 
-        if (addlength || Token::Match(tok, "%var% [ ] = %str% ;")) {
-            tok = tok->next();
-            const int sz = Token::getStrArraySize(tok->tokAt(3));
-            tok->insertToken(MathLib::toString(sz));
-            tok = tok->tokAt(5);
+        Token* endStmt{};
+        if (const Token* strTok = getStrTok(tok, addlength, &endStmt)) {
+            const int sz = Token::getStrArraySize(strTok);
+            tok->next()->insertToken(MathLib::toString(sz));
+            tok = endStmt;
         }
 
         else if (Token::Match(tok, "%var% [ ] = {")) {
@@ -4427,8 +4450,9 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // What member variables are there in this class?
-        for (const Token *it : classnameTokens)
-            scopeInfo.emplace_back(it->str(), tokStart->link());
+        std::transform(classnameTokens.begin(), classnameTokens.end(), std::back_inserter(scopeInfo), [&](const Token* tok) {
+            return ScopeInfo2(tok->str(), tokStart->link());
+        });
 
         for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
             // skip parentheses..
@@ -4700,7 +4724,7 @@ void Tokenizer::createLinks2()
             } else {
                 type.pop();
                 if (Token::Match(token, "> %name%") && !token->next()->isKeyword() &&
-                    Token::Match(top1->tokAt(-2), "%op% %name% <") &&
+                    Token::Match(top1->tokAt(-2), "%op% %name% <") && top1->strAt(-2) != "<" &&
                     (templateTokens.empty() || top1 != templateTokens.top()))
                     continue;
                 Token::createMutualLinks(top1, token);
@@ -8000,8 +8024,13 @@ void Tokenizer::simplifyStructDecl()
                 if (tok && (tok->next()->str() == "(" || tok->next()->str() == "{")) {
                     tok->insertToken("=");
                     tok = tok->next();
+                    const bool isEnum = start->str() == "enum";
+                    if (!isEnum && cpp) {
+                        tok->insertToken(type->str());
+                        tok = tok->next();
+                    }
 
-                    if (start->str() == "enum") {
+                    if (isEnum) {
                         if (tok->next()->str() == "{") {
                             tok->next()->str("(");
                             tok->linkAt(1)->str(")");
@@ -9811,13 +9840,11 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
     if (!mPreprocessor)
         return false;
-    for (const Directive &d: mPreprocessor->getDirectives()) {
-        if (d.linenr >= start->linenr() &&
-            d.linenr <= end->linenr() &&
-            d.str.compare(0,3,"#if") == 0 &&
-            start->fileIndex() < list.getFiles().size() &&
-            d.file == list.getFiles()[start->fileIndex()])
-            return true;
-    }
-    return false;
+    return std::any_of(mPreprocessor->getDirectives().begin(), mPreprocessor->getDirectives().end(), [&](const Directive& d) {
+        return d.str.compare(0, 3, "#if") == 0 &&
+        d.linenr >= start->linenr() &&
+        d.linenr <= end->linenr() &&
+        start->fileIndex() < list.getFiles().size() &&
+        d.file == list.getFiles()[start->fileIndex()];
+    });
 }

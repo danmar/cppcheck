@@ -51,6 +51,7 @@
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 #include <vector>
+#include <numeric>
 
 #ifdef USE_UNIX_SIGNAL_HANDLING
 #include "cppcheckexecutorsig.h"
@@ -129,14 +130,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     }
 
     // Output a warning for the user if he tries to exclude headers
-    bool warn = false;
     const std::vector<std::string>& ignored = parser.getIgnoredPaths();
-    for (const std::string &i : ignored) {
-        if (Path::isHeader(i)) {
-            warn = true;
-            break;
-        }
-    }
+    const bool warn = std::any_of(ignored.begin(), ignored.end(), [](const std::string& i) {
+        return Path::isHeader(i);
+    });
     if (warn) {
         std::cout << "cppcheck: filename exclusion does not apply to header (.h and .hpp) files." << std::endl;
         std::cout << "cppcheck: Please use --suppress for ignoring results from the header files." << std::endl;
@@ -154,11 +151,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
-        for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
-            if (matchglobs(mSettings->fileFilters, fsetting.filename)) {
-                newList.emplace_back(fsetting);
-            }
-        }
+        const std::list<ImportProject::FileSettings>& fileSettings = settings.project.fileSettings;
+        std::copy_if(fileSettings.begin(), fileSettings.end(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
+            return matchglobs(mSettings->fileFilters, fs.filename);
+        });
         if (!newList.empty())
             settings.project.fileSettings = newList;
         else {
@@ -325,10 +321,9 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         // Single process
         settings.jointSuppressionReport = true;
 
-        std::size_t totalfilesize = 0;
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-            totalfilesize += i->second;
-        }
+        const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
+            return v + f.second;
+        });
 
         std::size_t processedsize = 0;
         unsigned int c = 0;

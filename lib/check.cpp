@@ -35,13 +35,13 @@
 Check::Check(const std::string &aname)
     : mTokenizer(nullptr), mSettings(nullptr), mErrorLogger(nullptr), mName(aname)
 {
-    for (std::list<Check*>::iterator i = instances().begin(); i != instances().end(); ++i) {
-        if ((*i)->name() > aname) {
-            instances().insert(i, this);
-            return;
-        }
-    }
-    instances().push_back(this);
+    auto it = std::find_if(instances().begin(), instances().end(), [&](const Check* i) {
+        return i->name() > aname;
+    });
+    if (it == instances().end())
+        instances().push_back(this);
+    else
+        instances().insert(it, this);
 }
 
 void Check::reportError(const ErrorMessage &errmsg)

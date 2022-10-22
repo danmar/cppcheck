@@ -410,7 +410,7 @@ static bool isInScope(const Token * tok, const Scope * scope)
     const Variable * var = tok->variable();
     if (var && (var->isGlobal() || var->isStatic() || var->isExtern()))
         return false;
-    if (tok->scope() && tok->scope()->isNestedIn(scope))
+    if (tok->scope() && !tok->scope()->isClassOrStructOrUnion() && tok->scope()->isNestedIn(scope))
         return true;
     if (!var)
         return false;
@@ -418,10 +418,10 @@ static bool isInScope(const Token * tok, const Scope * scope)
         const Scope * tokScope = tok->scope();
         if (!tokScope)
             return false;
-        for (const Scope * argScope:tokScope->nestedList) {
-            if (argScope && argScope->isNestedIn(scope))
-                return true;
-        }
+        if (std::any_of(tokScope->nestedList.begin(), tokScope->nestedList.end(), [&](const Scope* argScope) {
+            return argScope && argScope->isNestedIn(scope);
+        }))
+            return true;
     }
     return false;
 }

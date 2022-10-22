@@ -42,6 +42,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <numeric>
 
 static const std::string AccessSpecDecl = "AccessSpecDecl";
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
@@ -1447,16 +1448,15 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
     // definition
     if (isDefinition()) {
         std::vector<AstNodePtr> children2;
-        for (const AstNodePtr &child: children) {
-            if (child->nodeType == CXXConstructorDecl ||
-                child->nodeType == CXXDestructorDecl ||
-                child->nodeType == CXXMethodDecl ||
-                child->nodeType == FieldDecl ||
-                child->nodeType == VarDecl ||
-                child->nodeType == AccessSpecDecl ||
-                child->nodeType == TypedefDecl)
-                children2.push_back(child);
-        }
+        std::copy_if(children.begin(), children.end(), std::back_inserter(children2), [](const AstNodePtr& child) {
+            return child->nodeType == CXXConstructorDecl ||
+            child->nodeType == CXXDestructorDecl ||
+            child->nodeType == CXXMethodDecl ||
+            child->nodeType == FieldDecl ||
+            child->nodeType == VarDecl ||
+            child->nodeType == AccessSpecDecl ||
+            child->nodeType == TypedefDecl;
+        });
         Scope *scope = createScope(tokenList, isStruct ? Scope::ScopeType::eStruct : Scope::ScopeType::eClass, children2, classToken);
         const std::string addr = mExtTokens[0];
         mData->scopeDecl(addr, scope);
@@ -1531,10 +1531,9 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
 
         int typeSize = 0;
         for (const Variable &var: scope.varlist) {
-            int mul = 1;
-            for (const auto &dim: var.dimensions()) {
-                mul *= dim.num;
-            }
+            const int mul = std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& dim) {
+                return v * dim.num;
+            });
             if (var.valueType())
                 typeSize += mul * var.valueType()->typeSize(*settings, true);
         }

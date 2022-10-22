@@ -2701,6 +2701,13 @@ void CheckStl::useStlAlgorithm()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    auto checkAssignee = [](const Token* tok) {
+        if (astIsBool(tok)) // std::accumulate is not a good fit for bool values, std::all/any/none_of return early
+            return false;
+        return !astIsContainer(tok); // don't warn for containers, where overloaded operators can be costly
+    };
+
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
             // Parse range-based for loop
@@ -2710,16 +2717,35 @@ void CheckStl::useStlAlgorithm()
                 continue;
             const Token *bodyTok = tok->next()->link()->next();
             const Token *splitTok = tok->next()->astOperand2();
-            if (!Token::simpleMatch(splitTok, ":"))
-                continue;
-            const Token *loopVar = splitTok->previous();
-            if (loopVar->varId() == 0)
-                continue;
+            const Token* loopVar{};
+            bool isIteratorLoop = false;
+            if (Token::simpleMatch(splitTok, ":")) {
+                loopVar = splitTok->previous();
+                if (loopVar->varId() == 0)
+                    continue;
+            }
+            else { // iterator-based loop?
+                const Token* initTok = getInitTok(tok);
+                const Token* condTok = getCondTok(tok);
+                const Token* stepTok = getStepTok(tok);
+                if (!initTok || !condTok || !stepTok)
+                    continue;
+                loopVar = Token::Match(condTok, "%comp%") ? condTok->astOperand1() : nullptr;
+                if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
+                    continue;
+                if (!Token::simpleMatch(initTok, "=") || !Token::Match(initTok->astOperand1(), "%varid%", loopVar->varId()))
+                    continue;
+                if (!stepTok->isIncDecOp())
+                    continue;
+                isIteratorLoop = true;
+            }
 
             // Check for single assignment
             bool useLoopVarInAssign;
             const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
             if (assignTok) {
+                if (!checkAssignee(assignTok->astOperand1()))
+                    continue;
                 const int assignVarId = assignTok->astOperand1()->varId();
                 std::string algo;
                 if (assignVarId == loopVar->varId()) {
@@ -2747,7 +2773,7 @@ void CheckStl::useStlAlgorithm()
             // Check for container calls
             bool useLoopVarInMemCall;
             const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall);
-            if (memberAccessTok) {
+            if (memberAccessTok && !isIteratorLoop) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
                 if (contVarId == loopVar->varId())
@@ -2784,6 +2810,8 @@ void CheckStl::useStlAlgorithm()
                 // Check for single assign
                 assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign);
                 if (assignTok) {
+                    if (!checkAssignee(assignTok->astOperand1()))
+                        continue;
                     const int assignVarId = assignTok->astOperand1()->varId();
                     std::string algo;
                     if (assignVarId == loopVar->varId()) {
