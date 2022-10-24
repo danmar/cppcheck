@@ -258,9 +258,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI->mButtonHideInformation, &QPushButton::clicked,
             this, &MainWindow::hideInformation);
 
-    if (!mSettings->contains(SETTINGS_CHECK_FOR_UPDATES))
-        mSettings->setValue(SETTINGS_CHECK_FOR_UPDATES, isCppcheckPremium());
-
     if (mSettings->value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()) {
         // Is there a new version?
         if (isCppcheckPremium()) {
@@ -1936,7 +1933,7 @@ static int getVersion(const QString& nameWithVersion) {
 void MainWindow::replyFinished(QNetworkReply *reply) {
     reply->deleteLater();
     if (reply->error()) {
-        // TODO?
+        mUI->mLayoutInformation->deleteLater();
         qDebug() << "Response: ERROR";
         return;
     }
@@ -1955,6 +1952,9 @@ void MainWindow::replyFinished(QNetworkReply *reply) {
                 mUI->mLabelInformation->setText(tr("New version available: %1").arg(str.trimmed()));
             }
         }
+    }
+    if (!mUI->mLabelInformation->isVisible()) {
+        mUI->mLayoutInformation->deleteLater();
     }
 }
 
