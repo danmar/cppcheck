@@ -641,7 +641,7 @@ static bool iscpp11init_impl(const Token * const tok)
     }
 
     const Token *endtok = nullptr;
-    if (Token::Match(nameToken, "%name%|return|: {") &&
+    if (Token::Match(nameToken, "%name%|return|: {") && !Token::Match(nameToken->tokAt(-2), "case %name%|%num% :") &&
         (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))

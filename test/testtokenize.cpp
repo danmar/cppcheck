@@ -6497,6 +6497,18 @@ private:
 
         // #10831
         ASSERT_EQUALS("f{([= x{([=", testAst("void foo() { F f = [](t x = []() {}) {}; }"));
+        
+        // #11357
+        ASSERT_NO_THROW(tokenizeAndStringify("void f(std::vector<int>& v, bool c) {\n"
+                                             "    std::sort(v.begin(), v.end(), [&c](const auto a, const auto b) {\n"
+                                             "        switch (c) {\n"
+                                             "        case false: {\n"
+                                             "            if (a < b) {}\n"
+                                             "        }\n"
+                                             "        }\n"
+                                             "        return a < b;\n"
+                                             "    });\n"
+                                             "}\n"));
     }
 
     void astcase() {
