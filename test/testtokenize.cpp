@@ -6511,9 +6511,7 @@ private:
                                              "}\n"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("namespace N {\n"
-                                             "        enum E : bool {\n"
-                                             "        F\n"
-                                             "    };\n"
+                                             "    enum E : bool { F };\n"
                                              "}\n"
                                              "void f(std::vector<int>& v, bool c) {\n"
                                              "    std::sort(v.begin(), v.end(), [&c](const auto a, const auto b) {\n"
