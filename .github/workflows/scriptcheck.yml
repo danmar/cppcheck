@@ -74,6 +74,9 @@ jobs:
       - name: Install missing software on ubuntu (Python 3)
         if: matrix.python-version != '2.7'
         run: |
+          # shellcheck cannot be installed via pip
+          # ERROR: Could not find a version that satisfies the requirement shellcheck (from versions: none)
+          # ERROR: No matching distribution found for shellcheck
           sudo apt-get install shellcheck
           python -m pip install pip --upgrade
           python -m pip install natsort
