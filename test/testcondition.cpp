@@ -4448,6 +4448,15 @@ private:
               "           *n == 'A');\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::istringstream& i) {\n" // #9327
+              "    std::string s;\n"
+              "    if (!(i >> s))\n"
+              "        return;\n"
+              "    if (!(i >> s))\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
