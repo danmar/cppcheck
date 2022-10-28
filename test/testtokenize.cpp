@@ -6383,12 +6383,6 @@ private:
                                              "template <class> auto b() -> decltype(a) {\n"
                                              "    if (a) {}\n"
                                              "}\n"));
-
-        // #11369
-        ASSERT_NO_THROW(tokenizeAndStringify("int a;\n"
-            "template <class> auto b() -> decltype(a) {\n"
-            "    if (a) {}\n"
-            "}\n"));
     }
 
     void astcast() {
