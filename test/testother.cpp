@@ -6463,6 +6463,11 @@ private:
               "    return f;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("float f(float x) {\n" // # 11369
+              "return (x >= 0.0) ? 0.0 : -0.0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionTemplate() {

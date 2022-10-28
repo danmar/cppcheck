@@ -131,7 +131,7 @@ namespace ValueFlow {
                 break;
             case ValueType::FLOAT:
                 // TODO: Write some better comparison
-                if (floatValue > rhs.floatValue || floatValue < rhs.floatValue)
+                if (std::memcmp(&floatValue, &rhs.floatValue, sizeof(floatValue)))
                     return false;
                 break;
             case ValueType::MOVED:
