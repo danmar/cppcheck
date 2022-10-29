@@ -6464,8 +6464,8 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("float f(float x) {\n" // # 11369
-              "return (x >= 0.0) ? 0.0 : -0.0;\n"
+        check("float f(float x) {\n" // # 11368
+              "    return (x >= 0.0) ? 0.0 : -0.0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
