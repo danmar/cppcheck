@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <cmath>
 #include <functional>
 #include <list>
 #include <string>
