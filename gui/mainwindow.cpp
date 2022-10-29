@@ -258,13 +258,17 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI->mButtonHideInformation, &QPushButton::clicked,
             this, &MainWindow::hideInformation);
 
-    // Is there a new version?
-    if (isCppcheckPremium()) {
-        const QUrl url("https://files.cppchecksolutions.com/version.txt");
-        mNetworkAccessManager->get(QNetworkRequest(url));
+    if (mSettings->value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()) {
+        // Is there a new version?
+        if (isCppcheckPremium()) {
+            const QUrl url("https://files.cppchecksolutions.com/version.txt");
+            mNetworkAccessManager->get(QNetworkRequest(url));
+        } else {
+            const QUrl url("https://cppcheck.sourceforge.io/version.txt");
+            mNetworkAccessManager->get(QNetworkRequest(url));
+        }
     } else {
-        const QUrl url("https://cppcheck.sourceforge.io/version.txt");
-        mNetworkAccessManager->get(QNetworkRequest(url));
+        delete mUI->mLayoutInformation;
     }
 }
 
@@ -1929,7 +1933,7 @@ static int getVersion(const QString& nameWithVersion) {
 void MainWindow::replyFinished(QNetworkReply *reply) {
     reply->deleteLater();
     if (reply->error()) {
-        // TODO?
+        mUI->mLayoutInformation->deleteLater();
         qDebug() << "Response: ERROR";
         return;
     }
@@ -1949,6 +1953,9 @@ void MainWindow::replyFinished(QNetworkReply *reply) {
             }
         }
     }
+    if (!mUI->mLabelInformation->isVisible()) {
+        mUI->mLayoutInformation->deleteLater();
+    }
 }
 
 void MainWindow::hideInformation() {
@@ -1956,6 +1963,7 @@ void MainWindow::hideInformation() {
     mSettings->setValue(SETTINGS_CHECK_VERSION, version);
     mUI->mLabelInformation->setVisible(false);
     mUI->mButtonHideInformation->setVisible(false);
+    mUI->mLayoutInformation->deleteLater();
 }
 
 bool MainWindow::isCppcheckPremium() const {

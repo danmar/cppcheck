@@ -3506,13 +3506,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void localvar60() { // #10531
-        functionVariableUsage("void Scale(double scale) {\n"
+    void localvar60() {
+        functionVariableUsage("void Scale(double scale) {\n" // #10531
                               "    for (int i = 0; i < m_points.size(); ++i) {\n"
                               "        auto& p = m_points[i];\n"
                               "        p += scale;\n"
                               "    }\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void foo(int c[]) {\n" // #10597
+                              "    int& cc = c[0];\n"
+                              "    cc &= ~0xff;\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

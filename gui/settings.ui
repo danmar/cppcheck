@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>589</width>
-    <height>346</height>
+    <width>627</width>
+    <height>411</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -158,6 +158,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="mCheckForUpdates">
+         <property name="text">
+          <string>Check for updates</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="verticalSpacer_2">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -293,27 +300,27 @@
           <string>Python binary (leave this empty to use python in the PATH)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_13">
-           <item>
-             <layout class="QHBoxLayout" name="horizontalLayout">
-              <item>
-               <widget class="QLineEdit" name="mEditPythonPath"/>
-              </item>
-              <item>
-               <widget class="QPushButton" name="mBtnBrowsePythonPath">
-                <property name="text">
-                 <string>...</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-           </item>
-           <item>
-             <widget class="QLabel" name="mPythonPathWarning">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout">
+            <item>
+             <widget class="QLineEdit" name="mEditPythonPath"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="mBtnBrowsePythonPath">
               <property name="text">
-               <string></string>
+               <string>...</string>
               </property>
              </widget>
-           </item>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="mPythonPathWarning">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>

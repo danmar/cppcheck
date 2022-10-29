@@ -640,8 +640,17 @@ static bool iscpp11init_impl(const Token * const tok)
             return true;
     }
 
+    auto isCaseStmt = [](const Token* colonTok) {
+        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num% :"))
+            return false;
+        const Token* caseTok = colonTok->tokAt(-2);
+        while (Token::Match(caseTok->tokAt(-1), "::|%name%"))
+            caseTok = caseTok->tokAt(-1);
+        return Token::simpleMatch(caseTok, "case");
+    };
+
     const Token *endtok = nullptr;
-    if (Token::Match(nameToken, "%name%|return|: {") &&
+    if (Token::Match(nameToken, "%name%|return|: {") && !isCaseStmt(nameToken) &&
         (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
