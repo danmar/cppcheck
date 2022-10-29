@@ -1050,7 +1050,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
     } else if (isNullValue(second)) {
         if (isNullValue(first))
             return "nan.0";
-        return isPositive(first) ? "inf.0" : "-inf.0";
+        return isPositive(first) == isPositive(second) ? "inf.0" : "-inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
 #endif
