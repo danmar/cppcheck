@@ -137,7 +137,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
     }
     if (s.find("$(") != std::string::npos)
         return false;
-    s = Path::simplifyPath(Path::fromNativeSeparators(s));
+    s = Path::simplifyPath(Path::fromNativeSeparators(std::move(s)));
     return true;
 }
 

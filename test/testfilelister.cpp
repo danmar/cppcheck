@@ -60,7 +60,7 @@ private:
         // Recursively add add files..
         std::list<std::pair<std::string, std::size_t>> files;
         std::vector<std::string> masks;
-        PathMatch matcher(masks);
+        PathMatch matcher(std::move(masks));
         std::string err = FileLister::recursiveAddFiles(files, adddir, matcher);
         ASSERT_EQUALS("", err);
 

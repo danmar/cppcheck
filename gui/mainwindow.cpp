@@ -1282,7 +1282,7 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     QDateTime saveCheckStartTime = mThread->getCheckStartTime();
     mThread->check(checkSettings);
     mUI->mResults->setCheckSettings(checkSettings);
-    mThread->setCheckStartTime(saveCheckStartTime);
+    mThread->setCheckStartTime(std::move(saveCheckStartTime));
 }
 
 void MainWindow::reAnalyze(bool all)

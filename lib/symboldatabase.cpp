@@ -6469,7 +6469,7 @@ static const Token* parsedecl(const Token* type,
                               bool isCpp,
                               SourceLocation loc = SourceLocation::current());
 
-void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocation loc)
+void SymbolDatabase::setValueType(Token* tok, const Variable& var, const SourceLocation &loc)
 {
     ValueType valuetype;
     if (mSettings.debugnormal || mSettings.debugwarnings)
@@ -6502,7 +6502,7 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocatio
 
 static ValueType::Type getEnumType(const Scope* scope, const Platform& platform);
 
-void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc)
+void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, const SourceLocation &loc)
 {
     ValueType valuetype;
     if (mSettings.debugnormal || mSettings.debugwarnings)
@@ -6551,7 +6551,7 @@ static bool isContainerYieldPointer(Library::Container::Yield yield)
     return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
 }
 
-void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, SourceLocation loc)
+void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, const SourceLocation &loc)
 {
     auto* valuetypePtr = new ValueType(valuetype);
     if (mSettings.debugnormal || mSettings.debugwarnings)
@@ -8138,7 +8138,7 @@ std::string ValueType::str() const
     return ret.substr(1);
 }
 
-void ValueType::setDebugPath(const Token* tok, SourceLocation ctx, SourceLocation local)
+void ValueType::setDebugPath(const Token* tok, SourceLocation ctx, const SourceLocation &local)
 {
     std::string file = ctx.file_name();
     if (file.empty())

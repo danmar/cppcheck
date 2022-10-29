@@ -87,7 +87,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
         if (Token::Match(tok, "asm|goto|break|continue"))
             return Progress::Break;
         if (Token::Match(tok, "return|throw")) {
-            forwardRecursive(tok, info, f);
+            forwardRecursive(tok, std::move(info), f);
             return Progress::Break;
             // Evaluate RHS of assignment before LHS
         }

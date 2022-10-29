@@ -92,7 +92,7 @@ private:
 
     void onemasksamepathdifferentcase() const {
         std::vector<std::string> masks(1, "sRc/");
-        PathMatch match(masks, false);
+        PathMatch match(std::move(masks), false);
         ASSERT(match.match("srC/"));
     }
 
@@ -139,25 +139,25 @@ private:
 
     void twomasklongerpath1() const {
         std::vector<std::string> masks = { "src/", "module/" };
-        PathMatch match(masks);
+        PathMatch match(std::move(masks));
         ASSERT(!match.match("project/"));
     }
 
     void twomasklongerpath2() const {
         std::vector<std::string> masks = { "src/", "module/" };
-        PathMatch match(masks);
+        PathMatch match(std::move(masks));
         ASSERT(match.match("project/src/"));
     }
 
     void twomasklongerpath3() const {
         std::vector<std::string> masks = { "src/", "module/" };
-        PathMatch match(masks);
+        PathMatch match(std::move(masks));
         ASSERT(match.match("project/module/"));
     }
 
     void twomasklongerpath4() const {
         std::vector<std::string> masks = { "src/", "module/" };
-        PathMatch match(masks);
+        PathMatch match(std::move(masks));
         ASSERT(match.match("project/src/module/"));
     }
 
@@ -168,7 +168,7 @@ private:
 
     void filemaskdifferentcase() const {
         std::vector<std::string> masks(1, "foo.cPp");
-        PathMatch match(masks, false);
+        PathMatch match(std::move(masks), false);
         ASSERT(match.match("fOo.cpp"));
     }
 

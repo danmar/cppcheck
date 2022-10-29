@@ -116,7 +116,7 @@ namespace {
         }
 
         template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-        Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
+        Progress traverseTok(T* tok, const F &f, bool traverseUnknown, T** out = nullptr) {
             if (Token::Match(tok, "asm|goto"))
                 return Break(Analyzer::Terminate::Bail);
             if (Token::Match(tok, "setjmp|longjmp (")) {
@@ -166,7 +166,7 @@ namespace {
         }
 
         template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-        Progress traverseRecursive(T* tok, F f, bool traverseUnknown, unsigned int recursion=0) {
+        Progress traverseRecursive(T* tok, const F &f, bool traverseUnknown, unsigned int recursion=0) {
             if (!tok)
                 return Progress::Continue;
             if (recursion > 10000)
