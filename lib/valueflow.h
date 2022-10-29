@@ -26,7 +26,6 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <cstring>
 #include <functional>
 #include <list>
 #include <string>
@@ -131,7 +130,7 @@ namespace ValueFlow {
                     return false;
                 break;
             case ValueType::FLOAT:
-                if (std::memcmp(&floatValue, &rhs.floatValue, sizeof(floatValue)))
+                if (floatValue > rhs.floatValue || floatValue < rhs.floatValue || std::signbit(floatValue) != std::signbit(rhs.floatValue))
                     return false;
                 break;
             case ValueType::MOVED:
