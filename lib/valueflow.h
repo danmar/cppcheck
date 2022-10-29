@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <cstring>
 #include <functional>
 #include <list>
 #include <string>
@@ -130,7 +131,6 @@ namespace ValueFlow {
                     return false;
                 break;
             case ValueType::FLOAT:
-                // TODO: Write some better comparison
                 if (std::memcmp(&floatValue, &rhs.floatValue, sizeof(floatValue)))
                     return false;
                 break;
