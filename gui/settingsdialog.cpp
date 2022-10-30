@@ -37,12 +37,14 @@
 
 SettingsDialog::SettingsDialog(ApplicationList *list,
                                TranslationHandler *translator,
+                               bool premium,
                                QWidget *parent) :
     QDialog(parent),
     mApplications(list),
     mTempApplications(new ApplicationList(this)),
     mTranslator(translator),
-    mUI(new Ui::Settings)
+    mUI(new Ui::Settings),
+    mPremium(premium)
 {
     mUI->setupUi(this);
     mUI->mPythonPathWarning->setStyleSheet("color: red");
@@ -63,6 +65,10 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI->mCheckForUpdates->setCheckState(boolToCheckState(settings.value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()));
     mUI->mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
     validateEditPythonPath();
+    if (premium)
+        mUI->mEditMisraFile->setVisible(false);
+    else
+        mUI->mEditMisraFile->setText(settings.value(SETTINGS_MISRA_FILE, QString()).toString());
     mUI->mEditMisraFile->setText(settings.value(SETTINGS_MISRA_FILE, QString()).toString());
 
 #ifdef Q_OS_WIN

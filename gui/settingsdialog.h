@@ -45,6 +45,7 @@ class SettingsDialog : public QDialog {
 public:
     SettingsDialog(ApplicationList *list,
                    TranslationHandler *translator,
+                   bool premium,
                    QWidget *parent = nullptr);
     SettingsDialog(const SettingsDialog &) = delete;
     ~SettingsDialog() override;
@@ -238,6 +239,8 @@ private:
     void manageStyleControls();
 
     static const int mLangCodeRole = Qt::UserRole;
+
+    bool mPremium;
 };
 /// @}
 #endif // SETTINGSDIALOG_H

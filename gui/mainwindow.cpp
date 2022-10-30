@@ -72,6 +72,16 @@
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
+static QString fromNativePath(const QString& p) {
+#ifdef Q_OS_WIN
+    QString ret(p);
+    ret.replace('\\', '/');
+    return ret;
+#else
+    return p;
+#endif
+}
+
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
     mApplications(new ApplicationList(this)),
@@ -913,7 +923,7 @@ Settings MainWindow::getCppcheckSettings()
         if (!mProjectFile->getImportProject().isEmpty())
             result.checkAllConfigurations = false;
 
-        const QString &buildDir = mProjectFile->getBuildDir();
+        const QString &buildDir = fromNativePath(mProjectFile->getBuildDir());
         if (!buildDir.isEmpty()) {
             if (QDir(buildDir).isAbsolute()) {
                 result.buildDir = buildDir.toStdString();
@@ -949,7 +959,7 @@ Settings MainWindow::getCppcheckSettings()
             result.checkUnknownFunctionReturn.insert(s.toStdString());
 
         QString filesDir(getDataDir());
-        const QString pythonCmd = mSettings->value(SETTINGS_PYTHON_PATH).toString();
+        const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         for (const QString& addon : mProjectFile->getAddons()) {
             QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
             if (addonFilePath.isEmpty())
@@ -961,7 +971,7 @@ Settings MainWindow::getCppcheckSettings()
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())
                 json += ", \"python\":\"" + pythonCmd + "\"";
-            QString misraFile = mSettings->value(SETTINGS_MISRA_FILE).toString();
+            QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
             if (addon == "misra" && !misraFile.isEmpty()) {
                 QString arg;
                 if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
@@ -1102,7 +1112,7 @@ void MainWindow::checkLockDownUI()
 
 void MainWindow::programSettings()
 {
-    SettingsDialog dialog(mApplications, mTranslation, this);
+    SettingsDialog dialog(mApplications, mTranslation, isCppcheckPremium(), this);
     if (dialog.exec() == QDialog::Accepted) {
         dialog.saveSettingValues();
         mSettings->sync();
