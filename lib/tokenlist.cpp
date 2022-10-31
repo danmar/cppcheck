@@ -504,7 +504,8 @@ static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
                 return tok;
         } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
-        } else if (Token::Match(vartok, "decltype|typeof (") && !Token::Match(tok->linkAt(1), ") [,)]")) {
+        } else if (Token::Match(vartok, "decltype|typeof (") &&
+                   (!Token::Match(tok->linkAt(1), ") ,|)|%name%") || Token::Match(tok->linkAt(1), ") %name% [:=]"))) {
             if (inner)
                 inner->push_back(vartok->tokAt(2));
             return vartok->linkAt(1)->next();
