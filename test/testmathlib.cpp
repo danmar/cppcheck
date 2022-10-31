@@ -977,7 +977,7 @@ private:
         ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.f")); // inf (#5875)
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0")); // -inf (#5142)
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0f")); // -inf (#5142)
-        ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
+        ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
 
     void isdec() const {
