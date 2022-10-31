@@ -1187,8 +1187,10 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             guiProject.analyzeAllVsConfigs = node->GetText();
         else if (strcmp(node->Name(), CppcheckXml::Parser) == 0)
             temp.clang = true;
-        else if (strcmp(node->Name(), CppcheckXml::AddonsElementName) == 0)
-            temp.addons = readXmlStringList(node, emptyString, CppcheckXml::AddonElementName, nullptr);
+        else if (strcmp(node->Name(), CppcheckXml::AddonsElementName) == 0) {
+            const auto& addons = readXmlStringList(node, emptyString, CppcheckXml::AddonElementName, nullptr);
+            temp.addons.insert(addons.cbegin(), addons.cend());
+        }
         else if (strcmp(node->Name(), CppcheckXml::TagsElementName) == 0)
             node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
         else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0) {
