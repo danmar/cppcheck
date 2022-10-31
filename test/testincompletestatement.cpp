@@ -712,7 +712,7 @@ private:
 
         check("int a[2];\n" // #11370
               "void f() {\n"
-	          "    auto g = [](decltype(a[0]) i) {};\n"
+              "    auto g = [](decltype(a[0]) i) {};\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
