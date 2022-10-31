@@ -6377,6 +6377,12 @@ private:
         ASSERT_EQUALS("AB: abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
 
         ASSERT_EQUALS("xfts(=", testAst("; auto x = f(ts...);"));
+
+        // #11369
+        ASSERT_NO_THROW(tokenizeAndStringify("int a;\n"
+                                             "template <class> auto b() -> decltype(a) {\n"
+                                             "    if (a) {}\n"
+                                             "}\n"));
     }
 
     void astcast() {
