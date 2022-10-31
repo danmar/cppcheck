@@ -979,7 +979,7 @@ Settings MainWindow::getCppcheckSettings()
                 json += ", \"args\":[\"" + arg + "\"]";
             }
             json += " }";
-            result.addons.push_back(json.toStdString());
+            result.addons.emplace(json.toStdString());
         }
 
         if (isCppcheckPremium()) {
