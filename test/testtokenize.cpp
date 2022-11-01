@@ -6243,6 +6243,10 @@ private:
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
         ASSERT_EQUALS("adecltypeac::(,decltypead::(,",
                       testAst("template <typename a> void b(a &, decltype(a::c), decltype(a::d));"));
+        ASSERT_EQUALS("g{([= decltypea0[(",
+                      testAst("auto g = [](decltype(a[0]) i) {};"));
+        ASSERT_EQUALS("g{([= decltypea0[(i&",
+                      testAst("auto g = [](decltype(a[0])& i) {};"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
                                              "struct B { A* hash; };\n"

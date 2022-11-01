@@ -709,6 +709,12 @@ private:
               "    (*s).i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found unused member access.\n", errout.str());
+
+        check("int a[2];\n" // #11370
+              "void f() {\n"
+              "    auto g = [](decltype(a[0]) i) {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
