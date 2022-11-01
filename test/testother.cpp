@@ -5138,14 +5138,16 @@ private:
     }
 
     void testMisusedScopeObjectAssignment() { // #11371
-        check("struct S {};\n"
+        check("struct S;\n"
               "S f();\n"
               "S& g();\n"
               "S&& h();\n"
+              "S* i();\n"
               "void t0() { f() = {}; }\n"
               "void t1() { g() = {}; }\n"
-              "void t2() { h() = {}; }\n", "test.cpp");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Instance of 'S' object is destroyed immediately, assignment has no effect.\n", errout.str());
+              "void t2() { h() = {}; }\n"
+              "void t3() { *i() = {}; }\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Instance of 'S' object is destroyed immediately, assignment has no effect.\n", errout.str());
     }
 
     void trac2084() {

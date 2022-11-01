@@ -2122,7 +2122,7 @@ void CheckOther::checkMisusedScopedObject()
             }
             if (tok->isAssignmentOp() && Token::simpleMatch(tok->astOperand1(), "(") && tok->astOperand1()->astOperand1()) {
                 if (const Function* ftok = tok->astOperand1()->astOperand1()->function()) {
-                    if (ftok->retType && ftok->retType->classScope && !Function::returnsReference(ftok))
+                    if (ftok->retType && Token::Match(ftok->retType->classDef, "class|struct|union") && !Function::returnsReference(ftok))
                         misusedScopeObjectError(tok->next(), ftok->retType->name(), /*isAssignment*/ true);
                 }
             }
