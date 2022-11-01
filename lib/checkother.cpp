@@ -2120,8 +2120,8 @@ void CheckOther::checkMisusedScopedObject()
                 misusedScopeObjectError(ctorTok, typeStr);
                 tok = tok->next();
             }
-            if (Token::simpleMatch(tok, ") =") && tok->link()->previous()) {
-                if (const Function* ftok = tok->link()->previous()->function()) {
+            if (tok->isAssignmentOp() && Token::simpleMatch(tok->astOperand1(), "(") && tok->astOperand1()->astOperand1()) {
+                if (const Function* ftok = tok->astOperand1()->astOperand1()->function()) {
                     if (ftok->retType && ftok->retType->classScope && !Function::returnsReference(ftok))
                         misusedScopeObjectError(tok->next(), ftok->retType->name(), /*isAssignment*/ true);
                 }
