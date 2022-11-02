@@ -433,6 +433,7 @@ private:
         TEST_CASE(noCrash4);
         TEST_CASE(noCrash5); // #10603
         TEST_CASE(noCrash6); // #10212
+        TEST_CASE(noCrash7);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -7235,6 +7236,11 @@ private:
                                              "template <class, bool> struct c;\n"
                                              "template <template <class, class> class a, class e, class... d>\n"
                                              "struct c<a<e, d...>, true> {};\n"));
+    }
+
+    void noCrash7() {
+        ASSERT_NO_THROW(tokenizeAndStringify("enum : { };\n"
+                                             "enum : 3 { };\n"));
     }
 
     void checkConfig(const char code[]) {
