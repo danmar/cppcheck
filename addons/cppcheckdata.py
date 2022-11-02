@@ -1485,7 +1485,7 @@ def reportError(location, severity, message, addon, errorId, extra=''):
                 'linenr': location.linenr,
                 'column': location.column,
                 'severity': severity,
-                'message': message,
+                'message': message + ' (' + extra + ')',
                 'addon': addon,
                 'errorId': errorId,
                 'extra': extra}

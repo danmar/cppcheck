@@ -1211,12 +1211,14 @@ class Rule(object):
     """Class to keep rule text and metadata"""
 
     MISRA_SEVERITY_LEVELS = ['Required', 'Mandatory', 'Advisory']
+    CPPCHECK_SEVERITY_LEVELS = ['information', 'portability', 'performance', 'style', 'warning', 'error']
 
     def __init__(self, num1, num2):
         self.num1 = num1
         self.num2 = num2
         self.text = ''
         self.misra_severity = ''
+        self.cppcheck_severity = 'style'
 
     @property
     def num(self):
@@ -1235,7 +1237,14 @@ class Rule(object):
 
     @property
     def cppcheck_severity(self):
-        return 'style'
+        return self._cppcheck_severity
+
+    @cppcheck_severity.setter
+    def cppcheck_severity(self, val):
+        if val in self.CPPCHECK_SEVERITY_LEVELS:
+            self._cppcheck_severity = val
+        else:
+            self._cppcheck_severity = ''
 
     def __repr__(self):
         return "%d.%d (%s)" % (self.num1, self.num2, self.misra_severity)
@@ -1314,6 +1323,7 @@ class MisraChecker:
         self.stdversion = stdversion
 
         self.severity = None
+        self.severityMap = None
 
         self.existing_violations = set()
 
@@ -4036,6 +4046,12 @@ class MisraChecker:
         """
         self.severity = severity
 
+    def setSeverityMap(self, severityMap):
+        """
+        Set the severity for each misra category
+        """
+        self.severityMap = severityMap
+
     def setSuppressionList(self, suppressionlist):
         num1 = 0
         num2 = 0
@@ -4169,6 +4185,10 @@ class MisraChecker:
                 if res:
                     rule.misra_severity = res.group(1)
                     have_severity = True
+
+                    if self.severityMap is not None:
+                        rule.cppcheck_severity = self.severityMap[rule.misra_severity.lower()]
+
                 else:
                     severity_loc += 1
 
@@ -4623,6 +4643,7 @@ def get_args_parser():
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("--severity", type=str, help="Set a custom severity string, for example 'error' or 'warning'. ")
+    parser.add_argument("--map-severity", type=str, help="Set a custom severity string (comma separated) for each misra category in the order advisory,required,mandatory")
     return parser
 
 
@@ -4637,6 +4658,17 @@ def main():
     if args.generate_table:
         generateTable()
         sys.exit(0)
+
+    if args.map_severity:
+        severities = args.map_severity.split(',')
+        if len(severities) != 3:
+            print("Please provide severities for all misra categories (advisory, required, mandatory)")
+            sys.exit(1)
+
+        severityMap = {"advisory":  severities[0],
+                       "required":  severities[1],
+                       "mandatory": severities[2]}
+        checker.setSeverityMap(severityMap)
 
     if args.rule_texts:
         filename = os.path.expanduser(args.rule_texts)
