@@ -4659,16 +4659,17 @@ def main():
         generateTable()
         sys.exit(0)
 
+    severities = ["style", "warning", "error"]
     if args.map_severity:
         severities = args.map_severity.split(',')
         if len(severities) != 3:
             print("Please provide severities for all misra categories (advisory, required, mandatory)")
             sys.exit(1)
 
-        severityMap = {"advisory":  severities[0],
-                       "required":  severities[1],
-                       "mandatory": severities[2]}
-        checker.setSeverityMap(severityMap)
+    severityMap = {"advisory":  severities[0],
+                   "required":  severities[1],
+                   "mandatory": severities[2]}
+    checker.setSeverityMap(severityMap)
 
     if args.rule_texts:
         filename = os.path.expanduser(args.rule_texts)
