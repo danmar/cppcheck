@@ -2120,16 +2120,24 @@ void CheckOther::checkMisusedScopedObject()
                 misusedScopeObjectError(ctorTok, typeStr);
                 tok = tok->next();
             }
+            if (tok->isAssignmentOp() && Token::simpleMatch(tok->astOperand1(), "(") && tok->astOperand1()->astOperand1()) {
+                if (const Function* ftok = tok->astOperand1()->astOperand1()->function()) {
+                    if (ftok->retType && Token::Match(ftok->retType->classDef, "class|struct|union") && !Function::returnsReference(ftok))
+                        misusedScopeObjectError(tok->next(), ftok->retType->name(), /*isAssignment*/ true);
+                }
+            }
         }
     }
 }
 
-void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
+void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname, bool isAssignment)
 {
+    std::string msg = "Instance of '$symbol' object is destroyed immediately";
+    msg += isAssignment ? ", assignment has no effect." : ".";
     reportError(tok, Severity::style,
                 "unusedScopedObject",
-                "$symbol:" + varname + "\n"
-                "Instance of '$symbol' object is destroyed immediately.", CWE563, Certainty::normal);
+                "$symbol:" + varname + "\n" +
+                msg, CWE563, Certainty::normal);
 }
 
 static const Token * getSingleExpressionInBlock(const Token * tok)

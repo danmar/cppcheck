@@ -251,7 +251,7 @@ private:
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
     void selfAssignmentError(const Token *tok, const std::string &varname);
-    void misusedScopeObjectError(const Token *tok, const std::string &varname);
+    void misusedScopeObjectError(const Token *tok, const std::string &varname, bool isAssignment = false);
     void duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors);
     void duplicateAssignExpressionError(const Token *tok1, const Token *tok2, bool inconclusive);
     void oppositeExpressionError(const Token *opTok, ErrorPath errors);
