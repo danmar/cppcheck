@@ -4126,7 +4126,7 @@ class MisraChecker:
         expect_more = False
 
         Rule_pattern = re.compile(r'^Rule ([0-9]+).([0-9]+)')
-        severity_pattern = re.compile(r'.*[ ]*(Advisory|Required|Mandatory)$')
+        severity_pattern = re.compile(r'^.* *(Advisory|Required|Mandatory).*$')
         xA_Z_pattern = re.compile(r'^[#A-Z].*')
         a_z_pattern = re.compile(r'^[a-z].*')
         # Try to detect the file encoding
