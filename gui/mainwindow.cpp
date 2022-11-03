@@ -971,15 +971,6 @@ Settings MainWindow::getCppcheckSettings()
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())
                 json += ", \"python\":\"" + pythonCmd + "\"";
-            QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
-            if (addon == "misra" && !misraFile.isEmpty()) {
-                QString arg;
-                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                    arg = "--misra-pdf=" + misraFile;
-                else
-                    arg = "--rule-texts=" + misraFile;
-                json += ", \"args\":[\"" + arg + "\"]";
-            }
             json += " }";
             result.addons.emplace(json.toStdString());
         }
@@ -1923,8 +1914,11 @@ static int getVersion(const QString& nameWithVersion) {
     for (const auto c: nameWithVersion) {
         if (c == '\n' || c == '\r')
             break;
-        else if (c == ' ')
+        else if (c == ' ') {
+            if (ret > 0 && dot == 1 && nameWithVersion.endsWith(" dev"))
+                return ret * 1000000 + v * 1000 + 500;
             dot = ret = v = 0;
+        }
         else if (c == '.') {
             ++dot;
             ret = ret * 1000 + v;

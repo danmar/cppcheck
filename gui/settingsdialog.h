@@ -142,11 +142,6 @@ protected slots:
     void browseClangPath();
 
     /**
-     * @brief Browse for MISRA file
-     */
-    void browseMisraFile();
-
-    /**
      * @brief Set Code Editor Style to Default
      */
     void setCodeEditorStyleDefault();
