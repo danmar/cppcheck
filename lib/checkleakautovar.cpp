@@ -452,18 +452,18 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     while (tokRightAstOperand && tokRightAstOperand->isCast())
                         tokRightAstOperand = tokRightAstOperand->astOperand2() ? tokRightAstOperand->astOperand2() : tokRightAstOperand->astOperand1();
                     if (tokRightAstOperand && Token::Match(tokRightAstOperand->previous(), "%type% (")) {
-                        const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(tokRightAstOperand->previous());
+                        const Token * fTok = tokRightAstOperand->previous();
+                        const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(fTok);
                         if (f && f->arg == -1) {
                             VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                             varAlloc.type = f->groupId;
                             varAlloc.status = VarInfo::ALLOC;
-                            varAlloc.allocTok = tokRightAstOperand->previous();
+                            varAlloc.allocTok = fTok;
                         } else {
                             // Fixme: warn about leak
                             alloctype.erase(innerTok->varId());
                         }
-
-                        changeAllocStatusIfRealloc(alloctype, innerTok->tokAt(2), varTok);
+                        changeAllocStatusIfRealloc(alloctype, fTok, varTok);
                     } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();
                         const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
