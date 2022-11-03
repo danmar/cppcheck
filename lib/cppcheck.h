@@ -30,8 +30,9 @@
 #include "settings.h"
 
 #include <cstddef>
+#include <fstream> // IWYU pragma: keep
 #include <functional>
-#include <istream>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
@@ -206,8 +207,6 @@ private:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
 
-    void bughuntingReport(const std::string &str) override;
-
     std::list<std::string> mErrorList;
     Settings mSettings;
 
@@ -240,6 +239,8 @@ private:
 
     /** Callback for executing a shell command (exe, args, output) */
     std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> mExecuteCommand;
+
+    std::ofstream mPlistFile;
 };
 
 /// @}

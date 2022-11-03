@@ -24,6 +24,9 @@
 #include "errorlogger.h"
 #include "importproject.h"
 
+#include <list>
+#include <string>
+
 #include <QMutex>
 #include <QObject>
 #include <QStringList>
@@ -41,7 +44,7 @@ class ThreadResult : public QObject, public ErrorLogger {
     Q_OBJECT
 public:
     ThreadResult();
-    virtual ~ThreadResult();
+    ~ThreadResult() override;
 
     /**
      * @brief Get next unprocessed file
@@ -76,7 +79,6 @@ public:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
-    void bughuntingReport(const std::string &str) override;
 
 public slots:
 
@@ -91,6 +93,7 @@ signals:
      * @param value Current progress
      * @param description Description of the current stage
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void progress(int value, const QString& description);
 
     /**
@@ -98,6 +101,7 @@ signals:
      *
      * @param item Error data
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void error(const ErrorItem &item);
 
     /**
@@ -105,6 +109,7 @@ signals:
      *
      * @param logline Log line
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void log(const QString &logline);
 
     /**
@@ -112,10 +117,8 @@ signals:
      *
      * @param item Error data
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void debugError(const ErrorItem &item);
-
-    /** @brief bug hunting report */
-    void bughuntingReportLine(QString line);
 
 protected:
 

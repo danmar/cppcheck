@@ -37,6 +37,7 @@ struct Analyzer {
         template<class T,
                  REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),
                  REQUIRES("T must not be a bool", !std::is_same<T, bool> )>
+        // NOLINTNEXTLINE(google-explicit-constructor)
         Action(T f) : mFlag(f) // cppcheck-suppress noExplicitConstructor
         {}
 
@@ -130,7 +131,7 @@ struct Analyzer {
     enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
 
     struct Result {
-        Result(Action action = Action::None, Terminate terminate = Terminate::None)
+        explicit Result(Action action = Action::None, Terminate terminate = Terminate::None)
             : action(action), terminate(terminate)
         {}
         Action action;
@@ -172,8 +173,6 @@ struct Analyzer {
     virtual bool lowerToInconclusive() = 0;
     /// If the analysis is unsure whether to update a scope, this will return true if the analysis should bifurcate the scope
     virtual bool updateScope(const Token* endBlock, bool modified) const = 0;
-    /// Called when a scope will be forked
-    virtual void forkScope(const Token* /*endBlock*/) {}
     /// If the value is conditional
     virtual bool isConditional() const = 0;
     /// If analysis should stop on the condition
@@ -181,7 +180,7 @@ struct Analyzer {
     /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, unsigned int flags = 0) = 0;
     /// Return analyzer for expression at token
-    virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = "") const = 0;
+    virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = emptyString) const = 0;
     virtual ~Analyzer() {}
 };
 

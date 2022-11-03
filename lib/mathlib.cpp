@@ -27,20 +27,12 @@
 #include <exception>
 #include <limits>
 #include <locale>
+#include <sstream>
 #include <stdexcept>
+#include <numeric>
 
 #include <simplecpp.h>
 
-#if defined(_MSC_VER) && _MSC_VER <= 1700  // VS2012 doesn't have std::isinf and std::isnan
-#define ISINF(x)      (!_finite(x))
-#define ISNAN(x)      (_isnan(x))
-#elif defined(__INTEL_COMPILER)
-#define ISINF(x)      (isinf(x))
-#define ISNAN(x)      (isnan(x))
-#else  // Use C++11 functions
-#define ISINF(x)      (std::isinf(x))
-#define ISNAN(x)      (std::isnan(x))
-#endif
 
 const int MathLib::bigint_bits = 64;
 
@@ -83,9 +75,9 @@ std::string MathLib::value::str() const
 {
     std::ostringstream ostr;
     if (mType == MathLib::value::Type::FLOAT) {
-        if (ISNAN(mDoubleValue))
+        if (std::isnan(mDoubleValue))
             return "nan.0";
-        if (ISINF(mDoubleValue))
+        if (std::isinf(mDoubleValue))
             return (mDoubleValue > 0) ? "inf.0" : "-inf.0";
 
         ostr.precision(9);
@@ -351,11 +343,9 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 
 unsigned int MathLib::encodeMultiChar(const std::string& str)
 {
-    unsigned int retval = 0;
-    for (char it : str) {
-        retval = (retval << 8) | it;
-    }
-    return retval;
+    return std::accumulate(str.begin(), str.end(), uint32_t(), [](uint32_t v, char c) {
+        return (v << 8) | c;
+    });
 }
 
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
@@ -452,9 +442,8 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
             --distance;
         result += digitval(*it)* std::pow(base, distance);
     }
-    return (positivesign)?result:-result;
+    return positivesign ? result : -result;
 }
-
 
 // Assuming a limited support of built-in hexadecimal floats (see C99, C++17) that is a fall-back implementation.
 // Performance has been optimized WRT to heap activity, however the calculation part is not optimized.
@@ -463,7 +452,7 @@ static double floatHexToDoubleNumber(const std::string& str)
     const std::size_t p = str.find_first_of("pP",3);
     const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
     const bool suffix = (str.back() == 'f') || (str.back() == 'F') || (str.back() == 'l') || (str.back() == 'L');
-    const double exponent = myStod(str, str.begin() + p + 1, (suffix)?str.end()-1:str.end(), 10);
+    const double exponent = myStod(str, str.begin() + p + 1, suffix ? str.end()-1:str.end(), 10);
     const double factor2 = std::pow(2, exponent);
     return factor1 * factor2;
 }
@@ -479,9 +468,6 @@ double MathLib::toDoubleNumber(const std::string &str)
     }
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
-    // nullcheck
-    if (isNullValue(str))
-        return 0.0;
 #ifdef _LIBCPP_VERSION
     if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
         // TODO : handle locale
@@ -1048,23 +1034,6 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 #endif
 }
 
-std::string MathLib::incdec(const std::string & var, const std::string & op)
-{
-#ifdef TEST_MATHLIB_VALUE
-    if (op == "++")
-        return value(var).add(1).str();
-    else if (op == "--")
-        return value(var).add(-1).str();
-#else
-    if (op == "++")
-        return MathLib::add(var, "1");
-    else if (op == "--")
-        return MathLib::subtract(var, "1");
-#endif
-
-    throw InternalError(nullptr, std::string("Unexpected operation '") + op + "' in MathLib::incdec(). Please report this to Cppcheck developers.");
-}
-
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
 #ifdef TEST_MATHLIB_VALUE
@@ -1081,7 +1050,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
     } else if (isNullValue(second)) {
         if (isNullValue(first))
             return "nan.0";
-        return isPositive(first) ? "inf.0" : "-inf.0";
+        return isPositive(first) == isPositive(second) ? "inf.0" : "-inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
 #endif
@@ -1221,8 +1190,8 @@ bool MathLib::isNullValue(const std::string &str)
 
     if (!isInt(str) && !isFloat(str))
         return false;
-    bool isHex = isIntHex(str) || isFloatHex(str);
-    for (char i : str) {
+    const bool isHex = isIntHex(str) || isFloatHex(str);
+    for (const char i : str) {
         if (std::isdigit(static_cast<unsigned char>(i)) && i != '0') // May not contain digits other than 0
             return false;
         if (i == 'p' || i == 'P' || (!isHex && (i == 'E' || i == 'e')))

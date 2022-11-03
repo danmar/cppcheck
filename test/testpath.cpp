@@ -37,6 +37,7 @@ private:
         TEST_CASE(is_c);
         TEST_CASE(is_cpp);
         TEST_CASE(get_path_from_filename);
+        TEST_CASE(join);
     }
 
     void removeQuotationMarks() const {
@@ -140,6 +141,14 @@ private:
         ASSERT_EQUALS("/tmp/", Path::getPathFromFilename("/tmp/index.h"));
         ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/index.h"));
         ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/"));
+    }
+
+    void join() const {
+        ASSERT_EQUALS("a", Path::join("a", ""));
+        ASSERT_EQUALS("a", Path::join("", "a"));
+        ASSERT_EQUALS("a/b", Path::join("a", "b"));
+        ASSERT_EQUALS("a/b", Path::join("a/", "b"));
+        ASSERT_EQUALS("/b", Path::join("a", "/b"));
     }
 };
 

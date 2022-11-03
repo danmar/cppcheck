@@ -21,12 +21,13 @@
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
+#include "testutils.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <iosfwd>
 #include <map>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -76,7 +77,7 @@ private:
         return library.load(doc);
     }
 
-    void isCompliantValidationExpression() {
+    void isCompliantValidationExpression() const {
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("-1"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1:"));
@@ -89,10 +90,13 @@ private:
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1.175494e-38:"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression(":1.175494e-38"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression(":42.0"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("!42.0"));
 
         // Robustness tests
         ASSERT_EQUALS(false, Library::isCompliantValidationExpression(nullptr));
         ASSERT_EQUALS(false, Library::isCompliantValidationExpression("x"));
+        ASSERT_EQUALS(false, Library::isCompliantValidationExpression("!"));
+        ASSERT_EQUALS(false, Library::isCompliantValidationExpression(""));
     }
 
     void empty() const {
@@ -336,6 +340,7 @@ private:
                                "    <arg nr=\"8\"><valid>0.0:</valid></arg>\n"
                                "    <arg nr=\"9\"><valid>:2.0</valid></arg>\n"
                                "    <arg nr=\"10\"><valid>0.0</valid></arg>\n"
+                               "    <arg nr=\"11\"><valid>!0.0</valid></arg>\n"
                                "  </function>\n"
                                "</def>";
 
@@ -343,7 +348,7 @@ private:
         ASSERT_EQUALS(true, Library::ErrorCode::OK == (readLibrary(library, xmldata)).errorcode);
 
         TokenList tokenList(nullptr);
-        std::istringstream istr("foo(a,b,c,d,e,f,g,h,i,j);");
+        std::istringstream istr("foo(a,b,c,d,e,f,g,h,i,j,k);");
         tokenList.createTokens(istr);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
@@ -460,8 +465,13 @@ private:
         ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 9, 200.0));
 
         // 0.0
-        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 10, 0));
-        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 10, 0.0));
+        ASSERT_EQUALS(true, library.isIntArgValid(tokenList.front(), 10, 0));
+        ASSERT_EQUALS(true, library.isFloatArgValid(tokenList.front(), 10, 0.0));
+
+        // ! 0.0
+        ASSERT_EQUALS(true, library.isFloatArgValid(tokenList.front(), 11, -0.42));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 11, 0.0));
+        ASSERT_EQUALS(true, library.isFloatArgValid(tokenList.front(), 11, 0.42));
     }
 
     void function_arg_minsize() const {
@@ -472,6 +482,7 @@ private:
                                "    <arg nr=\"2\"><minsize type=\"argvalue\" arg=\"3\"/></arg>\n"
                                "    <arg nr=\"3\"/>\n"
                                "    <arg nr=\"4\"><minsize type=\"value\" value=\"500\"/></arg>\n"
+                               "    <arg nr=\"5\"><minsize type=\"value\" value=\"4\" baseType=\"int\"/></arg>\n"
                                "  </function>\n"
                                "</def>";
 
@@ -479,7 +490,7 @@ private:
         ASSERT_EQUALS(true, Library::ErrorCode::OK == (readLibrary(library, xmldata)).errorcode);
 
         TokenList tokenList(nullptr);
-        std::istringstream istr("foo(a,b,c,d);");
+        std::istringstream istr("foo(a,b,c,d,e);");
         tokenList.createTokens(istr);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
@@ -511,6 +522,18 @@ private:
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
             ASSERT(Library::ArgumentChecks::MinSize::Type::VALUE == m.type);
             ASSERT_EQUALS(500, m.value);
+            ASSERT_EQUALS("", m.baseType);
+        }
+
+        // arg5: type=value
+        minsizes = library.argminsizes(tokenList.front(), 5);
+        ASSERT_EQUALS(true, minsizes != nullptr);
+        ASSERT_EQUALS(1U, minsizes ? minsizes->size() : 1U);
+        if (minsizes && minsizes->size() == 1U) {
+            const Library::ArgumentChecks::MinSize& m = minsizes->front();
+            ASSERT(Library::ArgumentChecks::MinSize::Type::VALUE == m.type);
+            ASSERT_EQUALS(4, m.value);
+            ASSERT_EQUALS("int", m.baseType);
         }
     }
 
@@ -803,7 +826,7 @@ private:
 
         Library::Container& A = library.containers["A"];
         Library::Container& B = library.containers["B"];
-        Library::Container& C = library.containers["C"];
+        const Library::Container& C = library.containers["C"];
 
         ASSERT_EQUALS(A.type_templateArgNo, 1);
         ASSERT_EQUALS(A.size_templateArgNo, 4);
@@ -842,6 +865,70 @@ private:
         ASSERT_EQUALS(C.size_templateArgNo, -1);
         ASSERT_EQUALS(C.stdStringLike, true);
         ASSERT_EQUALS(C.arrayLike_indexOp, true);
+
+        {
+            givenACodeSampleToTokenize var("std::A<int> a;");
+            ASSERT_EQUALS(&A, library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&A, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(!isIterator);
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::A<int>::size_type a_s;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::A<int>::iterator a_it;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT_EQUALS(&A, library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&A, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(isIterator);
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::B<int> b;");
+            ASSERT_EQUALS(&B, library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&B, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(!isIterator);
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::B<int>::size_type b_s;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
+
+        {
+            givenACodeSampleToTokenize var("std::B<int>::iterator b_it;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT_EQUALS(&B, library.detectIterator(var.tokens()));
+            bool isIterator;
+            ASSERT_EQUALS(&B, library.detectContainerOrIterator(var.tokens(), &isIterator));
+            ASSERT(isIterator);
+        }
+
+        {
+            givenACodeSampleToTokenize var("C c;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
+
+        {
+            givenACodeSampleToTokenize var("D d;");
+            ASSERT(!library.detectContainer(var.tokens()));
+            ASSERT(!library.detectIterator(var.tokens()));
+            ASSERT(!library.detectContainerOrIterator(var.tokens()));
+        }
     }
 
     void version() const {

@@ -19,11 +19,13 @@
 #ifndef SCRATCHPAD_H
 #define SCRATCHPAD_H
 
-#include "ui_scratchpad.h"
-
 #include <QDialog>
 
 class MainWindow;
+class QObject;
+namespace Ui {
+    class ScratchPad;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -35,6 +37,7 @@ class ScratchPad : public QDialog {
     Q_OBJECT
 public:
     explicit ScratchPad(MainWindow& mainWindow);
+    ~ScratchPad() override;
 
     /**
      * @brief Translate dialog
@@ -48,7 +51,7 @@ private slots:
     void checkButtonClicked();
 
 private:
-    Ui::ScratchPad mUI;
+    Ui::ScratchPad *mUI;
     MainWindow& mMainWindow;
 };
 

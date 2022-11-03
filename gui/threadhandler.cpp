@@ -23,6 +23,10 @@
 #include "resultsview.h"
 #include "settings.h"
 
+#include <list>
+#include <string>
+#include <utility>
+
 #include <QDebug>
 #include <QFileInfo>
 #include <QSettings>
@@ -200,9 +204,6 @@ void ThreadHandler::initialize(ResultsView *view)
 
     connect(&mResults, &ThreadResult::debugError,
             this, &ThreadHandler::debugError);
-
-    connect(&mResults, &ThreadResult::bughuntingReportLine,
-            this, &ThreadHandler::bughuntingReportLine);
 }
 
 void ThreadHandler::loadSettings(const QSettings &settings)
@@ -271,12 +272,12 @@ bool ThreadHandler::needsReCheck(const QString &filename, std::set<QString> &mod
         QString line = in.readLine();
         if (line.startsWith("#include \"")) {
             line.remove(0,10);
-            int i = line.indexOf("\"");
+            const int i = line.indexOf("\"");
             if (i > 0) {
                 line.remove(i,line.length());
                 line = QFileInfo(filename).absolutePath() + "/" + line;
                 if (needsReCheck(line, modified, unmodified)) {
-                    modified.insert(line);
+                    modified.insert(std::move(line));
                     return true;
                 }
             }

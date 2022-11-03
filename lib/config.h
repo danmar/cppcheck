@@ -32,14 +32,14 @@
 #endif
 
 // MS Visual C++ memory leak debug tracing
-#if defined(_MSC_VER) && defined(_DEBUG)
+#if !defined(DISABLE_CRTDBG_MAP_ALLOC) && defined(_MSC_VER) && defined(_DEBUG)
 #  define _CRTDBG_MAP_ALLOC
 #  include <crtdbg.h>
 #endif
 
 // C++11 noexcept
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define NOEXCEPT noexcept
 #else
@@ -48,9 +48,11 @@
 
 // C++11 noreturn
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define NORETURN [[noreturn]]
+#elif defined(__GNUC__)
+#  define NORETURN __attribute__((noreturn))
 #else
 #  define NORETURN
 #endif
@@ -64,9 +66,81 @@
 #  define FALLTHROUGH
 #endif
 
+// unused
+#if defined(__GNUC__) \
+    || defined(__clang__) \
+    || defined(__CPPCHECK__)
+#  define UNUSED __attribute__((unused))
+#else
+#  define UNUSED
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 #include <string>
 static const std::string emptyString;
+
+// Use the nonneg macro when you want to assert that a variable/argument is not negative
+#ifdef __CPPCHECK__
+#define nonneg   __cppcheck_low__(0)
+#elif defined(NONNEG)
+// Enable non-negative values checking
+// TODO : investigate using annotations/contracts for stronger value checking
+#define nonneg   unsigned
+#else
+// Disable non-negative values checking
+#define nonneg
+#endif
+
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define ASAN 1
+#endif
+#endif
+
+#ifndef ASAN
+#ifdef  __SANITIZE_ADDRESS__
+#define ASAN 1
+#else
+#define ASAN 0
+#endif
+#endif
+
+#if defined(_WIN32)
+#define THREADING_MODEL_THREAD
+#define STDCALL __stdcall
+#elif defined(USE_THREADS)
+#define THREADING_MODEL_THREAD
+#define STDCALL
+#elif ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__)) || defined(__CPPCHECK__)
+#define THREADING_MODEL_FORK
+#define STDCALL
+#else
+#error "No threading model defined"
+#endif
+
+#define STRINGISIZE(...) #__VA_ARGS__
+
+#ifdef __clang__
+#define SUPPRESS_WARNING(warning, ...)_Pragma("clang diagnostic push") _Pragma(STRINGISIZE(clang diagnostic ignored warning)) __VA_ARGS__ _Pragma("clang diagnostic pop")
+#define SUPPRESS_DEPRECATED_WARNING(...) SUPPRESS_WARNING("-Wdeprecated", __VA_ARGS__)
+#define SUPPRESS_FLOAT_EQUAL_WARNING(...) SUPPRESS_WARNING("-Wfloat-equal", __VA_ARGS__)
+#else
+#define SUPPRESS_WARNING(warning, ...) __VA_ARGS__
+#define SUPPRESS_DEPRECATED_WARNING(...) __VA_ARGS__
+#define SUPPRESS_FLOAT_EQUAL_WARNING(...) __VA_ARGS__
+#endif
+
+#if !defined(NO_WINDOWS_SEH) && defined(_WIN32) && defined(_MSC_VER)
+#define USE_WINDOWS_SEH
+#endif
+
+#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(__GNUC__) && defined(__GLIBC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__SVR4) && !defined(__QNX__)
+#define USE_UNIX_BACKTRACE_SUPPORT
+#endif
+
+#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__OS2__)
+#define USE_UNIX_SIGNAL_HANDLING
+#endif
 
 #endif // configH

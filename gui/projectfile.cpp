@@ -19,8 +19,12 @@
 #include "projectfile.h"
 
 #include "common.h"
+#include "config.h"
 #include "importproject.h"
 #include "settings.h"
+
+#include <string>
+#include <utility>
 
 #include <QFile>
 #include <QDir>
@@ -34,9 +38,9 @@ ProjectFile::ProjectFile(QObject *parent) :
     clear();
 }
 
-ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
+ProjectFile::ProjectFile(QString filename, QObject *parent) :
     QObject(parent),
-    mFilename(filename)
+    mFilename(std::move(filename))
 {
     clear();
     read();
@@ -46,7 +50,6 @@ void ProjectFile::clear()
 {
     const Settings settings;
     clangParser = false;
-    bugHunting = false;
     mRootPath.clear();
     mBuildDir.clear();
     mImportProject.clear();
@@ -56,8 +59,6 @@ void ProjectFile::clear()
     mUndefines.clear();
     mPaths.clear();
     mExcludedPaths.clear();
-    mFunctionContracts.clear();
-    mVariableContracts.clear();
     mLibraries.clear();
     mPlatform.clear();
     mSuppressions.clear();
@@ -73,6 +74,11 @@ void ProjectFile::clear()
     mVsConfigurations.clear();
     mTags.clear();
     mWarningTags.clear();
+
+    // Premium
+    mBughunting = false;
+    mCertIntPrecision = 0;
+    mCodingStandards.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -121,9 +127,6 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == QString(CppcheckXml::Parser))
                 clangParser = true;
 
-            if (xmlReader.name() == QString(CppcheckXml::BugHunting))
-                bugHunting = true;
-
             if (xmlReader.name() == QString(CppcheckXml::CheckHeadersElementName))
                 mCheckHeaders = readBool(xmlReader);
 
@@ -150,14 +153,6 @@ bool ProjectFile::read(const QString &filename)
             // These are read for compatibility
             if (xmlReader.name() == QString(CppcheckXml::IgnoreElementName))
                 readExcludes(xmlReader);
-
-            // Function contracts
-            if (xmlReader.name() == QString(CppcheckXml::FunctionContracts))
-                readFunctionContracts(xmlReader);
-
-            // Variable constraints
-            if (xmlReader.name() == QString(CppcheckXml::VariableContractsElementName))
-                readVariableContracts(xmlReader);
 
             // Find libraries list from inside project element
             if (xmlReader.name() == QString(CppcheckXml::LibrariesElementName))
@@ -205,6 +200,15 @@ bool ProjectFile::read(const QString &filename)
             // VSConfiguration
             if (xmlReader.name() == QString(CppcheckXml::VSConfigurationElementName))
                 readVsConfigurations(xmlReader);
+
+            // Cppcheck Premium
+            if (xmlReader.name() == QString(CppcheckXml::BughuntingElementName))
+                mBughunting = true;
+            if (xmlReader.name() == QString(CppcheckXml::CodingStandardsElementName))
+                readStringList(mCodingStandards, xmlReader, CppcheckXml::CodingStandardElementName);
+            if (xmlReader.name() == QString(CppcheckXml::CertIntPrecisionElementName))
+                mCertIntPrecision = readInt(xmlReader, 0);
+
             break;
 
         case QXmlStreamReader::EndElement:
@@ -501,79 +505,6 @@ void ProjectFile::readExcludes(QXmlStreamReader &reader)
     } while (!allRead);
 }
 
-void ProjectFile::readFunctionContracts(QXmlStreamReader &reader)
-{
-    QXmlStreamReader::TokenType type;
-    bool allRead = false;
-    do {
-        type = reader.readNext();
-        switch (type) {
-        case QXmlStreamReader::StartElement:
-            if (reader.name().toString() == CppcheckXml::FunctionContract) {
-                QXmlStreamAttributes attribs = reader.attributes();
-                QString function = attribs.value(QString(), CppcheckXml::ContractFunction).toString();
-                QString expects = attribs.value(QString(), CppcheckXml::ContractExpects).toString();
-                if (!function.isEmpty() && !expects.isEmpty())
-                    mFunctionContracts[function.toStdString()] = expects.toStdString();
-            }
-            break;
-
-        case QXmlStreamReader::EndElement:
-            if (reader.name().toString() == CppcheckXml::FunctionContracts)
-                allRead = true;
-            break;
-
-        // Not handled
-        case QXmlStreamReader::NoToken:
-        case QXmlStreamReader::Invalid:
-        case QXmlStreamReader::StartDocument:
-        case QXmlStreamReader::EndDocument:
-        case QXmlStreamReader::Characters:
-        case QXmlStreamReader::Comment:
-        case QXmlStreamReader::DTD:
-        case QXmlStreamReader::EntityReference:
-        case QXmlStreamReader::ProcessingInstruction:
-            break;
-        }
-    } while (!allRead);
-}
-
-void ProjectFile::readVariableContracts(QXmlStreamReader &reader)
-{
-    QXmlStreamReader::TokenType type;
-    while (true) {
-        type = reader.readNext();
-        switch (type) {
-        case QXmlStreamReader::StartElement:
-            if (reader.name().toString() == CppcheckXml::VariableContractItemElementName) {
-                QXmlStreamAttributes attribs = reader.attributes();
-                QString varname = attribs.value(QString(), CppcheckXml::VariableContractVarName).toString();
-                QString minValue = attribs.value(QString(), CppcheckXml::VariableContractMin).toString();
-                QString maxValue = attribs.value(QString(), CppcheckXml::VariableContractMax).toString();
-                setVariableContracts(varname, minValue, maxValue);
-            }
-            break;
-
-        case QXmlStreamReader::EndElement:
-            if (reader.name().toString() == CppcheckXml::VariableContractsElementName)
-                return;
-            break;
-
-        // Not handled
-        case QXmlStreamReader::NoToken:
-        case QXmlStreamReader::Invalid:
-        case QXmlStreamReader::StartDocument:
-        case QXmlStreamReader::EndDocument:
-        case QXmlStreamReader::Characters:
-        case QXmlStreamReader::Comment:
-        case QXmlStreamReader::DTD:
-        case QXmlStreamReader::EntityReference:
-        case QXmlStreamReader::ProcessingInstruction:
-            break;
-        }
-    }
-}
-
 void ProjectFile::readVsConfigurations(QXmlStreamReader &reader)
 {
     QXmlStreamReader::TokenType type;
@@ -694,7 +625,7 @@ void ProjectFile::readTagWarnings(QXmlStreamReader &reader, const QString &tag)
         case QXmlStreamReader::StartElement:
             // Read library-elements
             if (reader.name().toString() == CppcheckXml::WarningElementName) {
-                std::size_t hash = reader.attributes().value(QString(), CppcheckXml::HashAttributeName).toULongLong();
+                const std::size_t hash = reader.attributes().value(QString(), CppcheckXml::HashAttributeName).toULongLong();
                 mWarningTags[hash] = tag;
             }
             break;
@@ -788,11 +719,6 @@ void ProjectFile::setLibraries(const QStringList &libraries)
     mLibraries = libraries;
 }
 
-void ProjectFile::setFunctionContract(const QString& function, const QString& expects)
-{
-    mFunctionContracts[function.toStdString()] = expects.toStdString();
-}
-
 void ProjectFile::setPlatform(const QString &platform)
 {
     mPlatform = platform;
@@ -881,11 +807,6 @@ bool ProjectFile::write(const QString &filename)
         xmlWriter.writeEndElement();
     }
 
-    if (bugHunting) {
-        xmlWriter.writeStartElement(CppcheckXml::BugHunting);
-        xmlWriter.writeEndElement();
-    }
-
     xmlWriter.writeStartElement(CppcheckXml::CheckHeadersElementName);
     xmlWriter.writeCharacters(mCheckHeaders ? "true" : "false");
     xmlWriter.writeEndElement();
@@ -904,7 +825,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mIncludeDirs.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::IncludeDirElementName);
-        foreach (QString incdir, mIncludeDirs) {
+        for (const QString& incdir : mIncludeDirs) {
             xmlWriter.writeStartElement(CppcheckXml::DirElementName);
             xmlWriter.writeAttribute(CppcheckXml::DirNameAttrib, incdir);
             xmlWriter.writeEndElement();
@@ -914,7 +835,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mDefines.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::DefinesElementName);
-        foreach (QString define, mDefines) {
+        for (const QString& define : mDefines) {
             xmlWriter.writeStartElement(CppcheckXml::DefineName);
             xmlWriter.writeAttribute(CppcheckXml::DefineNameAttrib, define);
             xmlWriter.writeEndElement();
@@ -936,7 +857,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mPaths.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::PathsElementName);
-        foreach (QString path, mPaths) {
+        for (const QString& path : mPaths) {
             xmlWriter.writeStartElement(CppcheckXml::PathName);
             xmlWriter.writeAttribute(CppcheckXml::PathNameAttrib, path);
             xmlWriter.writeEndElement();
@@ -946,7 +867,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mExcludedPaths.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::ExcludeElementName);
-        foreach (QString path, mExcludedPaths) {
+        for (const QString& path : mExcludedPaths) {
             xmlWriter.writeStartElement(CppcheckXml::ExcludePathName);
             xmlWriter.writeAttribute(CppcheckXml::ExcludePathNameAttrib, path);
             xmlWriter.writeEndElement();
@@ -959,34 +880,9 @@ bool ProjectFile::write(const QString &filename)
                     CppcheckXml::LibrariesElementName,
                     CppcheckXml::LibraryElementName);
 
-    if (!mFunctionContracts.empty()) {
-        xmlWriter.writeStartElement(CppcheckXml::FunctionContracts);
-        for (const auto& contract: mFunctionContracts) {
-            xmlWriter.writeStartElement(CppcheckXml::FunctionContract);
-            xmlWriter.writeAttribute(CppcheckXml::ContractFunction, QString::fromStdString(contract.first));
-            xmlWriter.writeAttribute(CppcheckXml::ContractExpects, QString::fromStdString(contract.second));
-            xmlWriter.writeEndElement();
-        }
-        xmlWriter.writeEndElement();
-    }
-
-    if (!mVariableContracts.empty()) {
-        xmlWriter.writeStartElement(CppcheckXml::VariableContractsElementName);
-
-        for (auto vc: mVariableContracts) {
-            xmlWriter.writeStartElement(CppcheckXml::VariableContractItemElementName);
-            xmlWriter.writeAttribute(CppcheckXml::VariableContractVarName, vc.first);
-            xmlWriter.writeAttribute(CppcheckXml::VariableContractMin, QString::fromStdString(vc.second.minValue));
-            xmlWriter.writeAttribute(CppcheckXml::VariableContractMax, QString::fromStdString(vc.second.maxValue));
-            xmlWriter.writeEndElement();
-        }
-
-        xmlWriter.writeEndElement();
-    }
-
     if (!mSuppressions.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::SuppressionsElementName);
-        foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+        for (const Suppressions::Suppression &suppression : mSuppressions) {
             xmlWriter.writeStartElement(CppcheckXml::SuppressionElementName);
             if (!suppression.fileName.empty())
                 xmlWriter.writeAttribute("fileName", QString::fromStdString(suppression.fileName));
@@ -1046,6 +942,23 @@ bool ProjectFile::write(const QString &filename)
         }
     }
 
+    // Cppcheck Premium
+    if (mBughunting) {
+        xmlWriter.writeStartElement(CppcheckXml::BughuntingElementName);
+        xmlWriter.writeEndElement();
+    }
+
+    writeStringList(xmlWriter,
+                    mCodingStandards,
+                    CppcheckXml::CodingStandardsElementName,
+                    CppcheckXml::CodingStandardElementName);
+
+    if (mCertIntPrecision > 0) {
+        xmlWriter.writeStartElement(CppcheckXml::CertIntPrecisionElementName);
+        xmlWriter.writeCharacters(QString::number(mCertIntPrecision));
+        xmlWriter.writeEndElement();
+    }
+
     xmlWriter.writeEndDocument();
     file.close();
     return true;
@@ -1057,7 +970,7 @@ void ProjectFile::writeStringList(QXmlStreamWriter &xmlWriter, const QStringList
         return;
 
     xmlWriter.writeStartElement(startelementname);
-    foreach (QString str, stringlist) {
+    for (const QString& str : stringlist) {
         xmlWriter.writeStartElement(stringelementname);
         xmlWriter.writeCharacters(str);
         xmlWriter.writeEndElement();
@@ -1068,8 +981,8 @@ void ProjectFile::writeStringList(QXmlStreamWriter &xmlWriter, const QStringList
 QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
 {
     QStringList ret;
-    foreach (const QString &path, paths)
-    ret << QDir::fromNativeSeparators(path);
+    for (const QString &path : paths)
+        ret << QDir::fromNativeSeparators(path);
     return ret;
 }
 
@@ -1159,7 +1072,7 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
 #endif
     ;
 
-    foreach (QString path, searchPaths) {
+    for (const QString& path : searchPaths) {
         QString f = path + addon + ".py";
         if (QFile(f).exists())
             return f;

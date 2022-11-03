@@ -31,7 +31,7 @@
 #include "valueflow.h"
 
 #include <iomanip>
-#include <ostream>
+#include <sstream>
 #include <unordered_map>
 #include <vector>
 
@@ -94,7 +94,7 @@ void CheckFunctions::checkProhibitedFunctions()
 }
 
 //---------------------------------------------------------------------------
-// Check <valid> and <not-bool>
+// Check <valid>, <strz> and <not-bool>
 //---------------------------------------------------------------------------
 void CheckFunctions::invalidFunctionUsage()
 {
@@ -125,14 +125,59 @@ void CheckFunctions::invalidFunctionUsage()
                     else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
-
+                // check <strz>
                 if (mSettings->library.isargstrz(functionToken, argnr)) {
                     if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
                         const ValueType * valueType = argtok->next()->valueType();
                         const Variable * variable = argtok->next()->variable();
-                        if (valueType->type == ValueType::Type::CHAR && !variable->isArray() && !variable->isGlobal() &&
+                        if ((valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T || (valueType->type == ValueType::Type::RECORD && Token::Match(argtok, "& %var% . %var% ,|)"))) &&
+                            !variable->isArray() &&
+                            (variable->isConst() || !variable->isGlobal()) &&
                             (!argtok->next()->hasKnownValue() || argtok->next()->getValue(0) == nullptr)) {
                             invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                        }
+                    }
+                    const ValueType* const valueType = argtok->valueType();
+                    const Variable* const variable = argtok->variable();
+                    // Is non-null terminated local variable of type char (e.g. char buf[] = {'x'};) ?
+                    if (variable && variable->isLocal()
+                        && valueType && (valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T)
+                        && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, mSettings, mTokenizer->isCPP())) {
+                        const Token* varTok = variable->declEndToken();
+                        auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
+                        if (varTok && Token::simpleMatch(varTok->astOperand1(), "["))
+                        {
+                            const Token* const countTok = varTok->astOperand1()->astOperand2();
+                            if (countTok && countTok->hasKnownIntValue())
+                                count = countTok->getKnownIntValue();
+                        }
+                        if (Token::simpleMatch(varTok, "= {")) {
+                            varTok = varTok->tokAt(1);
+                            auto charsUntilFirstZero = 0;
+                            bool search = true;
+                            while (search && varTok && !Token::simpleMatch(varTok->next(), "}")) {
+                                varTok = varTok->next();
+                                if (!Token::simpleMatch(varTok, ",")) {
+                                    if (Token::Match(varTok, "%op%")) {
+                                        varTok = varTok->next();
+                                        continue;
+                                    }
+                                    ++charsUntilFirstZero;
+                                    if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() == 0)
+                                        search=false; // stop counting for cases like char buf[3] = {'x', '\0', 'y'};
+                                }
+                            }
+                            if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() != 0
+                                && (count == -1 || (count > 0 && count <= charsUntilFirstZero))) {
+                                invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                            }
+                        } else if (count > -1 && Token::Match(varTok, "= %str%")) {
+                            const Token* strTok = varTok->getValueTokenMinStrSize(mSettings);
+                            if (strTok) {
+                                const int strSize = Token::getStrArraySize(strTok);
+                                if (strSize > count && strTok->str().find('\0') == std::string::npos)
+                                    invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                            }
                         }
                     }
                 }
@@ -223,9 +268,9 @@ void CheckFunctions::checkIgnoredReturnValue()
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
                 !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
                 const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
-                if (mSettings->severity.isEnabled(Severity::warning) &&
-                    ((retvalTy == Library::UseRetValType::DEFAULT) ||
-                     (tok->function() && tok->function()->isAttributeNodiscard())))
+                const bool warn = (tok->function() && tok->function()->isAttributeNodiscard()) || // avoid duplicate warnings for resource-allocating functions
+                                  (retvalTy == Library::UseRetValType::DEFAULT && mSettings->library.getAllocFuncInfo(tok) == nullptr);
+                if (mSettings->severity.isEnabled(Severity::warning) && warn)
                     ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
                 else if (mSettings->severity.isEnabled(Severity::style) &&
                          retvalTy == Library::UseRetValType::ERROR_CODE)
@@ -364,7 +409,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
 void CheckFunctions::missingReturnError(const Token* tok)
 {
     reportError(tok, Severity::error, "missingReturn",
-                "Found a exit path from function with non-void return type that has missing return statement", CWE758, Certainty::normal);
+                "Found an exit path from function with non-void return type that has missing return statement", CWE758, Certainty::normal);
 }
 //---------------------------------------------------------------------------
 // Detect passing wrong values to <cmath> functions like atan(0, x);
@@ -563,10 +608,10 @@ void CheckFunctions::checkLibraryMatchFunctions()
         else if (insideNew)
             continue;
 
-        if (!Token::Match(tok, "%name% (") || Token::Match(tok, "asm|sizeof|catch"))
+        if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
             continue;
 
-        if (tok->varId() != 0 || tok->type() || tok->isStandardType() || tok->isControlFlowKeyword())
+        if (tok->varId() != 0 || tok->type() || tok->isStandardType())
             continue;
 
         if (tok->linkAt(1)->strAt(1) == "(")
@@ -575,11 +620,26 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (tok->function())
             continue;
 
+        if (Token::simpleMatch(tok->astTop(), "throw"))
+            continue;
+
         if (!mSettings->library.isNotLibraryFunction(tok))
             continue;
 
         const std::string &functionName = mSettings->library.getFunctionName(tok);
-        if (functionName.empty() || mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+        if (functionName.empty())
+            continue;
+
+        if (mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+            continue;
+
+        if (mSettings->library.podtype(tok->expressionString()))
+            continue;
+
+        const Token* start = tok;
+        while (Token::Match(start->tokAt(-2), "%name% ::"))
+            start = start->tokAt(-2);
+        if (mSettings->library.detectContainerOrIterator(start))
             continue;
 
         reportError(tok,
@@ -614,7 +674,7 @@ void CheckFunctions::returnLocalStdMove()
             if (retval->variable() && retval->variable()->isLocal() && !retval->variable()->isVolatile())
                 copyElisionError(retval);
             // RVO
-            if (Token::Match(retval, "(|{") && !retval->isCast())
+            if (Token::Match(retval, "(|{") && !retval->isCast() && !(retval->valueType() && retval->valueType()->reference != Reference::None))
                 copyElisionError(retval);
         }
     }
@@ -627,4 +687,113 @@ void CheckFunctions::copyElisionError(const Token *tok)
                 "returnStdMoveLocal",
                 "Using std::move for returning object by-value from function will affect copy elision optimization."
                 " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local");
+}
+
+void CheckFunctions::useStandardLibrary()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    for (const Scope& scope: mTokenizer->getSymbolDatabase()->scopeList) {
+        if (scope.type != Scope::ScopeType::eFor)
+            continue;
+
+        const Token *forToken = scope.classDef;
+        // for ( initToken ; condToken ; stepToken )
+        const Token* initToken = getInitTok(forToken);
+        if (!initToken)
+            continue;
+        const Token* condToken = getCondTok(forToken);
+        if (!condToken)
+            continue;
+        const Token* stepToken = getStepTok(forToken);
+        if (!stepToken)
+            continue;
+
+        // 1. we expect that idx variable will be initialized with 0
+        const Token* idxToken = initToken->astOperand1();
+        const Token* initVal = initToken->astOperand2();
+        if (!idxToken || !initVal || !initVal->hasKnownIntValue() || initVal->getKnownIntValue() != 0)
+            continue;
+        const auto idxVarId = idxToken->varId();
+        if (0 == idxVarId)
+            continue;
+
+        // 2. we expect that idx will be less of some variable
+        if (!condToken->isComparisonOp())
+            continue;
+
+        const auto& secondOp = condToken->str();
+        const bool isLess = "<" == secondOp &&
+                            isConstExpression(condToken->astOperand2(), mSettings->library, true, mTokenizer->isCPP()) &&
+                            condToken->astOperand1()->varId() == idxVarId;
+        const bool isMore = ">" == secondOp &&
+                            isConstExpression(condToken->astOperand1(), mSettings->library, true, mTokenizer->isCPP()) &&
+                            condToken->astOperand2()->varId() == idxVarId;
+
+        if (!(isLess || isMore))
+            continue;
+
+        // 3. we expect idx incrementing by 1
+        const bool inc = stepToken->str() == "++" && stepToken->astOperand1()->varId() == idxVarId;
+        const bool plusOne = stepToken->isBinaryOp() && stepToken->str() == "+=" &&
+                             stepToken->astOperand1()->varId() == idxVarId &&
+                             stepToken->astOperand2()->str() == "1";
+        if (!inc && !plusOne)
+            continue;
+
+        // technically using void* here is not correct but some compilers could allow it
+
+        const Token *tok = scope.bodyStart;
+        const std::string memcpyName = mTokenizer->isCPP() ? "std::memcpy" : "memcpy";
+        // (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];
+        if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
+                         "(| reinterpret_cast < const| uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memcpyName);
+            continue;
+        }
+
+        // ((char*)dst)[i] = ((const char*)src)[i];
+        if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = "
+                         "( ( const| uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memcpyName);
+            continue;
+        }
+
+
+        const static std::string memsetName = mTokenizer->isCPP() ? "std::memset" : "memset";
+        // ((char*)dst)[i] = 0;
+        if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = %char%|%num% ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memsetName);
+            continue;
+        }
+
+        // ((char*)dst)[i] = (const char*)0;
+        if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = "
+                         "( const| uint8_t|int8_t|char ) (| %char%|%num% )| ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memsetName);
+            continue;
+        }
+
+        // (reinterpret_cast<uint8_t*>(dest))[i] = static_cast<const uint8_t>(0);
+        if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
+                         "(| static_cast < const| uint8_t|int8_t|char > ( %char%|%num% ) )| ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memsetName);
+            continue;
+        }
+
+        // (reinterpret_cast<int8_t*>(dest))[i] = 0;
+        if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
+                         "%char%|%num% ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memsetName);
+            continue;
+        }
+    }
+}
+
+void CheckFunctions::useStandardLibraryError(const Token *tok, const std::string& expected)
+{
+    reportError(tok, Severity::style,
+                "useStandardLibrary",
+                "Consider using " + expected + " instead of loop.");
 }

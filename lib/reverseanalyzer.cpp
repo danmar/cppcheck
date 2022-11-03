@@ -45,10 +45,10 @@ struct ReverseTraversal {
     std::pair<bool, bool> evalCond(const Token* tok) {
         std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
-        bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
+        const bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
             return x == 1;
         });
-        bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
+        const bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
             return x == 0;
         });
         return std::make_pair(checkThen, checkElse);
@@ -65,7 +65,7 @@ struct ReverseTraversal {
         return true;
     }
 
-    Token* getParentFunction(Token* tok)
+    static Token* getParentFunction(Token* tok)
     {
         if (!tok)
             return nullptr;
@@ -90,7 +90,7 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    Token* getTopFunction(Token* tok)
+    static Token* getTopFunction(Token* tok)
     {
         if (!tok)
             return nullptr;

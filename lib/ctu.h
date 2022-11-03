@@ -26,13 +26,12 @@
 #include "check.h"
 #include "errorlogger.h"
 #include "mathlib.h"
-#include "utils.h"
 #include "valueflow.h"
 
-#include <algorithm>
 #include <list>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Function;
@@ -59,33 +58,33 @@ namespace CTU {
         struct Location {
             Location() = default;
             Location(const Tokenizer *tokenizer, const Token *tok);
-            Location(const std::string &fileName, nonneg int lineNumber, nonneg int column) : fileName(fileName), lineNumber(lineNumber), column(column) {}
+            Location(std::string fileName, nonneg int lineNumber, nonneg int column) : fileName(std::move(fileName)), lineNumber(lineNumber), column(column) {}
             std::string fileName;
-            nonneg int lineNumber;
-            nonneg int column;
+            nonneg int lineNumber{};
+            nonneg int column{};
         };
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
-            UnsafeUsage(const std::string &myId, nonneg int myArgNr, const std::string &myArgumentName, const Location &location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
+            UnsafeUsage(std::string myId, nonneg int myArgNr, std::string myArgumentName, Location location, MathLib::bigint value) : myId(std::move(myId)), myArgNr(myArgNr), myArgumentName(std::move(myArgumentName)), location(std::move(location)), value(value) {}
             std::string myId;
-            nonneg int myArgNr;
+            nonneg int myArgNr{};
             std::string myArgumentName;
             Location location;
-            MathLib::bigint value;
+            MathLib::bigint value{};
             std::string toString() const;
         };
 
         class CallBase {
         public:
             CallBase() = default;
-            CallBase(const std::string &callId, int callArgNr, const std::string &callFunctionName, const Location &loc)
-                : callId(callId), callArgNr(callArgNr), callFunctionName(callFunctionName), location(loc)
+            CallBase(std::string callId, int callArgNr, std::string callFunctionName, Location loc)
+                : callId(std::move(callId)), callArgNr(callArgNr), callFunctionName(std::move(callFunctionName)), location(std::move(loc))
             {}
             CallBase(const Tokenizer *tokenizer, const Token *callToken);
             virtual ~CallBase() {}
             std::string callId;
-            int callArgNr;
+            int callArgNr{};
             std::string callFunctionName;
             Location location;
         protected:
@@ -109,9 +108,9 @@ namespace CTU {
         public:
             NestedCall() = default;
 
-            NestedCall(const std::string &myId, nonneg int myArgNr, const std::string &callId, nonneg int callArgnr, const std::string &callFunctionName, const Location &location)
+            NestedCall(std::string myId, nonneg int myArgNr, const std::string &callId, nonneg int callArgnr, const std::string &callFunctionName, const Location &location)
                 : CallBase(callId, callArgnr, callFunctionName, location),
-                myId(myId),
+                myId(std::move(myId)),
                 myArgNr(myArgNr) {}
 
             NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken);
@@ -120,7 +119,7 @@ namespace CTU {
             bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
 
             std::string myId;
-            nonneg int myArgNr;
+            nonneg int myArgNr{};
         };
 
         std::list<FunctionCall> functionCalls;

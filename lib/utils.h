@@ -24,6 +24,7 @@
 #include "config.h"
 
 #include <algorithm>
+#include <array>
 #include <cstddef>
 #include <initializer_list>
 #include <string>
@@ -88,21 +89,35 @@ bool endsWith(const std::string& str, const char (&end)[N])
 
 inline static bool isPrefixStringCharLiteral(const std::string &str, char q, const std::string& p)
 {
+    // str must be at least the prefix plus the start and end quote
+    if (str.length() < p.length() + 2)
+        return false;
+
+    // check for end quote
     if (!endsWith(str, q))
         return false;
-    if ((str.length() + 1) > p.length() && (str.compare(0, p.size() + 1, p + q) == 0))
-        return true;
-    return false;
+
+    // check for start quote
+    if (str[p.size()] != q)
+        return false;
+
+    // check for prefix
+    if (str.compare(0, p.size(), p) != 0)
+        return false;
+
+    return true;
 }
 
 inline static bool isStringCharLiteral(const std::string &str, char q)
 {
-    static const std::vector<std::string> suffixes{"", "u8", "u", "U", "L"};
-    for (const std::string & p: suffixes) {
-        if (isPrefixStringCharLiteral(str, q, p))
-            return true;
-    }
-    return false;
+    // early out to avoid the loop
+    if (!endsWith(str, q))
+        return false;
+
+    static const std::array<std::string, 5> suffixes{"", "u8", "u", "U", "L"};
+    return std::any_of(suffixes.begin(), suffixes.end(), [&](const std::string& p) {
+        return isPrefixStringCharLiteral(str, q, p);
+    });
 }
 
 inline static bool isStringLiteral(const std::string &str)
@@ -154,32 +169,16 @@ CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name);
 
 CPPCHECKLIB bool matchglobs(const std::vector<std::string> &patterns, const std::string &name);
 
-#define UNUSED(x) (void)(x)
+CPPCHECKLIB void strTolower(std::string& str);
 
-// Use the nonneg macro when you want to assert that a variable/argument is not negative
-#ifdef __CPPCHECK__
-#define nonneg   __cppcheck_low__(0)
-#elif defined(NONNEG)
-// Enable non-negative values checking
-// TODO : investigate using annotations/contracts for stronger value checking
-#define nonneg   unsigned
-#else
-// Disable non-negative values checking
-#define nonneg
-#endif
-
-#if defined(__has_feature)
-#if __has_feature(address_sanitizer)
-#define ASAN 1
-#endif
-#endif
-
-#ifndef ASAN
-#ifdef  __SANITIZE_ADDRESS__
-#define ASAN 1
-#else
-#define ASAN 0
-#endif
-#endif
+/**
+ *  Simple helper function:
+ * \return size of array
+ * */
+template<typename T, int size>
+std::size_t getArrayLength(const T (& /*unused*/)[size])
+{
+    return size;
+}
 
 #endif

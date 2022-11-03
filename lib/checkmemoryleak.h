@@ -36,7 +36,6 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenize.h"
-#include "utils.h"
 
 #include <list>
 #include <string>
@@ -119,6 +118,11 @@ public:
      * @param tok token to check
      */
     bool isReopenStandardStream(const Token *tok) const;
+    /**
+     * Check if token opens /dev/null
+     * @param tok token to check
+     */
+    bool isOpenDevNull(const Token *tok) const;
     /**
      * Report that there is a memory leak (new/malloc/etc)
      * @param tok token where memory is leaked

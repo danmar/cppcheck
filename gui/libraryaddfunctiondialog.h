@@ -21,13 +21,15 @@
 
 #include <QDialog>
 
-#define SIMPLENAME     "[_a-zA-Z][_a-zA-Z0-9]*"            // just a name
-#define SCOPENAME      SIMPLENAME "(::" SIMPLENAME ")*"    // names with optional scope
-#define NAMES          SCOPENAME "(," SCOPENAME ")*"       // names can be separated by comma
-
+class QObject;
+class QWidget;
 namespace Ui {
     class LibraryAddFunctionDialog;
 }
+
+#define SIMPLENAME     "[_a-zA-Z][_a-zA-Z0-9]*"            // just a name
+#define SCOPENAME      SIMPLENAME "(::" SIMPLENAME ")*"    // names with optional scope
+#define NAMES          SCOPENAME "(," SCOPENAME ")*"       // names can be separated by comma
 
 class LibraryAddFunctionDialog : public QDialog {
     Q_OBJECT
@@ -35,7 +37,7 @@ class LibraryAddFunctionDialog : public QDialog {
 public:
     explicit LibraryAddFunctionDialog(QWidget *parent = nullptr);
     LibraryAddFunctionDialog(const LibraryAddFunctionDialog &) = delete;
-    ~LibraryAddFunctionDialog();
+    ~LibraryAddFunctionDialog() override;
     LibraryAddFunctionDialog &operator=(const LibraryAddFunctionDialog &) = delete;
 
     QString functionName() const;

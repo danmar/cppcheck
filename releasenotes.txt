@@ -1,2 +1,3 @@
-release notes for cppcheck-2.8
+release notes for cppcheck-2.10
 
+- the deprecated Makefile option SRCDIR is no longer accepted

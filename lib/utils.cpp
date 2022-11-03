@@ -18,6 +18,7 @@
 
 #include "utils.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iterator>
 #include <memory>
@@ -42,7 +43,7 @@ bool isValidGlobPattern(const std::string& pattern)
 {
     for (std::string::const_iterator i = pattern.begin(); i != pattern.end(); ++i) {
         if (*i == '*' || *i == '?') {
-            std::string::const_iterator j = i + 1;
+            const std::string::const_iterator j = i + 1;
             if (j != pattern.end() && (*j == '*' || *j == '?')) {
                 return false;
             }
@@ -68,7 +69,7 @@ bool matchglob(const std::string& pattern, const std::string& name)
                 }
                 if (*n != '\0') {
                     // If this isn't the last possibility, save it for later
-                    backtrack.push(std::make_pair(p, n));
+                    backtrack.emplace(p, n);
                 }
                 break;
             case '?':
@@ -119,4 +120,14 @@ bool matchglobs(const std::vector<std::string> &patterns, const std::string &nam
     return std::any_of(begin(patterns), end(patterns), [&name](const std::string &pattern) {
         return matchglob(pattern, name);
     });
+}
+
+void strTolower(std::string& str)
+{
+    // This wrapper exists because Sun's CC does not allow a static_cast
+    // from extern "C" int(*)(int) to int(*)(int).
+    static auto tolowerWrapper = [](int c) {
+        return std::tolower(c);
+    };
+    std::transform(str.begin(), str.end(), str.begin(), tolowerWrapper);
 }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,7 +149,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
             // Check for [xyz] usage - but exclude standalone square brackets
             unsigned int char_count = 0;
-            for (char c : pattern) {
+            for (const char c : pattern) {
                 if (c == ' ') {
                     char_count = 0;
                 } else if (c == ']') {
@@ -164,7 +164,7 @@ void CheckInternal::checkTokenSimpleMatchPatterns()
 
             // Check | usage: Count characters before the symbol
             char_count = 0;
-            for (char c : pattern) {
+            for (const char c : pattern) {
                 if (c == ' ') {
                     char_count = 0;
                 } else if (c == '|') {
@@ -339,19 +339,6 @@ void CheckInternal::checkExtraWhitespace()
             // two whitespaces or more
             if (pattern.find("  ") != std::string::npos)
                 extraWhitespaceError(tok, pattern, funcname);
-        }
-    }
-}
-
-void CheckInternal::checkStlUsage()
-{
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, ". emplace ("))
-                reportError(tok, Severity::error, "internalStlUsage", "The 'emplace' function shall be avoided for now. It is not available e.g. in Slackware 14.0. 'emplace_back' is fine.");
-            //if (Token::simpleMatch(tok, ". back ( )") && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container && Token::simpleMatch(tok->astOperand1()->valueType()->container, "std :: string"))
-            //  reportError(tok, Severity::error, "internalStlUsage", "The 'std::string::back()' function shall be avoided for now.");
         }
     }
 }

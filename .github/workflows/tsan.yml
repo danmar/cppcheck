@@ -1,0 +1,67 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: thread sanitizer
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    env:
+      TSAN_OPTIONS: halt_on_error=1
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          check-latest: true
+
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake make libpcre3-dev libboost-container-dev
+
+      - name: Install clang
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 15
+
+      - name: CMake
+        run: |
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_THREAD=On -DUSE_THREADS=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
+        env:
+          CC: clang-15
+          CXX: clang++-15
+
+      - name: Build cppcheck
+        run: |
+          cmake --build cmake.output --target cppcheck -- -j $(nproc)
+
+      - name: Build test
+        run: |
+          cmake --build cmake.output --target testrunner -- -j $(nproc)
+
+      - name: Run tests
+        run: ./cmake.output/bin/testrunner
+
+      # TODO: disabled for now as it takes around 40 minutes to finish
+      # set --error-exitcode=0 so we only fail on sanitizer issues - since it uses threads for execution it will exit the whole process on the first issue
+      - name: Self check
+        if: false
+        run: |
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ --error-exitcode=0 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings"
+          ec=0
+          ./cmake.output/bin/cppcheck $selfcheck_options --addon=naming.json -DCHECK_INTERNAL cli lib || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
+          ./cmake.output/bin/cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
+          exit $ec

@@ -19,18 +19,25 @@
 #ifndef STATSDIALOG_H
 #define STATSDIALOG_H
 
-#include "ui_stats.h"
-
 #include <QDialog>
 
 class ProjectFile;
 class CheckStatistics;
+class QObject;
+class QWidget;
+namespace Ui {
+    class StatsDialog;
+}
 
 #ifdef HAVE_QCHART
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 namespace QtCharts {
-    class QChartView;
-    class QLineSeries;
+#endif
+class QChartView;
+class QLineSeries;
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 }
+#endif
 #endif
 
 /// @addtogroup GUI
@@ -44,6 +51,7 @@ class StatsDialog : public QDialog {
     Q_OBJECT
 public:
     explicit StatsDialog(QWidget *parent = nullptr);
+    ~StatsDialog() override;
 
     /**
      * @brief Sets the project to extract statistics from
@@ -74,11 +82,16 @@ private slots:
     void copyToClipboard();
     void pdfExport();
 #ifdef HAVE_QCHART
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    QChartView *createChart(const QString &statsFile, const QString &tool);
+    QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
+#else
     QtCharts::QChartView *createChart(const QString &statsFile, const QString &tool);
     QtCharts::QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
 #endif
+#endif
 private:
-    Ui::StatsDialog mUI;
+    Ui::StatsDialog *mUI;
     const CheckStatistics *mStatistics;
 };
 

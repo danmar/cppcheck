@@ -2,8 +2,8 @@ TEMPLATE = app
 TARGET = test-filelist
 DEPENDPATH += .
 INCLUDEPATH += . ../../../externals/simplecpp
-OBJECTS_DIR = ../build
-MOC_DIR = ../build
+OBJECTS_DIR = ../../temp
+MOC_DIR = ../../temp
 QT += testlib
 
 include(../common.pri)

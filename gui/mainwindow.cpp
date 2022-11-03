@@ -20,44 +20,73 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
+#include "analyzerinfo.h"
 #include "common.h"
 #include "cppcheck.h"
+#include "errortypes.h"
 #include "filelist.h"
 #include "fileviewdialog.h"
-#include "functioncontractdialog.h"
 #include "helpdialog.h"
+#include "importproject.h"
 #include "librarydialog.h"
+#include "platform.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
+#include "resultsview.h"
 #include "scratchpad.h"
 #include "showtypes.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"
+#include "standards.h"
+#include "suppressions.h"
 #include "threadhandler.h"
 #include "threadresult.h"
 #include "translationhandler.h"
-#include "variablecontractsdialog.h"
+
+#include "ui_mainwindow.h"
+
+#include <algorithm>
+#include <functional>
+#include <list>
+#include <set>
+#include <string>
+#include <vector>
 
 #include <QApplication>
 #include <QAction>
 #include <QActionGroup>
+#include <QCloseEvent>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QTimer>
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
+
+static QString fromNativePath(const QString& p) {
+#ifdef Q_OS_WIN
+    QString ret(p);
+    ret.replace('\\', '/');
+    return ret;
+#else
+    return p;
+#endif
+}
 
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
     mApplications(new ApplicationList(this)),
     mTranslation(th),
+    mUI(new Ui::MainWindow),
     mScratchPad(nullptr),
     mProjectFile(nullptr),
     mPlatformActions(new QActionGroup(this)),
@@ -67,9 +96,17 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mExiting(false),
     mIsLogfileLoaded(false)
 {
-    mUI.setupUi(this);
+    {
+        Settings tempSettings;
+        tempSettings.exename = QCoreApplication::applicationFilePath().toStdString();
+        tempSettings.loadCppcheckCfg();
+        mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
+        mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
+    }
+
+    mUI->setupUi(this);
     mThread = new ThreadHandler(this);
-    mUI.mResults->initialize(mSettings, mApplications, mThread);
+    mUI->mResults->initialize(mSettings, mApplications, mThread);
 
     // Filter timer to delay filtering results slightly while typing
     mFilterTimer = new QTimer(this);
@@ -78,82 +115,77 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mFilterTimer, &QTimer::timeout, this, &MainWindow::filterResults);
 
     // "Filter" toolbar
-    mLineEditFilter = new QLineEdit(mUI.mToolBarFilter);
+    mLineEditFilter = new QLineEdit(mUI->mToolBarFilter);
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
     mLineEditFilter->setClearButtonEnabled(true);
-    mUI.mToolBarFilter->addWidget(mLineEditFilter);
+    mUI->mToolBarFilter->addWidget(mLineEditFilter);
     connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, &QLineEdit::returnPressed, this, &MainWindow::filterResults);
 
-    connect(mUI.mActionPrint, SIGNAL(triggered()), mUI.mResults, SLOT(print()));
-    connect(mUI.mActionPrintPreview, SIGNAL(triggered()), mUI.mResults, SLOT(printPreview()));
-    connect(mUI.mActionQuit, &QAction::triggered, this, &MainWindow::close);
-    connect(mUI.mActionAnalyzeFiles, &QAction::triggered, this, &MainWindow::analyzeFiles);
-    connect(mUI.mActionAnalyzeDirectory, &QAction::triggered, this, &MainWindow::analyzeDirectory);
-    connect(mUI.mActionSettings, &QAction::triggered, this, &MainWindow::programSettings);
-    connect(mUI.mActionClearResults, &QAction::triggered, this, &MainWindow::clearResults);
-    connect(mUI.mActionOpenXML, &QAction::triggered, this, &MainWindow::openResults);
+    connect(mUI->mActionPrint, SIGNAL(triggered()), mUI->mResults, SLOT(print()));
+    connect(mUI->mActionPrintPreview, SIGNAL(triggered()), mUI->mResults, SLOT(printPreview()));
+    connect(mUI->mActionQuit, &QAction::triggered, this, &MainWindow::close);
+    connect(mUI->mActionAnalyzeFiles, &QAction::triggered, this, &MainWindow::analyzeFiles);
+    connect(mUI->mActionAnalyzeDirectory, &QAction::triggered, this, &MainWindow::analyzeDirectory);
+    connect(mUI->mActionSettings, &QAction::triggered, this, &MainWindow::programSettings);
+    connect(mUI->mActionClearResults, &QAction::triggered, this, &MainWindow::clearResults);
+    connect(mUI->mActionOpenXML, &QAction::triggered, this, &MainWindow::openResults);
 
-    connect(mUI.mActionShowStyle, &QAction::toggled, this, &MainWindow::showStyle);
-    connect(mUI.mActionShowErrors, &QAction::toggled, this, &MainWindow::showErrors);
-    connect(mUI.mActionShowWarnings, &QAction::toggled, this, &MainWindow::showWarnings);
-    connect(mUI.mActionShowPortability, &QAction::toggled, this, &MainWindow::showPortability);
-    connect(mUI.mActionShowPerformance, &QAction::toggled, this, &MainWindow::showPerformance);
-    connect(mUI.mActionShowInformation, &QAction::toggled, this, &MainWindow::showInformation);
-    connect(mUI.mActionShowCppcheck, &QAction::toggled, mUI.mResults, &ResultsView::showCppcheckResults);
-    connect(mUI.mActionShowClang, &QAction::toggled, mUI.mResults, &ResultsView::showClangResults);
-    connect(mUI.mActionCheckAll, &QAction::triggered, this, &MainWindow::checkAll);
-    connect(mUI.mActionUncheckAll, &QAction::triggered, this, &MainWindow::uncheckAll);
-    connect(mUI.mActionCollapseAll, &QAction::triggered, mUI.mResults, &ResultsView::collapseAllResults);
-    connect(mUI.mActionExpandAll, &QAction::triggered, mUI.mResults, &ResultsView::expandAllResults);
-    connect(mUI.mActionShowHidden, &QAction::triggered, mUI.mResults, &ResultsView::showHiddenResults);
-    connect(mUI.mActionViewStats, &QAction::triggered, this, &MainWindow::showStatistics);
-    connect(mUI.mActionLibraryEditor, &QAction::triggered, this, &MainWindow::showLibraryEditor);
+    connect(mUI->mActionShowStyle, &QAction::toggled, this, &MainWindow::showStyle);
+    connect(mUI->mActionShowErrors, &QAction::toggled, this, &MainWindow::showErrors);
+    connect(mUI->mActionShowWarnings, &QAction::toggled, this, &MainWindow::showWarnings);
+    connect(mUI->mActionShowPortability, &QAction::toggled, this, &MainWindow::showPortability);
+    connect(mUI->mActionShowPerformance, &QAction::toggled, this, &MainWindow::showPerformance);
+    connect(mUI->mActionShowInformation, &QAction::toggled, this, &MainWindow::showInformation);
+    connect(mUI->mActionShowCppcheck, &QAction::toggled, mUI->mResults, &ResultsView::showCppcheckResults);
+    connect(mUI->mActionShowClang, &QAction::toggled, mUI->mResults, &ResultsView::showClangResults);
+    connect(mUI->mActionCheckAll, &QAction::triggered, this, &MainWindow::checkAll);
+    connect(mUI->mActionUncheckAll, &QAction::triggered, this, &MainWindow::uncheckAll);
+    connect(mUI->mActionCollapseAll, &QAction::triggered, mUI->mResults, &ResultsView::collapseAllResults);
+    connect(mUI->mActionExpandAll, &QAction::triggered, mUI->mResults, &ResultsView::expandAllResults);
+    connect(mUI->mActionShowHidden, &QAction::triggered, mUI->mResults, &ResultsView::showHiddenResults);
+    connect(mUI->mActionViewStats, &QAction::triggered, this, &MainWindow::showStatistics);
+    connect(mUI->mActionLibraryEditor, &QAction::triggered, this, &MainWindow::showLibraryEditor);
 
-    connect(mUI.mActionReanalyzeModified, &QAction::triggered, this, &MainWindow::reAnalyzeModified);
-    connect(mUI.mActionReanalyzeAll, &QAction::triggered, this, &MainWindow::reAnalyzeAll);
-    connect(mUI.mActionCheckLibrary, &QAction::triggered, this, &MainWindow::checkLibrary);
-    connect(mUI.mActionCheckConfiguration, &QAction::triggered, this, &MainWindow::checkConfiguration);
+    connect(mUI->mActionReanalyzeModified, &QAction::triggered, this, &MainWindow::reAnalyzeModified);
+    connect(mUI->mActionReanalyzeAll, &QAction::triggered, this, &MainWindow::reAnalyzeAll);
+    connect(mUI->mActionCheckLibrary, &QAction::triggered, this, &MainWindow::checkLibrary);
+    connect(mUI->mActionCheckConfiguration, &QAction::triggered, this, &MainWindow::checkConfiguration);
 
-    connect(mUI.mActionStop, &QAction::triggered, this, &MainWindow::stopAnalysis);
-    connect(mUI.mActionSave, &QAction::triggered, this, &MainWindow::save);
+    connect(mUI->mActionStop, &QAction::triggered, this, &MainWindow::stopAnalysis);
+    connect(mUI->mActionSave, &QAction::triggered, this, &MainWindow::save);
 
     // About menu
-    connect(mUI.mActionAbout, &QAction::triggered, this, &MainWindow::about);
-    connect(mUI.mActionLicense, &QAction::triggered, this, &MainWindow::showLicense);
+    connect(mUI->mActionAbout, &QAction::triggered, this, &MainWindow::about);
+    connect(mUI->mActionLicense, &QAction::triggered, this, &MainWindow::showLicense);
 
     // View > Toolbar menu
-    connect(mUI.mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(toggleMainToolBar()));
-    connect(mUI.mActionToolBarView, SIGNAL(toggled(bool)), this, SLOT(toggleViewToolBar()));
-    connect(mUI.mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(toggleFilterToolBar()));
+    connect(mUI->mActionToolBarMain, SIGNAL(toggled(bool)), this, SLOT(toggleMainToolBar()));
+    connect(mUI->mActionToolBarView, SIGNAL(toggled(bool)), this, SLOT(toggleViewToolBar()));
+    connect(mUI->mActionToolBarFilter, SIGNAL(toggled(bool)), this, SLOT(toggleFilterToolBar()));
 
-    connect(mUI.mActionAuthors, &QAction::triggered, this, &MainWindow::showAuthors);
+    connect(mUI->mActionAuthors, &QAction::triggered, this, &MainWindow::showAuthors);
     connect(mThread, &ThreadHandler::done, this, &MainWindow::analysisDone);
-    connect(mThread, &ThreadHandler::log, mUI.mResults, &ResultsView::log);
-    connect(mThread, &ThreadHandler::debugError, mUI.mResults, &ResultsView::debugError);
-    connect(mThread, &ThreadHandler::bughuntingReportLine, mUI.mResults, &ResultsView::bughuntingReportLine);
-    connect(mUI.mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
-    connect(mUI.mResults, &ResultsView::resultsHidden, mUI.mActionShowHidden, &QAction::setEnabled);
-    connect(mUI.mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
-    connect(mUI.mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
-    connect(mUI.mResults, &ResultsView::editFunctionContract, this, &MainWindow::editFunctionContract);
-    connect(mUI.mResults, &ResultsView::editVariableContract, this, &MainWindow::editVariableContract);
-    connect(mUI.mResults, &ResultsView::deleteFunctionContract, this, &MainWindow::deleteFunctionContract);
-    connect(mUI.mResults, &ResultsView::deleteVariableContract, this, &MainWindow::deleteVariableContract);
-    connect(mUI.mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
+    connect(mThread, &ThreadHandler::log, mUI->mResults, &ResultsView::log);
+    connect(mThread, &ThreadHandler::debugError, mUI->mResults, &ResultsView::debugError);
+    connect(mUI->mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
+    connect(mUI->mResults, &ResultsView::resultsHidden, mUI->mActionShowHidden, &QAction::setEnabled);
+    connect(mUI->mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
+    connect(mUI->mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
+    connect(mUI->mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
-    connect(mUI.mActionNewProjectFile, &QAction::triggered, this, &MainWindow::newProjectFile);
-    connect(mUI.mActionOpenProjectFile, &QAction::triggered, this, &MainWindow::openProjectFile);
-    connect(mUI.mActionShowScratchpad, &QAction::triggered, this, &MainWindow::showScratchpad);
-    connect(mUI.mActionCloseProjectFile, &QAction::triggered, this, &MainWindow::closeProjectFile);
-    connect(mUI.mActionEditProjectFile, &QAction::triggered, this, &MainWindow::editProjectFile);
+    connect(mUI->mActionNewProjectFile, &QAction::triggered, this, &MainWindow::newProjectFile);
+    connect(mUI->mActionOpenProjectFile, &QAction::triggered, this, &MainWindow::openProjectFile);
+    connect(mUI->mActionShowScratchpad, &QAction::triggered, this, &MainWindow::showScratchpad);
+    connect(mUI->mActionCloseProjectFile, &QAction::triggered, this, &MainWindow::closeProjectFile);
+    connect(mUI->mActionEditProjectFile, &QAction::triggered, this, &MainWindow::editProjectFile);
 
-    connect(mUI.mActionHelpContents, &QAction::triggered, this, &MainWindow::openHelpContents);
+    connect(mUI->mActionHelpContents, &QAction::triggered, this, &MainWindow::openHelpContents);
 
     loadSettings();
 
-    mThread->initialize(mUI.mResults);
+    mThread->initialize(mUI->mResults);
     if (mProjectFile)
         formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
     else
@@ -161,7 +193,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     enableCheckButtons(true);
 
-    mUI.mActionPrint->setShortcut(QKeySequence::Print);
+    mUI->mActionPrint->setShortcut(QKeySequence::Print);
     enableResultsButtons();
     enableProjectOpenActions(true);
     enableProjectActions(false);
@@ -175,7 +207,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
                 this, SLOT(openRecentProject()));
     }
     mRecentProjectActs[MaxRecentProjects] = nullptr; // The separator
-    mUI.mActionProjectMRU->setVisible(false);
+    mUI->mActionProjectMRU->setVisible(false);
     updateMRUMenuItems();
 
     QStringList args = QCoreApplication::arguments();
@@ -185,8 +217,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         handleCLIParams(args);
     }
 
-    mUI.mActionCloseProjectFile->setEnabled(mProjectFile != nullptr);
-    mUI.mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
+    mUI->mActionCloseProjectFile->setEnabled(mProjectFile != nullptr);
+    mUI->mActionEditProjectFile->setEnabled(mProjectFile != nullptr);
 
     for (int i = 0; i < mPlatforms.getCount(); i++) {
         Platform platform = mPlatforms.mPlatforms[i];
@@ -197,23 +229,24 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         action->setData(platform.mType);
         action->setCheckable(true);
         action->setActionGroup(mPlatformActions);
-        mUI.mMenuAnalyze->insertAction(mUI.mActionPlatforms, action);
+        mUI->mMenuAnalyze->insertAction(mUI->mActionPlatforms, action);
         connect(action, SIGNAL(triggered()), this, SLOT(selectPlatform()));
     }
 
-    mUI.mActionC89->setActionGroup(mCStandardActions);
-    mUI.mActionC99->setActionGroup(mCStandardActions);
-    mUI.mActionC11->setActionGroup(mCStandardActions);
+    mUI->mActionC89->setActionGroup(mCStandardActions);
+    mUI->mActionC99->setActionGroup(mCStandardActions);
+    mUI->mActionC11->setActionGroup(mCStandardActions);
 
-    mUI.mActionCpp03->setActionGroup(mCppStandardActions);
-    mUI.mActionCpp11->setActionGroup(mCppStandardActions);
-    mUI.mActionCpp14->setActionGroup(mCppStandardActions);
-    mUI.mActionCpp17->setActionGroup(mCppStandardActions);
-    mUI.mActionCpp20->setActionGroup(mCppStandardActions);
+    mUI->mActionCpp03->setActionGroup(mCppStandardActions);
+    mUI->mActionCpp11->setActionGroup(mCppStandardActions);
+    mUI->mActionCpp14->setActionGroup(mCppStandardActions);
+    mUI->mActionCpp17->setActionGroup(mCppStandardActions);
+    mUI->mActionCpp20->setActionGroup(mCppStandardActions);
+    //mUI->mActionCpp23->setActionGroup(mCppStandardActions);
 
-    mUI.mActionEnforceC->setActionGroup(mSelectLanguageActions);
-    mUI.mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
-    mUI.mActionAutoDetectLanguage->setActionGroup(mSelectLanguageActions);
+    mUI->mActionEnforceC->setActionGroup(mSelectLanguageActions);
+    mUI->mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
+    mUI->mActionAutoDetectLanguage->setActionGroup(mSelectLanguageActions);
 
     // For Windows platforms default to Win32 checked platform.
     // For other platforms default to unspecified/default which means the
@@ -225,12 +258,35 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 #endif
     Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
+
+    mNetworkAccessManager = new QNetworkAccessManager(this);
+    connect(mNetworkAccessManager, &QNetworkAccessManager::finished,
+            this, &MainWindow::replyFinished);
+
+    mUI->mLabelInformation->setVisible(false);
+    mUI->mButtonHideInformation->setVisible(false);
+    connect(mUI->mButtonHideInformation, &QPushButton::clicked,
+            this, &MainWindow::hideInformation);
+
+    if (mSettings->value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()) {
+        // Is there a new version?
+        if (isCppcheckPremium()) {
+            const QUrl url("https://files.cppchecksolutions.com/version.txt");
+            mNetworkAccessManager->get(QNetworkRequest(url));
+        } else {
+            const QUrl url("https://cppcheck.sourceforge.io/version.txt");
+            mNetworkAccessManager->get(QNetworkRequest(url));
+        }
+    } else {
+        delete mUI->mLayoutInformation;
+    }
 }
 
 MainWindow::~MainWindow()
 {
     delete mProjectFile;
     delete mScratchPad;
+    delete mUI;
 }
 
 void MainWindow::handleCLIParams(const QStringList &params)
@@ -256,9 +312,9 @@ void MainWindow::handleCLIParams(const QStringList &params)
         } else {
             loadResults(logFile);
         }
-    } else if ((index = params.indexOf(QRegExp(".*\\.cppcheck$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
+    } else if ((index = params.indexOf(QRegularExpression(".*\\.cppcheck$", QRegularExpression::CaseInsensitiveOption))) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         loadProjectFile(params[index]);
-    } else if ((index = params.indexOf(QRegExp(".*\\.xml$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
+    } else if ((index = params.indexOf(QRegularExpression(".*\\.xml$", QRegularExpression::CaseInsensitiveOption))) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         loadResults(params[index],QDir::currentPath());
     } else
         doAnalyzeFiles(params);
@@ -274,50 +330,51 @@ void MainWindow::loadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    ShowTypes *types = mUI.mResults->getShowTypes();
-    mUI.mActionShowStyle->setChecked(types->isShown(ShowTypes::ShowStyle));
-    mUI.mActionShowErrors->setChecked(types->isShown(ShowTypes::ShowErrors));
-    mUI.mActionShowWarnings->setChecked(types->isShown(ShowTypes::ShowWarnings));
-    mUI.mActionShowPortability->setChecked(types->isShown(ShowTypes::ShowPortability));
-    mUI.mActionShowPerformance->setChecked(types->isShown(ShowTypes::ShowPerformance));
-    mUI.mActionShowInformation->setChecked(types->isShown(ShowTypes::ShowInformation));
-    mUI.mActionShowCppcheck->setChecked(true);
-    mUI.mActionShowClang->setChecked(true);
+    ShowTypes *types = mUI->mResults->getShowTypes();
+    mUI->mActionShowStyle->setChecked(types->isShown(ShowTypes::ShowStyle));
+    mUI->mActionShowErrors->setChecked(types->isShown(ShowTypes::ShowErrors));
+    mUI->mActionShowWarnings->setChecked(types->isShown(ShowTypes::ShowWarnings));
+    mUI->mActionShowPortability->setChecked(types->isShown(ShowTypes::ShowPortability));
+    mUI->mActionShowPerformance->setChecked(types->isShown(ShowTypes::ShowPerformance));
+    mUI->mActionShowInformation->setChecked(types->isShown(ShowTypes::ShowInformation));
+    mUI->mActionShowCppcheck->setChecked(true);
+    mUI->mActionShowClang->setChecked(true);
 
     Standards standards;
     standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    mUI.mActionC89->setChecked(standards.c == Standards::C89);
-    mUI.mActionC99->setChecked(standards.c == Standards::C99);
-    mUI.mActionC11->setChecked(standards.c == Standards::C11);
+    mUI->mActionC89->setChecked(standards.c == Standards::C89);
+    mUI->mActionC99->setChecked(standards.c == Standards::C99);
+    mUI->mActionC11->setChecked(standards.c == Standards::C11);
     standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
-    mUI.mActionCpp03->setChecked(standards.cpp == Standards::CPP03);
-    mUI.mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
-    mUI.mActionCpp14->setChecked(standards.cpp == Standards::CPP14);
-    mUI.mActionCpp17->setChecked(standards.cpp == Standards::CPP17);
-    mUI.mActionCpp20->setChecked(standards.cpp == Standards::CPP20);
+    mUI->mActionCpp03->setChecked(standards.cpp == Standards::CPP03);
+    mUI->mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
+    mUI->mActionCpp14->setChecked(standards.cpp == Standards::CPP14);
+    mUI->mActionCpp17->setChecked(standards.cpp == Standards::CPP17);
+    mUI->mActionCpp20->setChecked(standards.cpp == Standards::CPP20);
+    //mUI->mActionCpp23->setChecked(standards.cpp == Standards::CPP23);
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
-    mUI.mActionToolBarMain->setChecked(showMainToolbar);
-    mUI.mToolBarMain->setVisible(showMainToolbar);
+    mUI->mActionToolBarMain->setChecked(showMainToolbar);
+    mUI->mToolBarMain->setVisible(showMainToolbar);
 
     const bool showViewToolbar = mSettings->value(SETTINGS_TOOLBARS_VIEW_SHOW, true).toBool();
-    mUI.mActionToolBarView->setChecked(showViewToolbar);
-    mUI.mToolBarView->setVisible(showViewToolbar);
+    mUI->mActionToolBarView->setChecked(showViewToolbar);
+    mUI->mToolBarView->setVisible(showViewToolbar);
 
     const bool showFilterToolbar = mSettings->value(SETTINGS_TOOLBARS_FILTER_SHOW, true).toBool();
-    mUI.mActionToolBarFilter->setChecked(showFilterToolbar);
-    mUI.mToolBarFilter->setVisible(showFilterToolbar);
+    mUI->mActionToolBarFilter->setChecked(showFilterToolbar);
+    mUI->mToolBarFilter->setVisible(showFilterToolbar);
 
-    Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    const Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
     if (enforcedLanguage == Settings::CPP)
-        mUI.mActionEnforceCpp->setChecked(true);
+        mUI->mActionEnforceCpp->setChecked(true);
     else if (enforcedLanguage == Settings::C)
-        mUI.mActionEnforceC->setChecked(true);
+        mUI->mActionEnforceC->setChecked(true);
     else
-        mUI.mActionAutoDetectLanguage->setChecked(true);
+        mUI->mActionAutoDetectLanguage->setChecked(true);
 
-    bool succeeded = mApplications->loadSettings();
+    const bool succeeded = mApplications->loadSettings();
     if (!succeeded) {
         const QString msg = tr("There was a problem with loading the editor application settings.\n\n"
                                "This is probably because the settings were changed between the Cppcheck versions. "
@@ -343,9 +400,6 @@ void MainWindow::loadSettings()
             QDir::setCurrent(inf.absolutePath());
         }
     }
-
-    updateFunctionContractsTab();
-    updateVariableContractsTab();
 }
 
 void MainWindow::saveSettings() const
@@ -356,39 +410,41 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_WINDOW_MAXIMIZED, isMaximized());
 
     // Show * states
-    mSettings->setValue(SETTINGS_SHOW_STYLE, mUI.mActionShowStyle->isChecked());
-    mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI.mActionShowErrors->isChecked());
-    mSettings->setValue(SETTINGS_SHOW_WARNINGS, mUI.mActionShowWarnings->isChecked());
-    mSettings->setValue(SETTINGS_SHOW_PORTABILITY, mUI.mActionShowPortability->isChecked());
-    mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI.mActionShowPerformance->isChecked());
-    mSettings->setValue(SETTINGS_SHOW_INFORMATION, mUI.mActionShowInformation->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_STYLE, mUI->mActionShowStyle->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_ERRORS, mUI->mActionShowErrors->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_WARNINGS, mUI->mActionShowWarnings->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_PORTABILITY, mUI->mActionShowPortability->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_PERFORMANCE, mUI->mActionShowPerformance->isChecked());
+    mSettings->setValue(SETTINGS_SHOW_INFORMATION, mUI->mActionShowInformation->isChecked());
 
-    if (mUI.mActionC89->isChecked())
+    if (mUI->mActionC89->isChecked())
         mSettings->setValue(SETTINGS_STD_C, "C89");
-    if (mUI.mActionC99->isChecked())
+    if (mUI->mActionC99->isChecked())
         mSettings->setValue(SETTINGS_STD_C, "C99");
-    if (mUI.mActionC11->isChecked())
+    if (mUI->mActionC11->isChecked())
         mSettings->setValue(SETTINGS_STD_C, "C11");
 
-    if (mUI.mActionCpp03->isChecked())
+    if (mUI->mActionCpp03->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++03");
-    if (mUI.mActionCpp11->isChecked())
+    if (mUI->mActionCpp11->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++11");
-    if (mUI.mActionCpp14->isChecked())
+    if (mUI->mActionCpp14->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++14");
-    if (mUI.mActionCpp17->isChecked())
+    if (mUI->mActionCpp17->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++17");
-    if (mUI.mActionCpp20->isChecked())
+    if (mUI->mActionCpp20->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++20");
+    //if (mUI.mActionCpp23->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_CPP, "C++23");
 
     // Main window settings
-    mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI.mToolBarMain->isVisible());
-    mSettings->setValue(SETTINGS_TOOLBARS_VIEW_SHOW, mUI.mToolBarView->isVisible());
-    mSettings->setValue(SETTINGS_TOOLBARS_FILTER_SHOW, mUI.mToolBarFilter->isVisible());
+    mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI->mToolBarMain->isVisible());
+    mSettings->setValue(SETTINGS_TOOLBARS_VIEW_SHOW, mUI->mToolBarView->isVisible());
+    mSettings->setValue(SETTINGS_TOOLBARS_FILTER_SHOW, mUI->mToolBarFilter->isVisible());
 
-    if (mUI.mActionEnforceCpp->isChecked())
+    if (mUI->mActionEnforceCpp->isChecked())
         mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::CPP);
-    else if (mUI.mActionEnforceC->isChecked())
+    else if (mUI->mActionEnforceC->isChecked())
         mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::C);
     else
         mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::None);
@@ -399,7 +455,7 @@ void MainWindow::saveSettings() const
 
     mSettings->setValue(SETTINGS_OPEN_PROJECT, mProjectFile ? mProjectFile->getFilename() : QString());
 
-    mUI.mResults->saveSettings(mSettings);
+    mUI->mResults->saveSettings(mSettings);
 }
 
 void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, const bool checkConfiguration)
@@ -409,23 +465,24 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     mIsLogfileLoaded = false;
     if (mProjectFile) {
         std::vector<std::string> v;
-        foreach (const QString &i, mProjectFile->getExcludedPaths()) {
-            v.push_back(i.toStdString());
-        }
+        const QStringList excluded = mProjectFile->getExcludedPaths();
+        std::transform(excluded.begin(), excluded.end(), std::back_inserter(v), [](const QString& e) {
+            return e.toStdString();
+        });
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             p.selectOneVsConfig(platform);
         }
     } else {
         enableProjectActions(false);
     }
 
-    mUI.mResults->clear(true);
+    mUI->mResults->clear(true);
     mThread->clearFiles();
 
-    mUI.mResults->checkingStarted(p.fileSettings.size());
+    mUI->mResults->checkingStarted(p.fileSettings.size());
 
     QDir inf(mCurrentDirectory);
     const QString checkPath = inf.canonicalPath();
@@ -433,7 +490,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
 
     checkLockDownUI(); // lock UI while checking
 
-    mUI.mResults->setCheckDirectory(checkPath);
+    mUI->mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
     checkSettings.force = false;
     checkSettings.checkLibrary = checkLibrary;
@@ -476,7 +533,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     }
     QStringList fileNames = pathList.getFileList();
 
-    mUI.mResults->clear(true);
+    mUI->mResults->clear(true);
     mThread->clearFiles();
 
     if (fileNames.isEmpty()) {
@@ -489,7 +546,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
         return;
     }
 
-    mUI.mResults->checkingStarted(fileNames.count());
+    mUI->mResults->checkingStarted(fileNames.count());
 
     mThread->setFiles(fileNames);
     if (mProjectFile && !checkConfiguration)
@@ -501,12 +558,10 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
 
     checkLockDownUI(); // lock UI while checking
 
-    mUI.mResults->setCheckDirectory(checkPath);
+    mUI->mResults->setCheckDirectory(checkPath);
     Settings checkSettings = getCppcheckSettings();
     checkSettings.checkLibrary = checkLibrary;
     checkSettings.checkConfiguration = checkConfiguration;
-
-    checkSettings.loadCppcheckCfg(QCoreApplication::applicationFilePath().toStdString());
 
     if (mProjectFile)
         qDebug() << "Checking project file" << mProjectFile->getFilename();
@@ -514,8 +569,9 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (!checkSettings.buildDir.empty()) {
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        for (const QString& s: fileNames)
-            sourcefiles.push_back(s.toStdString());
+        std::transform(fileNames.begin(), fileNames.end(), std::back_inserter(sourcefiles), [](const QString& s) {
+            return s.toStdString();
+        });
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
     }
 
@@ -529,13 +585,13 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     ThreadResult result;
     result.setFiles(QStringList(filename));
     connect(&result, SIGNAL(progress(int,const QString&)),
-            mUI.mResults, SLOT(progress(int,const QString&)));
+            mUI->mResults, SLOT(progress(int,const QString&)));
     connect(&result, SIGNAL(error(const ErrorItem&)),
-            mUI.mResults, SLOT(error(const ErrorItem&)));
+            mUI->mResults, SLOT(error(const ErrorItem&)));
     connect(&result, SIGNAL(log(const QString&)),
-            mUI.mResults, SLOT(log(const QString&)));
+            mUI->mResults, SLOT(log(const QString&)));
     connect(&result, SIGNAL(debugError(const ErrorItem&)),
-            mUI.mResults, SLOT(debugError(const ErrorItem&)));
+            mUI->mResults, SLOT(debugError(const ErrorItem&)));
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true, nullptr);
@@ -544,13 +600,13 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     // Check
     checkLockDownUI();
     clearResults();
-    mUI.mResults->checkingStarted(1);
+    mUI->mResults->checkingStarted(1);
     cppcheck.check(filename.toStdString(), code.toStdString());
     analysisDone();
 
     // Expand results
-    if (mUI.mResults->hasVisibleResults())
-        mUI.mResults->expandAllResults();
+    if (mUI->mResults->hasVisibleResults())
+        mUI->mResults->expandAllResults();
 }
 
 QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
@@ -591,7 +647,7 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
             mCurrentDirectory = inf.absolutePath();
         }
         formatAndSetTitle();
-    } else if (mode == QFileDialog::DirectoryOnly) {
+    } else if (mode == QFileDialog::Directory) {
         QString dir = QFileDialog::getExistingDirectory(this,
                                                         tr("Select directory to analyze"),
                                                         getPath(SETTINGS_LAST_CHECK_PATH));
@@ -607,33 +663,6 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
     setPath(SETTINGS_LAST_CHECK_PATH, mCurrentDirectory);
 
     return selected;
-}
-
-void MainWindow::updateFunctionContractsTab()
-{
-    QStringList addedContracts;
-    if (mProjectFile) {
-        for (const auto& it: mProjectFile->getFunctionContracts()) {
-            addedContracts << QString::fromStdString(it.first);
-        }
-    }
-    mUI.mResults->setAddedFunctionContracts(addedContracts);
-}
-
-void MainWindow::updateVariableContractsTab()
-{
-    QStringList added;
-    if (mProjectFile) {
-        for (auto vc: mProjectFile->getVariableContracts()) {
-            QString line = vc.first;
-            if (!vc.second.minValue.empty())
-                line += " min:" + QString::fromStdString(vc.second.minValue);
-            if (!vc.second.maxValue.empty())
-                line += " max:" + QString::fromStdString(vc.second.maxValue);
-            added << line;
-        }
-    }
-    mUI.mResults->setAddedVariableContracts(added);
 }
 
 void MainWindow::analyzeFiles()
@@ -675,7 +704,7 @@ void MainWindow::analyzeFiles()
 
 void MainWindow::analyzeDirectory()
 {
-    QStringList dir = selectFilesToAnalyze(QFileDialog::DirectoryOnly);
+    QStringList dir = selectFilesToAnalyze(QFileDialog::Directory);
     if (dir.isEmpty())
         return;
 
@@ -697,7 +726,7 @@ void MainWindow::analyzeDirectory()
             msgBox.addButton(QMessageBox::Yes);
             msgBox.addButton(QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::Yes);
-            int dlgResult = msgBox.exec();
+            const int dlgResult = msgBox.exec();
             if (dlgResult == QMessageBox::Yes) {
                 QString path = checkDir.canonicalPath();
                 if (!path.endsWith("/"))
@@ -720,7 +749,7 @@ void MainWindow::analyzeDirectory()
             msgBox.addButton(QMessageBox::Yes);
             msgBox.addButton(QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::Yes);
-            int dlgResult = msgBox.exec();
+            const int dlgResult = msgBox.exec();
             if (dlgResult == QMessageBox::Yes) {
                 doAnalyzeFiles(dir);
             }
@@ -732,8 +761,7 @@ void MainWindow::analyzeDirectory()
 
 void MainWindow::addIncludeDirs(const QStringList &includeDirs, Settings &result)
 {
-    QString dir;
-    foreach (dir, includeDirs) {
+    for (const QString& dir : includeDirs) {
         QString incdir;
         if (!QDir::isAbsolutePath(dir))
             incdir = mCurrentDirectory + "/";
@@ -853,15 +881,10 @@ Settings MainWindow::getCppcheckSettings()
     result.exename = QCoreApplication::applicationFilePath().toStdString();
 
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
-    bool posix = true;
-    if (result.posix())
-        posix = tryLoadLibrary(&result.library, "posix.cfg");
-    bool windows = true;
-    if (result.isWindowsPlatform())
-        windows = tryLoadLibrary(&result.library, "windows.cfg");
+    if (!std)
+        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg("std.cfg"));
 
-    if (!std || !posix || !windows)
-        QMessageBox::critical(this, tr("Error"), tr("Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=<directory> at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.").arg(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg"));
+    result.loadCppcheckCfg();
 
     // If project file loaded, read settings from it
     if (mProjectFile) {
@@ -869,33 +892,26 @@ Settings MainWindow::getCppcheckSettings()
         addIncludeDirs(dirs, result);
 
         const QStringList defines = mProjectFile->getDefines();
-        foreach (QString define, defines) {
+        for (const QString& define : defines) {
             if (!result.userDefines.empty())
                 result.userDefines += ";";
             result.userDefines += define.toStdString();
         }
 
         result.clang = mProjectFile->clangParser;
-        result.bugHunting = mProjectFile->bugHunting;
-        result.bugHuntingReport = " ";
-
-        result.functionContracts = mProjectFile->getFunctionContracts();
-
-        for (const auto& vc: mProjectFile->getVariableContracts())
-            result.variableContracts[vc.first.toStdString()] = vc.second;
 
         const QStringList undefines = mProjectFile->getUndefines();
-        foreach (QString undefine, undefines)
-        result.userUndefs.insert(undefine.toStdString());
+        for (const QString& undefine : undefines)
+            result.userUndefs.insert(undefine.toStdString());
 
         const QStringList libraries = mProjectFile->getLibraries();
-        foreach (QString library, libraries) {
+        for (const QString& library : libraries) {
             result.libraries.emplace_back(library.toStdString());
             const QString filename = library + ".cfg";
             tryLoadLibrary(&result.library, filename);
         }
 
-        foreach (const Suppressions::Suppression &suppression, mProjectFile->getSuppressions()) {
+        for (const Suppressions::Suppression &suppression : mProjectFile->getSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 
@@ -907,7 +923,7 @@ Settings MainWindow::getCppcheckSettings()
         if (!mProjectFile->getImportProject().isEmpty())
             result.checkAllConfigurations = false;
 
-        const QString &buildDir = mProjectFile->getBuildDir();
+        const QString &buildDir = fromNativePath(mProjectFile->getBuildDir());
         if (!buildDir.isEmpty()) {
             if (QDir(buildDir).isAbsolute()) {
                 result.buildDir = buildDir.toStdString();
@@ -939,12 +955,12 @@ Settings MainWindow::getCppcheckSettings()
         result.safeChecks.externalFunctions = mProjectFile->safeChecks.externalFunctions;
         result.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
         result.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
-        foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
-        result.checkUnknownFunctionReturn.insert(s.toStdString());
+        for (const QString& s : mProjectFile->getCheckUnknownFunctionReturn())
+            result.checkUnknownFunctionReturn.insert(s.toStdString());
 
         QString filesDir(getDataDir());
-        const QString pythonCmd = mSettings->value(SETTINGS_PYTHON_PATH).toString();
-        foreach (QString addon, mProjectFile->getAddons()) {
+        const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
+        for (const QString& addon : mProjectFile->getAddons()) {
             QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
             if (addonFilePath.isEmpty())
                 continue;
@@ -955,7 +971,7 @@ Settings MainWindow::getCppcheckSettings()
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())
                 json += ", \"python\":\"" + pythonCmd + "\"";
-            QString misraFile = mSettings->value(SETTINGS_MISRA_FILE).toString();
+            QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
             if (addon == "misra" && !misraFile.isEmpty()) {
                 QString arg;
                 if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
@@ -965,7 +981,21 @@ Settings MainWindow::getCppcheckSettings()
                 json += ", \"args\":[\"" + arg + "\"]";
             }
             json += " }";
-            result.addons.push_back(json.toStdString());
+            result.addons.emplace(json.toStdString());
+        }
+
+        if (isCppcheckPremium()) {
+            QString premiumArgs;
+            if (mProjectFile->getBughunting())
+                premiumArgs += " --bughunting";
+            if (mProjectFile->getCertIntPrecision() > 0)
+                premiumArgs += " --cert-c-int-precision=" + QString::number(mProjectFile->getCertIntPrecision());
+            if (mProjectFile->getAddons().contains("misra"))
+                premiumArgs += " --misra-c-2012";
+            for (const QString& c: mProjectFile->getCodingStandards()) {
+                premiumArgs += " --" + c;
+            }
+            result.premiumArgs = premiumArgs.mid(1).toStdString();
         }
     }
 
@@ -1016,33 +1046,33 @@ void MainWindow::analysisDone()
         return;
     }
 
-    mUI.mResults->checkingFinished();
+    mUI->mResults->checkingFinished();
     enableCheckButtons(true);
-    mUI.mActionSettings->setEnabled(true);
-    mUI.mActionOpenXML->setEnabled(true);
+    mUI->mActionSettings->setEnabled(true);
+    mUI->mActionOpenXML->setEnabled(true);
     if (mProjectFile) {
         enableProjectActions(true);
     } else if (mIsLogfileLoaded) {
-        mUI.mActionReanalyzeModified->setEnabled(false);
-        mUI.mActionReanalyzeAll->setEnabled(false);
+        mUI->mActionReanalyzeModified->setEnabled(false);
+        mUI->mActionReanalyzeAll->setEnabled(false);
     }
     enableProjectOpenActions(true);
     mPlatformActions->setEnabled(true);
     mCStandardActions->setEnabled(true);
     mCppStandardActions->setEnabled(true);
     mSelectLanguageActions->setEnabled(true);
-    mUI.mActionPosix->setEnabled(true);
+    mUI->mActionPosix->setEnabled(true);
     if (mScratchPad)
         mScratchPad->setEnabled(true);
-    mUI.mActionViewStats->setEnabled(true);
+    mUI->mActionViewStats->setEnabled(true);
 
     if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
         const QString prjpath = QFileInfo(mProjectFile->getFilename()).absolutePath();
         const QString buildDir = prjpath + '/' + mProjectFile->getBuildDir();
         if (QDir(buildDir).exists()) {
-            mUI.mResults->saveStatistics(buildDir + "/statistics.txt");
-            mUI.mResults->updateFromOldReport(buildDir + "/lastResults.xml");
-            mUI.mResults->save(buildDir + "/lastResults.xml", Report::XMLV2);
+            mUI->mResults->saveStatistics(buildDir + "/statistics.txt");
+            mUI->mResults->updateFromOldReport(buildDir + "/lastResults.xml");
+            mUI->mResults->save(buildDir + "/lastResults.xml", Report::XMLV2);
         }
     }
 
@@ -1062,15 +1092,15 @@ void MainWindow::analysisDone()
 void MainWindow::checkLockDownUI()
 {
     enableCheckButtons(false);
-    mUI.mActionSettings->setEnabled(false);
-    mUI.mActionOpenXML->setEnabled(false);
+    mUI->mActionSettings->setEnabled(false);
+    mUI->mActionOpenXML->setEnabled(false);
     enableProjectActions(false);
     enableProjectOpenActions(false);
     mPlatformActions->setEnabled(false);
     mCStandardActions->setEnabled(false);
     mCppStandardActions->setEnabled(false);
     mSelectLanguageActions->setEnabled(false);
-    mUI.mActionPosix->setEnabled(false);
+    mUI->mActionPosix->setEnabled(false);
     if (mScratchPad)
         mScratchPad->setEnabled(false);
 
@@ -1082,17 +1112,17 @@ void MainWindow::checkLockDownUI()
 
 void MainWindow::programSettings()
 {
-    SettingsDialog dialog(mApplications, mTranslation, this);
+    SettingsDialog dialog(mApplications, mTranslation, isCppcheckPremium(), this);
     if (dialog.exec() == QDialog::Accepted) {
         dialog.saveSettingValues();
         mSettings->sync();
-        mUI.mResults->updateSettings(dialog.showFullPath(),
-                                     dialog.saveFullPath(),
-                                     dialog.saveAllErrors(),
-                                     dialog.showNoErrorsMessage(),
-                                     dialog.showErrorId(),
-                                     dialog.showInconclusive());
-        mUI.mResults->updateStyleSetting(mSettings);
+        mUI->mResults->updateSettings(dialog.showFullPath(),
+                                      dialog.saveFullPath(),
+                                      dialog.saveAllErrors(),
+                                      dialog.showNoErrorsMessage(),
+                                      dialog.showErrorId(),
+                                      dialog.showInconclusive());
+        mUI->mResults->updateStyleSetting(mSettings);
         const QString newLang = mSettings->value(SETTINGS_LANGUAGE, "en").toString();
         setLanguage(newLang);
     }
@@ -1131,18 +1161,18 @@ void MainWindow::reAnalyzeSelected(QStringList files)
         return;
 
     // Clear details, statistics and progress
-    mUI.mResults->clear(false);
+    mUI->mResults->clear(false);
     for (int i = 0; i < files.size(); ++i)
-        mUI.mResults->clearRecheckFile(files[i]);
+        mUI->mResults->clearRecheckFile(files[i]);
 
-    mCurrentDirectory = mUI.mResults->getCheckDirectory();
+    mCurrentDirectory = mUI->mResults->getCheckDirectory();
     FileList pathList;
     pathList.addPathList(files);
     if (mProjectFile)
         pathList.addExcludeList(mProjectFile->getExcludedPaths());
     QStringList fileNames = pathList.getFileList();
     checkLockDownUI(); // lock UI while checking
-    mUI.mResults->checkingStarted(fileNames.size());
+    mUI->mResults->checkingStarted(fileNames.size());
     mThread->setCheckFiles(fileNames);
 
     // Saving last check start time, otherwise unchecked modified files will not be
@@ -1160,14 +1190,14 @@ void MainWindow::reAnalyze(bool all)
         return;
 
     // Clear details, statistics and progress
-    mUI.mResults->clear(all);
+    mUI->mResults->clear(all);
 
     // Clear results for changed files
     for (int i = 0; i < files.size(); ++i)
-        mUI.mResults->clear(files[i]);
+        mUI->mResults->clear(files[i]);
 
     checkLockDownUI(); // lock UI while checking
-    mUI.mResults->checkingStarted(files.size());
+    mUI->mResults->checkingStarted(files.size());
 
     if (mProjectFile)
         qDebug() << "Rechecking project file" << mProjectFile->getFilename();
@@ -1181,18 +1211,21 @@ void MainWindow::clearResults()
     if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
         QDir dir(QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir());
         for (const QString& f: dir.entryList(QDir::Files)) {
-            if (!f.endsWith("files.txt") && !QRegExp(".*.s[0-9]+$").exactMatch(f))
-                dir.remove(f);
+            if (!f.endsWith("files.txt")) {
+                static const QRegularExpression rx("^.*.s[0-9]+$");
+                if (!rx.match(f).hasMatch())
+                    dir.remove(f);
+            }
         }
     }
-    mUI.mResults->clear(true);
-    Q_ASSERT(false == mUI.mResults->hasResults());
+    mUI->mResults->clear(true);
+    Q_ASSERT(false == mUI->mResults->hasResults());
     enableResultsButtons();
 }
 
 void MainWindow::openResults()
 {
-    if (mUI.mResults->hasResults()) {
+    if (mUI->mResults->hasResults()) {
         QMessageBox msgBox(this);
         msgBox.setWindowTitle(tr("Cppcheck"));
         const QString msg(tr("Current results will be cleared.\n\n"
@@ -1203,7 +1236,7 @@ void MainWindow::openResults()
         msgBox.addButton(QMessageBox::Yes);
         msgBox.addButton(QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::Yes);
-        int dlgResult = msgBox.exec();
+        const int dlgResult = msgBox.exec();
         if (dlgResult == QMessageBox::No) {
             return;
         }
@@ -1229,10 +1262,10 @@ void MainWindow::loadResults(const QString &selectedFile)
     if (mProjectFile)
         closeProjectFile();
     mIsLogfileLoaded = true;
-    mUI.mResults->clear(true);
-    mUI.mActionReanalyzeModified->setEnabled(false);
-    mUI.mActionReanalyzeAll->setEnabled(false);
-    mUI.mResults->readErrorsXml(selectedFile);
+    mUI->mResults->clear(true);
+    mUI->mActionReanalyzeModified->setEnabled(false);
+    mUI->mActionReanalyzeAll->setEnabled(false);
+    mUI->mResults->readErrorsXml(selectedFile);
     setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     formatAndSetTitle(selectedFile);
 }
@@ -1240,62 +1273,62 @@ void MainWindow::loadResults(const QString &selectedFile)
 void MainWindow::loadResults(const QString &selectedFile, const QString &sourceDirectory)
 {
     loadResults(selectedFile);
-    mUI.mResults->setCheckDirectory(sourceDirectory);
+    mUI->mResults->setCheckDirectory(sourceDirectory);
 }
 
 void MainWindow::enableCheckButtons(bool enable)
 {
-    mUI.mActionStop->setEnabled(!enable);
-    mUI.mActionAnalyzeFiles->setEnabled(enable);
+    mUI->mActionStop->setEnabled(!enable);
+    mUI->mActionAnalyzeFiles->setEnabled(enable);
 
     if (mProjectFile) {
-        mUI.mActionReanalyzeModified->setEnabled(false);
-        mUI.mActionReanalyzeAll->setEnabled(enable);
+        mUI->mActionReanalyzeModified->setEnabled(false);
+        mUI->mActionReanalyzeAll->setEnabled(enable);
     } else if (!enable || mThread->hasPreviousFiles()) {
-        mUI.mActionReanalyzeModified->setEnabled(enable);
-        mUI.mActionReanalyzeAll->setEnabled(enable);
+        mUI->mActionReanalyzeModified->setEnabled(enable);
+        mUI->mActionReanalyzeAll->setEnabled(enable);
     }
 
-    mUI.mActionAnalyzeDirectory->setEnabled(enable);
+    mUI->mActionAnalyzeDirectory->setEnabled(enable);
 }
 
 void MainWindow::enableResultsButtons()
 {
-    bool enabled = mUI.mResults->hasResults();
-    mUI.mActionClearResults->setEnabled(enabled);
-    mUI.mActionSave->setEnabled(enabled);
-    mUI.mActionPrint->setEnabled(enabled);
-    mUI.mActionPrintPreview->setEnabled(enabled);
+    const bool enabled = mUI->mResults->hasResults();
+    mUI->mActionClearResults->setEnabled(enabled);
+    mUI->mActionSave->setEnabled(enabled);
+    mUI->mActionPrint->setEnabled(enabled);
+    mUI->mActionPrintPreview->setEnabled(enabled);
 }
 
 void MainWindow::showStyle(bool checked)
 {
-    mUI.mResults->showResults(ShowTypes::ShowStyle, checked);
+    mUI->mResults->showResults(ShowTypes::ShowStyle, checked);
 }
 
 void MainWindow::showErrors(bool checked)
 {
-    mUI.mResults->showResults(ShowTypes::ShowErrors, checked);
+    mUI->mResults->showResults(ShowTypes::ShowErrors, checked);
 }
 
 void MainWindow::showWarnings(bool checked)
 {
-    mUI.mResults->showResults(ShowTypes::ShowWarnings, checked);
+    mUI->mResults->showResults(ShowTypes::ShowWarnings, checked);
 }
 
 void MainWindow::showPortability(bool checked)
 {
-    mUI.mResults->showResults(ShowTypes::ShowPortability, checked);
+    mUI->mResults->showResults(ShowTypes::ShowPortability, checked);
 }
 
 void MainWindow::showPerformance(bool checked)
 {
-    mUI.mResults->showResults(ShowTypes::ShowPerformance, checked);
+    mUI->mResults->showResults(ShowTypes::ShowPerformance, checked);
 }
 
 void MainWindow::showInformation(bool checked)
 {
-    mUI.mResults->showResults(ShowTypes::ShowInformation, checked);
+    mUI->mResults->showResults(ShowTypes::ShowInformation, checked);
 }
 
 void MainWindow::checkAll()
@@ -1325,7 +1358,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
                         this);
 
         msg.setDefaultButton(QMessageBox::No);
-        int rv = msg.exec();
+        const int rv = msg.exec();
         if (rv == QMessageBox::Yes) {
             // This isn't really very clean way to close threads but since the app is
             // exiting it doesn't matter.
@@ -1339,24 +1372,34 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::toggleAllChecked(bool checked)
 {
-    mUI.mActionShowStyle->setChecked(checked);
+    mUI->mActionShowStyle->setChecked(checked);
     showStyle(checked);
-    mUI.mActionShowErrors->setChecked(checked);
+    mUI->mActionShowErrors->setChecked(checked);
     showErrors(checked);
-    mUI.mActionShowWarnings->setChecked(checked);
+    mUI->mActionShowWarnings->setChecked(checked);
     showWarnings(checked);
-    mUI.mActionShowPortability->setChecked(checked);
+    mUI->mActionShowPortability->setChecked(checked);
     showPortability(checked);
-    mUI.mActionShowPerformance->setChecked(checked);
+    mUI->mActionShowPerformance->setChecked(checked);
     showPerformance(checked);
-    mUI.mActionShowInformation->setChecked(checked);
+    mUI->mActionShowInformation->setChecked(checked);
     showInformation(checked);
 }
 
 void MainWindow::about()
 {
-    AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
-    dlg->exec();
+    if (!mCppcheckCfgAbout.isEmpty()) {
+        QMessageBox msg(QMessageBox::Information,
+                        tr("About"),
+                        mCppcheckCfgAbout,
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
+    }
+    else {
+        AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
+        dlg->exec();
+    }
 }
 
 void MainWindow::showLicense()
@@ -1411,7 +1454,7 @@ void MainWindow::save()
                 type = Report::CSV;
         }
 
-        mUI.mResults->save(selectedFile, type);
+        mUI->mResults->save(selectedFile, type);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
     }
 }
@@ -1421,17 +1464,17 @@ void MainWindow::resultsAdded()
 
 void MainWindow::toggleMainToolBar()
 {
-    mUI.mToolBarMain->setVisible(mUI.mActionToolBarMain->isChecked());
+    mUI->mToolBarMain->setVisible(mUI->mActionToolBarMain->isChecked());
 }
 
 void MainWindow::toggleViewToolBar()
 {
-    mUI.mToolBarView->setVisible(mUI.mActionToolBarView->isChecked());
+    mUI->mToolBarView->setVisible(mUI->mActionToolBarView->isChecked());
 }
 
 void MainWindow::toggleFilterToolBar()
 {
-    mUI.mToolBarFilter->setVisible(mUI.mActionToolBarFilter->isChecked());
+    mUI->mToolBarFilter->setVisible(mUI->mActionToolBarFilter->isChecked());
     mLineEditFilter->clear(); // Clearing the filter also disables filtering
 }
 
@@ -1443,6 +1486,9 @@ void MainWindow::formatAndSetTitle(const QString &text)
     if (!extraVersion.isEmpty()) {
         nameWithVersion += " (" + extraVersion + ")";
     }
+
+    if (!mCppcheckCfgProductName.isEmpty())
+        nameWithVersion = mCppcheckCfgProductName;
 
     QString title;
     if (text.isEmpty())
@@ -1460,8 +1506,8 @@ void MainWindow::setLanguage(const QString &code)
 
     if (mTranslation->setLanguage(code)) {
         //Translate everything that is visible here
-        mUI.retranslateUi(this);
-        mUI.mResults->translate();
+        mUI->retranslateUi(this);
+        mUI->mResults->translate();
         mLineEditFilter->setPlaceholderText(QCoreApplication::translate("MainWindow", "Quick Filter:"));
         if (mProjectFile)
             formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
@@ -1472,18 +1518,18 @@ void MainWindow::setLanguage(const QString &code)
 
 void MainWindow::aboutToShowViewMenu()
 {
-    mUI.mActionToolBarMain->setChecked(mUI.mToolBarMain->isVisible());
-    mUI.mActionToolBarView->setChecked(mUI.mToolBarView->isVisible());
-    mUI.mActionToolBarFilter->setChecked(mUI.mToolBarFilter->isVisible());
+    mUI->mActionToolBarMain->setChecked(mUI->mToolBarMain->isVisible());
+    mUI->mActionToolBarView->setChecked(mUI->mToolBarView->isVisible());
+    mUI->mActionToolBarFilter->setChecked(mUI->mToolBarFilter->isVisible());
 }
 
 void MainWindow::stopAnalysis()
 {
     mThread->stop();
-    mUI.mResults->disableProgressbar();
+    mUI->mResults->disableProgressbar();
     const QString &lastResults = getLastResults();
     if (!lastResults.isEmpty()) {
-        mUI.mResults->updateFromOldReport(lastResults);
+        mUI->mResults->updateFromOldReport(lastResults);
     }
 }
 
@@ -1534,14 +1580,11 @@ void MainWindow::loadProjectFile(const QString &filePath)
     addProjectMRU(filePath);
 
     mIsLogfileLoaded = false;
-    mUI.mActionCloseProjectFile->setEnabled(true);
-    mUI.mActionEditProjectFile->setEnabled(true);
+    mUI->mActionCloseProjectFile->setEnabled(true);
+    mUI->mActionEditProjectFile->setEnabled(true);
     delete mProjectFile;
     mProjectFile = new ProjectFile(filePath, this);
     mProjectFile->setActiveProject();
-    mUI.mResults->showContracts(mProjectFile->bugHunting);
-    updateFunctionContractsTab();
-    updateVariableContractsTab();
     if (!loadLastResults())
         analyzeProject(mProjectFile);
 }
@@ -1560,9 +1603,9 @@ bool MainWindow::loadLastResults()
         return false;
     if (!QFileInfo(lastResults).exists())
         return false;
-    mUI.mResults->readErrorsXml(lastResults);
-    mUI.mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
-    mUI.mActionViewStats->setEnabled(true);
+    mUI->mResults->readErrorsXml(lastResults);
+    mUI->mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
+    mUI->mActionViewStats->setEnabled(true);
     enableResultsButtons();
     return true;
 }
@@ -1672,26 +1715,20 @@ void MainWindow::newProjectFile()
     mProjectFile->setFilename(filepath);
     mProjectFile->setBuildDir(filename.left(filename.indexOf(".")) + "-cppcheck-build-dir");
 
-    ProjectFileDialog dlg(mProjectFile, this);
+    ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
     if (dlg.exec() == QDialog::Accepted) {
         addProjectMRU(filepath);
-        mUI.mResults->showContracts(mProjectFile->bugHunting);
         analyzeProject(mProjectFile);
     } else {
         closeProjectFile();
     }
-
-    updateFunctionContractsTab();
-    updateVariableContractsTab();
 }
 
 void MainWindow::closeProjectFile()
 {
     delete mProjectFile;
     mProjectFile = nullptr;
-    mUI.mResults->clear(true);
-    mUI.mResults->clearContracts();
-    mUI.mResults->showContracts(false);
+    mUI->mResults->clear(true);
     enableProjectActions(false);
     enableProjectOpenActions(true);
     formatAndSetTitle();
@@ -1709,10 +1746,9 @@ void MainWindow::editProjectFile()
         return;
     }
 
-    ProjectFileDialog dlg(mProjectFile, this);
+    ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
     if (dlg.exec() == QDialog::Accepted) {
         mProjectFile->write();
-        mUI.mResults->showContracts(mProjectFile->bugHunting);
         analyzeProject(mProjectFile);
     }
 }
@@ -1726,7 +1762,7 @@ void MainWindow::showStatistics()
     statsDialog.setPathSelected(mCurrentDirectory);
     statsDialog.setNumberOfFilesScanned(mThread->getPreviousFilesCount());
     statsDialog.setScanDuration(mThread->getPreviousScanDuration() / 1000.0);
-    statsDialog.setStatistics(mUI.mResults->getStatistics());
+    statsDialog.setStatistics(mUI->mResults->getStatistics());
 
     statsDialog.exec();
 }
@@ -1739,21 +1775,21 @@ void MainWindow::showLibraryEditor()
 
 void MainWindow::filterResults()
 {
-    mUI.mResults->filterResults(mLineEditFilter->text());
+    mUI->mResults->filterResults(mLineEditFilter->text());
 }
 
 void MainWindow::enableProjectActions(bool enable)
 {
-    mUI.mActionCloseProjectFile->setEnabled(enable);
-    mUI.mActionEditProjectFile->setEnabled(enable);
-    mUI.mActionCheckLibrary->setEnabled(enable);
-    mUI.mActionCheckConfiguration->setEnabled(enable);
+    mUI->mActionCloseProjectFile->setEnabled(enable);
+    mUI->mActionEditProjectFile->setEnabled(enable);
+    mUI->mActionCheckLibrary->setEnabled(enable);
+    mUI->mActionCheckConfiguration->setEnabled(enable);
 }
 
 void MainWindow::enableProjectOpenActions(bool enable)
 {
-    mUI.mActionNewProjectFile->setEnabled(enable);
-    mUI.mActionOpenProjectFile->setEnabled(enable);
+    mUI->mActionNewProjectFile->setEnabled(enable);
+    mUI->mActionOpenProjectFile->setEnabled(enable);
 }
 
 void MainWindow::openRecentProject()
@@ -1782,7 +1818,7 @@ void MainWindow::openRecentProject()
                         this);
 
         msg.setDefaultButton(QMessageBox::No);
-        int rv = msg.exec();
+        const int rv = msg.exec();
         if (rv == QMessageBox::Yes) {
             removeProjectMRU(project);
         }
@@ -1793,7 +1829,7 @@ void MainWindow::updateMRUMenuItems()
 {
     for (QAction* recentProjectAct : mRecentProjectActs) {
         if (recentProjectAct != nullptr)
-            mUI.mMenuFile->removeAction(recentProjectAct);
+            mUI->mMenuFile->removeAction(recentProjectAct);
     }
 
     QStringList projects = mSettings->value(SETTINGS_MRU_PROJECTS).toStringList();
@@ -1817,11 +1853,11 @@ void MainWindow::updateMRUMenuItems()
         mRecentProjectActs[i]->setText(text);
         mRecentProjectActs[i]->setData(projects[i]);
         mRecentProjectActs[i]->setVisible(true);
-        mUI.mMenuFile->insertAction(mUI.mActionProjectMRU, mRecentProjectActs[i]);
+        mUI->mMenuFile->insertAction(mUI->mActionProjectMRU, mRecentProjectActs[i]);
     }
 
     if (numRecentProjects > 1)
-        mRecentProjectActs[numRecentProjects] = mUI.mMenuFile->insertSeparator(mUI.mActionProjectMRU);
+        mRecentProjectActs[numRecentProjects] = mUI->mMenuFile->insertSeparator(mUI->mActionProjectMRU);
 }
 
 void MainWindow::addProjectMRU(const QString &project)
@@ -1861,7 +1897,7 @@ void MainWindow::suppressIds(QStringList ids)
     ids.removeDuplicates();
 
     QList<Suppressions::Suppression> suppressions = mProjectFile->getSuppressions();
-    foreach (QString id, ids) {
+    for (const QString& id : ids) {
         // Remove all matching suppressions
         std::string id2 = id.toStdString();
         for (int i = 0; i < suppressions.size();) {
@@ -1880,54 +1916,67 @@ void MainWindow::suppressIds(QStringList ids)
     mProjectFile->write();
 }
 
-void MainWindow::editFunctionContract(QString function)
-{
-    if (!mProjectFile)
+static int getVersion(const QString& nameWithVersion) {
+    int ret = 0;
+    int v = 0;
+    int dot = 0;
+    for (const auto c: nameWithVersion) {
+        if (c == '\n' || c == '\r')
+            break;
+        else if (c == ' ')
+            dot = ret = v = 0;
+        else if (c == '.') {
+            ++dot;
+            ret = ret * 1000 + v;
+            v = 0;
+        } else if (c >= '0' && c <= '9')
+            v = v * 10 + (c.toLatin1() - '0');
+    }
+    ret = ret * 1000 + v;
+    while (dot < 2) {
+        ++dot;
+        ret *= 1000;
+    }
+    return ret;
+}
+
+void MainWindow::replyFinished(QNetworkReply *reply) {
+    reply->deleteLater();
+    if (reply->error()) {
+        mUI->mLayoutInformation->deleteLater();
+        qDebug() << "Response: ERROR";
         return;
-
-    QString expects;
-    const auto it = mProjectFile->getFunctionContracts().find(function.toStdString());
-    if (it != mProjectFile->getFunctionContracts().end())
-        expects = QString::fromStdString(it->second);
-
-    FunctionContractDialog dlg(nullptr,
-                               function,
-                               expects);
-
-    if (dlg.exec() == QDialog::Accepted) {
-        mProjectFile->setFunctionContract(function, dlg.getExpects());
-        mProjectFile->write();
     }
-
-    updateFunctionContractsTab();
-}
-
-void MainWindow::editVariableContract(QString var)
-{
-    if (!mProjectFile)
-        return;
-
-    VariableContractsDialog dlg(nullptr, var);
-    if (dlg.exec() == QDialog::Accepted) {
-        mProjectFile->setVariableContracts(dlg.getVarname(), dlg.getMin(), dlg.getMax());
-        mProjectFile->write();
+    const QString str = reply->readAll();
+    qDebug() << "Response: " << str;
+    if (reply->url().fileName() == "version.txt") {
+        QString nameWithVersion = QString("Cppcheck %1").arg(CppCheck::version());
+        if (!mCppcheckCfgProductName.isEmpty())
+            nameWithVersion = mCppcheckCfgProductName;
+        const int appVersion = getVersion(nameWithVersion);
+        const int latestVersion = getVersion(str.trimmed());
+        if (appVersion < latestVersion) {
+            if (mSettings->value(SETTINGS_CHECK_VERSION, 0).toInt() != latestVersion) {
+                mUI->mButtonHideInformation->setVisible(true);
+                mUI->mLabelInformation->setVisible(true);
+                mUI->mLabelInformation->setText(tr("New version available: %1").arg(str.trimmed()));
+            }
+        }
     }
-
-    updateVariableContractsTab();
-}
-
-void MainWindow::deleteFunctionContract(const QString& function)
-{
-    if (mProjectFile) {
-        mProjectFile->deleteFunctionContract(function);
-        mProjectFile->write();
+    if (!mUI->mLabelInformation->isVisible()) {
+        mUI->mLayoutInformation->deleteLater();
     }
 }
 
-void MainWindow::deleteVariableContract(const QString& var)
-{
-    if (mProjectFile) {
-        mProjectFile->deleteVariableContract(var);
-        mProjectFile->write();
-    }
+void MainWindow::hideInformation() {
+    int version = getVersion(mUI->mLabelInformation->text());
+    mSettings->setValue(SETTINGS_CHECK_VERSION, version);
+    mUI->mLabelInformation->setVisible(false);
+    mUI->mButtonHideInformation->setVisible(false);
+    mUI->mLayoutInformation->deleteLater();
 }
+
+bool MainWindow::isCppcheckPremium() const {
+    return mCppcheckCfgProductName.startsWith("Cppcheck Premium ");
+}
+

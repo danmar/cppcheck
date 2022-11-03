@@ -19,15 +19,18 @@
 #ifndef PROJECTFILE_DIALOG_H
 #define PROJECTFILE_DIALOG_H
 
-#include "ui_projectfiledialog.h"
-
 #include "suppressions.h"
 
 #include <QDialog>
 #include <QString>
 #include <QStringList>
 
+class QModelIndex;
+class QObject;
 class QWidget;
+namespace Ui {
+    class ProjectFile;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -41,8 +44,8 @@ class ProjectFile;
 class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = nullptr);
-    virtual ~ProjectFileDialog();
+    explicit ProjectFileDialog(ProjectFile *projectFile, bool premium, QWidget *parent = nullptr);
+    ~ProjectFileDialog() override;
 
 private:
     void loadFromProjectFile(const ProjectFile *projectFile);
@@ -313,14 +316,17 @@ protected:
     int getSuppressionIndex(const QString &shortText) const;
 
 private:
-    QStringList getProjectConfigs(const QString &fileName);
+    static QStringList getProjectConfigs(const QString &fileName);
 
-    Ui::ProjectFile mUI;
+    Ui::ProjectFile *mUI;
 
     /**
      * @brief Projectfile path.
      */
     ProjectFile *mProjectFile;
+
+    /** Is this Cppcheck Premium? */
+    bool mPremium;
 
     QString getExistingDirectory(const QString &caption, bool trailingSlash);
 

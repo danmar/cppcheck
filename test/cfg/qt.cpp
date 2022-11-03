@@ -29,10 +29,10 @@ void QString1(QString s)
     }
 }
 
-int QString2()
+bool QString2()
 {
     QString s;
-    // FIXME cppcheck-suppress reademptycontainer
+    // cppcheck-suppress knownConditionTrueFalse
     return s.size();
 }
 
@@ -469,4 +469,21 @@ void nullPointer(int * pIntPtr)
         // cppcheck-suppress nullPointerRedundantCheck
         *pIntPtr = 3;
     }
+}
+
+namespace {
+    class C : public QObject {
+        Q_OBJECT
+    public:
+        explicit C(QObject* parent = nullptr) : QObject(parent) {}
+        void signal() {}
+    };
+    class D : public QObject {
+        Q_OBJECT
+    public:
+        D() {
+            connect(new C(this), &C::signal, this, &D::slot);
+        }
+        void slot() {};
+    };
 }

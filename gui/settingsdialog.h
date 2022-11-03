@@ -20,8 +20,6 @@
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
-#include "ui_settings.h"
-
 #include <QDialog>
 
 class QSettings;
@@ -29,6 +27,11 @@ class QWidget;
 class ApplicationList;
 class TranslationHandler;
 class CodeEditorStyle;
+class QCheckBox;
+class QObject;
+namespace Ui {
+    class Settings;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -42,9 +45,10 @@ class SettingsDialog : public QDialog {
 public:
     SettingsDialog(ApplicationList *list,
                    TranslationHandler *translator,
+                   bool premium,
                    QWidget *parent = nullptr);
     SettingsDialog(const SettingsDialog &) = delete;
-    virtual ~SettingsDialog();
+    ~SettingsDialog() override;
     SettingsDialog &operator=(const SettingsDialog &) = delete;
 
     /**
@@ -230,11 +234,13 @@ protected:
      * @brief Dialog from UI designer
      *
      */
-    Ui::Settings mUI;
+    Ui::Settings *mUI;
 private:
     void manageStyleControls();
 
     static const int mLangCodeRole = Qt::UserRole;
+
+    bool mPremium;
 };
 /// @}
 #endif // SETTINGSDIALOG_H

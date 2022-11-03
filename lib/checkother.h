@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "utils.h"
 
 #include <string>
 #include <vector>
@@ -88,7 +87,6 @@ public:
         checkOther.checkKnownArgument();
         checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
-        checkOther.checkPipeParameterSize();
         checkOther.checkRedundantCopy();
         checkOther.clarifyCalculation();
         checkOther.checkPassByReference();
@@ -191,9 +189,6 @@ public:
     /** @brief %Check that variadic function calls don't use NULL. If NULL is \#defined as 0 and the function expects a pointer, the behaviour is undefined. */
     void checkVarFuncNullUB();
 
-    /** @brief %Check that calling the POSIX pipe() system call is called with an integer array of size two. */
-    void checkPipeParameterSize();
-
     /** @brief %Check to avoid casting a return value to unsigned char and then back to integer type.  */
     void checkCastIntToCharAndBack();
 
@@ -235,7 +230,6 @@ private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);
-    void checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim);
     void clarifyCalculationError(const Token *tok, const std::string &op);
     void clarifyStatementError(const Token* tok);
     void cstyleCastError(const Token *tok);
@@ -257,15 +251,16 @@ private:
     void redundantBitwiseOperationInSwitchError(const Token *tok, const std::string &varname);
     void suspiciousCaseInSwitchError(const Token* tok, const std::string& operatorString);
     void selfAssignmentError(const Token *tok, const std::string &varname);
-    void misusedScopeObjectError(const Token *tok, const std::string &varname);
+    void misusedScopeObjectError(const Token *tok, const std::string &varname, bool isAssignment = false);
     void duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors);
     void duplicateAssignExpressionError(const Token *tok1, const Token *tok2, bool inconclusive);
     void oppositeExpressionError(const Token *opTok, ErrorPath errors);
-    void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
+    void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors, bool hasMultipleExpr = false);
     void duplicateValueTernaryError(const Token *tok);
     void duplicateExpressionTernaryError(const Token *tok, ErrorPath errors);
     void duplicateBreakError(const Token *tok, bool inconclusive);
-    void unreachableCodeError(const Token* tok, bool inconclusive);
+    void unreachableCodeError(const Token* tok, const Token* noreturn, bool inconclusive);
+    void redundantContinueError(const Token* tok);
     void unsignedLessThanZeroError(const Token *tok, const ValueFlow::Value *v, const std::string &varname);
     void pointerLessThanZeroError(const Token *tok, const ValueFlow::Value *v);
     void unsignedPositiveError(const Token *tok, const ValueFlow::Value *v, const std::string &varname);
@@ -276,11 +271,10 @@ private:
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
     void commaSeparatedReturnError(const Token *tok);
-    void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
+    void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive, bool addressOfDeref);
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef);
     void unknownEvaluationOrder(const Token* tok);
-    static bool isMovedParameterAllowedForInconclusiveFunction(const Token * tok);
     void accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive);
     void funcArgNamesDifferent(const std::string & functionName, nonneg int index, const Token* declaration, const Token* definition);
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
@@ -300,7 +294,6 @@ private:
         c.invalidPointerCastError(nullptr,  "float *", "double *", false, false);
         c.negativeBitwiseShiftError(nullptr, 1);
         c.negativeBitwiseShiftError(nullptr, 2);
-        c.checkPipeParameterSizeError(nullptr,  "varname", "dimension");
         c.raceAfterInterlockedDecrementError(nullptr);
         c.invalidFreeError(nullptr, "malloc", false);
         c.overlappingWriteUnion(nullptr);
@@ -334,7 +327,7 @@ private:
         c.duplicateValueTernaryError(nullptr);
         c.duplicateExpressionTernaryError(nullptr, errorPath);
         c.duplicateBreakError(nullptr,  false);
-        c.unreachableCodeError(nullptr,  false);
+        c.unreachableCodeError(nullptr, nullptr,  false);
         c.unsignedLessThanZeroError(nullptr, nullptr, "varname");
         c.unsignedPositiveError(nullptr, nullptr, "varname");
         c.pointerLessThanZeroError(nullptr, nullptr);
@@ -344,7 +337,7 @@ private:
         c.varFuncNullUBError(nullptr);
         c.nanInArithmeticExpressionError(nullptr);
         c.commaSeparatedReturnError(nullptr);
-        c.redundantPointerOpError(nullptr,  "varname", false);
+        c.redundantPointerOpError(nullptr,  "varname", false, /*addressOfDeref*/ true);
         c.unusedLabelError(nullptr, false, false);
         c.unusedLabelError(nullptr, false, true);
         c.unusedLabelError(nullptr, true, false);
@@ -379,7 +372,6 @@ private:
                "- assignment in an assert statement\n"
                "- free() or delete of an invalid memory location\n"
                "- bitwise operation with negative right operand\n"
-               "- provide wrong dimensioned array to pipe() system command (--std=posix)\n"
                "- cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
                "- race condition with non-interlocked access after InterlockedDecrement() call\n"
                "- expression 'x = x++;' depends on order of evaluation of side effects\n"

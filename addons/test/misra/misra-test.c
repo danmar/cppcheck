@@ -45,7 +45,7 @@
 typedef struct {
   union { // 19.2
     struct {
-      unsigned a : 2; // 8.1
+      unsigned a : 2;
       unsigned : 14;
     };
     uint16_t value;
@@ -65,6 +65,8 @@ static _Noreturn void misra_1_4_func(void) // 1.4
     printf_s("hello"); // 1.4
 }
 
+#define MISRA_2_2 (1*60)
+
 static void misra_2_2(int x) {
     int a;
     a = x + 0; // 2.2
@@ -73,6 +75,7 @@ static void misra_2_2(int x) {
     a = 0 * x; // 2.2
     a = x * 1; // 2.2
     a = 1 * x; // 2.2
+    a = MISRA_2_2;
     (void)a;
 }
 
@@ -275,31 +278,13 @@ static void misra_7_1(void) {
   int x = 066; // 7.1
 }
 
-static void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.7
-
-static void misra_7_2_call_va_test(int a, ...) { } // 2.7
-
 static void misra_7_2(void) {
-    uint32_t a = 2147483647;
-    const uint32_t b = 2147483648U;
-    const uint32_t c = 2147483648; // 7.2 10.3
-    uint32_t d = 2147483649; // 7.2 10.3
-
-    uint8_t e = 0x80; // 7.2 10.3
-    uint8_t f = 0x80U;
-    uint16_t g = 0x8000; // 7.2 10.3
-    uint16_t h = 0x8000U;
-    uint32_t i = 0x80000000; // 7.2
-    uint32_t j = 0x80000000U;
-    uint64_t k = 0x8000000000000000; // TODO 7.2
-    uint64_t l = 0x8000000000000000ULL;
-
-    uint32_t m = 1 + 0x80000000; // 7.2 10.4
-
-    misra_7_2_call_test(1, 2, 2147483648U);
-    misra_7_2_call_test(1, 2, 2147483648); // 7.2
-    misra_7_2_call_test(1, 0x80000000, 3); // 7.2
-    misra_7_2_call_va_test(1, 2, 3);
+    uint32_t a = 0x7fffffff;
+    uint32_t b = 0x80000000; // 7.2
+    uint32_t c = 0x80000000U;
+    uint32_t d = 2147483647;
+    uint64_t e = 2147483648;
+    uint32_t f = 2147483648U;
 }
 
 // The addon should not generate false positives for the identifiers.
@@ -330,6 +315,7 @@ static const char *misra_7_4_return_const (void) { return 1 + "return_const"; } 
 static void misra_7_4_const_call(int a, const char* b) { } // 2.7
 static void misra_7_4_const_ptr_call(int a, const char const* b) { } // 2.7
 static void misra_7_4_call(int a, char* b) { } // 2.7
+static void misra_7_4_call_2(int a, ...) { } // 2.7
 
 static void misra_7_4(void)
 {
@@ -345,6 +331,7 @@ static void misra_7_4(void)
    misra_7_4_const_call(1, ("text_const_call"));
    misra_7_4_const_ptr_call(1, ("text_const_call"));
    misra_7_4_call(1, "text_call"); // 7.4 11.8
+   misra_7_4_call_2(1, "a", "b");
 }
 
 const misra_8_1_a; // 8.1 8.4
@@ -623,7 +610,7 @@ static void misra_10_1(uint32_t u, char c1, char c2, uint8_t u8) {
   int32_t i;
   char c;
   enum { E1 = 1 };
-  i = 3 << 1; // 10.1 10.6
+  i = 3 << 1; // 10.1
   i = (u & u) << 4; // no-warning
   c = c1 & c2; // 10.1
   c = c1 << 1; // 10.1
@@ -736,10 +723,10 @@ static void misra_10_5(uint16_t x) {
 struct misra_10_6_s {
     unsigned int a:4;
 };
-static void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
-  u16 y = x+x; // 10.6
+static void misra_10_6(u8 x, char c1, char c2) {
+  u16 y1 = x+x; // 10.6
+  u16 y2 = (0x100u - 0x80u); // rhs is not a composite expression because it's a constant expression
   u16 z = ~u8 x ;//10.6
-  u32 c = ( u16) ( u32 a + u32 b ); //10.6
   s32 i = c1 - c2; // 10.3 FIXME: False positive for 10.6 (this is compliant). Trac #9488
   struct misra_10_6_s s;
   s.a = x & 1U; // no-warning (#10487)
@@ -907,7 +894,8 @@ void misra_12_3(int a, int b, int c) {
 
   f((1,2),3); // TODO
 
-  for (i=0; i<10; i++, j++){} // 12.3
+  // third clause: 2 persistent side effects instead of 1 (14.2)
+  for (i=0; i<10; i++, j++){} // 12.3 14.2
   for (int i = 0, p = &a1;  // 12.3 14.2
           i < 42;
           ++i, ++p ) // 12.3
@@ -1170,7 +1158,7 @@ static void misra_14_2_init_value(int32_t *var) {
 }
 static void misra_14_2_fn1(bool b) {
   for (;i++<10;) {} // 14.2
-  for (;i<10;dostuff()) {} // TODO
+  for (;i<10;dostuff()) {} // 14.2
   int32_t g = 0;
   int g_arr[42];
   g += 2; // no-warning
@@ -1188,7 +1176,12 @@ static void misra_14_2_fn1(bool b) {
   for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
 
   bool abort = false;
-  for (i = 0; (i < 10) && !abort; ++i) { // no-warning
+  for (i = 0; (i < 10) && !abort; ++i) { // 14.2 as 'i' is not a variable
+      if (b) {
+        abort = true;
+      }
+  }
+  for (int i = 0; (i < 10) && !abort; ++i) { // no warning
       if (b) {
         abort = true;
       }
@@ -1199,6 +1192,18 @@ static void misra_14_2_fn1(bool b) {
   for (int i = x; i < 42; i++) {
       x++; // no warning
   }
+  // 1st clause item 2 + loop counter modification
+  for(x = 0; x < 10; x++) {
+    x++; // 14.2
+  }
+  // third clause: 2 persistent side effects instead of 1 (14.2)
+  for (int i = 0; i < 10; i++, x++) { // 12.3 14.2
+  }
+
+  // 2 loop counters, there shall be only 1
+  for(int i=0, j=0; (i<10) && (j<10); i++, j++) { // 12.3 14.2
+  }
+
   for (int i = (x - 3); i < 42; i++) {
       x ^= 3; // no warning
   }
@@ -1231,16 +1236,18 @@ static void misra_14_2_fn2(void)
     for (int i = 0, j = 19; y < 10, --j > 10; y++, j--) { // 14.2 12.3
         i++; // no warning
     }
-    for (int i = 0; y < 10; y++) { // TODO: 14.2
+    // 1st clause is not empty, but is not used in 2nd and 3rd clause
+    for (int i = 0; y < 10; y++) { // 14.2
         i++; // no warning
     }
-    for (int i = 0; i < 10; y++) { // TODO: 14.2
+    for (; y < 10; y++) {} // without 1st clause, no error
+    for (int i = 0; i < 10; y++) { // 14.2
         i++; // no warning
     }
-    for (int i = 0; y < 10; i++) { // TODO: 14.2
+    for (int i = 0; y < 10; i++) { // 14.2
         i++; // no warning
     }
-    for (int i = 0; i < 10; (y+=i)) {
+    for (int i = 0; i < 10; (y+=i)) { // 14.2
         i++; // no warning
     }
 
@@ -1336,7 +1343,7 @@ static void misra_15_4(void) {
       if (y==2) {
         break;
       }
-      for (z = 0; y < 42; ++z) {
+      for (z = 0; y < 42; ++z) { // 14.2
         if (z==1) {
           break;
         }
@@ -1570,6 +1577,8 @@ static void misra_16_3(void) {
     case 2:
         x++;
   } // 16.3
+
+  #define M_16_3(a,b,default) { (a), (b), (default) },
 }
 
 static void misra_16_4(void) {
@@ -1623,7 +1632,7 @@ static void misra_16_7(void) {
 }
 
 static void misra_17_1(void) {
-  va_list(); // 17.1
+  va_list(); // 17.1 17.7
   va_arg(); // 17.1
   va_start(); // 17.1
   va_end(); // 17.1

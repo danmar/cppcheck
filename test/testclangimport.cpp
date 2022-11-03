@@ -23,9 +23,9 @@
 #include "testsuite.h"
 
 #include <cstdint>
-#include <iosfwd>
 #include <list>
 #include <memory>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 
@@ -584,7 +584,10 @@ private:
     }
 
     void cxxRecordDecl1() {
-        const char clang[] = "`-CXXRecordDecl 0x34cc5f8 <1.cpp:2:1, col:7> col:7 class Foo";
+        const char* clang = "`-CXXRecordDecl 0x34cc5f8 <1.cpp:2:1, col:7> col:7 class Foo";
+        ASSERT_EQUALS("class Foo ;", parse(clang));
+
+        clang = "`-CXXRecordDecl 0x34cc5f8 <C:\\Foo\\Bar Baz\\1.cpp:2:1, col:7> col:7 class Foo";
         ASSERT_EQUALS("class Foo ;", parse(clang));
     }
 
@@ -1281,8 +1284,7 @@ private:
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
         ASSERT(!!tok);
         tok = tok->next();
-        // TODO ASSERT(tok->hasKnownIntValue());
-        // TODO ASSERT_EQUALS(10, tok->getKnownIntValue());
+        TODO_ASSERT_EQUALS(true, false, tok->hasKnownIntValue() && tok->getKnownIntValue() == 10);
     }
 
     void valueType1() {

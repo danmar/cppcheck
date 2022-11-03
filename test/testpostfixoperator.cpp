@@ -23,7 +23,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
+#include <sstream> // IWYU pragma: keep
 
 class TestPostfixOperator : public TestFixture {
 public:

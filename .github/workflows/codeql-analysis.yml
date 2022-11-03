@@ -2,10 +2,14 @@ name: "CodeQL"
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     strategy:
       fail-fast: false
@@ -18,17 +22,16 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       
     - name: Install missing software on ubuntu
       run: |
          sudo apt-get update
          sudo apt-get install libxml2-utils
-         sudo apt-get install libz3-dev libz3-4
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v1
+      uses: github/codeql-action/init@v2
       with:
         languages: ${{ matrix.language }}
         # If you wish to specify custom queries, you can do so here or in a config file.
@@ -38,7 +41,7 @@ jobs:
         setup-python-dependencies: false 
 
     - run: |
-         make -j$(nproc) USE_Z3=yes HAVE_RULES=yes cppcheck
+         make -j$(nproc) HAVE_RULES=yes cppcheck
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v1
+      uses: github/codeql-action/analyze@v2

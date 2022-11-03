@@ -28,6 +28,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -35,6 +36,7 @@
 #include <vector>
 
 class Token;
+class Settings;
 
 namespace tinyxml2 {
     class XMLDocument;
@@ -281,7 +283,9 @@ public:
         static Action actionFrom(const std::string& actionName);
     };
     std::map<std::string, Container> containers;
-    const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
+    const Container* detectContainer(const Token* typeStart) const;
+    const Container* detectIterator(const Token* typeStart) const;
+    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
 
     class ArgumentChecks {
     public:
@@ -324,6 +328,7 @@ public:
             int arg;
             int arg2;
             long long value;
+            std::string baseType;
         };
         std::vector<MinSize> minsizes;
 
@@ -405,7 +410,6 @@ public:
             return MathLib::isInt(op1);
         }
     };
-    static std::vector<InvalidArgValue> getInvalidArgValues(const std::string &validExpr);
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
@@ -475,11 +479,11 @@ public:
     std::vector<std::string> defines; // to provide some library defines
 
     struct SmartPointer {
-        std::string name = "";
+        std::string name;
         bool unique = false;
     };
 
-    std::map<std::string, SmartPointer> smartPointers;
+    std::unordered_map<std::string, SmartPointer> smartPointers;
     bool isSmartPointer(const Token *tok) const;
     const SmartPointer* detectSmartPointer(const Token* tok) const;
 
@@ -547,13 +551,15 @@ public:
      */
     std::string getFunctionName(const Token *ftok) const;
 
-    static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback="");
+    static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback=emptyString);
 
     /** Suppress/check a type */
-    enum class TypeCheck { def, check, suppress };
-    TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
-
-    bool bugHunting;
+    enum class TypeCheck { def,
+                           check,
+                           suppress,
+                           checkFiniteLifetime, // (unusedvar) object has side effects, but immediate destruction is wrong
+    };
+    TypeCheck getTypeCheck(std::string check, std::string typeName) const;
 
 private:
     // load a <function> xml node
@@ -561,11 +567,11 @@ private:
 
     class ExportedFunctions {
     public:
-        void addPrefix(const std::string& prefix) {
-            mPrefixes.insert(prefix);
+        void addPrefix(std::string prefix) {
+            mPrefixes.insert(std::move(prefix));
         }
-        void addSuffix(const std::string& suffix) {
-            mSuffixes.insert(suffix);
+        void addSuffix(std::string suffix) {
+            mSuffixes.insert(std::move(suffix));
         }
         bool isPrefix(const std::string& prefix) const {
             return (mPrefixes.find(prefix) != mPrefixes.end());
@@ -628,7 +634,7 @@ private:
     std::map<std::string, bool> mProcessAfterCode;
     std::set<std::string> mMarkupExtensions; // file extensions of markup files
     std::map<std::string, std::set<std::string>> mKeywords;  // keywords for code in the library
-    std::map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
+    std::unordered_map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
     std::map<std::string, std::set<std::string>> mImporters;  // keywords that import variables/functions
     std::map<std::string, int> mReflection; // invocation of reflection
@@ -646,9 +652,16 @@ private:
         const std::map<std::string, AllocFunc>::const_iterator it = data.find(name);
         return (it == data.end()) ? nullptr : &it->second;
     }
+
+    enum DetectContainer { ContainerOnly, IteratorOnly, Both };
+    const Library::Container* detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator = nullptr) const;
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
+
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                 const Settings* settings,
+                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId = nullptr);
 
 /// @}
 //---------------------------------------------------------------------------

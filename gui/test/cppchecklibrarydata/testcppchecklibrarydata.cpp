@@ -182,9 +182,12 @@ void TestCppcheckLibraryData::smartPointerValid()
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.smartPointers.size(), 3);
 
-    QCOMPARE(libraryData.smartPointers[0], QString("wxObjectDataPtr"));
-    QCOMPARE(libraryData.smartPointers[1], QString("wxScopedArray"));
-    QCOMPARE(libraryData.smartPointers[2], QString("wxScopedPtr"));
+    QCOMPARE(libraryData.smartPointers[0].name, QString("wxObjectDataPtr"));
+    QCOMPARE(libraryData.smartPointers[0].unique, false);
+    QCOMPARE(libraryData.smartPointers[1].name, QString("wxScopedArray"));
+    QCOMPARE(libraryData.smartPointers[1].unique, true);
+    QCOMPARE(libraryData.smartPointers[2].name, QString("wxScopedPtr"));
+    QCOMPARE(libraryData.smartPointers[2].unique, false);
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
@@ -199,7 +202,10 @@ void TestCppcheckLibraryData::smartPointerValid()
     // Verify no data got lost or modified
     QCOMPARE(libraryData.smartPointers.size(), fileLibraryData.smartPointers.size());
     QCOMPARE(libraryData.smartPointers.size(), 3);
-    QCOMPARE(libraryData.smartPointers, fileLibraryData.smartPointers);
+    for (int idx=0; idx < libraryData.smartPointers.size(); idx++) {
+        QCOMPARE(libraryData.smartPointers[idx].name, fileLibraryData.smartPointers[idx].name);
+        QCOMPARE(libraryData.smartPointers[idx].unique, fileLibraryData.smartPointers[idx].unique);
+    }
 }
 
 void TestCppcheckLibraryData::platformTypeValid()
@@ -543,18 +549,58 @@ void TestCppcheckLibraryData::markupValid()
     }
 }
 
-void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData &data, QString &result, bool removeFile)
+void TestCppcheckLibraryData::containerValid()
+{
+    // Load library data from file
+    loadCfgFile(":/files/container_valid.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), true);
+
+    // Swap library data read from file to other object
+    libraryData.swap(fileLibraryData);
+
+    // Do size and content checks against swapped data.
+    QCOMPARE(libraryData.containers.size(), 1);
+
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList.size(), 2);
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[0].name, QString("first"));
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[0].templateParameter, QString("0"));
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[1].name, QString("second"));
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[1].templateParameter, QString("1"));
+
+    // Save library data to file
+    saveCfgFile(TempCfgFile, libraryData);
+
+    fileLibraryData.clear();
+    QCOMPARE(fileLibraryData.containers.size(), 0);
+
+    // Reload library data from file
+    loadCfgFile(TempCfgFile, fileLibraryData, result, true);
+    QCOMPARE(result.isNull(), true);
+
+    // Verify no data got lost or modified
+    QCOMPARE(libraryData.containers.size(), fileLibraryData.containers.size());
+    for (int idx=0; idx < libraryData.containers.size(); idx++) {
+        CppcheckLibraryData::Container lhs = libraryData.containers[idx];
+        CppcheckLibraryData::Container rhs = fileLibraryData.containers[idx];
+        for (int num=0; num < lhs.rangeItemRecordTypeList.size(); num++) {
+            QCOMPARE(lhs.rangeItemRecordTypeList[num].name, rhs.rangeItemRecordTypeList[num].name);
+            QCOMPARE(lhs.rangeItemRecordTypeList[num].templateParameter, rhs.rangeItemRecordTypeList[num].templateParameter);
+        }
+    }
+}
+
+void TestCppcheckLibraryData::loadCfgFile(const QString &filename, CppcheckLibraryData &data, QString &res, bool removeFile)
 {
     QFile file(filename);
     QVERIFY(file.open(QIODevice::ReadOnly | QIODevice::Text));
-    result = data.open(file);
+    res = data.open(file);
     file.close();
     if (removeFile) {
         file.remove();
     }
 }
 
-void TestCppcheckLibraryData::saveCfgFile(QString filename, CppcheckLibraryData &data)
+void TestCppcheckLibraryData::saveCfgFile(const QString &filename, CppcheckLibraryData &data)
 {
     QFile file(filename);
     QVERIFY(file.open(QIODevice::WriteOnly | QIODevice::Text));

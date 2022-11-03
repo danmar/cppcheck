@@ -23,8 +23,8 @@
 
 #include "config.h"
 #include "token.h"
-#include "utils.h"
 
+#include <cstddef>
 #include <iosfwd>
 #include <string>
 #include <unordered_set>
@@ -43,6 +43,9 @@ class CPPCHECKLIB TokenList {
 public:
     explicit TokenList(const Settings* settings);
     ~TokenList();
+
+    TokenList(const TokenList &) = delete;
+    TokenList &operator=(const TokenList &) = delete;
 
     void setSettings(const Settings *settings) {
         mSettings = settings;
@@ -71,8 +74,8 @@ public:
      */
     static void deleteTokens(Token *tok);
 
-    void addtoken(std::string str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
-    void addtoken(std::string str, const Token *locationTok);
+    void addtoken(const std::string& str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
+    void addtoken(const std::string& str, const Token *locationTok);
 
     void addtoken(const Token *tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno);
     void addtoken(const Token *tok, const Token *locationTok);
@@ -107,12 +110,13 @@ public:
     void deallocateTokens();
 
     /** append file name if seen the first time; return its index in any case */
-    int appendFileIfNew(const std::string &fileName);
+    int appendFileIfNew(std::string fileName);
 
     /** get first token of list */
     const Token *front() const {
         return mTokensFrontBack.front;
     }
+    // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *front() {
         return mTokensFrontBack.front;
     }
@@ -121,6 +125,7 @@ public:
     const Token *back() const {
         return mTokensFrontBack.back;
     }
+    // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *back() {
         return mTokensFrontBack.back;
     }
@@ -151,10 +156,10 @@ public:
     std::string fileLine(const Token *tok) const;
 
     /**
-     * Calculates a 64-bit checksum of the token list used to compare
-     * multiple token lists with each other as quickly as possible.
+     * Calculates a hash of the token list used to compare multiple
+     * token lists with each other as quickly as possible.
      */
-    unsigned long long calculateChecksum() const;
+    std::size_t calculateHash() const;
 
     /**
      * Create abstract syntax tree.
@@ -193,13 +198,6 @@ public:
     bool isKeyword(const std::string &str) const;
 
 private:
-
-    /** Disable copy constructor, no implementation */
-    TokenList(const TokenList &);
-
-    /** Disable assignment operator, no implementation */
-    TokenList &operator=(const TokenList &);
-
     void determineCppC();
 
     /** Token list */

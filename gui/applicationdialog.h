@@ -19,13 +19,15 @@
 #ifndef APPLICATIONDIALOG_H
 #define APPLICATIONDIALOG_H
 
-#include "ui_application.h"
-
 #include <QDialog>
 #include <QString>
 
+class QObject;
 class QWidget;
 class Application;
+namespace Ui {
+    class ApplicationDialog;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -49,7 +51,7 @@ public:
     ApplicationDialog(const QString &title,
                       Application &app,
                       QWidget *parent = nullptr);
-    virtual ~ApplicationDialog();
+    ~ApplicationDialog() override;
 
 protected slots:
 
@@ -67,7 +69,7 @@ protected:
      * @brief UI from the Qt designer
      *
      */
-    Ui::ApplicationDialog mUI;
+    Ui::ApplicationDialog* mUI;
 
 private:
 

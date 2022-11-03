@@ -4,20 +4,26 @@ name: valgrind
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
-      - uses: actions/checkout@v2
-        
+      - uses: actions/checkout@v3
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ runner.os }}
+
       - name: Prepare
         run: |
           sudo apt-get update
           sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
-          # the key expired and the ubuntu-dbgsym-keyring package does not yet include the latest one - see https://bugs.launchpad.net/ubuntu/+source/ubuntu-keyring/+bug/1920640
-          wget -O - http://ddebs.ubuntu.com/dbgsym-release-key.asc | sudo apt-key add -
 
       - name: Add debug repos on ubuntu
         run:  |
@@ -30,23 +36,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install valgrind
-          sudo apt-get install libz3-dev libz3-4 libz3-4-dbgsym
           sudo apt-get install libc6-dbg-amd64-cross
+          sudo apt-get install libboost-container-dev
 
       - name: Build cppcheck
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          CXXFLAGS="-O1 -g -DHAVE_BOOST" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Build test
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          CXXFLAGS="-O1 -g -DHAVE_BOOST" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run valgrind
         run: |
           valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log
           cat memcheck.log
           
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: Logs
           path: ./*.log

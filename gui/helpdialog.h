@@ -22,17 +22,23 @@
 #include <QDialog>
 #include <QTextBrowser>
 
+class QHelpEngine;
+class QObject;
+class QUrl;
+class QWidget;
 namespace Ui {
     class HelpDialog;
 }
 
-class QHelpEngine;
-
 class HelpBrowser : public QTextBrowser {
 public:
-    HelpBrowser(QWidget* parent = 0) : QTextBrowser(parent), mHelpEngine(nullptr) {}
+    explicit HelpBrowser(QWidget* parent = nullptr) : QTextBrowser(parent), mHelpEngine(nullptr) {}
+    HelpBrowser(const HelpBrowser&) = delete;
+    HelpBrowser(HelpBrowser&&) = delete;
+    HelpBrowser& operator=(const HelpBrowser&) = delete;
+    HelpBrowser& operator=(HelpBrowser&&) = delete;
     void setHelpEngine(QHelpEngine *helpEngine);
-    QVariant loadResource(int type, const QUrl& name);
+    QVariant loadResource(int type, const QUrl& name) override;
 private:
     QHelpEngine* mHelpEngine;
 };
@@ -42,7 +48,7 @@ class HelpDialog : public QDialog {
 
 public:
     explicit HelpDialog(QWidget *parent = nullptr);
-    ~HelpDialog();
+    ~HelpDialog() override;
 
 private:
     Ui::HelpDialog *mUi;

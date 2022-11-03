@@ -22,7 +22,9 @@
 #include "settings.h"
 #include "suppressions.h"
 
+#include <cstddef>
 #include <map>
+#include <utility>
 
 #include <QObject>
 #include <QString>
@@ -45,8 +47,8 @@ class ProjectFile : public QObject {
 
 public:
     explicit ProjectFile(QObject *parent = nullptr);
-    explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
-    ~ProjectFile() {
+    explicit ProjectFile(QString filename, QObject *parent = nullptr);
+    ~ProjectFile() override {
         if (this == mActiveProject) mActiveProject = nullptr;
     }
 
@@ -228,26 +230,6 @@ public:
         mMaxTemplateRecursion = maxTemplateRecursion;
     }
 
-    const std::map<std::string,std::string>& getFunctionContracts() const {
-        return mFunctionContracts;
-    }
-
-    const std::map<QString, Settings::VariableContracts>& getVariableContracts() const {
-        return mVariableContracts;
-    }
-
-    void setVariableContracts(QString var, const QString& min, const QString& max) {
-        mVariableContracts[var] = Settings::VariableContracts{min.toStdString(), max.toStdString()};
-    }
-
-    void deleteFunctionContract(const QString& function) {
-        mFunctionContracts.erase(function.toStdString());
-    }
-
-    void deleteVariableContract(const QString& var) {
-        mVariableContracts.erase(var);
-    }
-
     /**
      * @brief Get filename for the project file.
      * @return file name.
@@ -312,9 +294,6 @@ public:
      */
     void setLibraries(const QStringList &libraries);
 
-    /** Set contract for a function */
-    void setFunctionContract(const QString& function, const QString& expects);
-
     /**
      * @brief Set platform.
      * @param platform platform.
@@ -355,6 +334,36 @@ public:
     /** Get tags for a warning */
     QString getWarningTags(std::size_t hash) const;
 
+    /** Bughunting (Cppcheck Premium) */
+    void setBughunting(bool bughunting) {
+        mBughunting = bughunting;
+    }
+    bool getBughunting() const {
+        return mBughunting;
+    }
+
+    /** @brief Get list of coding standards (checked by Cppcheck Premium). */
+    QStringList getCodingStandards() const {
+        return mCodingStandards;
+    }
+
+    /**
+     * @brief Set list of coding standards (checked by Cppcheck Premium).
+     * @param codingStandards List of coding standards.
+     */
+    void setCodingStandards(QStringList codingStandards) {
+        mCodingStandards = std::move(codingStandards);
+    }
+
+    /** Cert C: int precision */
+    void setCertIntPrecision(int p) {
+        mCertIntPrecision = p;
+    }
+    int getCertIntPrecision() const {
+        return mCertIntPrecision;
+    }
+
+
     /**
      * @brief Write project file (to disk).
      * @param filename Filename to use.
@@ -391,8 +400,6 @@ public:
     /** Use Clang parser */
     bool clangParser;
 
-    /** Bug hunting */
-    bool bugHunting;
 protected:
 
     /**
@@ -409,9 +416,9 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
-    bool readBool(QXmlStreamReader &reader);
+    static bool readBool(QXmlStreamReader &reader);
 
-    int readInt(QXmlStreamReader &reader, int defaultValue);
+    static int readInt(QXmlStreamReader &reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
@@ -436,18 +443,6 @@ protected:
      * @param reader XML stream reader.
      */
     void readExcludes(QXmlStreamReader &reader);
-
-    /**
-     * @brief Read function contracts.
-     * @param reader XML stream reader.
-     */
-    void readFunctionContracts(QXmlStreamReader &reader);
-
-    /**
-     * @brief Read variable constraints.
-     * @param reader XML stream reader.
-     */
-    void readVariableContracts(QXmlStreamReader &reader);
 
     /**
      * @brief Read lists of Visual Studio configurations
@@ -479,7 +474,7 @@ protected:
      * @param reader       XML stream reader
      * @param elementname  elementname for each string
      */
-    void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
+    static void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
 
     /**
      * @brief Write string list
@@ -564,10 +559,6 @@ private:
      */
     QStringList mLibraries;
 
-    std::map<std::string, std::string> mFunctionContracts;
-
-    std::map<QString, Settings::VariableContracts> mVariableContracts;
-
     /**
      * @brief Platform
      */
@@ -582,6 +573,15 @@ private:
      * @brief List of addons.
      */
     QStringList mAddons;
+
+    bool mBughunting;
+
+    /**
+     * @brief List of coding standards, checked by Cppcheck Premium.
+     */
+    QStringList mCodingStandards;
+
+    int mCertIntPrecision;
 
     /** @brief Execute clang analyzer? */
     bool mClangAnalyzer;

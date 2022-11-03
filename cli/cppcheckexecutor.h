@@ -86,8 +86,6 @@ public:
      */
     void reportInfo(const ErrorMessage &msg) override;
 
-    void bughuntingReport(const std::string &str) override;
-
     /**
      * Information about how many files have been checked
      *
@@ -111,12 +109,14 @@ public:
      * Tries to load a library and prints warning/error messages
      * @return false, if an error occurred (except unknown XML elements)
      */
-    static bool tryLoadLibrary(Library& destination, const char* basepath, const char* filename);
+    static bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
 
     /**
      * Execute a shell command and read the output from it. Returns true if command terminated successfully.
      */
-    static bool executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output_);
+    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output_);
+
+    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
 
 protected:
 
@@ -150,24 +150,20 @@ private:
      *   - installs optional platform dependent signal handling
      *
      * @param cppcheck cppcheck instance
-     * @param argc from main()
-     * @param argv from main()
      **/
-    int check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[]);
+    int check_wrapper(CppCheck& cppcheck);
 
     /**
      * Starts the checking.
      *
      * @param cppcheck cppcheck instance
-     * @param argc from main()
-     * @param argv from main()
      * @return EXIT_FAILURE if arguments are invalid or no input files
      *         were found.
      *         If errors are found and --error-exitcode is used,
      *         given value is returned instead of default 0.
      *         If no errors are found, 0 is returned.
      */
-    int check_internal(CppCheck& cppcheck, int argc, const char* const argv[]);
+    int check_internal(CppCheck& cppcheck);
 
     /**
      * Pointer to current settings; set while check() is running.
@@ -198,11 +194,6 @@ private:
      * Error output
      */
     std::ofstream *mErrorOutput;
-
-    /**
-     * Bug hunting report
-     */
-    std::ostream *mBugHuntingReport;
 
     /**
      * Has --errorlist been given?

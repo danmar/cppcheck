@@ -21,13 +21,14 @@ import logging
 import logging.handlers
 import operator
 import html as html_lib
+from urllib.parse import urlparse
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.24"
+SERVER_VERSION = "1.3.30"
 
-OLD_VERSION = '2.7'
+OLD_VERSION = '2.9'
 
 
 # Set up logging
@@ -42,8 +43,13 @@ if logfile:
     logfile += '/'
 logfile += 'donate-cpu-server.log'
 handler_file = logging.handlers.RotatingFileHandler(filename=logfile, maxBytes=100*1024, backupCount=1)
+handler_file.setFormatter(logging.Formatter('%(asctime)s %(message)s'))
 handler_file.setLevel(logging.ERROR)
 logger.addHandler(handler_file)
+
+
+def print_ts(msg) -> None:
+    print('[{}] {}'.format(strDateTime(), msg))
 
 
 # Set up an exception hook for all uncaught exceptions so they can be logged
@@ -59,7 +65,7 @@ sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime() -> str:
-    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
 
 
 def dateTimeFromStr(datestr: str) -> datetime.datetime:
@@ -78,9 +84,26 @@ def overviewReport() -> str:
     html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
     html += '<a href="time_gt.html">Time report (regressed)</a><br>\n'
     html += '<a href="time_slow.html">Time report (slowest)</a><br>\n'
+    html += '<br>\n'
+    html += '--check-library:<br>\n'
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
+    html += '<a href="check_library_check_type_report.html">checkLibraryCheckType report</a><br>\n'
+    html += '<br>\n'
+    html += 'Debug warnings:<br>\n'
+    html += '<a href="head-debug">debug</a><br>\n'
+    html += '<a href="head-varid0">varid0</a><br>\n'
+    html += '<a href="head-valueType">valueType</a><br>\n'
+    html += '<a href="head-noparamend">noparamend</a><br>\n'
+    html += '<a href="head-simplifyTypedef">simplifyTypedef</a><br>\n'
+    html += '<a href="head-simplifyUsingUnmatchedBodyEnd">simplifyUsingUnmatchedBodyEnd</a><br>\n'
+    html += '<a href="head-simplifyUsing">simplifyUsing</a><br>\n'
+    #html += '<a href="head-autoNoType">autoNoType</a><br>\n'
+    #html += '<a href="head-valueFlowBailout">valueFlowBailout</a><br>\n'
+    #html += '<a href="head-bailoutUninitVar">bailoutUninitVar</a><br>\n'
+    #html += '<a href="head-symbolDatabaseWarning">symbolDatabaseWarning</a><br>\n'
+    #html += '<a href="head-valueFlowBailoutIncompleteVar">valueFlowBailoutIncompleteVar</a><br>\n'
     html += '<br>\n'
     html += 'Important errors:<br>\n'
     html += '<a href="head-cppcheckError">cppcheckError</a><br>\n'
@@ -131,13 +154,13 @@ def latestReport(latestResults: list) -> str:
         package = filename[filename.rfind('/')+1:]
         current_year = datetime.date.today().year
 
-        datestr = ''
+        datestr = None
         count = ['0', '0']
         lost = 0
         added = 0
         for line in open(filename, 'rt'):
             line = line.strip()
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
             #elif line.startswith('cppcheck:'):
             #    cppcheck = line[9:]
@@ -158,7 +181,9 @@ def latestReport(latestResults: list) -> str:
     return html
 
 
-def crashReport(results_path: str) -> str:
+def crashReport(results_path: str, query_params: dict):
+    pkgs = '' if query_params.get('pkgs') == '1' else None
+
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
@@ -168,8 +193,9 @@ def crashReport(results_path: str) -> str:
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        datestr = ''
         with open(filename, 'rt') as file_:
+            datestr = None
+            package_url = None
             for line in file_:
                 line = line.strip()
                 if line.startswith('cppcheck: '):
@@ -179,21 +205,25 @@ def crashReport(results_path: str) -> str:
                     else:
                         # Current package, parse on
                         continue
-                if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
+                elif pkgs is not None and package_url is None and line.startswith('ftp://'):
+                    package_url = line
                 elif line.startswith('count:'):
                     if line.find('Crash') < 0:
                         break
                     package = filename[filename.rfind('/')+1:]
                     counts = line.split(' ')
-                    c2 = ''
+                    c_version = ''
                     if counts[2] == 'Crash!':
-                        c2 = 'Crash'
-                    c1 = ''
+                        c_version = 'Crash'
+                    c_head = ''
                     if counts[1] == 'Crash!':
-                        c1 = 'Crash'
-                    html += fmt(package, datestr, c2, c1) + '\n'
-                    if c1 != 'Crash':
+                        c_head = 'Crash'
+                    html += fmt(package, datestr, c_version, c_head) + '\n'
+                    if package_url is not None:
+                        pkgs += '{}\n'.format(package_url)
+                    if c_head != 'Crash':
                         break
                 elif line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
@@ -226,7 +256,7 @@ def crashReport(results_path: str) -> str:
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
                             continue
 
-                        print('{} - unmatched stack frame - {}'.format(package, l))
+                        print_ts('{} - unmatched stack frame - {}'.format(package, l))
                         break
                     key = hash(' '.join(stack_trace))
 
@@ -250,7 +280,9 @@ def crashReport(results_path: str) -> str:
     html += '</pre>\n'
 
     html += '</body></html>\n'
-    return html
+    if pkgs is not None:
+        return pkgs, 'text/plain'
+    return html, 'text/html'
 
 
 def timeoutReport(results_path: str) -> str:
@@ -262,8 +294,8 @@ def timeoutReport(results_path: str) -> str:
     for filename in sorted(glob.glob(os.path.expanduser(results_path + '/*'))):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        datestr = ''
         with open(filename, 'rt') as file_:
+            datestr = None
             for line in file_:
                 line = line.strip()
                 if line.startswith('cppcheck: '):
@@ -273,7 +305,7 @@ def timeoutReport(results_path: str) -> str:
                     else:
                         # Current package, parse on
                         continue
-                if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+                if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
                 elif line.startswith('count:'):
                     if line.find('TO!') < 0:
@@ -588,7 +620,8 @@ def headReport(resultsPath: str) -> str:
     return html
 
 
-def headMessageIdReport(resultPath: str, messageId: str) -> str:
+def headMessageIdReport(resultPath: str, messageId: str, query_params: dict) -> str:
+    pkgs = '' if query_params.get('pkgs') == '1' else None
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*')):
@@ -608,8 +641,12 @@ def headMessageIdReport(resultPath: str, messageId: str) -> str:
             elif line.endswith(e):
                 if url:
                     text += url
+                    if pkgs is not None:
+                        pkgs += url
                     url = None
                 text += line
+    if pkgs is not None:
+        return pkgs
     return text
 
 
@@ -663,7 +700,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     for filename in glob.glob(resultPath + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        datestr = ''
+        datestr = None
         for line in open(filename, 'rt'):
             line = line.strip()
             if line.startswith('cppcheck: '):
@@ -673,7 +710,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
             if not line.startswith('elapsed-time:'):
@@ -748,7 +785,7 @@ def timeReportSlow(resultPath: str) -> str:
     for filename in glob.glob(resultPath + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        datestr = ''
+        datestr = None
         for line in open(filename, 'rt'):
             line = line.strip()
             if line.startswith('cppcheck: '):
@@ -758,7 +795,7 @@ def timeReportSlow(resultPath: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
+            if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
             elif line.startswith('count:'):
@@ -796,20 +833,26 @@ def timeReportSlow(resultPath: str) -> str:
 
 
 def check_library_report(result_path: str, message_id: str) -> str:
-    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore'):
+    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore', 'checkLibraryCheckType'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
-        print(error_message)
+        print_ts(error_message)
         return error_message
 
-    functions_shown_max = 50000
+    if message_id == 'checkLibraryCheckType':
+        metric = 'types'
+        m_column = 'Type'
+    else:
+        metric = 'functions'
+        m_column = 'Function'
+
+    functions_shown_max = 5000
     html = '<html><head><title>' + message_id + ' report</title></head><body>\n'
     html += '<h1>' + message_id + ' report</h1>\n'
-    html += 'Top ' + str(functions_shown_max) + ' functions are shown.'
+    html += 'Top ' + str(functions_shown_max) + ' ' + metric + ' are shown.'
     html += '<pre>\n'
     column_widths = [10, 100]
     html += '<b>'
-    html += 'Count'.rjust(column_widths[0]) + ' ' + \
-            'Function'
+    html += 'Count'.rjust(column_widths[0]) + ' ' + m_column
     html += '</b>\n'
 
     function_counts = {}
@@ -832,6 +875,8 @@ def check_library_report(result_path: str, message_id: str) -> str:
             if line.endswith('[' + message_id + ']\n'):
                 if message_id == 'checkLibraryFunction':
                     function_name = line[(line.find('for function ') + len('for function ')):line.rfind('[') - 1]
+                elif message_id == 'checkLibraryCheckType':
+                    function_name = line[(line.find('configuration for ') + len('configuration for ')):line.rfind('[') - 1]
                 else:
                     function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
@@ -852,8 +897,11 @@ def check_library_report(result_path: str, message_id: str) -> str:
 
 # Lists all checkLibrary* messages regarding the given function name
 def check_library_function_name(result_path: str, function_name: str) -> str:
-    print('check_library_function_name')
     function_name = urllib.parse.unquote_plus(function_name)
+    if function_name.endswith('()'):
+        id = '[checkLibrary'
+    else:
+        id = '[checkLibraryCheckType]'
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
@@ -870,8 +918,8 @@ def check_library_function_name(result_path: str, function_name: str) -> str:
                 info_messages = True
             if not info_messages:
                 continue
-            if '[checkLibrary' in line:
-                if (' ' + function_name) in line:
+            if id in line:
+                if (' ' + function_name + ' ') in line:
                     if url:
                         output_lines_list.append(url)
                         url = None
@@ -906,92 +954,101 @@ class HttpClientThread(Thread):
     def __init__(self, connection: socket.socket, cmd: str, resultPath: str, latestResults: list) -> None:
         Thread.__init__(self)
         self.connection = connection
-        self.cmd = cmd[:cmd.find('\n')]
+        self.cmd = cmd[:cmd.find('\r\n')]
         self.resultPath = resultPath
         self.latestResults = latestResults
+
+    # TODO: use a proper parser
+    def parse_req(cmd):
+        req_parts = cmd.split(' ')
+        if len(req_parts) != 3 or req_parts[0] != 'GET' or not req_parts[2].startswith('HTTP'):
+            return None, None
+        url_obj = urlparse(req_parts[1])
+        return url_obj.path, dict(urllib.parse.parse_qsl(url_obj.query))
 
     def run(self):
         try:
             cmd = self.cmd
-            print('[' + strDateTime() + '] ' + cmd)
-            res = re.match(r'GET /([a-zA-Z0-9_\-\.\+%]*) HTTP', cmd)
-            if res is None:
+            print_ts(cmd)
+            url, queryParams = HttpClientThread.parse_req(cmd)
+            if url is None:
+                print_ts('invalid request: {}'.format(cmd))
                 self.connection.close()
                 return
-            url = res.group(1)
-            if url == '':
+            if url == '/':
                 html = overviewReport()
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'latest.html':
+            elif url == '/latest.html':
                 html = latestReport(self.latestResults)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'crash.html':
-                html = crashReport(self.resultPath)
-                httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'timeout.html':
+            elif url == '/crash.html':
+                text, mime = crashReport(self.resultPath, queryParams)
+                httpGetResponse(self.connection, text, mime)
+            elif url == '/timeout.html':
                 html = timeoutReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'stale.html':
+            elif url == '/stale.html':
                 html = staleReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'diff.html':
+            elif url == '/diff.html':
                 html = diffReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url.startswith('difftoday-'):
-                messageId = url[10:]
+            elif url.startswith('/difftoday-'):
+                messageId = url[len('/difftoday-'):]
                 text = diffMessageIdTodayReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url.startswith('diff-'):
-                messageId = url[5:]
+            elif url.startswith('/diff-'):
+                messageId = url[len('/diff-'):]
                 text = diffMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url == 'head.html':
+            elif url == '/head.html':
                 html = headReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url.startswith('headtoday-'):
-                messageId = url[10:]
+            elif url.startswith('/headtoday-'):
+                messageId = url[len('/headtoday-'):]
                 text = headMessageIdTodayReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url.startswith('head-'):
-                messageId = url[5:]
-                text = headMessageIdReport(self.resultPath, messageId)
+            elif url.startswith('/head-'):
+                messageId = url[len('/head-'):]
+                text = headMessageIdReport(self.resultPath, messageId, queryParams)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url == 'time_lt.html':
+            elif url == '/time_lt.html':
                 text = timeReport(self.resultPath, False)
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'time_gt.html':
+            elif url == '/time_gt.html':
                 text = timeReport(self.resultPath, True)
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'time_slow.html':
+            elif url == '/time_slow.html':
                 text = timeReportSlow(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'check_library_function_report.html':
+            elif url == '/check_library_function_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'check_library_noreturn_report.html':
+            elif url == '/check_library_noreturn_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryNoReturn')
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'check_library_use_ignore_report.html':
+            elif url == '/check_library_use_ignore_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryUseIgnore')
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url.startswith('check_library-'):
-                print('check library function !')
-                function_name = url[len('check_library-'):]
+            elif url == '/check_library_check_type_report.html':
+                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryCheckType')
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url.startswith('/check_library-'):
+                function_name = url[len('/check_library-'):]
                 text = check_library_function_name(self.resultPath + '/' + 'info_output', function_name)
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
-                filename = resultPath + '/' + url
+                filename = resultPath + url
                 if not os.path.isfile(filename):
-                    print('HTTP/1.1 404 Not Found')
+                    print_ts('HTTP/1.1 404 Not Found')
                     self.connection.send(b'HTTP/1.1 404 Not Found\r\n\r\n')
                 else:
-                    f = open(filename, 'rt')
-                    data = f.read()
-                    f.close()
+                    with open(filename, 'rt') as f:
+                        data = f.read()
                     httpGetResponse(self.connection, data, 'text/plain')
         except:
             tb = "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
-            print(tb)
+            print_ts(tb)
             httpGetResponse(self.connection, tb, 'text/plain')
         finally:
             time.sleep(1)
@@ -1012,12 +1069,12 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
         with open('latest.txt', 'rt') as f:
             latestResults = f.read().strip().split(' ')
 
-    print('[' + strDateTime() + '] version ' + SERVER_VERSION)
-    print('[' + strDateTime() + '] listening on port ' + str(server_address_port))
+    print_ts('version ' + SERVER_VERSION)
+    print_ts('listening on port ' + str(server_address_port))
 
     while True:
         # wait for a connection
-        print('[' + strDateTime() + '] waiting for a connection')
+        print_ts('waiting for a connection')
         connection, client_address = sock.accept()
         try:
             bytes_received = connection.recv(128)
@@ -1027,7 +1084,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             continue
         except UnicodeDecodeError as e:
             connection.close()
-            print('Error: Decoding failed: ' + str(e))
+            print_ts('Error: Decoding failed: ' + str(e))
             continue
         if cmd.find('\n') < 1:
             continue
@@ -1040,7 +1097,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             newThread.start()
         elif cmd == 'GetCppcheckVersions\n':
             reply = 'head ' + OLD_VERSION
-            print('[' + strDateTime() + '] GetCppcheckVersions: ' + reply)
+            print_ts('GetCppcheckVersions: ' + reply)
             connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd == 'get\n':
@@ -1049,11 +1106,10 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if packageIndex >= len(packages):
                 packageIndex = 0
 
-            f = open('package-index.txt', 'wt')
-            f.write(str(packageIndex) + '\n')
-            f.close()
+            with open('package-index.txt', 'wt') as f:
+                f.write(str(packageIndex) + '\n')
 
-            print('[' + strDateTime() + '] get:' + pkg)
+            print_ts('get:' + pkg)
             connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
@@ -1068,7 +1124,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         try:
                             text_received = bytes_received.decode('utf-8', 'ignore')
                         except UnicodeDecodeError as e:
-                            print('Error: Decoding failed: ' + str(e))
+                            print_ts('Error: Decoding failed (write): ' + str(e))
                             data = ''
                             break
                         t = 0.0
@@ -1084,17 +1140,17 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if pos < 10:
                 continue
             url = data[:pos]
-            print('[' + strDateTime() + '] write:' + url)
+            print_ts('write:' + url)
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
                 res = re.match(r'https?://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
-                print('results not written. res is None.')
+                print_ts('results not written. res is None.')
                 continue
             if url not in packages:
-                print('results not written. url is not in packages.')
+                print_ts('results not written. url is not in packages.')
                 continue
             # Verify that head was compared to correct OLD_VERSION
             versions_found = False
@@ -1103,17 +1159,17 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 if line.startswith('cppcheck: '):
                     versions_found = True
                     if OLD_VERSION not in line.split():
-                        print('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
+                        print_ts('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
                               line)
-                        print('Ignoring data.')
+                        print_ts('Ignoring data.')
                         old_version_wrong = True
                     break
             if not versions_found:
-                print('Cppcheck versions missing in result data. Ignoring data.')
+                print_ts('Cppcheck versions missing in result data. Ignoring data.')
                 continue
             if old_version_wrong:
                 continue
-            print('results added for package ' + res.group(1))
+            print_ts('results added for package ' + res.group(1))
             filename = os.path.join(resultPath, res.group(1))
             with open(filename, 'wt') as f:
                 f.write(strDateTime() + '\n' + data)
@@ -1137,7 +1193,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         try:
                             text_received = bytes_received.decode('utf-8', 'ignore')
                         except UnicodeDecodeError as e:
-                            print('Error: Decoding failed: ' + str(e))
+                            print_ts('Error: Decoding failed (write_info): ' + str(e))
                             data = ''
                             break
                         t = 0.0
@@ -1153,19 +1209,19 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if pos < 10:
                 continue
             url = data[:pos]
-            print('[' + strDateTime() + '] write_info:' + url)
+            print_ts('write_info:' + url)
 
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
                 res = re.match(r'https://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
-                print('info output not written. res is None.')
+                print_ts('info output not written. res is None.')
                 continue
             if url not in packages:
-                print('info output not written. url is not in packages.')
+                print_ts('info output not written. url is not in packages.')
                 continue
-            print('adding info output for package ' + res.group(1))
+            print_ts('adding info output for package ' + res.group(1))
             info_path = resultPath + '/' + 'info_output'
             if not os.path.exists(info_path):
                 os.mkdir(info_path)
@@ -1176,7 +1232,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             packages_count = str(len(packages))
             connection.send(packages_count.encode('utf-8', 'ignore'))
             connection.close()
-            print('[' + strDateTime() + '] getPackagesCount: ' + packages_count)
+            print_ts('getPackagesCount: ' + packages_count)
             continue
         elif cmd.startswith('getPackageIdx'):
             request_idx = abs(int(cmd[len('getPackageIdx:'):]))
@@ -1184,20 +1240,20 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 pkg = packages[request_idx]
                 connection.send(pkg.encode('utf-8', 'ignore'))
                 connection.close()
-                print('[' + strDateTime() + '] getPackageIdx: ' + pkg)
+                print_ts('getPackageIdx: ' + pkg)
             else:
                 connection.close()
-                print('[' + strDateTime() + '] getPackageIdx: index is out of range')
+                print_ts('getPackageIdx: index is out of range')
             continue
         else:
             if cmd.find('\n') < 0:
-                print('[' + strDateTime() + '] invalid command: "' + firstLine + '"')
+                print_ts('invalid command: "' + firstLine + '"')
             else:
                 lines = cmd.split('\n')
                 s = '\\n'.join(lines[:2])
                 if len(lines) > 2:
                     s += '...'
-                print('[' + strDateTime() + '] invalid command: "' + s + '"')
+                print_ts('invalid command: "' + s + '"')
             connection.close()
 
 
@@ -1206,26 +1262,27 @@ if __name__ == "__main__":
     if not os.path.isdir(workPath):
         workPath = os.path.expanduser('~/daca@home')
     os.chdir(workPath)
-    print('work path: ' + workPath)
+    print_ts('work path: ' + workPath)
     resultPath = workPath + '/donated-results'
+    if not os.path.isdir(resultPath):
+        print_ts("fatal: result path '{}' is missing".format(resultPath))
+        sys.exit(1)
 
-    f = open('packages.txt', 'rt')
-    packages = [val.strip() for val in f.readlines()]
-    f.close()
+    with open('packages.txt', 'rt') as f:
+        packages = [val.strip() for val in f.readlines()]
 
-    print('packages: ' + str(len(packages)))
+    print_ts('packages: ' + str(len(packages)))
 
     if len(packages) == 0:
-        print('fatal: there are no packages')
+        print_ts('fatal: there are no packages')
         sys.exit(1)
 
     packageIndex = 0
     if os.path.isfile('package-index.txt'):
-        f = open('package-index.txt', 'rt')
-        packageIndex = int(f.read())
+        with open('package-index.txt', 'rt') as f:
+            packageIndex = int(f.read())
         if packageIndex < 0 or packageIndex >= len(packages):
             packageIndex = 0
-        f.close()
 
     server_address_port = 8000
     if '--test' in sys.argv[1:]:
@@ -1234,4 +1291,4 @@ if __name__ == "__main__":
     try:
         server(server_address_port, packages, packageIndex, resultPath)
     except socket.timeout:
-        print('Timeout!')
+        print_ts('Timeout!')

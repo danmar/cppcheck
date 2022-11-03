@@ -39,8 +39,8 @@ public:
         CSV,
     };
 
-    explicit Report(const QString &filename);
-    virtual ~Report();
+    explicit Report(QString filename);
+    ~Report() override;
 
     /**
      * @brief Create the report (file).

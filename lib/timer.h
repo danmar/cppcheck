@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 
 #include <ctime>
 #include <map>
+#include <mutex>
 #include <string>
 
 enum class SHOWTIME_MODES {
@@ -63,18 +64,20 @@ public:
 
 private:
     std::map<std::string, struct TimerResultsData> mResults;
+    mutable std::mutex mResultsSync;
 };
 
 class CPPCHECKLIB Timer {
 public:
-    Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
+    Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
     ~Timer();
+
+    Timer(const Timer&) = delete;
+    Timer& operator=(const Timer&) = delete;
+
     void stop();
 
 private:
-    Timer(const Timer& other); // disallow copying
-    Timer& operator=(const Timer&); // disallow assignments
-
     const std::string mStr;
     TimerResultsIntf* mTimerResults;
     std::clock_t mStart;

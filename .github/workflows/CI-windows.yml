@@ -6,18 +6,76 @@ name: CI-windows
 
 on: [push,pull_request]
 
+permissions:
+  contents: read
+
 defaults:
   run:
     shell: cmd
-    
+
 jobs:
+
+  build_qt:
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+        qt_ver: [5.15.2, 6.2.4, 6.3.2, 6.4.0]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64 # no 32-bit Qt available
+
+      - name: Cache Qt ${{ matrix.qt_ver }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Windows-QtCache-${{ matrix.qt_ver }}-qtcharts
+
+      - name: Install Qt ${{ matrix.qt_ver }}
+        uses: jurplel/install-qt-action@v2
+        with:
+          aqtversion: '==2.0.6'
+          version: ${{ matrix.qt_ver }}
+          modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+      - name: Build GUI release (qmake)
+        if: startsWith(matrix.qt_ver, '5')
+        run: |
+          cd gui || exit /b !errorlevel!
+          qmake HAVE_QCHART=yes || exit /b !errorlevel!
+          nmake release || exit /b !errorlevel!
+        env:
+          CL: /MP
+
+      - name: Deploy GUI
+        if: startsWith(matrix.qt_ver, '5')
+        run: |
+          windeployqt Build\gui || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
+
+      - name: Build GUI release (CMake)
+        if: startsWith(matrix.qt_ver, '6')
+        run: |
+          cmake -S . -B build -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_QT6=On || exit /b !errorlevel!
+          cmake --build build --target cppcheck-gui || exit /b !errorlevel!
+
+      # TODO: deploy with CMake/Qt6
 
   build:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
         arch: [x64, x86]
-        qt_ver: ['', 5.15.2]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -25,18 +83,15 @@ jobs:
     env:
       # see https://www.pcre.org/original/changelog.txt
       PCRE_VERSION: 8.45
-      # see https://github.com/Z3Prover/z3/releases:
-      Z3_VERSION: 4.8.10
 
     steps:
-      - uses: actions/checkout@v2
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+      - uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
-        if: matrix.qt_ver == ''
-        uses: actions/setup-python@v2
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
+          check-latest: true
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1
@@ -45,19 +100,21 @@ jobs:
 
       - name: Cache PCRE
         id: cache-pcre
-        uses: actions/cache@v2
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        uses: actions/cache@v3
         with:
-          path: pcre-${{ env.PCRE_VERSION }}.zip
-          key: pcre-${{ env.PCRE_VERSION }}
+          path: |
+            externals\pcre.h
+            externals\pcre.lib
+            externals\pcre64.lib
+          key: pcre-${{ env.PCRE_VERSION }}-${{ matrix.arch }}-bin-win
 
       - name: Download PCRE
-        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-pcre.outputs.cache-hit != 'true'
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
 
       - name: Install PCRE
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
@@ -72,79 +129,22 @@ jobs:
         env:
           CL: /MP
 
-      - name: Cache Z3 Library
-        id: cache-z3
-        uses: actions/cache@v2
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
-        with:
-          path: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win.zip
-          key: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win
-
-      - name: Download Z3 library
-        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-z3.outputs.cache-hit != 'true'
-        run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip || exit /b !errorlevel!
-
-      - name: Install Z3 library
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
-        run: |
-          7z x z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -oexternals -r -y || exit /b !errorlevel!
-          move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
-
-      - name: Cache Qt ${{ matrix.qt_ver }}
-        if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        id: cache-qt
-        uses: actions/cache@v1  # not v2!
-        with:
-          path: ../Qt
-          key: Windows-QtCache-${{ matrix.qt_ver }}-qtcharts
-
-      # no 32-bit Qt available
-      - name: Install Qt ${{ matrix.qt_ver }}
-        if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        uses: jurplel/install-qt-action@v2
-        with:
-          version: ${{ matrix.qt_ver }}
-          modules: 'qtcharts'
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
-
       - name: Install missing Python packages
-        if: matrix.qt_ver == ''
         run: |
           python -m pip install pip --upgrade || exit /b !errorlevel!
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
 
-      - name: Build GUI release
-        if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        run: |
-          cd gui || exit /b !errorlevel!
-          qmake HAVE_QCHART=yes || exit /b !errorlevel!
-          nmake release || exit /b !errorlevel!
-        env:
-          CL: /MP
-      
-      - name: Deploy GUI
-        if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        run: |
-          windeployqt Build\gui || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
-
       - name: Run CMake
-        if: false && matrix.qt_ver == ''
+        if: false # TODO: enable
         run: |
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          rm -rf build
-          mkdir build
-          cd build
-          cmake -DBUILD_TESTS=On .. || exit /b !errorlevel!
+          cmake -S . -B build -DBUILD_TESTS=On || exit /b !errorlevel!
 
       - name: Build CLI debug configuration using MSBuild
-        if: matrix.qt_ver == ''
         run: |
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
@@ -154,11 +154,9 @@ jobs:
           msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Debug test
-        if: matrix.qt_ver == ''
         run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
 
       - name: Build CLI release configuration using MSBuild
-        if: matrix.qt_ver == ''
         run: |
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
@@ -168,11 +166,9 @@ jobs:
           msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Release test
-        if: matrix.qt_ver == ''
         run: .\bin\testrunner.exe || exit /b !errorlevel!
 
       - name: Run test/cli
-        if: matrix.qt_ver == ''
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
           :: copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
@@ -183,13 +179,35 @@ jobs:
           python -m pytest test-helloworld.py || exit /b !errorlevel!
           python -m pytest test-inline-suppress.py || exit /b !errorlevel!
           python -m pytest test-more-projects.py || exit /b !errorlevel!
+          python -m pytest test-other.py || exit /b !errorlevel!
           python -m pytest test-proj2.py || exit /b !errorlevel!
           python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!
 
       - name: Test addons
-        if: matrix.qt_ver == ''
         run: |
-          .\cppcheck.exe --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c
+          .\cppcheck --addon=threadsafety addons\test\threadsafety || exit /b !errorlevel!
+          .\cppcheck --addon=threadsafety --std=c++03 addons\test\threadsafety || exit /b !errorlevel!
+          .\cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c || exit /b !errorlevel!
           cd addons\test
-          ..\..\cppcheck.exe --dump -DDUMMY --suppress=uninitvar --inline-suppr misra\misra-test.c --std=c89 --platform=unix64 && python3 ..\misra.py -verify misra\misra-test.c.dump
+          rem We'll force C89 standard to enable an additional verification for
+          rem rules 5.4 and 5.5 which have standard-dependent options.
+          ..\..\cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra\misra-test.c --std=c89 --platform=unix64 || exit /b !errorlevel!
+          python3 ..\misra.py -verify misra\misra-test.c.dump || exit /b !errorlevel!
+          rem TODO: do we need to verify something here?
+          ..\..\cppcheck --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra\misra-test.h || exit /b !errorlevel!
+          ..\..\cppcheck --dump misra\misra-test.cpp || exit /b !errorlevel!
+          python3 ..\misra.py -verify misra\misra-test.cpp.dump || exit /b !errorlevel!
+          python3 ..\misra.py --rule-texts=misra\misra2012_rules_dummy_ascii.txt -verify misra\misra-test.cpp.dump || exit /b !errorlevel!
+          python3 ..\misra.py --rule-texts=misra\misra2012_rules_dummy_utf8.txt -verify misra\misra-test.cpp.dump || exit /b !errorlevel!
+          python3 ..\misra.py --rule-texts=misra\misra2012_rules_dummy_windows1250.txt -verify misra\misra-test.cpp.dump || exit /b !errorlevel!
+          ..\..\cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra\misra-test-avr8.c || exit /b !errorlevel!
+          ..\..\cppcheck --dump misc-test.cpp || exit /b !errorlevel!
+          python3 ..\misc.py -verify misc-test.cpp.dump || exit /b !errorlevel!
+          ..\..\cppcheck --dump naming_test.c || exit /b !errorlevel!
+          rem TODO: fix this - does not fail on Linux
+          rem python3 ..\naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump || exit /b !errorlevel!
+          ..\..\cppcheck --dump naming_test.cpp || exit /b !errorlevel!
+          python3 ..\naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump || exit /b !errorlevel!
+          ..\..\cppcheck --dump namingng_test.c || exit /b !errorlevel!
+          python3 ..\namingng.py --configfile ..\naming.json --verify namingng_test.c.dump || exit /b !errorlevel!
 

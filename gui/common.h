@@ -89,6 +89,8 @@
 #define SETTINGS_SHOW_ERROR_ID          "Show error Id"
 #define SETTINGS_SHOW_STATISTICS        "Show statistics"
 #define SETTINGS_OPEN_PROJECT           "Open Project"
+#define SETTINGS_CHECK_VERSION          "Check Version"
+#define SETTINGS_CHECK_FOR_UPDATES      "Check for updates"
 
 // The maximum value for the progress bar
 #define PROGRESS_MAX                    1024.0

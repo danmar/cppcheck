@@ -23,17 +23,25 @@
 #include <QMessageBox>
 #include <QTextEdit>
 
+#include "ui_fileview.h"
+
 FileViewDialog::FileViewDialog(const QString &file,
                                const QString &title,
                                QWidget *parent)
     : QDialog(parent)
+    , mUI(new Ui::Fileview)
 {
-    mUI.setupUi(this);
+    mUI->setupUi(this);
 
 
     setWindowTitle(title);
-    connect(mUI.mButtons, SIGNAL(accepted()), this, SLOT(accept()));
-    loadTextFile(file, mUI.mText);
+    connect(mUI->mButtons, SIGNAL(accepted()), this, SLOT(accept()));
+    loadTextFile(file, mUI->mText);
+}
+
+FileViewDialog::~FileViewDialog()
+{
+    delete mUI;
 }
 
 void FileViewDialog::loadTextFile(const QString &filename, QTextEdit *edit)

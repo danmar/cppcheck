@@ -72,7 +72,7 @@ void AnalyzerInformation::close()
     }
 }
 
-static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long checksum, std::list<ErrorMessage> *errors)
+static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, std::list<ErrorMessage> *errors)
 {
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(analyzerInfoFile.c_str());
@@ -83,8 +83,8 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long
     if (rootNode == nullptr)
         return false;
 
-    const char *attr = rootNode->Attribute("checksum");
-    if (!attr || attr != std::to_string(checksum))
+    const char *attr = rootNode->Attribute("hash");
+    if (!attr || attr != std::to_string(hash))
         return false;
 
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
@@ -95,37 +95,39 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, unsigned long long
     return true;
 }
 
-std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg)
+std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg)
 {
-    const std::string files(buildDir + "/files.txt");
-    std::ifstream fin(files);
-    if (fin.is_open()) {
-        std::string line;
-        const std::string end(':' + cfg + ':' + sourcefile);
-        while (std::getline(fin,line)) {
-            if (line.size() <= end.size() + 2U)
-                continue;
-            if (!endsWith(line, end.c_str(), end.size()))
-                continue;
-            std::ostringstream ostr;
-            ostr << buildDir << '/' << line.substr(0,line.find(':'));
-            return ostr.str();
-        }
+    std::string line;
+    const std::string end(':' + cfg + ':' + Path::simplifyPath(sourcefile));
+    while (std::getline(filesTxt,line)) {
+        if (line.size() <= end.size() + 2U)
+            continue;
+        if (!endsWith(line, end.c_str(), end.size()))
+            continue;
+        return line.substr(0,line.find(':'));
     }
-
-    std::string filename = Path::fromNativeSeparators(buildDir);
-    if (!endsWith(filename, '/'))
-        filename += '/';
-    const std::string::size_type pos = sourcefile.rfind('/');
-    if (pos == std::string::npos)
-        filename += sourcefile;
-    else
-        filename += sourcefile.substr(pos+1);
-    filename += ".analyzerinfo";
-    return filename;
+    return "";
 }
 
-bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, unsigned long long checksum, std::list<ErrorMessage> *errors)
+std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg)
+{
+    std::ifstream fin(Path::join(buildDir, "files.txt"));
+    if (fin.is_open()) {
+        const std::string& ret = getAnalyzerInfoFileFromFilesTxt(fin, sourcefile, cfg);
+        if (!ret.empty())
+            return Path::join(buildDir, ret);
+    }
+
+    const std::string::size_type pos = sourcefile.rfind('/');
+    std::string filename;
+    if (pos == std::string::npos)
+        filename = sourcefile;
+    else
+        filename = sourcefile.substr(pos + 1);
+    return Path::join(buildDir, filename) + ".analyzerinfo";
+}
+
+bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t hash, std::list<ErrorMessage> *errors)
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;
@@ -133,13 +135,13 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
 
     mAnalyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(buildDir,sourcefile,cfg);
 
-    if (skipAnalysis(mAnalyzerInfoFile, checksum, errors))
+    if (skipAnalysis(mAnalyzerInfoFile, hash, errors))
         return false;
 
     mOutputStream.open(mAnalyzerInfoFile);
     if (mOutputStream.is_open()) {
         mOutputStream << "<?xml version=\"1.0\"?>\n";
-        mOutputStream << "<analyzerinfo checksum=\"" << checksum << "\">\n";
+        mOutputStream << "<analyzerinfo hash=\"" << hash << "\">\n";
     } else {
         mAnalyzerInfoFile.clear();
     }

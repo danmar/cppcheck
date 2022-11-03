@@ -18,6 +18,7 @@
 
 #include "translationhandler.h"
 
+#include "config.h"
 #include "common.h"
 
 #include <QApplication>
@@ -29,7 +30,7 @@
 
 
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
-static void unused()
+static UNUSED void unused()
 {
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "OK"))
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Cancel"))
@@ -81,7 +82,7 @@ bool TranslationHandler::setLanguage(const QString &code)
     }
 
     //Make sure the translator is otherwise valid
-    int index = getLanguageIndexByCode(code);
+    const int index = getLanguageIndexByCode(code);
     if (index == -1) {
         error = QObject::tr("Unknown language specified!");
         failure = true;
@@ -153,7 +154,7 @@ QString TranslationHandler::suggestLanguage() const
     //qDebug()<<"Your language is"<<language;
 
     //And see if we can find it from our list of language files
-    int index = getLanguageIndexByCode(language);
+    const int index = getLanguageIndexByCode(language);
 
     //If nothing found, return English
     if (index < 0) {
@@ -168,7 +169,7 @@ void TranslationHandler::addTranslation(const char *name, const char *filename)
     TranslationInfo info;
     info.mName = name;
     info.mFilename = filename;
-    int codeLength = QString(filename).length() - QString(filename).indexOf('_') - 1;
+    const int codeLength = QString(filename).length() - QString(filename).indexOf('_') - 1;
     info.mCode = QString(filename).right(codeLength);
     mTranslations.append(info);
 }

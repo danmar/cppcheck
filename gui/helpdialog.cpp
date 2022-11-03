@@ -18,15 +18,17 @@
 
 #include "helpdialog.h"
 
-#include "ui_helpdialog.h"
-
 #include "common.h"
+
+#include "ui_helpdialog.h"
 
 #include <QFileInfo>
 #include <QHelpEngine>
 #include <QHelpContentWidget>
 #include <QHelpIndexWidget>
 #include <QMessageBox>
+
+class QWidget;
 
 void HelpBrowser::setHelpEngine(QHelpEngine *helpEngine)
 {
@@ -58,7 +60,7 @@ static QString getHelpFile()
     paths << (filesdir + "/help")
           << filesdir;
 #endif
-    for (QString p: paths) {
+    for (const QString &p: paths) {
         QString filename = p + "/online-help.qhc";
         if (QFileInfo(filename).exists())
             return filename;
@@ -110,4 +112,5 @@ HelpDialog::HelpDialog(QWidget *parent) :
 HelpDialog::~HelpDialog()
 {
     delete mUi;
+    delete mHelpEngine;
 }

@@ -161,9 +161,6 @@
     <ClCompile Include="ctu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="exprengine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pathanalysis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -180,9 +177,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="summaries.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bughuntingchecks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="reverseanalyzer.cpp">
@@ -364,9 +358,6 @@
     <ClInclude Include="summaries.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bughuntingchecks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tokenrange.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -377,6 +368,30 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="infer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="analyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="calculate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="forwardanalyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pathanalysis.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="reverseanalyzer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smallvector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="standards.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="valueptr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

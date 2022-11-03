@@ -3,6 +3,9 @@
 
 import os
 import re
+import tempfile
+import pytest
+
 from testutils import create_gui_project_file, cppcheck
 
 # Run Cppcheck from project path
@@ -178,3 +181,27 @@ def test_exclude():
     assert stdout == 'cppcheck: error: no C or C++ source files found.\n'
 
 
+def test_build_dir_dump_output():
+    with tempfile.TemporaryDirectory() as tempdir:
+        args = f'--cppcheck-build-dir={tempdir} --addon=misra helloworld'
+
+        cppcheck(args.split())
+        cppcheck(args.split())
+        with open(f'{tempdir}/main.a1.dump', 'rt') as f:
+            dump = f.read()
+            assert '</dump>' in dump, 'invalid dump data: ...' + dump[-100:]
+
+def __test_missing_include_system(use_j):
+    args = '--enable=missingInclude --suppress=zerodiv helloworld'
+    if use_j:
+        args = '-j2 ' + args
+
+    _, _, stderr = cppcheck(args.split())
+    assert stderr == 'nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]\n\n'
+
+def test_missing_include_system():
+    __test_missing_include_system(False)
+
+@pytest.mark.xfail
+def test_missing_include_system_j(): #11283
+    __test_missing_include_system(True)

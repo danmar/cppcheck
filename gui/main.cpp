@@ -29,6 +29,7 @@
 #else
 #include <iostream>
 #endif
+#include <string>
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -43,7 +44,7 @@ static bool CheckArgs(const QStringList &args);
 int main(int argc, char *argv[])
 {
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)) && (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
@@ -56,11 +57,13 @@ int main(int argc, char *argv[])
     QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
 
     // Set data dir..
-    foreach (const QString arg, app.arguments()) {
-        if (arg.startsWith("--data-dir=")) {
-            settings->setValue("DATADIR", arg.mid(11));
-            return 0;
-        }
+    const QStringList args = QApplication::arguments();
+    auto it = std::find_if(args.begin(), args.end(), [](const QString& arg) {
+        return arg.startsWith("--data-dir=");
+    });
+    if (it != args.end()) {
+        settings->setValue("DATADIR", it->mid(11));
+        return 0;
     }
 
     TranslationHandler* th = new TranslationHandler(&app);

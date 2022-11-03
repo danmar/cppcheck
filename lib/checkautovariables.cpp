@@ -28,10 +28,8 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "utils.h"
 #include "valueflow.h"
 
-#include <algorithm>
 #include <list>
 #include <unordered_set>
 #include <utility>
@@ -216,7 +214,7 @@ void CheckAutoVariables::assignFunctionArg()
             // TODO: What happens if this is removed?
             if (tok->astParent())
                 continue;
-            if (!(tok->isAssignmentOp() || Token::Match(tok, "++|--")) || !Token::Match(tok->astOperand1(), "%var%"))
+            if (!(tok->isAssignmentOp() || tok->tokType() == Token::eIncDecOp) || !Token::Match(tok->astOperand1(), "%var%"))
                 continue;
             const Token* const vartok = tok->astOperand1();
             if (isNonReferenceArg(vartok) &&
@@ -394,6 +392,13 @@ void CheckAutoVariables::errorUselessAssignmentPtrArg(const Token *tok)
                 "Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?", CWE398, Certainty::normal);
 }
 
+bool CheckAutoVariables::diag(const Token* tokvalue)
+{
+    if (!tokvalue)
+        return true;
+    return !mDiagDanglingTemp.insert(tokvalue).second;
+}
+
 //---------------------------------------------------------------------------
 
 static bool isInScope(const Token * tok, const Scope * scope)
@@ -405,7 +410,7 @@ static bool isInScope(const Token * tok, const Scope * scope)
     const Variable * var = tok->variable();
     if (var && (var->isGlobal() || var->isStatic() || var->isExtern()))
         return false;
-    if (tok->scope() && tok->scope()->isNestedIn(scope))
+    if (tok->scope() && !tok->scope()->isClassOrStructOrUnion() && tok->scope()->isNestedIn(scope))
         return true;
     if (!var)
         return false;
@@ -413,10 +418,10 @@ static bool isInScope(const Token * tok, const Scope * scope)
         const Scope * tokScope = tok->scope();
         if (!tokScope)
             return false;
-        for (const Scope * argScope:tokScope->nestedList) {
-            if (argScope && argScope->isNestedIn(scope))
-                return true;
-        }
+        if (std::any_of(tokScope->nestedList.begin(), tokScope->nestedList.end(), [&](const Scope* argScope) {
+            return argScope && argScope->isNestedIn(scope);
+        }))
+            return true;
     }
     return false;
 }
@@ -444,7 +449,7 @@ static int getPointerDepth(const Token *tok)
     int n = 0;
     std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
     for (const Token* tok2 = decl.first; tok2 != decl.second; tok2 = tok2->next())
-        if (Token::simpleMatch(tok, "*"))
+        if (Token::simpleMatch(tok2, "*"))
             n++;
     return n;
 }
@@ -473,11 +478,12 @@ static bool isEscapedReference(const Variable* var)
         return false;
     if (!var->isReference())
         return false;
-    if (!var->declEndToken())
+    const Token * const varDeclEndToken = var->declEndToken();
+    if (!varDeclEndToken)
         return false;
-    if (!Token::simpleMatch(var->declEndToken(), "="))
+    if (!Token::simpleMatch(varDeclEndToken, "="))
         return false;
-    const Token* vartok = var->declEndToken()->astOperand2();
+    const Token* vartok = varDeclEndToken->astOperand2();
     return !isTemporary(true, vartok, nullptr, false);
 }
 
@@ -521,70 +527,6 @@ static bool isAssignedToNonLocal(const Token* tok)
     return !var->isLocal() || var->isStatic();
 }
 
-static std::vector<const Token*> getParentMembers(const Token* tok)
-{
-    if (!tok)
-        return {};
-    if (!Token::simpleMatch(tok->astParent(), "."))
-        return {tok};
-    const Token* parent = tok;
-    while (Token::simpleMatch(parent->astParent(), "."))
-        parent = parent->astParent();
-    std::vector<const Token*> result;
-    for (const Token* tok2 : astFlatten(parent, ".")) {
-        if (Token::simpleMatch(tok2, "(") && Token::simpleMatch(tok2->astOperand1(), ".")) {
-            std::vector<const Token*> sub = getParentMembers(tok2->astOperand1());
-            result.insert(result.end(), sub.begin(), sub.end());
-        }
-        result.push_back(tok2);
-    }
-    return result;
-}
-
-static const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library)
-{
-    std::vector<const Token*> members = getParentMembers(tok);
-    if (members.size() < 2)
-        return tok;
-    // Find the first local variable or temporary
-    auto it = std::find_if(members.rbegin(), members.rend(), [&](const Token* tok2) {
-        const Variable* var = tok2->variable();
-        if (var) {
-            return var->isLocal() || var->isArgument();
-        } else {
-            return isTemporary(cpp, tok2, library);
-        }
-    });
-    if (it == members.rend())
-        return tok;
-    // If any of the submembers are borrowed types then stop
-    if (std::any_of(it.base() - 1, members.end() - 1, [&](const Token* tok2) {
-        if (astIsPointer(tok2) || astIsContainerView(tok2) || astIsIterator(tok2))
-            return true;
-        if (!astIsUniqueSmartPointer(tok2)) {
-            if (astIsSmartPointer(tok2))
-                return true;
-            const Token* dotTok = tok2->next();
-            if (!Token::simpleMatch(dotTok, ".")) {
-                const Token* endTok = nextAfterAstRightmostLeaf(tok2);
-                if (!endTok)
-                    dotTok = tok2->next();
-                else if (Token::simpleMatch(endTok, "."))
-                    dotTok = endTok;
-                else if (Token::simpleMatch(endTok->next(), "."))
-                    dotTok = endTok->next();
-            }
-            // If we are dereferencing the member variable then treat it as borrowed
-            if (Token::simpleMatch(dotTok, ".") && dotTok->originalName() == "->")
-                return true;
-        }
-        const Variable* var = tok2->variable();
-        return var && var->isReference();
-    }))
-        return nullptr;
-    return *it;
-}
-
 void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token * end)
 {
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
@@ -596,7 +538,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     // If the scope is not set correctly then skip checking it
     if (scope->bodyStart != start)
         return;
-    bool returnRef = Function::returnsReference(scope->function);
+    const bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
@@ -668,7 +610,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         break;
                     } else if (!tokvalue->variable() &&
                                isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                        errorDanglingTemporaryLifetime(tok, &val, tokvalue);
+                        if (!diag(tokvalue))
+                            errorDanglingTemporaryLifetime(tok, &val, tokvalue);
                         break;
                     }
                 }

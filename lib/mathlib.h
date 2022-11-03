@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include <sstream>
 #include <string>
 
 /// @addtogroup Core
@@ -66,17 +65,15 @@ public:
         value shiftRight(const value &v) const;
     };
 
-    typedef long long bigint;
-    typedef unsigned long long biguint;
+    using bigint = long long;
+    using biguint = unsigned long long;
     static const int bigint_bits;
 
     static bigint toLongNumber(const std::string & str);
     static biguint toULongNumber(const std::string & str);
 
     template<class T> static std::string toString(T value) {
-        std::ostringstream result;
-        result << value;
-        return result.str();
+        return std::to_string(value);
     }
     static double toDoubleNumber(const std::string & str);
 
@@ -106,7 +103,6 @@ public:
     static std::string multiply(const std::string & first, const std::string & second);
     static std::string divide(const std::string & first, const std::string & second);
     static std::string mod(const std::string & first, const std::string & second);
-    static std::string incdec(const std::string & var, const std::string & op);
     static std::string calculate(const std::string & first, const std::string & second, char action);
 
     static std::string sin(const std::string & tok);

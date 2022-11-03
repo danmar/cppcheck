@@ -25,7 +25,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <algorithm>
@@ -36,6 +35,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream> // IWYU pragma: keep
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -170,7 +170,7 @@ void CheckIO::checkFileUsage()
             } else if (Token::Match(tok, "%var% =") &&
                        (tok->strAt(2) != "fopen" && tok->strAt(2) != "freopen" && tok->strAt(2) != "tmpfile" &&
                         (windows ? (tok->str() != "_wfopen" && tok->str() != "_wfreopen") : true))) {
-                std::map<int, Filepointer>::iterator i = filepointers.find(tok->varId());
+                const std::map<int, Filepointer>::iterator i = filepointers.find(tok->varId());
                 if (i != filepointers.end()) {
                     i->second.mode = OpenMode::UNKNOWN_OM;
                     i->second.lastOperation = Filepointer::Operation::UNKNOWN_OP;
@@ -496,7 +496,7 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
                  argTok->variable()->dimension(0) != 0))) {
         *formatArgTok = argTok->nextArgument();
         if (!argTok->values().empty()) {
-            std::list<ValueFlow::Value>::const_iterator value = std::find_if(
+            const std::list<ValueFlow::Value>::const_iterator value = std::find_if(
                 argTok->values().begin(), argTok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
             if (value != argTok->values().end() && value->isTokValue() && value->tokvalue &&
                 value->tokvalue->tokType() == Token::eString) {
@@ -975,7 +975,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                         bool done = false;
                         while (!done) {
                             if (i == formatString.end()) {
-                                done = true;
                                 break;
                             }
                             switch (*i) {
@@ -1313,7 +1312,7 @@ void CheckIO::checkFormatString(const Token * const tok,
 
     if (printWarning) {
         // Check that all parameter positions reference an actual parameter
-        for (int i : parameterPositionsUsed) {
+        for (const int i : parameterPositionsUsed) {
             if ((i == 0) || (i > numFormat))
                 wrongPrintfScanfPosixParameterPositionError(tok, tok->str(), i, numFormat);
         }
@@ -1342,7 +1341,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
 
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
-    if (!Token::Match(arg, "%str% ,|)") && !(Token::Match(arg,"%var%") && arg->variable() && arg->variable()->isArray())) {
+    if (!Token::Match(arg, "%str% ,|)") && !(arg->variable() && arg->variable()->isArray())) {
         const Token *top = arg;
         while (top->str() == "(" && !top->isCast())
             top = top->next();

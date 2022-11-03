@@ -57,7 +57,6 @@ private:
         TEST_CASE(toDoubleNumber);
         TEST_CASE(naninf);
         TEST_CASE(isNullValue);
-        TEST_CASE(incdec);
         TEST_CASE(sin);
         TEST_CASE(cos);
         TEST_CASE(tan);
@@ -978,7 +977,7 @@ private:
         ASSERT_EQUALS("inf.0", MathLib::divide("3.0", "0.f")); // inf (#5875)
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0")); // -inf (#5142)
         ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "0.0f")); // -inf (#5142)
-        ASSERT_EQUALS("-inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
+        ASSERT_EQUALS("inf.0", MathLib::divide("-3.0", "-0.0f")); // inf (#5142)
     }
 
     void isdec() const {
@@ -1192,27 +1191,6 @@ private:
         ASSERT_EQUALS(false, MathLib::isNullValue("-ENOMEM"));
     }
 
-    void incdec() const {
-        // increment
-        {
-            const MathLib::biguint num = ~10U;
-            const std::string op = "++";
-            const std::string strNum = MathLib::incdec(MathLib::toString(num), op);
-            const MathLib::biguint incrementedNum = MathLib::toULongNumber(strNum);
-            ASSERT_EQUALS(num + 1U, incrementedNum);
-        }
-        // decrement
-        {
-            const MathLib::biguint num = ~10U;
-            const std::string op = "--";
-            const std::string strNum = MathLib::incdec(MathLib::toString(num), op);
-            const MathLib::biguint decrementedNum = MathLib::toULongNumber(strNum);
-            ASSERT_EQUALS(num - 1U, decrementedNum);
-        }
-        // invalid operation
-        ASSERT_THROW(MathLib::incdec("1", "x"), InternalError); // throw
-    }
-
     void sin() const {
         ASSERT_EQUALS("0.0", MathLib::sin("0"));
     }
@@ -1239,11 +1217,19 @@ private:
         ASSERT_EQUALS("0.0", MathLib::toString(+0.0));
         ASSERT_EQUALS("0.0", MathLib::toString(-0.0));
         // float (trailing f or F)
-        ASSERT_EQUALS("0",  MathLib::toString(+0.0f));
-        ASSERT_EQUALS("-0", MathLib::toString(-0.0F));
+        ASSERT_EQUALS("0.000000", MathLib::toString(0.0f));
+        ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0f));
+        ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0f));
+        ASSERT_EQUALS("0.000000", MathLib::toString(0.0F));
+        ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0F));
+        ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0F));
         // double (tailing l or L)
-        ASSERT_EQUALS("0",  MathLib::toString(+0.0l));
-        ASSERT_EQUALS("-0", MathLib::toString(-0.0L));
+        ASSERT_EQUALS("0.000000",  MathLib::toString(0.0l));
+        ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0l));
+        ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0l));
+        ASSERT_EQUALS("0.000000",  MathLib::toString(0.0L));
+        ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0L));
+        ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0L));
     }
 
     void CPP14DigitSeparators() const { // Ticket #7137, #7565

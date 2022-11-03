@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 namespace tinyxml2 {
     class XMLElement;
@@ -61,13 +62,16 @@ public:
     explicit Check(const std::string &aname);
 
     /** This constructor is used when running checks. */
-    Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(aname) {}
+    Check(std::string aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(std::move(aname)) {}
 
     virtual ~Check() {
         if (!mTokenizer)
             instances().remove(this);
     }
+
+    Check(const Check &) = delete;
+    Check& operator=(const Check &) = delete;
 
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
     static std::list<Check *> &instances();
@@ -151,7 +155,7 @@ protected:
 
     void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty);
 
-    ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, const std::string& bug) const;
+    ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, std::string bug) const;
 
     /**
      * Use WRONG_DATA in checkers when you check for wrong data. That
@@ -159,9 +163,6 @@ protected:
      */
     bool wrongData(const Token *tok, const char *str);
 
-    /** disabled assignment operator and copy constructor */
-    void operator=(const Check &) = delete;
-    Check(const Check &) = delete;
 private:
     const std::string mName;
 };

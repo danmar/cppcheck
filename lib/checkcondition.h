@@ -26,7 +26,6 @@
 #include "config.h"
 #include "mathlib.h"
 #include "errortypes.h"
-#include "utils.h"
 
 #include <set>
 #include <string>
@@ -137,7 +136,7 @@ private:
     bool isOverlappingCond(const Token * const cond1, const Token * const cond2, bool pure) const;
     void assignIfError(const Token *tok1, const Token *tok2, const std::string &condition, bool result);
     void mismatchingBitAndError(const Token *tok1, const MathLib::bigint num1, const Token *tok2, const MathLib::bigint num2);
-    void badBitmaskCheckError(const Token *tok);
+    void badBitmaskCheckError(const Token *tok, bool isNoOp = false);
     void comparisonError(const Token *tok,
                          const std::string &bitop,
                          MathLib::bigint value1,
@@ -161,12 +160,12 @@ private:
 
     void clarifyConditionError(const Token *tok, bool assign, bool boolop);
 
-    void alwaysTrueFalseError(const Token *tok, const ValueFlow::Value *value);
+    void alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value);
 
     void invalidTestForOverflow(const Token* tok, const ValueType *valueType, const std::string &replace);
     void pointerAdditionResultNotNullError(const Token *tok, const Token *calc);
 
-    void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok);
+    void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok, bool isRedundant = false);
 
     void assignmentInCondition(const Token *eq);
 
@@ -191,7 +190,7 @@ private:
         c.redundantConditionError(nullptr, "If x > 11 the condition x > 10 is always true.", false);
         c.moduloAlwaysTrueFalseError(nullptr, "1");
         c.clarifyConditionError(nullptr, true, false);
-        c.alwaysTrueFalseError(nullptr, nullptr);
+        c.alwaysTrueFalseError(nullptr, nullptr, nullptr);
         c.invalidTestForOverflow(nullptr, nullptr, "false");
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
         c.duplicateConditionalAssignError(nullptr, nullptr);

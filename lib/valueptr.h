@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include <functional>
 #include <memory>
 
 template<class T>
@@ -43,6 +42,7 @@ public:
 
     template<class U>
     // cppcheck-suppress noExplicitConstructor
+    // NOLINTNEXTLINE(google-explicit-constructor)
     ValuePtr(const U& value) : mPtr(cloner<U>::apply(&value)), mClone(&cloner<U>::apply)
     {}
 
@@ -53,8 +53,11 @@ public:
     }
     ValuePtr(ValuePtr&& rhs) : mPtr(std::move(rhs.mPtr)), mClone(std::move(rhs.mClone)) {}
 
-    pointer release() {
-        return mPtr.release();
+    /**
+     * Releases the shared_ptr's ownership of the managed object using the .reset() function
+     */
+    void release() {
+        mPtr.reset();
     }
 
     T* get() NOEXCEPT {
@@ -89,6 +92,7 @@ public:
         return *this;
     }
 
+    // NOLINTNEXTLINE(google-explicit-constructor)
     operator bool() const NOEXCEPT {
         return !!mPtr;
     }

@@ -25,6 +25,7 @@
 
 #include <QThread>
 
+class QObject;
 class Settings;
 class ThreadResult;
 
@@ -39,7 +40,7 @@ class CheckThread : public QThread {
     Q_OBJECT
 public:
     explicit CheckThread(ThreadResult &result);
-    virtual ~CheckThread();
+    ~CheckThread() override;
 
     /**
      * @brief Set settings for cppcheck
@@ -94,6 +95,7 @@ signals:
      */
     void done();
 
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void fileChecked(const QString &file);
 protected:
 

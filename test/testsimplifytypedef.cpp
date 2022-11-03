@@ -186,6 +186,9 @@ private:
         TEST_CASE(simplifyTypedef137);
         TEST_CASE(simplifyTypedef138);
         TEST_CASE(simplifyTypedef139);
+        TEST_CASE(simplifyTypedef140); // #10798
+        TEST_CASE(simplifyTypedef141); // #10144
+        TEST_CASE(simplifyTypedef142); // T() when T is a pointer type
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -394,14 +397,19 @@ private:
             "    typedef float float_t ;\n"
             "    inline VL::float_t fast_atan2(VL::float_t y, VL::float_t x){}\n"
             "}";
-
         const char expected[] =
             "namespace VL { "
             ""
             "float fast_atan2 ( float y , float x ) { } "
             "}";
-
         ASSERT_EQUALS(expected, tok(code, false));
+
+        // ticket #11373
+        const char code1[] =
+            "typedef int foo;\n"
+            "inline foo f();\n";
+        const char expected1[] = "int f ( ) ;";
+        ASSERT_EQUALS(expected1, tok(code1, false));
     }
 
     void simplifyTypedef7() {
@@ -1389,7 +1397,7 @@ private:
                                 "I i;";
 
             // The expected result..
-            const char expected[] = "std :: pair < int , int > const i ;";
+            const char expected[] = "const std :: pair < int , int > i ;";
             ASSERT_EQUALS(expected, tok(code));
         }
 
@@ -1424,14 +1432,14 @@ private:
                             "typedef const Class & Const_Reference;\n"
                             "void some_method (Const_Reference x) const {}\n"
                             "void another_method (Const_Reference x) const {}\n"
-                            "}";
+                            "};";
 
         // The expected result..
         const char expected[] = "class Class2 { "
                                 ""
                                 "void some_method ( const Class & x ) const { } "
                                 "void another_method ( const Class & x ) const { } "
-                                "}";
+                                "} ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -2435,8 +2443,7 @@ private:
                                 "std :: vector < CharacterConversion > ( ) . swap ( c2c ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:4]: (debug) valueflow.cpp:4635:(valueFlow) bailout: variable 'it' used in loop\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout.str());
     }
 
     void simplifyTypedef117() { // #6507
@@ -2543,11 +2550,12 @@ private:
 
     void simplifyTypedef124() { // ticket #7792
         const char code[] = "typedef long unsigned int size_t;\n"
-                            "typedef size_t (my_func)(char *, size_t, size_t, void *);";
+                            "typedef size_t (my_func)(char *, size_t, size_t, void *);"
+                            "size_t f(size_t s);";
 
-        // Check for output..
-        checkSimplifyTypedef(code);
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:1]: (debug) Failed to parse 'typedef long unsigned int size_t ;'. The checking continues anyway.\n", errout.str());
+        const char exp[] = "long f ( long s ) ;";
+        ASSERT_EQUALS(exp, tok(code, /*simplify*/ true));
+        ASSERT_EQUALS("", errout.str());
 
         const char code1[] = "typedef long unsigned int uint32_t;\n"
                              "typedef uint32_t (my_func)(char *, uint32_t, uint32_t, void *);";
@@ -2621,7 +2629,7 @@ private:
                                 "  constexpr const foo &c_str() const noexcept { return _a; }\n"
                                 "};";
 
-            const char exp[] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
@@ -2632,8 +2640,8 @@ private:
                                 "  constexpr operator foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
-            const char exp[] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
 
@@ -2644,8 +2652,8 @@ private:
                                 "  constexpr operator const foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
-            const char exp[] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
     }
@@ -3025,6 +3033,41 @@ private:
         ASSERT_EQUALS(
             "struct Anonymous0 { struct c * b ; } ; struct Anonymous0 * d ; void e ( struct c * a ) { if ( a < d [ 0 ] . b ) { } }",
             tok(code));
+    }
+
+    void simplifyTypedef140() { // #10798
+        {
+            const char code[] = "typedef void (*b)();\n"
+                                "enum class E { a, b, c };\n";
+            ASSERT_EQUALS("enum class E { a , b , c } ;", tok(code));
+        }
+        {
+            const char code[] = "typedef int A;\n"
+                                "enum class E { A };\n";
+            ASSERT_EQUALS("enum class E { A } ;", tok(code));
+        }
+    }
+
+    void simplifyTypedef141() { // #10144
+        const char code[] = "class C {\n"
+                            "    struct I {\n"
+                            "        using vt = const std::string;\n"
+                            "        using ptr = vt*;\n"
+                            "    };\n"
+                            "};\n";
+        ASSERT_EQUALS("class C { struct I { } ; } ;", tok(code));
+    }
+
+    void simplifyTypedef142() { // T() when T is a pointer type
+        // #11232
+        const char code1[] = "typedef int* T;\n"
+                             "a = T();\n";
+        ASSERT_EQUALS("a = ( int * ) 0 ;", tok(code1));
+
+        // #9479
+        const char code2[] = "typedef int* T;\n"
+                             "void f(T = T()){}\n";
+        ASSERT_EQUALS("void f ( int * = ( int * ) 0 ) { }", tok(code2));
     }
 
     void simplifyTypedefFunction1() {

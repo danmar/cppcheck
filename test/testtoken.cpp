@@ -25,7 +25,7 @@
 #include "valueflow.h"
 
 #include <algorithm>
-#include <iosfwd>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 
@@ -62,7 +62,6 @@ private:
         TEST_CASE(stringTypes);
         TEST_CASE(getStrLength);
         TEST_CASE(getStrSize);
-        TEST_CASE(getCharAt);
         TEST_CASE(strValue);
         TEST_CASE(concatStr);
 
@@ -412,28 +411,6 @@ private:
         ASSERT_EQUALS(sizeof("\\"), Token::getStrSize(&tok, &settings));
     }
 
-    void getCharAt() const {
-        Token tok;
-
-        tok.str("\"asdf\"");
-        ASSERT_EQUALS("a", Token::getCharAt(&tok, 0));
-        ASSERT_EQUALS("s", Token::getCharAt(&tok, 1));
-
-        tok.str("\"a\\ts\"");
-        ASSERT_EQUALS("\\t", Token::getCharAt(&tok, 1));
-
-        tok.str("\"\"");
-        ASSERT_EQUALS("\\0", Token::getCharAt(&tok, 0));
-
-        tok.str("L\"a\\ts\"");
-        ASSERT_EQUALS("a", Token::getCharAt(&tok, 0));
-        ASSERT_EQUALS("\\t", Token::getCharAt(&tok, 1));
-
-        tok.str("u\"a\\ts\"");
-        ASSERT_EQUALS("\\t", Token::getCharAt(&tok, 1));
-        ASSERT_EQUALS("s", Token::getCharAt(&tok, 2));
-    }
-
     void strValue() const {
         Token tok;
 
@@ -764,10 +741,9 @@ private:
         append_vector(test_ops, logicalOps);
         append_vector(test_ops, assignmentOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
-        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            ASSERT_EQUALS(true, MatchCheck(*test_op, "%op%"));
-        }
+        ASSERT_EQUALS(true, std::all_of(test_ops.begin(), test_ops.end(), [&](const std::string& s) {
+            return MatchCheck(s, "%op%");
+        }));
 
         // Negative test against other operators
         std::vector<std::string> other_ops;
@@ -786,10 +762,9 @@ private:
         append_vector(test_ops, comparisonOps);
         append_vector(test_ops, logicalOps);
 
-        std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
-        for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            ASSERT_EQUALS(true, MatchCheck(*test_op, "%cop%"));
-        }
+        ASSERT_EQUALS(true, std::all_of(test_ops.begin(), test_ops.end(), [&](const std::string& s) {
+            return MatchCheck(s, "%cop%");
+        }));
 
         // Negative test against other operators
         std::vector<std::string> other_ops;
@@ -1103,14 +1078,14 @@ private:
         ASSERT(t == nullptr);
     }
 
-    void findClosingBracket() {
+    void findClosingBracket() const {
         givenACodeSampleToTokenize var("template<typename X, typename...Y> struct S : public Fred<Wilma<Y...>> {}");
 
         const Token* const t = var.tokens()->next()->findClosingBracket();
         ASSERT(Token::simpleMatch(t, "> struct"));
     }
 
-    void expressionString() {
+    void expressionString() const {
         givenACodeSampleToTokenize var1("void f() { *((unsigned long long *)x) = 0; }");
         const Token *const tok1 = Token::findsimplematch(var1.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok1->expressionString());
@@ -1132,7 +1107,7 @@ private:
         ASSERT_EQUALS("x=\"\\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07\"", data6.tokens()->next()->expressionString());
     }
 
-    void hasKnownIntValue() {
+    void hasKnownIntValue() const {
         // pointer might be NULL
         ValueFlow::Value v1(0);
 

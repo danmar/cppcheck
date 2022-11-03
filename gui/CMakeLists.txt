@@ -1,6 +1,15 @@
 if (BUILD_GUI)
 
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
+    # disable all clang-tidy checks for Qt generated files
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/.clang-tidy"
+"---
+Checks:          '-*,misc-definitions-in-headers'
+WarningsAsErrors: '*'
+CheckOptions:
+  - { key: HeaderFileExtensions,          value: 'x' }
+")
+
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
         add_definitions(-DQT_NO_WARNING_OUTPUT)
@@ -14,8 +23,9 @@ if (BUILD_GUI)
     file(GLOB tss  "*.ts")
     QT_WRAP_UI(uis_hdrs ${uis})
     QT_ADD_RESOURCES(resources "gui.qrc")
-    QT_ADD_TRANSLATION(qms ${tss})
-    list(APPEND cppcheck-gui-deps ${hdrs} ${uis_hdrs} ${resources} ${qms} )
+    # TODO: passing "-no-obsolete" here breaks the translations
+    QT_CREATE_TRANSLATION(qms ${CMAKE_CURRENT_SOURCE_DIR} ${tss})
+    list(APPEND cppcheck-gui-deps ${hdrs} ${uis_hdrs} ${resources} ${qms})
     add_custom_target(gui-build-deps SOURCES ${cppcheck-gui-deps})
 
     list(APPEND cppcheck-gui_SOURCES ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:simplecpp_objs>)
@@ -28,26 +38,25 @@ if (BUILD_GUI)
     target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/)
     if(USE_BUNDLED_TINYXML2)
         target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
+    else()
+        target_include_directories(cppcheck-gui SYSTEM PRIVATE ${tinyxml2_INCLUDE_DIRS})
     endif()
     if (HAVE_RULES)
         target_link_libraries(cppcheck-gui ${PCRE_LIBRARY})
     endif()
-    if (USE_Z3)
-        target_link_libraries(cppcheck-gui ${Z3_LIBRARIES})
-    endif()
     if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
-        target_link_libraries(cppcheck-gui tinyxml2)
+        target_link_libraries(cppcheck-gui ${tinyxml2_LIBRARIES})
     endif()
-    target_link_libraries(cppcheck-gui ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB} ${QT_PRINTSUPPORT_LIB} ${QT_HELP_LIB})
+    target_link_libraries(cppcheck-gui ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB} ${QT_PRINTSUPPORT_LIB} ${QT_HELP_LIB} ${QT_NETWORK_LIB})
     if(WITH_QCHART)
         target_compile_definitions (cppcheck-gui PRIVATE HAVE_QCHART)
         target_link_libraries(cppcheck-gui ${QT_CHARTS_LIB})
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            # Q_UNUSED() in generated code
-            target_compile_options(cppcheck-gui PRIVATE -Wno-extra-semi-stmt)
-        endif()
+        # Q_UNUSED() in generated code
+        target_compile_options_safe(cppcheck-gui -Wno-extra-semi-stmt)
+        # caused by Qt generated moc code
+        target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
     endif()
 
     install(TARGETS cppcheck-gui RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)

@@ -16,15 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "redirect.h"
 #include "settings.h"
 #include "testsuite.h"
+#include "testutils.h"
 #include "threadexecutor.h"
+#include "timer.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <map>
-#include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
+#include <vector>
 
 class TestThreadExecutor : public TestFixture {
 public:
@@ -37,25 +42,24 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE) {
         errout.str("");
         output.str("");
-        if (!ThreadExecutor::isEnabled()) {
-            // Skip this check on systems which don't use this feature
-            return;
-        }
 
         std::map<std::string, std::size_t> filemap;
         for (int i = 1; i <= files; ++i) {
             std::ostringstream oss;
             oss << "file_" << i << ".cpp";
-            filemap[oss.str()] = 1;
+            filemap[oss.str()] = data.size();
         }
 
         settings.jobs = jobs;
+        settings.showtime = showtime;
         ThreadExecutor executor(filemap, settings, *this);
+        std::vector<ScopedFile> scopedfiles;
+        scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)
-            executor.addFileContent(i->first, data);
+            scopedfiles.emplace_back(i->first, data);
 
         ASSERT_EQUALS(result, executor.check());
     }
@@ -65,6 +69,7 @@ private:
 
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
+        TEST_CASE(many_threads_showtime);
         TEST_CASE(no_errors_more_files);
         TEST_CASE(no_errors_less_files);
         TEST_CASE(no_errors_equal_amount_files);
@@ -91,6 +96,17 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}");
+    }
+
+    // #11249 - reports TSAN errors - only applies to threads not processes though
+    void many_threads_showtime() {
+        REDIRECT;
+        check(16, 100, 100,
+              "int main()\n"
+              "{\n"
+              "  char *a = malloc(10);\n"
+              "  return 0;\n"
+              "}", SHOWTIME_MODES::SHOWTIME_SUMMARY);
     }
 
     void no_errors_more_files() {

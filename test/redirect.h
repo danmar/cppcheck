@@ -21,7 +21,9 @@
 #include <sstream>
 #include <string>
 
+// NOLINTNEXTLINE(readability-redundant-declaration) - TODO: fix this
 extern std::ostringstream errout;
+// NOLINTNEXTLINE(readability-redundant-declaration) - TODO: fix this
 extern std::ostringstream output;
 /**
  * @brief Utility class for capturing cout and cerr to ostringstream buffers

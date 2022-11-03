@@ -16,29 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VARIABLECONSTRAINTSDIALOG_H
-#define VARIABLECONSTRAINTSDIALOG_H
+#ifndef STACKTRACE_H
+#define STACKTRACE_H
 
-#include <QDialog>
+#include "config.h"
 
-namespace Ui {
-    class VariableContractsDialog;
-}
+#ifdef USE_UNIX_BACKTRACE_SUPPORT
 
-class VariableContractsDialog : public QDialog {
-    Q_OBJECT
+#include <cstdio>
 
-public:
-    explicit VariableContractsDialog(QWidget *parent, QString var);
-    ~VariableContractsDialog();
+/*
+ * Try to print the callstack.
+ * That is very sensitive to the operating system, hardware, compiler and runtime.
+ * The code is not meant for production environment!
+ * One reason is named first: it's using functions not whitelisted for usage in a signal handler function.
+ */
+void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool lowMem);
 
-    QString getVarname() const;
-    QString getMin() const;
-    QString getMax() const;
+#endif
 
-private:
-    Ui::VariableContractsDialog *mUI;
-    QString mVarName;
-};
-
-#endif // VARIABLECONSTRAINTSDIALOG_H
+#endif // STACKTRACE_H

@@ -35,6 +35,8 @@ class QWidget;
 class QItemSelectionModel;
 class ThreadHandler;
 class QContextMenuEvent;
+class QKeyEvent;
+class QObject;
 class QSettings;
 
 /// @addtogroup GUI
@@ -49,7 +51,7 @@ class ResultsTree : public QTreeView {
     Q_OBJECT
 public:
     explicit ResultsTree(QWidget * parent = nullptr);
-    virtual ~ResultsTree();
+    ~ResultsTree() override;
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
 
     /**
@@ -186,6 +188,7 @@ signals:
      *
      * @param hidden true if there are some hidden results, or false if there are not
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void resultsHidden(bool hidden);
 
     /**
@@ -193,6 +196,7 @@ signals:
      *
      * @param selectedItems list of selected files
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void checkSelected(QStringList selectedItems);
 
     /**
@@ -200,13 +204,13 @@ signals:
      *
      * @param current Model index to specify new selected item.
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void treeSelectionChanged(const QModelIndex &current);
 
     /** Suppress Ids */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void suppressIds(QStringList ids);
 
-    /** Edit contract for function */
-    void editFunctionContract(QString function);
 public slots:
 
     /**
@@ -285,11 +289,6 @@ protected slots:
     void openContainingFolder();
 
     /**
-     * @brief Allow user to edit contract to fix bughunting warning
-     */
-    void editContract();
-
-    /**
      * @brief Slot for selection change in the results tree.
      *
      * @param current Model index to specify new selected item.
@@ -334,7 +333,7 @@ protected:
      *
      * @param severity Severity
      */
-    QString severityToIcon(Severity::SeverityType severity) const;
+    static QString severityToIcon(Severity::SeverityType severity);
 
     /**
      * @brief Helper function to open an error within target with application*
@@ -359,7 +358,7 @@ protected:
      * @param target The error tree item containing the filename/full path
      * @param fullPath Whether or not to retrieve the full path or only the filename.
      */
-    QString getFilePath(QStandardItem *target, bool fullPath);
+    static QString getFilePath(QStandardItem *target, bool fullPath);
 
     /**
      * @brief Context menu event (user right clicked on the tree)

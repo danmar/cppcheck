@@ -28,7 +28,6 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <list>
@@ -76,6 +75,7 @@ public:
         checkBufferOverrun.stringNotZeroTerminated();
         checkBufferOverrun.objectIndex();
         checkBufferOverrun.argumentSize();
+        checkBufferOverrun.negativeArraySize();
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
@@ -87,6 +87,8 @@ public:
         c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
         c.objectIndexError(nullptr, nullptr, true);
         c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
+        c.negativeMemoryAllocationSizeError(nullptr, nullptr);
+        c.negativeArraySizeError(nullptr);
     }
 
     /** @brief Parse current TU and extract file info */
@@ -119,6 +121,10 @@ private:
 
     void argumentSize();
     void argumentSizeError(const Token *tok, const std::string &functionName, nonneg int paramIndex, const std::string &paramExpression, const Variable *paramVar, const Variable *functionArg);
+
+    void negativeArraySize();
+    void negativeArraySizeError(const Token* tok);
+    void negativeMemoryAllocationSizeError(const Token* tok, const ValueFlow::Value* value); // provide a negative value to memory allocation function
 
     void objectIndex();
     void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);
@@ -160,7 +166,8 @@ private:
                "- Dangerous usage of strncat()\n"
                "- Using array index before checking it\n"
                "- Partial string write that leads to buffer that is not zero terminated.\n"
-               "- Check for large enough arrays being passed to functions\n";
+               "- Check for large enough arrays being passed to functions\n"
+               "- Allocating memory with a negative size\n";
     }
 };
 /// @}

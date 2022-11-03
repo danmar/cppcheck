@@ -22,11 +22,26 @@
 #include <wx/memory.h>
 #include <wx/frame.h>
 #include <wx/menu.h>
+#include <wx/regex.h>
 #include <wx/stattext.h>
 #include <wx/sizer.h>
 #include <wx/string.h>
 #include <wx/textctrl.h>
 #include <wx/propgrid/property.h>
+
+void uninitvar_wxRegEx_GetMatch(wxRegEx &obj, size_t *start, size_t *len, size_t index)
+{
+    size_t s,l;
+    size_t *sPtr,*lPtr;
+    // cppcheck-suppress uninitvar
+    (void)obj.GetMatch(&s,lPtr);
+    // TODO cppcheck-suppress uninitvar
+    (void)obj.GetMatch(sPtr,&l);
+    (void)obj.GetMatch(&s,&l);
+    (void)obj.GetMatch(start,len);
+    (void)obj.GetMatch(start,len,0);
+    (void)obj.GetMatch(start,len,index);
+}
 
 #ifdef __VISUALC__
 // Ensure no duplicateBreak warning is issued after wxLogApiError() calls.
@@ -41,6 +56,34 @@ bool duplicateBreak_wxLogApiError(const wxString &msg, const HRESULT &hr, wxStri
     return true;
 }
 #endif
+
+void argDirection_wxString_ToDouble(const wxString &str)
+{
+    // No warning is expected. Ensure both arguments are treated
+    // as output by library configuration
+    double value;
+    const bool convOk = str.ToDouble(&value);
+    if (convOk && value <= 42.0) {}
+}
+
+void argDirection_wxString_ToCDouble(const wxString &str)
+{
+    // No warning is expected. Ensure both arguments are treated
+    // as output by library configuration
+    double value;
+    const bool convOk = str.ToCDouble(&value);
+    if (convOk && value <= 42.0) {}
+}
+
+void argDirection_wxTextCtrl_GetSelection(const wxTextCtrl *const textCtrl)
+{
+    // No warning is expected. Ensure both arguments are treated
+    // as output by library configuration
+    long start;
+    long end;
+    textCtrl->GetSelection(&start, &end);
+    if (start > 0 && end > 0) {}
+}
 
 void useRetval_wxString_MakeCapitalized(wxString &str)
 {

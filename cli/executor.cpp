@@ -16,35 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "functioncontractdialog.h"
+#include "executor.h"
 
-#include "ui_functioncontractdialog.h"
+Executor::Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
+    : mFiles(files), mSettings(settings), mErrorLogger(errorLogger)
+{}
 
-static QString formatFunctionName(QString f)
-{
-    if (f.endsWith("()"))
-        return f;
-    f.replace("(", "(\n    ");
-    f.replace(",", ",\n    ");
-    return f;
-}
-
-FunctionContractDialog::FunctionContractDialog(QWidget *parent, const QString &name, const QString &expects) :
-    QDialog(parent),
-    mUi(new Ui::FunctionContractDialog)
-{
-    mUi->setupUi(this);
-    mUi->functionName->setText(formatFunctionName(name));
-    mUi->expects->setPlainText(expects);
-}
-
-FunctionContractDialog::~FunctionContractDialog()
-{
-    delete mUi;
-}
-
-QString FunctionContractDialog::getExpects() const
-{
-    return mUi->expects->toPlainText();
-}
+Executor::~Executor()
+{}
 

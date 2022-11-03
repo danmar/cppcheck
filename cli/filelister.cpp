@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "filelister.h"
 
+#include "config.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "utils.h"
@@ -34,9 +35,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <windows.h>
-#ifndef __BORLANDC__
 #include <shlwapi.h>
-#endif
 
 // Here is the catch: cppcheck core is Ansi code (using char type).
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
@@ -44,12 +43,8 @@
 
 static BOOL myIsDirectory(const std::string& path)
 {
-#ifdef __BORLANDC__
-    return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
-#else
 // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
     return PathIsDirectoryA(path.c_str());
-#endif
 }
 
 static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
@@ -60,15 +55,7 @@ static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findDa
 
 static BOOL myFileExists(const std::string& path)
 {
-#ifdef __BORLANDC__
-    DWORD fa = GetFileAttributes(path.c_str());
-    BOOL result = FALSE;
-    if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
-        result = TRUE;
-#else
-    const BOOL result = PathFileExistsA(path.c_str()) && !PathIsDirectoryA(path.c_str());
-#endif
-    return result;
+    return PathFileExistsA(path.c_str()) && !PathIsDirectoryA(path.c_str());
 }
 
 std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
@@ -217,12 +204,13 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                 dirent entry;
                 char buf[sizeof(*dir_result) + (sizeof(dir_result->d_name) > 1 ? 0 : NAME_MAX + 1)];
             } dir_result_buffer;
-            UNUSED(dir_result_buffer.buf); // do not trigger cppcheck itself on the "unused buf"
+            // TODO: suppress instead?
+            (void)dir_result_buffer.buf; // do not trigger cppcheck itself on the "unused buf"
             std::string new_path;
             new_path.reserve(path.length() + 100);// prealloc some memory to avoid constant new/deletes in loop
 
-            while ((readdir_r(dir, &dir_result_buffer.entry, &dir_result) == 0) && (dir_result != nullptr)) {
 
+            while ((SUPPRESS_DEPRECATED_WARNING(readdir_r(dir, &dir_result_buffer.entry, &dir_result)) == 0) && (dir_result != nullptr)) {
                 if ((std::strcmp(dir_result->d_name, ".") == 0) ||
                     (std::strcmp(dir_result->d_name, "..") == 0))
                     continue;
@@ -230,9 +218,9 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                 new_path = path + '/' + dir_result->d_name;
 
 #if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
-                bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
+                const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
 #else
-                bool path_is_directory = FileLister::isDirectory(new_path);
+                const bool path_is_directory = FileLister::isDirectory(new_path);
 #endif
                 if (path_is_directory) {
                     if (recursive && !ignored.match(new_path)) {

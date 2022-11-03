@@ -24,8 +24,8 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 
@@ -250,6 +250,8 @@ private:
         TEST_CASE(garbageCode218); // #8763
         TEST_CASE(garbageCode219); // #10101
         TEST_CASE(garbageCode220); // #6832
+        TEST_CASE(garbageCode221);
+        TEST_CASE(garbageCode222); // #10763
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -656,7 +658,7 @@ private:
     }
 
     void garbageCode43() { // #6703
-        ASSERT_THROW(checkCode("int { }; struct A<void> a = { }"), InternalError);
+        checkCode("int { }; struct A<void> a = { }");
     }
 
     void garbageCode44() { // #6704
@@ -1703,6 +1705,12 @@ private:
     }
     void garbageCode220() { // #6832
         ASSERT_THROW(checkCode("(){(){{()}}return;{switch()0 case(){}break;l:()}}\n"), InternalError);  // don't crash
+    }
+    void garbageCode221() {
+        ASSERT_THROW(checkCode("struct A<0<;\n"), InternalError);  // don't crash
+    }
+    void garbageCode222() { // #10763
+        ASSERT_THROW(checkCode("template<template<class>\n"), InternalError);  // don't crash
     }
 
     void syntaxErrorFirstToken() {

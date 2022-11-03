@@ -23,9 +23,8 @@
 
 #include "check.h"
 #include "config.h"
-#include "symboldatabase.h"
 #include "tokenize.h"
-#include "utils.h"
+#include "symboldatabase.h"
 
 #include <cstddef>
 #include <list>
@@ -188,6 +187,9 @@ public:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
+    /** @brief Set of the STL types whose operator[] is not const */
+    static const std::set<std::string> stl_containers_not_const;
+
 private:
     const SymbolDatabase *mSymbolDatabase;
 
@@ -199,11 +201,12 @@ private:
     void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
-    void uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
-    void missingMemberCopyError(const Token *tok, const std::string& classname, const std::string& varname);
+    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
+    void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
+    void missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
-    void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
+    void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type, bool isContainer = false);
     void memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type);
     void memsetErrorFloat(const Token *tok, const std::string &type);
     void mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname);
@@ -237,11 +240,11 @@ private:
         c.noCopyConstructorError(nullptr, false, nullptr, false);
         c.noOperatorEqError(nullptr, false, nullptr, false);
         c.noDestructorError(nullptr, false, nullptr);
-        c.uninitVarError(nullptr, false, "classname", "varname", false, false);
-        c.uninitVarError(nullptr, true, "classname", "varnamepriv", false, false);
-        c.uninitVarError(nullptr, false, "classname", "varname", true, false);
-        c.uninitVarError(nullptr, true, "classname", "varnamepriv", true, false);
-        c.missingMemberCopyError(nullptr, "classname", "varnamepriv");
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
+        c.missingMemberCopyError(nullptr, Function::eConstructor, "classname", "varnamepriv");
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
         c.memsetError(nullptr, "memfunc", "classname", "class");
@@ -348,6 +351,13 @@ private:
      * @param varid id of variable to mark assigned
      */
     static void assignVar(std::vector<Usage> &usageList, nonneg int varid);
+
+    /**
+     * @brief assign a variable in the varlist
+     * @param usageList reference to usage vector
+     * @param vartok variable token
+     */
+    static void assignVar(std::vector<Usage> &usageList, const Token *vartok);
 
     /**
      * @brief initialize a variable in the varlist

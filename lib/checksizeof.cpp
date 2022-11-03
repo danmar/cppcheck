@@ -165,6 +165,21 @@ void CheckSizeof::checkSizeofForPointerSize()
                             if (vt && vt->type == ValueType::CHAR && vt->pointer == 0)
                                 continue;
                         }
+                        auto hasMultiplication = [](const Token* parTok) -> bool {
+                            while (parTok) { // Allow division if followed by multiplication
+                                if (parTok->isArithmeticalOp() && parTok->str() == "*") {
+                                    const Token* szToks[] = { parTok->astOperand1(), parTok->astOperand2() };
+                                    if (std::any_of(std::begin(szToks), std::end(szToks), [](const Token* szTok) {
+                                        return Token::simpleMatch(szTok, "(") && Token::simpleMatch(szTok->previous(), "sizeof");
+                                    }))
+                                        return true;
+                                }
+                                parTok = parTok->astParent();
+                            }
+                            return false;
+                        };
+                        if (hasMultiplication(tok2->astParent()))
+                            continue;
 
                         divideBySizeofError(tok2, tokFunc->str());
                     }
@@ -373,16 +388,25 @@ void CheckSizeof::suspiciousSizeofCalculation()
     if (!mSettings->severity.isEnabled(Severity::warning) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
-    // TODO: Use AST here. This should be possible as soon as sizeof without brackets is correctly parsed
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            const Token* const end = tok->linkAt(1);
-            const Variable* var = end->previous()->variable();
-            if (end->strAt(-1) == "*" || (var && var->isPointer() && !var->isArray())) {
-                if (end->strAt(1) == "/")
-                    divideSizeofError(tok);
-            } else if (Token::simpleMatch(end, ") * sizeof") && end->next()->astOperand1() == tok->next())
-                multiplySizeofError(tok);
+            const Token* lPar = tok->astParent();
+            if (lPar && lPar->str() == "(") {
+                const Token* const rPar = lPar->link();
+                const Token* varTok = lPar->astOperand2();
+                int derefCount = 0;
+                while (Token::Match(varTok, "[|*")) {
+                    ++derefCount;
+                    varTok = varTok->astOperand1();
+                }
+                if (lPar->astParent() && lPar->astParent()->str() == "/") {
+                    const Variable* var = varTok ? varTok->variable() : nullptr;
+                    if (var && var->isPointer() && !var->isArray() && !(var->valueType() && var->valueType()->pointer <= derefCount))
+                        divideSizeofError(tok);
+                }
+                else if (Token::simpleMatch(rPar, ") * sizeof") && rPar->next()->astOperand1() == tok->next())
+                    multiplySizeofError(tok);
+            }
         }
     }
 }

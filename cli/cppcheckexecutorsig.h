@@ -16,16 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef CPPCHECKEXECUTORSIG_H
+#define CPPCHECKEXECUTORSIG_H
 
-//---------------------------------------------------------------------------
-#ifndef bughuntingchecksH
-#define bughuntingchecksH
-//---------------------------------------------------------------------------
+#include "config.h"
 
-#include "exprengine.h"
-#include <vector>
+#if defined(USE_UNIX_SIGNAL_HANDLING)
 
-void addBughuntingChecks(std::vector<ExprEngine::Callback> *callbacks);
+class CppCheckExecutor;
+class CppCheck;
 
-//---------------------------------------------------------------------------
-#endif // bughuntingchecksH
+int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), CppCheck& cppcheck);
+
+#endif // CPPCHECKEXECUTORSIG_H
+
+#endif // CPPCHECKEXECUTORSIG_H

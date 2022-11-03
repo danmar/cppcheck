@@ -19,8 +19,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "ui_mainwindow.h"
-
+#include "library.h"
 #include "settings.h"
 #include "platforms.h"
 
@@ -32,10 +31,20 @@ class ThreadHandler;
 class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
+class ApplicationList;
 class QAction;
 class QActionGroup;
 class QSettings;
 class QTimer;
+class QLineEdit;
+class ImportProject;
+class QCloseEvent;
+class QObject;
+class QNetworkAccessManager;
+class QNetworkReply;
+namespace Ui {
+    class MainWindow;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -55,7 +64,7 @@ public:
 
     MainWindow(TranslationHandler* th, QSettings* settings);
     MainWindow(const MainWindow &) = delete;
-    virtual ~MainWindow();
+    ~MainWindow() override;
     MainWindow &operator=(const MainWindow &) = delete;
 
     /**
@@ -72,13 +81,6 @@ public:
     void analyzeCode(const QString& code, const QString& filename);
 
 public slots:
-
-    /** Update "Functions" tab */
-    void updateFunctionContractsTab();
-
-    /** Update "Variables" tab */
-    void updateVariableContractsTab();
-
     /** @brief Slot for analyze files menu item */
     void analyzeFiles();
 
@@ -228,19 +230,13 @@ protected slots:
     /** Suppress error ids */
     void suppressIds(QStringList ids);
 
-    /** Edit contract for function */
-    void editFunctionContract(QString function);
+private slots:
+    void replyFinished(QNetworkReply *reply);
 
-    /** Edit constraints for variable */
-    void editVariableContract(QString var);
-
-    /** Delete contract for function */
-    void deleteFunctionContract(const QString& function);
-
-    /** Edit constraints for variable */
-    void deleteVariableContract(const QString& var);
-
+    void hideInformation();
 private:
+
+    bool isCppcheckPremium() const;
 
     /** Get filename for last results */
     QString getLastResults() const;
@@ -330,7 +326,7 @@ private:
     void formatAndSetTitle(const QString &text = QString());
 
     /** @brief Show help contents */
-    void openOnlineHelp();
+    static void openOnlineHelp();
 
     /**
      * @brief Enable or disable project file actions.
@@ -431,7 +427,7 @@ private:
     TranslationHandler *mTranslation;
 
     /** @brief Class holding all UI components */
-    Ui::MainWindow mUI;
+    Ui::MainWindow *mUI;
 
     /** @brief Current analyzed directory. */
     QString mCurrentDirectory;
@@ -472,6 +468,11 @@ private:
      * List of MRU menu actions. Needs also to store the separator.
      */
     QAction *mRecentProjectActs[MaxRecentProjects + 1];
+
+    QString mCppcheckCfgAbout;
+    QString mCppcheckCfgProductName;
+
+    QNetworkAccessManager *mNetworkAccessManager = nullptr;
 };
 /// @}
 #endif // MAINWINDOW_H

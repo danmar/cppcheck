@@ -20,6 +20,8 @@
 
 #include "ui_libraryeditargdialog.h"
 
+class QWidget;
+
 LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &arg) :
     QDialog(parent),
     mUi(new Ui::LibraryEditArgDialog),
@@ -108,7 +110,7 @@ CppcheckLibraryData::Function::Arg LibraryEditArgDialog::getArg() const
     return ret;
 }
 
-void LibraryEditArgDialog::minsizeChanged(int)
+void LibraryEditArgDialog::minsizeChanged()
 {
     mUi->minsize1arg->setEnabled(mUi->minsize1type->currentIndex() != 0);
     mUi->minsize1arg2->setEnabled(mUi->minsize1type->currentText() == "mul");

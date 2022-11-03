@@ -24,13 +24,15 @@
 #include "config.h"
 
 #include <atomic>
-#include <simplecpp.h>
+#include <cstddef>
 #include <istream>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+
+#include <simplecpp.h>
 
 class ErrorLogger;
 class Settings;
@@ -56,7 +58,7 @@ public:
     std::string str;
 
     /** record a directive (possibly filtering src) */
-    Directive(const std::string &_file, const int _linenr, const std::string &_str);
+    Directive(std::string _file, const int _linenr, const std::string &_str);
 };
 
 /// @addtogroup Core
@@ -164,15 +166,15 @@ public:
     void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
 
     /**
-     * Calculate CRC32 checksum. Using toolinfo, tokens1, filedata.
+     * Calculate HASH. Using toolinfo, tokens1, filedata.
      *
      * @param tokens1    Sourcefile tokens
      * @param toolinfo   Arbitrary extra toolinfo
-     * @return CRC32 checksum
+     * @return HASH
      */
-    unsigned int calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
+    std::size_t calculateHash(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
 
-    void simplifyPragmaAsm(simplecpp::TokenList *tokenList);
+    void simplifyPragmaAsm(simplecpp::TokenList *tokenList) const;
 
 private:
 

@@ -38,8 +38,7 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) override {}
-        void bughuntingReport(const std::string & /*str*/) override {}
+        void reportOut(const std::string & /*outmsg*/, Color /*c*/ = Color::Reset) override {}
 
         void reportErr(const ErrorMessage &msg) override {
             id.push_back(msg.id);

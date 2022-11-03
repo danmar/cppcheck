@@ -25,13 +25,13 @@
 static const QStringList getTranslationNames(const TranslationHandler& handler)
 {
     QStringList names;
-    foreach (TranslationInfo translation, handler.getTranslations()) {
+    for (const TranslationInfo& translation : handler.getTranslations()) {
         names.append(translation.mName);
     }
     return names;
 }
 
-void TestTranslationHandler::construct()
+void TestTranslationHandler::construct() const
 {
     TranslationHandler handler;
     QCOMPARE(getTranslationNames(handler).size(), 13);  // 12 translations + english

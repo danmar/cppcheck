@@ -24,9 +24,9 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
 #include <memory>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class TestMemleakInClass;
@@ -521,6 +521,7 @@ private:
         TEST_CASE(class24); // ticket #3806 - false positive in copy constructor
         TEST_CASE(class25); // ticket #4367 - false positive implementation for destructor is not seen
         TEST_CASE(class26); // ticket #10789
+        TEST_CASE(class27); // ticket #8126
 
         TEST_CASE(staticvar);
 
@@ -1461,6 +1462,17 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Class 'S' is unsafe, 'S::p' can leak by wrong usage.\n", errout.str());
     }
 
+    void class27() { // ticket #8126 - array of pointers
+        check("struct S {\n"
+              "    S() {\n"
+              "        for (int i = 0; i < 5; i++)\n"
+              "            a[i] = new char[3];\n"
+              "    }\n"
+              "    char* a[5];\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Class 'S' is unsafe, 'S::a' can leak by wrong usage.\n", errout.str());
+    }
+
     void staticvar() {
         check("class A\n"
               "{\n"
@@ -1558,6 +1570,18 @@ private:
               "    delete [] pkt_buffer;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
+
+        check("struct S {\n" // 5678
+              "    ~S();\n"
+              "    void f();\n"
+              "    int* p;\n"
+              "};\n"
+              "void S::f() {\n"
+              "    p = new char[1];\n"
+              "    delete p;\n"
+              "    p = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Mismatching allocation and deallocation: S::p\n", errout.str());
     }
 
     void mismatch2() { // #5659
@@ -1696,6 +1720,7 @@ private:
         TEST_CASE(assign1);
         TEST_CASE(assign2);
         TEST_CASE(assign3);
+        TEST_CASE(assign4); // #11019
 
         // Failed allocation
         TEST_CASE(failedAllocation);
@@ -1875,6 +1900,73 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void assign4() {
+        check("struct S { int a, b, c; };\n" // #11019
+              "void f() {\n"
+              "    struct S s;\n"
+              "    *&s.a = open(\"xx.log\", O_RDONLY);\n"
+              "    ((s).b) = open(\"xx.log\", O_RDONLY);\n"
+              "    (&s)->c = open(\"xx.log\", O_RDONLY);\n"
+              "}\n", false);
+        ASSERT_EQUALS("[test.c:7]: (error) Memory leak: s.a\n"
+                      "[test.c:7]: (error) Memory leak: s.b\n"
+                      "[test.c:7]: (error) Memory leak: s.c\n",
+                      errout.str());
+
+        check("struct S { int *p, *q; };\n" // #7705
+              "void f(S s) {\n"
+              "    s.p = new int[10];\n"
+              "    s.q = malloc(40);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s.p\n"
+                      "[test.cpp:5]: (error) Memory leak: s.q\n",
+                      errout.str());
+
+        check("struct S** f(struct S** s) {\n" // don't throw
+              "    struct S** ret = malloc(sizeof(*ret));\n"
+              "    ret[0] = malloc(sizeof(**s));\n"
+              "    ret[0]->g = strdup(s[0]->g);\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void run_rcmd(enum rcommand rcmd, rsh_session *sess, char *cmd) {\n"
+              "    sess->fp = popen(cmd, rcmd == RSH_PIPE_READ ? \"r\" : \"w\");\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char* a[2]; };\n"
+              "enum E { E0, E1 };\n"
+              "void f(struct S* s, enum E e, const char* n) {\n"
+              "    free(s->a[e]);\n"
+              "    s->a[e] = strdup(n);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(struct S** s, const char* c) {\n"
+              "    *s = malloc(sizeof(struct S));\n"
+              "    (*s)->value = strdup(c);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    size_t mpsz;\n"
+              "    void* hdr;\n"
+              "};\n"
+              "void f(struct S s[static 1U], int fd, size_t size) {\n"
+              "    s->mpsz = size;\n"
+              "    s->hdr = mmap(NULL, s->mpsz, PROT_READ, MAP_SHARED, fd, 0);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(type_t t) {\n"
+              "    t->p = malloc(10);\n"
+              "    t->x.p = malloc(10);\n"
+              "    t->y[2].p = malloc(10);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void failedAllocation() {
         check("static struct ABC * foo()\n"
               "{\n"
@@ -1961,6 +2053,20 @@ private:
               "    return NewT(s);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("typedef struct s { char* str; } attr_t;\n" // #10152
+              "attr_t* f(int type) {\n"
+              "    attr_t a;\n"
+              "    switch (type) {\n"
+              "    case 1:\n"
+              "        a.str = strdup(\"?\");\n"
+              "        break;\n"
+              "    default:\n"
+              "        return NULL;\n"
+              "    }\n"
+              "    return g(&a);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:9]: (error) Memory leak: a.str\n", errout.str());
     }
 
     void ifelse() {
@@ -2125,7 +2231,7 @@ private:
               "  ((f)->realm) = strdup(realm);\n"
               "  if(f->realm == NULL) {}\n"
               "}", false);
-        TODO_ASSERT_EQUALS("[test.c:6]: (error) Memory leak: f.realm\n", "", errout.str());
+        ASSERT_EQUALS("[test.c:6]: (error) Memory leak: f.realm\n", errout.str());
     }
 
     void customAllocation() { // #4770
@@ -2205,6 +2311,7 @@ private:
         TEST_CASE(getAllocationType);
 
         TEST_CASE(crash1); // #10729
+        TEST_CASE(openDevNull); // #9653
     }
 
     void functionParameter() {
@@ -2307,6 +2414,44 @@ private:
               "    return static_cast<int*>(malloc(size));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if (new int[42]) {} }\n" // #10857
+              "void g() { if (malloc(42)) {} }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Allocation with new, if doesn't release it.\n"
+                      "[test.cpp:2]: (error) Allocation with malloc, if doesn't release it.\n",
+                      errout.str());
+
+        check("const char* string(const char* s) {\n"
+              "    StringSet::iterator it = strings_.find(s);\n"
+              "    if (it != strings_.end())\n"
+              "        return *it;\n"
+              "    return *strings_.insert(it, std::strcpy(new char[std::strlen(s) + 1], s));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    static void load(const QString& projPath) {\n"
+              "        if (proj_)\n"
+              "            return;\n"
+              "        proj_ = new ProjectT(projPath);\n"
+              "        proj_->open(new OpenCallback());\n"
+              "    }\n"
+              "private:\n"
+              "    static Core::ProjectBase* proj_;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& s, int n) {\n"
+              "    std::unique_ptr<char[]> u;\n"
+              "    u.reset(strcpy(new char[n], s.c_str()));\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char* p; };\n"
+              "void f(S* s, int N) {\n"
+              "    s->p = s->p ? strcpy(new char[N], s->p) : nullptr;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
@@ -2358,7 +2503,7 @@ private:
               "{\n"
               "    42,malloc(42);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
 
         check("void *f()\n"
               "{\n"
@@ -2429,6 +2574,115 @@ private:
               "int main() {\n"
               "  unary_right_comma (a);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    new int[10];\n"
+              "    new int[10][5];\n"
+              "    new int[10]();\n"
+              "    new int[10]{};\n"
+              "    new int[] { 1, 2, 3 };\n"
+              "    new std::string;\n"
+              "    new int;\n"
+              "    new int();\n"
+              "    new int(1);\n"
+              "    new int{};\n"
+              "    new int{ 1 };\n"
+              "    new uint8_t[4];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:3]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:4]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:5]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:6]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:7]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:8]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:9]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:10]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:11]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:12]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:13]: (error) Return value of allocation function 'new' is not stored.\n",
+                      errout.str());
+
+        check("void f(int* p) {\n"
+              "    new auto('c');\n"
+              "    new(p) int;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n"
+                           "[test.cpp:3]: (error) Return value of allocation function 'new' is not stored.\n",
+                           "",
+                           errout.str());
+
+        check("void g(int* p) {\n"
+              "    new QWidget;\n"
+              "    new QWidget();\n"
+              "    new QWidget{ this };\n"
+              "    h(new int[10], 1);\n"
+              "    h(new int[10][5], 1);\n"
+              "    h(new int[10](), 1);\n"
+              "    h(new int[10]{}, 1);\n"
+              "    h(new int[] { 1, 2, 3 }, 1);\n"
+              "    h(new auto('c'), 1);\n"
+              "    h(new std::string, 1);\n"
+              "    h(new int, 1);\n"
+              "    h(new int{}, 1);\n"
+              "    h(new int(), 1);\n"
+              "    h(new int{ 1 }, 1);\n"
+              "    h(new int(1), 1);\n"
+              "    h(new(p) int, 1);\n"
+              "    h(new QWidget, 1);\n"
+              "    C{ new int[10], 1 };\n"
+              "    C{ new int[10](), 1 };\n"
+              "    C{ new int[10]{}, 1 };\n"
+              "    C{ new int[] { 1, 2, 3 }, 1 };\n"
+              "    C{ new auto('c'), 1 };\n"
+              "    C{ new std::string, 1 };\n"
+              "    C{ new int, 1 };\n"
+              "    C{ new int{}, 1 };\n"
+              "    C{ new int(), 1 };\n"
+              "    C{ new int{ 1 }, 1 };\n"
+              "    C{ new int(1), 1 };\n"
+              "    C{ new(p) int, 1 };\n"
+              "    C{ new QWidget, 1 };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) { if (b && malloc(42)) {} }\n" //  // #10858
+              "void g(bool b) { if (b || malloc(42)) {} }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'malloc' is not stored.\n"
+                      "[test.cpp:2]: (error) Return value of allocation function 'malloc' is not stored.\n",
+                      errout.str());
+
+        check("void f0(const bool b) { b ? new int : nullptr; }\n" // #11155
+              "void f1(const bool b) { b ? nullptr : new int; }\n"
+              "int* g0(const bool b) { return b ? new int : nullptr; }\n"
+              "void g1(const bool b) { h(b, b ? nullptr : new int); }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n",
+                      errout.str());
+
+        check("void f() {\n" // #11157
+              "    switch (*new int) { case 42: break; }\n"
+              "    switch (*malloc(42)) { case 42: break; }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with new, switch doesn't release it.\n"
+                      "[test.cpp:3]: (error) Allocation with malloc, switch doesn't release it.\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    Ref<StringBuffer> remove(new StringBuffer());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11039
+              "    delete new int;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11327
+              "    int* p = (new int[3]) + 1;\n"
+              "    delete[] &p[-1];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2603,6 +2857,14 @@ private:
         check("void foo() {\n"
               "    extern void *malloc (size_t size);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void openDevNull() {
+        check("void f() {\n" // #9653
+              "    (void)open(\"/dev/null\", O_RDONLY);\n"
+              "    open(\"/dev/null\", O_WRONLY);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

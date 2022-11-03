@@ -32,7 +32,7 @@ Before building the installer make sure all the components are build:
 And that runtime files are available:
   - Qt runtimes:
       Qt5Core.dll, Qt5PrintSupport.dll, Qt5Widgets.dll, Qt5Gui.dll and platforms/qwindows.dll
-  - MS CRT merge module (Microsoft_VC140_CRT_x86.msm or Microsoft_VC140_CRT_x64.msm)
+  - MS CRT merge module (Microsoft_VC143_CRT_x86.msm or Microsoft_VC143_CRT_x64.msm)
 
 Build installer by giving this command line in VS command prompt (or run
 vcvars32.bat in DOS prompt first to setup environment):

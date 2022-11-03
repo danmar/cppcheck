@@ -24,7 +24,8 @@
 #include <QDialog>
 
 class QListWidgetItem;
-
+class QObject;
+class QWidget;
 namespace Ui {
     class LibraryDialog;
 }
@@ -35,7 +36,7 @@ class LibraryDialog : public QDialog {
 public:
     explicit LibraryDialog(QWidget *parent = nullptr);
     LibraryDialog(const LibraryDialog &) = delete;
-    ~LibraryDialog();
+    ~LibraryDialog() override;
     LibraryDialog &operator=(const LibraryDialog &) = delete;
 
 private slots:
@@ -45,10 +46,10 @@ private slots:
     void addFunction();
     void changeFunction();
     void editArg();
-    void editFunctionName(QListWidgetItem*);
-    void filterFunctions(const QString&);
+    void editFunctionName(QListWidgetItem* /*item*/);
+    void filterFunctions(const QString& /*filter*/);
     void selectFunction();
-    void sortFunctions(bool);
+    void sortFunctions(bool /*sort*/);
 
 private:
     Ui::LibraryDialog *mUi;

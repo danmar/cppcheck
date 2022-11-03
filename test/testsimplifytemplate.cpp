@@ -27,7 +27,7 @@
 #include "tokenlist.h"
 
 #include <cstring>
-#include <iosfwd>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 
@@ -217,6 +217,9 @@ private:
         TEST_CASE(template172); // #10258 crash
         TEST_CASE(template173); // #10332 crash
         TEST_CASE(template174); // #10506 hang
+        TEST_CASE(template175); // #10908
+        TEST_CASE(template176); // #11146
+        TEST_CASE(template177);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -255,6 +258,7 @@ private:
         TEST_CASE(expandSpecialized2);
         TEST_CASE(expandSpecialized3); // #8671
         TEST_CASE(expandSpecialized4);
+        TEST_CASE(expandSpecialized5); // #10494
 
         TEST_CASE(templateAlias1);
         TEST_CASE(templateAlias2);
@@ -1138,7 +1142,7 @@ private:
                                 "return f1<B<A>> ( 0 , reinterpret_cast < B<A> * > ( E<void*> :: Int ( -1 ) ) ) ; "
                                 "} "
                                 "} ; "
-                                "int main ( void ) { "
+                                "int main ( ) { "
                                 "C<A> ca ; "
                                 "return 0 ; "
                                 "} "
@@ -4456,6 +4460,47 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template175() // #10908
+    {
+        const char code[] = "template <typename T, int value> T Get() {return value;}\n"
+                            "char f() { Get<int,10>(); }\n";
+        const char exp[] = "int Get<int,10> ( ) ; "
+                           "char f ( ) { Get<int,10> ( ) ; } "
+                           "int Get<int,10> ( ) { return 10 ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template176() // #11146 don't crash
+    {
+        const char code[] = "struct a {\n"
+                            "    template <typename> class b {};\n"
+                            "};\n"
+                            "struct c {\n"
+                            "    template <typename> a::b<int> d();\n"
+                            "    ;\n"
+                            "};\n"
+                            "template <typename> a::b<int> c::d() {}\n"
+                            "template <> class a::b<int> c::d<int>() { return {}; };\n";
+        const char exp[] = "struct a { "
+                           "class b<int> c :: d<int> ( ) ; "
+                           "template < typename > class b { } ; "
+                           "} ; "
+                           "struct c { a :: b<int> d<int> ( ) ; } ; "
+                           "class a :: b<int> c :: d<int> ( ) { return { } ; } ; "
+                           "a :: b<int> c :: d<int> ( ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template177() {
+        const char code[] = "template <typename Encoding, typename Allocator>\n"
+                            "class C { xyz<Encoding, Allocator> x; };\n"
+                            "C<UTF8<>, MemoryPoolAllocator<>> c;";
+        const char exp[] = "class C<UTF8<>,MemoryPoolAllocator<>> ; "
+                           "C<UTF8<>,MemoryPoolAllocator<>> c ; "
+                           "class C<UTF8<>,MemoryPoolAllocator<>> { xyz < UTF8 < > , MemoryPoolAllocator < > > x ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -4809,14 +4854,14 @@ private:
         //         "no constructor" false positives
         const char code[] = "class Fred {\n"
                             "    template<class T> explicit Fred(T t) { }\n"
-                            "}";
-        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } }", tok(code));
+                            "};";
+        ASSERT_EQUALS("class Fred { template < class T > explicit Fred ( T t ) { } } ;", tok(code));
 
         // #3532
         const char code2[] = "class Fred {\n"
                              "    template<class T> Fred(T t) { }\n"
-                             "}";
-        ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } }", tok(code2));
+                             "};";
+        ASSERT_EQUALS("class Fred { template < class T > Fred ( T t ) { } } ;", tok(code2));
     }
 
     void syntax_error_templates_1() {
@@ -5252,6 +5297,9 @@ private:
         ASSERT_EQUALS(4U, templateParameters("template<template<typename>...Foo,int,template<template<template<typename>>>,int> x;"));
         ASSERT_EQUALS(2U, templateParameters("template<typename S, enable_if_t<(is_compile_string<S>::value), int>> void i(S s);"));
         ASSERT_EQUALS(2U, templateParameters("template<typename c, b<(c::d), int>> void e();"));
+        ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args&...>> constexpr void f() {}")); // #11351
+        ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args&&...>> void f() {}"));
+        ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args*...>> void f() {}"));
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition
@@ -5496,7 +5544,7 @@ private:
                             "private:\n"
                             "    std::basic_ostream<unsigned char> &outputStream_;\n"
                             "};";
-        const char expected[] = "struct OutputU16<unsignedchar> final { "
+        const char expected[] = "struct OutputU16<unsignedchar> { "
                                 "explicit OutputU16<unsignedchar> ( std :: basic_ostream < unsigned char > & t ) : outputStream_ ( t ) { } "
                                 "void operator() ( unsigned short ) const ; "
                                 "private: "
@@ -5578,6 +5626,27 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tok(code));
         }
+    }
+
+    void expandSpecialized5() {
+        const char code[] = "template<typename T> class hash;\n" // #10494
+                            "template<> class hash<int> {};\n"
+                            "int f(int i) {\n"
+                            "    int hash = i;\n"
+                            "    const int a[2]{};\n"
+                            "    return a[hash];\n"
+                            "}\n";
+
+        const char expected[] = "class hash<int> ; "
+                                "template < typename T > class hash ; "
+                                "class hash<int> { } ; "
+                                "int f ( int i ) { "
+                                "int hash ; hash = i ; "
+                                "const int a [ 2 ] { } ; "
+                                "return a [ hash ] ; "
+                                "}";
+
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void templateAlias1() {
