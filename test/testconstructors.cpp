@@ -3324,6 +3324,38 @@ private:
               "};");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
 
+        // Unknown member functions and unknown static functions
+        check("class ABC {\n"
+              "  static void static_base_func();\n"
+              "  void const_base_func() const;\n"
+              "};\n"
+              "class Fred : private ABC {\n"
+              "public:\n"
+              "    Fred() {\n"
+              "        const_func();\n"
+              "        static_func();\n"
+              "        const_base_func();\n"
+              "        ABC::static_base_func();\n"
+              "    }\n"
+              "    void const_func() const;\n"
+              "    static void static_f();\n"
+              "private:\n"
+              "    int i;\n"
+              "};");
+
+        // Unknown overloaded member functions
+        check("class Fred : private ABC {\n"
+              "public:\n"
+              "    Fred() {\n"
+              "        func();\n"
+              "    }\n"
+              "    void func() const;\n"
+              "    void func();\n"
+              "private:\n"
+              "    int i;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void uninitVarEnum1() {

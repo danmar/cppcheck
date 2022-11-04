@@ -336,7 +336,7 @@ private:
         bool init;
     };
 
-    static bool isBaseClassFunc(const Token *tok, const Scope *scope);
+    static bool isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope);
 
     /**
      * @brief Create usage list that contains all scope members and also members
