@@ -686,6 +686,21 @@ void CheckClass::assignAllVar(std::vector<Usage> &usageList)
         i.assign = true;
 }
 
+void CheckClass::assignAllVarsVisibleFromScope(std::vector<Usage>& usageList, const Scope* scope)
+{
+    for (Usage& usage : usageList) {
+        if (usage.var->scope() == scope)
+            usage.assign = true;
+    }
+
+    // Iterate through each base class...
+    for (const Type::BaseInfo& i : scope->definedType->derivedFrom) {
+        const Type *derivedFrom = i.type;
+
+        assignAllVarsVisibleFromScope(usageList, derivedFrom->classScope);
+    }
+}
+
 void CheckClass::clearAllVar(std::vector<Usage> &usageList)
 {
     for (Usage & i : usageList) {
@@ -892,6 +907,12 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     callstack.push_back(member);
                     initializeVarList(*member, callstack, scope, usage);
                     callstack.pop_back();
+                }
+
+                // assume that a base class call to operator= assigns all its base members (but not more)
+                else if (func.tokenDef->str() == ftok->str() && isBaseClassMutableMemberFunc(ftok, scope)) {
+                    if (member->nestedIn)
+                        assignAllVarsVisibleFromScope(usage, member->nestedIn->definedType->classScope);
                 }
 
                 // there is a called member function, but it has no implementation, so we assume it initializes everything
