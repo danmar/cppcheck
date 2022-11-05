@@ -7483,6 +7483,13 @@ private:
         testIsCpp11init("class X{}", // forgotten ; so not properly recognized as a class
                         "{ }",
                         TokenImpl::Cpp11init::CPP11INIT);
+
+        testIsCpp11init("namespace abc::def { TEST(a, b) {} }",
+                        "{ TEST",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("namespace { TEST(a, b) {} }", // anonymous namespace
+                        "{ TEST",
+                        TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }
 };
