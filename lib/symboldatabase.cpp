@@ -6211,8 +6211,6 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
         for (const Token* child = parent->astOperand1(); child;) {
             if (Token::Match(child, ".|::"))
                 child = child->astOperand2();
-            else if (Token::simpleMatch(child, "["))
-                child = child->astOperand1();
             else {
                 isArrayToPointerDecay = child->variable() && child->variable()->isArray();
                 break;
