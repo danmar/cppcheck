@@ -6207,7 +6207,19 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     if (parent->str() == "&" && !parent->astOperand2()) {
         ValueType vt(valuetype);
         vt.reference = Reference::None; //Given int& x; the type of &x is int* not int&*
-        vt.pointer += 1U;
+        bool isArrayToPointerDecay = false;
+        for (const Token* child = parent->astOperand1(); child;) {
+            if (Token::Match(child, ".|::"))
+                child = child->astOperand2();
+            else if (Token::simpleMatch(child, "["))
+                child = child->astOperand1();
+            else {
+                isArrayToPointerDecay = child->variable() && child->variable()->isArray();
+                break;
+            }
+        }
+        if (!isArrayToPointerDecay)
+            vt.pointer += 1U;
         setValueType(parent, vt);
         return;
     }
