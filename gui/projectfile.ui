@@ -779,7 +779,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_12">
          <property name="title">
-          <string>Coding standards</string>
+          <string>Coding standards (Premium)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_20">
           <item>
@@ -790,32 +790,14 @@
            </widget>
           </item>
           <item>
-           <layout class="QHBoxLayout" name="mLayoutMisraRuleTexts">
-            <item>
-             <widget class="QLabel" name="mLabelMisraFile">
-              <property name="text">
-               <string>MISRA rule texts</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLineEdit" name="mEditMisraFile">
-              <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Copy/paste the text from Appendix A &amp;quot;Summary of guidelines&amp;quot; from the MISRA C 2012 pdf to a text file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="mBtnBrowseMisraFile">
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           <widget class="QCheckBox" name="mMisraCpp2008">
+            <property name="text">
+             <string>Misra C++ 2008</string>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="mPremiumCertC">
+           <widget class="QCheckBox" name="mCertC2016">
             <property name="text">
              <string>Cert C</string>
             </property>
@@ -836,9 +818,9 @@
            </layout>
           </item>
           <item>
-           <widget class="QCheckBox" name="mMisraCpp2008">
+           <widget class="QCheckBox" name="mCertCpp2016">
             <property name="text">
-             <string>Misra C++ 2008</string>
+             <string>Cert C++</string>
             </property>
            </widget>
           </item>
@@ -855,7 +837,7 @@
        <item>
         <widget class="QGroupBox" name="mGroupboxBughunting">
          <property name="title">
-          <string>Bug hunting</string>
+          <string>Bug hunting (Premium)</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_21">
           <item>

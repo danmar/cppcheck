@@ -268,11 +268,6 @@ protected slots:
     void editSuppression(const QModelIndex &index);
 
     /**
-     * @brief Browse for misra file
-     */
-    void browseMisraFile();
-
-    /**
      * @brief Check for all VS configurations
      */
     void checkAllVSConfigs();

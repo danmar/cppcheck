@@ -468,9 +468,6 @@ double MathLib::toDoubleNumber(const std::string &str)
     }
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
-    // nullcheck
-    if (isNullValue(str))
-        return 0.0;
 #ifdef _LIBCPP_VERSION
     if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
         // TODO : handle locale
@@ -1053,7 +1050,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
     } else if (isNullValue(second)) {
         if (isNullValue(first))
             return "nan.0";
-        return isPositive(first) ? "inf.0" : "-inf.0";
+        return isPositive(first) == isPositive(second) ? "inf.0" : "-inf.0";
     }
     return toString(toDoubleNumber(first) / toDoubleNumber(second));
 #endif

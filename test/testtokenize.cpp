@@ -6243,6 +6243,10 @@ private:
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
         ASSERT_EQUALS("adecltypeac::(,decltypead::(,",
                       testAst("template <typename a> void b(a &, decltype(a::c), decltype(a::d));"));
+        ASSERT_EQUALS("g{([= decltypea0[(",
+                      testAst("auto g = [](decltype(a[0]) i) {};"));
+        ASSERT_EQUALS("g{([= decltypea0[(i&",
+                      testAst("auto g = [](decltype(a[0])& i) {};"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
                                              "struct B { A* hash; };\n"
@@ -6377,6 +6381,12 @@ private:
         ASSERT_EQUALS("AB: abc+=", testAst("struct A : public B<C*> { void f() { a=b+c; } };"));
 
         ASSERT_EQUALS("xfts(=", testAst("; auto x = f(ts...);"));
+
+        // #11369
+        ASSERT_NO_THROW(tokenizeAndStringify("int a;\n"
+                                             "template <class> auto b() -> decltype(a) {\n"
+                                             "    if (a) {}\n"
+                                             "}\n"));
     }
 
     void astcast() {
@@ -7473,6 +7483,13 @@ private:
         testIsCpp11init("class X{}", // forgotten ; so not properly recognized as a class
                         "{ }",
                         TokenImpl::Cpp11init::CPP11INIT);
+
+        testIsCpp11init("namespace abc::def { TEST(a, b) {} }",
+                        "{ TEST",
+                        TokenImpl::Cpp11init::NOINIT);
+        testIsCpp11init("namespace { TEST(a, b) {} }", // anonymous namespace
+                        "{ TEST",
+                        TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }
 };

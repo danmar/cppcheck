@@ -493,6 +493,17 @@ static Token * createAstAtToken(Token *tok, bool cpp);
 
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
+    auto isDecltypeFuncParam = [](const Token* tok) -> bool {
+        if (!Token::simpleMatch(tok, ")"))
+            return false;
+        tok = tok->next();
+        while (Token::Match(tok, "*|&|&&|const"))
+            tok = tok->next();
+        if (Token::simpleMatch(tok, "("))
+            tok = tok->link()->next();
+        return Token::Match(tok, "%name%| ,|)");
+    };
+
     if (!Token::Match(tok->previous(), "( %name%"))
         return tok;
     Token *vartok = tok;
@@ -504,7 +515,7 @@ static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
                 return tok;
         } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
-        } else if (Token::Match(vartok, "decltype|typeof (") && !Token::Match(tok->linkAt(1), ") [,)]")) {
+        } else if (Token::Match(vartok, "decltype|typeof (") && !isDecltypeFuncParam(tok->linkAt(1))) {
             if (inner)
                 inner->push_back(vartok->tokAt(2));
             return vartok->linkAt(1)->next();
@@ -626,7 +637,8 @@ static bool iscpp11init_impl(const Token * const tok)
     }
     if (!nameToken)
         return false;
-    if (nameToken->str() == ")" && Token::simpleMatch(nameToken->link()->previous(), "decltype ("))
+    if (nameToken->str() == ")" && Token::simpleMatch(nameToken->link()->previous(), "decltype (") &&
+        !Token::simpleMatch(nameToken->link()->tokAt(-2), "."))
         return true;
     if (Token::simpleMatch(nameToken, ", {"))
         return true;
@@ -663,7 +675,7 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (Token::simpleMatch(nameToken->previous(), ". void {") && nameToken->previous()->originalName() == "->")
         return false; // trailing return type. The only function body that can contain no semicolon is a void function.
-    if (Token::simpleMatch(nameToken->previous(), "namespace"))
+    if (Token::simpleMatch(nameToken->previous(), "namespace") || Token::simpleMatch(nameToken, "namespace") /*anonymous namespace*/)
         return false;
     if (endtok != nullptr && !Token::Match(nameToken, "return|:")) {
         // If there is semicolon between {..} this is not a initlist

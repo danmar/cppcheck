@@ -37,6 +37,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 namespace ValueFlow {
     class Value;
@@ -99,7 +100,7 @@ public:
     void loadCppcheckCfg();
 
     /** @brief addons, either filename of python/json file or json data */
-    std::list<std::string> addons;
+    std::unordered_set<std::string> addons;
 
     /** @brief Path to the python interpreter to be used to run addons. */
     std::string addonPython;
