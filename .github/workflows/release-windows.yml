@@ -65,13 +65,16 @@ jobs:
         uses: actions/cache@v1  # not v2!
         with:
           path: ../Qt
-          key: Windows-QtCache-${{ env.QT_VERSION }}-qtcharts-qthelp
+          key: Windows-QtCache-${{ env.QT_VERSION }}-qtcharts-qthelp-openssl
 
+      # available modules: https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-modules
+      # available tools:   https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-tools
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v2
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts qthelp'
+          tools: 'tools_openssl_x64,1.1.1-10,qt.tools.openssl.win_x64'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       - name: Create .qm
@@ -117,7 +120,8 @@ jobs:
           xcopy /s gui\help win_installer\files\help || exit /b !errorlevel!
           del win_installer\files\translations\*.qm || exit /b !errorlevel!
           move gui\*.qm win_installer\files\translations || exit /b !errorlevel!
-          copy win_installer\dlls\*.dll win_installer\files || exit /b !errorlevel!
+          :: copy libcrypto-1_1-x64.dll and libssl-1_1-x64.dll
+          copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSL\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
 
       - name: Build Installer
         run: |

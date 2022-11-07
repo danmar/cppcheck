@@ -397,14 +397,19 @@ private:
             "    typedef float float_t ;\n"
             "    inline VL::float_t fast_atan2(VL::float_t y, VL::float_t x){}\n"
             "}";
-
         const char expected[] =
             "namespace VL { "
             ""
             "float fast_atan2 ( float y , float x ) { } "
             "}";
-
         ASSERT_EQUALS(expected, tok(code, false));
+
+        // ticket #11373
+        const char code1[] =
+            "typedef int foo;\n"
+            "inline foo f();\n";
+        const char expected1[] = "int f ( ) ;";
+        ASSERT_EQUALS(expected1, tok(code1, false));
     }
 
     void simplifyTypedef7() {

@@ -710,7 +710,7 @@ void CheckClass::clearAllVar(std::vector<Usage> &usageList)
     }
 }
 
-bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
+bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope)
 {
     // Iterate through each base class...
     for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
@@ -721,11 +721,11 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
             const std::list<Function>& functionList = derivedFrom->classScope->functionList;
 
             if (std::any_of(functionList.begin(), functionList.end(), [&](const Function& func) {
-                return func.tokenDef->str() == tok->str();
+                return func.tokenDef->str() == tok->str() && !func.isStatic() && !func.isConst();
             }))
                 return true;
 
-            if (isBaseClassFunc(tok, derivedFrom->classScope))
+            if (isBaseClassMutableMemberFunc(tok, derivedFrom->classScope))
                 return true;
         }
 
@@ -910,6 +910,12 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     callstack.pop_back();
                 }
 
+                // assume that a base class call to operator= assigns all its base members (but not more)
+                else if (func.tokenDef->str() == ftok->str() && isBaseClassMutableMemberFunc(ftok, scope)) {
+                    if (member->nestedIn)
+                        assignAllVarsVisibleFromScope(usage, member->nestedIn->definedType->classScope);
+                }
+
                 // there is a called member function, but it has no implementation, so we assume it initializes everything
                 else {
                     assignAllVar(usage);
@@ -965,8 +971,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     }
                 }
 
-                // there is a called member function, but it has no implementation, so we assume it initializes everything
-                else {
+                // there is a called member function, but it has no implementation, so we assume it initializes everything (if it can mutate state)
+                else if (!member->isConst() && !member->isStatic()) {
                     assignAllVar(usage);
                 }
             }
@@ -974,7 +980,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             // not member function
             else {
                 // could be a base class virtual function, so we assume it initializes everything
-                if (!func.isConstructor() && isBaseClassFunc(ftok, scope)) {
+                if (!func.isConstructor() && isBaseClassMutableMemberFunc(ftok, scope)) {
                     /** @todo False Negative: we should look at the base class functions to see if they
                      *  call any derived class virtual functions that change the derived class state
                      */
