@@ -656,7 +656,7 @@ static bool iscpp11init_impl(const Token * const tok)
         if (!Token::Match(colonTok->tokAt(-1), "%name%|%num% :"))
             return false;
         const Token* caseTok = colonTok->tokAt(-2);
-        while (Token::Match(caseTok->tokAt(-1), "::|%name%"))
+        while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
             caseTok = caseTok->tokAt(-1);
         return Token::simpleMatch(caseTok, "case");
     };
