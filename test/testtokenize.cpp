@@ -6760,8 +6760,8 @@ private:
         // #9445 - typeof is not a keyword in C
         ASSERT_NO_THROW(tokenizeAndStringify("void foo() { char *typeof, *value; }", false, Settings::Native, "test.c"));
 
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : { };"), InternalError, "syntax error: Unexpected token ':'");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : 3 { };"), InternalError, "syntax error: Unexpected token ':'");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : { };"), InternalError, "syntax error: Unexpected token '{'");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : 3 { };"), InternalError, "syntax error: Unexpected token '3'");
     }
 
 
