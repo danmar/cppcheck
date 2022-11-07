@@ -1415,6 +1415,14 @@ private:
                       "[test.cpp:9]: (warning) Member variable 'B::ca' is not assigned a value in 'B::operator='.\n",
                       errout.str());
 
+        check("class C : B {\n"
+              "    virtual C& operator=(C& c);\n"
+              "};\n"
+              "class D : public D {\n"
+              "    virtual C& operator=(C& c) { return C::operator=(c); };\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void initvar_derived_pod_struct_with_union() {

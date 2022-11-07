@@ -686,6 +686,22 @@ void CheckClass::assignAllVar(std::vector<Usage> &usageList)
         i.assign = true;
 }
 
+void CheckClass::assignAllVarsVisibleFromScope(std::vector<Usage>& usageList, const Scope* scope)
+{
+    for (Usage& usage : usageList) {
+        if (usage.var->scope() == scope)
+            usage.assign = true;
+    }
+
+    // Iterate through each base class...
+    for (const Type::BaseInfo& i : scope->definedType->derivedFrom) {
+        const Type *derivedFrom = i.type;
+
+        if (derivedFrom)
+            assignAllVarsVisibleFromScope(usageList, derivedFrom->classScope);
+    }
+}
+
 void CheckClass::clearAllVar(std::vector<Usage> &usageList)
 {
     for (Usage & i : usageList) {
