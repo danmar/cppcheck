@@ -7634,6 +7634,8 @@ void Tokenizer::findGarbageCode() const
                     syntaxError(tok2, "Unexpected token '" + tok2->str() + "'");
             }
         }
+        if (Token::Match(tok, "enum : %num%| {"))
+            syntaxError(tok->next(), "Unexpected token '" + tok->next()->str() + "'");
     }
 
     // Keywords in global scope
