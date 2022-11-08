@@ -1443,7 +1443,7 @@ private:
         check("class C : B {\n"
               "    virtual C& operator=(C& c);\n"
               "};\n"
-              "class D : public D {\n"
+              "class D : public C {\n"
               "    virtual C& operator=(C& c) { return C::operator=(c); };\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
