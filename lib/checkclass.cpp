@@ -697,7 +697,8 @@ void CheckClass::assignAllVarsVisibleFromScope(std::vector<Usage>& usageList, co
     for (const Type::BaseInfo& i : scope->definedType->derivedFrom) {
         const Type *derivedFrom = i.type;
 
-        assignAllVarsVisibleFromScope(usageList, derivedFrom->classScope);
+        if (derivedFrom)
+            assignAllVarsVisibleFromScope(usageList, derivedFrom->classScope);
     }
 }
 
