@@ -692,7 +692,7 @@ static bool iscpp11init_impl(const Token * const tok)
         return true;
     const Token *prev = nameToken;
     while (Token::Match(prev, "%name%|::|:|<|>|,")) {
-        if (Token::Match(prev, "class|struct"))
+        if (Token::Match(prev, "class|struct|union|enum"))
             return false;
 
         prev = prev->previous();

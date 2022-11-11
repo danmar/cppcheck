@@ -7490,6 +7490,10 @@ private:
         testIsCpp11init("namespace { TEST(a, b) {} }", // anonymous namespace
                         "{ TEST",
                         TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("enum { e = decltype(s)::i };",
+                        "{ e",
+                        TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }
 };
