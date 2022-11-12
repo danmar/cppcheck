@@ -23,6 +23,7 @@
 
 #include "config.h"
 
+#include <stdexcept>
 #include <list>
 #include <string>
 #include <utility>
@@ -39,6 +40,11 @@ struct InternalError {
     std::string errorMessage;
     Type type;
     std::string id;
+};
+
+class TerminateException: public std::runtime_error {
+public:
+    TerminateException(): std::runtime_error("terminate") {}
 };
 
 class CPPCHECKLIB Certainty {
