@@ -6533,6 +6533,9 @@ private:
                                              "        return a < b;\n"
                                              "    });\n"
                                              "}\n"));
+
+        // #11378
+        ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
     }
 
     void astcase() {
