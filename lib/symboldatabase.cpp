@@ -7033,6 +7033,18 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 parsedecl(fscope->function->retDef, &vt, mDefaultSignedness, mSettings, mIsCpp);
                 setValueType(tok, vt);
             }
+        } else if (tok->isKeyword() && tok->str() == "this" && tok->scope()->isExecutable()) {
+            const Scope* fscope = tok->scope();
+            while (fscope && !fscope->function)
+                fscope = fscope->nestedIn;
+            const Scope* defScope = fscope && fscope->function->tokenDef ? fscope->function->tokenDef->scope() : nullptr;
+            if (defScope && defScope->isClassOrStruct()) {
+                ValueType vt(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::RECORD, 1);
+                vt.typeScope = defScope;
+                if (fscope->function->isConst())
+                    vt.constness = 1;
+                setValueType(tok, vt);
+            }
         }
     }
 
