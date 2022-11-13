@@ -6533,6 +6533,9 @@ private:
                                              "        return a < b;\n"
                                              "    });\n"
                                              "}\n"));
+
+        // #11378
+        ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
     }
 
     void astcase() {
@@ -6759,6 +6762,9 @@ private:
 
         // #9445 - typeof is not a keyword in C
         ASSERT_NO_THROW(tokenizeAndStringify("void foo() { char *typeof, *value; }", false, Settings::Native, "test.c"));
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : { };"), InternalError, "syntax error: Unexpected token '{'");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : 3 { };"), InternalError, "syntax error: Unexpected token '3'");
     }
 
 
@@ -7489,6 +7495,10 @@ private:
                         TokenImpl::Cpp11init::NOINIT);
         testIsCpp11init("namespace { TEST(a, b) {} }", // anonymous namespace
                         "{ TEST",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("enum { e = decltype(s)::i };",
+                        "{ e",
                         TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }

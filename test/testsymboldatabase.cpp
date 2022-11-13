@@ -473,6 +473,7 @@ private:
 
         TEST_CASE(valueType1);
         TEST_CASE(valueType2);
+        TEST_CASE(valueTypeThis);
 
         TEST_CASE(variadic1); // #7453
         TEST_CASE(variadic2); // #7649
@@ -7921,6 +7922,11 @@ private:
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("iterator(std :: map|unordered_map <)", tok->valueType()->str());
         }
+    }
+
+    void valueTypeThis() {
+        ASSERT_EQUALS("C *", typeOf("class C { C() { *this = 0; } };", "this"));
+        ASSERT_EQUALS("const C *", typeOf("class C { void foo() const; }; void C::foo() const { *this = 0; }", "this"));
     }
 
     void variadic1() { // #7453
