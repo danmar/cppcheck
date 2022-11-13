@@ -4850,6 +4850,14 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #11383
+              "    void f() {\n"
+              "        auto l2 = [i = i]() { return i; };\n"
+              "    }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {
