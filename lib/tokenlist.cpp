@@ -1385,25 +1385,25 @@ static void compileExpression(Token *&tok, AST_state& state)
         compileComma(tok, state);
 }
 
-static bool isLambdaCaptureList(const Token * tok)
+const Token* isLambdaCaptureList(const Token * tok)
 {
     // a lambda expression '[x](y){}' is compiled as:
     // [
     // `-(  <<-- optional
     //   `-{
     // see compilePrecedence2
-    if (tok->str() != "[")
-        return false;
+    if (!Token::simpleMatch(tok, "["))
+        return nullptr;
     if (!Token::Match(tok->link(), "] (|{"))
-        return false;
+        return nullptr;
     if (Token::simpleMatch(tok->astOperand1(), "{") && tok->astOperand1() == tok->link()->next())
-        return true;
+        return tok->astOperand1();
     if (!tok->astOperand1() || tok->astOperand1()->str() != "(")
-        return false;
+        return nullptr;
     const Token * params = tok->astOperand1();
-    if (!params->astOperand1() || params->astOperand1()->str() != "{")
-        return false;
-    return true;
+    if (!Token::simpleMatch(params->astOperand1(), "{"))
+        return nullptr;
+    return params->astOperand1();
 }
 
 // Compile inner expressions inside inner ({..}) and lambda bodies

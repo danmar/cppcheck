@@ -1559,6 +1559,10 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
 
     for (; tok && tok != last; tok = tok->next()) {
         // check for return of reference to this
+
+        if (const Token* lScope = isLambdaCaptureList(tok)) // skip lambda
+            tok = lScope->link();
+
         if (tok->str() != "return")
             continue;
 
