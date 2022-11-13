@@ -889,6 +889,8 @@ Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const V
 
 Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
 {
+    if (Settings::terminated())
+        throw TerminateException();
     ForwardTraversal ft{a, settings};
     ft.updateRecursive(start);
     return Analyzer::Result{ ft.actions, ft.terminate };

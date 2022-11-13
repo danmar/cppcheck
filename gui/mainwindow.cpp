@@ -1951,9 +1951,18 @@ void MainWindow::replyFinished(QNetworkReply *reply) {
         const int latestVersion = getVersion(str.trimmed());
         if (appVersion < latestVersion) {
             if (mSettings->value(SETTINGS_CHECK_VERSION, 0).toInt() != latestVersion) {
+                QString install;
+                if (isCppcheckPremium()) {
+#ifdef Q_OS_WIN
+                    const QString url("https://cppchecksolutions.com/cppcheck-premium-installation");
+#else
+                    const QString url("https://cppchecksolutions.com/cppcheck-premium-linux-installation");
+#endif
+                    install = "<a href=\"" + url + "\">" + tr("Install") + "</a>";
+                }
                 mUI->mButtonHideInformation->setVisible(true);
                 mUI->mLabelInformation->setVisible(true);
-                mUI->mLabelInformation->setText(tr("New version available: %1").arg(str.trimmed()));
+                mUI->mLabelInformation->setText(tr("New version available: %1. %2").arg(str.trimmed()).arg(install));
             }
         }
     }

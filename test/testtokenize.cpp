@@ -6533,6 +6533,9 @@ private:
                                              "        return a < b;\n"
                                              "    });\n"
                                              "}\n"));
+
+        // #11378
+        ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
     }
 
     void astcase() {
@@ -7492,6 +7495,10 @@ private:
                         TokenImpl::Cpp11init::NOINIT);
         testIsCpp11init("namespace { TEST(a, b) {} }", // anonymous namespace
                         "{ TEST",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("enum { e = decltype(s)::i };",
+                        "{ e",
                         TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }
