@@ -1448,7 +1448,8 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("struct D : B { D& operator=(const D&); };\n" // don't crash
+        check("struct B;\n" // don't crash
+              "struct D : B { D& operator=(const D&); };\n"
               "struct E : D { E& operator=(const E& rhs); };\n"
               "E& E::operator=(const E& rhs) {\n"
               "    if (this != &rhs)\n"
