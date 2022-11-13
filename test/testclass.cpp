@@ -1324,10 +1324,10 @@ private:
 
         checkOpertorEqRetRefThis( // #11380
             "struct S {\n"
-            "    S & operator=(const S& other) {\n"
+            "    S& operator=(const S& other) {\n"
             "        i = []() { return 42; }();\n"
             "        return *this;\n"
-            "        }\n"
+            "    }\n"
             "    int i;\n"
             "};\n");
         ASSERT_EQUALS("", errout.str());
