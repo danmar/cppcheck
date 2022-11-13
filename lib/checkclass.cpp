@@ -1273,19 +1273,24 @@ void CheckClass::privateFunctions()
         }
 
         while (!privateFuncs.empty()) {
+            const auto& pf = privateFuncs.front();
+            if (pf->retDef && pf->retDef->isAttributeMaybeUnused()) {
+                privateFuncs.pop_front();
+                continue;
+            }
             // Check that all private functions are used
-            bool used = checkFunctionUsage(privateFuncs.front(), scope); // Usage in this class
+            bool used = checkFunctionUsage(pf, scope); // Usage in this class
             // Check in friend classes
             const std::vector<Type::FriendInfo>& friendList = scope->definedType->friendList;
             for (int i = 0; i < friendList.size() && !used; i++) {
                 if (friendList[i].type)
-                    used = checkFunctionUsage(privateFuncs.front(), friendList[i].type->classScope);
+                    used = checkFunctionUsage(pf, friendList[i].type->classScope);
                 else
                     used = true; // Assume, it is used if we do not see friend class
             }
 
             if (!used)
-                unusedPrivateFunctionError(privateFuncs.front()->tokenDef, scope->className, privateFuncs.front()->name());
+                unusedPrivateFunctionError(pf->tokenDef, scope->className, pf->name());
 
             privateFuncs.pop_front();
         }

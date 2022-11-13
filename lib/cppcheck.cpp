@@ -534,6 +534,9 @@ unsigned int CppCheck::check(const std::string &path)
         } catch (const InternalError &e) {
             internalError(path, e.errorMessage);
             mExitCode = 1; // e.g. reflect a syntax error
+        } catch (const TerminateException &) {
+            // Analysis is terminated
+            return mExitCode;
         } catch (const std::exception &e) {
             internalError(path, e.what());
         }
@@ -911,6 +914,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 --checkCount; // don't count invalid configurations
                 continue;
 
+            } catch (const TerminateException &) {
+                // Analysis is terminated
+                return mExitCode;
+
             } catch (const InternalError &e) {
                 std::list<ErrorMessage::FileLocation> locationList;
                 if (e.token) {
@@ -962,6 +969,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         executeAddons(dumpFile);
 
+    } catch (const TerminateException &) {
+        // Analysis is terminated
+        return mExitCode;
     } catch (const std::runtime_error &e) {
         internalError(filename, e.what());
     } catch (const std::bad_alloc &e) {

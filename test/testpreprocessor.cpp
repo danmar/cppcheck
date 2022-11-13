@@ -2453,7 +2453,7 @@ private:
         ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
         ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emited outside of the Preprocessor
+        // the expected messages are emitted outside of the Preprocessor
         ASSERT_EQUALS("", errout.str());
 
         Preprocessor::missingIncludeFlag = false;
