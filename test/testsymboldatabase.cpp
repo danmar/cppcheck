@@ -4381,7 +4381,7 @@ private:
         check("int ( * X0 ) ( long ) < int ( ) ( long ) > :: f0 ( int * ) { return 0 ; }");
         ASSERT_EQUALS("", errout.str());
 
-        check("int g();\n"
+        check("int g();\n" // #11385
               "void f(int i) {\n"
               "    if (i > ::g()) {}\n"
               "}\n");
