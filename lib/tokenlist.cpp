@@ -656,7 +656,7 @@ static bool iscpp11init_impl(const Token * const tok)
         if (!Token::Match(colonTok->tokAt(-1), "%name%|%num% :"))
             return false;
         const Token* caseTok = colonTok->tokAt(-2);
-        while (Token::Match(caseTok->tokAt(-1), "::|%name%"))
+        while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
             caseTok = caseTok->tokAt(-1);
         return Token::simpleMatch(caseTok, "case");
     };
@@ -692,7 +692,7 @@ static bool iscpp11init_impl(const Token * const tok)
         return true;
     const Token *prev = nameToken;
     while (Token::Match(prev, "%name%|::|:|<|>|,")) {
-        if (Token::Match(prev, "class|struct"))
+        if (Token::Match(prev, "class|struct|union|enum"))
             return false;
 
         prev = prev->previous();
@@ -996,8 +996,12 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     Token* curlyBracket = roundBracket->link()->next();
                     while (Token::Match(curlyBracket, "mutable|const|constexpr|consteval"))
                         curlyBracket = curlyBracket->next();
-                    if (Token::simpleMatch(curlyBracket, "noexcept ("))
-                        curlyBracket = curlyBracket->linkAt(1)->next();
+                    if (Token::simpleMatch(curlyBracket, "noexcept")) {
+                        if (Token::simpleMatch(curlyBracket->next(), "("))
+                            curlyBracket = curlyBracket->linkAt(1)->next();
+                        else
+                            curlyBracket = curlyBracket->next();
+                    }
                     if (curlyBracket && curlyBracket->originalName() == "->")
                         curlyBracket = findTypeEnd(curlyBracket->next());
                     if (curlyBracket && curlyBracket->str() == "{") {
@@ -1381,25 +1385,25 @@ static void compileExpression(Token *&tok, AST_state& state)
         compileComma(tok, state);
 }
 
-static bool isLambdaCaptureList(const Token * tok)
+const Token* isLambdaCaptureList(const Token * tok)
 {
     // a lambda expression '[x](y){}' is compiled as:
     // [
     // `-(  <<-- optional
     //   `-{
     // see compilePrecedence2
-    if (tok->str() != "[")
-        return false;
+    if (!Token::simpleMatch(tok, "["))
+        return nullptr;
     if (!Token::Match(tok->link(), "] (|{"))
-        return false;
+        return nullptr;
     if (Token::simpleMatch(tok->astOperand1(), "{") && tok->astOperand1() == tok->link()->next())
-        return true;
+        return tok->astOperand1();
     if (!tok->astOperand1() || tok->astOperand1()->str() != "(")
-        return false;
+        return nullptr;
     const Token * params = tok->astOperand1();
-    if (!params->astOperand1() || params->astOperand1()->str() != "{")
-        return false;
-    return true;
+    if (!Token::simpleMatch(params->astOperand1(), "{"))
+        return nullptr;
+    return params->astOperand1();
 }
 
 // Compile inner expressions inside inner ({..}) and lambda bodies
