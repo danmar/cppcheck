@@ -4380,7 +4380,13 @@ private:
     void symboldatabase65() {
         // don't crash on missing links from instantiation of template with typedef
         check("int ( * X0 ) ( long ) < int ( ) ( long ) > :: f0 ( int * ) { return 0 ; }");
-        ASSERT_EQUALS("[test.cpp:1]: (debug) SymbolDatabase::findFunction found '>' without link.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g();\n" // #11385
+              "void f(int i) {\n"
+              "    if (i > ::g()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void symboldatabase66() { // #8540
