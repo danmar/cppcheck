@@ -5455,11 +5455,8 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
             if (tok1->strAt(-2) == ">") {
                 if (tok1->linkAt(-2))
                     tok1 = tok1->linkAt(-2)->tokAt(-1);
-                else {
-                    if (mSettings->debugwarnings)
-                        debugMessage(tok1->tokAt(-2), "debug", "SymbolDatabase::findFunction found '>' without link.");
-                    return nullptr;
-                }
+                else
+                    break;
             } else
                 tok1 = tok1->tokAt(-2);
         }
