@@ -2446,7 +2446,7 @@ void CheckOther::checkDuplicateExpression()
                 }
             }
             auto isInsideLambdaCaptureList = [](const Token* tok) {
-                auto* parent = tok->astParent();
+                const Token* parent = tok->astParent();
                 while (Token::simpleMatch(parent, ","))
                     parent = parent->astParent();
                 return isLambdaCaptureList(parent);
