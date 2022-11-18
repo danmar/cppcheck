@@ -2445,8 +2445,14 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             }
+            auto isInsideLambdaCaptureList = [](const Token* tok) {
+                const Token* parent = tok->astParent();
+                while (Token::simpleMatch(parent, ","))
+                    parent = parent->astParent();
+                return isLambdaCaptureList(parent);
+            };
             ErrorPath errorPath;
-            if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=") && !isLambdaCaptureList(tok->astParent())) {
+            if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=") && !isInsideLambdaCaptureList(tok)) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
                 const bool pointerDereference = (tok->astOperand1() && tok->astOperand1()->isUnaryOp("*")) ||

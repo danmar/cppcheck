@@ -4853,7 +4853,8 @@ private:
 
         check("struct S {\n" // #11383
               "    void f() {\n"
-              "        auto l2 = [i = i]() { return i; };\n"
+              "        int x = 42;"
+              "        auto l2 = [i = i, x, y = 0]() { return i + x + y; };\n"
               "    }\n"
               "    int i;\n"
               "};\n");
