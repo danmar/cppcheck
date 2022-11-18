@@ -2012,6 +2012,21 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: i\n"
                       "[test.cpp:3] -> [test.cpp:4]: (error) Mismatching allocation and deallocation: j\n", errout.str());
+
+        check("static void deleter(int* p) { free(p); }\n" // #11392
+              "void f() {\n"
+              "    if (int* p = static_cast<int*>(malloc(4))) {\n"
+              "        std::unique_ptr<int, decltype(&deleter)> guard(p, &deleter);\n"
+              "    }\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if (int* p = static_cast<int*>(malloc(4))) {\n"
+              "        std::unique_ptr<int, decltype(&deleter)> guard(p, &deleter);\n"
+              "    }\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerDeleter() {
