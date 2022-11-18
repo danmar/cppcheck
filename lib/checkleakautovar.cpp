@@ -730,14 +730,14 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         Token::simpleMatch(deleterToken->link()->linkAt(1), ") {")) {
                         tscopeStart = deleterToken->link()->linkAt(1)->tokAt(1);
                         tscopeEnd = tscopeStart->link();
-                    // check user-defined deleter function
+                        // check user-defined deleter function
                     } else if (dtok && dtok->function()) {
                         const Scope* tscope = dtok->function()->functionScope;
                         if (tscope) {
                             tscopeStart = tscope->bodyStart;
                             tscopeEnd = tscope->bodyEnd;
                         }
-                    // If the deleter is a class, check if class calls the dealloc function
+                        // If the deleter is a class, check if class calls the dealloc function
                     } else if ((dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken)) && dtok->type()) {
                         const Scope * tscope = dtok->type()->classScope;
                         if (tscope) {
