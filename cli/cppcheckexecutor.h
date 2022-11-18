@@ -86,6 +86,8 @@ public:
      */
     void reportInfo(const ErrorMessage &msg) override;
 
+    void suppress(const Suppressions::ErrorMessage& msg) override;
+
     /**
      * Information about how many files have been checked
      *

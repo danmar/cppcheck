@@ -217,6 +217,8 @@ private:
      */
     void reportInfo(const ErrorMessage &msg) override;
 
+    void suppress(const Suppressions::ErrorMessage& msg) override;
+
     ErrorLogger &mErrorLogger;
 
     /** @brief Current preprocessor configuration */

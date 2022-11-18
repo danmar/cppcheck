@@ -1606,6 +1606,11 @@ void CppCheck::reportInfo(const ErrorMessage &msg)
         mErrorLogger.reportInfo(msg);
 }
 
+void CppCheck::suppress(const Suppressions::ErrorMessage& msg)
+{
+    mSettings.nomsg.isSuppressed(msg);
+}
+
 void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
 {}
 
