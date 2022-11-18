@@ -83,6 +83,9 @@ public:
         report(msg, MessageType::REPORT_INFO);
     }
 
+    void suppress(const Suppressions::ErrorMessage&) override {
+    }
+
     void writeEnd(const std::string& str) const {
         writeToPipe(CHILD_END, str);
     }
