@@ -126,8 +126,7 @@ void strTolower(std::string& str)
 {
     // This wrapper exists because Sun's CC does not allow a static_cast
     // from extern "C" int(*)(int) to int(*)(int).
-    static auto tolowerWrapper = [](int c) {
+    std::transform(str.begin(), str.end(), str.begin(), [](int c) {
         return std::tolower(c);
-    };
-    std::transform(str.begin(), str.end(), str.begin(), tolowerWrapper);
+    });
 }
