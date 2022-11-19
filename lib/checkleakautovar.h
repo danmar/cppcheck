@@ -125,7 +125,7 @@ private:
     void check();
 
     /** check for leaks in a function scope */
-    void checkScope(const Token * const startToken,
+    bool checkScope(const Token * const startToken,
                     VarInfo *varInfo,
                     std::set<int> notzero,
                     nonneg int recursiveCount);

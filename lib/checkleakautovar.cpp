@@ -284,7 +284,7 @@ static const Token * isFunctionCall(const Token * nameToken)
     return nullptr;
 }
 
-void CheckLeakAutoVar::checkScope(const Token * const startToken,
+bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo *varInfo,
                                   std::set<int> notzero,
                                   nonneg int recursiveCount)
@@ -532,10 +532,12 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     return ChildrenToVisit::none;
                 });
 
-                checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount);
+                if (!checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount))
+                    continue;
                 closingParenthesis = closingParenthesis->linkAt(1);
                 if (Token::simpleMatch(closingParenthesis, "} else {")) {
-                    checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero, recursiveCount);
+                    if (!checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero, recursiveCount))
+                        continue;
                     tok = closingParenthesis->linkAt(2)->previous();
                 } else {
                     tok = closingParenthesis->previous();
@@ -675,6 +677,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // goto => weird execution path
         else if (tok->str() == "goto") {
             varInfo->clear();
+            return false;
         }
 
         // continue/break
@@ -765,6 +768,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
     }
     ret(endToken, *varInfo, true);
+    return true;
 }
 
 

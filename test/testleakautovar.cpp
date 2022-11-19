@@ -1241,14 +1241,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void doublefree4() {  // #5451 - exit
-        check("void f(char *p) {\n"
+    void doublefree4() {
+        check("void f(char *p) {\n" // #5451 - exit
               "  if (x) {\n"
               "    free(p);\n"
               "    exit(1);\n"
               "  }\n"
               "  free(p);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void* p, int i) {\n" // #11391
+              "    if (i)\n"
+              "        goto cleanup;\n"
+              "    free(p);\n"
+              "    exit(0);\n"
+              "cleanup:\n"
+              "    free(p);\n"
+              "    exit(1);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
