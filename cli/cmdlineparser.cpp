@@ -527,9 +527,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
 
                 if (str == "c")
-                    mSettings->enforcedLang = Settings::C;
+                    mSettings->enforcedLang = Settings::Language::C;
                 else if (str == "c++")
-                    mSettings->enforcedLang = Settings::CPP;
+                    mSettings->enforcedLang = Settings::Language::CPP;
                 else {
                     printError("unknown language '" + str + "' enforced.");
                     return false;

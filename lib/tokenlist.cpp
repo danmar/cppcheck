@@ -121,8 +121,8 @@ void TokenList::determineCppC()
         mIsC = Path::isC(getSourceFilePath());
         mIsCpp = Path::isCPP(getSourceFilePath());
     } else {
-        mIsC = mSettings->enforcedLang == Settings::C || (mSettings->enforcedLang == Settings::None && Path::isC(getSourceFilePath()));
-        mIsCpp = mSettings->enforcedLang == Settings::CPP || (mSettings->enforcedLang == Settings::None && Path::isCPP(getSourceFilePath()));
+        mIsC = mSettings->enforcedLang == Settings::Language::C || (mSettings->enforcedLang == Settings::Language::None && Path::isC(getSourceFilePath()));
+        mIsCpp = mSettings->enforcedLang == Settings::Language::CPP || (mSettings->enforcedLang == Settings::Language::None && Path::isCPP(getSourceFilePath()));
     }
 
     if (mIsCpp) {

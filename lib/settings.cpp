@@ -49,7 +49,7 @@ Settings::Settings()
     debugtemplate(false),
     debugwarnings(false),
     dump(false),
-    enforcedLang(None),
+    enforcedLang(Language::None),
     exceptionHandling(false),
     exitCode(0),
     force(false),
