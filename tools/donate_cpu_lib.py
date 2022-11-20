@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.37"
+CLIENT_VERSION = "1.3.38"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -80,8 +80,7 @@ def check_requirements():
 
 
 # Try and retry with exponential backoff if an exception is raised
-def try_retry(fun, fargs=(), max_tries=5):
-    sleep_duration = 5.0
+def try_retry(fun, fargs=(), max_tries=5, sleep_duration=5.0, sleep_factor=2.0):
     for i in range(max_tries):
         try:
             return fun(*fargs)
@@ -93,7 +92,7 @@ def try_retry(fun, fargs=(), max_tries=5):
                 print("{} in {}: {}".format(type(e).__name__, fun.__name__, str(e)))
                 print("Trying {} again in {} seconds".format(fun.__name__, sleep_duration))
                 time.sleep(sleep_duration)
-                sleep_duration *= 2.0
+                sleep_duration *= sleep_factor
             else:
                 print("Maximum number of tries reached for {}".format(fun.__name__))
                 raise e
@@ -210,46 +209,41 @@ def compile_cppcheck(cppcheck_path):
 
 def get_cppcheck_versions():
     print('Connecting to server to get Cppcheck versions..')
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(__server_address)
-            sock.send(b'GetCppcheckVersions\n')
-            versions = sock.recv(256)
-    except socket.error as err:
-        print('Failed to get cppcheck versions: ' + str(err))
-        return None
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        sock.send(b'GetCppcheckVersions\n')
+        versions = sock.recv(256)
+    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+    if not versions:
+        raise Exception('received empty response')
     return versions.decode('utf-8').split()
 
 
 def get_packages_count():
     print('Connecting to server to get count of packages..')
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect(__server_address)
-            sock.send(b'getPackagesCount\n')
-            packages = int(sock.recv(64))
-    except socket.error as err:
-        print('Failed to get count of packages: ' + str(err))
-        return None
-    return packages
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        sock.send(b'getPackagesCount\n')
+        packages = sock.recv(64)
+    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+    if not packages:
+        raise Exception('received empty response')
+    return int(packages)
 
 
 def get_package(package_index=None):
-    package = b''
-    while not package:
-        print('Connecting to server to get assigned work..')
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(__server_address)
-                if package_index is None:
-                    sock.send(b'get\n')
-                else:
-                    request = 'getPackageIdx:' + str(package_index) + '\n'
-                    sock.send(request.encode())
-                package = sock.recv(256)
-        except socket.error:
-            print("network or server might be temporarily down.. will try again in 30 seconds..")
-            time.sleep(30)
+    print('Connecting to server to get assigned work..')
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        if package_index is None:
+            sock.send(b'get\n')
+        else:
+            request = 'getPackageIdx:' + str(package_index) + '\n'
+            sock.send(request.encode())
+        package = sock.recv(256)
+    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+    if not package:
+        raise Exception('received empty response')
     return package.decode('utf-8')
 
 
@@ -586,28 +580,27 @@ def __send_all(connection, data):
             bytes_ = None
 
 
+def __upload(cmd, data, cmd_info):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect(__server_address)
+        __send_all(sock, '{}\n{}'.format(cmd, data))
+    print('{} has been successfully uploaded.'.format(cmd_info))
+    return True
+
+
 def upload_results(package, results):
     if not __make_cmd == 'make':
         print('Error: Result upload not performed - only make build binaries are currently fully supported')
         return False
 
     print('Uploading results.. ' + str(len(results)) + ' bytes')
-    max_retries = 4
-    for retry in range(max_retries):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(__server_address)
-                cmd = 'write\n'
-                __send_all(sock, cmd + package + '\n' + results + '\nDONE')
-            print('Results have been successfully uploaded.')
-            return True
-        except socket.error as err:
-            print('Upload error: ' + str(err))
-            if retry < (max_retries - 1):
-                print('Retrying upload in 30 seconds')
-                time.sleep(30)
-    print('Upload permanently failed!')
-    return False
+    try:
+        try_retry(__upload, fargs=('write\n' + package, results + '\nDONE', 'Result'), max_tries=4, sleep_duration=30, sleep_factor=1)
+    except Exception as e:
+        print('Result upload permanently failed ({})!'.format(e))
+        return False
+
+    return True
 
 
 def upload_info(package, info_output):
@@ -616,21 +609,13 @@ def upload_info(package, info_output):
         return False
 
     print('Uploading information output.. ' + str(len(info_output)) + ' bytes')
-    max_retries = 3
-    for retry in range(max_retries):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.connect(__server_address)
-                __send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
-            print('Information output has been successfully uploaded.')
-            return True
-        except socket.error as err:
-            print('Upload error: ' + str(err))
-            if retry < (max_retries - 1):
-                print('Retrying upload in 30 seconds')
-                time.sleep(30)
-    print('Upload permanently failed!')
-    return False
+    try:
+        try_retry(__upload, fargs=('write_info\n' + package, info_output + '\nDONE', 'Information'), max_tries=3, sleep_duration=30, sleep_factor=1)
+    except Exception as e:
+        print('Information upload permanently failed ({})!'.format(e))
+        return False
+
+    return True
 
 
 class LibraryIncludes:

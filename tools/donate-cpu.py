@@ -173,20 +173,18 @@ while True:
         if stop_time < time.strftime('%H:%M'):
             print('Stopping. Thank you!')
             sys.exit(0)
-    cppcheck_versions = lib.get_cppcheck_versions()
-    if cppcheck_versions is None:
-        print('Failed to communicate with server, retry later')
-        sys.exit(1)
-    if len(cppcheck_versions) == 0:
-        print('Did not get any cppcheck versions from server, retry later')
+    try:
+        cppcheck_versions = lib.try_retry(lib.get_cppcheck_versions, max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
+    except Exception as e:
+        print('Failed to get cppcheck versions from server ({}), retry later'.format(e))
         sys.exit(1)
     for ver in cppcheck_versions:
         if ver == 'head':
             ver = 'main'
         current_cppcheck_dir = os.path.join(work_path, 'tree-'+ver)
+        print('Fetching Cppcheck-{}..'.format(ver))
         try:
-            print('Fetching Cppcheck-{}..'.format(ver))
-            lib.try_retry(lib.checkout_cppcheck_version, fargs=(repo_path, ver, current_cppcheck_dir))
+            lib.try_retry(lib.checkout_cppcheck_version, fargs=(repo_path, ver, current_cppcheck_dir), max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
         except KeyboardInterrupt as e:
             # Passthrough for user abort
             raise e
@@ -204,7 +202,11 @@ while True:
     if package_urls:
         package = package_urls[packages_processed-1]
     else:
-        package = lib.get_package()
+        try:
+            package = lib.try_retry(lib.get_package, max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
+        except Exception as e:
+            print('Error: Failed to get package ({}), retry later'.format(e))
+            sys.exit(1)
     tgz = lib.download_package(work_path, package, bandwidth_limit)
     if tgz is None:
         print("No package downloaded")
@@ -243,7 +245,7 @@ while True:
                 p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True)
                 try:
                     comm = p.communicate()
-                    return comm[0]
+                    return comm[0].strip()
                 except:
                     return None
 
