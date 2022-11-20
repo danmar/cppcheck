@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.30"
+SERVER_VERSION = "1.3.31"
 
 OLD_VERSION = '2.9'
 
@@ -1055,6 +1055,37 @@ class HttpClientThread(Thread):
             self.connection.close()
 
 
+def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, timeout=10):
+    data = cmd[pos_nl+1:]
+    try:
+        t = 0.0
+        while (len(data) < max_data_size) and (not check_done or not data.endswith('\nDONE')) and (timeout > 0 and t < timeout):
+            bytes_received = connection.recv(1024)
+            if bytes_received:
+                try:
+                    text_received = bytes_received.decode('utf-8', 'ignore')
+                except UnicodeDecodeError as e:
+                    print_ts('Error: Decoding failed ({}): {}'.format(cmd_name, e))
+                    data = None
+                    break
+                t = 0.0
+                data += text_received
+            elif not check_done:
+                break
+            else:
+                time.sleep(0.2)
+                t += 0.2
+        connection.close()
+    except socket.error as e:
+        print_ts('Socket error occured ({}): {}'.format(cmd_name, e))
+        data = None
+
+    if (timeout > 0 and t >= timeout):
+        print_ts('Timeout occurred ({}).'.format(cmd_name))
+        data = None
+
+    return data
+
 def server(server_address_port: int, packages: list, packageIndex: int, resultPath: str) -> None:
     socket.setdefaulttimeout(30)
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -1086,10 +1117,13 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.close()
             print_ts('Error: Decoding failed: ' + str(e))
             continue
-        if cmd.find('\n') < 1:
+        pos_nl = cmd.find('\n')
+        if pos_nl < 1:
+            print_ts('No newline found in data.')
             continue
-        firstLine = cmd[:cmd.find('\n')]
+        firstLine = cmd[:pos_nl]
         if re.match('[a-zA-Z0-9./ ]+', firstLine) is None:
+            print_ts('Unsupported characters found in command: {}'.format(firstLine))
             connection.close()
             continue
         if cmd.startswith('GET /'):
@@ -1113,31 +1147,16 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.send(pkg.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd.startswith('write\nftp://') or cmd.startswith('write\nhttp://'):
-            # read data
-            data = cmd[cmd.find('\n')+1:]
-            try:
-                t = 0.0
-                max_data_size = 2 * 1024 * 1024
-                while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
-                    bytes_received = connection.recv(1024)
-                    if bytes_received:
-                        try:
-                            text_received = bytes_received.decode('utf-8', 'ignore')
-                        except UnicodeDecodeError as e:
-                            print_ts('Error: Decoding failed (write): ' + str(e))
-                            data = ''
-                            break
-                        t = 0.0
-                        data += text_received
-                    else:
-                        time.sleep(0.2)
-                        t += 0.2
-                connection.close()
-            except socket.error:
-                pass
+            data = read_data(connection, cmd, pos_nl, max_data_size=2 * 1024 * 1024, check_done=True, cmd_name='write')
+            if data is None:
+                continue
 
             pos = data.find('\n')
+            if pos == -1:
+                print_ts('No newline found in data. Ignoring result data.')
+                continue
             if pos < 10:
+                print_ts('Data is less than 10 characters. Ignoring result data.')
                 continue
             url = data[:pos]
             print_ts('write:' + url)
@@ -1147,10 +1166,10 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if res is None:
                 res = re.match(r'https?://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
-                print_ts('results not written. res is None.')
+                print_ts('res is None. Ignoring result data.')
                 continue
             if url not in packages:
-                print_ts('results not written. url is not in packages.')
+                print_ts('Url is not in packages. Ignoring result data.')
                 continue
             # Verify that head was compared to correct OLD_VERSION
             versions_found = False
@@ -1160,14 +1179,14 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                     versions_found = True
                     if OLD_VERSION not in line.split():
                         print_ts('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
-                              line)
-                        print_ts('Ignoring data.')
+                              line + '. Ignoring result data.')
                         old_version_wrong = True
                     break
             if not versions_found:
-                print_ts('Cppcheck versions missing in result data. Ignoring data.')
+                print_ts('Cppcheck versions missing in result data. Ignoring result data.')
                 continue
             if old_version_wrong:
+                print_ts('Unexpected old version. Ignoring result data.')
                 continue
             print_ts('results added for package ' + res.group(1))
             filename = os.path.join(resultPath, res.group(1))
@@ -1182,31 +1201,16 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             # generate package.diff..
             generate_package_diff_statistics(filename)
         elif cmd.startswith('write_info\nftp://') or cmd.startswith('write_info\nhttp://'):
-            # read data
-            data = cmd[cmd.find('\n') + 1:]
-            try:
-                t = 0.0
-                max_data_size = 1024 * 1024
-                while (len(data) < max_data_size) and (not data.endswith('\nDONE')) and (t < 10):
-                    bytes_received = connection.recv(1024)
-                    if bytes_received:
-                        try:
-                            text_received = bytes_received.decode('utf-8', 'ignore')
-                        except UnicodeDecodeError as e:
-                            print_ts('Error: Decoding failed (write_info): ' + str(e))
-                            data = ''
-                            break
-                        t = 0.0
-                        data += text_received
-                    else:
-                        time.sleep(0.2)
-                        t += 0.2
-                connection.close()
-            except socket.error:
-                pass
+            data = read_data(connection, cmd, pos_nl, max_data_size=1024 * 1024, check_done=True, cmd_name='write_info')
+            if data is None:
+                continue
 
             pos = data.find('\n')
+            if pos == -1:
+                print_ts('No newline found in data. Ignoring information data.')
+                continue
             if pos < 10:
+                print_ts('Data is less than 10 characters. Ignoring information data.')
                 continue
             url = data[:pos]
             print_ts('write_info:' + url)
@@ -1216,10 +1220,10 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if res is None:
                 res = re.match(r'https://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
-                print_ts('info output not written. res is None.')
+                print_ts('res is None. Ignoring information data.')
                 continue
             if url not in packages:
-                print_ts('info output not written. url is not in packages.')
+                print_ts('Url is not in packages. Ignoring information data.')
                 continue
             print_ts('adding info output for package ' + res.group(1))
             info_path = resultPath + '/' + 'info_output'
@@ -1246,7 +1250,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 print_ts('getPackageIdx: index is out of range')
             continue
         else:
-            if cmd.find('\n') < 0:
+            if pos_nl < 0:
                 print_ts('invalid command: "' + firstLine + '"')
             else:
                 lines = cmd.split('\n')
