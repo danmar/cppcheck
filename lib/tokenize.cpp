@@ -7719,7 +7719,8 @@ void Tokenizer::findGarbageCode() const
         } else {
             if (templateEndToken == tok)
                 templateEndToken = nullptr;
-            continue;
+            if (Token::Match(tok, "> %cop%"))
+                continue;
         }
         // skip C++ attributes [[...]]
         if (isCPP11 && (isCPPAttribute(tok) || isAlignAttribute(tok))) {
@@ -7755,7 +7756,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, ";|(|[ %comp%"))
             syntaxError(tok);
-        if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|,|%num% &|=|> ]")))
+        if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|,|%num%|%name% &|=|> ]")))
             syntaxError(tok);
         if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::Match(tok->previous(), "operator [+-] ;")))
             syntaxError(tok);
