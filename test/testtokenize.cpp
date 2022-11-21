@@ -6755,9 +6755,9 @@ private:
                                              "}"));
                                              
         ASSERT_NO_THROW(tokenizeAndStringify("template <typename T> void foo() {} "
-                                              "void h() { "
-                                              "  [func=foo<int>]{func();}(); "
-                                              "}"));
+                                             "void h() { "
+                                             "  [func=foo<int>]{func();}(); "
+                                             "}"));
 
 
         // op op
