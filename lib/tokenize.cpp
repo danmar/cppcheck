@@ -7719,8 +7719,7 @@ void Tokenizer::findGarbageCode() const
         } else {
             if (templateEndToken == tok)
                 templateEndToken = nullptr;
-            if (Token::Match(tok, "> %cop%"))
-                continue;
+            continue;
         }
         // skip C++ attributes [[...]]
         if (isCPP11 && (isCPPAttribute(tok) || isAlignAttribute(tok))) {
