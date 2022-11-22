@@ -477,9 +477,10 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 // check for function call
                 const Token * const openingPar = isFunctionCall(innerTok);
                 if (openingPar) {
+                    const Library::AllocFunc* allocFunc = mSettings->library.getDeallocFuncInfo(innerTok);
                     // innerTok is a function name
                     const VarInfo::AllocInfo allocation(0, VarInfo::NOALLOC);
-                    functionCall(innerTok, openingPar, varInfo, allocation, nullptr);
+                    functionCall(innerTok, openingPar, varInfo, allocation, allocFunc);
                     innerTok = openingPar->link();
                 }
             }
