@@ -6753,7 +6753,7 @@ private:
                                              "void h() { "
                                              "  for (my_struct ms : { my_struct{ .x=5, .y{42} } }) {} "
                                              "}"));
-                                             
+
         ASSERT_NO_THROW(tokenizeAndStringify("template <typename T> void foo() {} "
                                              "void h() { "
                                              "  [func=foo<int>]{func();}(); "
