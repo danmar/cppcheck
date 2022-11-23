@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.31"
+SERVER_VERSION = "1.3.32"
 
 OLD_VERSION = '2.9'
 
@@ -1135,10 +1135,13 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd == 'get\n':
-            pkg = packages[packageIndex]
-            packageIndex += 1
-            if packageIndex >= len(packages):
-                packageIndex = 0
+            while True:
+                pkg = packages[packageIndex]
+                packageIndex += 1
+                if packageIndex >= len(packages):
+                    packageIndex = 0
+                if pkg is not None:
+                    break
 
             with open('package-index.txt', 'wt') as f:
                 f.write(str(packageIndex) + '\n')
@@ -1249,6 +1252,39 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                 connection.close()
                 print_ts('getPackageIdx: index is out of range')
             continue
+        elif cmd.startswith('write_nodata\nftp://'):
+            data = read_data(connection, cmd, pos_nl, max_data_size=8 * 1024, check_done=False, cmd_name='write_nodata')
+            if data is None:
+                continue
+
+            pos = data.find('\n')
+            if pos == -1:
+                print_ts('No newline found in data. Ignoring no-data data.')
+                continue
+            if pos < 10:
+                print_ts('Data is less than 10 characters ({}). Ignoring no-data data.'.format(pos))
+                continue
+            url = data[:pos]
+
+            startIdx = packageIndex
+            currentIdx = packageIndex
+            while True:
+                if packages[currentIdx] == url:
+                    packages[currentIdx] = None
+                    print_ts('write_nodata:' + url)
+
+                    with open('packages_nodata.txt', 'at') as f:
+                        f.write(url + '\n')
+                    break
+                if currentIdx == 0:
+                    currentIdx = len(packages) - 1
+                else:
+                    currentIdx -= 1
+                if currentIdx == startIdx:
+                    print_ts('write_nodata:' + url + ' - package not found')
+                    break
+
+            connection.close()
         else:
             if pos_nl < 0:
                 print_ts('invalid command: "' + firstLine + '"')
@@ -1275,7 +1311,31 @@ if __name__ == "__main__":
     with open('packages.txt', 'rt') as f:
         packages = [val.strip() for val in f.readlines()]
 
-    print_ts('packages: ' + str(len(packages)))
+    print_ts('packages: {}'.format(len(packages)))
+
+    if os.path.isfile('packages_nodata.txt'):
+        with open('packages_nodata.txt', 'rt') as f:
+            packages_nodata = [val.strip() for val in f.readlines()]
+            packages_nodata.sort()
+
+        print_ts('packages_nodata: {}'.format(len(packages_nodata)))
+
+        print_ts('removing packages with no files to process'.format(len(packages_nodata)))
+        packages_nodata_clean = []
+        for pkg_n in packages_nodata:
+            if pkg_n in packages:
+                packages.remove(pkg_n)
+                packages_nodata_clean.append(pkg_n)
+
+        packages_nodata_diff = len(packages_nodata) - len(packages_nodata_clean)
+        if packages_nodata_diff:
+            with open('packages_nodata.txt', 'wt') as f:
+                for pkg in packages_nodata_clean:
+                    f.write(pkg + '\n')
+
+            print_ts('removed {} packages from packages_nodata.txt'.format(packages_nodata_diff))
+
+        print_ts('packages: {}'.format(len(packages)))
 
     if len(packages) == 0:
         print_ts('fatal: there are no packages')
