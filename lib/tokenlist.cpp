@@ -677,8 +677,6 @@ static bool iscpp11init_impl(const Token * const tok)
         return false; // trailing return type. The only function body that can contain no semicolon is a void function.
     if (Token::simpleMatch(nameToken->previous(), "namespace") || Token::simpleMatch(nameToken, "namespace") /*anonymous namespace*/)
         return false;
-    if (Token::simpleMatch(nameToken->tokAt(-1), ":") || Token::Match(nameToken->tokAt(-2), ": public|private|protected"))
-        return false;
     if (endtok != nullptr && !Token::Match(nameToken, "return|:")) {
         // If there is semicolon between {..} this is not a initlist
         for (const Token *tok2 = nameToken->next(); tok2 != endtok; tok2 = tok2->next()) {
@@ -693,7 +691,7 @@ static bool iscpp11init_impl(const Token * const tok)
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
     const Token *prev = nameToken;
-    while (Token::Match(prev, "%name%|::|:|<|>|,")) {
+    while (Token::Match(prev, "%name%|::|:|<|>|,|%num%")) {
         if (Token::Match(prev, "class|struct|union|enum"))
             return false;
 
