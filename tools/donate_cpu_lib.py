@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.38"
+CLIENT_VERSION = "1.3.39"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -597,7 +597,7 @@ def upload_results(package, results):
     try:
         try_retry(__upload, fargs=('write\n' + package, results + '\nDONE', 'Result'), max_tries=4, sleep_duration=30, sleep_factor=1)
     except Exception as e:
-        print('Result upload permanently failed ({})!'.format(e))
+        print('Result upload failed ({})!'.format(e))
         return False
 
     return True
@@ -612,7 +612,17 @@ def upload_info(package, info_output):
     try:
         try_retry(__upload, fargs=('write_info\n' + package, info_output + '\nDONE', 'Information'), max_tries=3, sleep_duration=30, sleep_factor=1)
     except Exception as e:
-        print('Information upload permanently failed ({})!'.format(e))
+        print('Information upload failed ({})!'.format(e))
+        return False
+
+    return True
+
+def upload_nodata(package):
+    print('Uploading no-data status..')
+    try:
+        try_retry(__upload, fargs=('write_nodata\n' + package, '', 'No-data status'), max_tries=3, sleep_duration=30, sleep_factor=1)
+    except Exception as e:
+        print('No-data upload failed ({})!'.format(e))
         return False
 
     return True

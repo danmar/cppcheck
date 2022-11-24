@@ -182,6 +182,9 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                              const PathMatch& ignored
                              )
 {
+    if (ignored.match(path))
+        return "";
+
     struct stat file_stat;
     if (stat(path.c_str(), &file_stat) != -1) {
         if ((file_stat.st_mode & S_IFMT) == S_IFDIR) {
