@@ -268,6 +268,7 @@ def __handle_remove_readonly(func, path, exc):
 def __remove_tree(folder_name):
     if not os.path.exists(folder_name):
         return
+    print('Removing existing temporary data...')
     count = 5
     while count > 0:
         count -= 1
@@ -310,7 +311,6 @@ def download_package(work_path, package, bandwidth_limit):
 
 
 def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None):
-    print('Unpacking..')
     temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
     os.mkdir(temp_path)
@@ -328,6 +328,7 @@ def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None
 
     source_found = False
     if tarfile.is_tarfile(tgz):
+        print('Unpacking..')
         with tarfile.open(tgz) as tf:
             total = 0
             extracted = 0
