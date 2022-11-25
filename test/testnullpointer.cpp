@@ -153,6 +153,7 @@ private:
         TEST_CASE(scanf_with_invalid_va_argument);
         TEST_CASE(nullpointer_in_return);
         TEST_CASE(nullpointer_in_typeid);
+        TEST_CASE(nullpointer_in_alignof); // #11401
         TEST_CASE(nullpointer_in_for_loop);
         TEST_CASE(nullpointerDelete);
         TEST_CASE(nullpointerSubFunction);
@@ -3413,7 +3414,27 @@ private:
               "     return typeid(*c) == typeid(*c);\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void nullpointer_in_alignof() // #11401
+    {
+        check("size_t foo() {\n"
+              "    char* c = 0;\n"
+              "    return alignof(*c);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    return alignof(*0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) {\n"
+              "    f(alignof(*p));\n"
+              "    if (p) {}\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_in_for_loop() {
@@ -4344,6 +4365,15 @@ private:
 
         ctu("size_t f(int* p) {\n"
             "    size_t len = sizeof(*p);\n"
+            "    return len;\n"
+            "}\n"
+            "void g() {\n"
+            "    f(NULL);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("size_t f(int* p) {\n"
+            "    size_t len = alignof(*p);\n"
             "    return len;\n"
             "}\n"
             "void g() {\n"

@@ -151,7 +151,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
 }
 
 static bool isUnevaluated(const Token* tok) {
-    return tok && Token::Match(tok->previous(), "sizeof|decltype (");
+    return tok && Token::Match(tok->previous(), "sizeof|decltype|alignof (");
 }
 
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)
@@ -288,7 +288,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
     const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
+        if (Token::Match(tok, "sizeof|decltype|typeid|typeof|alignof (")) {
             tok = tok->next()->link();
             continue;
         }
@@ -347,7 +347,7 @@ void CheckNullPointer::nullConstantDereference()
             tok = scope->function->token; // Check initialization list
 
         for (; tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "sizeof|decltype|typeid|typeof ("))
+            if (Token::Match(tok, "sizeof|decltype|typeid|typeof|alignof ("))
                 tok = tok->next()->link();
 
             else if (Token::simpleMatch(tok, "* 0")) {
