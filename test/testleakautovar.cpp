@@ -18,15 +18,16 @@
 
 
 #include "checkleakautovar.h"
-#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -36,6 +37,7 @@
 
 class TestLeakAutoVarStrcpy;
 class TestLeakAutoVarWindows;
+struct InternalError;
 
 class TestLeakAutoVar : public TestFixture {
 public:

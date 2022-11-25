@@ -44,6 +44,7 @@
 #include <cstring>
 #include <cctype>
 #include <cstdlib>
+#include <ctime>
 #include <exception>
 #include <fstream>
 #include <iostream> // <- TEMPORARY
@@ -53,6 +54,7 @@
 #include <sstream> // IWYU pragma: keep
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 

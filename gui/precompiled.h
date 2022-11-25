@@ -18,6 +18,7 @@
 
 #pragma once
 
+// IWYU pragma: begin_keep
 #include "checkthread.h"
 #include "codeeditor.h"
 #include "codeeditorstyle.h"
@@ -29,3 +30,4 @@
 
 #include <QFile>
 #include <QVariant>
+// IWYU pragma: end_keep

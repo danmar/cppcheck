@@ -93,6 +93,7 @@
 #include "programmemory.h"
 #include "reverseanalyzer.h"
 #include "settings.h"
+#include "smallvector.h"
 #include "sourcelocation.h"
 #include "standards.h"
 #include "symboldatabase.h"
@@ -106,13 +107,13 @@
 #include <array>
 #include <cassert>
 #include <climits>
+#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <exception>
 #include <functional>
 #include <initializer_list>
-#include <iosfwd>
 #include <iterator>
 #include <limits>
 #include <map>

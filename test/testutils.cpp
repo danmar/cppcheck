@@ -18,6 +18,7 @@
 
 #include "helpers.h"
 #include "fixture.h"
+#include "settings.h"
 #include "utils.h"
 
 const Settings givenACodeSampleToTokenize::settings;

@@ -28,6 +28,7 @@
 #include "valueflow.h"
 #include "vfvalue.h"
 
+#include <algorithm>
 #include <cctype>
 #include <climits>
 #include <cstdlib>

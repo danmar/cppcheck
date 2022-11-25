@@ -17,6 +17,8 @@
  */
 
 #pragma once
+
+// IWYU pragma: begin_keep
 #include "astutils.h"
 #include "errorlogger.h"
 #include "library.h"
@@ -27,3 +29,4 @@
 #include "suppressions.h"
 #include "utils.h"
 #include "valueflow.h"
+// IWYU pragma: end_keep

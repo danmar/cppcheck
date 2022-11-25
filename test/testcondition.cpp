@@ -25,6 +25,7 @@
 #include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
