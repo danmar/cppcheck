@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2022]
-        arch: [x64, x86]
+        arch: [x64]
         include:
           - platform: 'x86_64'
             packages: |
