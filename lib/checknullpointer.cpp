@@ -152,7 +152,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
 
 static bool isUnevaluatedOperator(const Token* tok)
 {
-    return Token::Match(tok, "sizeof|decltype|typeid|typeof|alignof (");
+    return Token::Match(tok, "sizeof|decltype|typeid|typeof|alignof|_Alignof (");
 }
 
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)

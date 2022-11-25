@@ -3435,6 +3435,12 @@ private:
               "    return;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    char* c = 0;\n"
+              "    return _Alignof(*c);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_in_for_loop() {
