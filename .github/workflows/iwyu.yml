@@ -54,6 +54,11 @@ jobs:
 
       - uses: actions/upload-artifact@v3
         with:
+          name: Compilation Database
+          path: ./cmake.output/compile_commands.json
+
+      - uses: actions/upload-artifact@v3
+        with:
           name: Qt Mappings
           path: ./qt5.imp
 
