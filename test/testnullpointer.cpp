@@ -3441,6 +3441,21 @@ private:
               "    return _Alignof(*c);\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    return _alignof(*0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    return __alignof(*0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    return __alignof__(*0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_in_for_loop() {
