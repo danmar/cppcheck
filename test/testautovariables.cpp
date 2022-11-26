@@ -2749,6 +2749,14 @@ private:
               "    v.data();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3]: (error) Using object that is a temporary.\n", errout.str());
+
+        check("std::string convert(std::string_view sv) { return std::string{ sv }; }\n" // #11374
+              "auto f() {\n"
+              "    std::vector<std::string> v;\n"
+              "    v.push_back(convert(\"foo\"));\n"
+              "    return v[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeUniquePtr()
