@@ -2931,6 +2931,13 @@ bool Function::returnsReference(const Function* function, bool unknown)
     });
 }
 
+bool Function::returnsStandardType(const Function* function, bool unknown)
+{
+    return checkReturns(function, unknown, true, [](UNUSED const Token* defStart, const Token* defEnd) {
+        return defEnd->previous() && defEnd->previous()->isStandardType();
+    });
+}
+
 bool Function::returnsVoid(const Function* function, bool unknown)
 {
     return checkReturns(function, unknown, true, [](UNUSED const Token* defStart, const Token* defEnd) {
