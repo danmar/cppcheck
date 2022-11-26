@@ -892,6 +892,36 @@ void * identicalCondition_mmap(int fd, size_t size) // #9940
     return buffer;
 }
 
+int munmap_no_double_free(int tofd, // #11396
+                          int fromfd,
+                          size_t len)
+{
+    int rc;
+    void* fptr = mmap(NULL,len,PROT_READ|PROT_WRITE,MAP_SHARED,fromfd,(off_t)0);
+    if (fptr == MAP_FAILED) {
+        return -1;
+    }
+
+    void* tptr = mmap(NULL,len,PROT_READ|PROT_WRITE,MAP_SHARED,tofd,(off_t)0);
+    if (tptr == MAP_FAILED) {
+        // cppcheck-suppress memleak
+        return -1;
+    }
+
+    memcpy(tptr,fptr,len);
+
+    if ((rc = munmap(fptr,len)) != 0) {
+        // cppcheck-suppress memleak
+        return -1;
+    }
+
+    if ((rc = munmap(tptr,len)) != 0) {
+        return -1;
+    }
+
+    return rc;
+}
+
 void resourceLeak_fdopen(int fd)
 {
     // cppcheck-suppress unreadVariable
