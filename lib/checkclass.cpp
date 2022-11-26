@@ -697,7 +697,7 @@ void CheckClass::assignAllVarsVisibleFromScope(std::vector<Usage>& usageList, co
     for (const Type::BaseInfo& i : scope->definedType->derivedFrom) {
         const Type *derivedFrom = i.type;
 
-        if (derivedFrom)
+        if (derivedFrom && derivedFrom->classScope)
             assignAllVarsVisibleFromScope(usageList, derivedFrom->classScope);
     }
 }
@@ -1559,6 +1559,10 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
 
     for (; tok && tok != last; tok = tok->next()) {
         // check for return of reference to this
+
+        if (const Token* lScope = isLambdaCaptureList(tok)) // skip lambda
+            tok = lScope->link();
+
         if (tok->str() != "return")
             continue;
 

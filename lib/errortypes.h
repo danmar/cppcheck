@@ -42,9 +42,9 @@ struct InternalError {
     std::string id;
 };
 
-class TerminateException: public std::runtime_error {
+class TerminateException : public std::runtime_error {
 public:
-    TerminateException(): std::runtime_error("terminate") {}
+    TerminateException() : std::runtime_error("terminate") {}
 };
 
 class CPPCHECKLIB Certainty {

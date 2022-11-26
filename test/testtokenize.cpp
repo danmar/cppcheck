@@ -6533,6 +6533,9 @@ private:
                                              "        return a < b;\n"
                                              "    });\n"
                                              "}\n"));
+
+        // #11378
+        ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
     }
 
     void astcase() {
@@ -6750,6 +6753,12 @@ private:
                                              "void h() { "
                                              "  for (my_struct ms : { my_struct{ .x=5, .y{42} } }) {} "
                                              "}"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename T> void foo() {} "
+                                             "void h() { "
+                                             "  [func=foo<int>]{func();}(); "
+                                             "}"));
+
 
         // op op
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
@@ -7492,6 +7501,10 @@ private:
                         TokenImpl::Cpp11init::NOINIT);
         testIsCpp11init("namespace { TEST(a, b) {} }", // anonymous namespace
                         "{ TEST",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("enum { e = decltype(s)::i };",
+                        "{ e",
                         TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }

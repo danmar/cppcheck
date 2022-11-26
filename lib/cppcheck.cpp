@@ -260,8 +260,24 @@ static void createDumpFile(const Settings& settings,
         std::ofstream fout(getCtuInfoFileName(dumpFile));
     }
 
+    std::string language;
+    switch (settings.enforcedLang) {
+    case Settings::Language::C:
+        language = " language=\"c\"";
+        break;
+    case Settings::Language::CPP:
+        language = " language=\"cpp\"";
+        break;
+    case Settings::Language::None:
+        if (Path::isCPP(filename))
+            language = " language=\"cpp\"";
+        else if (Path::isC(filename))
+            language = " language=\"c\"";
+        break;
+    }
+
     fdump << "<?xml version=\"1.0\"?>" << std::endl;
-    fdump << "<dumps>" << std::endl;
+    fdump << "<dumps" << language << ">" << std::endl;
     fdump << "  <platform"
           << " name=\"" << settings.platformString() << '\"'
           << " char_bit=\"" << settings.char_bit << '\"'

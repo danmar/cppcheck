@@ -4850,6 +4850,15 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #11383
+              "    void f() {\n"
+              "        int x = 42;"
+              "        auto l2 = [i = i, x, y = 0]() { return i + x + y; };\n"
+              "    }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {

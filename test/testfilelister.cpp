@@ -43,6 +43,7 @@ private:
 
         TEST_CASE(isDirectory);
         TEST_CASE(recursiveAddFiles);
+        TEST_CASE(excludeFile);
         TEST_CASE(fileExists);
     }
 
@@ -76,6 +77,15 @@ private:
 
         // Make sure headers are not added..
         ASSERT(files.find("lib/tokenize.h") == files.end());
+    }
+
+    void excludeFile() const {
+        std::map<std::string, std::size_t> files;
+        std::vector<std::string> ignored{"lib/token.cpp"};
+        PathMatch matcher(ignored);
+        std::string err = FileLister::recursiveAddFiles(files, "lib/token.cpp", matcher);
+        ASSERT(err.empty());
+        ASSERT(files.empty());
     }
 
     void fileExists() const {

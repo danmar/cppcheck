@@ -5213,6 +5213,15 @@ private:
             "  dostuff(x);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Pointer arithmetic overflow; 'p' buffer size is 12\n", errout.str());
+
+        ctu("void f(const char *p) {\n" // #11361
+            "    const char* c = p + 1;\n"
+            "}\n"
+            "void g() {\n"
+            "    const char s[N] = \"ab\";\n"
+            "    f(s);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void objectIndex() {
