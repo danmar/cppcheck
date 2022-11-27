@@ -39,6 +39,7 @@ jobs:
           make -C cmake.output autogen
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output gui-build-deps
+          make -C cmake.output triage-build-ui-deps
 
       - name: Build Qt mappings
         run: |
