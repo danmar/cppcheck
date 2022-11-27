@@ -326,6 +326,8 @@ private:
         ASSERT(Result::True == isUsedAsBool("void f(bool b); void f() { int i; f(i); }","i )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int *i; if (*i) {} }", "i )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int *i; if (*i) {} }", "* i )"));
+        ASSERT(Result::True == isUsedAsBool("int g(); void h(bool); void f() { h(g()); }", "( ) )"));
+        ASSERT(Result::True == isUsedAsBool("int g(int); void h(bool); void f() { h(g(0)); }", "( 0 ) )"));
     }
 };
 
