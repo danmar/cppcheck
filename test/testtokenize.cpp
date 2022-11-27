@@ -7506,6 +7506,32 @@ private:
         testIsCpp11init("enum { e = decltype(s)::i };",
                         "{ e",
                         TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("template <typename T>\n" // #11378
+                        "class D<M<T, 1>> : public B<M<T, 1>, T> {\n"
+                        "public:\n"
+                        "    D(int x) : B<M<T, 1>, T>(x) {}\n"
+                        "};\n",
+                        "{ public:",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("template <typename T>\n"
+                        "class D<M<T, 1>> : B<M<T, 1>, T> {\n"
+                        "public:\n"
+                        "    D(int x) : B<M<T, 1>, T>(x) {}\n"
+                        "};\n",
+                        "{ public:",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("using namespace std;\n"
+                        "namespace internal {\n"
+                        "    struct S { S(); };\n"
+                        "}\n"
+                        "namespace internal {\n"
+                        "    S::S() {}\n"
+                        "}\n",
+                        "{ } }",
+                        TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }
 };
