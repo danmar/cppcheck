@@ -2768,6 +2768,22 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:2] -> [test.cpp:1] -> [test.cpp:3]: (error) Returning pointer to local variable 'p' that will be invalid when returning.\n",
             errout.str());
+
+        check("int* f();\n" // #11406
+              "bool g() {\n"
+              "    std::unique_ptr<int> ptr(f());\n"
+              "    return ptr.get();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int* f();\n"
+              "int* g() {\n"
+              "    std::unique_ptr<int> ptr(f());\n"
+              "    return ptr.get();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning object that points to local variable 'ptr' that will be invalid when returning.\n",
+            errout.str());
     }
     void danglingLifetime() {
         check("auto f() {\n"
