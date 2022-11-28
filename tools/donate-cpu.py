@@ -245,10 +245,13 @@ while True:
 
             def get_client_version_head():
                 cmd = 'python3' + ' ' + os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
-                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True)
+                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
                 try:
                     comm = p.communicate()
-                    return comm[0].strip()
+                    # TODO: instead of using decode() we should pass the following to subprocess.Popen() but "encoding" and "errors" is not supported until Python 3.6:
+                    # universal_newlines=True, encoding='utf-8', errors='ignore'
+                    out = comm[0].decode(encoding='utf-8', errors='ignore')
+                    return out.strip()
                 except:
                     return None
 

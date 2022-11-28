@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.44"
+CLIENT_VERSION = "1.3.45"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -152,7 +152,9 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
 
 def get_cppcheck_info(cppcheck_path):
     try:
-        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes'], universal_newlines=True, cwd=cppcheck_path).strip()
+        # TODO: instead of using decode() we should pass the following to subprocess.Popen() but "encoding" and "errors" is not supported until Python 3.6:
+        # universal_newlines=True, encoding='utf-8', errors='ignore'
+        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes'], cwd=cppcheck_path).decode(encoding='utf-8', errors='ignore').strip()
     except:
         return ''
 
@@ -399,9 +401,9 @@ def __run_command(cmd, print_cmd=True):
     time_start = time.time()
     comm = None
     if sys.platform == 'win32':
-        p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE)
     else:
-        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, preexec_fn=os.setsid)
+        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
@@ -425,7 +427,10 @@ def __run_command(cmd, print_cmd=True):
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
             comm = p.communicate()
     time_stop = time.time()
-    stdout, stderr = comm
+    # TODO: instead of using decode() we should pass the following to subprocess.Popen() but "encoding" and "errors" is not supported until Python 3.6:
+    # universal_newlines=True, encoding='utf-8', errors='ignore'
+    stdout = comm[0].decode(encoding='utf-8', errors='ignore')
+    stderr = comm[1].decode(encoding='utf-8', errors='ignore')
     elapsed_time = time_stop - time_start
     return return_code, stdout, stderr, elapsed_time
 

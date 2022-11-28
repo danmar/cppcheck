@@ -53,9 +53,14 @@ class Reduce:
         timeout = None
         if self.__elapsed_time:
             timeout = self.__elapsed_time * 2
-        p = subprocess.Popen(self.__cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p = subprocess.Popen(self.__cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=(sys.version_info[0] < 3))
         try:
             comm = self.__communicate(p, timeout=timeout)
+            if sys.version_info[0] >= 3:
+                # TODO: instead of using decode() we should pass the following to subprocess.Popen() but "encoding" and "errors" is not supported until Python 3.6:
+                # universal_newlines=True, encoding='utf-8', errors='ignore'
+                comm[0] = comm[0].decode(encoding='utf-8', errors='ignore')
+                comm[1] = comm[1].decode(encoding='utf-8', errors='ignore')
         except TimeoutExpired:
             print('timeout')
             p.kill()
