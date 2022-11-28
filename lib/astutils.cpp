@@ -2971,7 +2971,8 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
             return ExprUsage::Used;
         // Function call or index
         if (Token::Match(tok->astParent(), "(|[") && !tok->astParent()->isCast() &&
-            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
+            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")) &&
+            !(tok->variable() && tok->variable()->valueType() && tok->variable()->valueType()->type == ValueType::Type::UNKNOWN_TYPE))
             return ExprUsage::Used;
     }
     return getFunctionUsage(tok, indirect, settings);
