@@ -507,14 +507,22 @@ static std::string readCode(const std::string &file, int linenr, int column, con
 
 static void replaceColors(std::string& source)
 {
-    findAndReplace(source, "{reset}", ::toString(Color::Reset));
-    findAndReplace(source, "{bold}", ::toString(Color::Bold));
-    findAndReplace(source, "{dim}", ::toString(Color::Dim));
-    findAndReplace(source, "{red}", ::toString(Color::FgRed));
-    findAndReplace(source, "{green}", ::toString(Color::FgGreen));
-    findAndReplace(source, "{blue}", ::toString(Color::FgBlue));
-    findAndReplace(source, "{magenta}", ::toString(Color::FgMagenta));
-    findAndReplace(source, "{default}", ::toString(Color::FgDefault));
+    static const std::string reset_str = ::toString(Color::Reset);
+    findAndReplace(source, "{reset}", reset_str);
+    static const std::string bold_str = ::toString(Color::Bold);
+    findAndReplace(source, "{bold}", bold_str);
+    static const std::string dim_str = ::toString(Color::Dim);
+    findAndReplace(source, "{dim}", dim_str);
+    static const std::string red_str = ::toString(Color::FgRed);
+    findAndReplace(source, "{red}", red_str);
+    static const std::string green_str = ::toString(Color::FgGreen);
+    findAndReplace(source, "{green}", green_str);
+    static const std::string blue_str = ::toString(Color::FgBlue);
+    findAndReplace(source, "{blue}", blue_str);
+    static const std::string magenta_str = ::toString(Color::FgMagenta);
+    findAndReplace(source, "{magenta}", magenta_str);
+    static const std::string default_str = ::toString(Color::FgDefault);
+    findAndReplace(source, "{default}", default_str);
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
