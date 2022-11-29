@@ -304,9 +304,9 @@ void ErrorMessage::deserialize(const std::string &data)
     unsigned long long tmp = 0;
     if (!results[2].empty()) {
         try {
-            tmp = std::stoull(results[2]);
+            tmp = MathLib::toULongNumber(results[2]);
         }
-        catch (const std::invalid_argument&) {
+        catch (const InternalError&) {
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID");
         }
         if (tmp > std::numeric_limits<unsigned short>::max())
@@ -316,9 +316,9 @@ void ErrorMessage::deserialize(const std::string &data)
     hash = 0;
     if (!results[3].empty()) {
         try {
-            hash = std::stoull(results[3]);
+            hash = MathLib::toULongNumber(results[3]);
         }
-        catch (const std::invalid_argument&) {
+        catch (const InternalError&) {
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash");
         }
     }
