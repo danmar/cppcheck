@@ -299,15 +299,15 @@ void ErrorMessage::deserialize(const std::string &data)
     if (elem != 7)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
-    id = results[0];
+    id = std::move(results[0]);
     severity = Severity::fromString(results[1]);
     if (!(std::istringstream(results[2]) >> cwe.id))
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID");
     if (!(std::istringstream(results[3]) >> hash))
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash");
-    file0 = results[4];
-    mShortMessage = results[5];
-    mVerboseMessage = results[6];
+    file0 = std::move(results[4]);
+    mShortMessage = std::move(results[5]);
+    mVerboseMessage = std::move(results[6]);
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
