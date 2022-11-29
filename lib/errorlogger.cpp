@@ -277,17 +277,17 @@ void ErrorMessage::deserialize(const std::string &data)
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
         std::string temp;
-        for (unsigned int i = 0; i < len && iss.good(); ++i) {
-            const char c = static_cast<char>(iss.get());
-            temp.append(1, c);
-        }
+        if (len > 0) {
+            temp.resize(len);
+            iss.read(&temp[0], len);
 
-        if (!iss.good())
-            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
+            if (!iss.good())
+                throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
-        if (temp == "inconclusive") {
-            certainty = Certainty::inconclusive;
-            continue;
+            if (temp == "inconclusive") {
+                certainty = Certainty::inconclusive;
+                continue;
+            }
         }
 
         results[elem++] = temp;
