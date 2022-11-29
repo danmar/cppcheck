@@ -307,8 +307,53 @@ private:
     }
 
     void DeserializeInvalidInput() const {
-        ErrorMessage msg;
-        ASSERT_THROW(msg.deserialize("500foobar"), InternalError);
+        {
+            // missing/invalid length
+            // missing separator
+            ErrorMessage msg;
+            ASSERT(!msg.deserialize("500foobar"));
+        }
+        {
+            // invalid length
+            ErrorMessage msg;
+            ASSERT(!msg.deserialize("foo foobar"));
+        }
+        {
+            // mismatching length
+            ErrorMessage msg;
+            ASSERT(!msg.deserialize("8 errorId"));
+        }
+        {
+            // incomplete message
+            ErrorMessage msg;
+            ASSERT(!msg.deserialize("7 errorId"));
+        }
+        {
+            // invalid CWE ID
+            const char str[] = "7 errorId"
+                               "5 error"
+                               "7 invalid"
+                               "1 0"
+                               "8 test.cpp"
+                               "17 Programming error"
+                               "17 Programming error"
+                               "0 ";
+            ErrorMessage msg;
+            ASSERT_THROW(msg.deserialize(str), InternalError);
+        }
+        {
+            // invalid hash
+            const char str[] = "7 errorId"
+                               "5 error"
+                               "1 0"
+                               "7 invalid"
+                               "8 test.cpp"
+                               "17 Programming error"
+                               "17 Programming error"
+                               "0 ";
+            ErrorMessage msg;
+            ASSERT_THROW(msg.deserialize(str), InternalError);
+        }
     }
 
     void SerializeSanitize() const {
