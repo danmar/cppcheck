@@ -301,10 +301,27 @@ void ErrorMessage::deserialize(const std::string &data)
 
     id = std::move(results[0]);
     severity = Severity::fromString(results[1]);
-    if (!(std::istringstream(results[2]) >> cwe.id))
-        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID");
-    if (!(std::istringstream(results[3]) >> hash))
-        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash");
+    unsigned long long tmp = 0;
+    if (!results[2].empty()) {
+        try {
+            tmp = std::stoull(results[2]);
+        }
+        catch (const std::invalid_argument&) {
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID");
+        }
+        if (tmp > std::numeric_limits<unsigned short>::max())
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - CWE ID is out of range");
+    }
+    cwe.id = static_cast<unsigned short>(tmp);
+    hash = 0;
+    if (!results[3].empty()) {
+        try {
+            hash = std::stoull(results[3]);
+        }
+        catch (const std::invalid_argument&) {
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash");
+        }
+    }
     file0 = std::move(results[4]);
     mShortMessage = std::move(results[5]);
     mVerboseMessage = std::move(results[6]);
