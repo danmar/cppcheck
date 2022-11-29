@@ -531,17 +531,20 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
 
     // No template is given
     if (templateFormat.empty()) {
-        std::ostringstream text;
-        if (!callStack.empty())
-            text << ErrorLogger::callStackToString(callStack) << ": ";
-        if (severity != Severity::none) {
-            text << '(' << Severity::toString(severity);
-            if (certainty == Certainty::inconclusive)
-                text << ", inconclusive";
-            text << ") ";
+        std::string text;
+        if (!callStack.empty()) {
+            text += ErrorLogger::callStackToString(callStack);
+            text += ": ";
         }
-        text << (verbose ? mVerboseMessage : mShortMessage);
-        return text.str();
+        if (severity != Severity::none) {
+            text += '(';
+            text += Severity::toString(severity);
+            if (certainty == Certainty::inconclusive)
+                text += ", inconclusive";
+            text += ") ";
+        }
+        text += (verbose ? mVerboseMessage : mShortMessage);
+        return text;
     }
 
     // template is given. Reformat the output according to it
