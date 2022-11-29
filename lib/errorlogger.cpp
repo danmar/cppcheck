@@ -368,7 +368,7 @@ void ErrorMessage::deserialize(const std::string &data)
         // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
 
         ErrorMessage::FileLocation loc(substrings[3], MathLib::toLongNumber(substrings[0]), MathLib::toLongNumber(substrings[1]));
-        loc.setfile(substrings[2]);
+        loc.setfile(std::move(substrings[2]));
         if (substrings.size() == 5)
             loc.setinfo(substrings[4]);
 
@@ -691,11 +691,10 @@ std::string ErrorMessage::FileLocation::getOrigFile(bool convert) const
     return mOrigFileName;
 }
 
-void ErrorMessage::FileLocation::setfile(const std::string &file)
+void ErrorMessage::FileLocation::setfile(std::string file)
 {
-    mFileName = file;
-    mFileName = Path::fromNativeSeparators(mFileName);
-    mFileName = Path::simplifyPath(mFileName);
+    mFileName = Path::fromNativeSeparators(std::move(file));
+    mFileName = Path::simplifyPath(std::move(mFileName));
 }
 
 std::string ErrorMessage::FileLocation::stringify() const
