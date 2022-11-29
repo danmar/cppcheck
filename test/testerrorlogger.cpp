@@ -297,7 +297,7 @@ private:
                       "0 ", msg.serialize());
 
         ErrorMessage msg2;
-        msg2.deserialize(msg.serialize());
+        ASSERT(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
         ASSERT_EQUALS("test.cpp", msg2.file0);
@@ -326,7 +326,7 @@ private:
                       "0 ", msg.serialize());
 
         ErrorMessage msg2;
-        msg2.deserialize(msg.serialize());
+        ASSERT(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
         ASSERT_EQUALS("1.c", msg2.file0);
@@ -344,7 +344,7 @@ private:
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
 
         ErrorMessage msg2;
-        msg2.deserialize(msg.serialize());
+        ASSERT(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("[]:;,()", msg2.callStack.front().getfile(false));
         ASSERT_EQUALS(":/,;", msg2.callStack.front().getOrigFile(false));
         ASSERT_EQUALS(654, msg2.callStack.front().line);

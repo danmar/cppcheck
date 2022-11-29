@@ -298,6 +298,11 @@ bool ErrorMessage::deserialize(const std::string &data)
     if (!(iss >> stackSize))
         return false;
 
+    iss.get();
+
+    if (stackSize == 0)
+        return true;
+
     while (iss.good()) {
         unsigned int len = 0;
         if (!(iss >> len))
