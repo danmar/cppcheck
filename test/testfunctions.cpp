@@ -1900,6 +1900,12 @@ private:
               "void g() { C::f(); }\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(const std::vector<std::string>& v) {\n" // #11223
+              "    for (const auto& s : v)\n"
+              "        s.find(\"\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function s.find() is not used.\n", errout.str());
+
         settings.severity = severity_old;
         settings.checkLibrary = false;
     }
