@@ -2260,9 +2260,18 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
             if (Token::Match(tok2, "; %varid% =", var->declarationId()))
                 tok2 = tok2->tokAt(2);
             if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=") && tok != tok2->astOperand2()) {
-                std::pair<const Token*, const Token*> r = typeDecl(tok2->astOperand2());
+                tok2 = tok2->astOperand2();
+                std::pair<const Token*, const Token*> r = typeDecl(tok2);
                 if (r.first)
                     return r;
+                if (tok2->astOperand1() && Token::simpleMatch(tok2, "new")) {
+                    if (Token::simpleMatch(tok2->astOperand1(), "("))
+                        return { tok2->next(), tok2->astOperand1() };
+                    const Token* declEnd = nextAfterAstRightmostLeaf(tok2->astOperand1());
+                    if (Token::simpleMatch(declEnd, "<") && declEnd->link())
+                        declEnd = declEnd->link()->next();
+                    return { tok2->next(),  declEnd };
+                }
             }
             if (astIsRangeBasedForDecl(var->nameToken()) && astIsContainer(var->nameToken()->astParent()->astOperand2())) { // range-based for
                 const ValueType* vt = var->nameToken()->astParent()->astOperand2()->valueType();
