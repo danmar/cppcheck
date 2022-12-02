@@ -8085,6 +8085,15 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
     return {};
 }
 
+static bool valueFlowIsSameContainerType(const ValueType& contType, const Token* tok, const Settings* settings)
+{
+    if (!tok || !tok->valueType() || !tok->valueType()->containerTypeToken)
+        return false;
+
+    const ValueType tokType = ValueType::parseDecl(tok->valueType()->containerTypeToken, settings, true);
+    return contType.isTypeEqual(&tokType);
+}
+
 static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                                                      const ValueType* valueType,
                                                      const Settings* settings,
@@ -8108,6 +8117,8 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                 initList = true;
             else if (vt.isIntegral() && astIsIntegral(args[0], false))
                 initList = true;
+            else if (args.size() == 1 && valueFlowIsSameContainerType(vt, tok->astOperand2(), settings))
+                initList = false; // copy ctor
         }
     }
     if (!initList)
