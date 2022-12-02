@@ -2264,6 +2264,11 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
                 if (r.first)
                     return r;
             }
+            if (astIsRangeBasedForDecl(var->nameToken()) && astIsContainer(var->nameToken()->astParent()->astOperand2())) { // range-based for
+                const ValueType* vt = var->nameToken()->astParent()->astOperand2()->valueType();
+                if (vt && vt->containerTypeToken)
+                    return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+            }
         }
         return {var->typeStartToken(), var->typeEndToken()->next()};
     } else if (Token::simpleMatch(tok, "return")) {
