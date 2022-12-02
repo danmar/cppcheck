@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.39"
+CLIENT_VERSION = "1.3.40"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -126,10 +126,19 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
 
         # It is possible to pull branches, not tags
         if version != 'main':
-            return
+            return False
+
+        hash_old = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=cppcheck_path).strip()
 
         print('Pulling {}'.format(version))
         subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
+
+        hash_new = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], cwd=cppcheck_path).strip()
+
+        has_changes = hash_old != hash_new
+        if not has_changes:
+            print('No changes detected')
+        return has_changes
     else:
         if version != 'main':
             print('Fetching {}'.format(version))
@@ -138,6 +147,7 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
             subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
         print('Adding worktree \'{}\' for {}'.format(cppcheck_path, version))
         subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
+        return True
 
 
 def get_cppcheck_info(cppcheck_path):
@@ -258,6 +268,7 @@ def __handle_remove_readonly(func, path, exc):
 def __remove_tree(folder_name):
     if not os.path.exists(folder_name):
         return
+    print('Removing existing temporary data...')
     count = 5
     while count > 0:
         count -= 1
@@ -300,7 +311,6 @@ def download_package(work_path, package, bandwidth_limit):
 
 
 def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None):
-    print('Unpacking..')
     temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
     os.mkdir(temp_path)
@@ -318,6 +328,7 @@ def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None
 
     source_found = False
     if tarfile.is_tarfile(tgz):
+        print('Unpacking..')
         with tarfile.open(tgz) as tf:
             total = 0
             extracted = 0
