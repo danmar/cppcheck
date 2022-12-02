@@ -8085,6 +8085,15 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
     return {};
 }
 
+static bool valueFlowIsSameContainerType(const ValueType& contType, const Token* tok, const Settings* settings)
+{
+    if (!tok || !tok->valueType() || !tok->valueType()->containerTypeToken)
+        return false;
+
+    const ValueType tokType = ValueType::parseDecl(tok->valueType()->containerTypeToken, settings, true);
+    return contType.isTypeEqual(&tokType);
+}
+
 static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                                                      const ValueType* valueType,
                                                      const Settings* settings,
@@ -8108,6 +8117,8 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                 initList = true;
             else if (vt.isIntegral() && astIsIntegral(args[0], false))
                 initList = true;
+            else if (args.size() == 1 && valueFlowIsSameContainerType(vt, tok->astOperand2(), settings))
+                initList = false; // copy ctor
         }
     }
     if (!initList)
@@ -8141,21 +8152,6 @@ static void valueFlowContainerSetTokValue(TokenList* tokenlist, const Token* tok
     } else {
         valueFlowForward(start, tok, value, tokenlist);
     }
-}
-
-static bool valueFlowIsSameContainerType(const Variable* var, const Token* tok, const Settings* settings)
-{
-    if (!var || !var->valueType() || !tok || !tok->valueType())
-        return false;
-
-    const Token* varType = var->valueType()->containerTypeToken;
-    const Token* tokType = tok->valueType()->containerTypeToken;
-    if (!varType || !tokType)
-        return false;
-
-    const ValueType vt1 = ValueType::parseDecl(varType, settings, true);
-    const ValueType vt2 = ValueType::parseDecl(tokType, settings, true);
-    return vt1.isTypeEqual(&vt2);
 }
 
 static void valueFlowContainerSize(TokenList* tokenlist,
@@ -8212,11 +8208,11 @@ static void valueFlowContainerSize(TokenList* tokenlist,
         if (known)
             values.back().setKnown();
         if (!staticSize) {
-            if (Token::simpleMatch(var->nameToken()->next(), "{") && !valueFlowIsSameContainerType(var, var->nameToken()->next()->astOperand2(), settings)) { // check for copy ctor
+            if (Token::simpleMatch(var->nameToken()->next(), "{")) {
                 Token* initList = var->nameToken()->next();
                 valueFlowContainerSetTokValue(tokenlist, var->nameToken(), initList);
                 values = getInitListSize(initList, var->valueType(), settings, known);
-            } else if (Token::Match(var->nameToken()->next(), "(|{")) {
+            } else if (Token::simpleMatch(var->nameToken()->next(), "(")) {
                 const Token* constructorArgs = var->nameToken()->next();
                 values = getContainerSizeFromConstructor(constructorArgs, var->valueType(), settings, known);
             }
