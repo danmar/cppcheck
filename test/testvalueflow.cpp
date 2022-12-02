@@ -6317,6 +6317,22 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+
+        code = "std::vector<int> g();\n" // #11417
+               "int f() {\n"
+               "    std::vector<int> v{ g() };\n"
+               "    auto x = v.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 1));
+
+        code = "std::vector<int> g();\n"
+               "int f() {\n"
+               "    std::vector<std::vector<int>> v{ g() };\n"
+               "    auto x = v.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
     }
 
     void valueFlowContainerElement()
