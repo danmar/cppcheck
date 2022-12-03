@@ -162,7 +162,10 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
     } else if (type == PipeWriter::REPORT_ERROR || type == PipeWriter::REPORT_INFO) {
         ErrorMessage msg;
         try {
-            msg.deserialize(buf);
+            if (!msg.deserialize(buf)) {
+                std::cerr << "#### ThreadExecutor::handleRead error" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
         } catch (const InternalError& e) {
             std::cerr << "#### ThreadExecutor::handleRead error, internal error:" << e.errorMessage << std::endl;
             std::exit(EXIT_FAILURE);

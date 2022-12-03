@@ -297,7 +297,7 @@ private:
                       "0 ", msg.serialize());
 
         ErrorMessage msg2;
-        msg2.deserialize(msg.serialize());
+        ASSERT(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
         ASSERT_EQUALS("test.cpp", msg2.file0);
@@ -307,8 +307,53 @@ private:
     }
 
     void DeserializeInvalidInput() const {
-        ErrorMessage msg;
-        ASSERT_THROW(msg.deserialize("500foobar"), InternalError);
+        {
+            // missing/invalid length
+            // missing separator
+            ErrorMessage msg;
+            ASSERT(!msg.deserialize("500foobar"));
+        }
+        {
+            // invalid length
+            ErrorMessage msg;
+            ASSERT(!msg.deserialize("foo foobar"));
+        }
+        {
+            // mismatching length
+            ErrorMessage msg;
+            ASSERT(!msg.deserialize("8 errorId"));
+        }
+        {
+            // incomplete message
+            ErrorMessage msg;
+            ASSERT(!msg.deserialize("7 errorId"));
+        }
+        {
+            // invalid CWE ID
+            const char str[] = "7 errorId"
+                               "5 error"
+                               "7 invalid"
+                               "1 0"
+                               "8 test.cpp"
+                               "17 Programming error"
+                               "17 Programming error"
+                               "0 ";
+            ErrorMessage msg;
+            ASSERT_THROW(msg.deserialize(str), InternalError);
+        }
+        {
+            // invalid hash
+            const char str[] = "7 errorId"
+                               "5 error"
+                               "1 0"
+                               "7 invalid"
+                               "8 test.cpp"
+                               "17 Programming error"
+                               "17 Programming error"
+                               "0 ";
+            ErrorMessage msg;
+            ASSERT_THROW(msg.deserialize(str), InternalError);
+        }
     }
 
     void SerializeSanitize() const {
@@ -326,7 +371,7 @@ private:
                       "0 ", msg.serialize());
 
         ErrorMessage msg2;
-        msg2.deserialize(msg.serialize());
+        ASSERT(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
         ASSERT_EQUALS("1.c", msg2.file0);
@@ -344,7 +389,7 @@ private:
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
 
         ErrorMessage msg2;
-        msg2.deserialize(msg.serialize());
+        ASSERT(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("[]:;,()", msg2.callStack.front().getfile(false));
         ASSERT_EQUALS(":/,;", msg2.callStack.front().getOrigFile(false));
         ASSERT_EQUALS(654, msg2.callStack.front().line);
