@@ -534,7 +534,12 @@ function check_defines_syntax
     fi
 }
 
-check_files "${DIR}"*.{c,cpp}
-check_defines_syntax
+if [ $# -eq 0  ]
+then
+    check_files "${DIR}"*.{c,cpp}
+    check_defines_syntax
+else
+    check_files "$@"
+fi
 
 echo SUCCESS
