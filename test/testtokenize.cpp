@@ -6758,6 +6758,8 @@ private:
                                              "void h() { "
                                              "  [func=foo<int>]{func();}(); "
                                              "}"));
+        ASSERT_NO_THROW(tokenizeAndStringify("template <class T> constexpr int n = 1;\n"
+                                             "template <class T> T a[n<T>];\n"));
 
 
         // op op

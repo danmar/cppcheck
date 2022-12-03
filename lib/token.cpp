@@ -2278,6 +2278,11 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
                 if (vt && vt->containerTypeToken)
                     return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
+            if (astIsSmartPointer(var->nameToken())) {
+                const ValueType* vt = var->valueType();
+                if (vt && vt->smartPointerTypeToken)
+                    return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
+            }
         }
         return {var->typeStartToken(), var->typeEndToken()->next()};
     } else if (Token::simpleMatch(tok, "return")) {
