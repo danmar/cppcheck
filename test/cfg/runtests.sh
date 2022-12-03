@@ -507,10 +507,13 @@ function check_file {
     esac
 }
 
-for f in "${DIR}"*.{c,cpp}
+function check_files
+{
+for f in "$@"
 do
     check_file $f
 done
+}
 
 # Check the syntax of the defines in the configuration files
 function check_defines_syntax
@@ -531,6 +534,7 @@ function check_defines_syntax
     fi
 }
 
+check_files "${DIR}"*.{c,cpp}
 check_defines_syntax
 
 echo SUCCESS
