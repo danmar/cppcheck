@@ -318,8 +318,8 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             if (str[i] == '1')
                 ret |= 1;
         }
-        /* if (str[0] == '-')
-                ret = -ret; */
+        if (str[0] == '-')
+            ret = -ret;
         return ret;
     }
 
