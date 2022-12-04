@@ -1900,6 +1900,28 @@ private:
               "void g() { C::f(); }\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(const std::vector<std::string>& v) {\n" // #11223
+              "    for (const auto& s : v)\n"
+              "        s.find(\"\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function s.find() is not used.\n", errout.str());
+
+        check("void f() {\n"
+              "    auto* p = new std::vector<int>(5);\n"
+              "    p->push_back(1);\n"
+              "    auto* q = new std::vector<int>{ 5, 7 };\n"
+              "    q->push_back(1);\n"
+              "    auto* r = new std::vector<int>;\n"
+              "    r->push_back(1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    auto p = std::make_shared<std::vector<int>>();\n"
+              "    p->push_back(1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings.severity = severity_old;
         settings.checkLibrary = false;
     }

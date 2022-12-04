@@ -99,6 +99,7 @@ void MainWindow::loadFromClipboard()
 
 void MainWindow::load(QTextStream &textStream)
 {
+    bool local = false;
     QString url;
     QString errorMessage;
     QStringList versions;
@@ -107,20 +108,23 @@ void MainWindow::load(QTextStream &textStream)
         QString line = textStream.readLine();
         if (line.isNull())
             break;
-        if (line.startsWith("ftp://")) {
+        if (line.startsWith("ftp://") || (line.startsWith(DACA2_PACKAGES) && line.endsWith(".tar.xz"))) {
+            local = line.startsWith(DACA2_PACKAGES) && line.endsWith(".tar.xz");
             url = line;
             if (!errorMessage.isEmpty())
                 mAllErrors << errorMessage;
             errorMessage.clear();
         } else if (!url.isEmpty()) {
             static const QRegularExpression severityRe("^.*: (error|warning|style|note):.*$");
-            if (severityRe.match(line).hasMatch())
+            if (!severityRe.match(line).hasMatch())
                 continue;
-            const QRegularExpressionMatch matchRes = mVersionRe.match(line);
-            if (matchRes.hasMatch()) {
-                const QString version = matchRes.captured(1);
-                if (versions.indexOf(version) < 0)
-                    versions << version;
+            if (!local) {
+                const QRegularExpressionMatch matchRes = mVersionRe.match(line);
+                if (matchRes.hasMatch()) {
+                    const QString version = matchRes.captured(1);
+                    if (versions.indexOf(version) < 0)
+                        versions << version;
+                }
             }
             if (line.indexOf(": note:") > 0)
                 errorMessage += '\n' + line;
@@ -259,16 +263,19 @@ bool MainWindow::unpackArchive(const QString &archiveName)
 void MainWindow::showResult(QListWidgetItem *item)
 {
     ui->statusBar->clearMessage();
-    if (!item->text().startsWith("ftp://"))
+    const bool local = item->text().startsWith(DACA2_PACKAGES);
+    if (!item->text().startsWith("ftp://") && !local)
         return;
     const QStringList lines = item->text().split("\n");
     if (lines.size() < 2)
         return;
     const QString &url = lines[0];
     QString msg = lines[1];
-    const QRegularExpressionMatch matchRes = mVersionRe.match(msg);
-    if (matchRes.hasMatch())
-        msg = matchRes.captured(2);
+    if (!local) {
+        const QRegularExpressionMatch matchRes = mVersionRe.match(msg);
+        if (matchRes.hasMatch())
+            msg = matchRes.captured(2);
+    }
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);
@@ -280,7 +287,7 @@ void MainWindow::showResult(QListWidgetItem *item)
         if (QFileInfo::exists(daca2archiveFile)) {
             if (!unpackArchive(daca2archiveFile))
                 return;
-        } else {
+        } else if (!local) {
             const QString archiveFullPath {WORK_FOLDER + '/' + archiveName};
             if (!QFileInfo::exists(archiveFullPath)) {
                 // Download archive

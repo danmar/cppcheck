@@ -8889,7 +8889,7 @@ void Tokenizer::simplifyNamespaceStd()
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
             skipEnumBody(&tok);
         }
-        if (!Token::Match(tok->previous(), ".|::")) {
+        if (!Token::Match(tok->previous(), ".|::|namespace")) {
             if (Token::Match(tok, "%name% (")) {
                 if (isFunctionHead(tok->next(), "{"))
                     userFunctions.insert(tok->str());

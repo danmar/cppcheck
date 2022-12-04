@@ -2178,8 +2178,6 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
         return nullptr;
     if (Token::simpleMatch(argtok, ","))
         argtok = argtok->astOperand1();
-    if (Token::simpleMatch(argtok, "(") && argtok->astOperand2())
-        argtok = argtok->astOperand2();
     tok = argtok;
     while (Token::Match(tok->astParent(), ",|(|{")) {
         tok = tok->astParent();

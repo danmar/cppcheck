@@ -930,6 +930,7 @@ public:
     static bool returnsConst(const Function* function, bool unknown = false);
 
     static bool returnsReference(const Function* function, bool unknown = false);
+    static bool returnsStandardType(const Function* function, bool unknown = false);
 
     static bool returnsVoid(const Function* function, bool unknown = false);
 
