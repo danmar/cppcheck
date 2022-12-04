@@ -381,6 +381,8 @@ private:
         ASSERT_THROW_EQUALS(MathLib::toLongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 18446744073709551616 (stoull)");
         ASSERT_THROW_EQUALS(MathLib::toLongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -18446744073709551616 (stoull)");
 
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("invalid"), InternalError, "Internal Error. MathLib::toLongNumber: invalid_argument: invalid (stoull)");
+
         // TODO: test binary
         // TODO: test floating point
 
@@ -517,6 +519,8 @@ private:
 
         ASSERT_THROW_EQUALS(MathLib::toULongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 18446744073709551616 (stoull)");
         ASSERT_THROW_EQUALS(MathLib::toULongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -18446744073709551616 (stoull)");
+
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("invalid"), InternalError, "Internal Error. MathLib::toULongNumber: invalid_argument: invalid (stoull)");
 
         // TODO: test binary
         // TODO: test floating point
