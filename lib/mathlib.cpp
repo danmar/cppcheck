@@ -337,6 +337,9 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             return static_cast<biguint>(doubleval);
     }
 
+    if (isCharLiteral(str))
+        return simplecpp::characterLiteralToLL(str);
+
     try {
         const biguint ret = std::stoull(str, nullptr, 10);
         return ret;
