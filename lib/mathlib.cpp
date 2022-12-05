@@ -523,11 +523,12 @@ template<> std::string MathLib::toString<double>(double value)
     std::ostringstream result;
     result.precision(12);
     result << value;
-    if (result.str() == "-0")
+    std::string s = result.str();
+    if (s == "-0")
         return "0.0";
-    if (result.str().find_first_of(".e") == std::string::npos)
-        return result.str() + ".0";
-    return result.str();
+    if (s.find_first_of(".e") == std::string::npos)
+        return s + ".0";
+    return s;
 }
 
 bool MathLib::isFloat(const std::string &str)
