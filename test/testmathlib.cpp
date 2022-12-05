@@ -565,11 +565,17 @@ private:
     }
 
     void toDoubleNumber() const {
-        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1"),        0.001);
-        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1f"),       0.001);
-        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1F"),       0.001);
-        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1l"),       0.001);
-        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1L"),       0.001);
+        // float values
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1."),       0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.f"),      0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.F"),      0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.l"),      0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.L"),      0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0"),      0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0f"),     0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0F"),     0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0l"),     0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0L"),     0.001);
         ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("0x1"),      0.001);
         ASSERT_EQUALS_DOUBLE(10.0,   MathLib::toDoubleNumber("10"),       0.001);
         ASSERT_EQUALS_DOUBLE(1000.0, MathLib::toDoubleNumber("10E+2"),    0.001);
@@ -583,11 +589,32 @@ private:
         ASSERT_EQUALS_DOUBLE(100.0,  MathLib::toDoubleNumber("1.0E+2"),   0.001);
         ASSERT_EQUALS_DOUBLE(1e+10,  MathLib::toDoubleNumber("1.0E+10"),  1);
 
-        // TODO: needs to fail
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ff"),      0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1FF"),      0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ll"),      0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1LL"),      0.001);
+        // valid non-float values
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1"),        0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1l"),       0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1L"),       0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ll"),      0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1LL"),      0.001);
+        // TODO: need to succeed
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1u"),       0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1U"),       0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ul"),      0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1UL"),      0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ULL"),     0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ULL"),     0.001);
+
+        // TODO: need to fail
+        // invalid values
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1f"),       0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1F"),       0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.ff"),     0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.FF"),     0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.ll"),     0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0LL"),    0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0ff"),    0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0FF"),    0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0ll"),    0.001);
+        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0LL"),    0.001);
 
         ASSERT_EQUALS_DOUBLE(0.0,    MathLib::toDoubleNumber("0E+0"),     0.000001);
         ASSERT_EQUALS_DOUBLE(0.0,    MathLib::toDoubleNumber("0E-0"),     0.000001);
@@ -625,8 +652,13 @@ private:
 
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: invalid");
 
+#ifdef _LIBCPP_VERSION
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1invalid");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.1invalid");
+#else
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1invalid");
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.1invalid");
+#endif
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1 invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1 invalid");
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("-1e-08.0"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: -1e-08.0");
 
