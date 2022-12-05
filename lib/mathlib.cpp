@@ -492,7 +492,7 @@ double MathLib::toDoubleNumber(const std::string &str)
         try {
             return simplecpp::characterLiteralToLL(str);
         } catch (const std::exception& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: characterLiteralToLL(" + str + ") => " + e.what());
+            throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: characterLiteralToLL(" + str + ") => " + e.what());
         }
     }
     if (isIntHex(str))
@@ -508,7 +508,13 @@ double MathLib::toDoubleNumber(const std::string &str)
     std::istringstream istr(str);
     istr.imbue(std::locale::classic());
     double ret;
-    istr >> ret;
+    if (!(istr >> ret))
+        throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: conversion failed: " + str);
+    std::string s;
+    if (istr >> s) {
+        if (s.find_first_not_of("FfLl") != std::string::npos)
+            throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: " + str);
+    }
     return ret;
 }
 
