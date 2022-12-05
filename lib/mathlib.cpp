@@ -341,7 +341,13 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         return simplecpp::characterLiteralToLL(str);
 
     try {
-        const biguint ret = std::stoull(str, nullptr, 10);
+        std::size_t idx = 0;
+        const biguint ret = std::stoull(str, &idx, 10);
+        if (idx != str.size()) {
+            const std::string s = str.substr(idx);
+            if (s.find_first_not_of("LlUu") != std::string::npos && s != "i64" && s != "ui64")
+                throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: input was not completely consumed: " + str);
+        }
         return ret;
     } catch (const std::out_of_range& /*e*/) {
         throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
@@ -414,7 +420,13 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         return simplecpp::characterLiteralToLL(str);
 
     try {
-        const biguint ret = std::stoull(str, nullptr, 10);
+        std::size_t idx = 0;
+        const biguint ret = std::stoull(str, &idx, 10);
+        if (idx != str.size()) {
+            const std::string s = str.substr(idx);
+            if (s.find_first_not_of("LlUu") != std::string::npos && s != "i64" && s != "ui64")
+                throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: input was not completely consumed: " + str);
+        }
         return ret;
     } catch (const std::out_of_range& /*e*/) {
         throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);

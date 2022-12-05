@@ -252,10 +252,25 @@ private:
 
     void toLongNumber() const {
         // zero input
-        ASSERT_EQUALS(0,  MathLib::toLongNumber("0"));
-        ASSERT_EQUALS(0,  MathLib::toLongNumber("-0"));
-        ASSERT_EQUALS(0,  MathLib::toLongNumber("+0"));
-        ASSERT_EQUALS(0U, MathLib::toLongNumber("0U"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("-0"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("+0"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0L"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0l"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0LL"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0ll"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0U"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0u"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0UL"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0ul"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0ULL"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0ull"));
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0i64")); // Visual Studio-specific
+        ASSERT_EQUALS(0, MathLib::toLongNumber("0ui64")); // Visual Studio-specific
+
+        // TODO: needs to fail
+        //ASSERT_EQUALS(0, MathLib::toLongNumber("0lll"));
+        //ASSERT_EQUALS(0, MathLib::toLongNumber("0uu"));
 
         ASSERT_EQUALS(1U,     MathLib::toLongNumber("1U"));
         ASSERT_EQUALS(10000U, MathLib::toLongNumber("1e4"));
@@ -383,6 +398,8 @@ private:
 
         ASSERT_THROW_EQUALS(MathLib::toLongNumber("invalid"), InternalError, "Internal Error. MathLib::toLongNumber: invalid_argument: invalid");
 
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("1invalid"), InternalError, "Internal Error. MathLib::toLongNumber: input was not completely consumed: 1invalid");
+
         // TODO: test binary
         // TODO: test floating point
 
@@ -391,10 +408,25 @@ private:
 
     void toULongNumber() const {
         // zero input
-        ASSERT_EQUALS(0,  MathLib::toULongNumber("0"));
-        ASSERT_EQUALS(0,  MathLib::toULongNumber("-0"));
-        ASSERT_EQUALS(0,  MathLib::toULongNumber("+0"));
-        ASSERT_EQUALS(0U, MathLib::toULongNumber("0U"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("-0"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("+0"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0L"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0l"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0LL"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0ll"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0U"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0u"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0UL"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0ul"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0ULL"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0ull"));
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0i64")); // Visual Studio-specific
+        ASSERT_EQUALS(0, MathLib::toULongNumber("0ui64")); // Visual Studio-specific
+
+        // TODO: needs to fail
+        //ASSERT_EQUALS(0, MathLib::toULongNumber("0lll"));
+        //ASSERT_EQUALS(0, MathLib::toULongNumber("0uu"));
 
         ASSERT_EQUALS(1U,     MathLib::toULongNumber("1U"));
         ASSERT_EQUALS(10000U, MathLib::toULongNumber("1e4"));
@@ -521,6 +553,8 @@ private:
         ASSERT_THROW_EQUALS(MathLib::toULongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -18446744073709551616");
 
         ASSERT_THROW_EQUALS(MathLib::toULongNumber("invalid"), InternalError, "Internal Error. MathLib::toULongNumber: invalid_argument: invalid");
+
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("1invalid"), InternalError, "Internal Error. MathLib::toULongNumber: input was not completely consumed: 1invalid");
 
         // TODO: test binary
         // TODO: test floating point
