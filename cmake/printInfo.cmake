@@ -76,6 +76,7 @@ if (USE_BOOST)
     message( STATUS "Boost_VERSION_STRING =  ${Boost_VERSION_STRING}")
     message( STATUS "Boost_INCLUDE_DIRS =    ${Boost_INCLUDE_DIRS}")
 endif()
+message( STATUS "USE_LIBCXX =            ${USE_LIBCXX}" )
 message( STATUS )
 
 if(${ANALYZE_ADDRESS})
