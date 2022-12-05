@@ -2284,9 +2284,9 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                     return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
             }
             if (pointedToType && astIsIterator(var->nameToken())) {
-              const ValueType* vt = var->valueType();
-              if (vt && vt->containerTypeToken)
-                  return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+                const ValueType* vt = var->valueType();
+                if (vt && vt->containerTypeToken)
+                    return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
         }
         return {var->typeStartToken(), var->typeEndToken()->next()};
