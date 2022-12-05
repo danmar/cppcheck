@@ -258,8 +258,10 @@ std::string ErrorMessage::serialize() const
 
 bool ErrorMessage::deserialize(const std::string &data)
 {
+    // TODO: clear all fields
     certainty = Certainty::normal;
     callStack.clear();
+
     std::istringstream iss(data);
     std::array<std::string, 7> results;
     std::size_t elem = 0;
@@ -268,12 +270,20 @@ bool ErrorMessage::deserialize(const std::string &data)
         if (!(iss >> len))
             return false;
 
-        iss.get();
+        if (iss.get() != ' ')
+            return false;
+
+        if (!iss.good())
+            return false;
+
         std::string temp;
         for (unsigned int i = 0; i < len && iss.good(); ++i) {
             const char c = static_cast<char>(iss.get());
             temp.append(1, c);
         }
+
+        if (!iss.good())
+            return false;
 
         if (temp == "inconclusive") {
             certainty = Certainty::inconclusive;
@@ -283,20 +293,31 @@ bool ErrorMessage::deserialize(const std::string &data)
         results[elem++] = temp;
     }
 
+    if (!iss.good())
+        return false;
+
     if (elem != 7)
-        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed");
+        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
     id = results[0];
     severity = Severity::fromString(results[1]);
-    std::istringstream(results[2]) >> cwe.id;
-    std::istringstream(results[3]) >> hash;
-    std::istringstream(results[4]) >> file0;
+    if (!(std::istringstream(results[2]) >> cwe.id))
+        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID");
+    if (!(std::istringstream(results[3]) >> hash))
+        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash");
+    file0 = results[4];
     mShortMessage = results[5];
     mVerboseMessage = results[6];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
         return false;
+
+    if (iss.get() != ' ')
+        return false;
+
+    if (stackSize == 0)
+        return true;
 
     while (iss.good()) {
         unsigned int len = 0;
