@@ -628,6 +628,7 @@ private:
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1invalid");
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.1invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.1invalid");
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1 invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1 invalid");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("-1e-08.0"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: -1e-08.0");
 
         // verify: string --> double --> string conversion
         ASSERT_EQUALS("1.0",  MathLib::toString(MathLib::toDoubleNumber("1.0f")));
@@ -1383,6 +1384,9 @@ private:
         ASSERT_EQUALS("0.000000",  MathLib::toString(0.0L));
         ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0L));
         ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0L));
+
+        ASSERT_EQUALS("1e-08", MathLib::toString(0.00000001));
+        ASSERT_EQUALS("-1e-08", MathLib::toString(-0.00000001));
     }
 
     void CPP14DigitSeparators() const { // Ticket #7137, #7565
