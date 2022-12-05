@@ -328,9 +328,10 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
     }
 
     if (isFloat(str)) {
-        // Things are going to be less precise now: the value can't b represented in the biguint type.
+        // Things are going to be less precise now: the value can't be represented in the biguint type.
         // Use min/max values as an approximation. See #5843
-        const double doubleval = std::atof(str.c_str());
+        // TODO: bail out when we are out of range?
+        const double doubleval = toDoubleNumber(str);
         if (doubleval > (double)std::numeric_limits<biguint>::max())
             return std::numeric_limits<biguint>::max();
         else
@@ -407,6 +408,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     if (isFloat(str)) {
         // Things are going to be less precise now: the value can't be represented in the bigint type.
         // Use min/max values as an approximation. See #5843
+        // TODO: bail out when we are out of range?
         const double doubleval = toDoubleNumber(str);
         if (doubleval > (double)std::numeric_limits<bigint>::max())
             return std::numeric_limits<bigint>::max();
