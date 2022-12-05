@@ -348,8 +348,8 @@ private:
             ASSERT_EQUALS(i, MathLib::toLongNumber("-0xFFFFFFFFFFFFFFFF"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toLongNumber("0x10000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 0x10000000000000000 (stoull)");
-        ASSERT_THROW_EQUALS(MathLib::toLongNumber("-0x10000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -0x10000000000000000 (stoull)");
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("0x10000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 0x10000000000000000");
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("-0x10000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -0x10000000000000000");
 
         // min/max and out-of-bounds - octal
         {
@@ -363,8 +363,8 @@ private:
             ASSERT_EQUALS(i, MathLib::toLongNumber("-01777777777777777777777"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toLongNumber("02000000000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 02000000000000000000000 (stoull)");
-        ASSERT_THROW_EQUALS(MathLib::toLongNumber("-02000000000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -02000000000000000000000 (stoull)");
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("02000000000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 02000000000000000000000");
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("-02000000000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -02000000000000000000000");
 
         // min/max and out-of-bounds - decimal
         {
@@ -378,10 +378,10 @@ private:
             ASSERT_EQUALS(i, MathLib::toLongNumber("-18446744073709551615"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toLongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 18446744073709551616 (stoull)");
-        ASSERT_THROW_EQUALS(MathLib::toLongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -18446744073709551616 (stoull)");
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 18446744073709551616");
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -18446744073709551616");
 
-        ASSERT_THROW_EQUALS(MathLib::toLongNumber("invalid"), InternalError, "Internal Error. MathLib::toLongNumber: invalid_argument: invalid (stoull)");
+        ASSERT_THROW_EQUALS(MathLib::toLongNumber("invalid"), InternalError, "Internal Error. MathLib::toLongNumber: invalid_argument: invalid");
 
         // TODO: test binary
         // TODO: test floating point
@@ -487,8 +487,8 @@ private:
             ASSERT_EQUALS(u, MathLib::toULongNumber("-0xFFFFFFFFFFFFFFFF"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toULongNumber("0x10000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 0x10000000000000000 (stoull)");
-        ASSERT_THROW_EQUALS(MathLib::toULongNumber("-0x10000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -0x10000000000000000 (stoull)");
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("0x10000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 0x10000000000000000");
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("-0x10000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -0x10000000000000000");
 
         // min/max and out-of-bounds - octal
         {
@@ -502,8 +502,8 @@ private:
             ASSERT_EQUALS(u, MathLib::toULongNumber("-01777777777777777777777"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toULongNumber("02000000000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 02000000000000000000000 (stoull)");
-        ASSERT_THROW_EQUALS(MathLib::toULongNumber("-02000000000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -02000000000000000000000 (stoull)");
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("02000000000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 02000000000000000000000");
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("-02000000000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -02000000000000000000000");
 
         // min/max and out-of-bounds - decimal
         {
@@ -517,10 +517,10 @@ private:
             ASSERT_EQUALS(u, MathLib::toULongNumber("-18446744073709551615"));
         }
 
-        ASSERT_THROW_EQUALS(MathLib::toULongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 18446744073709551616 (stoull)");
-        ASSERT_THROW_EQUALS(MathLib::toULongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -18446744073709551616 (stoull)");
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 18446744073709551616");
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -18446744073709551616");
 
-        ASSERT_THROW_EQUALS(MathLib::toULongNumber("invalid"), InternalError, "Internal Error. MathLib::toULongNumber: invalid_argument: invalid (stoull)");
+        ASSERT_THROW_EQUALS(MathLib::toULongNumber("invalid"), InternalError, "Internal Error. MathLib::toULongNumber: invalid_argument: invalid");
 
         // TODO: test binary
         // TODO: test floating point

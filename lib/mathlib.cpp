@@ -293,10 +293,10 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         try {
             const biguint ret = std::stoull(str, nullptr, 16);
             return ret;
-        } catch (const std::out_of_range& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
-        } catch (const std::invalid_argument& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str + " (" + e.what() +")");
+        } catch (const std::out_of_range& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+        } catch (const std::invalid_argument& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
         }
     }
 
@@ -305,10 +305,10 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         try {
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
-        } catch (const std::out_of_range& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
-        } catch (const std::invalid_argument& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str + " (" + e.what() +")");
+        } catch (const std::out_of_range& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+        } catch (const std::invalid_argument& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
         }
     }
 
@@ -343,10 +343,10 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
     try {
         const biguint ret = std::stoull(str, nullptr, 10);
         return ret;
-    } catch (const std::out_of_range& e) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
-    } catch (const std::invalid_argument& e) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str + " (" + e.what() +")");
+    } catch (const std::out_of_range& /*e*/) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+    } catch (const std::invalid_argument& /*e*/) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
     }
 }
 
@@ -364,10 +364,10 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         try {
             const biguint ret = std::stoull(str, nullptr, 16);
             return (bigint)ret;
-        } catch (const std::out_of_range& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
-        } catch (const std::invalid_argument& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str + " (" + e.what() +")");
+        } catch (const std::out_of_range& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+        } catch (const std::invalid_argument& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
         }
     }
 
@@ -376,10 +376,10 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         try {
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
-        } catch (const std::out_of_range& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
-        } catch (const std::invalid_argument& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str + " (" + e.what() +")");
+        } catch (const std::out_of_range& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+        } catch (const std::invalid_argument& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
         }
     }
 
@@ -416,10 +416,10 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     try {
         const biguint ret = std::stoull(str, nullptr, 10);
         return ret;
-    } catch (const std::out_of_range& e) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
-    } catch (const std::invalid_argument& e) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str + " (" + e.what() +")");
+    } catch (const std::out_of_range& /*e*/) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+    } catch (const std::invalid_argument& /*e*/) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
     }
 }
 
