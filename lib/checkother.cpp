@@ -2105,11 +2105,14 @@ void CheckOther::checkMisusedScopedObject()
             if (ctorTok && (((ctorTok->type() || ctorTok->isStandardType() || (ctorTok->function() && ctorTok->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
                              && (!ctorTok->function() || ctorTok->function()->isConstructor()) // // is not a function on this scope or is function in this scope and it's a ctor
                              && ctorTok->str() != "void") || isLibraryConstructor(tok->next(), typeStr))) {
-                if (const Token* arg = ctorTok->next()->astOperand2()) {
+                const Token* parTok = ctorTok->next();
+                if (Token::simpleMatch(parTok, "<") && parTok->link())
+                    parTok = parTok->link()->next();
+                if (const Token* arg = parTok->astOperand2()) {
                     if (!isConstStatement(arg, mTokenizer->isCPP()))
                         continue;
-                    if (ctorTok->strAt(1) == "(") {
-                        if (arg->varId()) // TODO: check if this is a declaration
+                    if (parTok->str() == "(") {
+                        if (arg->varId() && !(arg->variable() && arg->variable()->nameToken() != arg))
                             continue;
                         const Token* rml = nextAfterAstRightmostLeaf(arg);
                         if (rml && rml->previous() && rml->previous()->varId())

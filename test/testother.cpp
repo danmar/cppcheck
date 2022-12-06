@@ -5140,9 +5140,17 @@ private:
               "    void f() {\n"
               "        std::lock_guard<std::mutex>(m);\n"
               "    }\n"
+              "    void g() {\n"
+              "        std::scoped_lock<std::mutex>(m);\n"
+              "    }\n"
+              "    void h() {\n"
+              "        std::scoped_lock(m);\n"
+              "    }\n"
               "    std::mutex m;\n"
               "}\n", "test.cpp");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'std::lock_guard' object is destroyed immediately.\n",
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'std::lock_guard' object is destroyed immediately.\n"
+                      "[test.cpp:6]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n"
+                      "[test.cpp:9]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n",
                       errout.str());
     }
 
