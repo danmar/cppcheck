@@ -5639,7 +5639,7 @@ void Tokenizer::removePragma()
 void Tokenizer::removeMacroInClassDef()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "class|struct %name% %name% {|:"))
+        if (!Token::Match(tok, "class|struct %name% %name% final| {|:"))
             continue;
 
         const bool nextIsUppercase = tok->next()->isUpperCaseName();
