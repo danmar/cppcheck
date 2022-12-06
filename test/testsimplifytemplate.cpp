@@ -5300,6 +5300,7 @@ private:
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args&...>> constexpr void f() {}")); // #11351
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args&&...>> void f() {}"));
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args*...>> void f() {}"));
+        ASSERT_EQUALS(1U, templateParameters("S<4 < sizeof(uintptr_t)> x;"));
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition

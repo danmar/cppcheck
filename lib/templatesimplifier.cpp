@@ -521,7 +521,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // inner template
-        if (tok->str() == "<") {
+        if (tok->str() == "<" && !tok->previous()->isNumber()) {
             ++level;
             tok = tok->next();
         }
