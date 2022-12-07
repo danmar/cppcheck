@@ -2735,8 +2735,13 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
 
         if (tok->exprId() > 0) {
             for (const Token* tok2 = start; tok2 != end; tok2 = tok2->next()) {
-                if (isExpressionChangedAt(
-                        tok, tok2, tok->valueType() ? tok->valueType()->pointer : 0, global, settings, cpp, depth))
+                int indirect = 0;
+                if (const ValueType* vt = tok->valueType()) {
+                    indirect = vt->pointer;
+                    if (vt->type == ValueType::ITERATOR)
+                        ++indirect;
+                }
+                if (isExpressionChangedAt(tok, tok2, indirect, global, settings, cpp, depth))
                     return true;
             }
         }
