@@ -1922,6 +1922,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::vector<std::vector<int>>& v) {\n"
+              "    auto it = v.begin();\n"
+              "    it->push_back(1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings.severity = severity_old;
         settings.checkLibrary = false;
     }

@@ -300,7 +300,7 @@ std::string astCanonicalType(const Token *expr)
 {
     if (!expr)
         return "";
-    std::pair<const Token*, const Token*> decl = Token::typeDecl(expr);
+    std::pair<const Token*, const Token*> decl = Token::typeDecl(expr, /*pointedToType*/ true);
     if (decl.first && decl.second) {
         std::string ret;
         for (const Token *type = decl.first; Token::Match(type,"%name%|::") && type != decl.second; type = type->next()) {
