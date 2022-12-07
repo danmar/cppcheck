@@ -339,7 +339,7 @@ private:
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW(msg.deserialize(str), InternalError);
+            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid CWE ID");
         }
         {
             // invalid hash
@@ -352,7 +352,7 @@ private:
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW(msg.deserialize(str), InternalError);
+            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid hash");
         }
     }
 
