@@ -6363,6 +6363,12 @@ private:
                         "  return L[0][0];\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n" // #11305
+                        "    type_t a;\n"
+                        "    a[0] = 0;\n"
+                        "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberaccess() {

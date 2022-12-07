@@ -2970,7 +2970,7 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
         if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok))
             return ExprUsage::Used;
         // Function call or index
-        if (Token::Match(tok->astParent(), "(|[") && !tok->astParent()->isCast() &&
+        if (((Token::simpleMatch(tok->astParent(), "(") && !tok->astParent()->isCast()) || (Token::simpleMatch(tok->astParent(), "[") && tok->valueType())) &&
             (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
             return ExprUsage::Used;
     }
