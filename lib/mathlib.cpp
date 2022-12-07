@@ -293,8 +293,10 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         try {
             const biguint ret = std::stoull(str, nullptr, 16);
             return ret;
-        } catch (const std::out_of_range& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+        } catch (const std::out_of_range& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+        } catch (const std::invalid_argument& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
         }
     }
 
@@ -303,8 +305,10 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         try {
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
-        } catch (const std::out_of_range& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+        } catch (const std::out_of_range& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+        } catch (const std::invalid_argument& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
         }
     }
 
@@ -318,26 +322,38 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             if (str[i] == '1')
                 ret |= 1;
         }
-        /* if (str[0] == '-')
-                ret = -ret; */
+        if (str[0] == '-')
+            ret = -ret;
         return ret;
     }
 
     if (isFloat(str)) {
-        // Things are going to be less precise now: the value can't b represented in the biguint type.
+        // Things are going to be less precise now: the value can't be represented in the biguint type.
         // Use min/max values as an approximation. See #5843
-        const double doubleval = std::atof(str.c_str());
+        // TODO: bail out when we are out of range?
+        const double doubleval = toDoubleNumber(str);
         if (doubleval > (double)std::numeric_limits<biguint>::max())
             return std::numeric_limits<biguint>::max();
-        else
-            return static_cast<biguint>(doubleval);
+        else // cast to bigint to avoid UBSAN warning about negative double being out-of-range
+            return static_cast<biguint>(static_cast<bigint>(doubleval));
     }
 
+    if (isCharLiteral(str))
+        return simplecpp::characterLiteralToLL(str);
+
     try {
-        const biguint ret = std::stoull(str, nullptr, 10);
+        std::size_t idx = 0;
+        const biguint ret = std::stoull(str, &idx, 10);
+        if (idx != str.size()) {
+            const std::string s = str.substr(idx);
+            if (s.find_first_not_of("LlUu") != std::string::npos && s != "i64" && s != "ui64")
+                throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: input was not completely consumed: " + str);
+        }
         return ret;
-    } catch (const std::out_of_range& e) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+    } catch (const std::out_of_range& /*e*/) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str);
+    } catch (const std::invalid_argument& /*e*/) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: invalid_argument: " + str);
     }
 }
 
@@ -355,8 +371,10 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         try {
             const biguint ret = std::stoull(str, nullptr, 16);
             return (bigint)ret;
-        } catch (const std::out_of_range& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
+        } catch (const std::out_of_range& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+        } catch (const std::invalid_argument& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
         }
     }
 
@@ -365,8 +383,10 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         try {
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
-        } catch (const std::out_of_range& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
+        } catch (const std::out_of_range& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+        } catch (const std::invalid_argument& /*e*/) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
         }
     }
 
@@ -388,6 +408,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
     if (isFloat(str)) {
         // Things are going to be less precise now: the value can't be represented in the bigint type.
         // Use min/max values as an approximation. See #5843
+        // TODO: bail out when we are out of range?
         const double doubleval = toDoubleNumber(str);
         if (doubleval > (double)std::numeric_limits<bigint>::max())
             return std::numeric_limits<bigint>::max();
@@ -401,10 +422,18 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         return simplecpp::characterLiteralToLL(str);
 
     try {
-        const biguint ret = std::stoull(str, nullptr, 10);
+        std::size_t idx = 0;
+        const biguint ret = std::stoull(str, &idx, 10);
+        if (idx != str.size()) {
+            const std::string s = str.substr(idx);
+            if (s.find_first_not_of("LlUu") != std::string::npos && s != "i64" && s != "ui64")
+                throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: input was not completely consumed: " + str);
+        }
         return ret;
-    } catch (const std::out_of_range& e) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
+    } catch (const std::out_of_range& /*e*/) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str);
+    } catch (const std::invalid_argument& /*e*/) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: invalid_argument: " + str);
     }
 }
 
@@ -463,7 +492,7 @@ double MathLib::toDoubleNumber(const std::string &str)
         try {
             return simplecpp::characterLiteralToLL(str);
         } catch (const std::exception& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: characterLiteralToLL(" + str + ") => " + e.what());
+            throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: characterLiteralToLL(" + str + ") => " + e.what());
         }
     }
     if (isIntHex(str))
@@ -479,7 +508,13 @@ double MathLib::toDoubleNumber(const std::string &str)
     std::istringstream istr(str);
     istr.imbue(std::locale::classic());
     double ret;
-    istr >> ret;
+    if (!(istr >> ret))
+        throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: conversion failed: " + str);
+    std::string s;
+    if (istr >> s) {
+        if (s.find_first_not_of("FfLl") != std::string::npos)
+            throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: " + str);
+    }
     return ret;
 }
 
@@ -488,11 +523,12 @@ template<> std::string MathLib::toString<double>(double value)
     std::ostringstream result;
     result.precision(12);
     result << value;
-    if (result.str() == "-0")
+    std::string s = result.str();
+    if (s == "-0")
         return "0.0";
-    if (result.str().find('.') == std::string::npos)
-        return result.str() + ".0";
-    return result.str();
+    if (s.find_first_of(".e") == std::string::npos)
+        return s + ".0";
+    return s;
 }
 
 bool MathLib::isFloat(const std::string &str)
