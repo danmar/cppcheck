@@ -297,7 +297,7 @@ private:
                       "0 ", msg.serialize());
 
         ErrorMessage msg2;
-        ASSERT(msg2.deserialize(msg.serialize()));
+        ASSERT_NO_THROW(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
         ASSERT_EQUALS("test.cpp", msg2.file0);
@@ -311,22 +311,22 @@ private:
             // missing/invalid length
             // missing separator
             ErrorMessage msg;
-            ASSERT(!msg.deserialize("500foobar"));
+            ASSERT_THROW_EQUALS(msg.deserialize("500foobar"), InternalError, "Internal Error: Deserialization of error message failed - invalid separator");
         }
         {
             // invalid length
             ErrorMessage msg;
-            ASSERT(!msg.deserialize("foo foobar"));
+            ASSERT_THROW_EQUALS(msg.deserialize("foo foobar"), InternalError, "Internal Error: Deserialization of error message failed - invalid length");
         }
         {
             // mismatching length
             ErrorMessage msg;
-            ASSERT(!msg.deserialize("8 errorId"));
+            ASSERT_THROW_EQUALS(msg.deserialize("8 errorId"), InternalError, "Internal Error: Deserialization of error message failed - premature end of data");
         }
         {
             // incomplete message
             ErrorMessage msg;
-            ASSERT(!msg.deserialize("7 errorId"));
+            ASSERT_THROW_EQUALS(msg.deserialize("7 errorId"), InternalError, "Internal Error: Deserialization of error message failed - invalid length");
         }
         {
             // invalid CWE ID
@@ -371,7 +371,7 @@ private:
                       "0 ", msg.serialize());
 
         ErrorMessage msg2;
-        ASSERT(msg2.deserialize(msg.serialize()));
+        ASSERT_NO_THROW(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
         ASSERT_EQUALS("1.c", msg2.file0);
@@ -389,7 +389,7 @@ private:
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
 
         ErrorMessage msg2;
-        ASSERT(msg2.deserialize(msg.serialize()));
+        ASSERT_NO_THROW(msg2.deserialize(msg.serialize()));
         ASSERT_EQUALS("[]:;,()", msg2.callStack.front().getfile(false));
         ASSERT_EQUALS(":/,;", msg2.callStack.front().getOrigFile(false));
         ASSERT_EQUALS(654, msg2.callStack.front().line);

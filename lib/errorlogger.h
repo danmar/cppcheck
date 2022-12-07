@@ -165,7 +165,7 @@ public:
                          const std::string &templateLocation = emptyString) const;
 
     std::string serialize() const;
-    bool deserialize(const std::string &data);
+    void deserialize(const std::string &data);
 
     std::list<FileLocation> callStack;
     std::string id;

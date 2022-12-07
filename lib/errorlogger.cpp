@@ -256,7 +256,7 @@ std::string ErrorMessage::serialize() const
     return oss.str();
 }
 
-bool ErrorMessage::deserialize(const std::string &data)
+void ErrorMessage::deserialize(const std::string &data)
 {
     // TODO: clear all fields
     certainty = Certainty::normal;
@@ -268,13 +268,13 @@ bool ErrorMessage::deserialize(const std::string &data)
     while (iss.good() && elem < 7) {
         unsigned int len = 0;
         if (!(iss >> len))
-            return false;
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length");
 
         if (iss.get() != ' ')
-            return false;
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid separator");
 
         if (!iss.good())
-            return false;
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
         std::string temp;
         for (unsigned int i = 0; i < len && iss.good(); ++i) {
@@ -283,7 +283,7 @@ bool ErrorMessage::deserialize(const std::string &data)
         }
 
         if (!iss.good())
-            return false;
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
         if (temp == "inconclusive") {
             certainty = Certainty::inconclusive;
@@ -294,7 +294,7 @@ bool ErrorMessage::deserialize(const std::string &data)
     }
 
     if (!iss.good())
-        return false;
+        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
     if (elem != 7)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
@@ -311,18 +311,18 @@ bool ErrorMessage::deserialize(const std::string &data)
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
-        return false;
+        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid stack size");
 
     if (iss.get() != ' ')
-        return false;
+        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid separator");
 
     if (stackSize == 0)
-        return true;
+        return;
 
     while (iss.good()) {
         unsigned int len = 0;
         if (!(iss >> len))
-            return false;
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length (stack)");
 
         iss.get();
         std::string temp;
@@ -346,7 +346,7 @@ bool ErrorMessage::deserialize(const std::string &data)
             substrings.push_back(temp.substr(start, pos - start));
         }
         if (substrings.size() < 4)
-            throw InternalError(nullptr, "Internal Error: serializing/deserializing of error message failed!");
+            throw InternalError(nullptr, "Internal Error: Deserializing of error message failed");
 
         // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
 
@@ -360,8 +360,6 @@ bool ErrorMessage::deserialize(const std::string &data)
         if (callStack.size() >= stackSize)
             break;
     }
-
-    return true;
 }
 
 std::string ErrorMessage::getXMLHeader(const std::string& productName)
