@@ -2440,8 +2440,11 @@ struct ValueFlowAnalyzer : Analyzer {
             // TODO: Check if modified in the lambda function
             return Action::Invalid;
         int indirect = 0;
-        if (tok->valueType())
-            indirect = tok->valueType()->pointer;
+        if (const ValueType* vt = tok->valueType()) {
+            indirect = vt->pointer;
+            if (vt->type == ValueType::ITERATOR)
+                ++indirect;
+        }
         if (isVariableChanged(tok, indirect, getSettings(), isCPP()))
             return Action::Invalid;
         return Action::None;

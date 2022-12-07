@@ -4628,6 +4628,18 @@ private:
               "    if (!std::isalnum(c)) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #11404
+              "    int f() const;\n"
+              "    void g();\n"
+              "};\n"
+              "void h(std::vector<S*>::iterator it) {\n"
+              "    auto i = (*it)->f();\n"
+              "    (*it)->g();\n"
+              "    auto j = (*it)->f();\n"
+              "    if (i == j) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
