@@ -354,6 +354,7 @@ void ErrorMessage::deserialize(const std::string &data)
         }
 
         std::vector<std::string> substrings;
+        substrings.reserve(5);
         for (std::string::size_type pos = 0; pos < temp.size() && substrings.size() < 5; ++pos) {
             if (substrings.size() == 4) {
                 substrings.push_back(temp.substr(pos));
