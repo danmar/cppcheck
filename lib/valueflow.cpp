@@ -5330,7 +5330,7 @@ static void valueFlowForwardConst(Token* start,
                                   int /*unused*/ = 0)
 {
     if (!precedes(start, end))
-        throw InternalError(var->nameToken(), "valueFlowForwardConst: start token does not precede the end token.")
+        throw InternalError(var->nameToken(), "valueFlowForwardConst: start token does not precede the end token.");
     for (Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == var->declarationId()) {
             for (const ValueFlow::Value& value : values)
