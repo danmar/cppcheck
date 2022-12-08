@@ -575,8 +575,9 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     findAndReplace(result, "{severity}", Severity::toString(severity));
     findAndReplace(result, "{cwe}", MathLib::toString(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
-    findAndReplace(result, "{callstack}", callStack.empty() ? emptyString : ErrorLogger::callStackToString(callStack));
     if (!callStack.empty()) {
+        if (result.find("{callstack}") != std::string::npos)
+            findAndReplace(result, "{callstack}", ErrorLogger::callStackToString(callStack));
         findAndReplace(result, "{file}", callStack.back().getfile());
         findAndReplace(result, "{line}", MathLib::toString(callStack.back().line));
         findAndReplace(result, "{column}", MathLib::toString(callStack.back().column));
@@ -592,6 +593,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
             findAndReplace(result, "{code}", readCode(callStack.back().getOrigFile(), callStack.back().line, callStack.back().column, endl));
         }
     } else {
+        findAndReplace(result, "{callstack}", emptyString);
         findAndReplace(result, "{file}", "nofile");
         findAndReplace(result, "{line}", "0");
         findAndReplace(result, "{column}", "0");
