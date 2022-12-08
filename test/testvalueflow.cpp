@@ -6812,6 +6812,14 @@ private:
                "    std::shared_ptr<B> m;\n"
                "};\n";
         valueOfTok(code, "r");
+
+        code = "void f(int a, int b) {\n" // #11423
+               "    auto g = [](int& a, const int b) -> void {};\n"
+               "    auto h = [&a, &b]() {\n"
+               "        std::swap(a, b);\n"
+               "    };\n"
+               "}\n";
+        valueOfTok(code, "b");
     }
 
     void valueFlowHang() {
