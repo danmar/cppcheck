@@ -7541,7 +7541,10 @@ static bool isContainerSizeChanged(nonneg int varId,
                                    const Settings* settings = nullptr,
                                    int depth = 20);
 
-static bool isContainerSizeChangedByFunction(const Token* tok, int indirect, const Settings* settings = nullptr, int depth = 20)
+static bool isContainerSizeChangedByFunction(const Token* tok,
+                                             int indirect,
+                                             const Settings* settings = nullptr,
+                                             int depth = 20)
 {
     if (!tok->valueType())
         return false;
@@ -7580,8 +7583,12 @@ static bool isContainerSizeChangedByFunction(const Token* tok, int indirect, con
                 if (!arg->nameToken())
                     return false;
                 if (depth > 0)
-                    return isContainerSizeChanged(
-                        arg->declarationId(), scope->bodyStart, scope->bodyEnd, addressOf ? indirect + 1 : indirect, settings, depth - 1);
+                    return isContainerSizeChanged(arg->declarationId(),
+                                                  scope->bodyStart,
+                                                  scope->bodyEnd,
+                                                  addressOf ? indirect + 1 : indirect,
+                                                  settings,
+                                                  depth - 1);
             }
             // Don't know => Safe guess
             return true;
