@@ -467,7 +467,7 @@ namespace ValueFlow {
 
 ValueFlow::Value asImpossible(ValueFlow::Value v);
 
-bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
+bool isContainerSizeChanged(const Token* tok, int indirect, const Settings* settings = nullptr, int depth = 20);
 
 struct LifetimeToken {
     const Token* token;

@@ -867,6 +867,25 @@ private:
                     "    return m.at(1);\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("struct A {\n"
+                    "  virtual void init_v(std::vector<int> *v) = 0;\n"
+                    "};\n"
+                    "A* create_a();\n"
+                    "struct B {\n"
+                    "  B() : a(create_a()) {}\n"
+                    "  void init_v(std::vector<int> *v) {\n"
+                    "    a->init_v(v);\n"
+                    "  }\n"
+                    "  A* a;\n"
+                    "};\n"
+                    "void f() {\n"
+                    "  B b;\n"
+                    "  std::vector<int> v;\n"
+                    "  b.init_v(&v);\n"
+                    "  v[0];\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsSymbolic()

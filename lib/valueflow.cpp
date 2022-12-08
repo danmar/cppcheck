@@ -7540,10 +7540,14 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
 static bool isContainerSizeChanged(nonneg int varId,
                                    const Token* start,
                                    const Token* end,
+                                   int indirect,
                                    const Settings* settings = nullptr,
                                    int depth = 20);
 
-static bool isContainerSizeChangedByFunction(const Token* tok, const Settings* settings = nullptr, int depth = 20)
+static bool isContainerSizeChangedByFunction(const Token* tok,
+                                             int indirect,
+                                             const Settings* settings = nullptr,
+                                             int depth = 20)
 {
     if (!tok->valueType())
         return false;
@@ -7566,12 +7570,13 @@ static bool isContainerSizeChangedByFunction(const Token* tok, const Settings* s
     if (!ftok)
         return false; // not a function => variable not changed
     const Function * fun = ftok->function();
-    if (fun && !fun->hasVirtualSpecifier()) {
+    if (fun && !fun->isImplicitlyVirtual()) {
         const Variable *arg = fun->getArgumentVar(narg);
         if (arg) {
-            if (!arg->isReference() && !addressOf)
+            const bool isPointer = addressOf || indirect > 0;
+            if (!arg->isReference() && !isPointer)
                 return false;
-            if (!addressOf && arg->isConst())
+            if (!isPointer && arg->isConst())
                 return false;
             if (arg->valueType() && arg->valueType()->constness == 1)
                 return false;
@@ -7581,8 +7586,12 @@ static bool isContainerSizeChangedByFunction(const Token* tok, const Settings* s
                 if (!arg->nameToken())
                     return false;
                 if (depth > 0)
-                    return isContainerSizeChanged(
-                        arg->declarationId(), scope->bodyStart, scope->bodyEnd, settings, depth - 1);
+                    return isContainerSizeChanged(arg->declarationId(),
+                                                  scope->bodyStart,
+                                                  scope->bodyEnd,
+                                                  addressOf ? indirect + 1 : indirect,
+                                                  settings,
+                                                  depth - 1);
             }
             // Don't know => Safe guess
             return true;
@@ -7590,7 +7599,7 @@ static bool isContainerSizeChangedByFunction(const Token* tok, const Settings* s
     }
 
     bool inconclusive = false;
-    const bool isChanged = isVariableChangedByFunctionCall(tok, 0, settings, &inconclusive);
+    const bool isChanged = isVariableChangedByFunctionCall(tok, indirect, settings, &inconclusive);
     return (isChanged || inconclusive);
 }
 
@@ -7685,7 +7694,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             return Action::Invalid;
         if (isLikelyStreamRead(isCPP(), tok->astParent()))
             return Action::Invalid;
-        if (astIsContainer(tok) && isContainerSizeChanged(tok, getSettings()))
+        if (astIsContainer(tok) && isContainerSizeChanged(tok, getIndirect(tok), getSettings()))
             return read | Action::Invalid;
         return read;
     }
@@ -7787,7 +7796,7 @@ ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, const ValueFlow::Va
     return ExpressionAnalyzer(exprTok, value, tokenlist);
 }
 
-bool isContainerSizeChanged(const Token* tok, const Settings* settings, int depth)
+bool isContainerSizeChanged(const Token* tok, int indirect, const Settings* settings, int depth)
 {
     if (!tok)
         return false;
@@ -7823,7 +7832,7 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings, int dept
     case Library::Container::Action::CHANGE_INTERNAL:
         break;
     }
-    if (isContainerSizeChangedByFunction(tok, settings, depth))
+    if (isContainerSizeChangedByFunction(tok, indirect, settings, depth))
         return true;
     return false;
 }
@@ -7831,13 +7840,14 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings, int dept
 static bool isContainerSizeChanged(nonneg int varId,
                                    const Token* start,
                                    const Token* end,
+                                   int indirect,
                                    const Settings* settings,
                                    int depth)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() != varId)
             continue;
-        if (isContainerSizeChanged(tok, settings, depth))
+        if (isContainerSizeChanged(tok, indirect, settings, depth))
             return true;
     }
     return false;
