@@ -2834,7 +2834,7 @@ struct ValueFlowAnalyzer : Analyzer {
             if (state) {
                 pms.removeModifiedVars(endBlock);
                 pms.addState(endBlock->previous(), getProgramState());
-            } else  {
+            } else {
                 if (Token::simpleMatch(endBlock, "} else {"))
                     pms.addState(endBlock->linkAt(2)->previous(), getProgramState());
             }

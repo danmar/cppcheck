@@ -402,8 +402,8 @@ struct ForwardTraversal {
         }
         const bool bodyChangesCond = isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
         // Check for mutation in the condition
-        const bool condChanged = nullptr !=
-                   findAstNode(condTok, [&](const Token* tok) {
+        const bool condChanged =
+            nullptr != findAstNode(condTok, [&](const Token* tok) {
             return isVariableChanged(tok, 0, settings, true);
         });
         const bool changed = stepChangesCond || bodyChangesCond || condChanged;
