@@ -139,6 +139,7 @@ private:
         TEST_CASE(nullpointer93); // #3929
         TEST_CASE(nullpointer94); // #11040
         TEST_CASE(nullpointer95); // #11142
+        TEST_CASE(nullpointer96); // #11416
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2759,6 +2760,25 @@ private:
               "    for (auto& p : v)\n"
               "        if (*p < 2)\n"
               "            p = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer96()
+    {
+        check("struct S {\n"
+              "  int x;\n"
+              "};\n"
+              "S *create_s();\n"
+              "void test() {\n"
+              "  S *s = create_s();\n"
+              "  for (int i = 0; i < s->x; i++) {\n"
+              "    if (s->x == 17) {\n"
+              "      s = nullptr;\n"
+              "      break;\n"
+              "    }\n"
+              "  }\n"
+              "  if (s) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
