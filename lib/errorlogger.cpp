@@ -341,11 +341,16 @@ void ErrorMessage::deserialize(const std::string &data)
         if (!(iss >> len))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length (stack)");
 
-        iss.get();
+        if (iss.get() != ' ')
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid separator (stack)");
+
         std::string temp;
-        for (unsigned int i = 0; i < len && iss.good(); ++i) {
-            const char c = static_cast<char>(iss.get());
-            temp.append(1, c);
+        if (len > 0) {
+            temp.resize(len);
+            iss.read(&temp[0], len);
+
+            if (!iss.good())
+                throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data (stack)");
         }
 
         std::vector<std::string> substrings;
