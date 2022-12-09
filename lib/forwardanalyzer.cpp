@@ -394,24 +394,24 @@ struct ForwardTraversal {
             return true;
         if (Token::simpleMatch(condTok, ":"))
             return true;
-        bool changed = false;
+        bool stepChangesCond = false;
         if (stepTok) {
             std::pair<const Token*, const Token*> exprToks = stepTok->findExpressionStartEndTokens();
             if (exprToks.first != nullptr && exprToks.second != nullptr)
-                changed |= isExpressionChanged(condTok, exprToks.first, exprToks.second->next(), settings, true);
+                stepChangesCond |= isExpressionChanged(condTok, exprToks.first, exprToks.second->next(), settings, true);
         }
-        changed |= isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
+        const bool bodyChangesCond = isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
         // Check for mutation in the condition
-        changed |= nullptr !=
-                   findAstNode(condTok, [&](const Token* tok) {
+        const bool condChanged =
+            nullptr != findAstNode(condTok, [&](const Token* tok) {
             return isVariableChanged(tok, 0, settings, true);
         });
+        const bool changed = stepChangesCond || bodyChangesCond || condChanged;
         if (!changed)
             return true;
         ForwardTraversal ft = fork(true);
-        ft.analyzer->assume(condTok, false, Analyzer::Assume::Absolute);
         ft.updateScope(endBlock);
-        return ft.isConditionTrue(condTok);
+        return ft.isConditionTrue(condTok) && bodyChangesCond;
     }
 
     Progress updateInnerLoop(Token* endBlock, Token* stepTok, Token* condTok) {

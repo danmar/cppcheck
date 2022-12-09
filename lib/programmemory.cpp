@@ -461,8 +461,12 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
         programMemoryParseCondition(pm, tok, nullptr, settings, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
-    if (top && Token::Match(top->previous(), "for|while ("))
-        origin = top->link();
+    if (top && Token::Match(top->previous(), "for|while|if (") && !Token::simpleMatch(tok->astParent(), "?")) {
+        origin = top->link()->next();
+        if (!b && origin->link()) {
+            origin = origin->link();
+        }
+    }
     replace(pm, origin);
 }
 
