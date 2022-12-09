@@ -7685,6 +7685,13 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
         }
     }
 
+    int getIndirect(const Token* tok) const override {
+        if (tok->valueType()) {
+            return tok->valueType()->pointer;
+        }
+        return ValueFlowAnalyzer::getIndirect(tok);
+    }
+
     Action isModified(const Token* tok) const override {
         Action read = Action::Read;
         // An iterator won't change the container size
