@@ -1779,7 +1779,7 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
                 continue;
             const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
             std::vector<ValueFlow::Value> values;
-            for(const Token* tok2:tokens) {
+            for (const Token* tok2 : tokens) {
                 if (tok2->hasKnownIntValue()) {
                     values.push_back(ValueFlow::Value{});
                 } else {
@@ -1787,14 +1787,17 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
                     symValue.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
                     symValue.tokvalue = tok2;
                     values.push_back(symValue);
-                    std::copy_if(tok2->values().begin(), tok2->values().end(), std::back_inserter(values), [](const ValueFlow::Value& v) {
+                    std::copy_if(tok2->values().begin(),
+                                 tok2->values().end(),
+                                 std::back_inserter(values),
+                                 [](const ValueFlow::Value& v) {
                         if (!v.isKnown())
                             return false;
                         return v.isSymbolicValue();
                     });
                 }
             }
-            for(ValueFlow::Value& value:values) {
+            for (ValueFlow::Value& value : values) {
                 value.setImpossible();
                 if (isMin) {
                     value.intvalue++;

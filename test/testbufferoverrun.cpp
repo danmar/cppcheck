@@ -2228,16 +2228,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-      // #11349
+    // #11349
     void array_index_negative6()
     {
         check("void f(int i) {\n"
-            "  int j = i;\n"
-            "  const int a[5] = {};\n"
-            "  const int k = j < 0 ? 0 : j;\n"
-            "  (void)a[k];\n"
-            "  if (i == -3) {}\n"
-            "}\n");
+              "  int j = i;\n"
+              "  const int a[5] = {};\n"
+              "  const int k = j < 0 ? 0 : j;\n"
+              "  (void)a[k];\n"
+              "  if (i == -3) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -62,7 +62,7 @@ bool contains(const std::initializer_list<T>& r, const U& x)
     return std::find(r.begin(), r.end(), x) != r.end();
 }
 
-template<class T, class... Ts>
+template<class T, class ... Ts>
 inline std::array<T, sizeof...(Ts) + 1> makeArray(T x, Ts... xs)
 {
     return {std::move(x), std::move(xs)...};
