@@ -7685,7 +7685,8 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
         }
     }
 
-    int getIndirect(const Token* tok) const override {
+    int getIndirect(const Token* tok) const override
+    {
         if (tok->valueType()) {
             return tok->valueType()->pointer;
         }

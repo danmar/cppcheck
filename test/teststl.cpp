@@ -888,10 +888,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkNormal("void f(std::vector<int>* v) {\n"
-                  "  if (v->empty())\n"
-                  "    v->push_back(1);\n"
-                  "  auto x = v->back();\n"
-                  "}\n");
+                    "  if (v->empty())\n"
+                    "    v->push_back(1);\n"
+                    "  auto x = v->back();\n"
+                    "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
