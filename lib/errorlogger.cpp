@@ -277,17 +277,17 @@ void ErrorMessage::deserialize(const std::string &data)
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
         std::string temp;
-        for (unsigned int i = 0; i < len && iss.good(); ++i) {
-            const char c = static_cast<char>(iss.get());
-            temp.append(1, c);
-        }
+        if (len > 0) {
+            temp.resize(len);
+            iss.read(&temp[0], len);
 
-        if (!iss.good())
-            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
+            if (!iss.good())
+                throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data");
 
-        if (temp == "inconclusive") {
-            certainty = Certainty::inconclusive;
-            continue;
+            if (temp == "inconclusive") {
+                certainty = Certainty::inconclusive;
+                continue;
+            }
         }
 
         results[elem++] = temp;
@@ -299,15 +299,32 @@ void ErrorMessage::deserialize(const std::string &data)
     if (elem != 7)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - insufficient elements");
 
-    id = results[0];
+    id = std::move(results[0]);
     severity = Severity::fromString(results[1]);
-    if (!(std::istringstream(results[2]) >> cwe.id))
-        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID");
-    if (!(std::istringstream(results[3]) >> hash))
-        throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash");
-    file0 = results[4];
-    mShortMessage = results[5];
-    mVerboseMessage = results[6];
+    unsigned long long tmp = 0;
+    if (!results[2].empty()) {
+        try {
+            tmp = MathLib::toULongNumber(results[2]);
+        }
+        catch (const InternalError&) {
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID");
+        }
+        if (tmp > std::numeric_limits<unsigned short>::max())
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - CWE ID is out of range");
+    }
+    cwe.id = static_cast<unsigned short>(tmp);
+    hash = 0;
+    if (!results[3].empty()) {
+        try {
+            hash = MathLib::toULongNumber(results[3]);
+        }
+        catch (const InternalError&) {
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash");
+        }
+    }
+    file0 = std::move(results[4]);
+    mShortMessage = std::move(results[5]);
+    mVerboseMessage = std::move(results[6]);
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -324,14 +341,20 @@ void ErrorMessage::deserialize(const std::string &data)
         if (!(iss >> len))
             throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid length (stack)");
 
-        iss.get();
+        if (iss.get() != ' ')
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid separator (stack)");
+
         std::string temp;
-        for (unsigned int i = 0; i < len && iss.good(); ++i) {
-            const char c = static_cast<char>(iss.get());
-            temp.append(1, c);
+        if (len > 0) {
+            temp.resize(len);
+            iss.read(&temp[0], len);
+
+            if (!iss.good())
+                throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - premature end of data (stack)");
         }
 
         std::vector<std::string> substrings;
+        substrings.reserve(5);
         for (std::string::size_type pos = 0; pos < temp.size() && substrings.size() < 5; ++pos) {
             if (substrings.size() == 4) {
                 substrings.push_back(temp.substr(pos));
@@ -351,7 +374,7 @@ void ErrorMessage::deserialize(const std::string &data)
         // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
 
         ErrorMessage::FileLocation loc(substrings[3], MathLib::toLongNumber(substrings[0]), MathLib::toLongNumber(substrings[1]));
-        loc.setfile(substrings[2]);
+        loc.setfile(std::move(substrings[2]));
         if (substrings.size() == 5)
             loc.setinfo(substrings[4]);
 
@@ -490,14 +513,22 @@ static std::string readCode(const std::string &file, int linenr, int column, con
 
 static void replaceColors(std::string& source)
 {
-    findAndReplace(source, "{reset}", ::toString(Color::Reset));
-    findAndReplace(source, "{bold}", ::toString(Color::Bold));
-    findAndReplace(source, "{dim}", ::toString(Color::Dim));
-    findAndReplace(source, "{red}", ::toString(Color::FgRed));
-    findAndReplace(source, "{green}", ::toString(Color::FgGreen));
-    findAndReplace(source, "{blue}", ::toString(Color::FgBlue));
-    findAndReplace(source, "{magenta}", ::toString(Color::FgMagenta));
-    findAndReplace(source, "{default}", ::toString(Color::FgDefault));
+    static const std::string reset_str = ::toString(Color::Reset);
+    findAndReplace(source, "{reset}", reset_str);
+    static const std::string bold_str = ::toString(Color::Bold);
+    findAndReplace(source, "{bold}", bold_str);
+    static const std::string dim_str = ::toString(Color::Dim);
+    findAndReplace(source, "{dim}", dim_str);
+    static const std::string red_str = ::toString(Color::FgRed);
+    findAndReplace(source, "{red}", red_str);
+    static const std::string green_str = ::toString(Color::FgGreen);
+    findAndReplace(source, "{green}", green_str);
+    static const std::string blue_str = ::toString(Color::FgBlue);
+    findAndReplace(source, "{blue}", blue_str);
+    static const std::string magenta_str = ::toString(Color::FgMagenta);
+    findAndReplace(source, "{magenta}", magenta_str);
+    static const std::string default_str = ::toString(Color::FgDefault);
+    findAndReplace(source, "{default}", default_str);
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
@@ -506,17 +537,20 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
 
     // No template is given
     if (templateFormat.empty()) {
-        std::ostringstream text;
-        if (!callStack.empty())
-            text << ErrorLogger::callStackToString(callStack) << ": ";
-        if (severity != Severity::none) {
-            text << '(' << Severity::toString(severity);
-            if (certainty == Certainty::inconclusive)
-                text << ", inconclusive";
-            text << ") ";
+        std::string text;
+        if (!callStack.empty()) {
+            text += ErrorLogger::callStackToString(callStack);
+            text += ": ";
         }
-        text << (verbose ? mVerboseMessage : mShortMessage);
-        return text.str();
+        if (severity != Severity::none) {
+            text += '(';
+            text += Severity::toString(severity);
+            if (certainty == Certainty::inconclusive)
+                text += ", inconclusive";
+            text += ") ";
+        }
+        text += (verbose ? mVerboseMessage : mShortMessage);
+        return text;
     }
 
     // template is given. Reformat the output according to it
@@ -542,8 +576,9 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     findAndReplace(result, "{severity}", Severity::toString(severity));
     findAndReplace(result, "{cwe}", MathLib::toString(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
-    findAndReplace(result, "{callstack}", callStack.empty() ? emptyString : ErrorLogger::callStackToString(callStack));
     if (!callStack.empty()) {
+        if (result.find("{callstack}") != std::string::npos)
+            findAndReplace(result, "{callstack}", ErrorLogger::callStackToString(callStack));
         findAndReplace(result, "{file}", callStack.back().getfile());
         findAndReplace(result, "{line}", MathLib::toString(callStack.back().line));
         findAndReplace(result, "{column}", MathLib::toString(callStack.back().column));
@@ -559,6 +594,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
             findAndReplace(result, "{code}", readCode(callStack.back().getOrigFile(), callStack.back().line, callStack.back().column, endl));
         }
     } else {
+        findAndReplace(result, "{callstack}", emptyString);
         findAndReplace(result, "{file}", "nofile");
         findAndReplace(result, "{line}", "0");
         findAndReplace(result, "{column}", "0");
@@ -663,11 +699,10 @@ std::string ErrorMessage::FileLocation::getOrigFile(bool convert) const
     return mOrigFileName;
 }
 
-void ErrorMessage::FileLocation::setfile(const std::string &file)
+void ErrorMessage::FileLocation::setfile(std::string file)
 {
-    mFileName = file;
-    mFileName = Path::fromNativeSeparators(mFileName);
-    mFileName = Path::simplifyPath(mFileName);
+    mFileName = Path::fromNativeSeparators(std::move(file));
+    mFileName = Path::simplifyPath(std::move(mFileName));
 }
 
 std::string ErrorMessage::FileLocation::stringify() const

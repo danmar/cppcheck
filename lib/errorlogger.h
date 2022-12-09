@@ -84,7 +84,7 @@ public:
          * Set the filename.
          * @param file Filename to set.
          */
-        void setfile(const std::string &file);
+        void setfile(std::string file);
 
         /**
          * @return the location as a string. Format: [file:line]

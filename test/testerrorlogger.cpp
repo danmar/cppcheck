@@ -356,6 +356,19 @@ private:
             ErrorMessage msg;
             ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid hash");
         }
+        {
+            // out-of-range CWE ID
+            const char str[] = "7 errorId"
+                               "5 error"
+                               "5 65536" // max +1
+                               "1 0"
+                               "8 test.cpp"
+                               "17 Programming error"
+                               "17 Programming error"
+                               "0 ";
+            ErrorMessage msg;
+            ASSERT_THROW(msg.deserialize(str), InternalError);
+        }
     }
 
     void SerializeSanitize() const {

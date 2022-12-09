@@ -210,15 +210,17 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
             // TODO: suppress instead?
             (void)dir_result_buffer.buf; // do not trigger cppcheck itself on the "unused buf"
             std::string new_path;
-            new_path.reserve(path.length() + 100);// prealloc some memory to avoid constant new/deletes in loop
-
+            new_path.reserve(path.length() + 1 + sizeof(dir_result->d_name));// prealloc some memory to avoid constant new/deletes in loop
+            new_path += path;
+            new_path += '/';
 
             while ((SUPPRESS_DEPRECATED_WARNING(readdir_r(dir, &dir_result_buffer.entry, &dir_result)) == 0) && (dir_result != nullptr)) {
                 if ((std::strcmp(dir_result->d_name, ".") == 0) ||
                     (std::strcmp(dir_result->d_name, "..") == 0))
                     continue;
 
-                new_path = path + '/' + dir_result->d_name;
+                new_path.erase(path.length() + 1);
+                new_path += dir_result->d_name;
 
 #if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
                 const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
