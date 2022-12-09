@@ -20,7 +20,6 @@
 #define simplecppH
 
 #include <cctype>
-#include <cstddef>
 #include <cstring>
 #include <istream>
 #include <list>
