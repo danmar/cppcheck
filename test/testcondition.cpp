@@ -4640,6 +4640,13 @@ private:
               "    if (i == j) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11384
+        check("bool f(const int* it, const int* end) {\n"
+              "	return (it != end) && *it++ &&\n"
+              "           (it != end) && *it;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

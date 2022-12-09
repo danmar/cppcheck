@@ -6070,7 +6070,7 @@ struct ConditionHandler {
                         });
                     for (Token* start:nextExprs) {
                         Analyzer::Result r = forward(start, cond.vartok, values, tokenlist);
-                        if (r.terminate != Analyzer::Terminate::None)
+                        if (r.terminate != Analyzer::Terminate::None || r.action.isModified())
                             return;
                     }
                 }
