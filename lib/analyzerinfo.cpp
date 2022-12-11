@@ -149,7 +149,7 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
     return true;
 }
 
-void AnalyzerInformation::reportErr(const ErrorMessage &msg, bool /*verbose*/)
+void AnalyzerInformation::reportErr(const ErrorMessage &msg)
 {
     if (mOutputStream.is_open())
         mOutputStream << msg.toXML() << '\n';
