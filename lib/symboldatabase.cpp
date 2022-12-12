@@ -4176,12 +4176,12 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
     }
 
     auto skipLambda = [](const Token* tok) -> const Token* {
-        if (!Token::simpleMatch(tok, "[") && tok->link())
+        if (!(Token::simpleMatch(tok, "[") && tok->link()))
             return nullptr;
         tok = tok->link()->next();
         if (Token::simpleMatch(tok, "(") && tok->link())
             tok = tok->link()->next();
-        if (!Token::simpleMatch(tok, "{") && tok->link())
+        if (!(Token::simpleMatch(tok, "{") && tok->link()))
             return nullptr;
         return tok->link()->next();
     };
