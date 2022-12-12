@@ -3917,7 +3917,15 @@ void Tokenizer::setVarIdPass1()
             if (!scopeStack.top().isExecutable)
                 newFunctionDeclEnd = isFunctionHead(tok, "{:;");
             else {
-                Token const * const tokenLinkNext = tok->link()->next();
+                const Token* tokenLinkNext = tok->link()->next();
+                if (Token::simpleMatch(tokenLinkNext, ".")) { // skip trailing return type
+                    tokenLinkNext = tokenLinkNext->next();
+                    while (Token::Match(tokenLinkNext, "%name%|::")) {
+                        tokenLinkNext = tokenLinkNext->next();
+                        if (Token::simpleMatch(tokenLinkNext, "<") && tokenLinkNext->link())
+                            tokenLinkNext = tokenLinkNext->link()->next();
+                    }
+                }
                 if (tokenLinkNext && tokenLinkNext->str() == "{") // might be for- or while-loop or if-statement
                     newFunctionDeclEnd = tokenLinkNext;
             }
