@@ -6505,9 +6505,6 @@ private:
                               "    switch (y) {}\n"
                               "};"));
 
-        // #10831
-        ASSERT_EQUALS("f{([= x{([=", testAst("void foo() { F f = [](t x = []() {}) {}; }"));
-
         // #11357
         ASSERT_NO_THROW(tokenizeAndStringify("void f(std::vector<int>& v, bool c) {\n"
                                              "    std::sort(v.begin(), v.end(), [&c](const auto a, const auto b) {\n"
