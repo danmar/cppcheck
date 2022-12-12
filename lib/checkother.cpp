@@ -1332,7 +1332,7 @@ void CheckOther::checkPassByReference()
         }
 
         // Check if variable could be const
-        if (!var->scope() || var->scope()->function->hasVirtualSpecifier())
+        if (!var->scope() || var->scope()->function->isImplicitlyVirtual())
             continue;
 
         if (canBeConst(var, mSettings)) {

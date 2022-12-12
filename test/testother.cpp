@@ -1970,6 +1970,15 @@ private:
               "int* f(U u) { return u.b; }\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct B { virtual int f(std::string s) = 0; };\n" // #11432
+              "struct D1 : B {\n"
+              "  int f(std::string s) override { s += 'a'; return s.size(); }\n"
+              "}\n"
+              "struct D2 : B {\n"
+              "  int f(std::string s) override { return s.size(); }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         Settings settings1;
         settings1.platform(Settings::Win64);
         check("using ui64 = unsigned __int64;\n"
