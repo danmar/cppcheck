@@ -57,7 +57,7 @@ static std::string objfiles(const std::vector<std::string> &files)
 
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
-    static const std::array<std::string, 4> externalfolders{"externals", "externals/picojson", "externals/simplecpp", "externals/tinyxml2"};
+    static const std::array<std::string, 3> externalfolders{"externals/picojson", "externals/simplecpp", "externals/tinyxml2"};
 
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
