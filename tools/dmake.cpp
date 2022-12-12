@@ -106,8 +106,9 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         std::string hfile(path);
         hfile += line.substr(pos1, pos2 - pos1);
 
-        if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
-            hfile.erase(0, 4 + hfile.find("/../"));
+        const std::string::size_type traverse_pos = hfile.find("/../");
+        if (traverse_pos != std::string::npos)    // TODO: Ugly fix
+            hfile.erase(0, 4 + traverse_pos);
         getDeps(hfile, depfiles);
     }
 }
