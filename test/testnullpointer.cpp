@@ -2788,7 +2788,7 @@ private:
     {
         check("struct B { virtual int f() = 0; };\n"
               "struct D : public B { int f() override; };\n"
-              "int g(B * p) {\n"
+              "int g(B* p) {\n"
               "    if (p) {\n"
               "        auto d = dynamic_cast<B*>(p);\n"
               "        return d ? d->f() : 0;\n"
