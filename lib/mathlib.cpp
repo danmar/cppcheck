@@ -498,8 +498,9 @@ double MathLib::toDoubleNumber(const std::string &str)
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
 #ifdef _LIBCPP_VERSION
-    if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
-        // TODO : handle locale
+    if (isFloat(str)) // Workaround libc++ bug at https://github.com/llvm/llvm-project/issues/18156
+        // TODO: handle locale
+        // TODO: make sure all characters are being consumed
         return std::strtod(str.c_str(), nullptr);
 #endif
     if (isFloatHex(str))
