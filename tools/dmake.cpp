@@ -109,6 +109,9 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         const std::string::size_type traverse_pos = hfile.find("/../");
         if (traverse_pos != std::string::npos)    // TODO: Ugly fix
             hfile.erase(0, 4 + traverse_pos);
+        // no need to look up extension-less headers
+        if (!endsWith(hfile, ".h"))
+            continue;
         getDeps(hfile, depfiles);
     }
 }
