@@ -346,7 +346,7 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         const biguint ret = std::stoull(str, &idx, 10);
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
-            if (s.find_first_not_of("LlUu") != std::string::npos && s != "i64" && s != "ui64")
+            if (!isValidIntegerSuffix(s, true))
                 throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: input was not completely consumed: " + str);
         }
         return ret;
@@ -426,7 +426,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         const biguint ret = std::stoull(str, &idx, 10);
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
-            if (s.find_first_not_of("LlUu") != std::string::npos && s != "i64" && s != "ui64")
+            if (!isValidIntegerSuffix(s, true))
                 throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: input was not completely consumed: " + str);
         }
         return ret;
@@ -512,7 +512,9 @@ double MathLib::toDoubleNumber(const std::string &str)
         throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: conversion failed: " + str);
     std::string s;
     if (istr >> s) {
-        if (s.find_first_not_of("FfLl") != std::string::npos)
+        if (isDecimalFloat(str))
+            return ret;
+        if (!isValidIntegerSuffix(s, true))
             throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: " + str);
     }
     return ret;
