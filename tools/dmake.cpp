@@ -27,6 +27,7 @@
 
 #include "../cli/filelister.h"
 #include "../lib/pathmatch.h"
+#include "../lib/utils.h"
 
 static std::string builddir(std::string filename)
 {
@@ -136,7 +137,7 @@ static std::string getCppFiles(std::vector<std::string> &files, const std::strin
 
     // add *.cpp files to the "files" vector..
     for (const std::pair<const std::string&, size_t> file : filemap) {
-        if (file.first.find(".cpp") != std::string::npos)
+        if (endsWith(file.first, ".cpp"))
             files.push_back(file.first);
     }
     return "";
