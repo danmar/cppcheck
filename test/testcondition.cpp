@@ -4913,11 +4913,11 @@ private:
 
         // #11303
         check("void f(int n) {\n"
-            "    std::vector<char> buffer(n);\n"
-            "    if(buffer.back() == 0 ||\n"
-            "       buffer.back() == '\\n' ||\n"
-            "       buffer.back() == '\\0') {}\n"
-            "}\n");
+              "    std::vector<char> buffer(n);\n"
+              "    if(buffer.back() == 0 ||\n"
+              "       buffer.back() == '\\n' ||\n"
+              "       buffer.back() == '\\0') {}\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'buffer.back()=='\0'' is always false\n", errout.str());
     }
 
