@@ -103,7 +103,8 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         pos1 += 10;
 
         const std::string::size_type pos2 = line.find(rightBracket, pos1);
-        std::string hfile = path + line.substr(pos1, pos2 - pos1);
+        std::string hfile(path);
+        hfile += line.substr(pos1, pos2 - pos1);
 
         if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
             hfile.erase(0, 4 + hfile.find("/../"));
