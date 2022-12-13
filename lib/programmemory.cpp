@@ -1160,7 +1160,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     const ValueFlow::Value* value = nullptr;
     if (!expr)
         return unknown;
-    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
+    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",") {
         return expr->values().front();
     } else if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||

@@ -598,6 +598,17 @@ static void setTokenValue(Token* tok,
     if (!parent)
         return;
 
+    if (Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
+        const Token* callParent = findParent(parent, [](const Token* p) {
+            return !Token::simpleMatch(p, ",");
+        });
+        // Ensure that the comma isnt a function call
+        if (!callParent || (!Token::Match(callParent->previous(), "%name%|> (") && !Token::simpleMatch(callParent, "{"))) {
+            setTokenValue(parent, std::move(value), settings);
+            return;
+        }
+    }
+
     if (Token::simpleMatch(parent, "=") && astIsRHS(tok) && !value.isLifetimeValue()) {
         setTokenValue(parent, value, settings);
         return;
