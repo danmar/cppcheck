@@ -6281,6 +6281,10 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n" // #10831
                                              "    auto g = [](std::function<void()> h = []() {}) { };\n"
                                              "}"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n" // #11379
+                                             "    auto l = [x = 3](std::string&& v) { };\n"
+                                             "}\n"));
     }
 
     void astbrackets() { // []
