@@ -79,6 +79,7 @@
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
     <ClCompile Include="errortypes.cpp" />
+    <ClCompile Include="fwdanalysis.cpp" />
     <ClCompile Include="infer.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
@@ -143,6 +144,7 @@
     <ClInclude Include="ctu.h" />
     <ClInclude Include="errorlogger.h" />
     <ClInclude Include="errortypes.h" />
+    <ClInclude Include="fwdanalysis.h" />
     <ClInclude Include="forwardanalyzer.h" />
     <ClInclude Include="infer.h" />
     <ClInclude Include="library.h" />

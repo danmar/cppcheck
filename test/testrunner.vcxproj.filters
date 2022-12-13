@@ -25,6 +25,9 @@
     <ClCompile Include="test64bit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testanalyzerinformation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="testautovariables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -83,6 +86,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testpreprocessor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testprocessexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testrunner.cpp">
