@@ -24,7 +24,7 @@
 
 #include "check.h"
 #include "config.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <list>
 #include <string>

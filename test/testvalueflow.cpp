@@ -23,7 +23,7 @@
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <climits>

@@ -31,6 +31,7 @@
 #include "tokenize.h"
 #include "utils.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
 #include "checkclass.h" // CheckClass::stl_containers_not_const

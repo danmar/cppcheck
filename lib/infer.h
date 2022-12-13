@@ -21,7 +21,7 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <list>
 #include <string>

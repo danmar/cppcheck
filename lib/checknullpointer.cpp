@@ -29,6 +29,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "valueflow.h"
 
 #include <algorithm>
 #include <cctype>

@@ -19,7 +19,7 @@
 #include "settings.h"
 #include "path.h"
 #include "summaries.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <fstream>
 

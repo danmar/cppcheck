@@ -103,6 +103,7 @@
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="valueflow.cpp" />
+    <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="..\externals\simplecpp\simplecpp.h" />
@@ -174,6 +175,7 @@
     <ClInclude Include="valueflow.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="vfvalue.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
