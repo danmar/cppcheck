@@ -2274,7 +2274,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                     return { tok2->next(),  declEnd };
                 }
                 const Token *typeBeg{}, *typeEnd{};
-                if (tok2->str() == "::" && Token::Match(tok2->astOperand2(), "{")) { // empty initlist
+                if (tok2->str() == "::" && Token::simpleMatch(tok2->astOperand2(), "{")) { // empty initlist
                     typeBeg = previousBeforeAstLeftmostLeaf(tok2);
                     typeEnd = tok2->astOperand2();
                 }
