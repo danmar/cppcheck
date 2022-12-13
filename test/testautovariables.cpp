@@ -2758,13 +2758,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-      // #10532
+        // #10532
         check("std::string f(std::string ss) {\n"
-                  "  std::string_view sv = true ? \"\" : ss;\n"
-                  "  std::string s = sv;\n"
-                  "  return s;\n"
-                  "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3]: (error) Using object that is a temporary.\n", errout.str());
+              "  std::string_view sv = true ? \"\" : ss;\n"
+              "  std::string s = sv;\n"
+              "  return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3]: (error) Using object that is a temporary.\n",
+                      errout.str());
     }
 
     void danglingLifetimeUniquePtr()
