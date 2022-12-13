@@ -99,12 +99,12 @@ const Token* findAstNode(const Token* ast, const TFunc& pred)
 }
 
 template<class TFunc>
-const Token* findParent(const Token* tok,const TFunc& pred)
+const Token* findParent(const Token* tok, const TFunc& pred)
 {
     if (!tok)
         return nullptr;
     const Token* parent = tok->astParent();
-    while(parent && !pred(parent)) {
+    while (parent && !pred(parent)) {
         parent = parent->astParent();
     }
     return parent;

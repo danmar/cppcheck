@@ -598,7 +598,7 @@ static void setTokenValue(Token* tok,
     if (!parent)
         return;
 
-    if(Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
+    if (Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
         const Token* callParent = findParent(parent, [](const Token* p) {
             return !Token::simpleMatch(p, ",");
         });

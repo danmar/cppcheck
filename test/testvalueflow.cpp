@@ -1365,26 +1365,27 @@ private:
         ASSERT_EQUALS(sizeof(std::int32_t) * 10 * 20, values.back().intvalue);
     }
 
-    void valueFlowComma() {
-        const char *code;
+    void valueFlowComma()
+    {
+        const char* code;
         std::list<ValueFlow::Value> values;
 
-        code  = "void f(int i) {\n"
-              "    int x = (i, 4);\n"
-              "    return x;\n"
-              "}\n";
-       ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 4));
+        code = "void f(int i) {\n"
+               "    int x = (i, 4);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 4));
 
-       code  = "void f(int i) {\n"
-              "    int x = (4, i);\n"
-              "    return x;\n"
-              "}\n";
-       ASSERT_EQUALS(false, testValueOfX(code, 3U, 4));
+        code = "void f(int i) {\n"
+               "    int x = (4, i);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 4));
 
-       code  = "void f() {\n"
-              "    int x = g(3, 4);\n"
-              "    return x;\n"
-              "}\n";
+        code = "void f() {\n"
+               "    int x = g(3, 4);\n"
+               "    return x;\n"
+               "}\n";
         values = tokenValues(code, ",");
         ASSERT_EQUALS(0U, values.size());
     }
