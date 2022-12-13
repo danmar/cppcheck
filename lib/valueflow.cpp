@@ -1731,6 +1731,15 @@ static bool isConvertedToIntegral(const Token* tok, const Settings* settings)
     return vt.type != ValueType::UNKNOWN_INT && vt.isIntegral();
 }
 
+static bool isSameToken(const Token* tok1, const Token* tok2)
+{
+    if (tok1->exprId() != 0 && tok1->exprId() == tok2->exprId())
+        return true;
+    if (tok1->hasKnownIntValue() && tok2->hasKnownIntValue())
+        return tok1->values().front().intvalue == tok2->values().front().intvalue;
+    return false;
+}
+
 static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* settings)
 {
     for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
@@ -1757,7 +1766,50 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             value.setImpossible();
             setTokenValue(tok, value, settings);
         }
-        if (Token::simpleMatch(tok, "%") && tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
+        if (Token::simpleMatch(tok, "?") && Token::Match(tok->astOperand1(), "<|<=|>|>=")) {
+            const Token* condTok = tok->astOperand1();
+            const Token* branchesTok = tok->astOperand2();
+
+            auto tokens = makeArray(condTok->astOperand1(), condTok->astOperand2());
+            auto branches = makeArray(branchesTok->astOperand1(), branchesTok->astOperand2());
+            bool flipped = false;
+            if (std::equal(tokens.begin(), tokens.end(), branches.rbegin(), &isSameToken))
+                flipped = true;
+            else if (!std::equal(tokens.begin(), tokens.end(), branches.begin(), &isSameToken))
+                continue;
+            const bool isMin = Token::Match(condTok, "<|<=") ^ flipped;
+            std::vector<ValueFlow::Value> values;
+            for (const Token* tok2 : tokens) {
+                if (tok2->hasKnownIntValue()) {
+                    values.emplace_back();
+                } else {
+                    ValueFlow::Value symValue{};
+                    symValue.valueType = ValueFlow::Value::ValueType::SYMBOLIC;
+                    symValue.tokvalue = tok2;
+                    values.push_back(symValue);
+                    std::copy_if(tok2->values().begin(),
+                                 tok2->values().end(),
+                                 std::back_inserter(values),
+                                 [](const ValueFlow::Value& v) {
+                        if (!v.isKnown())
+                            return false;
+                        return v.isSymbolicValue();
+                    });
+                }
+            }
+            for (ValueFlow::Value& value : values) {
+                value.setImpossible();
+                if (isMin) {
+                    value.intvalue++;
+                    value.bound = ValueFlow::Value::Bound::Lower;
+                } else {
+                    value.intvalue--;
+                    value.bound = ValueFlow::Value::Bound::Upper;
+                }
+                setTokenValue(tok, value, settings);
+            }
+
+        } else if (Token::simpleMatch(tok, "%") && tok->astOperand2() && tok->astOperand2()->hasKnownIntValue()) {
             ValueFlow::Value value{tok->astOperand2()->values().front()};
             value.bound = ValueFlow::Value::Bound::Lower;
             value.setImpossible();
