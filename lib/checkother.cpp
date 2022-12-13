@@ -21,6 +21,7 @@
 #include "checkother.h"
 
 #include "astutils.h"
+#include "fwdanalysis.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"

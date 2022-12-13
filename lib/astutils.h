@@ -23,11 +23,9 @@
 //---------------------------------------------------------------------------
 
 #include <functional>
-#include <set>
 #include <stack>
 #include <string>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "config.h"
@@ -35,9 +33,9 @@
 #include "library.h"
 #include "smallvector.h"
 #include "symboldatabase.h"
+#include "token.h"
 
 class Settings;
-class Token;
 
 enum class ChildrenToVisit {
     none,
@@ -421,68 +419,6 @@ bool isScopeBracket(const Token* tok);
 bool isNullOperand(const Token *expr);
 
 bool isGlobalData(const Token *expr, bool cpp);
-/**
- * Forward data flow analysis for checks
- *  - unused value
- *  - redundant assignment
- *  - valueflow analysis
- */
-class FwdAnalysis {
-public:
-    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mWhat(What::Reassign), mValueFlowKnown(true) {}
-
-    bool hasOperand(const Token *tok, const Token *lhs) const;
-
-    /**
-     * Check if "expr" is reassigned. The "expr" can be a tree (x.y[12]).
-     * @param expr Symbolic expression to perform forward analysis for
-     * @param startToken First token in forward analysis
-     * @param endToken Last token in forward analysis
-     * @return Token where expr is reassigned. If it's not reassigned then nullptr is returned.
-     */
-    const Token *reassign(const Token *expr, const Token *startToken, const Token *endToken);
-
-    /**
-     * Check if "expr" is used. The "expr" can be a tree (x.y[12]).
-     * @param expr Symbolic expression to perform forward analysis for
-     * @param startToken First token in forward analysis
-     * @param endToken Last token in forward analysis
-     * @return true if expr is used.
-     */
-    bool unusedValue(const Token *expr, const Token *startToken, const Token *endToken);
-
-    struct KnownAndToken {
-        bool known;
-        const Token *token;
-    };
-
-    /** Is there some possible alias for given expression */
-    bool possiblyAliased(const Token *expr, const Token *startToken) const;
-
-    std::set<nonneg int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
-private:
-    static bool isEscapedAlias(const Token* expr);
-
-    /** Result of forward analysis */
-    struct Result {
-        enum class Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
-        explicit Result(Type type) : type(type), token(nullptr) {}
-        Result(Type type, const Token *token) : type(type), token(token) {}
-        const Token *token;
-    };
-
-    struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
-
-    // Is expression a l-value global data?
-    bool isGlobalData(const Token *expr) const;
-
-    const bool mCpp;
-    const Library &mLibrary;
-    enum class What { Reassign, UnusedValue, ValueFlow } mWhat;
-    std::vector<KnownAndToken> mValueFlow;
-    bool mValueFlowKnown;
-};
 
 bool isSizeOfEtc(const Token *tok);
 
