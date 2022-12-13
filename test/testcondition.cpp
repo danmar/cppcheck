@@ -4918,7 +4918,7 @@ private:
               "       buffer.back() == '\\n' ||\n"
               "       buffer.back() == '\\0') {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'buffer.back()=='\0'' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'buffer.back()=='\\0'' is always false\n", errout.str());
     }
 
     void alwaysTrueLoop()
