@@ -32,7 +32,13 @@
     <ClInclude Include="cppcheckexecutorsig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="executor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="filelister.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="processexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stacktrace.h">
@@ -55,10 +61,16 @@
     <ClCompile Include="cppcheckexecutorsig.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="executor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="filelister.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="cmdlineparser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="processexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stacktrace.cpp">
