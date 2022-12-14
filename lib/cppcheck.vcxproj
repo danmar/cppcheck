@@ -33,7 +33,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="SourceFiles">
     <ClCompile Include="..\externals\simplecpp\simplecpp.cpp" />
     <ClCompile Include="..\externals\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="analyzerinfo.cpp" />
@@ -104,7 +104,7 @@
     <ClCompile Include="forwardanalyzer.cpp" />
     <ClCompile Include="reverseanalyzer.cpp" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="HeaderFiles">
     <ClInclude Include="..\externals\simplecpp\simplecpp.h" />
     <ClInclude Include="..\externals\tinyxml2\tinyxml2.h" />
     <ClInclude Include="analyzer.h" />
