@@ -727,7 +727,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
 
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
-    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, false, path);
+    std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(tok, false, path);
     auto it = std::find_if(values.cbegin(), values.cend(), [](const ValueFlow::Value& v) {
         return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
     });
@@ -1155,7 +1155,7 @@ void CheckStl::invalidContainer()
 
                             ErrorPath ep;
                             bool addressOf = false;
-                            const Variable* var = getLifetimeVariable(info.tok, ep, &addressOf);
+                            const Variable* var = ValueFlow::getLifetimeVariable(info.tok, ep, &addressOf);
                             // Check the reference is created before the change
                             if (var && var->declarationId() == r.tok->varId() && !addressOf) {
                                 // An argument always reaches
