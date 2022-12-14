@@ -202,6 +202,13 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    std::vector<std::string> libfiles_h;
+    for (const std::string &libfile : libfiles) {
+        std::string fname(libfile.substr(4));
+        fname.erase(fname.find(".cpp"));
+        libfiles_h.emplace_back(fname + ".h");
+    }
+
     // QMAKE - lib/lib.pri
     {
         std::ofstream fout1("lib/lib.pri");
@@ -211,13 +218,9 @@ int main(int argc, char **argv)
             fout1 << "include($$PWD/../externals/externals.pri)\n";
             fout1 << "INCLUDEPATH += $$PWD\n";
             fout1 << "HEADERS += ";
-            for (const std::string &libfile : libfiles) {
-                std::string fname(libfile.substr(4));
-                if (fname.find(".cpp") == std::string::npos)
-                    continue;   // shouldn't happen
-                fname.erase(fname.find(".cpp"));
-                fout1 << "$${PWD}/" << fname << ".h";
-                if (libfile != libfiles.back())
+            for (const std::string &libfile_h : libfiles_h) {
+                fout1 << "$${PWD}/" << libfile_h;
+                if (libfile_h != libfiles_h.back())
                     fout1 << " \\\n" << std::string(11, ' ');
             }
             fout1 << "\n\nSOURCES += ";
