@@ -404,7 +404,6 @@
     <ResourceCompile Include="version.rc" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
-    <ClInclude Include="..\lib\config.h" />
     <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="cppcheckexecutor.h" />
     <ClInclude Include="cppcheckexecutorseh.h" />
