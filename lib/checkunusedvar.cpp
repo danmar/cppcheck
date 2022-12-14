@@ -22,6 +22,7 @@
 
 #include "astutils.h"
 #include "errortypes.h"
+#include "fwdanalysis.h"
 #include "library.h"
 #include "preprocessor.h"
 #include "settings.h"

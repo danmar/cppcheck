@@ -38,6 +38,7 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/errorlogger.h \
            $${PWD}/errortypes.h \
            $${PWD}/forwardanalyzer.h \
+           $${PWD}/fwdanalysis.h \
            $${PWD}/importproject.h \
            $${PWD}/infer.h \
            $${PWD}/library.h \
@@ -96,6 +97,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/errorlogger.cpp \
            $${PWD}/errortypes.cpp \
            $${PWD}/forwardanalyzer.cpp \
+           $${PWD}/fwdanalysis.cpp \
            $${PWD}/importproject.cpp \
            $${PWD}/infer.cpp \
            $${PWD}/library.cpp \
