@@ -114,7 +114,7 @@ Produces a lot of false positives since it is too vague in its analysis.
 
 `performance-inefficient-string-concatenation`<br>
 
-Produces many warnings which very much look like false positives (needs to be reported upstream).
+Produces warnings which might be considered false positives starting with C++11 - see https://github.com/llvm/llvm-project/issues/54526.
 
 `modernize-avoid-c-arrays`<br>
 `readability-container-size-empty`<br>
