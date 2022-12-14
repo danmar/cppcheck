@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -31,7 +31,6 @@
     <ClCompile Include="..\cli\executor.cpp" />
     <ClCompile Include="..\cli\processexecutor.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
-    <ClCompile Include="..\lib\astutils.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testanalyzerinformation.cpp" />
@@ -107,7 +106,6 @@
     <ClInclude Include="..\cli\cmdlineparser.h" />
     <ClInclude Include="..\cli\filelister.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
-    <ClInclude Include="..\lib\config.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="precompiled.h" />
     <ClInclude Include="redirect.h" />
