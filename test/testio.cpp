@@ -80,6 +80,7 @@ private:
         TEST_CASE(testPrintfAuto); // #8992
         TEST_CASE(testPrintfParenthesis); // #8489
         TEST_CASE(testStdDistance); // #10304
+        TEST_CASE(testParameterPack); // #11289
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -4866,6 +4867,16 @@ private:
               "const auto Idx = std::distance(&IO.front(), pio);\n"
               "printf(\"Idx = %td\", Idx);\n"
               "}", /*inconclusive*/ false, /*portability*/ true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testParameterPack() { // #11289
+        check("template <typename... Args> auto f(const char* format, const Args&... args) {\n"
+              "    return snprintf(nullptr, 0, format, args...);\n"
+              "}\n"
+              "void g() {\n"
+              "    f(\"%d%d\", 1, 2);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
