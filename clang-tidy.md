@@ -127,6 +127,7 @@ Produces warnings which might be considered false positives starting with C++11 
 `readability-redundant-access-specifiers`<br>
 `performance-noexcept-move-constructor`<br>
 `concurrency-mt-unsafe`<br>
+`misc-use-anonymous-namespace`<br>
 
 To be evaluated.
 
