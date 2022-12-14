@@ -3229,7 +3229,7 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
 
 enum class LifetimeCapture { Undefined, ByValue, ByReference };
 
-std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
+static std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
     std::string result;
     if (!val)
@@ -5306,6 +5306,8 @@ static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 
     return nullptr;
 }
 
+static ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
+
 static void valueFlowSymbolicOperators(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
@@ -6559,18 +6561,6 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
     if (varTok->hasKnownIntValue())
         return ValueFlow::Value{};
     std::vector<ValueFlow::Value> r = infer(IntegralInferModel{}, op, varTok->values(), val);
-    if (r.size() == 1 && r.front().isKnown())
-        return r.front();
-    return ValueFlow::Value{};
-}
-
-ValueFlow::Value inferCondition(const std::string &op, MathLib::bigint val, const Token* varTok)
-{
-    if (!varTok)
-        return ValueFlow::Value{};
-    if (varTok->hasKnownIntValue())
-        return ValueFlow::Value{};
-    std::vector<ValueFlow::Value> r = infer(IntegralInferModel{}, op, val, varTok->values());
     if (r.size() == 1 && r.front().isKnown())
         return r.front();
     return ValueFlow::Value{};

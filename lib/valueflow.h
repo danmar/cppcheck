@@ -99,9 +99,6 @@ struct LifetimeToken {
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate);
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value);
 
-ValueFlow::Value inferCondition(const std::string& op, MathLib::bigint val, const Token* varTok);
-ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
-
 CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
 
 const Token* solveExprValue(const Token* expr,
@@ -119,8 +116,6 @@ const Variable* getLifetimeVariable(const Token* tok, ValueFlow::Value::ErrorPat
 const Variable* getLifetimeVariable(const Token* tok);
 
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings);
-
-std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
 std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
