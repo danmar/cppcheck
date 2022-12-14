@@ -27,9 +27,11 @@
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutorseh.cpp" />
-    <ClCompile Include="..\cli\filelister.cpp" />
+    <ClCompile Include="..\cli\cppcheckexecutorsig.cpp" />
     <ClCompile Include="..\cli\executor.cpp" />
+    <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\processexecutor.cpp" />
+    <ClCompile Include="..\cli\stacktrace.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
@@ -50,6 +52,7 @@
     <ClCompile Include="testerrorlogger.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
     <ClCompile Include="testfilelister.cpp" />
+    <ClCompile Include="testfunctions.cpp" />
     <ClCompile Include="testgarbage.cpp" />
     <ClCompile Include="testimportproject.cpp" />
     <ClCompile Include="testincompletestatement.cpp" />
@@ -60,7 +63,6 @@
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
     <ClCompile Include="testnullpointer.cpp" />
-    <ClCompile Include="testfunctions.cpp" />
     <ClCompile Include="testoptions.cpp" />
     <ClCompile Include="testother.cpp" />
     <ClCompile Include="testpath.cpp" />
@@ -78,10 +80,10 @@
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="teststring.cpp" />
     <ClCompile Include="testsuite.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="testsummaries.cpp" />
     <ClCompile Include="testsuppressions.cpp" />
@@ -104,7 +106,13 @@
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="..\cli\cmdlineparser.h" />
+    <ClInclude Include="..\cli\cppcheckexecutor.h" />
+    <ClInclude Include="..\cli\cppcheckexecutorseh.h" />
+    <ClInclude Include="..\cli\cppcheckexecutorsig.h" />
+    <ClInclude Include="..\cli\executor.h" />
     <ClInclude Include="..\cli\filelister.h" />
+    <ClInclude Include="..\cli\processexecutor.h" />
+    <ClInclude Include="..\cli\stacktrace.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="precompiled.h" />
