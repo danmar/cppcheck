@@ -533,8 +533,10 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     return ChildrenToVisit::none;
                 });
 
-                if (!checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount))
+                if (!checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount)) {
+                    varInfo->clear();
                     continue;
+                }
                 closingParenthesis = closingParenthesis->linkAt(1);
                 if (Token::simpleMatch(closingParenthesis, "} else {")) {
                     if (!checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero, recursiveCount))
