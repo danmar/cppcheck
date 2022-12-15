@@ -5201,12 +5201,13 @@ private:
               true);
         ASSERT_EQUALS("", errout.str());
 
-        check("struct S { char a, b; };\n"
-              "void f(char& c, const std::vector<S>&v) {\n"
-              "    for (const auto s : v) {\n"
-              "        if (s.a == c)\n"
-              "            c = s.b;\n"
-              "    }\n"
+        check("bool g(int);\n"
+              "int f(const std::vector<int>&v) {\n"
+              "    int ret = 0;\n"
+              "    for (const auto i : v)\n"
+              "        if (!g(i))\n"
+              "            ret = 1;\n"
+              "    return ret;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
