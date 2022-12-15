@@ -5202,7 +5202,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("bool g(int);\n"
-              "int f(const std::vector<int>&v) {\n"
+              "int f(const std::vector<int>& v) {\n"
               "    int ret = 0;\n"
               "    for (const auto i : v)\n"
               "        if (!g(i))\n"
