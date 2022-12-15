@@ -1370,9 +1370,22 @@ static bool isForLoopCondition(const Token * const tok)
            parent->astParent()->astParent()->astOperand1()->str() == "for";
 }
 
+static bool isForLoopIncrement(const Token* const tok)
+{
+    if (!tok)
+        return false;
+    const Token *const parent = tok->astParent();
+    return Token::simpleMatch(parent, ";") && parent->astOperand2() == tok &&
+           Token::simpleMatch(parent->astParent(), ";") &&
+           Token::simpleMatch(parent->astParent()->astParent(), "(") &&
+           parent->astParent()->astParent()->astOperand1()->str() == "for";
+}
+
 bool isUsedAsBool(const Token* const tok)
 {
     if (!tok)
+        return false;
+    if (isForLoopIncrement(tok))
         return false;
     if (astIsBool(tok))
         return true;
