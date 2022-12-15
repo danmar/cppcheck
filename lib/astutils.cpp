@@ -397,12 +397,18 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
         return isTemporary(cpp, tok->astOperand2(), library);
     if (tok->isCast() || (cpp && isCPPCast(tok)))
         return isTemporary(cpp, tok->astOperand2(), library);
-    if (Token::Match(tok, "?|.|[|++|--|%name%|%assign%"))
+    if (Token::Match(tok, ".|[|++|--|%name%|%assign%"))
         return false;
     if (tok->isUnaryOp("*"))
         return false;
     if (Token::Match(tok, "&|<<|>>") && isLikelyStream(cpp, tok->astOperand1()))
         return false;
+    if (Token::simpleMatch(tok, "?")) {
+        const Token* branchTok = tok->astOperand2();
+        if (!branchTok->astOperand1()->valueType())
+            return false;
+        return !branchTok->astOperand1()->valueType()->isTypeEqual(branchTok->astOperand2()->valueType());
+    }
     if (Token::simpleMatch(tok, "(") && tok->astOperand1() &&
         (tok->astOperand2() || Token::simpleMatch(tok->next(), ")"))) {
         if (tok->valueType()) {

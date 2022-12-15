@@ -6386,14 +6386,26 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             return;
         }
 
-        if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
-            setValueType(parent, *vt1);
-            return;
-        }
+        if (parent->isArithmeticalOp()) {
+            if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
+                setValueType(parent, *vt1);
+                return;
+            }
 
-        if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
-            setValueType(parent, *vt2);
-            return;
+            if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
+                setValueType(parent, *vt2);
+                return;
+            }
+        } else if (ternary) {
+            if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
+                setValueType(parent, *vt2);
+                return;
+            }
+
+            if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
+                setValueType(parent, *vt1);
+                return;
+            }
         }
 
         if (vt1->pointer != 0U) {
@@ -7309,6 +7321,8 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) 
 
 bool ValueType::isTypeEqual(const ValueType* that) const
 {
+    if (!that)
+        return false;
     auto tie = [](const ValueType* vt) {
         return std::tie(vt->type, vt->container, vt->pointer, vt->typeScope, vt->smartPointer);
     };
