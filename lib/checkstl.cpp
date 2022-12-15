@@ -2708,7 +2708,7 @@ void CheckStl::useStlAlgorithm()
         return !astIsContainer(tok); // don't warn for containers, where overloaded operators can be costly
     };
 
-    auto isConditionWithoutSideeffects = [this](const Token* tok) -> bool {
+    auto isConditionWithoutSideEffects = [this](const Token* tok) -> bool {
         if (!Token::simpleMatch(tok, "{") || !Token::simpleMatch(tok->previous(), ")"))
             return false;
         return isConstExpression(tok->previous()->link()->astOperand2(), mSettings->library, true);
@@ -2832,7 +2832,7 @@ void CheckStl::useStlAlgorithm()
                             algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
                         else if (assignTok->str() != "=")
                             algo = "std::accumulate";
-                        else if (isConditionWithoutSideeffects(condBodyTok))
+                        else if (isConditionWithoutSideEffects(condBodyTok))
                             algo = "std::any_of, std::all_of, std::none_of";
                         else
                             continue;
