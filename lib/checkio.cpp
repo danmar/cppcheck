@@ -1306,6 +1306,8 @@ void CheckIO::checkFormatString(const Token * const tok,
     // Count printf/scanf parameters..
     int numFunction = 0;
     while (argListTok2) {
+        if (Token::Match(argListTok2, "%name% ...")) // bailout for parameter pack
+            return;
         numFunction++;
         argListTok2 = argListTok2->nextArgument(); // Find next argument
     }
