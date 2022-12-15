@@ -725,10 +725,10 @@ void CheckFunctions::useStandardLibrary()
 
         const auto& secondOp = condToken->str();
         const bool isLess = "<" == secondOp &&
-                            isConstExpression(condToken->astOperand2(), mSettings->library, true, mTokenizer->isCPP()) &&
+                            isConstExpression(condToken->astOperand2(), mSettings->library, mTokenizer->isCPP()) &&
                             condToken->astOperand1()->varId() == idxVarId;
         const bool isMore = ">" == secondOp &&
-                            isConstExpression(condToken->astOperand1(), mSettings->library, true, mTokenizer->isCPP()) &&
+                            isConstExpression(condToken->astOperand1(), mSettings->library, mTokenizer->isCPP()) &&
                             condToken->astOperand2()->varId() == idxVarId;
 
         if (!(isLess || isMore))

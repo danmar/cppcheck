@@ -1904,7 +1904,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
     return true;
 }
 
-bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp)
+bool isConstExpression(const Token *tok, const Library& library, bool cpp)
 {
     if (!tok)
         return true;
@@ -1923,7 +1923,7 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure, bool
     // bailout when we see ({..})
     if (tok->str() == "{")
         return false;
-    return isConstExpression(tok->astOperand1(), library, pure, cpp) && isConstExpression(tok->astOperand2(), library, pure, cpp);
+    return isConstExpression(tok->astOperand1(), library, cpp) && isConstExpression(tok->astOperand2(), library, cpp);
 }
 
 bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess, bool checkReference)

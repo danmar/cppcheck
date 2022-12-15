@@ -5039,7 +5039,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                 continue;
             if (condTok->hasKnownIntValue())
                 continue;
-            if (!isConstExpression(condTok, settings->library, true, tokenlist->isCPP()))
+            if (!isConstExpression(condTok, settings->library, tokenlist->isCPP()))
                 continue;
             const bool is1 = (condTok->isComparisonOp() || condTok->tokType() == Token::eLogicalOp || astIsBool(condTok));
 
@@ -5166,7 +5166,7 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
                 continue;
             if (tok->astOperand2()->exprId() == 0)
                 continue;
-            if (!isConstExpression(tok->astOperand2(), tokenlist->getSettings()->library, true, tokenlist->isCPP()))
+            if (!isConstExpression(tok->astOperand2(), tokenlist->getSettings()->library, tokenlist->isCPP()))
                 continue;
             if (tok->astOperand1()->valueType() && tok->astOperand2()->valueType()) {
                 if (isTruncated(
@@ -5918,7 +5918,7 @@ struct ConditionHandler {
                         continue;
                     if (cond.true_values.empty() || cond.false_values.empty())
                         continue;
-                    if (!isConstExpression(cond.vartok, tokenlist->getSettings()->library, true, tokenlist->isCPP()))
+                    if (!isConstExpression(cond.vartok, tokenlist->getSettings()->library, tokenlist->isCPP()))
                         continue;
                     f(cond, tok, scope);
                 }
@@ -6625,7 +6625,7 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
             return {};
         if (!tok->astOperand2() || tok->astOperand2()->hasKnownIntValue() || tok->astOperand2()->isLiteral())
             return {};
-        if (!isConstExpression(tok, settings->library, true, true))
+        if (!isConstExpression(tok, settings->library, true))
             return {};
 
         std::vector<Condition> result;
