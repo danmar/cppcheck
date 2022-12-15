@@ -4973,6 +4973,13 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11434
+              "    const int N = 5;\n"
+              "    bool a[N];\n"
+              "    for (int i = 0; i < N; a[i++] = false);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueTryCatch()

@@ -1371,11 +1371,23 @@ static bool isForLoopCondition(const Token * const tok)
            parent->astParent()->astParent()->astOperand1()->str() == "for";
 }
 
+static bool isForLoopIncrement(const Token* const tok)
+{
+    if (!tok)
+        return false;
+    const Token *const parent = tok->astParent();
+    return Token::simpleMatch(parent, ";") && parent->astOperand2() == tok &&
+           Token::simpleMatch(parent->astParent(), ";") &&
+           Token::simpleMatch(parent->astParent()->astParent(), "(") &&
+           parent->astParent()->astParent()->astOperand1()->str() == "for";
+}
+
 bool isUsedAsBool(const Token* const tok)
 {
     if (!tok)
         return false;
-    if (astIsBool(tok))
+    const bool isForLoopInc = isForLoopIncrement(tok);
+    if (astIsBool(tok) && !isForLoopInc)
         return true;
     if (Token::Match(tok, "!|&&|%oror%|%comp%"))
         return true;
@@ -1395,7 +1407,7 @@ bool isUsedAsBool(const Token* const tok)
         return true;
     if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
         return true;
-    if (isForLoopCondition(tok))
+    if (!isForLoopInc && isForLoopCondition(tok))
         return true;
     if (!Token::Match(parent, "%cop%")) {
         std::vector<ValueType> vtParents = getParentValueTypes(tok);
