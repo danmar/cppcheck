@@ -260,7 +260,8 @@ CLIOBJ =      cli/cmdlineparser.o \
               cli/main.o \
               cli/processexecutor.o \
               cli/stacktrace.o \
-              cli/threadexecutor.o
+              cli/threadexecutor.o \
+              cli/xmlanalysisreport.o
 
 TESTOBJ =     test/options.o \
               test/test64bit.o \
@@ -650,6 +651,9 @@ cli/stacktrace.o: cli/stacktrace.cpp cli/stacktrace.h lib/config.h lib/utils.h
 
 cli/threadexecutor.o: cli/threadexecutor.cpp cli/cppcheckexecutor.h cli/executor.h cli/threadexecutor.h lib/analyzerinfo.h lib/check.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/threadexecutor.cpp
+
+cli/xmlanalysisreport.o: cli/xmlanalysisreport.cpp cli/analysisreport.h
+	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/xmlanalysisreport.cpp
 
 test/options.o: test/options.cpp test/options.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/options.cpp

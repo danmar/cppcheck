@@ -34,6 +34,7 @@
 #include "suppressions.h"
 #include "utils.h"
 #include "checkunusedfunctions.h"
+#include "xmlanalysisreport.h"
 
 #if defined(THREADING_MODEL_THREAD)
 #include "threadexecutor.h"
@@ -69,7 +70,7 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
+    : mSettings(nullptr), mReport(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
 {}
 
 CppCheckExecutor::~CppCheckExecutor()
@@ -99,9 +100,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         if (parser.getShowErrorMessages()) {
             mShowAllErrors = true;
-            std::cout << ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName);
             cppcheck->getErrorMessages();
-            std::cout << ErrorMessage::getXMLFooter() << std::endl;
+            std::cout << mReport->emit() << std::endl;
         }
 
         if (parser.exitAfterPrinting()) {
@@ -206,6 +206,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     const Settings& settings = cppCheck.settings();
     mSettings = &settings;
 
+    mReport = (AnalysisReport*) new XMLAnalysisReport(settings.cppcheckCfgProductName);
+
     if (!parseFromArgs(&cppCheck, argc, argv)) {
         mSettings = nullptr;
         return EXIT_FAILURE;
@@ -222,6 +224,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     else
         ret = check_internal(cppCheck);
 
+    free(mReport);
+    mReport = nullptr;
     mSettings = nullptr;
     return ret;
 }
@@ -301,10 +305,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 
     if (!settings.outputFile.empty()) {
         mErrorOutput = new std::ofstream(settings.outputFile);
-    }
-
-    if (settings.xml) {
-        reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
     }
 
     if (!settings.buildDir.empty()) {
@@ -409,7 +409,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     }
 
     if (settings.xml) {
-        reportErr(ErrorMessage::getXMLFooter());
+        reportErr(mReport->emit());
     }
 
     mSettings = nullptr;
@@ -499,7 +499,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
 void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     if (mShowAllErrors) {
-        reportOut(msg.toXML());
+        mReport->add_finding(msg);
         return;
     }
 
@@ -508,7 +508,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
         return;
 
     if (mSettings->xml)
-        reportErr(msg.toXML());
+        mReport->add_finding(msg);
     else
         reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
 }

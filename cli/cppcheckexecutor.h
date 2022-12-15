@@ -19,6 +19,7 @@
 #ifndef CPPCHECKEXECUTOR_H
 #define CPPCHECKEXECUTOR_H
 
+#include "analysisreport.h"
 #include "color.h"
 #include "errorlogger.h"
 
@@ -169,6 +170,11 @@ private:
      * Pointer to current settings; set while check() is running.
      */
     const Settings* mSettings;
+
+    /**
+     * Reporting object for storing and serializing the results.
+     */
+    AnalysisReport *mReport;
 
     /**
      * Used to filter out duplicate error messages.
