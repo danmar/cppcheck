@@ -2824,8 +2824,10 @@ void CheckStl::useStlAlgorithm()
                             algo = "std::count_if";
                         else if (accumulateBoolLiteral(assignTok, assignVarId))
                             algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
-                        else
+                        else if (assignTok->str() != "=")
                             algo = "std::accumulate";
+                        else 
+                            continue;
                     }
                     useStlAlgorithmError(assignTok, algo);
                     continue;

@@ -5200,6 +5200,15 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char a, b; };\n"
+              "void f(char& c, const std::vector<S>&v) {\n"
+              "    for (const auto s : v) {\n"
+              "        if (s.a == c)\n"
+              "            c = s.b;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void loopAlgoMinMax() {
