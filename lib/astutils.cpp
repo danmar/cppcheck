@@ -2472,6 +2472,37 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             return false;
 
         const Token *ftok = tok->tokAt(2);
+        if (astIsContainer(tok) && tok->valueType() && tok->valueType()->container) {
+            const Library::Container* c = tok->valueType()->container;
+            const Library::Container::Action action = c->getAction(ftok->str());
+            if (contains({Library::Container::Action::INSERT,
+                          Library::Container::Action::ERASE,
+                          Library::Container::Action::CHANGE,
+                          Library::Container::Action::CHANGE_CONTENT,
+                          Library::Container::Action::CHANGE_INTERNAL,
+                          Library::Container::Action::CLEAR,
+                          Library::Container::Action::PUSH,
+                          Library::Container::Action::POP,
+                          Library::Container::Action::RESIZE},
+                         action))
+                return true;
+            const Library::Container::Yield yield = c->getYield(ftok->str());
+            // If accessing element check if the element is changed
+            if (contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield)) {
+                return isVariableChanged(ftok->next(), indirect, settings, cpp, depth - 1);
+            } else if (contains({Library::Container::Yield::BUFFER,
+                                 Library::Container::Yield::BUFFER_NT,
+                                 Library::Container::Yield::START_ITERATOR,
+                                 Library::Container::Yield::ITERATOR},
+                                yield)) {
+                return isVariableChanged(ftok->next(), indirect + 1, settings, cpp, depth - 1);
+            } else if (contains({Library::Container::Yield::SIZE,
+                                 Library::Container::Yield::EMPTY,
+                                 Library::Container::Yield::END_ITERATOR},
+                                yield)) {
+                return false;
+            }
+        }
         if (settings)
             return !settings->library.isFunctionConst(ftok);
 
