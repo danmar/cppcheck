@@ -1386,8 +1386,9 @@ bool isUsedAsBool(const Token* const tok)
 {
     if (!tok)
         return false;
-    const bool isForLoopInc = isForLoopIncrement(tok);
-    if (astIsBool(tok) && !isForLoopInc)
+    if (isForLoopIncrement(tok))
+        return false;
+    if (astIsBool(tok))
         return true;
     if (Token::Match(tok, "!|&&|%oror%|%comp%"))
         return true;
@@ -1407,7 +1408,7 @@ bool isUsedAsBool(const Token* const tok)
         return true;
     if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
         return true;
-    if (!isForLoopInc && isForLoopCondition(tok))
+    if (isForLoopCondition(tok))
         return true;
     if (!Token::Match(parent, "%cop%")) {
         std::vector<ValueType> vtParents = getParentValueTypes(tok);
