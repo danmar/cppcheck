@@ -2826,7 +2826,7 @@ void CheckStl::useStlAlgorithm()
                             algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
                         else if (assignTok->str() != "=")
                             algo = "std::accumulate";
-                        else 
+                        else
                             continue;
                     }
                     useStlAlgorithmError(assignTok, algo);
