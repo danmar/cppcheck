@@ -19,7 +19,7 @@
 #include "clianalysisreport.h"
 
 CLIAnalysisReport::CLIAnalysisReport(bool verbose, std::string templateFormat, std::string templateLocation)
-: mVerbose(verbose), mTemplateFormat(std::move(templateFormat)), mTemplateLocation(std::move(templateLocation)) {}
+    : mVerbose(verbose), mTemplateFormat(std::move(templateFormat)), mTemplateLocation(std::move(templateLocation)) {}
 
 void CLIAnalysisReport::addFinding(const ErrorMessage &msg) {
     mBuffer << msg.toString(mVerbose, mTemplateFormat, mTemplateLocation);

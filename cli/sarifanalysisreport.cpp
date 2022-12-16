@@ -21,7 +21,7 @@
 #include <picojson.h>
 
 SARIFAnalysisReport::SARIFAnalysisReport( std::string versionNumber)
-: mVersionNumber(std::move(versionNumber)) {}
+    : mVersionNumber(std::move(versionNumber)) {}
 
 void SARIFAnalysisReport::addFinding(const ErrorMessage &msg) {
     std::map<std::string, std::vector<ErrorMessage>>::iterator it = mFindings.insert(mFindings.begin(), {msg.id, std::vector<ErrorMessage>()});
@@ -64,60 +64,60 @@ std::string SARIFAnalysisReport::emit() {
 
         // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317836
         picojson::object reportingDescriptor = {
-                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317839
-                { "id", picojson::value(rule.id) },
-                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317843
-                { "name", picojson::value(rule.shortMessage()) },
-                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317845
-                { "shortDescription", picojson::value(text(rule.shortMessage())) },
-                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317846
-                { "fullDescription", picojson::value(text(rule.verboseMessage())) },
-                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317849
-                { "help", picojson::value(text(rule.verboseMessage())) },
+            // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317839
+            { "id", picojson::value(rule.id) },
+            // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317843
+            { "name", picojson::value(rule.shortMessage()) },
+            // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317845
+            { "shortDescription", picojson::value(text(rule.shortMessage())) },
+            // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317846
+            { "fullDescription", picojson::value(text(rule.verboseMessage())) },
+            // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317849
+            { "help", picojson::value(text(rule.verboseMessage())) },
         };
         rules.emplace_back(reportingDescriptor);
 
         for (const ErrorMessage& err : it->second) {
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317427
             picojson::object artifactLocation = {
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317430
-                    { "uri", picojson::value(err.file0) }
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317430
+                { "uri", picojson::value(err.file0) }
             };
 
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317685
             picojson::object region = {
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317690
-                    { "startLine", picojson::value(1.0) },
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317691
-                    { "startColumn", picojson::value(1.0) },
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317692
-                    { "endLine", picojson::value(1.0) },
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317693
-                    { "endColumn", picojson::value(1.0) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317690
+                { "startLine", picojson::value(1.0) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317691
+                { "startColumn", picojson::value(1.0) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317692
+                { "endLine", picojson::value(1.0) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317693
+                { "endColumn", picojson::value(1.0) },
             };
 
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317678
             picojson::object physicalLocation = {
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317681
-                    { "artifactLocation", picojson::value(artifactLocation) },
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317682
-                    { "region", picojson::value(region) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317681
+                { "artifactLocation", picojson::value(artifactLocation) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317682
+                { "region", picojson::value(region) },
             };
 
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317670
             picojson::object location = {
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317678
-                    { "physicalLocation", picojson::value(physicalLocation) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317678
+                { "physicalLocation", picojson::value(physicalLocation) },
             };
 
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317638
             picojson::object result = {
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317643
-                    { "ruleId", picojson::value(err.id) },
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317649
-                    { "message", picojson::value(text(err.shortMessage())) },
-                    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317650
-                    { "locations", picojson::value(location) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317643
+                { "ruleId", picojson::value(err.id) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317649
+                { "message", picojson::value(text(err.shortMessage())) },
+                // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317650
+                { "locations", picojson::value(location) },
             };
             results.emplace_back(result);
         }
