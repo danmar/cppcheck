@@ -6485,6 +6485,18 @@ private:
         // #9729
         ASSERT_NO_THROW(tokenizeAndStringify("void foo() { bar([]() noexcept { if (0) {} }); }"));
 
+        // #11128
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename T>\n"
+                                             "struct S;\n"
+                                             "struct R;\n"
+                                             "S<R> y, z;\n"
+                                             "auto f(int x) -> S<R> {\n"
+                                             "    if (const auto i = x; i != 0)\n"
+                                             "        return y;\n"
+                                             "    else\n"
+                                             "        return z;\n"
+                                             "}\n"));
+
         // #10079 - createInnerAST bug..
         ASSERT_EQUALS("x{([= yz= switchy(",
                       testAst("x = []() -> std::vector<uint8_t> {\n"
