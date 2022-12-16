@@ -30,7 +30,7 @@
 class XMLAnalysisReport : public AnalysisReport {
 public:
     explicit XMLAnalysisReport(const std::string&);
-    void add_finding(const ErrorMessage &) override;
+    void addFinding(const ErrorMessage &) override;
     std::string emit() override;
 private:
     std::stringstream mBuffer;

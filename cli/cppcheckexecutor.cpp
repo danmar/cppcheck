@@ -501,7 +501,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
 void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     if (mShowAllErrors) {
-        mReport->add_finding(msg);
+        mReport->addFinding(msg);
         return;
     }
 
@@ -510,9 +510,9 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
         return;
 
     if (mSettings->xml)
-        mReport->add_finding(msg);
+        mReport->addFinding(msg);
     else
-        mReport->add_finding(msg);
+        mReport->addFinding(msg);
 }
 
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
