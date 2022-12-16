@@ -27,7 +27,7 @@ options:
 
 ### Structure of `dir`
 
-It expects the given `dir` to contain folders which are named after the containg version or commit hash. These folder must contain a `cppcheck` and the associated files for that version.
+It expects the given `dir` to contain folders which are either named after version numbers or commit hashes. These folders must each contain a `cppcheck` and the associated files for that version.
 
 If the first folder is not a valid version the names are interpreted as commit hashes. These are internally sorted but that requires the `repo` parameter to be set.
 

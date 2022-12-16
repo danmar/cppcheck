@@ -406,9 +406,8 @@ function cppunit_fn {
     fi
 }
 
-for f in "${DIR}"*.{c,cpp}
-do
-    f=$(basename $f)
+function check_file {
+    f=$(basename $1)
     case $f in
         boost.cpp)
             boost_fn
@@ -506,22 +505,41 @@ do
           echo "Unhandled file $f"
           exit_if_strict
     esac
+}
+
+function check_files
+{
+for f in "$@"
+do
+    check_file $f
 done
+}
 
 # Check the syntax of the defines in the configuration files
-if ! xmlstarlet --version; then
-    echo "xmlstarlet needed to extract defines, skipping defines check."
-    exit_if_strict
+function check_defines_syntax
+{
+    if ! xmlstarlet --version; then
+        echo "xmlstarlet needed to extract defines, skipping defines check."
+        exit_if_strict
+    else
+        for configfile in ${CFG}*.cfg; do
+            echo "Checking defines in $configfile"
+            # Disable debugging output temporarily since there could be many defines
+            set +x
+            # XMLStarlet returns 1 if no elements were found which is no problem here
+            EXTRACTED_DEFINES=$(xmlstarlet sel -t -m '//define' -c . -n <$configfile || true)
+            EXTRACTED_DEFINES=$(echo "$EXTRACTED_DEFINES" | sed 's/<define name="/#define /g' | sed 's/" value="/ /g' | sed 's/"\/>//g')
+            echo "$EXTRACTED_DEFINES" | gcc -fsyntax-only -xc -Werror -
+        done
+    fi
+}
+
+if [ $# -eq 0  ]
+then
+    check_files "${DIR}"*.{c,cpp}
+    check_defines_syntax
 else
-    for configfile in ${CFG}*.cfg; do
-        echo "Checking defines in $configfile"
-        # Disable debugging output temporarily since there could be many defines
-        set +x
-        # XMLStarlet returns 1 if no elements were found which is no problem here
-        EXTRACTED_DEFINES=$(xmlstarlet sel -t -m '//define' -c . -n <$configfile || true)
-        EXTRACTED_DEFINES=$(echo "$EXTRACTED_DEFINES" | sed 's/<define name="/#define /g' | sed 's/" value="/ /g' | sed 's/"\/>//g')
-        echo "$EXTRACTED_DEFINES" | gcc -fsyntax-only -xc -Werror -
-    done
+    check_files "$@"
 fi
 
 echo SUCCESS

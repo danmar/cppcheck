@@ -139,6 +139,8 @@ private:
         TEST_CASE(nullpointer93); // #3929
         TEST_CASE(nullpointer94); // #11040
         TEST_CASE(nullpointer95); // #11142
+        TEST_CASE(nullpointer96); // #11416
+        TEST_CASE(nullpointer97); // #11229
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -153,6 +155,7 @@ private:
         TEST_CASE(scanf_with_invalid_va_argument);
         TEST_CASE(nullpointer_in_return);
         TEST_CASE(nullpointer_in_typeid);
+        TEST_CASE(nullpointer_in_alignof); // #11401
         TEST_CASE(nullpointer_in_for_loop);
         TEST_CASE(nullpointerDelete);
         TEST_CASE(nullpointerSubFunction);
@@ -2762,6 +2765,39 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void nullpointer96()
+    {
+        check("struct S {\n"
+              "  int x;\n"
+              "};\n"
+              "S *create_s();\n"
+              "void test() {\n"
+              "  S *s = create_s();\n"
+              "  for (int i = 0; i < s->x; i++) {\n"
+              "    if (s->x == 17) {\n"
+              "      s = nullptr;\n"
+              "      break;\n"
+              "    }\n"
+              "  }\n"
+              "  if (s) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer97() // #11229
+    {
+        check("struct B { virtual int f() = 0; };\n"
+              "struct D : public B { int f() override; };\n"
+              "int g(B* p) {\n"
+              "    if (p) {\n"
+              "        auto d = dynamic_cast<B*>(p);\n"
+              "        return d ? d->f() : 0;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -3413,7 +3449,48 @@ private:
               "     return typeid(*c) == typeid(*c);\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+    }
 
+    void nullpointer_in_alignof() // #11401
+    {
+        check("size_t foo() {\n"
+              "    char* c = 0;\n"
+              "    return alignof(*c);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    return alignof(*0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) {\n"
+              "    f(alignof(*p));\n"
+              "    if (p) {}\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    char* c = 0;\n"
+              "    return _Alignof(*c);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    return _alignof(*0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    return __alignof(*0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("size_t foo() {\n"
+              "    return __alignof__(*0);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_in_for_loop() {
@@ -4344,6 +4421,15 @@ private:
 
         ctu("size_t f(int* p) {\n"
             "    size_t len = sizeof(*p);\n"
+            "    return len;\n"
+            "}\n"
+            "void g() {\n"
+            "    f(NULL);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("size_t f(int* p) {\n"
+            "    size_t len = alignof(*p);\n"
             "    return len;\n"
             "}\n"
             "void g() {\n"

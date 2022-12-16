@@ -116,6 +116,7 @@ private:
         TEST_CASE(initvar_operator_eq5);     // ticket #4119
         TEST_CASE(initvar_operator_eq6);
         TEST_CASE(initvar_operator_eq7);
+        TEST_CASE(initvar_operator_eq8);
         TEST_CASE(initvar_same_classname);      // BUG 2208157
         TEST_CASE(initvar_chained_assign);      // BUG 2270433
         TEST_CASE(initvar_2constructors);       // BUG 2270353
@@ -981,6 +982,30 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void initvar_operator_eq8() {
+        check("struct B {\n"
+              "    int b;\n"
+              "};\n"
+              "struct D1 : B {\n"
+              "    D1& operator=(const D1& src);\n"
+              "    int d1;\n"
+              "};\n"
+              "struct D2 : D1 {\n"
+              "    D2& operator=(const D2& src);\n"
+              "    int d2;\n"
+              "};\n"
+              "struct D3 : D2 {\n"
+              "    D3& operator=(const D3& src) {\n"
+              "        D1::operator=(src);\n"
+              "        d3_1 = src.d3_1;\n"
+              "    }\n"
+              "    int d3_1;\n"
+              "    int d3_2;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'D3::d3_2' is not assigned a value in 'D3::operator='.\n"
+                      "[test.cpp:13]: (warning) Member variable 'D3::d2' is not assigned a value in 'D3::operator='.\n", errout.str());
+    }
+
     void initvar_same_classname() {
         // Bug 2208157 - False positive: Uninitialized variable, same class name
 
@@ -1414,6 +1439,24 @@ private:
                       "[test.cpp:9]: (warning) Member variable 'B::cb' is not assigned a value in 'B::operator='.\n"
                       "[test.cpp:9]: (warning) Member variable 'B::ca' is not assigned a value in 'B::operator='.\n",
                       errout.str());
+
+        check("class C : B {\n" // don't crash
+              "    virtual C& operator=(C& c);\n"
+              "};\n"
+              "class D : public C {\n"
+              "    virtual C& operator=(C& c) { return C::operator=(c); };\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct B;\n" // don't crash
+              "struct D : B { D& operator=(const D&); };\n"
+              "struct E : D { E& operator=(const E& rhs); };\n"
+              "E& E::operator=(const E& rhs) {\n"
+              "    if (this != &rhs)\n"
+              "        D::operator=(rhs);\n"
+              "    return *this;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
     }
 
@@ -3323,6 +3366,38 @@ private:
               "    int i;\n"
               "};");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
+
+        // Unknown member functions and unknown static functions
+        check("class ABC {\n"
+              "  static void static_base_func();\n"
+              "  void const_base_func() const;\n"
+              "};\n"
+              "class Fred : private ABC {\n"
+              "public:\n"
+              "    Fred() {\n"
+              "        const_func();\n"
+              "        static_func();\n"
+              "        const_base_func();\n"
+              "        ABC::static_base_func();\n"
+              "    }\n"
+              "    void const_func() const;\n"
+              "    static void static_f();\n"
+              "private:\n"
+              "    int i;\n"
+              "};");
+
+        // Unknown overloaded member functions
+        check("class Fred : private ABC {\n"
+              "public:\n"
+              "    Fred() {\n"
+              "        func();\n"
+              "    }\n"
+              "    void func() const;\n"
+              "    void func();\n"
+              "private:\n"
+              "    int i;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
 
     }
 

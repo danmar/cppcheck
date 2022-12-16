@@ -1570,7 +1570,7 @@ private:
 
     void checkMissingReturn() {
         check("int f() {}");
-        ASSERT_EQUALS("[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
 
         {
             const char code[] = "int main(void) {}";
@@ -1578,7 +1578,7 @@ private:
 
             s.standards.c = Standards::C89;
             check(code, "test.c", &s); // c code (c89)
-            ASSERT_EQUALS("[test.c:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+            ASSERT_EQUALS("[test.c:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
 
             s.standards.c = Standards::C99;
             check(code, "test.c", &s); // c code (c99)
@@ -1621,7 +1621,7 @@ private:
               "  return 1;\n"
               "out:\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
 
         // switch
         check("int f() {\n"
@@ -1630,7 +1630,7 @@ private:
               "        case 2: return 1;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
 
         check("int f() {\n"
               "    switch (x) {\n"
@@ -1660,7 +1660,7 @@ private:
               "        return 1;\n"
               "    }\n" // <- error (missing else)
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
 
         check("int f(int x) {\n"
               "    if (x) {\n"
@@ -1669,7 +1669,7 @@ private:
               "        return 1;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
 
         check("int f() {\n"
               "    if (!0) {\n"
@@ -1681,7 +1681,7 @@ private:
         check("int f() {\n"
               "    if (!0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
 
         // loop
         check("int f(int x) {\n"
@@ -1725,8 +1725,8 @@ private:
               "    S3& operator=(const S3& t) { if (this != &t) { k = t.k; return *this; } }\n"
               "    int k;\n"
               "};\n");
-        ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n"
-                      "[test.cpp:10]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+        ASSERT_EQUALS("[test.cpp:2]: (error) Found an exit path from function with non-void return type that has missing return statement\n"
+                      "[test.cpp:10]: (error) Found an exit path from function with non-void return type that has missing return statement\n",
                       errout.str());
 
         // #11171
@@ -1735,12 +1735,12 @@ private:
 
         check("std::enable_if_t<sizeof(uint64_t) == 8, int> f() {}");
         ASSERT_EQUALS(
-            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            "[test.cpp:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n",
             errout.str());
 
         check("template<class T> std::enable_if_t<std::is_same<T, int>{}, int> f(T) {}");
         ASSERT_EQUALS(
-            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            "[test.cpp:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n",
             errout.str());
 
         check("template<class T> std::enable_if_t<std::is_same<T, int>{}> f(T) {}");
@@ -1751,12 +1751,12 @@ private:
 
         check("typename std::enable_if<sizeof(uint64_t) == 8, int>::type f() {}");
         ASSERT_EQUALS(
-            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            "[test.cpp:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n",
             errout.str());
 
         check("template<class T> typename std::enable_if<std::is_same<T, int>{}, int>::type f(T) {}");
         ASSERT_EQUALS(
-            "[test.cpp:1]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+            "[test.cpp:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n",
             errout.str());
 
         check("template<class T> typename std::enable_if<std::is_same<T, int>{}>::type f(T) {}");
@@ -1898,6 +1898,34 @@ private:
               "    static int f() { return 1; }\n"
               "};\n"
               "void g() { C::f(); }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::vector<std::string>& v) {\n" // #11223
+              "    for (const auto& s : v)\n"
+              "        s.find(\"\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Return value of function s.find() is not used.\n", errout.str());
+
+        check("void f() {\n"
+              "    auto* p = new std::vector<int>(5);\n"
+              "    p->push_back(1);\n"
+              "    auto* q = new std::vector<int>{ 5, 7 };\n"
+              "    q->push_back(1);\n"
+              "    auto* r = new std::vector<int>;\n"
+              "    r->push_back(1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    auto p = std::make_shared<std::vector<int>>();\n"
+              "    p->push_back(1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<std::vector<int>>& v) {\n"
+              "    auto it = v.begin();\n"
+              "    it->push_back(1);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         settings.severity = severity_old;

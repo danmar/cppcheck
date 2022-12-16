@@ -2931,6 +2931,13 @@ bool Function::returnsReference(const Function* function, bool unknown)
     });
 }
 
+bool Function::returnsStandardType(const Function* function, bool unknown)
+{
+    return checkReturns(function, unknown, true, [](UNUSED const Token* defStart, const Token* defEnd) {
+        return defEnd->previous() && defEnd->previous()->isStandardType();
+    });
+}
+
 bool Function::returnsVoid(const Function* function, bool unknown)
 {
     return checkReturns(function, unknown, true, [](UNUSED const Token* defStart, const Token* defEnd) {
@@ -5455,11 +5462,8 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
             if (tok1->strAt(-2) == ">") {
                 if (tok1->linkAt(-2))
                     tok1 = tok1->linkAt(-2)->tokAt(-1);
-                else {
-                    if (mSettings->debugwarnings)
-                        debugMessage(tok1->tokAt(-2), "debug", "SymbolDatabase::findFunction found '>' without link.");
-                    return nullptr;
-                }
+                else
+                    break;
             } else
                 tok1 = tok1->tokAt(-2);
         }
@@ -6207,7 +6211,17 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     if (parent->str() == "&" && !parent->astOperand2()) {
         ValueType vt(valuetype);
         vt.reference = Reference::None; //Given int& x; the type of &x is int* not int&*
-        vt.pointer += 1U;
+        bool isArrayToPointerDecay = false;
+        for (const Token* child = parent->astOperand1(); child;) {
+            if (Token::Match(child, ".|::"))
+                child = child->astOperand2();
+            else {
+                isArrayToPointerDecay = child->variable() && child->variable()->isArray();
+                break;
+            }
+        }
+        if (!isArrayToPointerDecay)
+            vt.pointer += 1U;
         setValueType(parent, vt);
         return;
     }
@@ -6372,14 +6386,26 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             return;
         }
 
-        if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
-            setValueType(parent, *vt1);
-            return;
-        }
+        if (parent->isArithmeticalOp()) {
+            if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
+                setValueType(parent, *vt1);
+                return;
+            }
 
-        if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
-            setValueType(parent, *vt2);
-            return;
+            if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
+                setValueType(parent, *vt2);
+                return;
+            }
+        } else if (ternary) {
+            if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
+                setValueType(parent, *vt2);
+                return;
+            }
+
+            if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
+                setValueType(parent, *vt1);
+                return;
+            }
         }
 
         if (vt1->pointer != 0U) {
@@ -7023,6 +7049,18 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 parsedecl(fscope->function->retDef, &vt, mDefaultSignedness, mSettings, mIsCpp);
                 setValueType(tok, vt);
             }
+        } else if (tok->isKeyword() && tok->str() == "this" && tok->scope()->isExecutable()) {
+            const Scope* fscope = tok->scope();
+            while (fscope && !fscope->function)
+                fscope = fscope->nestedIn;
+            const Scope* defScope = fscope && fscope->function->tokenDef ? fscope->function->tokenDef->scope() : nullptr;
+            if (defScope && defScope->isClassOrStruct()) {
+                ValueType vt(ValueType::Sign::UNKNOWN_SIGN, ValueType::Type::RECORD, 1);
+                vt.typeScope = defScope;
+                if (fscope->function->isConst())
+                    vt.constness = 1;
+                setValueType(tok, vt);
+            }
         }
     }
 
@@ -7283,6 +7321,8 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) 
 
 bool ValueType::isTypeEqual(const ValueType* that) const
 {
+    if (!that)
+        return false;
     auto tie = [](const ValueType* vt) {
         return std::tie(vt->type, vt->container, vt->pointer, vt->typeScope, vt->smartPointer);
     };

@@ -268,9 +268,9 @@ std::string Suppressions::addSuppressions(const std::list<Suppression> &suppress
     return "";
 }
 
-void Suppressions::ErrorMessage::setFileName(const std::string &s)
+void Suppressions::ErrorMessage::setFileName(std::string s)
 {
-    mFileName = Path::simplifyPath(s);
+    mFileName = Path::simplifyPath(std::move(s));
 }
 
 bool Suppressions::Suppression::parseComment(std::string comment, std::string *errorMessage)

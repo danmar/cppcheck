@@ -409,7 +409,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
 void CheckFunctions::missingReturnError(const Token* tok)
 {
     reportError(tok, Severity::error, "missingReturn",
-                "Found a exit path from function with non-void return type that has missing return statement", CWE758, Certainty::normal);
+                "Found an exit path from function with non-void return type that has missing return statement", CWE758, Certainty::normal);
 }
 //---------------------------------------------------------------------------
 // Detect passing wrong values to <cmath> functions like atan(0, x);

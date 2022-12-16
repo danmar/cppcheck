@@ -56,7 +56,7 @@ bool matchglob(const std::string& pattern, const std::string& name)
 {
     const char* p = pattern.c_str();
     const char* n = name.c_str();
-    std::stack<std::pair<const char*, const char*>> backtrack;
+    std::stack<std::pair<const char*, const char*>, std::vector<std::pair<const char*, const char*>>> backtrack;
 
     for (;;) {
         bool matching = true;

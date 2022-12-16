@@ -126,9 +126,11 @@ QStringList FileList::applyExcludeList() const
 
     QStringList paths;
     for (const QFileInfo& item : mFileList) {
-        QString name = QDir::fromNativeSeparators(item.canonicalFilePath());
-        if (!pathMatch.match(name.toStdString()))
-            paths << name;
+        if (pathMatch.match(QDir::fromNativeSeparators(item.filePath()).toStdString()))
+            continue;
+        QString canonical = QDir::fromNativeSeparators(item.canonicalFilePath());
+        if (!pathMatch.match(canonical.toStdString()))
+            paths << canonical;
     }
     return paths;
 }

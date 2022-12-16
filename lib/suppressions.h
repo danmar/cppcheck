@@ -42,7 +42,7 @@ public:
     struct CPPCHECKLIB ErrorMessage {
         std::size_t hash;
         std::string errorId;
-        void setFileName(const std::string &s);
+        void setFileName(std::string s);
         const std::string &getFileName() const {
             return mFileName;
         }

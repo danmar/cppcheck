@@ -418,17 +418,17 @@ private:
         REDIRECT;
         {
             const char * const argv[] = {"cppcheck", "file.cpp"};
-            settings.enforcedLang = Settings::None;
+            settings.enforcedLang = Settings::Language::None;
             ASSERT(defParser.parseFromArgs(2, argv));
-            ASSERT_EQUALS(Settings::None, settings.enforcedLang);
+            ASSERT_EQUALS(Settings::Language::None, settings.enforcedLang);
             ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
         }
         CLEAR_REDIRECT_OUTPUT;
         {
             const char * const argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
-            settings.enforcedLang = Settings::None;
+            settings.enforcedLang = Settings::Language::None;
             ASSERT(defParser.parseFromArgs(4, argv));
-            ASSERT_EQUALS(Settings::CPP, settings.enforcedLang);
+            ASSERT_EQUALS(Settings::Language::CPP, settings.enforcedLang);
             ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
         }
         CLEAR_REDIRECT_OUTPUT;
@@ -446,17 +446,17 @@ private:
         CLEAR_REDIRECT_OUTPUT;
         {
             const char * const argv[] = {"cppcheck", "--language=c++", "file.cpp"};
-            settings.enforcedLang = Settings::None;
+            settings.enforcedLang = Settings::Language::None;
             ASSERT(defParser.parseFromArgs(3, argv));
-            ASSERT_EQUALS(Settings::CPP, settings.enforcedLang);
+            ASSERT_EQUALS(Settings::Language::CPP, settings.enforcedLang);
             ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
         }
         CLEAR_REDIRECT_OUTPUT;
         {
             const char * const argv[] = {"cppcheck", "--language=c", "file.cpp"};
-            settings.enforcedLang = Settings::None;
+            settings.enforcedLang = Settings::Language::None;
             ASSERT(defParser.parseFromArgs(3, argv));
-            ASSERT_EQUALS(Settings::C, settings.enforcedLang);
+            ASSERT_EQUALS(Settings::Language::C, settings.enforcedLang);
             ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
         }
         CLEAR_REDIRECT_OUTPUT;

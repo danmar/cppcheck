@@ -473,6 +473,7 @@ private:
 
         TEST_CASE(valueType1);
         TEST_CASE(valueType2);
+        TEST_CASE(valueTypeThis);
 
         TEST_CASE(variadic1); // #7453
         TEST_CASE(variadic2); // #7649
@@ -4379,7 +4380,13 @@ private:
     void symboldatabase65() {
         // don't crash on missing links from instantiation of template with typedef
         check("int ( * X0 ) ( long ) < int ( ) ( long ) > :: f0 ( int * ) { return 0 ; }");
-        ASSERT_EQUALS("[test.cpp:1]: (debug) SymbolDatabase::findFunction found '>' without link.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g();\n" // #11385
+              "void f(int i) {\n"
+              "    if (i > ::g()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void symboldatabase66() { // #8540
@@ -7601,6 +7608,8 @@ private:
         ASSERT_EQUALS("signed int",  typeOf("int x[10]; a = x[0] + 1;", "+"));
         ASSERT_EQUALS("",            typeOf("a = x[\"hello\"];", "[", "test.cpp"));
         ASSERT_EQUALS("const char",  typeOf("a = x[\"hello\"];", "[", "test.c"));
+        ASSERT_EQUALS("signed int *", typeOf("int x[10]; a = &x;", "&"));
+        ASSERT_EQUALS("signed int *", typeOf("int x[10]; a = &x[1];", "&"));
 
         // cast..
         ASSERT_EQUALS("void *", typeOf("a = (void *)0;", "("));
@@ -7919,6 +7928,11 @@ private:
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("iterator(std :: map|unordered_map <)", tok->valueType()->str());
         }
+    }
+
+    void valueTypeThis() {
+        ASSERT_EQUALS("C *", typeOf("class C { C() { *this = 0; } };", "this"));
+        ASSERT_EQUALS("const C *", typeOf("class C { void foo() const; }; void C::foo() const { *this = 0; }", "this"));
     }
 
     void variadic1() { // #7453

@@ -418,6 +418,13 @@ private:
               "    (*this)[0] << a, b, c;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11359
+              "    struct S {\n"
+              "        S(int x, int y) {}\n"
+              "    } s(1, 2);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #8451
@@ -702,6 +709,12 @@ private:
               "    (*s).i;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Redundant code: Found unused member access.\n", errout.str());
+
+        check("int a[2];\n" // #11370
+              "void f() {\n"
+              "    auto g = [](decltype(a[0]) i) {};\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {

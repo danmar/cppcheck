@@ -72,6 +72,16 @@
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
+static QString fromNativePath(const QString& p) {
+#ifdef Q_OS_WIN
+    QString ret(p);
+    ret.replace('\\', '/');
+    return ret;
+#else
+    return p;
+#endif
+}
+
 MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mSettings(settings),
     mApplications(new ApplicationList(this)),
@@ -258,13 +268,17 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mUI->mButtonHideInformation, &QPushButton::clicked,
             this, &MainWindow::hideInformation);
 
-    // Is there a new version?
-    if (isCppcheckPremium()) {
-        const QUrl url("https://files.cppchecksolutions.com/version.txt");
-        mNetworkAccessManager->get(QNetworkRequest(url));
+    if (mSettings->value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()) {
+        // Is there a new version?
+        if (isCppcheckPremium()) {
+            const QUrl url("https://files.cppchecksolutions.com/version.txt");
+            mNetworkAccessManager->get(QNetworkRequest(url));
+        } else {
+            const QUrl url("https://cppcheck.sourceforge.io/version.txt");
+            mNetworkAccessManager->get(QNetworkRequest(url));
+        }
     } else {
-        const QUrl url("https://cppcheck.sourceforge.io/version.txt");
-        mNetworkAccessManager->get(QNetworkRequest(url));
+        delete mUI->mLayoutInformation;
     }
 }
 
@@ -909,7 +923,7 @@ Settings MainWindow::getCppcheckSettings()
         if (!mProjectFile->getImportProject().isEmpty())
             result.checkAllConfigurations = false;
 
-        const QString &buildDir = mProjectFile->getBuildDir();
+        const QString &buildDir = fromNativePath(mProjectFile->getBuildDir());
         if (!buildDir.isEmpty()) {
             if (QDir(buildDir).isAbsolute()) {
                 result.buildDir = buildDir.toStdString();
@@ -945,7 +959,7 @@ Settings MainWindow::getCppcheckSettings()
             result.checkUnknownFunctionReturn.insert(s.toStdString());
 
         QString filesDir(getDataDir());
-        const QString pythonCmd = mSettings->value(SETTINGS_PYTHON_PATH).toString();
+        const QString pythonCmd = fromNativePath(mSettings->value(SETTINGS_PYTHON_PATH).toString());
         for (const QString& addon : mProjectFile->getAddons()) {
             QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
             if (addonFilePath.isEmpty())
@@ -957,17 +971,8 @@ Settings MainWindow::getCppcheckSettings()
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())
                 json += ", \"python\":\"" + pythonCmd + "\"";
-            QString misraFile = mSettings->value(SETTINGS_MISRA_FILE).toString();
-            if (addon == "misra" && !misraFile.isEmpty()) {
-                QString arg;
-                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
-                    arg = "--misra-pdf=" + misraFile;
-                else
-                    arg = "--rule-texts=" + misraFile;
-                json += ", \"args\":[\"" + arg + "\"]";
-            }
             json += " }";
-            result.addons.push_back(json.toStdString());
+            result.addons.emplace(json.toStdString());
         }
 
         if (isCppcheckPremium()) {
@@ -1098,7 +1103,7 @@ void MainWindow::checkLockDownUI()
 
 void MainWindow::programSettings()
 {
-    SettingsDialog dialog(mApplications, mTranslation, this);
+    SettingsDialog dialog(mApplications, mTranslation, isCppcheckPremium(), this);
     if (dialog.exec() == QDialog::Accepted) {
         dialog.saveSettingValues();
         mSettings->sync();
@@ -1909,8 +1914,11 @@ static int getVersion(const QString& nameWithVersion) {
     for (const auto c: nameWithVersion) {
         if (c == '\n' || c == '\r')
             break;
-        else if (c == ' ')
+        else if (c == ' ') {
+            if (ret > 0 && dot == 1 && nameWithVersion.endsWith(" dev"))
+                return ret * 1000000 + v * 1000 + 500;
             dot = ret = v = 0;
+        }
         else if (c == '.') {
             ++dot;
             ret = ret * 1000 + v;
@@ -1929,7 +1937,7 @@ static int getVersion(const QString& nameWithVersion) {
 void MainWindow::replyFinished(QNetworkReply *reply) {
     reply->deleteLater();
     if (reply->error()) {
-        // TODO?
+        mUI->mLayoutInformation->deleteLater();
         qDebug() << "Response: ERROR";
         return;
     }
@@ -1943,11 +1951,23 @@ void MainWindow::replyFinished(QNetworkReply *reply) {
         const int latestVersion = getVersion(str.trimmed());
         if (appVersion < latestVersion) {
             if (mSettings->value(SETTINGS_CHECK_VERSION, 0).toInt() != latestVersion) {
+                QString install;
+                if (isCppcheckPremium()) {
+#ifdef Q_OS_WIN
+                    const QString url("https://cppchecksolutions.com/cppcheck-premium-installation");
+#else
+                    const QString url("https://cppchecksolutions.com/cppcheck-premium-linux-installation");
+#endif
+                    install = "<a href=\"" + url + "\">" + tr("Install") + "</a>";
+                }
                 mUI->mButtonHideInformation->setVisible(true);
                 mUI->mLabelInformation->setVisible(true);
-                mUI->mLabelInformation->setText(tr("New version available: %1").arg(str.trimmed()));
+                mUI->mLabelInformation->setText(tr("New version available: %1. %2").arg(str.trimmed()).arg(install));
             }
         }
+    }
+    if (!mUI->mLabelInformation->isVisible()) {
+        mUI->mLayoutInformation->deleteLater();
     }
 }
 
@@ -1956,6 +1976,7 @@ void MainWindow::hideInformation() {
     mSettings->setValue(SETTINGS_CHECK_VERSION, version);
     mUI->mLabelInformation->setVisible(false);
     mUI->mButtonHideInformation->setVisible(false);
+    mUI->mLayoutInformation->deleteLater();
 }
 
 bool MainWindow::isCppcheckPremium() const {

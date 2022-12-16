@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <cmath>
 #include <functional>
 #include <list>
 #include <string>
@@ -130,8 +131,7 @@ namespace ValueFlow {
                     return false;
                 break;
             case ValueType::FLOAT:
-                // TODO: Write some better comparison
-                if (floatValue > rhs.floatValue || floatValue < rhs.floatValue)
+                if (floatValue > rhs.floatValue || floatValue < rhs.floatValue || std::signbit(floatValue) != std::signbit(rhs.floatValue))
                     return false;
                 break;
             case ValueType::MOVED:
@@ -467,7 +467,7 @@ namespace ValueFlow {
 
 ValueFlow::Value asImpossible(ValueFlow::Value v);
 
-bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
+bool isContainerSizeChanged(const Token* tok, int indirect, const Settings* settings = nullptr, int depth = 20);
 
 struct LifetimeToken {
     const Token* token;

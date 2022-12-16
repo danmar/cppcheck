@@ -71,6 +71,7 @@ private:
 
         TEST_CASE(valueFlowCalculations);
         TEST_CASE(valueFlowSizeof);
+        TEST_CASE(valueFlowComma);
 
         TEST_CASE(valueFlowErrorPath);
 
@@ -160,6 +161,7 @@ private:
         TEST_CASE(valueFlowSymbolicIdentity);
         TEST_CASE(valueFlowSymbolicStrlen);
         TEST_CASE(valueFlowSmartPointer);
+        TEST_CASE(valueFlowImpossibleMinMax);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -1362,6 +1364,31 @@ private:
         values = tokenValues(code, "=");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(sizeof(std::int32_t) * 10 * 20, values.back().intvalue);
+    }
+
+    void valueFlowComma()
+    {
+        const char* code;
+        std::list<ValueFlow::Value> values;
+
+        code = "void f(int i) {\n"
+               "    int x = (i, 4);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 4));
+
+        code = "void f(int i) {\n"
+               "    int x = (4, i);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 4));
+
+        code = "void f() {\n"
+               "    int x = g(3, 4);\n"
+               "    return x;\n"
+               "}\n";
+        values = tokenValues(code, ",");
+        ASSERT_EQUALS(0U, values.size());
     }
 
     void valueFlowErrorPath() {
@@ -6317,6 +6344,22 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+
+        code = "std::vector<int> g();\n" // #11417
+               "int f() {\n"
+               "    std::vector<int> v{ g() };\n"
+               "    auto x = v.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 1));
+
+        code = "std::vector<int> g();\n"
+               "int f() {\n"
+               "    std::vector<std::vector<int>> v{ g() };\n"
+               "    auto x = v.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
     }
 
     void valueFlowContainerElement()
@@ -7614,6 +7657,67 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+    }
+
+    void valueFlowImpossibleMinMax()
+    {
+        const char* code;
+
+        code = "void f(int a, int b) {\n"
+               "    int x = a < b ? a : b;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", 1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "b", 1));
+
+        code = "void f(int a, int b) {\n"
+               "    int x = a > b ? a : b;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", -1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "b", -1));
+
+        code = "void f(int a, int b) {\n"
+               "    int x = a > b ? b : a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", 1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "b", 1));
+
+        code = "void f(int a, int b) {\n"
+               "    int x = a < b ? b : a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", -1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "b", -1));
+
+        code = "void f(int a) {\n"
+               "    int x = a < 0 ? a : 0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", 1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 1));
+
+        code = "void f(int a) {\n"
+               "    int x = a > 0 ? a : 0;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", -1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+
+        code = "void f(int a) {\n"
+               "    int x = a > 0 ? 0 : a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", 1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, 1));
+
+        code = "void f(int a) {\n"
+               "    int x = a < 0 ? 0 : a;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", -1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
     }
 };
 

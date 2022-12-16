@@ -13,15 +13,16 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
+          check-latest: true
 
       - name: Install missing software on ubuntu
         run: |

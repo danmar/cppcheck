@@ -13,11 +13,15 @@ if (MSVC)
 endif()
 
 # TODO: this should probably apply to the compiler and not the platform
-if (CPPCHK_GLIBCXX_DEBUG AND UNIX)
-    # TODO: check if this can be enabled again for Clang - also done in Makefile
-    if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+if (CPPCHK_GLIBCXX_DEBUG AND UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        if (USE_LIBCXX)
+            add_definitions(-DLIBCXX_ENABLE_DEBUG_MODE)
+        endif()
+    else()
+        # TODO: check if this can be enabled again for Clang - also done in Makefile
         add_definitions(-D_GLIBCXX_DEBUG)
-    endif()    
+    endif()
 endif()
 
 if (HAVE_RULES)

@@ -88,6 +88,7 @@ private:
         TEST_CASE(staticVariable); //ticket #5566
 
         TEST_CASE(templateSimplification); //ticket #6183
+        TEST_CASE(maybeUnused);
     }
 
 
@@ -872,6 +873,13 @@ private:
               "    CTest::Greeting<bool>(true);\n"
               "    return 0;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void maybeUnused() {
+        check("class C {\n"
+              "    [[maybe_unused]] int f() { return 42; }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 };

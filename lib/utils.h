@@ -62,6 +62,12 @@ bool contains(const std::initializer_list<T>& r, const U& x)
     return std::find(r.begin(), r.end(), x) != r.end();
 }
 
+template<class T, class ... Ts>
+inline std::array<T, sizeof...(Ts) + 1> makeArray(T x, Ts... xs)
+{
+    return {std::move(x), std::move(xs)...};
+}
+
 // Enum hash for C++11. This is not needed in C++14
 struct EnumClassHash {
     template<typename T>

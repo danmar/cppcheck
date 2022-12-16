@@ -140,6 +140,7 @@ private:
         TEST_CASE(testMisusedScopeObjectInConstructor);
         TEST_CASE(testMisusedScopeObjectStandardType);
         TEST_CASE(testMisusedScopeObjectNamespace);
+        TEST_CASE(testMisusedScopeObjectAssignment); // #11371
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -1967,6 +1968,15 @@ private:
               "    decltype(nullptr) b;\n"
               "};\n"
               "int* f(U u) { return u.b; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct B { virtual int f(std::string s) = 0; };\n" // #11432
+              "struct D1 : B {\n"
+              "  int f(std::string s) override { s += 'a'; return s.size(); }\n"
+              "}\n"
+              "struct D2 : B {\n"
+              "  int f(std::string s) override { return s.size(); }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         Settings settings1;
@@ -4291,7 +4301,7 @@ private:
               "    return 0;\n"
               "    foo();\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Statements following 'return' will never be executed.\n", errout.str());
 
         check("int foo(int unused) {\n"
               "    return 0;\n"
@@ -4312,7 +4322,7 @@ private:
               "    (void)unused2;\n"
               "    foo();\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Statements following 'return' will never be executed.\n", errout.str());
 
         check("int foo() {\n"
               "    if(bar)\n"
@@ -4349,7 +4359,7 @@ private:
               "    return 0;\n"
               "    j=2;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("[test.cpp:7]: (style) Statements following return, break, continue, goto or throw will never be executed.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style) Statements following 'return' will never be executed.\n", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"
@@ -4496,6 +4506,27 @@ private:
                "    return INB(port_1);\n"
                "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        check("[[noreturn]] void n();\n"
+              "void f() {\n"
+              "    n();\n"
+              "    g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Statements following noreturn function 'n()' will never be executed.\n", errout.str());
+
+        check("void f() {\n"
+              "    exit(1);\n"
+              "    g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Statements following noreturn function 'exit()' will never be executed.\n", errout.str());
+
+        check("void f() {\n"
+              "    do {\n"
+              "        break;\n"
+              "        g();\n"
+              "    } while (0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Statements following 'break' will never be executed.\n", errout.str());
     }
 
     void redundantContinue() {
@@ -4828,6 +4859,15 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #11383
+              "    void f() {\n"
+              "        int x = 42;"
+              "        auto l2 = [i = i, x, y = 0]() { return i + x + y; };\n"
+              "    }\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {
@@ -5109,10 +5149,31 @@ private:
               "    void f() {\n"
               "        std::lock_guard<std::mutex>(m);\n"
               "    }\n"
+              "    void g() {\n"
+              "        std::scoped_lock<std::mutex>(m);\n"
+              "    }\n"
+              "    void h() {\n"
+              "        std::scoped_lock(m);\n"
+              "    }\n"
               "    std::mutex m;\n"
               "}\n", "test.cpp");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'std::lock_guard' object is destroyed immediately.\n",
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'std::lock_guard' object is destroyed immediately.\n"
+                      "[test.cpp:6]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n"
+                      "[test.cpp:9]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n",
                       errout.str());
+    }
+
+    void testMisusedScopeObjectAssignment() { // #11371
+        check("struct S;\n"
+              "S f();\n"
+              "S& g();\n"
+              "S&& h();\n"
+              "S* i();\n"
+              "void t0() { f() = {}; }\n"
+              "void t1() { g() = {}; }\n"
+              "void t2() { h() = {}; }\n"
+              "void t3() { *i() = {}; }\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Instance of 'S' object is destroyed immediately, assignment has no effect.\n", errout.str());
     }
 
     void trac2084() {
@@ -6440,6 +6501,11 @@ private:
               "S f(bool x, S s) {\n"
               "    (x) ? f.a = 42 : f.b = 42;\n"
               "    return f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("float f(float x) {\n" // # 11368
+              "    return (x >= 0.0) ? 0.0 : -0.0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -140,6 +140,7 @@ private:
         // goto
         TEST_CASE(goto1);
         TEST_CASE(goto2);
+        TEST_CASE(goto3); // #11431
 
         // if/else
         TEST_CASE(ifelse1);
@@ -169,6 +170,7 @@ private:
         TEST_CASE(ifelse25); // #9966
         TEST_CASE(ifelse26);
         TEST_CASE(ifelse27);
+        TEST_CASE(ifelse28); // #11038
 
         // switch
         TEST_CASE(switch1);
@@ -1240,14 +1242,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void doublefree4() {  // #5451 - exit
-        check("void f(char *p) {\n"
+    void doublefree4() {
+        check("void f(char *p) {\n" // #5451 - exit
               "  if (x) {\n"
               "    free(p);\n"
               "    exit(1);\n"
               "  }\n"
               "  free(p);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void* p, int i) {\n" // #11391
+              "    if (i)\n"
+              "        goto cleanup;\n"
+              "    free(p);\n"
+              "    exit(0);\n"
+              "cleanup:\n"
+              "    free(p);\n"
+              "    exit(1);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1490,6 +1503,21 @@ private:
               "    }\n"
               "    return p;\n"  // no error since there is a goto
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void goto3() { // #11431
+        check("void f() {\n"
+              "    int* p = (int*)malloc(2);\n"
+              "    if (!p) {\n"
+              "        p = (int*)malloc(1);\n"
+              "        if (!p)\n"
+              "            goto err;\n"
+              "    }\n"
+              "    free(p);\n"
+              "err:\n"
+              "    (void)0;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1909,6 +1937,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void ifelse28() { // #11038
+        check("char * f(void) {\n"
+              "   char *buf = (char*)malloc(42*sizeof(char));\n"
+              "   char *temp;\n"
+              "   if ((temp = (char*)realloc(buf, 16)) != NULL)\n"
+              "   {  buf = temp;  }\n"
+              "   return buf;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void switch1() {
         check("void f() {\n"
               "    char *p = 0;\n"
@@ -2000,6 +2039,21 @@ private:
               "}", true);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: i\n"
                       "[test.cpp:3] -> [test.cpp:4]: (error) Mismatching allocation and deallocation: j\n", errout.str());
+
+        check("static void deleter(int* p) { free(p); }\n" // #11392
+              "void f() {\n"
+              "    if (int* p = static_cast<int*>(malloc(4))) {\n"
+              "        std::unique_ptr<int, decltype(&deleter)> guard(p, &deleter);\n"
+              "    }\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if (int* p = static_cast<int*>(malloc(4))) {\n"
+              "        std::unique_ptr<int, decltype(&deleter)> guard(p, &deleter);\n"
+              "    }\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerDeleter() {

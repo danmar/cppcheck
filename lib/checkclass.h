@@ -336,7 +336,7 @@ private:
         bool init;
     };
 
-    static bool isBaseClassFunc(const Token *tok, const Scope *scope);
+    static bool isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope);
 
     /**
      * @brief Create usage list that contains all scope members and also members
@@ -371,6 +371,13 @@ private:
      * @param usageList reference to usage vector
      */
     static void assignAllVar(std::vector<Usage> &usageList);
+
+    /**
+     * @brief set all variable in list assigned, if visible from given scope
+     * @param usageList reference to usage vector
+     * @param scope scope from which usages must be visible
+     */
+    static void assignAllVarsVisibleFromScope(std::vector<Usage> &usageList, const Scope *scope);
 
     /**
      * @brief set all variables in list not assigned and not initialized

@@ -742,14 +742,16 @@ void Tokenizer::simplifyTypedef()
             typeStart = tokOffset;
 
             while (Token::Match(tokOffset, "const|struct|enum %type%") ||
-                   (tokOffset->next() && tokOffset->next()->isStandardType()))
+                   (tokOffset->next() && tokOffset->next()->isStandardType() && !Token::Match(tokOffset->next(), "%name% ;")))
                 tokOffset = tokOffset->next();
 
             typeEnd = tokOffset;
-            tokOffset = tokOffset->next();
+            if (!Token::Match(tokOffset->next(), "%name% ;"))
+                tokOffset = tokOffset->next();
 
             while (Token::Match(tokOffset, "%type%") &&
-                   (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed"))) {
+                   (tokOffset->isStandardType() || Token::Match(tokOffset, "unsigned|signed")) &&
+                   !Token::Match(tokOffset->next(), "%name% ;")) {
                 typeEnd = tokOffset;
                 tokOffset = tokOffset->next();
             }
@@ -1232,7 +1234,7 @@ void Tokenizer::simplifyTypedef()
                 }
 
                 // check for typedef that can be substituted
-                else if ((tok2->isNameOnly() || (tok2->isName() && tok2->isExpandedMacro())) &&
+                else if ((tok2->isNameOnly() || (tok2->isName() && (tok2->isExpandedMacro() || tok2->isInline()))) &&
                          (Token::simpleMatch(tok2, pattern.c_str(), pattern.size()) ||
                           (inMemberFunc && tok2->str() == typeName->str()))) {
                     // member function class variables don't need qualification
@@ -3161,7 +3163,7 @@ void Tokenizer::arraySize()
 {
     auto getStrTok = [](Token* tok, bool addLength, Token** endStmt) -> Token* {
         if (addLength) {
-            *endStmt = tok->tokAt(6);
+            *endStmt = tok->tokAt(5);
             return tok->tokAt(4);
         }
         if (Token::Match(tok, "%var% [ ] =")) {
@@ -3915,7 +3917,15 @@ void Tokenizer::setVarIdPass1()
             if (!scopeStack.top().isExecutable)
                 newFunctionDeclEnd = isFunctionHead(tok, "{:;");
             else {
-                Token const * const tokenLinkNext = tok->link()->next();
+                const Token* tokenLinkNext = tok->link()->next();
+                if (Token::simpleMatch(tokenLinkNext, ".")) { // skip trailing return type
+                    tokenLinkNext = tokenLinkNext->next();
+                    while (Token::Match(tokenLinkNext, "%name%|::")) {
+                        tokenLinkNext = tokenLinkNext->next();
+                        if (Token::simpleMatch(tokenLinkNext, "<") && tokenLinkNext->link())
+                            tokenLinkNext = tokenLinkNext->link()->next();
+                    }
+                }
                 if (tokenLinkNext && tokenLinkNext->str() == "{") // might be for- or while-loop or if-statement
                     newFunctionDeclEnd = tokenLinkNext;
             }
@@ -5637,7 +5647,7 @@ void Tokenizer::removePragma()
 void Tokenizer::removeMacroInClassDef()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "class|struct %name% %name% {|:"))
+        if (!Token::Match(tok, "class|struct %name% %name% final| {|:"))
             continue;
 
         const bool nextIsUppercase = tok->next()->isUpperCaseName();
@@ -7632,6 +7642,8 @@ void Tokenizer::findGarbageCode() const
                     syntaxError(tok2, "Unexpected token '" + tok2->str() + "'");
             }
         }
+        if (Token::Match(tok, "enum : %num%| {"))
+            syntaxError(tok->tokAt(2), "Unexpected token '" + tok->strAt(2) + "'");
     }
 
     // Keywords in global scope
@@ -7752,7 +7764,7 @@ void Tokenizer::findGarbageCode() const
             syntaxError(tok);
         if (Token::Match(tok, ";|(|[ %comp%"))
             syntaxError(tok);
-        if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "[|,|%num% &|=|> ]")))
+        if (Token::Match(tok, "%cop%|= ]") && !(isCPP() && Token::Match(tok->previous(), "%type%|[|,|%num% &|=|> ]")))
             syntaxError(tok);
         if (Token::Match(tok, "[+-] [;,)]}]") && !(isCPP() && Token::Match(tok->previous(), "operator [+-] ;")))
             syntaxError(tok);
@@ -8022,8 +8034,13 @@ void Tokenizer::simplifyStructDecl()
                 if (tok && (tok->next()->str() == "(" || tok->next()->str() == "{")) {
                     tok->insertToken("=");
                     tok = tok->next();
+                    const bool isEnum = start->str() == "enum";
+                    if (!isEnum && cpp) {
+                        tok->insertToken(type->str());
+                        tok = tok->next();
+                    }
 
-                    if (start->str() == "enum") {
+                    if (isEnum) {
                         if (tok->next()->str() == "{") {
                             tok->next()->str("(");
                             tok->linkAt(1)->str(")");
@@ -8880,7 +8897,7 @@ void Tokenizer::simplifyNamespaceStd()
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
             skipEnumBody(&tok);
         }
-        if (!Token::Match(tok->previous(), ".|::")) {
+        if (!Token::Match(tok->previous(), ".|::|namespace")) {
             if (Token::Match(tok, "%name% (")) {
                 if (isFunctionHead(tok->next(), "{"))
                     userFunctions.insert(tok->str());

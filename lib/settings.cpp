@@ -49,7 +49,7 @@ Settings::Settings()
     debugtemplate(false),
     debugwarnings(false),
     dump(false),
-    enforcedLang(None),
+    enforcedLang(Language::None),
     exceptionHandling(false),
     exitCode(0),
     force(false),
@@ -98,9 +98,9 @@ void Settings::loadCppcheckCfg()
         for (const picojson::value &v : obj["addons"].get<picojson::array>()) {
             const std::string &s = v.get<std::string>();
             if (!Path::isAbsolute(s))
-                addons.push_back(Path::getPathFromFilename(fileName) + s);
+                addons.emplace(Path::getPathFromFilename(fileName) + s);
             else
-                addons.push_back(s);
+                addons.emplace(s);
         }
     }
     if (obj.count("suppressions") && obj["suppressions"].is<picojson::array>()) {

@@ -221,5 +221,7 @@ private:
 
 /// @}
 
+const Token* isLambdaCaptureList(const Token* tok);
+
 //---------------------------------------------------------------------------
 #endif // tokenlistH

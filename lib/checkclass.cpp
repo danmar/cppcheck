@@ -686,6 +686,22 @@ void CheckClass::assignAllVar(std::vector<Usage> &usageList)
         i.assign = true;
 }
 
+void CheckClass::assignAllVarsVisibleFromScope(std::vector<Usage>& usageList, const Scope* scope)
+{
+    for (Usage& usage : usageList) {
+        if (usage.var->scope() == scope)
+            usage.assign = true;
+    }
+
+    // Iterate through each base class...
+    for (const Type::BaseInfo& i : scope->definedType->derivedFrom) {
+        const Type *derivedFrom = i.type;
+
+        if (derivedFrom && derivedFrom->classScope)
+            assignAllVarsVisibleFromScope(usageList, derivedFrom->classScope);
+    }
+}
+
 void CheckClass::clearAllVar(std::vector<Usage> &usageList)
 {
     for (Usage & i : usageList) {
@@ -694,7 +710,7 @@ void CheckClass::clearAllVar(std::vector<Usage> &usageList)
     }
 }
 
-bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
+bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope)
 {
     // Iterate through each base class...
     for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
@@ -705,11 +721,11 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
             const std::list<Function>& functionList = derivedFrom->classScope->functionList;
 
             if (std::any_of(functionList.begin(), functionList.end(), [&](const Function& func) {
-                return func.tokenDef->str() == tok->str();
+                return func.tokenDef->str() == tok->str() && !func.isStatic() && !func.isConst();
             }))
                 return true;
 
-            if (isBaseClassFunc(tok, derivedFrom->classScope))
+            if (isBaseClassMutableMemberFunc(tok, derivedFrom->classScope))
                 return true;
         }
 
@@ -894,6 +910,12 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     callstack.pop_back();
                 }
 
+                // assume that a base class call to operator= assigns all its base members (but not more)
+                else if (func.tokenDef->str() == ftok->str() && isBaseClassMutableMemberFunc(ftok, scope)) {
+                    if (member->nestedIn)
+                        assignAllVarsVisibleFromScope(usage, member->nestedIn->definedType->classScope);
+                }
+
                 // there is a called member function, but it has no implementation, so we assume it initializes everything
                 else {
                     assignAllVar(usage);
@@ -949,8 +971,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     }
                 }
 
-                // there is a called member function, but it has no implementation, so we assume it initializes everything
-                else {
+                // there is a called member function, but it has no implementation, so we assume it initializes everything (if it can mutate state)
+                else if (!member->isConst() && !member->isStatic()) {
                     assignAllVar(usage);
                 }
             }
@@ -958,7 +980,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
             // not member function
             else {
                 // could be a base class virtual function, so we assume it initializes everything
-                if (!func.isConstructor() && isBaseClassFunc(ftok, scope)) {
+                if (!func.isConstructor() && isBaseClassMutableMemberFunc(ftok, scope)) {
                     /** @todo False Negative: we should look at the base class functions to see if they
                      *  call any derived class virtual functions that change the derived class state
                      */
@@ -1251,19 +1273,24 @@ void CheckClass::privateFunctions()
         }
 
         while (!privateFuncs.empty()) {
+            const auto& pf = privateFuncs.front();
+            if (pf->retDef && pf->retDef->isAttributeMaybeUnused()) {
+                privateFuncs.pop_front();
+                continue;
+            }
             // Check that all private functions are used
-            bool used = checkFunctionUsage(privateFuncs.front(), scope); // Usage in this class
+            bool used = checkFunctionUsage(pf, scope); // Usage in this class
             // Check in friend classes
             const std::vector<Type::FriendInfo>& friendList = scope->definedType->friendList;
             for (int i = 0; i < friendList.size() && !used; i++) {
                 if (friendList[i].type)
-                    used = checkFunctionUsage(privateFuncs.front(), friendList[i].type->classScope);
+                    used = checkFunctionUsage(pf, friendList[i].type->classScope);
                 else
                     used = true; // Assume, it is used if we do not see friend class
             }
 
             if (!used)
-                unusedPrivateFunctionError(privateFuncs.front()->tokenDef, scope->className, privateFuncs.front()->name());
+                unusedPrivateFunctionError(pf->tokenDef, scope->className, pf->name());
 
             privateFuncs.pop_front();
         }
@@ -1532,6 +1559,10 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
 
     for (; tok && tok != last; tok = tok->next()) {
         // check for return of reference to this
+
+        if (const Token* lScope = isLambdaCaptureList(tok)) // skip lambda
+            tok = lScope->link();
+
         if (tok->str() != "return")
             continue;
 

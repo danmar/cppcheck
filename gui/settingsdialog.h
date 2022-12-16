@@ -45,6 +45,7 @@ class SettingsDialog : public QDialog {
 public:
     SettingsDialog(ApplicationList *list,
                    TranslationHandler *translator,
+                   bool premium,
                    QWidget *parent = nullptr);
     SettingsDialog(const SettingsDialog &) = delete;
     ~SettingsDialog() override;
@@ -141,11 +142,6 @@ protected slots:
     void browseClangPath();
 
     /**
-     * @brief Browse for MISRA file
-     */
-    void browseMisraFile();
-
-    /**
      * @brief Set Code Editor Style to Default
      */
     void setCodeEditorStyleDefault();
@@ -238,6 +234,8 @@ private:
     void manageStyleControls();
 
     static const int mLangCodeRole = Qt::UserRole;
+
+    bool mPremium;
 };
 /// @}
 #endif // SETTINGSDIALOG_H

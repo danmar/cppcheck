@@ -284,7 +284,7 @@ static const Token * isFunctionCall(const Token * nameToken)
     return nullptr;
 }
 
-void CheckLeakAutoVar::checkScope(const Token * const startToken,
+bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                                   VarInfo *varInfo,
                                   std::set<int> notzero,
                                   nonneg int recursiveCount)
@@ -452,18 +452,18 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     while (tokRightAstOperand && tokRightAstOperand->isCast())
                         tokRightAstOperand = tokRightAstOperand->astOperand2() ? tokRightAstOperand->astOperand2() : tokRightAstOperand->astOperand1();
                     if (tokRightAstOperand && Token::Match(tokRightAstOperand->previous(), "%type% (")) {
-                        const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(tokRightAstOperand->previous());
+                        const Token * fTok = tokRightAstOperand->previous();
+                        const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(fTok);
                         if (f && f->arg == -1) {
                             VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                             varAlloc.type = f->groupId;
                             varAlloc.status = VarInfo::ALLOC;
-                            varAlloc.allocTok = tokRightAstOperand->previous();
+                            varAlloc.allocTok = fTok;
                         } else {
                             // Fixme: warn about leak
                             alloctype.erase(innerTok->varId());
                         }
-
-                        changeAllocStatusIfRealloc(alloctype, innerTok->tokAt(2), varTok);
+                        changeAllocStatusIfRealloc(alloctype, fTok, varTok);
                     } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
                         const Token* tok2 = innerTok->tokAt(2)->astOperand1();
                         const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
@@ -477,9 +477,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 // check for function call
                 const Token * const openingPar = isFunctionCall(innerTok);
                 if (openingPar) {
+                    const Library::AllocFunc* allocFunc = mSettings->library.getDeallocFuncInfo(innerTok);
                     // innerTok is a function name
                     const VarInfo::AllocInfo allocation(0, VarInfo::NOALLOC);
-                    functionCall(innerTok, openingPar, varInfo, allocation, nullptr);
+                    functionCall(innerTok, openingPar, varInfo, allocation, allocFunc);
                     innerTok = openingPar->link();
                 }
             }
@@ -532,10 +533,14 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     return ChildrenToVisit::none;
                 });
 
-                checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount);
+                if (!checkScope(closingParenthesis->next(), &varInfo1, notzero, recursiveCount)) {
+                    varInfo->clear();
+                    continue;
+                }
                 closingParenthesis = closingParenthesis->linkAt(1);
                 if (Token::simpleMatch(closingParenthesis, "} else {")) {
-                    checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero, recursiveCount);
+                    if (!checkScope(closingParenthesis->tokAt(2), &varInfo2, notzero, recursiveCount))
+                        continue;
                     tok = closingParenthesis->linkAt(2)->previous();
                 } else {
                     tok = closingParenthesis->previous();
@@ -675,6 +680,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // goto => weird execution path
         else if (tok->str() == "goto") {
             varInfo->clear();
+            return false;
         }
 
         // continue/break
@@ -717,8 +723,10 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 // Check if its a pointer to a function
                 const Token * dtok = Token::findmatch(deleterToken, "& %name%", endDeleterToken);
                 if (dtok) {
-                    af = mSettings->library.getDeallocFuncInfo(dtok->tokAt(1));
-                } else {
+                    dtok = dtok->next();
+                    af = mSettings->library.getDeallocFuncInfo(dtok);
+                }
+                if (!dtok || !af) {
                     const Token * tscopeStart = nullptr;
                     const Token * tscopeEnd = nullptr;
                     // If the deleter is a lambda, check if it calls the dealloc function
@@ -728,6 +736,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                         Token::simpleMatch(deleterToken->link()->linkAt(1), ") {")) {
                         tscopeStart = deleterToken->link()->linkAt(1)->tokAt(1);
                         tscopeEnd = tscopeStart->link();
+                        // check user-defined deleter function
+                    } else if (dtok && dtok->function()) {
+                        const Scope* tscope = dtok->function()->functionScope;
+                        if (tscope) {
+                            tscopeStart = tscope->bodyStart;
+                            tscopeEnd = tscope->bodyEnd;
+                        }
                         // If the deleter is a class, check if class calls the dealloc function
                     } else if ((dtok = Token::findmatch(deleterToken, "%type%", endDeleterToken)) && dtok->type()) {
                         const Scope * tscope = dtok->type()->classScope;
@@ -743,6 +758,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                             if (af)
                                 break;
                         }
+                    } else { // there is a deleter, but we can't check it -> assume that it deallocates correctly
+                        varInfo->clear();
+                        continue;
                     }
                 }
             }
@@ -753,6 +771,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
     }
     ret(endToken, *varInfo, true);
+    return true;
 }
 
 

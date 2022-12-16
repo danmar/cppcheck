@@ -87,10 +87,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.11'
+          check-latest: true
 
       - name: Set up Visual Studio environment
         uses: ilammy/msvc-dev-cmd@v1

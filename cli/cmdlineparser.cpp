@@ -230,7 +230,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--addon=", 8) == 0)
-                mSettings->addons.emplace_back(argv[i]+8);
+                mSettings->addons.emplace(argv[i]+8);
 
             else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
                 mSettings->addonPython.assign(argv[i]+15);
@@ -527,9 +527,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
 
                 if (str == "c")
-                    mSettings->enforcedLang = Settings::C;
+                    mSettings->enforcedLang = Settings::Language::C;
                 else if (str == "c++")
-                    mSettings->enforcedLang = Settings::CPP;
+                    mSettings->enforcedLang = Settings::Language::CPP;
                 else {
                     printError("unknown language '" + str + "' enforced.");
                     return false;
@@ -621,7 +621,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
                 if (!mSettings->premiumArgs.empty())
                     mSettings->premiumArgs += " ";
-                mSettings->premiumArgs += "--" + std::string(argv[i] + 10);
+                const std::string p(argv[i] + 10);
+                mSettings->premiumArgs += "--" + p;
+                if (p == "misra-c-2012")
+                    mSettings->addons.emplace("misra");
             }
 
             // --project

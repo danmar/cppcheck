@@ -4448,6 +4448,15 @@ private:
               "           *n == 'A');\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::istringstream& i) {\n" // #9327
+              "    std::string s;\n"
+              "    if (!(i >> s))\n"
+              "        return;\n"
+              "    if (!(i >> s))\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4617,6 +4626,25 @@ private:
         check("void f(const std::string & s, int i) {\n"
               "    const char c = s[i];\n"
               "    if (!std::isalnum(c)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #11404
+              "    int f() const;\n"
+              "    void g();\n"
+              "};\n"
+              "void h(std::vector<S*>::iterator it) {\n"
+              "    auto i = (*it)->f();\n"
+              "    (*it)->g();\n"
+              "    auto j = (*it)->f();\n"
+              "    if (i == j) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11384
+        check("bool f(const int* it, const int* end) {\n"
+              "	return (it != end) && *it++ &&\n"
+              "           (it != end) && *it;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4882,6 +4910,15 @@ private:
               "    return *it;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'it!=vector.end()' is always true\n", errout.str());
+
+        // #11303
+        check("void f(int n) {\n"
+              "    std::vector<char> buffer(n);\n"
+              "    if(buffer.back() == 0 ||\n"
+              "       buffer.back() == '\\n' ||\n"
+              "       buffer.back() == '\\0') {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'buffer.back()=='\\0'' is always false\n", errout.str());
     }
 
     void alwaysTrueLoop()
@@ -4943,6 +4980,13 @@ private:
               "    } \n"
               "    I = K;   \n"
               "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11434
+              "    const int N = 5;\n"
+              "    bool a[N];\n"
+              "    for (int i = 0; i < N; a[i++] = false);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

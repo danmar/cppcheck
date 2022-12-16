@@ -1321,6 +1321,16 @@ private:
             "};\n"
             "A::B & A::B::operator=(const A::B & b) { return b; }");
         ASSERT_EQUALS("[test.cpp:8]: (style) 'operator=' should return reference to 'this' instance.\n", errout.str());
+
+        checkOpertorEqRetRefThis( // #11380
+            "struct S {\n"
+            "    S& operator=(const S& other) {\n"
+            "        i = []() { return 42; }();\n"
+            "        return *this;\n"
+            "    }\n"
+            "    int i;\n"
+            "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void operatorEqRetRefThis2() {

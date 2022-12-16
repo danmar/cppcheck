@@ -176,6 +176,7 @@ private:
         TEST_CASE(varid_lambda_mutable);
         TEST_CASE(varid_trailing_return1); // #8889
         TEST_CASE(varid_trailing_return2); // #9066
+        TEST_CASE(varid_trailing_return3); // #11423
         TEST_CASE(varid_parameter_pack); // #9383
         TEST_CASE(varid_for_auto_cpp17);
         TEST_CASE(varid_not); // #9689 'not x'
@@ -790,14 +791,14 @@ private:
                              "        : ExecutionPath(c, id)\n"
                              "    {\n"
                              "    }\n"
-                             "}\n";
+                             "};\n";
         const char expected3[] = "1: class Nullpointer : public ExecutionPath\n"
                                  "2: {\n"
                                  "3: Nullpointer ( Check * c@1 , const unsigned int id@2 , const std :: string & name@3 )\n"
                                  "4: : ExecutionPath ( c@1 , id@2 )\n"
                                  "5: {\n"
                                  "6: }\n"
-                                 "7: }\n";
+                                 "7: } ;\n";
         ASSERT_EQUALS(expected3, tokenize(code3));
     }
 
@@ -2820,6 +2821,18 @@ private:
         const char code1[] = "auto func(int arg) -> bar::quux {}";
         const char exp1[] = "1: auto func ( int arg@1 ) . bar :: quux { }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_trailing_return3() { // #11423
+        const char code[] = "void f(int a, int b) {\n"
+                            "    auto g = [](int& a, const int b) -> void {};\n"
+                            "    auto h = [&a, &b]() { std::swap(a, b); };\n"
+                            "}\n";
+        const char exp[] = "1: void f ( int a@1 , int b@2 ) {\n"
+                           "2: auto g@3 ; g@3 = [ ] ( int & a@4 , const int b@5 ) . void { } ;\n"
+                           "3: auto h@6 ; h@6 = [ & a@1 , & b@2 ] ( ) { std :: swap ( a@1 , b@2 ) ; } ;\n"
+                           "4: }\n";
+        ASSERT_EQUALS(exp, tokenize(code));
     }
 
     void varid_parameter_pack() { // #9383

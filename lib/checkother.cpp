@@ -21,6 +21,7 @@
 #include "checkother.h"
 
 #include "astutils.h"
+#include "fwdanalysis.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -825,7 +826,7 @@ void CheckOther::checkUnreachableCode()
                         secondBreak = silencedWarning;
 
                     if (!labelInFollowingLoop && !silencedCompilerWarningOnly)
-                        unreachableCodeError(secondBreak, inconclusive);
+                        unreachableCodeError(secondBreak, tok, inconclusive);
                     tok = Token::findmatch(secondBreak, "[}:]");
                 } else if (secondBreak->scope() && secondBreak->scope()->isLoopScope() && secondBreak->str() == "}" && tok->str() == "continue") {
                     redundantContinueError(tok);
@@ -849,10 +850,18 @@ void CheckOther::duplicateBreakError(const Token *tok, bool inconclusive)
                 "The second statement can never be executed, and so should be removed.", CWE561, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
+void CheckOther::unreachableCodeError(const Token *tok, const Token* noreturn, bool inconclusive)
 {
+    std::string msg = "Statements following ";
+    if (noreturn && (noreturn->function() || mSettings->library.isnoreturn(noreturn)))
+        msg += "noreturn function '" + noreturn->str() + "()'";
+    else if (noreturn && noreturn->isKeyword())
+        msg += "'" + noreturn->str() + "'";
+    else
+        msg += "return, break, continue, goto or throw";
+    msg += " will never be executed.";
     reportError(tok, Severity::style, "unreachableCode",
-                "Statements following return, break, continue, goto or throw will never be executed.", CWE561, inconclusive ? Certainty::inconclusive : Certainty::normal);
+                msg, CWE561, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckOther::redundantContinueError(const Token *tok)
@@ -1324,7 +1333,7 @@ void CheckOther::checkPassByReference()
         }
 
         // Check if variable could be const
-        if (!var->scope() || var->scope()->function->hasVirtualSpecifier())
+        if (!var->scope() || var->scope()->function->isImplicitlyVirtual())
             continue;
 
         if (canBeConst(var, mSettings)) {
@@ -2097,11 +2106,14 @@ void CheckOther::checkMisusedScopedObject()
             if (ctorTok && (((ctorTok->type() || ctorTok->isStandardType() || (ctorTok->function() && ctorTok->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
                              && (!ctorTok->function() || ctorTok->function()->isConstructor()) // // is not a function on this scope or is function in this scope and it's a ctor
                              && ctorTok->str() != "void") || isLibraryConstructor(tok->next(), typeStr))) {
-                if (const Token* arg = ctorTok->next()->astOperand2()) {
+                const Token* parTok = ctorTok->next();
+                if (Token::simpleMatch(parTok, "<") && parTok->link())
+                    parTok = parTok->link()->next();
+                if (const Token* arg = parTok->astOperand2()) {
                     if (!isConstStatement(arg, mTokenizer->isCPP()))
                         continue;
-                    if (ctorTok->strAt(1) == "(") {
-                        if (arg->varId()) // TODO: check if this is a declaration
+                    if (parTok->str() == "(") {
+                        if (arg->varId() && !(arg->variable() && arg->variable()->nameToken() != arg))
                             continue;
                         const Token* rml = nextAfterAstRightmostLeaf(arg);
                         if (rml && rml->previous() && rml->previous()->varId())
@@ -2112,16 +2124,24 @@ void CheckOther::checkMisusedScopedObject()
                 misusedScopeObjectError(ctorTok, typeStr);
                 tok = tok->next();
             }
+            if (tok->isAssignmentOp() && Token::simpleMatch(tok->astOperand1(), "(") && tok->astOperand1()->astOperand1()) {
+                if (const Function* ftok = tok->astOperand1()->astOperand1()->function()) {
+                    if (ftok->retType && Token::Match(ftok->retType->classDef, "class|struct|union") && !Function::returnsReference(ftok))
+                        misusedScopeObjectError(tok->next(), ftok->retType->name(), /*isAssignment*/ true);
+                }
+            }
         }
     }
 }
 
-void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname)
+void CheckOther::misusedScopeObjectError(const Token *tok, const std::string& varname, bool isAssignment)
 {
+    std::string msg = "Instance of '$symbol' object is destroyed immediately";
+    msg += isAssignment ? ", assignment has no effect." : ".";
     reportError(tok, Severity::style,
                 "unusedScopedObject",
-                "$symbol:" + varname + "\n"
-                "Instance of '$symbol' object is destroyed immediately.", CWE563, Certainty::normal);
+                "$symbol:" + varname + "\n" +
+                msg, CWE563, Certainty::normal);
 }
 
 static const Token * getSingleExpressionInBlock(const Token * tok)
@@ -2429,8 +2449,14 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             }
+            auto isInsideLambdaCaptureList = [](const Token* tok) {
+                const Token* parent = tok->astParent();
+                while (Token::simpleMatch(parent, ","))
+                    parent = parent->astParent();
+                return isLambdaCaptureList(parent);
+            };
             ErrorPath errorPath;
-            if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=")) {
+            if (tok->isOp() && tok->astOperand1() && !Token::Match(tok, "+|*|<<|>>|+=|*=|<<=|>>=") && !isInsideLambdaCaptureList(tok)) {
                 if (Token::Match(tok, "==|!=|-") && astIsFloat(tok->astOperand1(), true))
                     continue;
                 const bool pointerDereference = (tok->astOperand1() && tok->astOperand1()->isUnaryOp("*")) ||

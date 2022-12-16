@@ -281,6 +281,8 @@ struct ReverseTraversal {
                 const bool inLoop = condTok->astTop() && Token::Match(condTok->astTop()->previous(), "for|while (");
                 // Evaluate condition of for and while loops first
                 if (inLoop) {
+                    if (Token::findmatch(tok->link(), "goto|break", tok))
+                        break;
                     if (condAction.isModified())
                         break;
                     valueFlowGenericForward(condTok, analyzer, settings);

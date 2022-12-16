@@ -260,8 +260,24 @@ static void createDumpFile(const Settings& settings,
         std::ofstream fout(getCtuInfoFileName(dumpFile));
     }
 
+    std::string language;
+    switch (settings.enforcedLang) {
+    case Settings::Language::C:
+        language = " language=\"c\"";
+        break;
+    case Settings::Language::CPP:
+        language = " language=\"cpp\"";
+        break;
+    case Settings::Language::None:
+        if (Path::isCPP(filename))
+            language = " language=\"cpp\"";
+        else if (Path::isC(filename))
+            language = " language=\"c\"";
+        break;
+    }
+
     fdump << "<?xml version=\"1.0\"?>" << std::endl;
-    fdump << "<dumps>" << std::endl;
+    fdump << "<dumps" << language << ">" << std::endl;
     fdump << "  <platform"
           << " name=\"" << settings.platformString() << '\"'
           << " char_bit=\"" << settings.char_bit << '\"'
@@ -534,6 +550,9 @@ unsigned int CppCheck::check(const std::string &path)
         } catch (const InternalError &e) {
             internalError(path, e.errorMessage);
             mExitCode = 1; // e.g. reflect a syntax error
+        } catch (const TerminateException &) {
+            // Analysis is terminated
+            return mExitCode;
         } catch (const std::exception &e) {
             internalError(path, e.what());
         }
@@ -911,6 +930,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 --checkCount; // don't count invalid configurations
                 continue;
 
+            } catch (const TerminateException &) {
+                // Analysis is terminated
+                return mExitCode;
+
             } catch (const InternalError &e) {
                 std::list<ErrorMessage::FileLocation> locationList;
                 if (e.token) {
@@ -962,6 +985,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         executeAddons(dumpFile);
 
+    } catch (const TerminateException &) {
+        // Analysis is terminated
+        return mExitCode;
     } catch (const std::runtime_error &e) {
         internalError(filename, e.what());
     } catch (const std::bad_alloc &e) {
@@ -1551,7 +1577,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         return;
 
     if (!mSettings.buildDir.empty())
-        mAnalyzerInformation.reportErr(msg, mSettings.verbose);
+        mAnalyzerInformation.reportErr(msg);
 
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 

@@ -438,7 +438,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
         // Skip variadic types (Ticket #5774, #6059, #6172)
         if (Token::simpleMatch(tok, "...")) {
             if ((tok->previous()->isName() && !Token::Match(tok->tokAt(-2), "<|,|::")) ||
-                (!tok->previous()->isName() && !Token::Match(tok->previous(), ">|&")))
+                (!tok->previous()->isName() && !Token::Match(tok->previous(), ">|&|&&|*")))
                 return 0; // syntax error
             tok = tok->next();
             if (!tok)
@@ -521,7 +521,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // inner template
-        if (tok->str() == "<") {
+        if (tok->str() == "<" && tok->previous()->isName()) {
             ++level;
             tok = tok->next();
         }

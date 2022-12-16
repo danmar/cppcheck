@@ -5396,6 +5396,17 @@ private:
                         "    return n;\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Uninitialized variable: i\n", errout.str());
+
+        // #11412
+        valueFlowUninit("void f(int n) {\n"
+                        "	short* p;\n"
+                        "	if (n) {\n"
+                        "		p = g(n);\n"
+                        "	}\n"
+                        "	for (int i = 0; i < n; i++)\n"
+                        "		(void)p[i];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
@@ -6362,6 +6373,12 @@ private:
                         "  Foo(*L);\n"
                         "  return L[0][0];\n"
                         "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n" // #11305
+                        "    type_t a;\n"
+                        "    a[0] = 0;\n"
+                        "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 

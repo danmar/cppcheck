@@ -2245,7 +2245,7 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
     return nullptr;
 }
 
-std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
+std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool pointedToType)
 {
     if (!tok)
         return {};
@@ -2260,9 +2260,33 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
             if (Token::Match(tok2, "; %varid% =", var->declarationId()))
                 tok2 = tok2->tokAt(2);
             if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=") && tok != tok2->astOperand2()) {
-                std::pair<const Token*, const Token*> r = typeDecl(tok2->astOperand2());
+                tok2 = tok2->astOperand2();
+                std::pair<const Token*, const Token*> r = typeDecl(tok2);
                 if (r.first)
                     return r;
+                if (pointedToType && tok2->astOperand1() && Token::simpleMatch(tok2, "new")) {
+                    if (Token::simpleMatch(tok2->astOperand1(), "("))
+                        return { tok2->next(), tok2->astOperand1() };
+                    const Token* declEnd = nextAfterAstRightmostLeaf(tok2->astOperand1());
+                    if (Token::simpleMatch(declEnd, "<") && declEnd->link())
+                        declEnd = declEnd->link()->next();
+                    return { tok2->next(), declEnd };
+                }
+            }
+            if (astIsRangeBasedForDecl(var->nameToken()) && astIsContainer(var->nameToken()->astParent()->astOperand2())) { // range-based for
+                const ValueType* vt = var->nameToken()->astParent()->astOperand2()->valueType();
+                if (vt && vt->containerTypeToken)
+                    return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+            }
+            if (pointedToType && astIsSmartPointer(var->nameToken())) {
+                const ValueType* vt = var->valueType();
+                if (vt && vt->smartPointerTypeToken)
+                    return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
+            }
+            if (pointedToType && astIsIterator(var->nameToken())) {
+                const ValueType* vt = var->valueType();
+                if (vt && vt->containerTypeToken)
+                    return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
         }
         return {var->typeStartToken(), var->typeEndToken()->next()};
@@ -2482,7 +2506,7 @@ Token* findLambdaEndScope(Token* tok)
     if (!Token::simpleMatch(tok, ")"))
         return nullptr;
     tok = tok->next();
-    while (Token::Match(tok, "mutable|constexpr|constval|noexcept|.")) {
+    while (Token::Match(tok, "mutable|constexpr|consteval|noexcept|.")) {
         if (Token::simpleMatch(tok, "noexcept ("))
             tok = tok->linkAt(1);
         if (Token::simpleMatch(tok, ".")) {
