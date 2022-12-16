@@ -363,6 +363,9 @@ public:
     /** @brief XML version (--xml-version=..) */
     int xml_version;
 
+    /** @brief write SARIF results (--sarif) */
+    bool sarif;
+
     /**
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs
      * @return true for the file to be excluded.

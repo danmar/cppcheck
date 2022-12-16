@@ -36,6 +36,7 @@
 #include "checkunusedfunctions.h"
 #include "xmlanalysisreport.h"
 #include "clianalysisreport.h"
+#include "sarifanalysisreport.h"
 
 #if defined(THREADING_MODEL_THREAD)
 #include "threadexecutor.h"
@@ -218,6 +219,8 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 
     if (settings.xml)
         mReport = (AnalysisReport*) new XMLAnalysisReport(settings.cppcheckCfgProductName);
+    else if (settings.sarif)
+        mReport = (AnalysisReport*) new SARIFAnalysisReport(cppCheck.version());
     else
         mReport = (AnalysisReport*) new CLIAnalysisReport(settings.verbose, settings.templateFormat, settings.templateLocation);
 

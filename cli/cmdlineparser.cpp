@@ -964,6 +964,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->xml = true;
             }
 
+            // Write results in SARIF format.
+            else if (std::strcmp(argv[i], "--sarif") == 0)
+                mSettings->sarif = true;
+
             else {
                 std::string message("unrecognized command line option: \"");
                 message += argv[i];
