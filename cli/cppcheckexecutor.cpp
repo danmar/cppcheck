@@ -35,6 +35,7 @@
 #include "utils.h"
 #include "checkunusedfunctions.h"
 #include "xmlanalysisreport.h"
+#include "clianalysisreport.h"
 
 #if defined(THREADING_MODEL_THREAD)
 #include "threadexecutor.h"
@@ -206,8 +207,6 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     const Settings& settings = cppCheck.settings();
     mSettings = &settings;
 
-    mReport = (AnalysisReport*) new XMLAnalysisReport(settings.cppcheckCfgProductName);
-
     if (!parseFromArgs(&cppCheck, argc, argv)) {
         mSettings = nullptr;
         return EXIT_FAILURE;
@@ -216,6 +215,11 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
         mSettings = nullptr;
         return EXIT_SUCCESS;
     }
+
+    if (settings.xml)
+        mReport = (AnalysisReport*) new XMLAnalysisReport(settings.cppcheckCfgProductName);
+    else
+        mReport = (AnalysisReport*) new CLIAnalysisReport(settings.verbose, settings.templateFormat, settings.templateLocation);
 
     int ret;
 
@@ -408,9 +412,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         }
     }
 
-    if (settings.xml) {
-        reportErr(mReport->emit());
-    }
+    reportErr(mReport->emit());
 
     mSettings = nullptr;
     if (returnValue)
@@ -510,7 +512,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
     if (mSettings->xml)
         mReport->add_finding(msg);
     else
-        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
+        mReport->add_finding(msg);
 }
 
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
