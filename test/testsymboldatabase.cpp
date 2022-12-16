@@ -366,6 +366,7 @@ private:
         TEST_CASE(symboldatabase100); // #10174
         TEST_CASE(symboldatabase101);
         TEST_CASE(symboldatabase102);
+        TEST_CASE(symboldatabase103);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -5058,6 +5059,15 @@ private:
         ASSERT(db->scopeList.size() == 2);
         ASSERT(db->scopeList.front().type == Scope::eGlobal);
         ASSERT(db->scopeList.back().className == "g");
+    }
+
+    void symboldatabase103() {
+        GET_SYMBOL_DB("void f() {\n"
+                      "using lambda = decltype([]() { return true; });\n"
+                      "lambda{}();\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
