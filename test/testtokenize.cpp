@@ -7535,6 +7535,13 @@ private:
                         "}\n",
                         "{ } }",
                         TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("template <std::size_t N>\n"
+                        "struct C : public C<N - 1>, public B {\n"
+                        "    ~C() {}\n"
+                        "};\n",
+                        "{ } }",
+                        TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }
 };

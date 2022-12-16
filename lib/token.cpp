@@ -2270,7 +2270,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                     const Token* declEnd = nextAfterAstRightmostLeaf(tok2->astOperand1());
                     if (Token::simpleMatch(declEnd, "<") && declEnd->link())
                         declEnd = declEnd->link()->next();
-                    return { tok2->next(),  declEnd };
+                    return { tok2->next(), declEnd };
                 }
             }
             if (astIsRangeBasedForDecl(var->nameToken()) && astIsContainer(var->nameToken()->astParent()->astOperand2())) { // range-based for
