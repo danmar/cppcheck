@@ -88,6 +88,7 @@ std::string SARIFAnalysisReport::emit() {
             { "defaultConfiguration", picojson::value(level(sarifSeverity(rule.severity))) },
             { "properties", picojson::value(properties) },
         };
+
         rules.emplace_back(reportingDescriptor);
 
         for (const ErrorMessage& err : it->second) {
@@ -132,12 +133,13 @@ std::string SARIFAnalysisReport::emit() {
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317638
             picojson::object result = {
                 // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317643
-                { "ruleId", picojson::value(err.id) },
+                {"ruleId", picojson::value(err.id)},
                 // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317649
-                { "message", picojson::value(text(err.shortMessage())) },
+                {"message", picojson::value(text(err.shortMessage()))},
                 // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317650
-                { "locations", picojson::value(locations) },
+                {"locations", picojson::value(locations)},
             };
+
             results.emplace_back(result);
         }
     }
