@@ -390,7 +390,7 @@ static std::string arrayIndexMessage(const Token* tok,
     std::ostringstream errmsg;
     if (condition)
         errmsg << ValueFlow::eitherTheConditionIsRedundant(condition)
-               << " or the array '" + array + "' is accessed at index " << stringifyIndexes(tok->astOperand1()->expressionString(), indexValues) << ", which is out of bounds.";
+               << " or the array '" << array << "' is accessed at index " << stringifyIndexes(tok->astOperand1()->expressionString(), indexValues) << ", which is out of bounds.";
     else
         errmsg << "Array '" << array << "' accessed at index " << stringifyIndexes(tok->astOperand1()->expressionString(), indexValues) <<  ", which is out of bounds.";
 
