@@ -218,11 +218,11 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     }
 
     if (settings.xml)
-        mReport = (AnalysisReport*) new XMLAnalysisReport(settings.cppcheckCfgProductName);
+        mReport = std::unique_ptr<AnalysisReport>(new XMLAnalysisReport(settings.cppcheckCfgProductName));
     else if (settings.sarif)
-        mReport = (AnalysisReport*) new SARIFAnalysisReport(cppCheck.version());
+        mReport = std::unique_ptr<AnalysisReport>(new SARIFAnalysisReport(cppCheck.version()));
     else
-        mReport = (AnalysisReport*) new CLIAnalysisReport(settings.verbose, settings.templateFormat, settings.templateLocation);
+        mReport = std::unique_ptr<AnalysisReport>(new CLIAnalysisReport(settings.verbose, settings.templateFormat, settings.templateLocation));
 
     int ret;
 
@@ -231,8 +231,6 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     else
         ret = check_internal(cppCheck);
 
-    free(mReport);
-    mReport = nullptr;
     mSettings = nullptr;
     return ret;
 }

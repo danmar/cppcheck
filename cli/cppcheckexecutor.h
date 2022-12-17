@@ -174,7 +174,7 @@ private:
     /**
      * Reporting object for storing and serializing the results.
      */
-    AnalysisReport *mReport;
+    std::unique_ptr<AnalysisReport> mReport;
 
     /**
      * Used to filter out duplicate error messages.
