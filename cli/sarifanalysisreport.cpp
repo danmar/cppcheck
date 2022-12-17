@@ -69,24 +69,24 @@ std::string SARIFAnalysisReport::emit() {
 
         // https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning#reportingdescriptor-object
         picojson::object properties = {
-            { "precision", picojson::value(sarifPrecision(rule.certainty)) },
+            {"precision", picojson::value(sarifPrecision(rule.certainty))},
         };
 
         // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317836
         picojson::object reportingDescriptor = {
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317839
-            { "id", picojson::value(rule.id) },
+            {"id", picojson::value(rule.id)},
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317843
-            { "name", picojson::value(rule.shortMessage()) },
+            {"name", picojson::value(rule.shortMessage())},
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317845
-            { "shortDescription", picojson::value(text(rule.shortMessage())) },
+            {"shortDescription", picojson::value(text(rule.shortMessage()))},
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317846
-            { "fullDescription", picojson::value(text(rule.verboseMessage())) },
+            {"fullDescription", picojson::value(text(rule.verboseMessage()))},
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317849
-            { "help", picojson::value(text(rule.verboseMessage())) },
+            {"help", picojson::value(text(rule.verboseMessage()))},
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317850
-            { "defaultConfiguration", picojson::value(level(sarifSeverity(rule.severity))) },
-            { "properties", picojson::value(properties) },
+            {"defaultConfiguration", picojson::value(level(sarifSeverity(rule.severity)))},
+            {"properties", picojson::value(properties)},
         };
 
         rules.emplace_back(reportingDescriptor);
