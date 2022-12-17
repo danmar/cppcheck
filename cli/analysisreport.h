@@ -39,6 +39,8 @@ public:
      * Output the results as a string.
      */
     virtual std::string emit() = 0;
+
+    virtual ~AnalysisReport() = default;
 };
 
 #endif // ANALYSIS_REPORT_H
