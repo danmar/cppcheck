@@ -4458,15 +4458,15 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-            // #11227
+        // #11227
         check("struct S {\n"
-                  "	int get();\n"
-                  "};\n"
-                  "void f(const S* s) {\n"
-                  "    if (!s)\n"
-                  "        return;\n"
-                  "    g(s ? s->get() : 0);\n"
-                  "}\n");
+              "	int get();\n"
+              "};\n"
+              "void f(const S* s) {\n"
+              "    if (!s)\n"
+              "        return;\n"
+              "    g(s ? s->get() : 0);\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (style) Condition 's' is always true\n", errout.str());
     }
 
