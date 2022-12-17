@@ -33,6 +33,11 @@ static std::map<std::string, picojson::value> text(const std::string& s) {
     return m;
 }
 
+static std::map<std::string, picojson::value> level(const std::string& s) {
+    std::map<std::string, picojson::value> m = {{ "level", picojson::value(s) }};
+    return m;
+}
+
 // SARIFAnalysisReport::emit() constructs a SARIF log object, according to the SARIF 2.1.0 specification.
 // The complete specification is at <https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html>
 // but GitHub provides an easier document to read (albeit with different requirements):
@@ -74,6 +79,8 @@ std::string SARIFAnalysisReport::emit() {
             { "fullDescription", picojson::value(text(rule.verboseMessage())) },
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317849
             { "help", picojson::value(text(rule.verboseMessage())) },
+            // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317850
+            { "defaultConfiguration", picojson::value(level(sarifSeverity(rule.severity))) },
         };
         rules.emplace_back(reportingDescriptor);
 
@@ -139,4 +146,18 @@ std::string SARIFAnalysisReport::emit() {
     sarifLog["runs"] = picojson::value({run});
 
     return static_cast<picojson::value>(sarifLog).serialize(true);
+}
+
+std::string SARIFAnalysisReport::sarifSeverity(Severity::SeverityType severity) {
+    switch (severity) {
+        case Severity::SeverityType::error:
+            return "error";
+        case Severity::SeverityType::warning:
+            return "warning";
+        // SARIF only recognizes three severities: error, warning, and note. CppCheck
+        // has a few others (style, performance, portability, information), which
+        // means they will get lumped into "note" when converted to SARIF.
+        default:
+            return "note";
+    }
 }

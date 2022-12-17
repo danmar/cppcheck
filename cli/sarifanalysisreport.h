@@ -30,6 +30,7 @@ public:
     explicit SARIFAnalysisReport(std::string versionNumber);
     void addFinding(const ErrorMessage& msg) override;
     std::string emit() override;
+    static std::string sarifSeverity(Severity::SeverityType severity);
 private:
     std::string mVersionNumber;
     std::map<std::string, std::vector<ErrorMessage>> mFindings;
