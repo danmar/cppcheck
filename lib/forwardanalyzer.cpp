@@ -806,12 +806,12 @@ struct ForwardTraversal {
                     return Break();
                 return Break();
             } else if (Token* callTok = callExpr(tok)) {
-                // Since the call could be an unknow macro, traverse the tokens as a range instead of recursively
-                if (updateRange(callTok, callTok->link(), depth - 1) == Progress::Break)
+                // Since the call could be an unknown macro, traverse the tokens as a range instead of recursively
+                if (!Token::simpleMatch(callTok, "( )") && updateRange(callTok->next(), callTok->link(), depth - 1) == Progress::Break)
                     return Break();
                 if (updateTok(callTok) == Progress::Break)
                     return Break();
-                if (updateRecursive(callTok->astOperand1()) == Progress::Break)
+                if (start != callTok && updateRecursive(callTok->astOperand1()) == Progress::Break)
                     return Break();
                 tok = callTok->link();
                 if (!tok)
@@ -823,7 +823,7 @@ struct ForwardTraversal {
                     if (precedes(next, end))
                         tok = next->previous();
                     else
-                        return Break();
+                        return Progress::Continue;
                 }
             }
             // Prevent infinite recursion
@@ -865,14 +865,14 @@ struct ForwardTraversal {
 
     static Token* callExpr(Token* tok) {
         while (tok->astParent() && astIsLHS(tok)) {
-            if (isFunctionCall(tok->astParent()))
-                return tok->astParent();
-            if (!Token::Match(tok, "%name%|::|<"))
+            if (!Token::Match(tok, "%name%|::|<|."))
                 break;
             if (Token::simpleMatch(tok, "<") && !tok->link())
                 break;
             tok = tok->astParent();
         }
+        if (isFunctionCall(tok))
+            return tok;
         return nullptr;
     }
 
