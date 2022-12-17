@@ -8539,7 +8539,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
     }
 }
 
-bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint *minValue, MathLib::bigint *maxValue)
+static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint *minValue, MathLib::bigint *maxValue)
 {
     if (!vt || !vt->isIntegral() || vt->pointer)
         return false;
