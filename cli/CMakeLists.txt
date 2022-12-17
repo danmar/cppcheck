@@ -11,6 +11,7 @@ else()
     target_include_directories(cli_objs SYSTEM PRIVATE ${tinyxml2_INCLUDE_DIRS})
 endif()
 target_include_directories(cli_objs PRIVATE ${PROJECT_SOURCE_DIR}/externals/simplecpp/)
+target_include_directories(cli_objs PRIVATE ${PROJECT_SOURCE_DIR}/externals/picojson/)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
     # false positive warning in up to Clang 13 - caused by FD_ZERO macro
