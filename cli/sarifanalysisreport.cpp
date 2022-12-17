@@ -67,6 +67,11 @@ std::string SARIFAnalysisReport::emit() {
     for (std::map<std::string, std::vector<ErrorMessage>>::iterator it = mFindings.begin(); it != mFindings.end(); ++it) {
         const ErrorMessage rule = it->second[0];
 
+        // https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning#reportingdescriptor-object
+        picojson::object properties = {
+            { "precision", picojson::value(sarifPrecision(rule.certainty)) },
+        };
+
         // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317836
         picojson::object reportingDescriptor = {
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317839
@@ -81,6 +86,7 @@ std::string SARIFAnalysisReport::emit() {
             { "help", picojson::value(text(rule.verboseMessage())) },
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317850
             { "defaultConfiguration", picojson::value(level(sarifSeverity(rule.severity))) },
+            { "properties", picojson::value(properties) },
         };
         rules.emplace_back(reportingDescriptor);
 
@@ -159,5 +165,19 @@ std::string SARIFAnalysisReport::sarifSeverity(Severity::SeverityType severity) 
         // means they will get lumped into "note" when converted to SARIF.
         default:
             return "note";
+    }
+}
+
+std::string SARIFAnalysisReport::sarifPrecision(Certainty::CertaintyLevel certainty) {
+    switch (certainty) {
+        case Certainty::CertaintyLevel::safe:
+            return "very-high";
+        case Certainty::CertaintyLevel::normal:
+            return "high";
+        case Certainty::CertaintyLevel::experimental:
+            return "medium";
+        case Certainty::CertaintyLevel::inconclusive:
+        default:
+            return "low";
     }
 }
