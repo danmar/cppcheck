@@ -805,6 +805,17 @@ struct ForwardTraversal {
                 if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
                     return Break();
                 return Break();
+            } else if (Token* callTok = callExpr(tok)) {
+                // Since the call could be an unknow macro, traverse the tokens as a range instead of recursively
+                if (updateRange(callTok, callTok->link(), depth - 1) == Progress::Break)
+                    return Break();
+                if (updateTok(callTok) == Progress::Break)
+                    return Break();
+                if (updateRecursive(callTok->astOperand1()) == Progress::Break)
+                    return Break();
+                tok = callTok->link();
+                if (!tok)
+                    return Break();
             } else {
                 if (updateTok(tok, &next) == Progress::Break)
                     return Break();
@@ -847,6 +858,19 @@ struct ForwardTraversal {
         while (tok->astParent() && astIsLHS(tok)) {
             if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();
+            tok = tok->astParent();
+        }
+        return nullptr;
+    }
+
+    static Token* callExpr(Token* tok) {
+        while (tok->astParent() && astIsLHS(tok)) {
+            if (isFunctionCall(tok->astParent()))
+                return tok->astParent();
+            if (!Token::Match(tok, "%name%|::|<"))
+                break;
+            if (Token::simpleMatch(tok, "<") && !tok->link())
+                break;
             tok = tok->astParent();
         }
         return nullptr;
