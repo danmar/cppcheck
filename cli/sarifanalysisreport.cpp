@@ -89,9 +89,11 @@ std::string SARIFAnalysisReport::emit() {
     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317541
     toolComponent["name"] = picojson::value("CppCheck");
 
-    // While the "version" property isn't required, it's useful information to supply.
     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317546
     toolComponent["version"] = picojson::value(mVersionNumber);
+
+    // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317550
+    toolComponent["informationUri"] = picojson::value("http://cppcheck.net");
 
     for (std::map<std::string, std::vector<ErrorMessage>>::iterator it = mFindings.begin(); it != mFindings.end(); ++it) {
         const ErrorMessage rule = it->second[0];
