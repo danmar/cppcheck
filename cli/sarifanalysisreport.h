@@ -25,6 +25,10 @@
 #include <map>
 #include <vector>
 
+/**
+ * @brief The SARIFAnalysisReport class is used to collect and export findings of a
+ * CppCheck analysis in the open Static Analysis Results Interchange Format (S.A.R.I.F.).
+ */
 class SARIFAnalysisReport : public AnalysisReport {
 public:
     explicit SARIFAnalysisReport(std::string versionNumber);
