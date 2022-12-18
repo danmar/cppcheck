@@ -77,6 +77,7 @@ std::string SARIFAnalysisReport::emit() {
     picojson::object toolComponent;
     picojson::array results;
     picojson::array rules;
+    picojson::array runs;
 
     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317480
     sarifLog["version"] = picojson::value("2.1.0");
@@ -183,9 +184,10 @@ std::string SARIFAnalysisReport::emit() {
 
     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317507
     run["results"] = picojson::value(results);
+    runs.emplace_back(run);
 
     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317482
-    sarifLog["runs"] = picojson::value({run});
+    sarifLog["runs"] = picojson::value(runs);
 
     return static_cast<picojson::value>(sarifLog).serialize(true);
 }
