@@ -489,8 +489,6 @@ struct AST_state {
     explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
 };
 
-static Token * createAstAtToken(Token *tok, bool cpp);
-
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
     auto isDecltypeFuncParam = [](const Token* tok) -> bool {
@@ -1008,9 +1006,6 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                         squareBracket->astOperand1(roundBracket);
                         roundBracket->astOperand1(curlyBracket);
                         state.op.push(squareBracket);
-                        for (tok = roundBracket->next(); precedes(tok, roundBracket->link()); tok = tok->next()) {
-                            tok = createAstAtToken(tok, state.cpp);
-                        }
                         tok = curlyBracket->link()->next();
                         continue;
                     }
@@ -1405,6 +1400,8 @@ const Token* isLambdaCaptureList(const Token * tok)
         return nullptr;
     return params->astOperand1();
 }
+
+static Token * createAstAtToken(Token *tok, bool cpp);
 
 // Compile inner expressions inside inner ({..}) and lambda bodies
 static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)

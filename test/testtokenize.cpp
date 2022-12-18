@@ -6243,10 +6243,6 @@ private:
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
         ASSERT_EQUALS("adecltypeac::(,decltypead::(,",
                       testAst("template <typename a> void b(a &, decltype(a::c), decltype(a::d));"));
-        ASSERT_EQUALS("g{([= decltypea0[(",
-                      testAst("auto g = [](decltype(a[0]) i) {};"));
-        ASSERT_EQUALS("g{([= decltypea0[(i&",
-                      testAst("auto g = [](decltype(a[0])& i) {};"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("struct A;\n" // #10839
                                              "struct B { A* hash; };\n"
@@ -6281,6 +6277,14 @@ private:
                              "    for (int i = 0; i <= 123; ++i)\n"
                              "        x->emplace_back(y);\n"
                              "}");
+
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n" // #10831
+                                             "    auto g = [](std::function<void()> h = []() {}) { };\n"
+                                             "}"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n" // #11379
+                                             "    auto l = [x = 3](std::string&& v) { };\n"
+                                             "}\n"));
     }
 
     void astbrackets() { // []
@@ -6504,9 +6508,6 @@ private:
                               "    const auto y = z;\n"
                               "    switch (y) {}\n"
                               "};"));
-
-        // #10831
-        ASSERT_EQUALS("f{([= x{([=", testAst("void foo() { F f = [](t x = []() {}) {}; }"));
 
         // #11357
         ASSERT_NO_THROW(tokenizeAndStringify("void f(std::vector<int>& v, bool c) {\n"
