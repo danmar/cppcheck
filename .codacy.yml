@@ -7,4 +7,3 @@ exclude_paths:
   - test/test.cxx
   - test/cfg/*.c
   - test/cfg/*.cpp
-  - test/synthetic/*.c
