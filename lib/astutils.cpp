@@ -2422,7 +2422,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         tok2 = tok2->astParent();
     }
 
-    while (Token::simpleMatch(tok2->astParent(), "?") || (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
+    while ((Token::simpleMatch(tok2, ":") && Token::simpleMatch(tok2->astParent(), "?")) ||
+           (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
 
     if (tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)

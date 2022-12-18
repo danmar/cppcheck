@@ -8358,7 +8358,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                     ValueFlow::Value value(tok->tokAt(2)->astOperand2()->values().front());
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowForward(tok->next(), containerTok, value, tokenlist);
+                    valueFlowForward(tok->linkAt(2), containerTok, value, tokenlist);
                 }
             }
         }

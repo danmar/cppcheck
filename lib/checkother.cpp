@@ -1643,8 +1643,8 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
     ErrorPath errorPath;
     std::string id = "const" + vartype;
     std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray;
-    errorPath.emplace_back(var ? var->nameToken() : nullptr, message);
-    if (var && var->isArgument() && function && function->functionPointerUsage) {
+    errorPath.emplace_back(var->nameToken(), message);
+    if (var->isArgument() && function && function->functionPointerUsage) {
         errorPath.emplace_front(function->functionPointerUsage, "You might need to cast the function pointer here");
         id += "Callback";
         message += ". However it seems that '" + function->name() + "' is a callback function, if '$symbol' is declared with const you might also need to cast function pointer(s).";
