@@ -466,12 +466,12 @@ private:
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", Standards::cppstd_t std = Standards::CPP11) {
         errout.str("");
 
         settings1.debugwarnings = true;
         settings1.platform(platform);
-        settings1.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
+        settings1.standards.cpp = std;
 
         // tokenize..
         Tokenizer tokenizer(&settings1, this);
@@ -2273,7 +2273,7 @@ private:
 
     void vardecl14() {
         const char code[] = "::std::tr1::shared_ptr<int> pNum1, pNum2;\n";
-        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code, false, Settings::Native, "test.cpp", false));
+        ASSERT_EQUALS(":: std :: tr1 :: shared_ptr < int > pNum1 ; :: std :: tr1 :: shared_ptr < int > pNum2 ;", tokenizeAndStringify(code, false, Settings::Native, "test.cpp", Standards::CPP03));
     }
 
     void vardecl15() {
@@ -4538,12 +4538,12 @@ private:
 
         code = "using namespace std;\n"
                "tr1::function <void(int)> f;";
-        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, Settings::Native, "test.cpp", false));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, Settings::Native, "test.cpp", true));
+        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, Settings::Native, "test.cpp", Standards::CPP03));
+        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code));
 
         code = "std::tr1::function <void(int)> f;";
-        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, Settings::Native, "test.cpp", false));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, Settings::Native, "test.cpp", true));
+        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, Settings::Native, "test.cpp", Standards::CPP03));
+        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code));
 
         // #4042 (Do not add 'std ::' to variables)
         code = "using namespace std;\n"
@@ -5737,58 +5737,58 @@ private:
 
     void simplifyCPPAttribute() {
         ASSERT_EQUALS("int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("[[deprecated]] int f();"));
 
         ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", true, Settings::Native, "test.cpp", false));
+                      tokenizeAndStringify("[[deprecated]] int f();", true, Settings::Native, "test.cpp", Standards::CPP03));
 
         ASSERT_EQUALS("[ [ deprecated ] ] int f ( ) ;",
-                      tokenizeAndStringify("[[deprecated]] int f();", true, Settings::Native, "test.c", true));
+                      tokenizeAndStringify("[[deprecated]] int f();", true, Settings::Native, "test.c"));
 
         ASSERT_EQUALS("template < class T > int f ( ) { }",
-                      tokenizeAndStringify("template <class T> [[noreturn]] int f(){}", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("template <class T> [[noreturn]] int f(){}"));
 
         ASSERT_EQUALS("int f ( int i ) ;",
-                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);"));
 
         ASSERT_EQUALS("[ [ maybe_unused ] ] int f ( [ [ maybe_unused ] ] int i ) ;",
-                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", true, Settings::Native, "test.cpp", false));
+                      tokenizeAndStringify("[[maybe_unused]] int f([[maybe_unused]] int i);", true, Settings::Native, "test.cpp", Standards::CPP03));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct [[]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct [[]] a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct [[,]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct [[,]] a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct [[deprecated,]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct [[deprecated,]] a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct [[,,]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct [[,,]] a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct [[deprecated,,]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct [[deprecated,,]] a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct [[deprecated,maybe_unused,]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct [[deprecated,maybe_unused,]] a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct [[,,,]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct [[,,,]] a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct alignas(int) a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct alignas(int) a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct alignas ( alignof ( float ) ) a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct alignas ( alignof ( float ) ) a;"));
 
         ASSERT_EQUALS("char a [ 256 ] ;",
-                      tokenizeAndStringify("alignas(256) char a[256];", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("alignas(256) char a[256];"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct alignas(float) [[deprecated(reason)]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct alignas(float) [[deprecated(reason)]] a;"));
 
         ASSERT_EQUALS("struct a ;",
-                      tokenizeAndStringify("struct [[deprecated,maybe_unused]] alignas(double) [[trivial_abi]] a;", true, Settings::Native, "test.cpp", true));
+                      tokenizeAndStringify("struct [[deprecated,maybe_unused]] alignas(double) [[trivial_abi]] a;"));
     }
 
     void simplifyCaseRange() {
@@ -6501,6 +6501,18 @@ private:
 
         // #9729
         ASSERT_NO_THROW(tokenizeAndStringify("void foo() { bar([]() noexcept { if (0) {} }); }"));
+
+        // #11128
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename T>\n"
+                                             "struct S;\n"
+                                             "struct R;\n"
+                                             "S<R> y, z;\n"
+                                             "auto f(int x) -> S<R> {\n"
+                                             "    if (const auto i = x; i != 0)\n"
+                                             "        return y;\n"
+                                             "    else\n"
+                                             "        return z;\n"
+                                             "}\n", true, Settings::Native, "test.cpp", Standards::CPP17));
 
         // #10079 - createInnerAST bug..
         ASSERT_EQUALS("x{([= yz= switchy(",
