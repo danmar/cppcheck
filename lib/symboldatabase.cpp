@@ -387,8 +387,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             tok = tok->tokAt(3);
 
-            while (tok && tok->str() != ";")
-                tok = tok->next();
+            while (tok && tok->str() != ";") {
+                if (Token::simpleMatch(tok, "decltype ("))
+                    tok = tok->linkAt(1);
+                else
+                    tok = tok->next();
+            }
         }
 
         // unnamed struct and union
