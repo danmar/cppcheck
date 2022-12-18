@@ -2521,7 +2521,7 @@ void CheckOther::checkDuplicateExpression()
                                          &errorPath) &&
                         isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
-                    else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP())) {
+                    else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, mTokenizer->isCPP())) {
                         auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) {
                             if (isSameExpression(mTokenizer->isCPP(), true, exp1, exp2, mSettings->library, true, true, &errorPath) &&
                                 isWithoutSideEffects(mTokenizer->isCPP(), exp1) &&

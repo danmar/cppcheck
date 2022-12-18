@@ -266,7 +266,7 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
 
 bool isConstFunctionCall(const Token* ftok, const Library& library);
 
-bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp);
+bool isConstExpression(const Token *tok, const Library& library, bool cpp);
 
 bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess = false, bool checkReference = true);
 

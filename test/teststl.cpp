@@ -5200,6 +5200,25 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("bool g(int);\n"
+              "int f(const std::vector<int>& v) {\n"
+              "    int ret = 0;\n"
+              "    for (const auto i : v)\n"
+              "        if (!g(i))\n"
+              "            ret = 1;\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int ret = 0;\n"
+              "    for (const auto i : v)\n"
+              "        if (i < 5)\n"
+              "            ret = 1;\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of algorithm instead of a raw loop.\n", errout.str());
     }
 
     void loopAlgoMinMax() {

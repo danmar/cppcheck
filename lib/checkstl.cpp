@@ -2708,6 +2708,12 @@ void CheckStl::useStlAlgorithm()
         return !astIsContainer(tok); // don't warn for containers, where overloaded operators can be costly
     };
 
+    auto isConditionWithoutSideEffects = [this](const Token* tok) -> bool {
+        if (!Token::simpleMatch(tok, "{") || !Token::simpleMatch(tok->previous(), ")"))
+            return false;
+        return isConstExpression(tok->previous()->link()->astOperand2(), mSettings->library, true);
+    };
+
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
             // Parse range-based for loop
@@ -2824,8 +2830,12 @@ void CheckStl::useStlAlgorithm()
                             algo = "std::count_if";
                         else if (accumulateBoolLiteral(assignTok, assignVarId))
                             algo = "std::any_of, std::all_of, std::none_of, or std::accumulate";
-                        else
+                        else if (assignTok->str() != "=")
                             algo = "std::accumulate";
+                        else if (isConditionWithoutSideEffects(condBodyTok))
+                            algo = "std::any_of, std::all_of, std::none_of";
+                        else
+                            continue;
                     }
                     useStlAlgorithmError(assignTok, algo);
                     continue;
