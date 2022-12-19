@@ -220,7 +220,7 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     if (settings.xml)
         mReport = std::unique_ptr<AnalysisReport>(new XMLAnalysisReport(settings.cppcheckCfgProductName));
     else if (settings.sarif)
-        mReport = std::unique_ptr<AnalysisReport>(new SARIFAnalysisReport(cppCheck.version()));
+        mReport = std::unique_ptr<AnalysisReport>(new SARIFAnalysisReport(CppCheck::version()));
     else
         mReport = std::unique_ptr<AnalysisReport>(new CLIAnalysisReport(settings.verbose, settings.templateFormat, settings.templateLocation));
 
