@@ -23,7 +23,7 @@ XMLAnalysisReport::XMLAnalysisReport(const std::string& productName) {
 }
 
 void XMLAnalysisReport::addFinding(const ErrorMessage &msg) {
-    mBuffer << msg.toXML();
+    mBuffer << msg.toXML() << std::endl;
 }
 
 std::string XMLAnalysisReport::emit() {
