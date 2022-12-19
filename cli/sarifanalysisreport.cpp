@@ -40,29 +40,29 @@ static std::map<std::string, picojson::value> level(const std::string& s) {
 
 static std::string sarifSeverity(Severity::SeverityType severity) {
     switch (severity) {
-        case Severity::SeverityType::error:
-            return "error";
-        case Severity::SeverityType::warning:
-            return "warning";
-            // SARIF only recognizes three severities: error, warning, and note. CppCheck
-            // has a few others (style, performance, portability, information), which
-            // means they will get lumped into "note" when converted to SARIF.
-        default:
-            return "note";
+    case Severity::SeverityType::error:
+        return "error";
+    case Severity::SeverityType::warning:
+        return "warning";
+    // SARIF only recognizes three severities: error, warning, and note. CppCheck
+    // has a few others (style, performance, portability, information), which
+    // means they will get lumped into "note" when converted to SARIF.
+    default:
+        return "note";
     }
 }
 
 static std::string sarifPrecision(Certainty::CertaintyLevel certainty) {
     switch (certainty) {
-        case Certainty::CertaintyLevel::safe:
-            return "very-high";
-        case Certainty::CertaintyLevel::normal:
-            return "high";
-        case Certainty::CertaintyLevel::experimental:
-            return "medium";
-        case Certainty::CertaintyLevel::inconclusive:
-        default:
-            return "low";
+    case Certainty::CertaintyLevel::safe:
+        return "very-high";
+    case Certainty::CertaintyLevel::normal:
+        return "high";
+    case Certainty::CertaintyLevel::experimental:
+        return "medium";
+    case Certainty::CertaintyLevel::inconclusive:
+    default:
+        return "low";
     }
 }
 
