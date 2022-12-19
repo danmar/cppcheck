@@ -600,7 +600,7 @@ void CheckIO::checkFormatString(const Token * const tok,
     bool percent = false;
     const Token* argListTok2 = argListTok;
     std::set<int> parameterPositionsUsed;
-    for (std::string::const_iterator i = formatString.begin(); i != formatString.end(); ++i) {
+    for (std::string::const_iterator i = formatString.cbegin(); i != formatString.cend(); ++i) {
         if (*i == '%') {
             percent = !percent;
         } else if (percent && *i == '[') {

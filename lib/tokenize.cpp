@@ -4242,11 +4242,11 @@ static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
 
 static Token * matchMemberName(const std::list<std::string> &scope, const Token *nsToken, Token *memberToken, const std::list<ScopeInfo2> &scopeInfo)
 {
-    std::list<ScopeInfo2>::const_iterator scopeIt = scopeInfo.begin();
+    std::list<ScopeInfo2>::const_iterator scopeIt = scopeInfo.cbegin();
 
     // Current scope..
-    for (std::list<std::string>::const_iterator it = scope.begin(); it != scope.end(); ++it) {
-        if (scopeIt == scopeInfo.end() || scopeIt->name != *it)
+    for (std::list<std::string>::const_iterator it = scope.cbegin(); it != scope.cend(); ++it) {
+        if (scopeIt == scopeInfo.cend() || scopeIt->name != *it)
             return nullptr;
         ++scopeIt;
     }

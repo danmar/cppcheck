@@ -1864,7 +1864,7 @@ private:
 
         bool seen_something = false;
         for (const Scope & scope : db->scopeList) {
-            for (std::list<Function>::const_iterator func = scope.functionList.begin(); func != scope.functionList.end(); ++func) {
+            for (std::list<Function>::const_iterator func = scope.functionList.cbegin(); func != scope.functionList.cend(); ++func) {
                 ASSERT_EQUALS("Sub", func->token->str());
                 ASSERT_EQUALS(true, func->hasBody());
                 ASSERT_EQUALS(Function::eConstructor, func->type);
@@ -2471,7 +2471,7 @@ private:
                       "Fred::Fred(Whitespace whitespace) { }");
         ASSERT_EQUALS(true, db != nullptr);
         ASSERT_EQUALS(3, db->scopeList.size());
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
         ASSERT_EQUALS(1, scope->functionList.size());
@@ -2489,7 +2489,7 @@ private:
                       "void Fred::foo(char b[16]) { }");
         ASSERT_EQUALS(true, db != nullptr);
         ASSERT_EQUALS(3, db->scopeList.size());
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
         ASSERT_EQUALS(1, scope->functionList.size());
@@ -3076,7 +3076,7 @@ private:
                       "class Sub;");
         ASSERT(db && db->typeList.size() == 5);
 
-        std::list<Type>::const_iterator i = db->typeList.begin();
+        std::list<Type>::const_iterator i = db->typeList.cbegin();
         const Type* Foo = &(*i++);
         const Type* Bar = &(*i++);
         const Type* Sub = &(*i++);
@@ -3144,7 +3144,7 @@ private:
                       "};");
         ASSERT(db && db->typeList.size() == 3);
 
-        std::list<Type>::const_iterator i = db->typeList.begin();
+        std::list<Type>::const_iterator i = db->typeList.cbegin();
         const Type* Fred = &(*i++);
         const Type* Wilma = &(*i++);
         const Type* Barney = &(*i++);
@@ -3233,7 +3233,7 @@ private:
             ASSERT(db->getVariableFromVarId(i) != nullptr);
 
         ASSERT_EQUALS(4U, db->scopeList.size());
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
         ASSERT_EQUALS(Scope::eGlobal, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eStruct, scope->type);
@@ -3251,7 +3251,7 @@ private:
 
         ASSERT(db != nullptr);
         ASSERT_EQUALS(4U, db->scopeList.size());
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
         ASSERT_EQUALS(Scope::eGlobal, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eStruct, scope->type);
@@ -3441,7 +3441,7 @@ private:
                       "}");
         ASSERT(db != nullptr);
         ASSERT(db->scopeList.size() == 4U);
-        std::list<Scope>::const_iterator it = db->scopeList.begin();
+        std::list<Scope>::const_iterator it = db->scopeList.cbegin();
         ASSERT(it->type == Scope::eGlobal);
         ASSERT((++it)->type == Scope::eFunction);
         ASSERT((++it)->type == Scope::eIf);
@@ -3461,7 +3461,7 @@ private:
                       "};");
         ASSERT(db != nullptr);
         ASSERT(db->typeList.size() == 3U);
-        std::list<Type>::const_iterator it = db->typeList.begin();
+        std::list<Type>::const_iterator it = db->typeList.cbegin();
         const Type * classB = &(*it);
         const Type * classC = &(*(++it));
         const Type * classA = &(*(++it));
@@ -5178,7 +5178,7 @@ private:
         ASSERT_EQUALS(3U, db->scopeList.size());
 
         // Assert that all enum values are known
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
 
         // Offsets
         ++scope;
@@ -5266,7 +5266,7 @@ private:
         ASSERT_EQUALS(2U, db->scopeList.size());
 
         // Assert that all enum values are known
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
 
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eEnum, (unsigned int)scope->type);
@@ -5563,7 +5563,7 @@ private:
                       "    void g();\n"
                       "};");
         ASSERT(db && db->scopeList.back().functionList.size() == 4);
-        std::list<Function>::const_iterator it = db->scopeList.back().functionList.begin();
+        std::list<Function>::const_iterator it = db->scopeList.back().functionList.cbegin();
         ASSERT((it++)->isPure());
         ASSERT((it++)->isPure());
         ASSERT(!(it++)->isPure());
@@ -7354,7 +7354,7 @@ private:
                       "}");
 
         ASSERT(db && db->scopeList.size() == 3);
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
         ASSERT_EQUALS(Scope::eGlobal, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eFunction, scope->type);
@@ -7373,7 +7373,7 @@ private:
                       "}");
 
         ASSERT(db && db->scopeList.size() == 3);
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
         ASSERT_EQUALS(Scope::eGlobal, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eFunction, scope->type);
@@ -7388,7 +7388,7 @@ private:
                       "}");
 
         ASSERT(db && db->scopeList.size() == 3);
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
         ASSERT_EQUALS(Scope::eGlobal, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eFunction, scope->type);
@@ -7419,7 +7419,7 @@ private:
                       "Fred::foo(const std::string & b) { }");
 
         ASSERT(db && db->scopeList.size() == 3);
-        std::list<Scope>::const_iterator scope = db->scopeList.begin();
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
         ASSERT_EQUALS(Scope::eGlobal, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eClass, scope->type);

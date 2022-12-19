@@ -92,7 +92,7 @@ static bool isVarTokComparison(const Token * tok, const Token ** vartok,
 void VarInfo::print()
 {
     std::cout << "size=" << alloctype.size() << std::endl;
-    for (std::map<int, AllocInfo>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
+    for (std::map<int, AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it) {
         std::string strusage;
         const std::map<int, std::string>::const_iterator use =
             possibleUsage.find(it->first);
@@ -134,7 +134,7 @@ void VarInfo::print()
 void VarInfo::possibleUsageAll(const std::string &functionName)
 {
     possibleUsage.clear();
-    for (std::map<int, AllocInfo>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it)
+    for (std::map<int, AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it)
         possibleUsage[it->first] = functionName;
 }
 
@@ -551,7 +551,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
                 std::map<int, VarInfo::AllocInfo>::const_iterator it;
 
-                for (it = old.alloctype.begin(); it != old.alloctype.end(); ++it) {
+                for (it = old.alloctype.cbegin(); it != old.alloctype.cend(); ++it) {
                     const int varId = it->first;
                     if (old.conditionalAlloc.find(varId) == old.conditionalAlloc.end())
                         continue;
@@ -563,7 +563,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 // Conditional allocation in varInfo1
-                for (it = varInfo1.alloctype.begin(); it != varInfo1.alloctype.end(); ++it) {
+                for (it = varInfo1.alloctype.cbegin(); it != varInfo1.alloctype.cend(); ++it) {
                     if (varInfo2.alloctype.find(it->first) == varInfo2.alloctype.end() &&
                         old.alloctype.find(it->first) == old.alloctype.end()) {
                         varInfo->conditionalAlloc.insert(it->first);
@@ -571,7 +571,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 // Conditional allocation in varInfo2
-                for (it = varInfo2.alloctype.begin(); it != varInfo2.alloctype.end(); ++it) {
+                for (it = varInfo2.alloctype.cbegin(); it != varInfo2.alloctype.cend(); ++it) {
                     if (varInfo1.alloctype.find(it->first) == varInfo1.alloctype.end() &&
                         old.alloctype.find(it->first) == old.alloctype.end()) {
                         varInfo->conditionalAlloc.insert(it->first);
@@ -579,13 +579,13 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
 
                 // Conditional allocation/deallocation
-                for (it = varInfo1.alloctype.begin(); it != varInfo1.alloctype.end(); ++it) {
+                for (it = varInfo1.alloctype.cbegin(); it != varInfo1.alloctype.cend(); ++it) {
                     if (it->second.managed() && conditionalAlloc.find(it->first) != conditionalAlloc.end()) {
                         varInfo->conditionalAlloc.erase(it->first);
                         varInfo2.erase(it->first);
                     }
                 }
-                for (it = varInfo2.alloctype.begin(); it != varInfo2.alloctype.end(); ++it) {
+                for (it = varInfo2.alloctype.cbegin(); it != varInfo2.alloctype.cend(); ++it) {
                     if (it->second.managed() && conditionalAlloc.find(it->first) != conditionalAlloc.end()) {
                         varInfo->conditionalAlloc.erase(it->first);
                         varInfo1.erase(it->first);
@@ -1024,7 +1024,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
     std::vector<int> toRemove;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (std::map<int, VarInfo::AllocInfo>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
+    for (std::map<int, VarInfo::AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it) {
         // don't warn if variable is conditionally allocated, unless it leaves the scope
         if (!isEndOfScope && !it->second.managed() && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
             continue;

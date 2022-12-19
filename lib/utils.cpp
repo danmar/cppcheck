@@ -41,7 +41,7 @@ int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
 
 bool isValidGlobPattern(const std::string& pattern)
 {
-    for (std::string::const_iterator i = pattern.begin(); i != pattern.end(); ++i) {
+    for (std::string::const_iterator i = pattern.cbegin(); i != pattern.cend(); ++i) {
         if (*i == '*' || *i == '?') {
             const std::string::const_iterator j = i + 1;
             if (j != pattern.end() && (*j == '*' || *j == '?')) {
