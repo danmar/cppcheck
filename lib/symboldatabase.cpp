@@ -479,8 +479,10 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
         // check for end of scope
         else if (tok == scope->bodyEnd) {
-            access.erase(scope);
-            scope = const_cast<Scope*>(scope->nestedIn);
+            do {
+                access.erase(scope);
+                scope = const_cast<Scope*>(scope->nestedIn);
+            } while (scope->type != Scope::eGlobal && succeeds(tok, scope->bodyEnd));
             continue;
         }
         // check for end of init list

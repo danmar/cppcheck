@@ -372,6 +372,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
         TEST_CASE(createSymbolDatabaseFindAllScopes3);
         TEST_CASE(createSymbolDatabaseFindAllScopes4);
+        TEST_CASE(createSymbolDatabaseFindAllScopes5);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -5131,6 +5132,31 @@ private:
         ASSERT_EQUALS(4, db->scopeList.size());
         const Token* const var1 = Token::findsimplematch(tokenizer.tokens(), "d");
         ASSERT(var1->variable());
+    }
+
+    void createSymbolDatabaseFindAllScopes5()
+    {
+        GET_SYMBOL_DB("class C {\n"
+                      "public:\n"
+                      "    template<typename T>\n"
+                      "    class D;\n"
+                      "    template<typename T>\n"
+                      "    struct O : public std::false_type {};\n"
+                      "};\n"
+                      "template<typename T>\n"
+                      "struct C::O<std::optional<T>> : public std::true_type {};\n"
+                      "template<typename T>\n"
+                      "class C::D {};\n"
+                      "struct S {\n"
+                      "    S(int i) : m(i) {}\n"
+                      "    static const S IN;\n"
+                      "    int m;\n"
+                      "};\n"
+                      "const S S::IN(1);\n");
+        ASSERT(db);
+        ASSERT_EQUALS(6, db->scopeList.size());
+        const Token* const var = Token::findsimplematch(tokenizer.tokens(), "IN (");
+        TODO_ASSERT(var && var->variable());
     }
 
     void enum1() {
