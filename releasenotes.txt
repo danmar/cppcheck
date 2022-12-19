@@ -1,3 +1,4 @@
 release notes for cppcheck-2.10
 
 - the deprecated Makefile option SRCDIR is no longer accepted
+- if the file provided via "--file-list" cannot be opened it will now error out

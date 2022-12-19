@@ -41,7 +41,7 @@ public:
 
 private:
     Settings settings; // TODO: reset after each test
-    CmdLineParser defParser;
+    CmdLineParser defParser; // TODO: reset after each test
 
     void run() override {
         TEST_CASE(nooptions);
@@ -95,8 +95,8 @@ private:
         TEST_CASE(exitcodeSuppressionsOld);
         TEST_CASE(exitcodeSuppressions);
         TEST_CASE(exitcodeSuppressionsNoFile);
-        //TEST_CASE(fileList);
-        //TEST_CASE(fileListNoFile);
+        TEST_CASE(fileList);
+        TEST_CASE(fileListNoFile);
         // TEST_CASE(fileListStdin);  // Disabled since hangs the test run
         TEST_CASE(fileListInvalid);
         TEST_CASE(inlineSuppr);
@@ -526,16 +526,13 @@ private:
     void includesFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--includes-file=fileThatDoesNotExist.txt", "file.cpp"};
-        settings.includePaths.clear();
         TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS(3, 0, settings.includePaths.size());
         TODO_ASSERT_EQUALS("", "cppcheck: error: unable to open includes file at 'fileThatDoesNotExist.txt'\n", GET_REDIRECT_OUTPUT);
     }
 
     void includesFileNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--includes-file=fileThatDoesNotExist.txt", "file.cpp"};
-        settings.includePaths.clear();
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to open includes file at 'fileThatDoesNotExist.txt'\n", GET_REDIRECT_OUTPUT);
     }
@@ -553,7 +550,6 @@ private:
     void configExcludesFileNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--config-excludes-file=fileThatDoesNotExist.txt", "file.cpp"};
-        settings.includePaths.clear();
         ASSERT_EQUALS( false, defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unable to open config excludes file at 'fileThatDoesNotExist.txt'\n", GET_REDIRECT_OUTPUT);
     }
@@ -677,7 +673,6 @@ private:
     void errorExitcodeMissing() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--error-exitcode=", "file.cpp"};
-        settings.exitCode = 0;
         // Fails since exit code not given
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument must be an integer. Try something like '--error-exitcode=1'.\n", GET_REDIRECT_OUTPUT);
@@ -686,7 +681,6 @@ private:
     void errorExitcodeStr() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--error-exitcode=foo", "file.cpp"};
-        settings.exitCode = 0;
         // Fails since invalid exit code
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument must be an integer. Try something like '--error-exitcode=1'.\n", GET_REDIRECT_OUTPUT);
@@ -695,7 +689,6 @@ private:
     void exitcodeSuppressionsOld() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions", "suppr.txt", "file.cpp"};
-        settings.exitCode = 0;
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", GET_REDIRECT_OUTPUT);
     }
@@ -704,7 +697,6 @@ private:
         // TODO: Fails since cannot open the file
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions=suppr.txt", "file.cpp"};
-        settings.exitCode = 0;
         TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
         TODO_ASSERT_EQUALS("", "cppcheck: error: couldn't open the file: \"suppr.txt\".\n", GET_REDIRECT_OUTPUT);
     }
@@ -712,33 +704,26 @@ private:
     void exitcodeSuppressionsNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions", "file.cpp"};
-        settings.exitCode = 0;
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: AddressSanitizer: stack-buffer-overflow
-    // TODO: nothing is read since the file does not exist
-    /*
-       void fileList() {
+    // TODO: file does not exist
+    void fileList() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        ASSERT_EQUALS(true, defParser.parseFromArgs(4, argv));
+        TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
         // TODO: settings are not being reset after each test
         //TODO_ASSERT_EQUALS(4, 1, defParser.getPathNames().size());
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
-       }
-     */
+        TODO_ASSERT_EQUALS("", "cppcheck: error: couldn't open the file: \"files.txt\".\n", GET_REDIRECT_OUTPUT);
+    }
 
-    // TODO: should fail since the file is missing
-    /*
-       void fileListNoFile() {
+    void fileListNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        TODO_ASSERT_EQUALS(false, true, defParser.parseFromArgs(4, argv));
-        TODO_ASSERT_EQUALS("cppcheck: error: error: couldn't open the file: \"files.txt\".\n", "", GET_REDIRECT_OUTPUT);
-       }
-     */
+        ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: couldn't open the file: \"files.txt\".\n", GET_REDIRECT_OUTPUT);
+    }
 
     /*    void fileListStdin() {
             // TODO: Give it some stdin to read from, fails because the list of
@@ -759,7 +744,9 @@ private:
     void inlineSuppr() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--inline-suppr", "file.cpp"};
+        settings.inlineSuppressions = false;
         ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.inlineSuppressions);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -775,7 +762,6 @@ private:
     void jobsMissingCount() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j", "file.cpp"};
-        settings.jobs = 0;
         // Fails since -j is missing thread count
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-j' is not a number.\n", GET_REDIRECT_OUTPUT);
@@ -784,7 +770,6 @@ private:
     void jobsInvalid() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j", "e", "file.cpp"};
-        settings.jobs = 0;
         // Fails since invalid count given for -j
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-j' is not a number.\n", GET_REDIRECT_OUTPUT);
@@ -794,7 +779,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-f", "--max-configs=12", "file.cpp"};
         settings.force = false;
-        settings.maxConfigs = 12;
+        settings.maxConfigs = 0;
         ASSERT(defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS(12, settings.maxConfigs);
         ASSERT_EQUALS(false, settings.force);
@@ -945,7 +930,6 @@ private:
     void platformUnknown() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win128", "file.cpp"};
-        ASSERT(settings.platform(Settings::Unspecified));
         ASSERT(!defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: \"win128\".\n", GET_REDIRECT_OUTPUT);
     }
@@ -962,7 +946,6 @@ private:
     void plistDoesNotExist() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--plist-output=./cppcheck_reports", "file.cpp"};
-        settings.plistOutput = "";
         // Fails since folder pointed by --plist-output= does not exist
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
         // TODO: output contains non-native separator
@@ -1198,7 +1181,6 @@ private:
         CmdLineParser parser(&settings);
         // Fails since no ignored path given
         ASSERT_EQUALS(false, parser.parseFromArgs(2, argv));
-        ASSERT_EQUALS(0, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("cppcheck: error: argument to '-i' is missing.\n", GET_REDIRECT_OUTPUT);
     }
 
