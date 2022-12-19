@@ -373,7 +373,7 @@ void ResultsView::readErrorsXml(const QString &filename)
 
 void ResultsView::updateDetails(const QModelIndex &index)
 {
-    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI->mTree->model());
+    const QStandardItemModel *model = qobject_cast<const QStandardItemModel*>(mUI->mTree->model());
     QStandardItem *item = model->itemFromIndex(index);
 
     if (!item) {
