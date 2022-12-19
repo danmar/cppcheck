@@ -482,7 +482,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             do {
                 access.erase(scope);
                 scope = const_cast<Scope*>(scope->nestedIn);
-            } while (succeeds(tok, scope->bodyEnd));
+            } while (scope->type != Scope::eGlobal && succeeds(tok, scope->bodyEnd));
             continue;
         }
         // check for end of init list
