@@ -3915,7 +3915,7 @@ void Tokenizer::simplifyLabelsCaseDefault()
     int indentLevel = 0;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // Simplify labels in the executable scope..
-        Token *start = const_cast<Token *>(startOfExecutableScope(tok));
+        auto *start = const_cast<Token *>(startOfExecutableScope(tok));
         if (start) {
             tok = start;
             executablescope = true;

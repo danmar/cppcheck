@@ -5120,7 +5120,7 @@ static void valueFlowAfterMove(TokenList& tokenlist, const SymbolDatabase& symbo
                 start = memberInitializationTok;
         }
 
-        for (Token* tok = const_cast<Token*>(start); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(start); tok != scope->bodyEnd; tok = tok->next()) {
             Token * varTok;
             if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName().empty()) {
                 varTok = tok;
@@ -5376,7 +5376,7 @@ static std::set<nonneg int> getVarIds(const Token* tok)
 static void valueFlowSymbolic(const TokenList& tokenlist, const SymbolDatabase& symboldatabase, const Settings* settings)
 {
     for (const Scope* scope : symboldatabase.functionScopes) {
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "="))
                 continue;
             if (tok->astParent())
@@ -5469,7 +5469,7 @@ static ValueFlow::Value inferCondition(const std::string& op, const Token* varTo
 static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, const Settings* settings)
 {
     for (const Scope* scope : symboldatabase.functionScopes) {
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->hasKnownIntValue())
                 continue;
 
@@ -5582,7 +5582,7 @@ struct SymbolicInferModel : InferModel {
 static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings* settings)
 {
     for (const Scope* scope : symboldatabase.functionScopes) {
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "-|%comp%"))
                 continue;
             if (tok->hasKnownIntValue())
@@ -5930,7 +5930,7 @@ static void valueFlowAfterAssign(TokenList &tokenlist,
         if (skippedFunctions.count(scope))
             continue;
         std::unordered_map<nonneg int, std::unordered_set<nonneg int>> backAssigns;
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             // Assignment
             bool isInit = false;
             if (tok->str() != "=" && !(isInit = isVariableInit(tok)))
@@ -6063,7 +6063,7 @@ static void valueFlowAfterSwap(TokenList& tokenlist,
                                const Settings* settings)
 {
     for (const Scope* scope : symboldatabase.functionScopes) {
-        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "swap ("))
                 continue;
             if (!Token::simpleMatch(tok->next()->astOperand2(), ","))
@@ -6238,7 +6238,7 @@ struct ConditionHandler {
         for (const Scope *scope : symboldatabase.functionScopes) {
             if (skippedFunctions.count(scope))
                 continue;
-            for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            for (auto *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "if|while|for ("))
                     continue;
                 if (Token::Match(tok, ":|;|,"))
@@ -6727,7 +6727,7 @@ struct ConditionHandler {
                             return;
                         if (r.action.isModified())
                             return;
-                        Token* start = const_cast<Token*>(loopScope->bodyEnd);
+                        auto* start = const_cast<Token*>(loopScope->bodyEnd);
                         if (Token::simpleMatch(start, "} while (")) {
                             start = start->tokAt(2);
                             forward(start, start->link(), cond.vartok, values, tokenlist, settings);
@@ -7180,8 +7180,8 @@ static void valueFlowForLoop(TokenList &tokenlist, const SymbolDatabase& symbold
         if (scope.type != Scope::eFor)
             continue;
 
-        Token* tok = const_cast<Token*>(scope.classDef);
-        Token* const bodyStart = const_cast<Token*>(scope.bodyStart);
+        auto* tok = const_cast<Token*>(scope.classDef);
+        auto* const bodyStart = const_cast<Token*>(scope.bodyStart);
 
         if (!Token::simpleMatch(tok->next()->astOperand2(), ";") ||
             !Token::simpleMatch(tok->next()->astOperand2()->astOperand2(), ";"))
@@ -8779,7 +8779,7 @@ static void valueFlowContainerSize(TokenList& tokenlist,
 
     // after assignment
     for (const Scope *functionScope : symboldatabase.functionScopes) {
-        for (Token* tok = const_cast<Token*>(functionScope->bodyStart); tok != functionScope->bodyEnd; tok = tok->next()) {
+        for (auto* tok = const_cast<Token*>(functionScope->bodyStart); tok != functionScope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
                 Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)

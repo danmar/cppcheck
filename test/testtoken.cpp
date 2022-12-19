@@ -114,7 +114,7 @@ private:
     }
 
     void nextprevious() const {
-        Token *token = new Token();
+        auto *token = new Token();
         token->str("1");
         token->insertToken("2");
         token->next()->insertToken("3");

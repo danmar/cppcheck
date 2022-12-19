@@ -586,7 +586,7 @@ Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const
     if (unsafeUsage.empty())
         return nullptr;
 
-    MyFileInfo *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo;
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }
@@ -597,7 +597,7 @@ Check::FileInfo * CheckNullPointer::loadFileInfoFromXml(const tinyxml2::XMLEleme
     if (unsafeUsage.empty())
         return nullptr;
 
-    MyFileInfo *fileInfo = new MyFileInfo;
+    auto *fileInfo = new MyFileInfo;
     fileInfo->unsafeUsage = unsafeUsage;
     return fileInfo;
 }

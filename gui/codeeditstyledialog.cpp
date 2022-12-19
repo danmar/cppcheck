@@ -72,10 +72,10 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     mStyleIncoming(newStyle),
     mStyleOutgoing(newStyle)
 {
-    QVBoxLayout *vboxMain = new QVBoxLayout(this);
-    QHBoxLayout *hboxEdit = new QHBoxLayout();
+    auto *vboxMain = new QVBoxLayout(this);
+    auto *hboxEdit = new QHBoxLayout();
     // Color/Weight controls
-    QFormLayout *flEditControls = new QFormLayout();
+    auto *flEditControls = new QFormLayout();
     mBtnWidgetColorFG = new SelectColorButton(this);
     flEditControls->addRow(QObject::tr("Editor Foreground Color"),
                            mBtnWidgetColorFG);
@@ -141,7 +141,7 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     vboxMain->addLayout(hboxEdit);
 
     // Default Controls
-    QHBoxLayout *hboxDefaultControls = new QHBoxLayout();
+    auto *hboxDefaultControls = new QHBoxLayout();
     mBtnDefaultLight = new QPushButton(QObject::tr("Set to Default Light"),
                                        this);
     mBtnDefaultDark  = new QPushButton(QObject::tr("Set to Default Dark"),
@@ -153,7 +153,7 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     vboxMain->addLayout(hboxDefaultControls);
     vboxMain->addStretch(2);
     // dialog controls
-    QDialogButtonBox *dBtnBox = new QDialogButtonBox(
+    auto *dBtnBox = new QDialogButtonBox(
         QDialogButtonBox::Cancel |
         QDialogButtonBox::Ok |
         QDialogButtonBox::Reset);

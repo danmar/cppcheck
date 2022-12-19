@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationName("Cppcheck");
     QCoreApplication::setApplicationName("Cppcheck-GUI");
 
-    QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
+    auto* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
 
     // Set data dir..
     const QStringList args = QApplication::arguments();
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    TranslationHandler* th = new TranslationHandler(&app);
+    auto* th = new TranslationHandler(&app);
     th->setLanguage(settings->value(SETTINGS_LANGUAGE, th->suggestLanguage()).toString());
 
     if (!CheckArgs(QApplication::arguments()))

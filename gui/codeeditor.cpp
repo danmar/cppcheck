@@ -287,11 +287,11 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setStyleSheet(generateStyleString());
 
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
-    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
+    auto *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
+    auto *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
 #else
-    const QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
-    const QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
+    const auto *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
+    const auto *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
 #endif
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));

@@ -1347,8 +1347,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                 }
                 break;
             }
-            const unsigned int pos1 = (unsigned int)ovector[0];
-            const unsigned int pos2 = (unsigned int)ovector[1];
+            const auto pos1 = (unsigned int)ovector[0];
+            const auto pos2 = (unsigned int)ovector[1];
 
             // jump to the end of the match for the next pcre_exec
             pos = (int)pos2;
@@ -1751,7 +1751,7 @@ bool CppCheck::analyseWholeProgram()
     // Analyse the tokens
     CTU::FileInfo ctu;
     for (const Check::FileInfo *fi : mFileInfo) {
-        const CTU::FileInfo *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
+        const auto *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
         if (fi2) {
             ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
             ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
