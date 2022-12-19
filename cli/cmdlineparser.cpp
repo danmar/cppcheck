@@ -1026,6 +1026,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     if (mSettings->basePaths.empty() && mSettings->relativePaths)
         mSettings->basePaths = mPathNames;
 
+    if (mSettings->xml && mSettings->sarif) {
+        printError("output format cannot be both XML and SARIF.");
+        return false;
+    }
+
     return true;
 }
 
