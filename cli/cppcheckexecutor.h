@@ -30,6 +30,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <memory>
 
 class CppCheck;
 class Library;
