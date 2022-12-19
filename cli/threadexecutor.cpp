@@ -56,7 +56,7 @@ public:
         mItNextFileSettings = mThreadExecutor.mSettings.project.fileSettings.begin();
 
         mTotalFiles = files.size() + mThreadExecutor.mSettings.project.fileSettings.size();
-        mTotalFileSize = std::accumulate(files.begin(), files.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
+        mTotalFileSize = std::accumulate(files.cbegin(), files.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
             return v + p.second;
         });
     }
@@ -105,7 +105,7 @@ private:
             std::string errmsg = msg.toString(mThreadExecutor.mSettings.verbose);
 
             std::lock_guard<std::mutex> lg(mErrorSync);
-            if (std::find(mThreadExecutor.mErrorList.begin(), mThreadExecutor.mErrorList.end(), errmsg) == mThreadExecutor.mErrorList.end()) {
+            if (std::find(mThreadExecutor.mErrorList.cbegin(), mThreadExecutor.mErrorList.cend(), errmsg) == mThreadExecutor.mErrorList.cend()) {
                 mThreadExecutor.mErrorList.emplace_back(std::move(errmsg));
                 reportError = true;
             }
@@ -159,7 +159,7 @@ unsigned int STDCALL ThreadExecutor::threadProc(SyncLogForwarder* logForwarder)
     logForwarder->mFileSync.lock();
 
     for (;;) {
-        if (itFile == logForwarder->mThreadExecutor.mFiles.end() && itFileSettings == logForwarder->mThreadExecutor.mSettings.project.fileSettings.end()) {
+        if (itFile == logForwarder->mThreadExecutor.mFiles.cend() && itFileSettings == logForwarder->mThreadExecutor.mSettings.project.fileSettings.cend()) {
             logForwarder->mFileSync.unlock();
             break;
         }

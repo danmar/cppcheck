@@ -184,7 +184,7 @@ struct Interval {
     static std::vector<const ValueFlow::Value*> merge(std::vector<const ValueFlow::Value*> x,
                                                       const std::vector<const ValueFlow::Value*>& y)
     {
-        x.insert(x.end(), y.begin(), y.end());
+        x.insert(x.end(), y.cbegin(), y.cend());
         return x;
     }
 
@@ -245,7 +245,7 @@ struct Interval {
         if (r.empty())
             return {};
         bool b = calculate(op, r.front(), 0);
-        if (std::all_of(r.begin() + 1, r.end(), [&](int i) {
+        if (std::all_of(r.cbegin() + 1, r.cend(), [&](int i) {
             return b == calculate(op, i, 0);
         }))
             return {b};
@@ -263,8 +263,8 @@ static void addToErrorPath(ValueFlow::Value& value, const std::vector<const Valu
     for (const ValueFlow::Value* ref : refs) {
         if (ref->condition && !value.condition)
             value.condition = ref->condition;
-        std::copy_if(ref->errorPath.begin(),
-                     ref->errorPath.end(),
+        std::copy_if(ref->errorPath.cbegin(),
+                     ref->errorPath.cend(),
                      std::back_inserter(value.errorPath),
                      [&](const ErrorPathItem& e) {
             return locations.insert(e.first).second;
@@ -292,7 +292,7 @@ static void setValueKind(ValueFlow::Value& value, const std::vector<const ValueF
 
 static bool inferNotEqual(const std::list<ValueFlow::Value>& values, MathLib::bigint x)
 {
-    return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& value) {
+    return std::any_of(values.cbegin(), values.cend(), [&](const ValueFlow::Value& value) {
         return value.isImpossible() && value.intvalue == x;
     });
 }

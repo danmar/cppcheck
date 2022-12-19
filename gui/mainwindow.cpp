@@ -466,7 +466,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     if (mProjectFile) {
         std::vector<std::string> v;
         const QStringList excluded = mProjectFile->getExcludedPaths();
-        std::transform(excluded.begin(), excluded.end(), std::back_inserter(v), [](const QString& e) {
+        std::transform(excluded.cbegin(), excluded.cend(), std::back_inserter(v), [](const QString& e) {
             return e.toStdString();
         });
         p.ignorePaths(v);
@@ -569,7 +569,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (!checkSettings.buildDir.empty()) {
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        std::transform(fileNames.begin(), fileNames.end(), std::back_inserter(sourcefiles), [](const QString& s) {
+        std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(sourcefiles), [](const QString& s) {
             return s.toStdString();
         });
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);

@@ -104,7 +104,7 @@ static bool isVariableCopyNeeded(const Variable &var, Function::Type type)
 
 static bool isVcl(const Settings *settings)
 {
-    return std::any_of(settings->libraries.begin(), settings->libraries.end(), [](const std::string& library) {
+    return std::any_of(settings->libraries.cbegin(), settings->libraries.cend(), [](const std::string& library) {
         return library == "vcl";
     });
 }
@@ -146,10 +146,10 @@ void CheckClass::constructors()
 
         const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");
 
-        const bool usedInUnion = std::any_of(mSymbolDatabase->scopeList.begin(), mSymbolDatabase->scopeList.end(), [&](const Scope& unionScope) {
+        const bool usedInUnion = std::any_of(mSymbolDatabase->scopeList.cbegin(), mSymbolDatabase->scopeList.cend(), [&](const Scope& unionScope) {
             if (unionScope.type != Scope::eUnion)
                 return false;
-            return std::any_of(unionScope.varlist.begin(), unionScope.varlist.end(), [&](const Variable& var) {
+            return std::any_of(unionScope.varlist.cbegin(), unionScope.varlist.cend(), [&](const Variable& var) {
                 return var.type() && var.type()->classScope == scope;
             });
         });
@@ -184,7 +184,7 @@ void CheckClass::constructors()
         // #3196 => bailout if there are nested unions
         // TODO: handle union variables better
         {
-            const bool bailout = std::any_of(scope->nestedList.begin(), scope->nestedList.end(), [](const Scope* nestedScope) {
+            const bool bailout = std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [](const Scope* nestedScope) {
                 return nestedScope->type == Scope::eUnion;
             });
             if (bailout)
@@ -342,7 +342,7 @@ void CheckClass::checkExplicitConstructors()
 
         // Is class abstract? Maybe this test is over-simplification, but it will suffice for simple cases,
         // and it will avoid false positives.
-        const bool isAbstractClass = std::any_of(scope->functionList.begin(), scope->functionList.end(), [](const Function& func) {
+        const bool isAbstractClass = std::any_of(scope->functionList.cbegin(), scope->functionList.cend(), [](const Function& func) {
             return func.isPure();
         });
 
@@ -442,12 +442,12 @@ void CheckClass::copyconstructors()
             if (!funcCopyCtor || funcCopyCtor->isDefault()) {
                 bool unknown = false;
                 if (!hasNonCopyableBase(scope, &unknown) && !unknown)
-                    noCopyConstructorError(scope, funcCopyCtor, allocatedVars.begin()->second, unknown);
+                    noCopyConstructorError(scope, funcCopyCtor, allocatedVars.cbegin()->second, unknown);
             }
             if (!funcOperatorEq || funcOperatorEq->isDefault()) {
                 bool unknown = false;
                 if (!hasNonCopyableBase(scope, &unknown) && !unknown)
-                    noOperatorEqError(scope, funcOperatorEq, allocatedVars.begin()->second, unknown);
+                    noOperatorEqError(scope, funcOperatorEq, allocatedVars.cbegin()->second, unknown);
             }
             if (!funcDestructor || funcDestructor->isDefault()) {
                 const Token * mustDealloc = nullptr;
@@ -619,7 +619,7 @@ bool CheckClass::canNotMove(const Scope *scope)
 
 static void getAllVariableMembers(const Scope *scope, std::vector<const Variable *>& varList)
 {
-    std::transform(scope->varlist.begin(), scope->varlist.end(), std::back_inserter(varList), [](const Variable& var) {
+    std::transform(scope->varlist.cbegin(), scope->varlist.cend(), std::back_inserter(varList), [](const Variable& var) {
         return &var;
     });
     if (scope->definedType) {
@@ -639,7 +639,7 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
     std::vector<const Variable *> varlist;
     getAllVariableMembers(scope, varlist);
     ret.reserve(varlist.size());
-    std::transform(varlist.begin(), varlist.end(), std::back_inserter(ret), [](const Variable* var) {
+    std::transform(varlist.cbegin(), varlist.cend(), std::back_inserter(ret), [](const Variable* var) {
         return Usage(var);
     });
     return ret;
@@ -720,7 +720,7 @@ bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *sco
         if (derivedFrom && derivedFrom->classScope) {
             const std::list<Function>& functionList = derivedFrom->classScope->functionList;
 
-            if (std::any_of(functionList.begin(), functionList.end(), [&](const Function& func) {
+            if (std::any_of(functionList.cbegin(), functionList.cend(), [&](const Function& func) {
                 return func.tokenDef->str() == tok->str() && !func.isStatic() && !func.isConst();
             }))
                 return true;
@@ -762,7 +762,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
                     // recursive call
                     // assume that all variables are initialized
-                    if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
+                    if (std::find(callstack.cbegin(), callstack.cend(), member) != callstack.cend()) {
                         /** @todo false negative: just bail */
                         assignAllVar(usage);
                         return;
@@ -826,7 +826,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Calling member variable function?
         if (Token::Match(ftok->next(), "%var% . %name% (") && !(ftok->next()->valueType() && ftok->next()->valueType()->pointer)) {
-            if (std::any_of(scope->varlist.begin(), scope->varlist.end(), [&](const Variable& var) {
+            if (std::any_of(scope->varlist.cbegin(), scope->varlist.cend(), [&](const Variable& var) {
                 return var.declarationId() == ftok->next()->varId();
             }))
                 /** @todo false negative: we assume function changes variable state */
@@ -896,7 +896,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 const Function *member = ftok->function();
                 // recursive call
                 // assume that all variables are initialized
-                if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
+                if (std::find(callstack.cbegin(), callstack.cend(), member) != callstack.cend()) {
                     /** @todo false negative: just bail */
                     assignAllVar(usage);
                     return;
@@ -945,7 +945,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
                 // recursive call
                 // assume that all variables are initialized
-                if (std::find(callstack.begin(), callstack.end(), member) != callstack.end()) {
+                if (std::find(callstack.cbegin(), callstack.cend(), member) != callstack.cend()) {
                     assignAllVar(usage);
                     return;
                 }
@@ -1694,7 +1694,7 @@ void CheckClass::operatorEqToSelf()
                 // make sure return signature is correct
                 if (Token::Match(func.retDef, "%type% &") && func.retDef->str() == scope->className) {
                     // find the parameter name
-                    const Token *rhs = func.argumentList.begin()->nameToken();
+                    const Token *rhs = func.argumentList.cbegin()->nameToken();
                     const Token* out_ifStatementScopeStart = nullptr;
                     if (!hasAssignSelf(&func, rhs, &out_ifStatementScopeStart)) {
                         if (hasAllocation(&func, scope))
@@ -1878,7 +1878,7 @@ void CheckClass::virtualDestructor()
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
                 if (destructor && !destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Public) {
-                    if (std::any_of(scope->functionList.begin(), scope->functionList.end(), [](const Function& func) {
+                    if (std::any_of(scope->functionList.cbegin(), scope->functionList.cend(), [](const Function& func) {
                         return func.hasVirtualSpecifier();
                     }))
                         inconclusiveErrors.push_back(destructor);
@@ -2361,7 +2361,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                             if (assignVar->isPointer() && !assignVar->isConst() && var->typeScope()) {
                                 const auto& funcMap = var->typeScope()->functionMap;
                                 // if there is no operator that is const and returns a non-const pointer, func cannot be const
-                                if (std::none_of(funcMap.begin(), funcMap.end(), [](const std::pair<std::string, const Function*>& fm) {
+                                if (std::none_of(funcMap.cbegin(), funcMap.cend(), [](const std::pair<std::string, const Function*>& fm) {
                                     return fm.second->isConst() && fm.first == "operator[]" && !Function::returnsConst(fm.second);
                                 }))
                                     return false;
@@ -2715,11 +2715,11 @@ void CheckClass::getFirstVirtualFunctionCallStack(
         return;
     }
     std::map<const Function *, std::list<const Token *>>::const_iterator found = virtualFunctionCallsMap.find(callFunction);
-    if (found == virtualFunctionCallsMap.end() || found->second.empty()) {
+    if (found == virtualFunctionCallsMap.cend() || found->second.empty()) {
         pureFuncStack.clear();
         return;
     }
-    const Token * firstCall = *found->second.begin();
+    const Token * firstCall = *found->second.cbegin();
     pureFuncStack.push_back(firstCall);
     getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, firstCall, pureFuncStack);
 }
@@ -2732,7 +2732,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
-    std::transform(tokStack.begin(), tokStack.end(), std::back_inserter(errorPath), [](const Token* tok) {
+    std::transform(tokStack.cbegin(), tokStack.cend(), std::back_inserter(errorPath), [](const Token* tok) {
         return ErrorPathItem(tok, "Calling " + tok->str());
     });
     int lineNumber = 1;
@@ -2767,7 +2767,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
-    std::transform(tokStack.begin(), tokStack.end(), std::back_inserter(errorPath), [](const Token* tok) {
+    std::transform(tokStack.cbegin(), tokStack.cend(), std::back_inserter(errorPath), [](const Token* tok) {
         return ErrorPathItem(tok, "Calling " + tok->str());
     });
     if (!errorPath.empty())
@@ -3094,8 +3094,8 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
             continue;
 
         // the full definition must be compared
-        const bool fullDefinition = std::all_of(classScope->functionList.begin(),
-                                                classScope->functionList.end(),
+        const bool fullDefinition = std::all_of(classScope->functionList.cbegin(),
+                                                classScope->functionList.cend(),
                                                 [](const Function& f) {
             return f.hasBody();
         });

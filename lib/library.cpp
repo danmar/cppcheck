@@ -1313,10 +1313,10 @@ bool Library::formatstr_function(const Token* ftok) const
 int Library::formatstr_argno(const Token* ftok) const
 {
     const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = functions.at(getFunctionName(ftok)).argumentChecks;
-    auto it = std::find_if(argumentChecksFunc.begin(), argumentChecksFunc.end(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
+    auto it = std::find_if(argumentChecksFunc.cbegin(), argumentChecksFunc.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
         return a.second.formatstr;
     });
-    return it == argumentChecksFunc.end() ? -1 : it->first - 1;
+    return it == argumentChecksFunc.cend() ? -1 : it->first - 1;
 }
 
 bool Library::formatstr_scan(const Token* ftok) const
@@ -1352,7 +1352,7 @@ const std::string& Library::returnValue(const Token *ftok) const
     if (isNotLibraryFunction(ftok))
         return emptyString;
     const std::map<std::string, std::string>::const_iterator it = mReturnValue.find(getFunctionName(ftok));
-    return it != mReturnValue.end() ? it->second : emptyString;
+    return it != mReturnValue.cend() ? it->second : emptyString;
 }
 
 const std::string& Library::returnValueType(const Token *ftok) const
@@ -1360,7 +1360,7 @@ const std::string& Library::returnValueType(const Token *ftok) const
     if (isNotLibraryFunction(ftok))
         return emptyString;
     const std::map<std::string, std::string>::const_iterator it = mReturnValueType.find(getFunctionName(ftok));
-    return it != mReturnValueType.end() ? it->second : emptyString;
+    return it != mReturnValueType.cend() ? it->second : emptyString;
 }
 
 int Library::returnValueContainer(const Token *ftok) const
@@ -1368,7 +1368,7 @@ int Library::returnValueContainer(const Token *ftok) const
     if (isNotLibraryFunction(ftok))
         return -1;
     const std::map<std::string, int>::const_iterator it = mReturnValueContainer.find(getFunctionName(ftok));
-    return it != mReturnValueContainer.end() ? it->second : -1;
+    return it != mReturnValueContainer.cend() ? it->second : -1;
 }
 
 std::vector<MathLib::bigint> Library::unknownReturnValues(const Token *ftok) const
@@ -1376,7 +1376,7 @@ std::vector<MathLib::bigint> Library::unknownReturnValues(const Token *ftok) con
     if (isNotLibraryFunction(ftok))
         return std::vector<MathLib::bigint>();
     const std::map<std::string, std::vector<MathLib::bigint>>::const_iterator it = mUnknownReturnValues.find(getFunctionName(ftok));
-    return (it == mUnknownReturnValues.end()) ? std::vector<MathLib::bigint>() : it->second;
+    return (it == mUnknownReturnValues.cend()) ? std::vector<MathLib::bigint>() : it->second;
 }
 
 const Library::Function *Library::getFunction(const Token *ftok) const
@@ -1397,7 +1397,7 @@ bool Library::hasminsize(const Token *ftok) const
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     if (it == functions.cend())
         return false;
-    return std::any_of(it->second.argumentChecks.begin(), it->second.argumentChecks.end(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
+    return std::any_of(it->second.argumentChecks.cbegin(), it->second.argumentChecks.cend(), [](const std::pair<const int, Library::ArgumentChecks>& a) {
         return !a.second.minsizes.empty();
     });
 }
@@ -1454,7 +1454,7 @@ bool Library::isFunctionConst(const Token *ftok) const
     if (isNotLibraryFunction(ftok))
         return false;
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
-    return (it != functions.end() && it->second.isconst);
+    return (it != functions.cend() && it->second.isconst);
 }
 
 bool Library::isnoreturn(const Token *ftok) const
@@ -1493,19 +1493,19 @@ bool Library::markupFile(const std::string &path) const
 bool Library::processMarkupAfterCode(const std::string &path) const
 {
     const std::map<std::string, bool>::const_iterator it = mProcessAfterCode.find(Path::getFilenameExtensionInLowerCase(path));
-    return (it == mProcessAfterCode.end() || it->second);
+    return (it == mProcessAfterCode.cend() || it->second);
 }
 
 bool Library::reportErrors(const std::string &path) const
 {
     const std::map<std::string, bool>::const_iterator it = mReportErrors.find(Path::getFilenameExtensionInLowerCase(path));
-    return (it == mReportErrors.end() || it->second);
+    return (it == mReportErrors.cend() || it->second);
 }
 
 bool Library::isexecutableblock(const std::string &file, const std::string &token) const
 {
     const std::unordered_map<std::string, CodeBlock>::const_iterator it = mExecutableBlocks.find(Path::getFilenameExtensionInLowerCase(file));
-    return (it != mExecutableBlocks.end() && it->second.isBlock(token));
+    return (it != mExecutableBlocks.cend() && it->second.isBlock(token));
 }
 
 int Library::blockstartoffset(const std::string &file) const

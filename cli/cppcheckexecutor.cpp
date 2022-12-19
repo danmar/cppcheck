@@ -131,7 +131,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     // Output a warning for the user if he tries to exclude headers
     const std::vector<std::string>& ignored = parser.getIgnoredPaths();
-    const bool warn = std::any_of(ignored.begin(), ignored.end(), [](const std::string& i) {
+    const bool warn = std::any_of(ignored.cbegin(), ignored.cend(), [](const std::string& i) {
         return Path::isHeader(i);
     });
     if (warn) {
@@ -152,7 +152,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::list<ImportProject::FileSettings> newList;
 
         const std::list<ImportProject::FileSettings>& fileSettings = settings.project.fileSettings;
-        std::copy_if(fileSettings.begin(), fileSettings.end(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
+        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
             return matchglobs(mSettings->fileFilters, fs.filename);
         });
         if (!newList.empty())
@@ -321,7 +321,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         // Single process
         settings.jointSuppressionReport = true;
 
-        const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
+        const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
             return v + f.second;
         });
 

@@ -106,7 +106,7 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>* se
     std::list<std::string> templist;
     if (!addIncludePathsToList(fileName, &templist))
         return false;
-    set->insert(templist.begin(), templist.end());
+    set->insert(templist.cbegin(), templist.cend());
     return true;
 }
 
@@ -647,7 +647,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->libraries.emplace_back(lib);
 
                     const auto& excludedPaths = mSettings->project.guiProject.excludedPaths;
-                    std::copy(excludedPaths.begin(), excludedPaths.end(), std::back_inserter(mIgnoredPaths));
+                    std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
 
                     const std::string platform(mSettings->project.guiProject.platform);
 
@@ -839,8 +839,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     std::string message("couldn't open the file: \"");
                     message += filename;
                     message += "\".";
-                    if (std::count(filename.begin(), filename.end(), ',') > 0 ||
-                        std::count(filename.begin(), filename.end(), '.') > 1) {
+                    if (std::count(filename.cbegin(), filename.cend(), ',') > 0 ||
+                        std::count(filename.cbegin(), filename.cend(), '.') > 1) {
                         // If user tried to pass multiple files (we can only guess that)
                         // e.g. like this: --suppressions-list=a.txt,b.txt
                         // print more detailed error message to tell user how he can solve the problem

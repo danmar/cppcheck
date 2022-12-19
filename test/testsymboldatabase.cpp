@@ -90,7 +90,7 @@ private:
     static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) {
         std::list<Scope>::const_iterator scope;
 
-        for (scope = db->scopeList.begin(); scope != db->scopeList.end(); ++scope) {
+        for (scope = db->scopeList.cbegin(); scope != db->scopeList.cend(); ++scope) {
             if (scope->type == Scope::eFunction) {
                 if (scope->classDef == tok)
                     return &(*scope);
@@ -108,7 +108,7 @@ private:
                 currScope = currScope->nestedIn;
         }
         while (currScope) {
-            auto it = std::find_if(currScope->functionList.begin(), currScope->functionList.end(), [&](const Function& f) {
+            auto it = std::find_if(currScope->functionList.cbegin(), currScope->functionList.cend(), [&](const Function& f) {
                 return f.tokenDef->str() == str;
             });
             if (it != currScope->functionList.end())
@@ -2159,9 +2159,9 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        const std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.cbegin();
         ASSERT(it->varlist.size() == 1);
-        const std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.cbegin();
         ASSERT(var->name() == "i");
         ASSERT(var->typeStartToken()->str() == "int");
     }
@@ -2171,10 +2171,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        const std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.cbegin();
         ASSERT(it->varlist.size() == 1);
 
-        const std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.cbegin();
         ASSERT(var->name() == "array");
         ASSERT(var->typeStartToken()->str() == "int");
     }
@@ -2184,10 +2184,10 @@ private:
 
         ASSERT(db && db->scopeList.size() == 1);
 
-        const std::list<Scope>::const_iterator it = db->scopeList.begin();
+        const std::list<Scope>::const_iterator it = db->scopeList.cbegin();
         ASSERT(it->varlist.size() == 1);
 
-        const std::list<Variable>::const_iterator var = it->varlist.begin();
+        const std::list<Variable>::const_iterator var = it->varlist.cbegin();
         ASSERT(var->name() == "array");
         ASSERT(var->typeStartToken()->str() == "int");
     }
@@ -2476,8 +2476,8 @@ private:
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
         ASSERT_EQUALS(1, scope->functionList.size());
-        ASSERT(scope->functionList.begin()->functionScope != nullptr);
-        const Scope * functionScope = scope->functionList.begin()->functionScope;
+        ASSERT(scope->functionList.cbegin()->functionScope != nullptr);
+        const Scope * functionScope = scope->functionList.cbegin()->functionScope;
         ++scope;
         ASSERT(functionScope == &*scope);
     }
@@ -2494,8 +2494,8 @@ private:
         ++scope;
         ASSERT_EQUALS((unsigned int)Scope::eClass, (unsigned int)scope->type);
         ASSERT_EQUALS(1, scope->functionList.size());
-        ASSERT(scope->functionList.begin()->functionScope != nullptr);
-        const Scope * functionScope = scope->functionList.begin()->functionScope;
+        ASSERT(scope->functionList.cbegin()->functionScope != nullptr);
+        const Scope * functionScope = scope->functionList.cbegin()->functionScope;
         ++scope;
         ASSERT(functionScope == &*scope);
     }
@@ -2642,7 +2642,7 @@ private:
     void functionReturnsReference() {
         GET_SYMBOL_DB("Fred::Reference foo();");
         ASSERT_EQUALS(1, db->scopeList.back().functionList.size());
-        const Function &func = *db->scopeList.back().functionList.begin();
+        const Function &func = *db->scopeList.back().functionList.cbegin();
         ASSERT(!Function::returnsReference(&func, false));
         ASSERT(Function::returnsReference(&func, true));
     }
@@ -2656,7 +2656,7 @@ private:
                       "namespace barney { X::X(int) { } }");
 
         // Locate the scope for the class..
-        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
             return s.isClassOrStruct();
         });
         const Scope *scope = (it == db->scopeList.end()) ? nullptr : &*it;
@@ -2687,7 +2687,7 @@ private:
                       "}");
 
         // Locate the scope for the class..
-        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
             return s.isClassOrStruct();
         });
         const Scope* scope = (it == db->scopeList.end()) ? nullptr : &*it;
@@ -2973,7 +2973,7 @@ private:
         ASSERT_EQUALS(4U, db->scopeList.size());
 
         // Find the scope for the Fred struct..
-        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [&](const Scope& scope) {
+        auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [&](const Scope& scope) {
             return scope.isClassOrStruct() && scope.className == "Fred";
         });
         const Scope* fredScope = (it == db->scopeList.end()) ? nullptr : &*it;
@@ -3428,7 +3428,7 @@ private:
 
             ASSERT(db != nullptr);
             ASSERT_EQUALS(2U, db->scopeList.size());
-            ASSERT_EQUALS(2U, db->scopeList.begin()->functionList.size());
+            ASSERT_EQUALS(2U, db->scopeList.cbegin()->functionList.size());
         }
     }
 
@@ -4985,7 +4985,7 @@ private:
                           "}\n");
             ASSERT(db);
             ASSERT_EQUALS(1, db->functionScopes.size());
-            auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
                 return s.className == "T";
             });
             ASSERT(it != db->scopeList.end());
@@ -5007,7 +5007,7 @@ private:
                           "}\n");
             ASSERT(db);
             ASSERT_EQUALS(1, db->functionScopes.size());
-            auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
                 return s.className == "A";
             });
             ASSERT(it != db->scopeList.end());
@@ -5030,7 +5030,7 @@ private:
                           "void A::f(N::O::B*) {}\n");
             ASSERT(db);
             ASSERT_EQUALS(1, db->functionScopes.size());
-            auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+            auto it = std::find_if(db->scopeList.cbegin(), db->scopeList.cend(), [](const Scope& s) {
                 return s.className == "A";
             });
             ASSERT(it != db->scopeList.end());
@@ -5111,7 +5111,7 @@ private:
         ASSERT_EQUALS(1, db->scopeList.front().varlist.size());
         auto list = db->scopeList;
         list.pop_front();
-        ASSERT_EQUALS(true, std::all_of(list.begin(), list.end(), [](const Scope& scope) {
+        ASSERT_EQUALS(true, std::all_of(list.cbegin(), list.cend(), [](const Scope& scope) {
             return scope.varlist.empty();
         }));
     }
@@ -7452,8 +7452,8 @@ private:
         const Scope * class_scope = &*scope;
         ++scope;
         ASSERT(class_scope->functionList.size() == 1);
-        ASSERT(class_scope->functionList.begin()->hasBody());
-        ASSERT(class_scope->functionList.begin()->functionScope == &*scope);
+        ASSERT(class_scope->functionList.cbegin()->hasBody());
+        ASSERT(class_scope->functionList.cbegin()->functionScope == &*scope);
     }
 
 #define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)

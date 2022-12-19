@@ -359,7 +359,7 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 
 unsigned int MathLib::encodeMultiChar(const std::string& str)
 {
-    return std::accumulate(str.begin(), str.end(), uint32_t(), [](uint32_t v, char c) {
+    return std::accumulate(str.cbegin(), str.cend(), uint32_t(), [](uint32_t v, char c) {
         return (v << 8) | c;
     });
 }
@@ -479,9 +479,9 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
 static double floatHexToDoubleNumber(const std::string& str)
 {
     const std::size_t p = str.find_first_of("pP",3);
-    const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
+    const double factor1 = myStod(str, str.cbegin() + 2, str.cbegin()+p, 16);
     const bool suffix = (str.back() == 'f') || (str.back() == 'F') || (str.back() == 'l') || (str.back() == 'L');
-    const double exponent = myStod(str, str.begin() + p + 1, suffix ? str.end()-1:str.end(), 10);
+    const double exponent = myStod(str, str.cbegin() + p + 1, suffix ? str.cend()-1:str.cend(), 10);
     const double factor2 = std::pow(2, exponent);
     return factor1 * factor2;
 }
@@ -727,7 +727,7 @@ static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::
 // cppcheck-suppress unusedFunction
 bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions)
 {
-    return isValidIntegerSuffixIt(str.begin(), str.end(), supportMicrosoftExtensions);
+    return isValidIntegerSuffixIt(str.cbegin(), str.cend(), supportMicrosoftExtensions);
 }
 
 
