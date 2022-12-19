@@ -407,6 +407,8 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
         const Token* branchTok = tok->astOperand2();
         if (!branchTok->astOperand1()->valueType())
             return false;
+        if (!branchTok->astOperand2()->valueType())
+            return false;
         return !branchTok->astOperand1()->valueType()->isTypeEqual(branchTok->astOperand2()->valueType());
     }
     if (Token::simpleMatch(tok, "(") && tok->astOperand1() &&
