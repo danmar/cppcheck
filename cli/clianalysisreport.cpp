@@ -25,6 +25,6 @@ void CLIAnalysisReport::addFinding(const ErrorMessage &msg) {
     mBuffer << msg.toString(mVerbose, mTemplateFormat, mTemplateLocation);
 }
 
-std::string CLIAnalysisReport::emit() {
+std::string CLIAnalysisReport::serialize() {
     return mBuffer.str();
 }

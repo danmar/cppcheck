@@ -110,7 +110,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (parser.getShowErrorMessages()) {
             mShowAllErrors = true;
             cppcheck->getErrorMessages();
-            std::cout << mReport->emit() << std::endl;
+            std::cout << mReport->serialize() << std::endl;
         }
 
         if (parser.exitAfterPrinting()) {
@@ -413,7 +413,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         }
     }
 
-    reportErr(mReport->emit());
+    reportErr(mReport->serialize());
 
     mSettings = nullptr;
     if (returnValue)

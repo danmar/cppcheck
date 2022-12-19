@@ -70,7 +70,7 @@ static std::string sarifPrecision(Certainty::CertaintyLevel certainty) {
 // The complete specification is at <https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html>
 // but GitHub provides an easier document to read (albeit with different requirements):
 // <https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning>.
-std::string SARIFAnalysisReport::emit() {
+std::string SARIFAnalysisReport::serialize() {
     picojson::object sarifLog;
     picojson::object run;
     picojson::object tool;

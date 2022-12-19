@@ -26,7 +26,7 @@ void XMLAnalysisReport::addFinding(const ErrorMessage &msg) {
     mBuffer << msg.toXML() << std::endl;
 }
 
-std::string XMLAnalysisReport::emit() {
+std::string XMLAnalysisReport::serialize() {
     mBuffer << ErrorMessage::getXMLFooter();
     return mBuffer.str();
 }
