@@ -1577,7 +1577,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         return;
 
     if (!mSettings.buildDir.empty())
-        mAnalyzerInformation.reportErr(msg, mSettings.verbose);
+        mAnalyzerInformation.reportErr(msg);
 
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 

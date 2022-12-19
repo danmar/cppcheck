@@ -867,6 +867,32 @@ private:
                     "    return m.at(1);\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("struct A {\n"
+                    "  virtual void init_v(std::vector<int> *v) = 0;\n"
+                    "};\n"
+                    "A* create_a();\n"
+                    "struct B {\n"
+                    "  B() : a(create_a()) {}\n"
+                    "  void init_v(std::vector<int> *v) {\n"
+                    "    a->init_v(v);\n"
+                    "  }\n"
+                    "  A* a;\n"
+                    "};\n"
+                    "void f() {\n"
+                    "  B b;\n"
+                    "  std::vector<int> v;\n"
+                    "  b.init_v(&v);\n"
+                    "  v[0];\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(std::vector<int>* v) {\n"
+                    "  if (v->empty())\n"
+                    "    v->push_back(1);\n"
+                    "  auto x = v->back();\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsSymbolic()
@@ -5174,6 +5200,25 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("bool g(int);\n"
+              "int f(const std::vector<int>& v) {\n"
+              "    int ret = 0;\n"
+              "    for (const auto i : v)\n"
+              "        if (!g(i))\n"
+              "            ret = 1;\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int ret = 0;\n"
+              "    for (const auto i : v)\n"
+              "        if (i < 5)\n"
+              "            ret = 1;\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of algorithm instead of a raw loop.\n", errout.str());
     }
 
     void loopAlgoMinMax() {

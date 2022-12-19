@@ -84,7 +84,7 @@ public:
          * Set the filename.
          * @param file Filename to set.
          */
-        void setfile(const std::string &file);
+        void setfile(std::string file);
 
         /**
          * @return the location as a string. Format: [file:line]
@@ -165,7 +165,7 @@ public:
                          const std::string &templateLocation = emptyString) const;
 
     std::string serialize() const;
-    bool deserialize(const std::string &data);
+    void deserialize(const std::string &data);
 
     std::list<FileLocation> callStack;
     std::string id;

@@ -42,9 +42,10 @@ option(USE_QT6              "Prefer Qt6 when available"                         
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                             ON)
-option(CPPCHK_GLIBCXX_DEBUG "Usage of _GLIBCXX_DEBUG in Debug build"                        ON)
+option(CPPCHK_GLIBCXX_DEBUG "Usage of STL debug checks in Debug build"                      ON)
 option(USE_THREADS          "Usage of threads instead of fork() for -j"                     OFF)
 option(USE_BOOST            "Usage of Boost"                                                OFF)
+option(USE_LIBCXX           "Use libc++ instead of libstdc++"                               OFF)
 
 option(DISABLE_CRTDBG_MAP_ALLOC "Disable usage of Visual Studio C++ memory leak detection in Debug build" OFF)
 option(NO_UNIX_SIGNAL_HANDLING "Disable usage of Unix Signal Handling"                      OFF)

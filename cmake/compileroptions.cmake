@@ -65,6 +65,11 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         add_compile_options(-gdwarf-4)
     endif()
 
+    if (USE_LIBCXX)
+        add_compile_options(-stdlib=libc++)
+        add_link_options(-lc++)
+    endif()
+
    add_compile_options_safe(-Wno-documentation-unknown-command)
 
    # TODO: fix and enable these warnings - or move to suppression list below

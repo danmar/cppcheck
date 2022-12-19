@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
 
     steps:
       - uses: actions/checkout@v3

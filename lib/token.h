@@ -1078,7 +1078,11 @@ public:
 
     static const ::Type* typeOf(const Token* tok, const Token** typeTok = nullptr);
 
-    static std::pair<const Token*, const Token*> typeDecl(const Token * tok);
+    /**
+     * @return the declaration associated with this token.
+     * @param pointedToType return the pointed-to type?
+     */
+    static std::pair<const Token*, const Token*> typeDecl(const Token* tok, bool pointedToType = false);
 
     static std::string typeStr(const Token* tok);
 

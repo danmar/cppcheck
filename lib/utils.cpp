@@ -56,7 +56,7 @@ bool matchglob(const std::string& pattern, const std::string& name)
 {
     const char* p = pattern.c_str();
     const char* n = name.c_str();
-    std::stack<std::pair<const char*, const char*>> backtrack;
+    std::stack<std::pair<const char*, const char*>, std::vector<std::pair<const char*, const char*>>> backtrack;
 
     for (;;) {
         bool matching = true;
@@ -126,8 +126,7 @@ void strTolower(std::string& str)
 {
     // This wrapper exists because Sun's CC does not allow a static_cast
     // from extern "C" int(*)(int) to int(*)(int).
-    static auto tolowerWrapper = [](int c) {
+    std::transform(str.begin(), str.end(), str.begin(), [](int c) {
         return std::tolower(c);
-    };
-    std::transform(str.begin(), str.end(), str.begin(), tolowerWrapper);
+    });
 }

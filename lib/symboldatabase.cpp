@@ -387,8 +387,12 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
 
             tok = tok->tokAt(3);
 
-            while (tok && tok->str() != ";")
-                tok = tok->next();
+            while (tok && tok->str() != ";") {
+                if (Token::simpleMatch(tok, "decltype ("))
+                    tok = tok->linkAt(1);
+                else
+                    tok = tok->next();
+            }
         }
 
         // unnamed struct and union
@@ -4058,6 +4062,17 @@ static const Type* findVariableTypeIncludingUsedNamespaces(const SymbolDatabase*
 
 //---------------------------------------------------------------------------
 
+static const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
+    if (!(Token::simpleMatch(tok, "[") && tok->link()))
+        return nullptr;
+    tok = tok->link()->next();
+    if (Token::simpleMatch(tok, "(") && tok->link())
+        tok = tok->link()->next();
+    if (!(Token::simpleMatch(tok, "{") && tok->link()))
+        return nullptr;
+    return tok->link()->next();
+};
+
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
@@ -4181,7 +4196,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             initArgCount++;
             if (tok->strAt(1) == "[") {
                 const Token* lambdaStart = tok->next();
-                tok = findLambdaEndToken(lambdaStart);
+                tok = type == eLambda ? findLambdaEndTokenWithoutAST(lambdaStart) : findLambdaEndToken(lambdaStart);
                 if (!tok)
                     throw InternalError(lambdaStart, "Analysis failed (lambda not recognized). If the code is valid then please report this failure.", InternalError::INTERNAL);
             }
@@ -6386,14 +6401,26 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             return;
         }
 
-        if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
-            setValueType(parent, *vt1);
-            return;
-        }
+        if (parent->isArithmeticalOp()) {
+            if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
+                setValueType(parent, *vt1);
+                return;
+            }
 
-        if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
-            setValueType(parent, *vt2);
-            return;
+            if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
+                setValueType(parent, *vt2);
+                return;
+            }
+        } else if (ternary) {
+            if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
+                setValueType(parent, *vt2);
+                return;
+            }
+
+            if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
+                setValueType(parent, *vt1);
+                return;
+            }
         }
 
         if (vt1->pointer != 0U) {
@@ -7309,6 +7336,8 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) 
 
 bool ValueType::isTypeEqual(const ValueType* that) const
 {
+    if (!that)
+        return false;
     auto tie = [](const ValueType* vt) {
         return std::tie(vt->type, vt->container, vt->pointer, vt->typeScope, vt->smartPointer);
     };

@@ -461,8 +461,12 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
         programMemoryParseCondition(pm, tok, nullptr, settings, b);
     const Token* origin = tok;
     const Token* top = tok->astTop();
-    if (top && Token::Match(top->previous(), "for|while ("))
-        origin = top->link();
+    if (top && Token::Match(top->previous(), "for|while|if (") && !Token::simpleMatch(tok->astParent(), "?")) {
+        origin = top->link()->next();
+        if (!b && origin->link()) {
+            origin = origin->link();
+        }
+    }
     replace(pm, origin);
 }
 
@@ -1156,7 +1160,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     const ValueFlow::Value* value = nullptr;
     if (!expr)
         return unknown;
-    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp()) {
+    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",") {
         return expr->values().front();
     } else if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
@@ -1349,7 +1353,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
                 ValueFlow::Value& v = pm.at(child->exprId());
                 if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
-                    if (isContainerSizeChanged(child, settings))
+                    if (isContainerSizeChanged(child, v.indirect, settings))
                         v = unknown;
                 } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
                     if (isVariableChanged(child, v.indirect, settings, true))

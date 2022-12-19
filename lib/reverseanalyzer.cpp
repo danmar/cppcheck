@@ -244,7 +244,7 @@ struct ReverseTraversal {
                         // Assignment to
                     } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() &&
                                assignTok->astOperand2()->exprId() > 0 &&
-                               isConstExpression(assignTok->astOperand2(), settings->library, true, true)) {
+                               isConstExpression(assignTok->astOperand2(), settings->library, true)) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {
@@ -281,6 +281,8 @@ struct ReverseTraversal {
                 const bool inLoop = condTok->astTop() && Token::Match(condTok->astTop()->previous(), "for|while (");
                 // Evaluate condition of for and while loops first
                 if (inLoop) {
+                    if (Token::findmatch(tok->link(), "goto|break", tok))
+                        break;
                     if (condAction.isModified())
                         break;
                     valueFlowGenericForward(condTok, analyzer, settings);

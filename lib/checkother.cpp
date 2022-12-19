@@ -21,6 +21,7 @@
 #include "checkother.h"
 
 #include "astutils.h"
+#include "fwdanalysis.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -1332,7 +1333,7 @@ void CheckOther::checkPassByReference()
         }
 
         // Check if variable could be const
-        if (!var->scope() || var->scope()->function->hasVirtualSpecifier())
+        if (!var->scope() || var->scope()->function->isImplicitlyVirtual())
             continue;
 
         if (canBeConst(var, mSettings)) {
@@ -1642,8 +1643,8 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
     ErrorPath errorPath;
     std::string id = "const" + vartype;
     std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray;
-    errorPath.emplace_back(var ? var->nameToken() : nullptr, message);
-    if (var && var->isArgument() && function && function->functionPointerUsage) {
+    errorPath.emplace_back(var->nameToken(), message);
+    if (var->isArgument() && function && function->functionPointerUsage) {
         errorPath.emplace_front(function->functionPointerUsage, "You might need to cast the function pointer here");
         id += "Callback";
         message += ". However it seems that '" + function->name() + "' is a callback function, if '$symbol' is declared with const you might also need to cast function pointer(s).";
@@ -2105,11 +2106,14 @@ void CheckOther::checkMisusedScopedObject()
             if (ctorTok && (((ctorTok->type() || ctorTok->isStandardType() || (ctorTok->function() && ctorTok->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
                              && (!ctorTok->function() || ctorTok->function()->isConstructor()) // // is not a function on this scope or is function in this scope and it's a ctor
                              && ctorTok->str() != "void") || isLibraryConstructor(tok->next(), typeStr))) {
-                if (const Token* arg = ctorTok->next()->astOperand2()) {
+                const Token* parTok = ctorTok->next();
+                if (Token::simpleMatch(parTok, "<") && parTok->link())
+                    parTok = parTok->link()->next();
+                if (const Token* arg = parTok->astOperand2()) {
                     if (!isConstStatement(arg, mTokenizer->isCPP()))
                         continue;
-                    if (ctorTok->strAt(1) == "(") {
-                        if (arg->varId()) // TODO: check if this is a declaration
+                    if (parTok->str() == "(") {
+                        if (arg->varId() && !(arg->variable() && arg->variable()->nameToken() != arg))
                             continue;
                         const Token* rml = nextAfterAstRightmostLeaf(arg);
                         if (rml && rml->previous() && rml->previous()->varId())
@@ -2517,7 +2521,7 @@ void CheckOther::checkDuplicateExpression()
                                          &errorPath) &&
                         isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
-                    else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP())) {
+                    else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, mTokenizer->isCPP())) {
                         auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) {
                             if (isSameExpression(mTokenizer->isCPP(), true, exp1, exp2, mSettings->library, true, true, &errorPath) &&
                                 isWithoutSideEffects(mTokenizer->isCPP(), exp1) &&

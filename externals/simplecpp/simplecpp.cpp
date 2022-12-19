@@ -24,13 +24,15 @@
 
 #include <algorithm>
 #include <climits>
+#include <cstddef>
+#include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <exception>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
 #include <limits>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
 #if __cplusplus >= 201103L
@@ -136,7 +138,7 @@ static bool startsWith(const std::string &str, const std::string &s)
 
 static bool endsWith(const std::string &s, const std::string &e)
 {
-    return (s.size() >= e.size() && s.compare(s.size() - e.size(), e.size(), e) == 0);
+    return (s.size() >= e.size()) && std::equal(e.rbegin(), e.rend(), s.rbegin());
 }
 
 static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
@@ -566,7 +568,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         TokenString currentToken;
 
-        if (cback() && cback()->location.line == location.line && cback()->previous && cback()->previous->op == '#' && (lastLine() == "# error" || lastLine() == "# warning")) {
+        if (cback() && cback()->location.line == location.line && cback()->previous && cback()->previous->op == '#' && isLastLinePreprocessor() && (lastLine() == "# error" || lastLine() == "# warning")) {
             char prev = ' ';
             while (istr.good() && (prev == '\\' || (ch != '\r' && ch != '\n'))) {
                 currentToken += ch;
@@ -627,7 +629,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 currentToken.erase(pos,2);
                 ++multiline;
             }
-            if (multiline || startsWith(lastLine(10),"# ")) {
+            if (multiline || isLastLinePreprocessor()) {
                 pos = 0;
                 while ((pos = currentToken.find('\n',pos)) != std::string::npos) {
                     currentToken.erase(pos,1);
@@ -708,7 +710,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             else
                 back()->setstr(prefix + s);
 
-            if (newlines > 0 && lastLine().compare(0,9,"# define ") == 0) {
+            if (newlines > 0 && isLastLinePreprocessor() && lastLine().compare(0,9,"# define ") == 0) {
                 multiline += newlines;
                 location.adjust(s);
             } else {
@@ -721,7 +723,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
             currentToken += ch;
         }
 
-        if (currentToken == "<" && lastLine() == "# include") {
+        if (*currentToken.begin() == '<' && isLastLinePreprocessor() && lastLine() == "# include") {
             currentToken = readUntil(istr, location, '<', '>', outputList, bom);
             if (currentToken.size() < 2U)
                 return;
@@ -2862,11 +2864,15 @@ static std::string openHeader(std::ifstream &f, const simplecpp::DUI &dui, const
 
     if (systemheader) {
         ret = openHeaderIncludePath(f, dui, header);
-        return ret.empty() ? openHeaderRelative(f, sourcefile, header) : ret;
+        if (ret.empty())
+            return openHeaderRelative(f, sourcefile, header);
+        return ret;
     }
 
     ret = openHeaderRelative(f, sourcefile, header);
-    return ret.empty() ? openHeaderIncludePath(f, dui, header) : ret;
+    if (ret.empty())
+        return openHeaderIncludePath(f, dui, header);
+    return ret;
 }
 
 static std::string getFileName(const std::map<std::string, simplecpp::TokenList *> &filedata, const std::string &sourcefile, const std::string &header, const simplecpp::DUI &dui, bool systemheader)

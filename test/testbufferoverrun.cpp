@@ -205,6 +205,7 @@ private:
         TEST_CASE(array_index_negative3);
         TEST_CASE(array_index_negative4);
         TEST_CASE(array_index_negative5);    // #10526
+        TEST_CASE(array_index_negative6);    // #11349
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -2223,6 +2224,19 @@ private:
               "        }\n"
               "    }\n"
               "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #11349
+    void array_index_negative6()
+    {
+        check("void f(int i) {\n"
+              "  int j = i;\n"
+              "  const int a[5] = {};\n"
+              "  const int k = j < 0 ? 0 : j;\n"
+              "  (void)a[k];\n"
+              "  if (i == -3) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -842,10 +842,10 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     if (!mSettings.checks.isEnabled(Checks::missingInclude) && !mSettings.checkConfiguration)
         return;
 
-    const std::string fname = Path::fromNativeSeparators(filename);
+    std::string fname = Path::fromNativeSeparators(filename);
     Suppressions::ErrorMessage errorMessage;
     errorMessage.errorId = "missingInclude";
-    errorMessage.setFileName(fname);
+    errorMessage.setFileName(std::move(fname));
     errorMessage.lineNumber = linenr;
     if (mSettings.nomsg.isSuppressed(errorMessage))
         return;

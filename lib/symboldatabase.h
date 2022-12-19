@@ -122,8 +122,12 @@ public:
         else if (classDef_ && classDef_->str() == "using") {
             typeStart = classDef->tokAt(3);
             typeEnd = typeStart;
-            while (typeEnd->next() && typeEnd->next()->str() != ";")
-                typeEnd = typeEnd->next();
+            while (typeEnd->next() && typeEnd->next()->str() != ";") {
+                if (Token::simpleMatch(typeEnd, "decltype ("))
+                    typeEnd = typeEnd->linkAt(1);
+                else
+                    typeEnd = typeEnd->next();
+            }
         }
     }
 

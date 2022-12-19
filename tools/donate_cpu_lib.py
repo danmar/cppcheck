@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.40"
+CLIENT_VERSION = "1.3.41"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -157,14 +157,29 @@ def get_cppcheck_info(cppcheck_path):
         return ''
 
 
-def compile_version(cppcheck_path):
+def __get_cppcheck_binary(cppcheck_path):
     if __make_cmd == "msbuild.exe":
-        if os.path.isfile(os.path.join(cppcheck_path, 'bin', 'cppcheck.exe')):
+        return os.path.join(cppcheck_path, 'bin', 'cppcheck.exe')
+    if __make_cmd == 'mingw32-make':
+        return os.path.join(cppcheck_path, 'cppcheck.exe')
+    return os.path.join(cppcheck_path, 'cppcheck')
+
+
+def has_binary(cppcheck_path):
+    cppcheck_bin = __get_cppcheck_binary(cppcheck_path)
+    if __make_cmd == "msbuild.exe":
+        if os.path.isfile(cppcheck_bin):
             return True
     elif __make_cmd == 'mingw32-make':
-        if os.path.isfile(os.path.join(cppcheck_path, 'cppcheck.exe')):
+        if os.path.isfile(cppcheck_bin):
             return True
-    elif os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
+    elif os.path.isfile(cppcheck_bin):
+        return True
+    return False
+
+
+def compile_version(cppcheck_path):
+    if has_binary(cppcheck_path):
         return True
     # Build
     ret = compile_cppcheck(cppcheck_path)
@@ -175,13 +190,19 @@ def compile_version(cppcheck_path):
         exclude_bin = 'cppcheck.exe'
     else:
         exclude_bin = 'cppcheck'
-    # TODO: how to support multiple compiler on the same machine? this will clean msbuild.exe files in a mingw32-make build and vice versa
+    # TODO: how to support multiple compilers on the same machine? this will clean msbuild.exe files in a mingw32-make build and vice versa
     subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
     return ret
 
 
 def compile_cppcheck(cppcheck_path):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
+
+    cppcheck_bin = __get_cppcheck_binary(cppcheck_path)
+    # remove file so interrupted "main" branch compilation is being resumed
+    if os.path.isfile(cppcheck_bin):
+        os.remove(cppcheck_bin)
+
     try:
         if __make_cmd == 'msbuild.exe':
             subprocess.check_call(['python3', os.path.join('tools', 'matchcompiler.py'), '--write-dir', 'lib'], cwd=cppcheck_path)
@@ -211,7 +232,9 @@ def compile_cppcheck(cppcheck_path):
             subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
     except Exception as e:
         print('Running Cppcheck failed: {}'.format(e))
-        # TODO: remove binary
+        # remove faulty binary
+        if os.path.isfile(cppcheck_bin):
+            os.remove(cppcheck_bin)
         return False
 
     return True
