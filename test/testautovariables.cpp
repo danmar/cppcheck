@@ -3733,6 +3733,14 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        // #11442
+        check("const std::string& f(const P< std::string >& value) {\n"
+              "   static const std::string empty;\n"
+              "   return value.get() == nullptr ? empty : *value;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()
