@@ -648,7 +648,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
     }
     if (!unknown_elements.empty()) {
         std::string str;
-        for (std::set<std::string>::const_iterator i = unknown_elements.begin(); i != unknown_elements.end();) {
+        for (std::set<std::string>::const_iterator i = unknown_elements.cbegin(); i != unknown_elements.cend();) {
             str += *i;
             if (++i != unknown_elements.end())
                 str += ", ";

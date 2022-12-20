@@ -1640,7 +1640,7 @@ void CppCheck::getErrorMessages()
     tooManyConfigsError(emptyString,0U);
 
     // call all "getErrorMessages" in all registered Check classes
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+    for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
         (*it)->getErrorMessages(this, &s);
 
     Preprocessor::getErrorMessages(this, &s);

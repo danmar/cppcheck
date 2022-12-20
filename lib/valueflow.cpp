@@ -7197,7 +7197,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                     values.back().condition = tok;
                     values.back().errorPath.emplace_back(tok, "case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
                 }
-                for (std::list<ValueFlow::Value>::const_iterator val = values.begin(); val != values.end(); ++val) {
+                for (std::list<ValueFlow::Value>::const_iterator val = values.cbegin(); val != values.cend(); ++val) {
                     valueFlowReverse(tokenlist,
                                      const_cast<Token*>(scope.classDef),
                                      vartok,

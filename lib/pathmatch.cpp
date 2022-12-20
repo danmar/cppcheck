@@ -38,7 +38,7 @@ bool PathMatch::match(const std::string &path) const
     if (path.empty())
         return false;
 
-    for (std::vector<std::string>::const_iterator i = mExcludedPaths.begin(); i != mExcludedPaths.end(); ++i) {
+    for (std::vector<std::string>::const_iterator i = mExcludedPaths.cbegin(); i != mExcludedPaths.cend(); ++i) {
         const std::string excludedPath((!Path::isAbsolute(path) && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
 
         std::string findpath = Path::fromNativeSeparators(path);

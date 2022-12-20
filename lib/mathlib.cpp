@@ -546,10 +546,10 @@ bool MathLib::isDecimalFloat(const std::string &str)
     enum class State {
         START, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L
     } state = State::START;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case State::START:
             if (*it=='.')
@@ -748,10 +748,10 @@ bool MathLib::isOct(const std::string& str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (*it == '0')
@@ -783,10 +783,10 @@ bool MathLib::isIntHex(const std::string& str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (*it == '0')
@@ -824,10 +824,10 @@ bool MathLib::isFloatHex(const std::string& str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (*it == '0')
@@ -914,10 +914,10 @@ bool MathLib::isBin(const std::string& str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (*it == '0')
@@ -955,10 +955,10 @@ bool MathLib::isDec(const std::string & str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (isdigit(static_cast<unsigned char>(*it)))

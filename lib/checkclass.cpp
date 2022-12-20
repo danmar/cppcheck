@@ -451,7 +451,7 @@ void CheckClass::copyconstructors()
             }
             if (!funcDestructor || funcDestructor->isDefault()) {
                 const Token * mustDealloc = nullptr;
-                for (std::map<int, const Token*>::const_iterator it = allocatedVars.begin(); it != allocatedVars.end(); ++it) {
+                for (std::map<int, const Token*>::const_iterator it = allocatedVars.cbegin(); it != allocatedVars.cend(); ++it) {
                     if (!Token::Match(it->second, "%var% [(=] new %type%")) {
                         mustDealloc = it->second;
                         break;
@@ -1198,7 +1198,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
     if (!scope)
         return true; // Assume it is used, if scope is not seen
 
-    for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+    for (std::list<Function>::const_iterator func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
         if (func->functionScope) {
             if (Token::Match(func->tokenDef, "%name% (")) {
                 for (const Token *ftok = func->tokenDef->tokAt(2); ftok && ftok->str() != ")"; ftok = ftok->next()) {
@@ -1220,8 +1220,8 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
             return true;
     }
 
-    const std::map<std::string, Type*>::const_iterator end = scope->definedTypesMap.end();
-    for (std::map<std::string, Type*>::const_iterator iter = scope->definedTypesMap.begin(); iter != end; ++iter) {
+    const std::map<std::string, Type*>::const_iterator end = scope->definedTypesMap.cend();
+    for (std::map<std::string, Type*>::const_iterator iter = scope->definedTypesMap.cbegin(); iter != end; ++iter) {
         const Type *type = (*iter).second;
         if (type->enclosingScope == scope && checkFunctionUsage(privfunc, type->classScope))
             return true;
@@ -1534,7 +1534,7 @@ void CheckClass::operatorEqRetRefThis()
         return;
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (std::list<Function>::const_iterator func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
                 // make sure return signature is correct
                 if (func->retType == func->nestedIn->definedType && func->tokenDef->strAt(-1) == "&") {
@@ -1582,7 +1582,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         if (tok->strAt(2) == "(" &&
             tok->linkAt(2)->next()->str() == ";") {
             // check if it is a member function
-            for (std::list<Function>::const_iterator it = scope->functionList.begin(); it != scope->functionList.end(); ++it) {
+            for (std::list<Function>::const_iterator it = scope->functionList.cbegin(); it != scope->functionList.cend(); ++it) {
                 // check for a regular function with the same name and a body
                 if (it->type == Function::eFunction && it->hasBody() &&
                     it->token->str() == tok->next()->str()) {
@@ -2523,7 +2523,7 @@ void CheckClass::initializerListOrder()
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // iterate through all member functions looking for constructors
-        for (std::list<Function>::const_iterator func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (std::list<Function>::const_iterator func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             if (func->isConstructor() && func->hasBody()) {
                 // check for initializer list
                 const Token *tok = func->arg->link()->next();
@@ -2861,7 +2861,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         bool hasNonStaticVars = false;
-        for (std::list<Variable>::const_iterator var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+        for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
             if (!var->isStatic()) {
                 hasNonStaticVars = true;
                 break;

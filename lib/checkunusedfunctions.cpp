@@ -306,7 +306,7 @@ static bool isOperatorFunction(const std::string & funcName)
 bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings) const
 {
     bool errors = false;
-    for (std::unordered_map<std::string, FunctionUsage>::const_iterator it = mFunctions.begin(); it != mFunctions.end(); ++it) {
+    for (std::unordered_map<std::string, FunctionUsage>::const_iterator it = mFunctions.cbegin(); it != mFunctions.cend(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
@@ -443,7 +443,7 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
         }
     }
 
-    for (std::map<std::string, Location>::const_iterator decl = decls.begin(); decl != decls.end(); ++decl) {
+    for (std::map<std::string, Location>::const_iterator decl = decls.cbegin(); decl != decls.cend(); ++decl) {
         const std::string &functionName = decl->first;
 
         // TODO: move to configuration files
