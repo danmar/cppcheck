@@ -510,10 +510,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
     if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
         return;
 
-    if (mSettings->xml)
-        mReport->addFinding(msg);
-    else
-        mReport->addFinding(msg);
+    mReport->addFinding(msg);
 }
 
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
