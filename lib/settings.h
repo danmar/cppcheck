@@ -328,6 +328,9 @@ public:
     SimpleEnableGroup<Certainty::CertaintyLevel> certainty;
     SimpleEnableGroup<Checks::CheckList> checks;
 
+    /** @brief write SARIF results (--sarif) */
+    bool sarif;
+
     /** @brief show timing information (--showtime=file|summary|top5) */
     SHOWTIME_MODES showtime;
 
@@ -362,9 +365,6 @@ public:
 
     /** @brief XML version (--xml-version=..) */
     int xml_version;
-
-    /** @brief write SARIF results (--sarif) */
-    bool sarif;
 
     /**
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs

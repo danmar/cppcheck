@@ -65,12 +65,12 @@ Settings::Settings()
     quiet(false),
     relativePaths(false),
     reportProgress(false),
+    sarif(false),
     showtime(SHOWTIME_MODES::SHOWTIME_NONE),
     valueFlowMaxIterations(4),
     verbose(false),
     xml(false),
-    xml_version(2),
-    sarif(false)
+    xml_version(2)
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
