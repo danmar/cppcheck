@@ -164,11 +164,8 @@ Tokenizer::Tokenizer() :
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
-    mTimerResults(nullptr)
-#ifdef MAXTIME
-    , mMaxTime(std::time(0) + MAXTIME)
-#endif
-    , mPreprocessor(nullptr)
+    mTimerResults(nullptr),
+    mPreprocessor(nullptr)
 {}
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
@@ -180,11 +177,8 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
-    mTimerResults(nullptr)
-#ifdef MAXTIME
-    ,mMaxTime(std::time(0) + MAXTIME)
-#endif
-    , mPreprocessor(nullptr)
+    mTimerResults(nullptr),
+    mPreprocessor(nullptr)
 {
     // make sure settings are specified
     assert(mSettings);
@@ -614,6 +608,8 @@ void Tokenizer::simplifyTypedef()
     // Convert "using a::b;" to corresponding typedef statements
     simplifyUsingToTypedef();
 
+    const std::time_t maxTime = mSettings->typedefMaxTime > 0 ? std::time(nullptr) + mSettings->typedefMaxTime: 0;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (mErrorLogger && !list.getFiles().empty())
             mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
@@ -621,8 +617,20 @@ void Tokenizer::simplifyTypedef()
         if (Settings::terminated())
             return;
 
-        if (isMaxTime())
+        if (maxTime > 0 && std::time(nullptr) > maxTime) {
+            if (mSettings->debugwarnings) {
+                ErrorMessage::FileLocation loc;
+                loc.setfile(list.getFiles()[0]);
+                ErrorMessage errmsg({std::move(loc)},
+                                    emptyString,
+                                    Severity::debug,
+                                    "Typedef simplification instantation maximum time exceeded",
+                                    "typedefMaxTime",
+                                    Certainty::normal);
+                mErrorLogger->reportErr(errmsg);
+            }
             return;
+        }
 
         if (goback) {
             //jump back once, see the comment at the end of the function
@@ -3461,12 +3469,9 @@ void Tokenizer::simplifyTemplates()
     if (isC())
         return;
 
+    const std::time_t maxTime = mSettings->templateMaxTime > 0 ? std::time(nullptr) + mSettings->templateMaxTime : 0;
     mTemplateSimplifier->simplifyTemplates(
-#ifdef MAXTIME
-        mMaxTime,
-#else
-        0, // ignored
-#endif
+        maxTime,
         mCodeWithTemplates);
 }
 //---------------------------------------------------------------------------

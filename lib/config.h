@@ -19,6 +19,10 @@
 #ifndef configH
 #define configH
 
+#ifdef MAXTIME
+#error "MAXTIME is no longer supported - please use command-line options --checks-max-time=, --template-max-time= and --typedef-max-time= instead"
+#endif
+
 #ifdef _WIN32
 #  ifdef CPPCHECKLIB_EXPORT
 #    define CPPCHECKLIB __declspec(dllexport)

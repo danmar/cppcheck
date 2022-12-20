@@ -3112,12 +3112,22 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         Token * const tok2 = instantiation.token();
         if (mErrorLogger && !mTokenList.getFiles().empty())
             mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
-#ifdef MAXTIME
-        if (std::time(0) > maxtime)
+
+        if (maxtime > 0 && std::time(nullptr) > maxtime) {
+            if (mSettings->debugwarnings) {
+                ErrorMessage::FileLocation loc;
+                loc.setfile(mTokenList.getFiles()[0]);
+                ErrorMessage errmsg({std::move(loc)},
+                                    emptyString,
+                                    Severity::debug,
+                                    "Template instantation maximum time exceeded",
+                                    "templateMaxTime",
+                                    Certainty::normal);
+                mErrorLogger->reportErr(errmsg);
+            }
             return false;
-#else
-        (void)maxtime;
-#endif
+        }
+
         assert(mTokenList.validateToken(tok2)); // that assertion fails on examples from #6021
 
         const Token *startToken = tok2;
@@ -3173,12 +3183,22 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         Token * tok2 = const_cast<Token *>(templateDeclaration.nameToken());
         if (mErrorLogger && !mTokenList.getFiles().empty())
             mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
-#ifdef MAXTIME
-        if (std::time(0) > maxtime)
+
+        if (maxtime > 0 && std::time(nullptr) > maxtime) {
+            if (mSettings->debugwarnings) {
+                ErrorMessage::FileLocation loc;
+                loc.setfile(mTokenList.getFiles()[0]);
+                ErrorMessage errmsg({std::move(loc)},
+                                    emptyString,
+                                    Severity::debug,
+                                    "Template instantation maximum time exceeded",
+                                    "templateMaxTime",
+                                    Certainty::normal);
+                mErrorLogger->reportErr(errmsg);
+            }
             return false;
-#else
-        (void)maxtime;
-#endif
+        }
+
         assert(mTokenList.validateToken(tok2)); // that assertion fails on examples from #6021
 
         Token *startToken = tok2;

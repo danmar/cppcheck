@@ -125,6 +125,9 @@ public:
     /** Check for incomplete info in library files? */
     bool checkLibrary;
 
+    /** @brief The maximum time in seconds for the checks of a single file */
+    std::size_t checksMaxTime;
+
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
@@ -341,6 +344,12 @@ public:
     /** @brief The output format in which the error locations are printed in
      *  text mode, e.g. "{file}:{line} {info}" */
     std::string templateLocation;
+
+    /** @brief The maximum time in seconds for the template instantation */
+    std::size_t templateMaxTime;
+
+    /** @brief The maximum time in seconds for the typedef simplification */
+    std::size_t typedefMaxTime;
 
     /** @brief defines given by the user */
     std::string userDefines;
