@@ -2361,7 +2361,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
                 if (indirect > 0 && requireInit && requireNonNull)
                     return true;
             }
-
+            if (Token::simpleMatch(tok->tokAt(-2), "std :: tie"))
+                return true;
             // if the library says 0 is invalid
             // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
             if (indirect == 0 && requireNonNull)
