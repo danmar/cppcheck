@@ -69,7 +69,8 @@ Settings::Settings()
     valueFlowMaxIterations(4),
     verbose(false),
     xml(false),
-    xml_version(2)
+    xml_version(2),
+    sarif(false)
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
