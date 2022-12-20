@@ -45,12 +45,14 @@
 #include <unordered_set>
 #include <utility>
 
-struct less {
-    template<class T, class U>
-    bool operator()(const T& x, const U& y) const {
-        return x < y;
-    }
-};
+namespace {
+    struct less {
+        template<class T, class U>
+        bool operator()(const T &x, const U &y) const {
+            return x < y;
+        }
+    };
+}
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
