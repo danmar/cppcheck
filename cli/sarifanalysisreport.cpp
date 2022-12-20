@@ -24,8 +24,7 @@ SARIFAnalysisReport::SARIFAnalysisReport( std::string versionNumber)
     : mVersionNumber(std::move(versionNumber)) {}
 
 void SARIFAnalysisReport::addFinding(const ErrorMessage &msg) {
-    std::map<std::string, std::vector<ErrorMessage>>::iterator it = mFindings.insert(mFindings.begin(), {msg.id, std::vector<ErrorMessage>()});
-    it->second.push_back(msg);
+    mFindings[msg.id].push_back(msg);
 }
 
 static std::map<std::string, picojson::value> text(const std::string& s) {
