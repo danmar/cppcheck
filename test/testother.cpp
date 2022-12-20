@@ -102,6 +102,7 @@ private:
         TEST_CASE(varScope29);      // #10888
         TEST_CASE(varScope30);      // #8541
         TEST_CASE(varScope31);      // #11099
+        TEST_CASE(varScope32);      // #11441
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1525,6 +1526,17 @@ private:
                       "[test.cpp:67]: (style) The scope of the variable 'w' can be reduced.\n"
                       "[test.cpp:74]: (style) The scope of the variable 'w' can be reduced.\n",
                       errout.str());
+    }
+
+    void varScope32() { // #11441
+        check("template <class F>\n"
+              "std::vector<int> g(F, const std::vector<int>&);\n"
+              "void f(const std::vector<int>&v) {\n"
+              "    std::vector<int> w;\n"
+              "    for (auto x : v)\n"
+              "        w = g([&]() { x; }, w);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Unused variable value 'x'\n", errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)

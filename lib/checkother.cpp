@@ -1033,20 +1033,15 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
 
         if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
             loopVariable = false;
-            int indent = 0;
-            for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) { // Ensure that variable isn't used on right side of =, too
-                if (tok2->str() == "(")
-                    indent++;
-                else if (tok2->str() == ")") {
-                    if (indent == 0)
-                        break;
-                    indent--;
-                } else if (tok2->str() == ";")
-                    break;
-                else if (tok2->varId() == var->declarationId()) {
-                    loopVariable = true;
-                    break;
-                }
+            std::pair<const Token*, const Token*> range = tok->next()->findExpressionStartEndTokens();
+            if (range.first)
+                range.first = range.first->next();
+            const Token* exprTok = findExpression(var->nameToken()->exprId(), range.first, range.second, [&](const Token* tok2) {
+                return tok2->varId() == var->declarationId();
+            });
+            if (exprTok) {
+                tok = exprTok;
+                loopVariable = true;
             }
         }
 
