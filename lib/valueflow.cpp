@@ -9050,7 +9050,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
 
     if (settings->debugwarnings) {
         if (n == 0 && values != getTotalValues(tokenlist)) {
-            ErrorMessage errmsg({},
+            ErrorMessage::FileLocation loc;
+            loc.setfile(tokenlist->getFiles()[0]);
+            ErrorMessage errmsg({std::move(loc)},
                                 emptyString,
                                 Severity::debug,
                                 "ValueFlow maximum iterations exceeded",
