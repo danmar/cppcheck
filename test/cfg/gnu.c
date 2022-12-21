@@ -24,6 +24,7 @@
 #endif
 #include <strings.h>
 #include <error.h>
+#include <getopt.h>
 
 void unreachableCode_error(void) // #11197
 {
@@ -31,6 +32,18 @@ void unreachableCode_error(void) // #11197
     // cppcheck-suppress unusedVariable
     // TODO cppcheck-suppress unreachableCode
     int i;
+}
+
+int nullPointer_getopt_long(int argc, char **argv, const char *optstring,
+                            const struct option *longopts, int *longindex)
+{
+    // cppcheck-suppress nullPointer
+    (void) getopt_long(argc, argv, NULL, longopts, longindex);
+    // cppcheck-suppress nullPointer
+    (void) getopt_long(argc, argv, optstring, NULL, longindex);
+    // cppcheck-suppress nullPointer
+    (void) getopt_long(argc, NULL, optstring, longopts, longindex);
+    return getopt_long(argc, argv, optstring, longopts, longindex);
 }
 
 int nullPointer_getservent_r(struct servent *restrict result_buf, char *restrict buf, size_t buflen, struct servent **restrict result)
