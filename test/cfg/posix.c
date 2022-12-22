@@ -8,7 +8,6 @@
 //
 
 #include <aio.h>
-#include <stdlib.h>
 #include <stdio.h> // <- FILE
 #include <dirent.h>
 #include <sys/mman.h>
@@ -31,10 +30,17 @@
 #include <stdbool.h>
 #include <mqueue.h>
 #define _XOPEN_SOURCE
+#include <stdlib.h>
 #include <unistd.h>
 #include <wchar.h>
 #include <string.h>
 #include <strings.h>
+
+void nullPointer_setkey(const char *key)
+{
+    // cppcheck-suppress nullPointer
+    setkey(NULL);
+}
 
 void nullPointer_encrypt(char block[64], int edflag)
 {
