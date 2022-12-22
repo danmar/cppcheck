@@ -262,7 +262,6 @@ CLIOBJ =      cli/cmdlineparser.o \
               cli/stacktrace.o \
               cli/threadexecutor.o \
               cli/xmlanalysisreport.o \
-              cli/clianalysisreport.o \
               cli/sarifanalysisreport.o
 
 TESTOBJ =     test/options.o \
@@ -341,7 +340,7 @@ cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)
 
 all:	cppcheck testrunner
 
-testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o cli/clianalysisreport.o cli/xmlanalysisreport.o cli/sarifanalysisreport.o
+testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o cli/xmlanalysisreport.o cli/sarifanalysisreport.o
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)
 
 test:	all
@@ -656,9 +655,6 @@ cli/threadexecutor.o: cli/threadexecutor.cpp cli/cppcheckexecutor.h cli/executor
 
 cli/xmlanalysisreport.o: cli/xmlanalysisreport.cpp cli/analysisreport.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/xmlanalysisreport.cpp
-
-cli/clianalysisreport.o: cli/clianalysisreport.cpp cli/analysisreport.h
-	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/clianalysisreport.cpp
 
 cli/sarifanalysisreport.o: cli/sarifanalysisreport.cpp cli/analysisreport.h
 	$(CXX) ${INCLUDE_FOR_CLI} -isystem externals/picojson $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/sarifanalysisreport.cpp

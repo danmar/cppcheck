@@ -35,7 +35,6 @@
 #include "utils.h"
 #include "checkunusedfunctions.h"
 #include "xmlanalysisreport.h"
-#include "clianalysisreport.h"
 #include "sarifanalysisreport.h"
 
 #if defined(THREADING_MODEL_THREAD)
@@ -102,10 +101,8 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         if (settings.xml)
             mReport = std::unique_ptr<AnalysisReport>(new XMLAnalysisReport(settings.cppcheckCfgProductName));
-        else if (settings.sarif)
+        if (settings.sarif)
             mReport = std::unique_ptr<AnalysisReport>(new SARIFAnalysisReport(CppCheck::version()));
-        else
-            mReport = std::unique_ptr<AnalysisReport>(new CLIAnalysisReport(settings.verbose, settings.templateFormat, settings.templateLocation));
 
         if (parser.getShowErrorMessages()) {
             mShowAllErrors = true;
@@ -413,7 +410,9 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         }
     }
 
-    reportErr(mReport->serialize());
+    if (settings.xml || settings.sarif) {
+        reportErr(mReport->serialize());
+    }
 
     mSettings = nullptr;
     if (returnValue)
@@ -510,7 +509,10 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
     if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
         return;
 
-    mReport->addFinding(msg);
+    if (mSettings->xml || mSettings->sarif)
+        mReport->addFinding(msg);
+    else
+        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
 }
 
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
