@@ -36,6 +36,51 @@
 #include <string.h>
 #include <strings.h>
 
+#if __TRACE_H__ // <trace.h>
+void nullPointer_posix_trace_trygetnext_event(trace_id_t trid,
+           struct posix_trace_event_info *event,
+           void *data, size_t num_bytes,
+           size_t *data_len, int *unavailable)
+{
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_trygetnext_event(trid, NULL, data, num_bytes, data_len, unavailable);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_trygetnext_event(trid, event, NULL, num_bytes, data_len, unavailable);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_trygetnext_event(trid, event, data, num_bytes, NULL, unavailable);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_trygetnext_event(trid, event, data, num_bytes, data_len, NULL);
+}
+
+int nullPointer_posix_trace_timedgetnext_event(trace_id_t trid, struct posix_trace_event_info *restrict event, void *restrict data, size_t num_bytes, size_t *restrict data_len, int *restrict unavailable, const struct timespec *restrict abstime)
+{
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_timedgetnext_event(trid, NULL, data, num_bytes, data_len, unavailable, abstime);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_timedgetnext_event(trid, event, NULL, num_bytes, data_len, unavailable, abstime);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_timedgetnext_event(trid, event, data, num_bytes, NULL, unavailable, abstime);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_timedgetnext_event(trid, event, data, num_bytes, data_len, NULL, abstime);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_timedgetnext_event(trid, event, data, num_bytes, data_len, unavailable, NULL);
+    return posix_trace_timedgetnext_event(trid, event, data, num_bytes, data_len, unavailable, abstime);
+}
+
+int nullPointer_posix_trace_getnext_event(trace_id_t trid, struct posix_trace_event_info *restrict event, void *restrict data, size_t num_bytes, size_t *restrict data_len, int *restrict unavailable)
+{
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_getnext_event(trid, NULL, data, num_bytes, data_len, unavailable);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_getnext_event(trid, event, NULL, num_bytes, data_len, unavailable);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_getnext_event(trid, event, data, num_bytes, NULL, unavailable);
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_getnext_event(trid, event, data, num_bytes, data_len, NULL);
+    return posix_trace_getnext_event(trid, event, data, num_bytes, data_len, unavailable);
+}
+#endif // __TRACE_H__
+
 void nullPointer_pthread_attr_getstack(const pthread_attr_t *attr, void *stackaddr, size_t stacksize) {
   // cppcheck-suppress nullPointer
   (void) pthread_attr_getstack(NULL, &stackaddr, &stacksize);
