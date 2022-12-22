@@ -36,6 +36,15 @@
 #include <string.h>
 #include <strings.h>
 
+int nullPointer_getopt(int argc, char* const argv[], const char* optstring)
+{
+    // cppcheck-suppress nullPointer
+    (void) getopt(argc, NULL, optstring);
+    // cppcheck-suppress nullPointer
+    (void) getopt(argc, argv, NULL);
+    return getopt(argc, argv, optstring);
+}
+
 int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
 {
     // No warning is expected for:
