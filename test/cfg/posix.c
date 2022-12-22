@@ -37,6 +37,14 @@
 #include <strings.h>
 
 #if __TRACE_H__ // <trace.h>
+
+void nullPointer_posix_trace_event(trace_event_id_t event_id, const void* restrictdata_ptr, size_t data_len)
+{
+    // cppcheck-suppress nullPointer
+    (void) posix_trace_event(event_id, NULL, data_len);
+    (void) posix_trace_event(event_id, restrictdata_ptr, 0);
+}
+
 void nullPointer_posix_trace_trygetnext_event(trace_id_t trid,
            struct posix_trace_event_info *event,
            void *data, size_t num_bytes,
