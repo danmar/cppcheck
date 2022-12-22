@@ -34,6 +34,21 @@ void unreachableCode_error(void) // #11197
     int i;
 }
 
+int nullPointer_gethostbyaddr_r(const void* addr, socklen_t len, int type, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+{
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(NULL, len, type, ret, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(addr, len, type, NULL, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(addr, len, type, ret, NULL, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(addr, len, type, ret, buf, buflen, NULL, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, NULL);
+    return gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, h_errnop);
+}
+
 int nullPointer_getopt_long(int argc, char **argv, const char *optstring,
                             const struct option *longopts, int *longindex)
 {
