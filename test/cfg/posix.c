@@ -36,6 +36,31 @@
 #include <string.h>
 #include <strings.h>
 
+void nullPointer_pthread_attr_getstack(const pthread_attr_t *attr, void *stackaddr, size_t stacksize) {
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_getstack(NULL, &stackaddr, &stacksize);
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_getstack(attr, NULL, &stacksize);
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_getstack(attr, &stackaddr, NULL);
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_getstack(NULL, NULL, &stacksize);
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_getstack(NULL, &stackaddr, NULL);
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_getstack(attr, NULL, NULL);
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_getstack(NULL, NULL, NULL);
+}
+
+void nullPointer_pthread_attr_setstack(pthread_attr_t *attr) {
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_setstack(NULL, NULL, 0);
+  (void) pthread_attr_setstack(attr, NULL, 0);
+  // cppcheck-suppress nullPointer
+  (void) pthread_attr_setstack(NULL, (void*) 1, 0);
+}
+
 void nullPointer_setkey(const char *key)
 {
     // cppcheck-suppress nullPointer
