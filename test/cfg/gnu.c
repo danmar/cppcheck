@@ -25,6 +25,7 @@
 #include <strings.h>
 #include <error.h>
 #include <getopt.h>
+#include <netdb.h>
 
 void unreachableCode_error(void) // #11197
 {
@@ -33,6 +34,37 @@ void unreachableCode_error(void) // #11197
     // TODO cppcheck-suppress unreachableCode
     int i;
 }
+
+int nullPointer_gethostbyname2_r(const char* name, int af, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+{
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(NULL, af, ret, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(name, af, NULL, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(name, af, ret, NULL, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(name, af, ret, buf, buflen, NULL, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(name, af, ret, buf, buflen, result, NULL);
+    return gethostbyname2_r(name, af, ret, buf, buflen, result, h_errnop);
+}
+
+int nullPointer_gethostbyname_r(const char* name, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+{
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(NULL, ret, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(name, NULL, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(name, ret, NULL, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(name, ret, buf, buflen, NULL, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(name, ret, buf, buflen, result, NULL);
+    return gethostbyname_r(name, ret, buf, buflen, result, h_errnop);
+}
+
 
 int nullPointer_gethostbyaddr_r(const void* addr, socklen_t len, int type, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
 {
