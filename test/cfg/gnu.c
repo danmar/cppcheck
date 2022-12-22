@@ -46,6 +46,18 @@ int nullPointer_getopt_long(int argc, char **argv, const char *optstring,
     return getopt_long(argc, argv, optstring, longopts, longindex);
 }
 
+int nullPointer_getopt_long_only(int argc, char* const* argv, const char* optstring,
+                                 const struct option* longopts, int* longindex)
+{
+    // cppcheck-suppress nullPointer
+    (void) getopt_long_only(argc, NULL, optstring, longopts, longindex);
+    // cppcheck-suppress nullPointer
+    (void) getopt_long_only(argc, argv, NULL, longopts, longindex);
+    // cppcheck-suppress nullPointer
+    (void) getopt_long_only(argc, argv, optstring, NULL, longindex);
+    return getopt_long_only(argc, argv, optstring, longopts, longindex);
+}
+
 int nullPointer_getservent_r(struct servent *restrict result_buf, char *restrict buf, size_t buflen, struct servent **restrict result)
 {
     // cppcheck-suppress nullPointer
