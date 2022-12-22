@@ -24,7 +24,6 @@
 #include <netdb.h>
 #include <regex.h>
 #include <time.h>
-#include <unistd.h>
 #include <pthread.h>
 #include <syslog.h>
 #include <stdarg.h>
@@ -32,9 +31,17 @@
 #include <stdbool.h>
 #include <mqueue.h>
 #define _XOPEN_SOURCE
+#include <unistd.h>
 #include <wchar.h>
 #include <string.h>
 #include <strings.h>
+
+void nullPointer_encrypt(char block[64], int edflag)
+{
+    // cppcheck-suppress nullPointer
+    encrypt(NULL, edflag);
+    encrypt(block, edflag);
+}
 
 int nullPointer_getopt(int argc, char* const argv[], const char* optstring)
 {
