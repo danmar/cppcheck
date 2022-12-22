@@ -19,7 +19,7 @@
 #include "xmlanalysisreport.h"
 
 XMLAnalysisReport::XMLAnalysisReport(const std::string& productName) {
-    mBuffer << ErrorMessage::getXMLHeader(productName);
+    mBuffer << ErrorMessage::getXMLHeader(productName) << std::endl;
 }
 
 void XMLAnalysisReport::addFinding(const ErrorMessage &msg) {
