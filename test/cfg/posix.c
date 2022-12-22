@@ -36,6 +36,13 @@
 #include <string.h>
 #include <strings.h>
 
+void nullPointer_mq_timedsend(mqd_t mqdes, const char* msg_ptr, size_t msg_len, unsigned msg_prio, const struct timespec* abs_timeout) {
+  // cppcheck-suppress nullPointer
+  (void) mq_timedsend(mqdes, NULL, msg_len, msg_prio, abs_timeout);
+  // cppcheck-suppress nullPointer
+  (void) mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, NULL);
+}
+
 #if __TRACE_H__ // <trace.h>
 
 void nullPointer_posix_trace_event(trace_event_id_t event_id, const void* restrictdata_ptr, size_t data_len)
