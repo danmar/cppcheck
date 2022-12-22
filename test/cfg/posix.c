@@ -37,10 +37,10 @@
 #include <strings.h>
 
 void nullPointer_mq_timedsend(mqd_t mqdes, const char* msg_ptr, size_t msg_len, unsigned msg_prio, const struct timespec* abs_timeout) {
-  // cppcheck-suppress nullPointer
-  (void) mq_timedsend(mqdes, NULL, msg_len, msg_prio, abs_timeout);
-  // cppcheck-suppress nullPointer
-  (void) mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, NULL);
+    // cppcheck-suppress nullPointer
+    (void) mq_timedsend(mqdes, NULL, msg_len, msg_prio, abs_timeout);
+    // cppcheck-suppress nullPointer
+    (void) mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, NULL);
 }
 
 #if __TRACE_H__ // <trace.h>
@@ -53,9 +53,9 @@ void nullPointer_posix_trace_event(trace_event_id_t event_id, const void* restri
 }
 
 void nullPointer_posix_trace_trygetnext_event(trace_id_t trid,
-           struct posix_trace_event_info *event,
-           void *data, size_t num_bytes,
-           size_t *data_len, int *unavailable)
+                                              struct posix_trace_event_info *event,
+                                              void *data, size_t num_bytes,
+                                              size_t *data_len, int *unavailable)
 {
     // cppcheck-suppress nullPointer
     (void) posix_trace_trygetnext_event(trid, NULL, data, num_bytes, data_len, unavailable);
@@ -97,28 +97,28 @@ int nullPointer_posix_trace_getnext_event(trace_id_t trid, struct posix_trace_ev
 #endif // __TRACE_H__
 
 void nullPointer_pthread_attr_getstack(const pthread_attr_t *attr, void *stackaddr, size_t stacksize) {
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_getstack(NULL, &stackaddr, &stacksize);
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_getstack(attr, NULL, &stacksize);
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_getstack(attr, &stackaddr, NULL);
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_getstack(NULL, NULL, &stacksize);
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_getstack(NULL, &stackaddr, NULL);
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_getstack(attr, NULL, NULL);
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_getstack(NULL, NULL, NULL);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_getstack(NULL, &stackaddr, &stacksize);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_getstack(attr, NULL, &stacksize);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_getstack(attr, &stackaddr, NULL);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_getstack(NULL, NULL, &stacksize);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_getstack(NULL, &stackaddr, NULL);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_getstack(attr, NULL, NULL);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_getstack(NULL, NULL, NULL);
 }
 
 void nullPointer_pthread_attr_setstack(pthread_attr_t *attr) {
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_setstack(NULL, NULL, 0);
-  (void) pthread_attr_setstack(attr, NULL, 0);
-  // cppcheck-suppress nullPointer
-  (void) pthread_attr_setstack(NULL, (void*) 1, 0);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_setstack(NULL, NULL, 0);
+    (void) pthread_attr_setstack(attr, NULL, 0);
+    // cppcheck-suppress nullPointer
+    (void) pthread_attr_setstack(NULL, (void*) 1, 0);
 }
 
 void nullPointer_setkey(const char *key)
