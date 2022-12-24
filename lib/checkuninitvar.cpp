@@ -1563,7 +1563,7 @@ void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname
     if (diag(tok))
         return;
     errorPath.emplace_back(tok, "");
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 Severity::error,
                 "legacyUninitvar",
                 "$symbol:" + varname + "\nUninitialized variable: $symbol",
@@ -1586,7 +1586,7 @@ void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
     auto severity = v.isKnown() ? Severity::error : Severity::warning;
     auto certainty = v.isInconclusive() ? Certainty::inconclusive : Certainty::normal;
     if (v.subexpressions.empty()) {
-        reportError(errorPath,
+        reportError(std::move(errorPath),
                     severity,
                     "uninitvar",
                     "$symbol:" + varname + "\nUninitialized variable: $symbol",
@@ -1600,7 +1600,7 @@ void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
         vars += prefix + varname + "." + var;
         prefix = ", ";
     }
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 severity,
                 "uninitvar",
                 "$symbol:" + varname + "\nUninitialized " + vars,
@@ -1774,7 +1774,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo &ctu, const std::li
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
             const CTU::FileInfo::FunctionCall *functionCall = nullptr;
 
-            const std::list<ErrorMessage::FileLocation> &locationList =
+            std::list<ErrorMessage::FileLocation> locationList =
                 CTU::FileInfo::getErrorPath(CTU::FileInfo::InvalidValueType::uninit,
                                             unsafeUsage,
                                             callsMap,
@@ -1785,7 +1785,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo &ctu, const std::li
             if (locationList.empty())
                 continue;
 
-            const ErrorMessage errmsg(locationList,
+            const ErrorMessage errmsg(std::move(locationList),
                                       fi->file0,
                                       Severity::error,
                                       "Using argument " + unsafeUsage.myArgumentName + " that points at uninitialized variable " + functionCall->callArgumentExpression,

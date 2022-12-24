@@ -440,7 +440,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();
         const std::string id = e.errorId.toStdString();
-        ErrorMessage errmsg(callstack, f0, e.severity, msg, id, Certainty::normal);
+        ErrorMessage errmsg(std::move(callstack), f0, e.severity, msg, id, Certainty::normal);
         mResult.reportErr(errmsg);
     }
 }
