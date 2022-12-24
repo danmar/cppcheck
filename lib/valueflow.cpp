@@ -130,8 +130,8 @@ static void bailoutInternal(const std::string& type, TokenList &tokenlist, Error
 {
     if (function.find("operator") != std::string::npos)
         function = "(valueFlow)";
-    std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(tok, &tokenlist));
-    ErrorMessage errmsg(callstack, tokenlist.getSourceFilePath(), Severity::debug,
+    ErrorMessage::FileLocation loc(tok, &tokenlist);
+    ErrorMessage errmsg({std::move(loc)}, tokenlist.getSourceFilePath(), Severity::debug,
                         Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, type, Certainty::normal);
     errorLogger->reportErr(errmsg);
 }

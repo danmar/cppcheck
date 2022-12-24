@@ -684,10 +684,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             if (mSettings.relativePaths)
                 file = Path::getRelativePath(file, mSettings.basePaths);
 
-            const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
-            std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+            ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
 
-            ErrorMessage errmsg(callstack,
+            ErrorMessage errmsg({std::move(loc1)},
                                 "",
                                 Severity::error,
                                 output.msg,
@@ -1034,10 +1033,9 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 {
     const std::string fullmsg("Bailing out from checking since there was an internal error: " + msg);
 
-    const ErrorMessage::FileLocation loc1(filename, 0, 0);
-    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+    ErrorMessage::FileLocation loc1(filename, 0, 0);
 
-    ErrorMessage errmsg(callstack,
+    ErrorMessage errmsg({std::move(loc1)},
                         emptyString,
                         Severity::error,
                         fullmsg,
@@ -1299,7 +1297,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         if (!re) {
             if (pcreCompileErrorStr) {
                 const std::string msg = "pcre_compile failed: " + std::string(pcreCompileErrorStr);
-                const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
+                const ErrorMessage errmsg({},
                                           emptyString,
                                           Severity::error,
                                           msg,
@@ -1320,7 +1318,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         // It is NULL if everything works, and points to an error string otherwise.
         if (pcreStudyErrorStr) {
             const std::string msg = "pcre_study failed: " + std::string(pcreStudyErrorStr);
-            const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
+            const ErrorMessage errmsg({},
                                       emptyString,
                                       Severity::error,
                                       msg,
@@ -1343,7 +1341,7 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
             if (pcreExecRet < 0) {
                 const std::string errorMessage = pcreErrorCodeToString(pcreExecRet);
                 if (!errorMessage.empty()) {
-                    const ErrorMessage errmsg(std::list<ErrorMessage::FileLocation>(),
+                    const ErrorMessage errmsg({},
                                               emptyString,
                                               Severity::error,
                                               std::string("pcre_exec failed: ") + errorMessage,
@@ -1375,15 +1373,13 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
                 }
             }
 
-            const std::list<ErrorMessage::FileLocation> callStack(1, loc);
-
             // Create error message
             std::string summary;
             if (rule.summary.empty())
                 summary = "found '" + str.substr(pos1, pos2 - pos1) + "'";
             else
                 summary = rule.summary;
-            const ErrorMessage errmsg(callStack, tokenizer.list.getSourceFilePath(), rule.severity, summary, rule.id, Certainty::normal);
+            const ErrorMessage errmsg({std::move(loc)}, tokenizer.list.getSourceFilePath(), rule.severity, summary, rule.id, Certainty::normal);
 
             // Report error
             reportErr(errmsg);
@@ -1547,7 +1543,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
         msg << " For more details, use --enable=information.";
 
 
-    ErrorMessage errmsg(loclist,
+    ErrorMessage errmsg(std::move(loclist),
                         emptyString,
                         Severity::information,
                         msg.str(),
@@ -1569,7 +1565,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
         loclist.emplace_back(file);
     }
 
-    ErrorMessage errmsg(loclist,
+    ErrorMessage errmsg(std::move(loclist),
                         emptyString,
                         Severity::information,
                         "The configuration '" + configuration + "' was not checked because its code equals another one.",

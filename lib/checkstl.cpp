@@ -259,16 +259,16 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
         ErrorPath errorPath1 = getErrorPath(tok, containerSize, "Access out of bounds");
         ErrorPath errorPath2 = getErrorPath(tok, indexValue, "Access out of bounds");
         if (errorPath1.size() <= 1)
-            errorPath = errorPath2;
+            errorPath = std::move(errorPath2);
         else if (errorPath2.size() <= 1)
-            errorPath = errorPath1;
+            errorPath = std::move(errorPath1);
         else {
-            errorPath = errorPath1;
+            errorPath = std::move(errorPath1);
             errorPath.splice(errorPath.end(), errorPath2);
         }
     }
 
-    reportError(errorPath,
+    reportError(std::move(errorPath),
                 (containerSize && !containerSize->errorSeverity()) || (indexValue && !indexValue->errorSeverity()) ? Severity::warning : Severity::error,
                 "containerOutOfBounds",
                 "$symbol:" + containerName +"\n" + errmsg,
@@ -369,7 +369,7 @@ void CheckStl::iteratorsError(const Token* tok, const std::string& containerName
 void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName1, const std::string& containerName2)
 {
     std::list<const Token*> callstack = { tok, containerTok };
-    reportError(callstack, Severity::error, "iterators2",
+    reportError(std::move(callstack), Severity::error, "iterators2",
                 "$symbol:" + containerName1 + "\n"
                 "$symbol:" + containerName2 + "\n"
                 "Same iterator is used with different containers '" + containerName1 + "' and '" + containerName2 + "'.", CWE664, Certainty::normal);
@@ -378,7 +378,7 @@ void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const
 void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName)
 {
     std::list<const Token*> callstack = { tok, containerTok };
-    reportError(callstack,
+    reportError(std::move(callstack),
                 Severity::error,
                 "iterators3",
                 "$symbol:" + containerName +
@@ -393,7 +393,7 @@ void CheckStl::dereferenceErasedError(const Token *erased, const Token* deref, c
 {
     if (erased) {
         std::list<const Token*> callstack = { deref, erased };
-        reportError(callstack, Severity::error, "eraseDereference",
+        reportError(std::move(callstack), Severity::error, "eraseDereference",
                     "$symbol:" + itername + "\n"
                     "Iterator '$symbol' used after element has been erased.\n"
                     "The iterator '$symbol' is invalid after the element it pointed to has been erased. "
@@ -1181,7 +1181,7 @@ void CheckStl::invalidContainerLoopError(const Token* tok, const Token* loopTok,
 
     const std::string msg = "Calling '" + method + "' while iterating the container is invalid.";
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainerLoop", msg, CWE664, Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "invalidContainerLoop", msg, CWE664, Certainty::normal);
 }
 
 void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/, const ValueFlow::Value *val, ErrorPath errorPath)
@@ -1191,7 +1191,7 @@ void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/
         errorPath.insert(errorPath.begin(), val->errorPath.cbegin(), val->errorPath.cend());
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* contTok, ErrorPath errorPath)
@@ -1199,7 +1199,7 @@ void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* con
     std::string name = contTok ? contTok->expressionString() : "x";
     std::string msg = "Reference to " + name;
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, Certainty::normal);
+    reportError(std::move(errorPath), Severity::error, "invalidContainerReference", msg + " that may be invalid.", CWE664, Certainty::normal);
 }
 
 void CheckStl::stlOutOfBounds()
@@ -1318,7 +1318,7 @@ void CheckStl::negativeIndex()
 
 void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &index)
 {
-    const ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
+    ErrorPath errorPath = getErrorPath(tok, &index, "Negative array index");
     std::ostringstream errmsg;
     if (index.condition)
         errmsg << ValueFlow::eitherTheConditionIsRedundant(index.condition)
@@ -1327,7 +1327,7 @@ void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &inde
         errmsg << "Array index " << index.intvalue << " is out of bounds.";
     const auto severity = index.errorSeverity() && index.isKnown() ? Severity::error : Severity::warning;
     const auto certainty = index.isInconclusive() ? Certainty::inconclusive : Certainty::normal;
-    reportError(errorPath, severity, "negativeContainerIndex", errmsg.str(), CWE786, certainty);
+    reportError(std::move(errorPath), severity, "negativeContainerIndex", errmsg.str(), CWE786, certainty);
 }
 
 void CheckStl::erase()
@@ -1875,7 +1875,7 @@ void CheckStl::missingComparisonError(const Token *incrementToken1, const Token 
            << "There is no comparison between these increments to prevent that the iterator is "
            << "incremented beyond the end.";
 
-    reportError(callstack, Severity::warning, "StlMissingComparison", errmsg.str(), CWE834, Certainty::normal);
+    reportError(std::move(callstack), Severity::warning, "StlMissingComparison", errmsg.str(), CWE834, Certainty::normal);
 }
 
 
@@ -2452,17 +2452,17 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* tok, const ValueFlow
     if (!mSettings->isEnabled(value, inconclusive))
         return;
 
-    const ErrorPath errorPath = getErrorPath(tok, value, "Dereference of an invalid iterator");
+    ErrorPath errorPath = getErrorPath(tok, value, "Dereference of an invalid iterator");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
+        reportError(std::move(errorPath), Severity::warning, "derefInvalidIteratorRedundantCheck", errmsgcond, CWE825, (inconclusive || value->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
     } else {
         std::string errmsg;
         errmsg = std::string(value->isKnown() ? "Dereference" : "Possible dereference") + " of an invalid iterator";
         if (!varname.empty())
             errmsg = "$symbol:" + varname + '\n' + errmsg + ": $symbol";
 
-        reportError(errorPath,
+        reportError(std::move(errorPath),
                     value->isKnown() ? Severity::error : Severity::warning,
                     "derefInvalidIterator",
                     errmsg,

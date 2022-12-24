@@ -353,7 +353,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         locationList.emplace_back(filename, lineNumber);
     }
 
-    const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
+    const ErrorMessage errmsg(std::move(locationList), emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else
