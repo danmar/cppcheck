@@ -61,18 +61,18 @@ void Check::writeToErrorList(const ErrorMessage &errmsg)
 }
 
 
-void Check::reportError(const std::list<const Token *> &callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty)
+void Check::reportError(std::list<const Token *> callstack, Severity severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty)
 {
-    const ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty);
+    const ErrorMessage errmsg(std::move(callstack), mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else
         writeToErrorList(errmsg);
 }
 
-void Check::reportError(const ErrorPath &errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
+void Check::reportError(ErrorPath errorPath, Severity severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
 {
-    const ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty);
+    const ErrorMessage errmsg(std::move(errorPath), mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else

@@ -10550,13 +10550,13 @@ void Tokenizer::prepareTernaryOpForAST()
 
 void Tokenizer::reportError(const Token* tok, const Severity severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    const std::list<const Token*> callstack(1, tok);
-    reportError(callstack, severity, id, msg, inconclusive);
+    std::list<const Token*> callstack(1, tok);
+    reportError(std::move(callstack), severity, id, msg, inconclusive);
 }
 
-void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity severity, const std::string& id, const std::string& msg, bool inconclusive) const
+void Tokenizer::reportError(std::list<const Token*> callstack, Severity severity, const std::string& id, const std::string& msg, bool inconclusive) const
 {
-    const ErrorMessage errmsg(callstack, &list, severity, id, msg, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    const ErrorMessage errmsg(std::move(callstack), &list, severity, id, msg, inconclusive ? Certainty::inconclusive : Certainty::normal);
     mErrorLogger.reportErr(errmsg);
 }
 
