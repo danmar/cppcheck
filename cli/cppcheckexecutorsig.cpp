@@ -317,7 +317,7 @@ int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(Cpp
     memset(&act, 0, sizeof(act));
     act.sa_flags=SA_SIGINFO|SA_ONSTACK;
     act.sa_sigaction=CppcheckSignalHandler;
-    for (std::map<int, std::string>::const_iterator sig=listofsignals.begin(); sig!=listofsignals.end(); ++sig) {
+    for (std::map<int, std::string>::const_iterator sig=listofsignals.cbegin(); sig!=listofsignals.cend(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
     return (&executor->*f)(cppcheck);

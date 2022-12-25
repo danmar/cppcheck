@@ -162,9 +162,9 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 continue;
 
             QStringList args;
-            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.begin(); incIt != fileSettings->includePaths.end(); ++incIt)
+            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.cbegin(); incIt != fileSettings->includePaths.cend(); ++incIt)
                 args << ("-I" + QString::fromStdString(*incIt));
-            for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
+            for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.cbegin(); i != fileSettings->systemIncludePaths.cend(); ++i)
                 args << "-isystem" << QString::fromStdString(*i);
             for (const QString& def : QString::fromStdString(fileSettings->defines).split(";")) {
                 args << ("-D" + def);

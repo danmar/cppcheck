@@ -58,7 +58,7 @@ private:
         ThreadExecutor executor(filemap, settings, *this);
         std::vector<ScopedFile> scopedfiles;
         scopedfiles.reserve(filemap.size());
-        for (std::map<std::string, std::size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)
+        for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
             scopedfiles.emplace_back(i->first, data);
 
         ASSERT_EQUALS(result, executor.check());

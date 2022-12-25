@@ -75,7 +75,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
     : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
 {
     // Format callstack
-    for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
+    for (std::list<const Token *>::const_iterator it = callstack.cbegin(); it != callstack.cend(); ++it) {
         // --errorlist can provide null values here
         if (!(*it))
             continue;
@@ -247,7 +247,7 @@ std::string ErrorMessage::serialize() const
     oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
     oss << callStack.size() << " ";
 
-    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = callStack.begin(); loc != callStack.end(); ++loc) {
+    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
         std::ostringstream smallStream;
         smallStream << (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
         oss << smallStream.str().length() << " " << smallStream.str();
@@ -417,8 +417,8 @@ std::string ErrorMessage::fixInvalidChars(const std::string& raw)
 {
     std::string result;
     result.reserve(raw.length());
-    std::string::const_iterator from=raw.begin();
-    while (from!=raw.end()) {
+    std::string::const_iterator from=raw.cbegin();
+    while (from!=raw.cend()) {
         if (std::isprint(static_cast<unsigned char>(*from))) {
             result.push_back(*from);
         } else {
@@ -451,7 +451,7 @@ std::string ErrorMessage::toXML() const
     if (!file0.empty())
         printer.PushAttribute("file0", file0.c_str());
 
-    for (std::list<FileLocation>::const_reverse_iterator it = callStack.rbegin(); it != callStack.rend(); ++it) {
+    for (std::list<FileLocation>::const_reverse_iterator it = callStack.crbegin(); it != callStack.crend(); ++it) {
         printer.OpenElement("location", false);
         printer.PushAttribute("file", (*it).getfile().c_str());
         printer.PushAttribute("line", std::max((*it).line,0));
@@ -669,7 +669,7 @@ bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Supp
 std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
 {
     std::string str;
-    for (std::list<ErrorMessage::FileLocation>::const_iterator tok = callStack.begin(); tok != callStack.end(); ++tok) {
+    for (std::list<ErrorMessage::FileLocation>::const_iterator tok = callStack.cbegin(); tok != callStack.cend(); ++tok) {
         str += (tok == callStack.begin() ? "" : " -> ");
         str += tok->stringify();
     }
@@ -789,9 +789,9 @@ std::string ErrorLogger::plistData(const ErrorMessage &msg)
           << "   <key>path</key>\r\n"
           << "   <array>\r\n";
 
-    std::list<ErrorMessage::FileLocation>::const_iterator prev = msg.callStack.begin();
+    std::list<ErrorMessage::FileLocation>::const_iterator prev = msg.callStack.cbegin();
 
-    for (std::list<ErrorMessage::FileLocation>::const_iterator it = msg.callStack.begin(); it != msg.callStack.end(); ++it) {
+    for (std::list<ErrorMessage::FileLocation>::const_iterator it = msg.callStack.cbegin(); it != msg.callStack.cend(); ++it) {
         if (prev != it) {
             plist << "    <dict>\r\n"
                   << "     <key>kind</key><string>control</string>\r\n"

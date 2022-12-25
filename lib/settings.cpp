@@ -66,6 +66,7 @@ Settings::Settings()
     relativePaths(false),
     reportProgress(false),
     showtime(SHOWTIME_MODES::SHOWTIME_NONE),
+    valueFlowMaxIterations(4),
     verbose(false),
     xml(false),
     xml_version(2)

@@ -2899,7 +2899,7 @@ bool TemplateSimplifier::matchSpecialization(
     const std::list<const Token *> & specializations)
 {
     // Is there a matching specialization?
-    for (std::list<const Token *>::const_iterator it = specializations.begin(); it != specializations.end(); ++it) {
+    for (std::list<const Token *>::const_iterator it = specializations.cbegin(); it != specializations.cend(); ++it) {
         if (!Token::Match(*it, "%name% <"))
             continue;
         const Token *startToken = (*it);
@@ -3239,18 +3239,18 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
 
 static bool matchTemplateParameters(const Token *nameTok, const std::list<std::string> &strings)
 {
-    std::list<std::string>::const_iterator it = strings.begin();
+    std::list<std::string>::const_iterator it = strings.cbegin();
     const Token *tok = nameTok->tokAt(2);
     const Token *end = nameTok->next()->findClosingBracket();
     if (!end)
         return false;
-    while (tok && tok != end && it != strings.end()) {
+    while (tok && tok != end && it != strings.cend()) {
         if (tok->isUnsigned()) {
             if (*it != "unsigned")
                 return false;
             else {
                 ++it;
-                if (it == strings.end())
+                if (it == strings.cend())
                     return false;
             }
         } else if (tok->isSigned()) {
@@ -3258,7 +3258,7 @@ static bool matchTemplateParameters(const Token *nameTok, const std::list<std::s
                 return false;
             else {
                 ++it;
-                if (it == strings.end())
+                if (it == strings.cend())
                     return false;
             }
         }
@@ -3267,7 +3267,7 @@ static bool matchTemplateParameters(const Token *nameTok, const std::list<std::s
                 return false;
             else {
                 ++it;
-                if (it == strings.end())
+                if (it == strings.cend())
                     return false;
             }
         }
@@ -3276,7 +3276,7 @@ static bool matchTemplateParameters(const Token *nameTok, const std::list<std::s
         tok = tok->next();
         ++it;
     }
-    return it == strings.end() && tok && tok->str() == ">";
+    return it == strings.cend() && tok && tok->str() == ">";
 }
 
 void TemplateSimplifier::replaceTemplateUsage(
@@ -3774,7 +3774,7 @@ void TemplateSimplifier::simplifyTemplates(
 
             // get specializations..
             std::list<const Token *> specializations;
-            for (std::list<TokenAndName>::const_iterator iter2 = mTemplateDeclarations.begin(); iter2 != mTemplateDeclarations.end(); ++iter2) {
+            for (std::list<TokenAndName>::const_iterator iter2 = mTemplateDeclarations.cbegin(); iter2 != mTemplateDeclarations.cend(); ++iter2) {
                 if (iter2->isAlias() || iter2->isFriend())
                     continue;
 
@@ -3793,7 +3793,7 @@ void TemplateSimplifier::simplifyTemplates(
             }
         }
 
-        for (std::list<TokenAndName>::const_iterator it = mInstantiatedTemplates.begin(); it != mInstantiatedTemplates.end(); ++it) {
+        for (std::list<TokenAndName>::const_iterator it = mInstantiatedTemplates.cbegin(); it != mInstantiatedTemplates.cend(); ++it) {
             std::list<TokenAndName>::iterator decl;
             for (decl = mTemplateDeclarations.begin(); decl != mTemplateDeclarations.end(); ++decl) {
                 if (decl->token() == it->token())
