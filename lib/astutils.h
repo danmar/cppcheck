@@ -323,7 +323,7 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp,
 bool isVariablesChanged(const Token* start,
                         const Token* end,
                         int indirect,
-                        std::vector<const Variable*> vars,
+                        const std::vector<const Variable*> &vars,
                         const Settings* settings,
                         bool cpp);
 
