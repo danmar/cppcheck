@@ -154,6 +154,7 @@ jobs:
           rmdir /s /q win_installer\files\iconengines || exit /b !errorlevel!
           rmdir /s /q win_installer\files\imageformats || exit /b !errorlevel!
           rmdir /s /q win_installer\files\printsupport || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\sqldrivers || exit /b !errorlevel!      
           ren win_installer\files\translations lang || exit /b !errorlevel!
           del win_installer\files\d3dcompiler_47.dll || exit /b !errorlevel!
           del win_installer\files\libEGL.dll || exit /b !errorlevel!

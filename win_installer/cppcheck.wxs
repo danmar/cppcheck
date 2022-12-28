@@ -59,13 +59,6 @@
               <File Id='qwindowsvistastyledll' Name='qwindowsvistastyle.dll' Source='$(var.QtDllDir)\styles\qwindowsvistastyle.dll' />
             </Component>
           </Directory>
-          <Directory Id='QtSqlDriversFolder' Name='sqldrivers'>
-            <Component Id='QtSqlDrivers' DiskId='1' Guid='$(var.qtsqldriversGUID)'>
-              <File Id='qsqlitedll' Name='qsqlite.dll' Source='$(var.QtDllDir)\sqldrivers\qsqlite.dll' />
-              <File Id='qsqlodbcdll' Name='qsqlodbc.dll' Source='$(var.QtDllDir)\sqldrivers\qsqlodbc.dll' />
-              <File Id='qsqlpsqldll' Name='qsqlpsql.dll' Source='$(var.QtDllDir)\sqldrivers\qsqlpsql.dll' />
-            </Component>
-          </Directory>
           <Directory Id='TranslationsFolder' Name='lang'>
             <Component Id='GuiTranslations' Guid='$(var.guiTranslationsGUID)'>
               <File Id='cppcheck_de.qm' Name='cppcheck_de.qm' Source='$(var.TranslationsDir)\cppcheck_de.qm' />
@@ -208,7 +201,6 @@
         <ComponentRef Id='GuiExecutable' />
         <ComponentRef Id='QtPlatforms' />
         <ComponentRef Id='QtStyles' />
-        <ComponentRef Id='QtSqlDrivers' />
         <Feature Id='Translations' Title='GUI Translations' AllowAdvertise='no' Description='Translations for graphical user interface' Level='1'>
           <ComponentRef Id='GuiTranslations' />
         </Feature>
