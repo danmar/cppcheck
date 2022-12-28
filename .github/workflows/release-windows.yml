@@ -143,3 +143,26 @@ jobs:
         with:
           name: deploy
           path: win_installer\files
+
+      - name: Clean up deploy
+        run: |
+          del win_installer\files\addons\*.dll || exit /b !errorlevel!
+          del win_installer\files\addons\*.pyd || exit /b !errorlevel!
+          del win_installer\files\addons\base_library.zip || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\bearer || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\help || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\iconengines || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\imageformats || exit /b !errorlevel!
+          rmdir /s /q win_installer\files\printsupport || exit /b !errorlevel!
+          ren win_installer\files\translations lang || exit /b !errorlevel!
+          del win_installer\files\d3dcompiler_47.dll || exit /b !errorlevel!
+          del win_installer\files\libEGL.dll || exit /b !errorlevel!
+          del win_installer\files\libGLESv2.dll || exit /b !errorlevel!
+          del win_installer\files\opengl32sw.dll || exit /b !errorlevel!
+          del win_installer\files\Qt5Svg.dll || exit /b !errorlevel!
+          del win_installer\files\vc_redist.x64.exe || exit /b !errorlevel!
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: portable
+          path: win_installer\files
