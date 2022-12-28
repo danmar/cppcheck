@@ -94,12 +94,16 @@
               <File Id='boost.cfg' Name='boost.cfg' Source='$(var.CfgsDir)\boost.cfg' />
               <File Id='bsd.cfg' Name='bsd.cfg' Source='$(var.CfgsDir)\bsd.cfg' />
               <File Id='cairo.cfg' Name='cairo.cfg' Source='$(var.CfgsDir)\cairo.cfg' />
+              <File Id='cppcheck_lib.cfg' Name='cppcheck-lib.cfg' Source='$(var.CfgsDir)\cppcheck-lib.cfg' />
               <File Id='cppunit.cfg' Name='cppunit.cfg' Source='$(var.CfgsDir)\cppunit.cfg' />
               <File Id='dpdk.cfg' Name='dpdk.cfg' Source='$(var.CfgsDir)\dpdk.cfg' />
               <File Id='embedded_sql.cfg' Name='embedded_sql.cfg' Source='$(var.CfgsDir)\embedded_sql.cfg' />
+              <File Id='emscripten.cfg' Name='emscripten.cfg' Source='$(var.CfgsDir)\emscripten.cfg' />
+              <File Id='ginac.cfg' Name='ginac.cfg' Source='$(var.CfgsDir)\ginac.cfg' />
               <File Id='gnu.cfg' Name='gnu.cfg' Source='$(var.CfgsDir)\gnu.cfg' />
               <File Id='googletest.cfg' Name='googletest.cfg' Source='$(var.CfgsDir)\googletest.cfg' />
               <File Id='gtk.cfg' Name='gtk.cfg' Source='$(var.CfgsDir)\gtk.cfg' />
+              <File Id='icu.cfg' Name='icu.cfg' Source='$(var.CfgsDir)\icu.cfg' />
               <File Id='kde.cfg' Name='kde.cfg' Source='$(var.CfgsDir)\kde.cfg' />
               <File Id='libcerror.cfg' Name='libcerror.cfg' Source='$(var.CfgsDir)\libcerror.cfg' />
               <File Id='libcurl.cfg' Name='libcurl.cfg' Source='$(var.CfgsDir)\libcurl.cfg' />
@@ -111,10 +115,12 @@
               <File Id='microsoft_unittest.cfg' Name='microsoft_unittest.cfg' Source='$(var.CfgsDir)\microsoft_unittest.cfg' />
               <File Id='motif.cfg' Name='motif.cfg' Source='$(var.CfgsDir)\motif.cfg' />
               <File Id='nspr.cfg' Name='nspr.cfg' Source='$(var.CfgsDir)\nspr.cfg' />
+              <File Id='ntl.cfg' Name='ntl.cfg' Source='$(var.CfgsDir)\ntl.cfg' />
               <File Id='opencv2.cfg' Name='opencv2.cfg' Source='$(var.CfgsDir)\opencv2.cfg' />
               <File Id='opengl.cfg' Name='opengl.cfg' Source='$(var.CfgsDir)\opengl.cfg' />
               <File Id='openmp.cfg' Name='openmp.cfg' Source='$(var.CfgsDir)\openmp.cfg' />
               <File Id='openssl.cfg' Name='openssl.cfg' Source='$(var.CfgsDir)\openssl.cfg' />
+              <File Id='pcre.cfg' Name='pcre.cfg' Source='$(var.CfgsDir)\pcre.cfg' />
               <File Id='posix.cfg' Name='posix.cfg' Source='$(var.CfgsDir)\posix.cfg' />
               <File Id='python.cfg' Name='python.cfg' Source='$(var.CfgsDir)\python.cfg' />
               <File Id='qt.cfg' Name='qt.cfg' Source='$(var.CfgsDir)\qt.cfg' />
@@ -125,6 +131,8 @@
               <File Id='tinyxml2.cfg' Name='tinyxml2.cfg' Source='$(var.CfgsDir)\tinyxml2.cfg' />
               <File Id='vcl.cfg' Name='vcl.cfg' Source='$(var.CfgsDir)\vcl.cfg' />
               <File Id='wxwidgets.cfg' Name='wxwidgets.cfg' Source='$(var.CfgsDir)\wxwidgets.cfg' />
+              <File Id='wxsqlite3.cfg' Name='wxsqlite3.cfg' Source='$(var.CfgsDir)\wxsqlite3.cfg' />
+              <File Id='wxsvg.cfg' Name='wxsvg.cfg' Source='$(var.CfgsDir)\wxsvg.cfg' />
               <File Id='zlib.cfg' Name='zlib.cfg' Source='$(var.CfgsDir)\zlib.cfg' />
             </Component>
           </Directory>
