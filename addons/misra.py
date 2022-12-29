@@ -4458,48 +4458,48 @@ class MisraChecker:
                     summary_data = s['data']
 
                     if summary_type == 'MisraTypedefInfo':
+                        typedef_cache = {}
                         for new_typedef_info in summary_data:
-                            found = False
-                            for old_typedef_info in all_typedef_info:
-                                if old_typedef_info['name'] == new_typedef_info['name']:
-                                    found = True
-                                    if is_different_location(old_typedef_info, new_typedef_info):
-                                        self.reportError(Location(old_typedef_info), 5, 6)
-                                        self.reportError(Location(new_typedef_info), 5, 6)
-                                    else:
-                                        if new_typedef_info['used']:
-                                            old_typedef_info['used'] = True
-                                    break
-                            if not found:
-                                all_typedef_info.append(new_typedef_info)
+                            old_typedef_info = typedef_cache.get(new_typedef_info['name'], None)
+                            if old_typedef_info:
+                                if is_different_location(old_typedef_info, new_typedef_info):
+                                    self.reportError(Location(old_typedef_info), 5, 6)
+                                    self.reportError(Location(new_typedef_info), 5, 6)
+                                else:
+                                    if new_typedef_info['used']:
+                                        old_typedef_info['used'] = True
+                            else:
+                                typedef_cache[new_typedef_info['name']] = new_typedef_info
+
+                        all_typedef_info = list(typedef_cache.values())
 
                     if summary_type == 'MisraTagName':
+                        tag_cache = {}
                         for new_tagname_info in summary_data:
-                            found = False
-                            for old_tagname_info in all_tagname_info:
-                                if old_tagname_info['name'] == new_tagname_info['name']:
-                                    found = True
-                                    if is_different_location(old_tagname_info, new_tagname_info):
-                                        self.reportError(Location(old_tagname_info), 5, 7)
-                                        self.reportError(Location(new_tagname_info), 5, 7)
-                                    else:
-                                        if new_tagname_info['used']:
-                                            old_tagname_info['used'] = True
-                                    break
-                            if not found:
-                                all_tagname_info.append(new_tagname_info)
+                            old_tagname_info = tag_cache.get(new_tagname_info['name'], None)
+                            if old_tagname_info:
+                                if is_different_location(old_tagname_info, new_tagname_info):
+                                    self.reportError(Location(old_tagname_info), 5, 7)
+                                    self.reportError(Location(new_tagname_info), 5, 7)
+                                else:
+                                    if new_tagname_info['used']:
+                                        old_tagname_info['used'] = True
+                            else:
+                                tag_cache[new_tagname_info['name']] = new_tagname_info
+
+                        all_tagname_info = list(tag_cache.values())
 
                     if summary_type == 'MisraMacro':
+                        macro_cache = {}
                         for new_macro in summary_data:
-                            found = False
-                            for old_macro in all_macro_info:
-                                if old_macro['name'] == new_macro['name']:
-                                    found = True
-                                    if new_macro['used']:
-                                        old_macro['used'] = True
-                                    break
-                            if not found:
-                                all_macro_info.append(new_macro)
+                            old_macro = macro_cache.get(new_macro['name'], None)
+                            if old_macro:
+                                if new_macro['used']:
+                                    old_macro['used'] = True
+                            else:
+                                macro_cache[new_macro['name']] = new_macro
+
+                        all_macro_info = list(macro_cache.values())
 
                     if summary_type == 'MisraExternalIdentifiers':
                         for s in summary_data:
