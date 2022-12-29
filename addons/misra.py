@@ -4460,7 +4460,8 @@ class MisraChecker:
                     if summary_type == 'MisraTypedefInfo':
                         typedef_cache = {}
                         for new_typedef_info in summary_data:
-                            old_typedef_info = typedef_cache.get(new_typedef_info['name'], None)
+                            cache_key = new_typedef_info['name']
+                            old_typedef_info = typedef_cache.get(cache_key, None)
                             if old_typedef_info:
                                 if is_different_location(old_typedef_info, new_typedef_info):
                                     self.reportError(Location(old_typedef_info), 5, 6)
@@ -4469,14 +4470,15 @@ class MisraChecker:
                                     if new_typedef_info['used']:
                                         old_typedef_info['used'] = True
                             else:
-                                typedef_cache[new_typedef_info['name']] = new_typedef_info
+                                typedef_cache[cache_key] = new_typedef_info
 
                         all_typedef_info = list(typedef_cache.values())
 
                     if summary_type == 'MisraTagName':
                         tag_cache = {}
                         for new_tagname_info in summary_data:
-                            old_tagname_info = tag_cache.get(new_tagname_info['name'], None)
+                            cache_key = new_tagname_info['name']
+                            old_tagname_info = tag_cache.get(cache_key, None)
                             if old_tagname_info:
                                 if is_different_location(old_tagname_info, new_tagname_info):
                                     self.reportError(Location(old_tagname_info), 5, 7)
@@ -4485,19 +4487,20 @@ class MisraChecker:
                                     if new_tagname_info['used']:
                                         old_tagname_info['used'] = True
                             else:
-                                tag_cache[new_tagname_info['name']] = new_tagname_info
+                                tag_cache[cache_key] = new_tagname_info
 
                         all_tagname_info = list(tag_cache.values())
 
                     if summary_type == 'MisraMacro':
                         macro_cache = {}
                         for new_macro in summary_data:
-                            old_macro = macro_cache.get(new_macro['name'], None)
+                            cache_key = new_macro['name']
+                            old_macro = macro_cache.get(cache_key, None)
                             if old_macro:
                                 if new_macro['used']:
                                     old_macro['used'] = True
                             else:
-                                macro_cache[new_macro['name']] = new_macro
+                                macro_cache[cache_key] = new_macro
 
                         all_macro_info = list(macro_cache.values())
 
