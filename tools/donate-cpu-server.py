@@ -691,6 +691,9 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
 
 def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
     pkgs = '' if query_params and query_params.get('pkgs') == '1' else None
+    factor = 2.0
+    if not show_gt:
+        factor = 1.0 / factor
 
     title = 'Time report ({})'.format('regressed' if show_gt else 'improved')
     html = '<!DOCTYPE html>\n'
@@ -735,18 +738,26 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
             if time_base < 0.0 or time_head < 0.0:
                 # ignore results with crashes / errors for the time report
                 break
+            if time_base == 0.0 and time_head == 0.0:
+                # no difference possible
+                break
             total_time_base += time_base
             total_time_head += time_head
+            if time_base == time_head:
+                # no difference
+                break
+            if time_base > 0.0 and time_head > 0.0:
+                time_factor = time_head / time_base
+            elif time_base == 0.0:
+                time_factor = time_head
+            else:
+                time_factor = 0.0
             suspicious_time_difference = False
-            if show_gt and time_base*2 < time_head:
+            if show_gt and time_factor > factor:
                 suspicious_time_difference = True
-            elif not show_gt and time_head*2 < time_base:
+            elif not show_gt and time_factor <= factor:
                 suspicious_time_difference = True
             if suspicious_time_difference:
-                if time_base > 0.0:
-                    time_factor = time_head / time_base
-                else:
-                    time_factor = 0.0
                 pkg_name = filename[len(resultPath)+1:]
                 data[pkg_name] = (datestr, split_line[2], split_line[1], time_factor)
 
@@ -763,9 +774,9 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
     html += '\n'
     html += '(listed above are all suspicious timings with a factor '
     if show_gt:
-        html += '&gt;2.00'
+        html += '&gt; {}'.format(format(factor, '.2f'))
     else:
-        html += '&lt;=0.50'
+        html += '&lt;= {}'.format(format(factor, '.2f'))
     html += ')\n'
     html += '\n'
     if total_time_base > 0.0:
