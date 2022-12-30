@@ -112,7 +112,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!errmsg.empty())
             bad->emplace_back(tok->location, std::move(errmsg));
 
-        std::copy_if(suppressions.begin(), suppressions.end(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
+        std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
             return !s.errorId.empty();
         });
     } else {
@@ -327,7 +327,7 @@ static bool hasDefine(const std::string &userDefines, const std::string &cfg)
 
 static std::string cfg(const std::vector<std::string> &configs, const std::string &userDefines)
 {
-    std::set<std::string> configs2(configs.begin(), configs.end());
+    std::set<std::string> configs2(configs.cbegin(), configs.cend());
     std::string ret;
     for (const std::string &c : configs2) {
         if (c.empty())

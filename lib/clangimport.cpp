@@ -1328,7 +1328,7 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
     Scope *nestedIn = const_cast<Scope *>(nameToken->scope());
 
     if (prev) {
-        const std::string addr = *(std::find(mExtTokens.begin(), mExtTokens.end(), "prev") + 1);
+        const std::string addr = *(std::find(mExtTokens.cbegin(), mExtTokens.cend(), "prev") + 1);
         mData->ref(addr, nameToken);
     }
     if (!nameToken->function()) {
@@ -1448,7 +1448,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
     // definition
     if (isDefinition()) {
         std::vector<AstNodePtr> children2;
-        std::copy_if(children.begin(), children.end(), std::back_inserter(children2), [](const AstNodePtr& child) {
+        std::copy_if(children.cbegin(), children.cend(), std::back_inserter(children2), [](const AstNodePtr& child) {
             return child->nodeType == CXXConstructorDecl ||
             child->nodeType == CXXDestructorDecl ||
             child->nodeType == CXXMethodDecl ||
@@ -1531,7 +1531,7 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
 
         int typeSize = 0;
         for (const Variable &var: scope.varlist) {
-            const int mul = std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& dim) {
+            const int mul = std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& dim) {
                 return v * dim.num;
             });
             if (var.valueType())

@@ -1879,7 +1879,7 @@ namespace {
         }
 
         bool hasChild(const std::string &childName) const {
-            return std::any_of(children.begin(), children.end(), [&](const ScopeInfo3& child) {
+            return std::any_of(children.cbegin(), children.cend(), [&](const ScopeInfo3& child) {
                 return child.name == childName;
             });
         }
@@ -1901,7 +1901,7 @@ namespace {
             const ScopeInfo3 * tempScope = this;
             while (tempScope) {
                 // check children
-                auto it = std::find_if(tempScope->children.begin(), tempScope->children.end(), [&](const ScopeInfo3& child) {
+                auto it = std::find_if(tempScope->children.cbegin(), tempScope->children.cend(), [&](const ScopeInfo3& child) {
                     return &child != this && child.type == Record && (child.name == scope || child.fullName == scope);
                 });
                 if (it != tempScope->children.end())
@@ -2189,7 +2189,7 @@ namespace {
                         return true;
                 } else {
                     const std::string suffix = " :: " + qualification;
-                    if (std::any_of(usingNS.begin(), usingNS.end(), [&](const std::string& ns) {
+                    if (std::any_of(usingNS.cbegin(), usingNS.cend(), [&](const std::string& ns) {
                         return scope == ns + suffix;
                     }))
                         return true;
@@ -4450,7 +4450,7 @@ void Tokenizer::setVarIdPass2()
                     scopeName3.erase(pos + 4);
                 }
                 const std::map<std::string, nonneg int>& baseClassVars = varsByClass[baseClassName];
-                thisClassVars.insert(baseClassVars.begin(), baseClassVars.end());
+                thisClassVars.insert(baseClassVars.cbegin(), baseClassVars.cend());
             }
             tokStart = tokStart->next();
         }
@@ -4458,7 +4458,7 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // What member variables are there in this class?
-        std::transform(classnameTokens.begin(), classnameTokens.end(), std::back_inserter(scopeInfo), [&](const Token* tok) {
+        std::transform(classnameTokens.cbegin(), classnameTokens.cend(), std::back_inserter(scopeInfo), [&](const Token* tok) {
             return ScopeInfo2(tok->str(), tokStart->link());
         });
 
@@ -9551,7 +9551,7 @@ void Tokenizer::printUnknownTypes() const
         std::string last;
         int count = 0;
 
-        for (auto it = unknowns.begin(); it != unknowns.end(); ++it) {
+        for (auto it = unknowns.cbegin(); it != unknowns.cend(); ++it) {
             // skip types is std namespace because they are not interesting
             if (it->first.find("std::") != 0) {
                 if (it->first != last) {
@@ -9850,7 +9850,7 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
     if (!mPreprocessor)
         return false;
-    return std::any_of(mPreprocessor->getDirectives().begin(), mPreprocessor->getDirectives().end(), [&](const Directive& d) {
+    return std::any_of(mPreprocessor->getDirectives().cbegin(), mPreprocessor->getDirectives().cend(), [&](const Directive& d) {
         return d.str.compare(0, 3, "#if") == 0 &&
         d.linenr >= start->linenr() &&
         d.linenr <= end->linenr() &&

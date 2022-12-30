@@ -392,7 +392,7 @@ public:
 
     /** Is posix library specified? */
     bool posix() const {
-        return std::find(libraries.begin(), libraries.end(), "posix") != libraries.end();
+        return std::find(libraries.cbegin(), libraries.cend(), "posix") != libraries.cend();
     }
 
     /** @brief Request termination of checking */

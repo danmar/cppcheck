@@ -452,7 +452,7 @@ void CheckOther::checkRedundantAssignment()
                     if (tok->astOperand1()->valueType()->typeScope) {
                         const std::string op = "operator" + tok->str();
                         const std::list<Function>& fList = tok->astOperand1()->valueType()->typeScope->functionList;
-                        inconclusive = std::any_of(fList.begin(), fList.end(), [&](const Function& f) {
+                        inconclusive = std::any_of(fList.cbegin(), fList.cend(), [&](const Function& f) {
                             return f.name() == op;
                         });
                     }
@@ -1177,13 +1177,13 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
         if (var.isArray())
-            size *= std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& d) {
+            size *= std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& d) {
                 return v *= d.num;
             });
 
         accumulateSize(cumulatedSize, size, isUnion);
     }
-    return std::accumulate(type->derivedFrom.begin(), type->derivedFrom.end(), cumulatedSize, [&](int v, const Type::BaseInfo& baseInfo) {
+    return std::accumulate(type->derivedFrom.cbegin(), type->derivedFrom.cend(), cumulatedSize, [&](int v, const Type::BaseInfo& baseInfo) {
         if (baseInfo.type && baseInfo.type->classScope)
             v += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth + 1);
         return v;
@@ -1447,7 +1447,7 @@ void CheckOther::checkConstVariable()
         }
         if (function && Function::returnsReference(function) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
-            if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
+            if (std::any_of(returns.cbegin(), returns.cend(), [&](const Token* retTok) {
                 if (retTok->varId() == var->declarationId())
                     return true;
                 while (retTok && retTok->isCast())
@@ -1567,7 +1567,7 @@ void CheckOther::checkConstPointer()
             continue;
         if ((vt->pointer != 1 && !(vt->pointer == 2 && var->isArray())) || (vt->constness & 1) || vt->reference != Reference::None)
             continue;
-        if (std::find(nonConstPointers.begin(), nonConstPointers.end(), var) != nonConstPointers.end())
+        if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), var) != nonConstPointers.cend())
             continue;
         pointers.emplace_back(var);
         const Token* const parent = tok->astParent();
@@ -1611,7 +1611,7 @@ void CheckOther::checkConstPointer()
             if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
                 continue;
         }
-        if (std::find(nonConstPointers.begin(), nonConstPointers.end(), p) == nonConstPointers.end()) {
+        if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
             const Token *start = (p->isArgument()) ? p->scope()->bodyStart : p->nameToken()->next();
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
@@ -2354,8 +2354,8 @@ namespace {
                 functionsByName[func.tokenDef->str()].push_back(&func);
             }
             for (std::pair<const std::string, std::list<const Function*>>& it : functionsByName) {
-                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.begin(), it.second.end(), notconst);
-                if (nc == it.second.end()) {
+                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.cbegin(), it.second.cend(), notconst);
+                if (nc == it.second.cend()) {
                     // ok to add all of them
                     constFunctions.splice(constFunctions.end(), it.second);
                 }
@@ -3482,7 +3482,7 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
         if (var.name() == varname)
             return var.nameToken();
     }
-    auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
+    auto it = std::find_if(scope->functionList.cbegin(), scope->functionList.cend(), [&](const Function& f) {
         return f.type == Function::Type::eFunction && f.name() == varname;
     });
     if (it != scope->functionList.end())
@@ -3513,7 +3513,7 @@ void CheckOther::checkShadowVariables()
 
             if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
                 const auto argList = functionScope->function->argumentList;
-                auto it = std::find_if(argList.begin(), argList.end(), [&](const Variable& arg) {
+                auto it = std::find_if(argList.cbegin(), argList.cend(), [&](const Variable& arg) {
                     return arg.nameToken() && var.name() == arg.name();
                 });
                 if (it != argList.end()) {
@@ -3695,11 +3695,11 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
         verb = "Subtracting";
     if (v1) {
         errorPath.emplace_back(v1->tokvalue->variable()->nameToken(), "Variable declared here.");
-        errorPath.insert(errorPath.end(), v1->errorPath.begin(), v1->errorPath.end());
+        errorPath.insert(errorPath.end(), v1->errorPath.cbegin(), v1->errorPath.cend());
     }
     if (v2) {
         errorPath.emplace_back(v2->tokvalue->variable()->nameToken(), "Variable declared here.");
-        errorPath.insert(errorPath.end(), v2->errorPath.begin(), v2->errorPath.end());
+        errorPath.insert(errorPath.end(), v2->errorPath.cbegin(), v2->errorPath.cend());
     }
     errorPath.emplace_back(tok, "");
     reportError(

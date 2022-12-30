@@ -82,7 +82,7 @@ template<std::size_t N>
 static bool isVarTokComparison(const Token * tok, const Token ** vartok,
                                const std::array<std::pair<std::string, std::string>, N>& ops)
 {
-    return std::any_of(ops.begin(), ops.end(), [&](const std::pair<std::string, std::string>& op) {
+    return std::any_of(ops.cbegin(), ops.cend(), [&](const std::pair<std::string, std::string>& op) {
         return astIsVariableComparison(tok, op.first, op.second, vartok);
     });
 }
@@ -592,11 +592,11 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
                 }
 
-                alloctype.insert(varInfo1.alloctype.begin(), varInfo1.alloctype.end());
-                alloctype.insert(varInfo2.alloctype.begin(), varInfo2.alloctype.end());
+                alloctype.insert(varInfo1.alloctype.cbegin(), varInfo1.alloctype.cend());
+                alloctype.insert(varInfo2.alloctype.cbegin(), varInfo2.alloctype.cend());
 
-                possibleUsage.insert(varInfo1.possibleUsage.begin(), varInfo1.possibleUsage.end());
-                possibleUsage.insert(varInfo2.possibleUsage.begin(), varInfo2.possibleUsage.end());
+                possibleUsage.insert(varInfo1.possibleUsage.cbegin(), varInfo1.possibleUsage.cend());
+                possibleUsage.insert(varInfo2.possibleUsage.cbegin(), varInfo2.possibleUsage.cend());
             }
         }
 
@@ -1007,7 +1007,7 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
     const std::map<int, std::string> &possibleUsage = varInfo.possibleUsage;
 
     const std::map<int, VarInfo::AllocInfo>::const_iterator var = alloctype.find(vartok->varId());
-    if (var != alloctype.end() && var->second.status == VarInfo::ALLOC) {
+    if (var != alloctype.cend() && var->second.status == VarInfo::ALLOC) {
         const std::map<int, std::string>::const_iterator use = possibleUsage.find(vartok->varId());
         if (use == possibleUsage.end()) {
             leakError(vartok, vartok->str(), var->second.type);

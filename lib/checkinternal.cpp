@@ -227,8 +227,8 @@ void CheckInternal::checkMissingPercentCharacter()
 
             const std::string pattern = patternTok->strValue();
 
-            std::set<std::string>::const_iterator knownPattern, knownPatternsEnd = knownPatterns.end();
-            for (knownPattern = knownPatterns.begin(); knownPattern != knownPatternsEnd; ++knownPattern) {
+            std::set<std::string>::const_iterator knownPattern, knownPatternsEnd = knownPatterns.cend();
+            for (knownPattern = knownPatterns.cbegin(); knownPattern != knownPatternsEnd; ++knownPattern) {
                 const std::string brokenPattern = (*knownPattern).substr(0, (*knownPattern).size() - 1);
 
                 std::string::size_type pos = 0;
@@ -333,7 +333,7 @@ void CheckInternal::checkExtraWhitespace()
                 continue;
 
             const std::string pattern = patternTok->strValue();
-            if (!pattern.empty() && (pattern[0] == ' ' || *pattern.rbegin() == ' '))
+            if (!pattern.empty() && (pattern[0] == ' ' || *pattern.crbegin() == ' '))
                 extraWhitespaceError(tok, pattern, funcname);
 
             // two whitespaces or more

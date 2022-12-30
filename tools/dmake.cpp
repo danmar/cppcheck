@@ -60,7 +60,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     static const std::array<std::string, 3> externalfolders{"externals/picojson", "externals/simplecpp", "externals/tinyxml2"};
 
     // Is the dependency already included?
-    if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
+    if (std::find(depfiles.cbegin(), depfiles.cend(), filename) != depfiles.cend())
         return;
 
     std::ifstream f(filename.c_str());

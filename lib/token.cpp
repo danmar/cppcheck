@@ -2236,7 +2236,7 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         if (vars.empty())
             return nullptr;
         if (std::all_of(
-                vars.begin(), vars.end(), [&](const Variable* var) {
+                vars.cbegin(), vars.cend(), [&](const Variable* var) {
             return var->type() == vars.front()->type();
         }))
             return vars.front()->type();

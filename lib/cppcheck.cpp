@@ -821,7 +821,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 mCurrentConfig = mSettings.userDefines;
                 const std::vector<std::string> v1(split(mSettings.userDefines, ";"));
                 for (const std::string &cfg: split(currCfg, ";")) {
-                    if (std::find(v1.begin(), v1.end(), cfg) == v1.end()) {
+                    if (std::find(v1.cbegin(), v1.cend(), cfg) == v1.cend()) {
                         mCurrentConfig += ";" + cfg;
                     }
                 }
@@ -1573,7 +1573,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         return;
 
     // Alert only about unique errors
-    if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) != mErrorList.end())
+    if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) != mErrorList.cend())
         return;
 
     if (!mSettings.buildDir.empty())
@@ -1733,8 +1733,8 @@ bool CppCheck::analyseWholeProgram()
     for (const Check::FileInfo *fi : mFileInfo) {
         const CTU::FileInfo *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
         if (fi2) {
-            ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.begin(), fi2->functionCalls.end());
-            ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.begin(), fi2->nestedCalls.end());
+            ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
+            ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
         }
     }
     for (Check *check : Check::instances())

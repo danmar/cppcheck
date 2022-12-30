@@ -306,7 +306,7 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+                if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
                     return v.isIntValue() && !v.isImpossible() && v.intvalue == value;
                 }))
                     return true;
@@ -325,7 +325,7 @@ private:
 
         for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+                if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
                     return v.isSymbolicValue() && !v.isImpossible() && v.intvalue == value && v.tokvalue->expressionString() == expr;
                 }))
                     return true;
@@ -343,7 +343,7 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+                if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
                     return v.isFloatValue() && !v.isImpossible() && v.floatValue >= value - diff && v.floatValue <= value + diff;
                 }))
                     return true;
@@ -387,7 +387,7 @@ private:
         const std::size_t len = strlen(value);
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+                if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
                     return v.valueType == type && Token::simpleMatch(v.tokvalue, value, len);
                 }))
                     return true;
@@ -407,7 +407,7 @@ private:
         const std::size_t len = strlen(value);
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+                if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
                     return v.isLifetimeValue() && v.lifetimeScope == lifetimeScope && Token::simpleMatch(v.tokvalue, value, len);
                 }))
                     return true;
@@ -425,7 +425,7 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+                if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
                     return v.valueType == type && v.intvalue == value;
                 }))
                     return true;
@@ -443,7 +443,7 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+                if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
                     return v.isMovedValue() && v.moveKind == moveKind;
                 }))
                     return true;
@@ -462,7 +462,7 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+                if (std::any_of(tok->values().cbegin(), tok->values().cend(), [&](const ValueFlow::Value& v) {
                     return v.isIntValue() && v.intvalue == value && v.condition;
                 }))
                     return true;
@@ -4307,7 +4307,7 @@ private:
                "        x;\n"
                "}";
         std::list<ValueFlow::Value> values = tokenValues(code, "x <");
-        ASSERT(std::none_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isUninitValue)));
+        ASSERT(std::none_of(values.cbegin(), values.cend(), std::mem_fn(&ValueFlow::Value::isUninitValue)));
 
         // #9637
         code = "void f() {\n"
@@ -4618,7 +4618,7 @@ private:
 
     bool isNotKnownValues(const char code[], const char str[]) {
         const auto& values = tokenValues(code, str);
-        return std::none_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+        return std::none_of(values.cbegin(), values.cend(), [](const ValueFlow::Value& v) {
             return v.isKnown();
         });
     }

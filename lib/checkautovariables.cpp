@@ -418,7 +418,7 @@ static bool isInScope(const Token * tok, const Scope * scope)
         const Scope * tokScope = tok->scope();
         if (!tokScope)
             return false;
-        if (std::any_of(tokScope->nestedList.begin(), tokScope->nestedList.end(), [&](const Scope* argScope) {
+        if (std::any_of(tokScope->nestedList.cbegin(), tokScope->nestedList.cend(), [&](const Scope* argScope) {
             return argScope && argScope->isNestedIn(scope);
         }))
             return true;

@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
     // Set data dir..
     const QStringList args = QApplication::arguments();
-    auto it = std::find_if(args.begin(), args.end(), [](const QString& arg) {
+    auto it = std::find_if(args.cbegin(), args.cend(), [](const QString& arg) {
         return arg.startsWith("--data-dir=");
     });
     if (it != args.end()) {

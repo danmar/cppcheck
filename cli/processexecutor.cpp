@@ -171,7 +171,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
         if (!mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage())) {
             // Alert only about unique errors
             std::string errmsg = msg.toString(mSettings.verbose);
-            if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
+            if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
                 mErrorList.emplace_back(std::move(errmsg));
                 if (type == PipeWriter::REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
@@ -218,7 +218,7 @@ unsigned int ProcessExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
         return v + p.second;
     });
 
@@ -298,7 +298,7 @@ unsigned int ProcessExecutor::check()
             struct timeval tv; // for every second polling of load average condition
             tv.tv_sec = 1;
             tv.tv_usec = 0;
-            const int r = select(*std::max_element(rpipes.begin(), rpipes.end()) + 1, &rfds, nullptr, nullptr, &tv);
+            const int r = select(*std::max_element(rpipes.cbegin(), rpipes.cend()) + 1, &rfds, nullptr, nullptr, &tv);
 
             if (r > 0) {
                 std::list<int>::iterator rp = rpipes.begin();

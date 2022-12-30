@@ -69,7 +69,7 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
     const ProgramMemory::Map::const_iterator it = mValues.find(exprid);
-    const bool found = it != mValues.end() && (impossible || !it->second.isImpossible());
+    const bool found = it != mValues.cend() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
     else
@@ -542,7 +542,7 @@ static double asFloat(const ValueFlow::Value& value)
 }
 
 static std::string removeAssign(const std::string& assign) {
-    return std::string{assign.begin(), assign.end() - 1};
+    return std::string{assign.cbegin(), assign.cend() - 1};
 }
 
 struct assign {
@@ -713,7 +713,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["atan2"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -725,7 +725,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["remainder"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -737,7 +737,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["nextafter"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -749,7 +749,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["nexttoward"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -761,7 +761,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["hypot"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -773,7 +773,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["fdim"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -785,7 +785,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["fmax"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -797,7 +797,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["fmin"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -809,7 +809,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["fmod"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -821,7 +821,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["pow"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -833,7 +833,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["scalbln"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -845,7 +845,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["ldexp"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+        if (args.size() != 2 || !std::all_of(args.cbegin(), args.cend(), [](const ValueFlow::Value& v) {
             return v.isFloatValue() || v.isIntValue();
         }))
             return ValueFlow::Value::unknown();
@@ -1246,10 +1246,10 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     } else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
         const Token *tokvalue = nullptr;
         if (!pm.getTokValue(expr->astOperand1()->exprId(), &tokvalue)) {
-            auto tokvalue_it = std::find_if(expr->astOperand1()->values().begin(),
-                                            expr->astOperand1()->values().end(),
+            auto tokvalue_it = std::find_if(expr->astOperand1()->values().cbegin(),
+                                            expr->astOperand1()->values().cend(),
                                             std::mem_fn(&ValueFlow::Value::isTokValue));
-            if (tokvalue_it == expr->astOperand1()->values().end() || !tokvalue_it->isKnown()) {
+            if (tokvalue_it == expr->astOperand1()->values().cend() || !tokvalue_it->isKnown()) {
                 return unknown;
             }
             tokvalue = tokvalue_it->tokvalue;
@@ -1328,7 +1328,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         if (!f && settings && expr->str() == "(") {
             std::vector<const Token*> tokArgs = getArguments(expr);
             std::vector<ValueFlow::Value> args(tokArgs.size());
-            std::transform(tokArgs.begin(), tokArgs.end(), args.begin(), [&](const Token* tok) {
+            std::transform(tokArgs.cbegin(), tokArgs.cend(), args.begin(), [&](const Token* tok) {
                 return execute(tok, pm, settings);
             });
             BuiltinLibraryFunction lf = getBuiltinLibraryFunction(ftok->str());

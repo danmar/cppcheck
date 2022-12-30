@@ -670,7 +670,7 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLoc
 {
     std::string str;
     for (std::list<ErrorMessage::FileLocation>::const_iterator tok = callStack.cbegin(); tok != callStack.cend(); ++tok) {
-        str += (tok == callStack.begin() ? "" : " -> ");
+        str += (tok == callStack.cbegin() ? "" : " -> ");
         str += tok->stringify();
     }
     return str;
@@ -816,7 +816,7 @@ std::string ErrorLogger::plistData(const ErrorMessage &msg)
 
         std::list<ErrorMessage::FileLocation>::const_iterator next = it;
         ++next;
-        const std::string message = (it->getinfo().empty() && next == msg.callStack.end() ? msg.shortMessage() : it->getinfo());
+        const std::string message = (it->getinfo().empty() && next == msg.callStack.cend() ? msg.shortMessage() : it->getinfo());
 
         plist << "    <dict>\r\n"
               << "     <key>kind</key><string>event</string>\r\n"
