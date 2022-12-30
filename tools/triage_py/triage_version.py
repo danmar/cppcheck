@@ -22,8 +22,12 @@ args = parser.parse_args()
 def sort_commit_hashes(commits):
     git_cmd = 'git rev-list --abbrev-commit --topo-order --no-walk=sorted --reverse ' + ' '.join(commits)
     p = subprocess.Popen(git_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_repo, universal_newlines=True)
-    comm = p.communicate()
-    return comm[0].splitlines()
+    stdout, stderr = p.communicate()
+    if p.returncode != 0:
+        print('error: sorting commit hashes failed')
+        print(stderr)
+        sys.exit(1)
+    return stdout.splitlines()
 
 verbose = args.verbose
 do_compare = args.compare
