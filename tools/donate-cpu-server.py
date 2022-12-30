@@ -738,9 +738,9 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
             total_time_base += time_base
             total_time_head += time_head
             suspicious_time_difference = False
-            if show_gt and time_base > 1 and time_base*2 < time_head:
+            if show_gt and time_base*2 < time_head:
                 suspicious_time_difference = True
-            elif not show_gt and time_head > 1 and time_head*2 < time_base:
+            elif not show_gt and time_head*2 < time_base:
                 suspicious_time_difference = True
             if suspicious_time_difference:
                 if time_base > 0.0:
