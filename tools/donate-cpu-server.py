@@ -75,7 +75,7 @@ def dateTimeFromStr(datestr: str) -> datetime.datetime:
 def overviewReport() -> str:
     html = '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
-    html += '<a href="crash.html">Crash report</a><br>\n'
+    html += '<a href="crash.html">Crash report</a> - <a href="crash.html?pkgs=1">packages.txt</a><br>\n'
     html += '<a href="timeout.html">Timeout report</a><br>\n'
     html += '<a href="stale.html">Stale report</a><br>\n'
     html += '<a href="diff.html">Diff report</a><br>\n'
