@@ -250,6 +250,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->addEnabled("information");
             }
 
+            else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
+                mSettings->checksMaxTime = std::atoi(argv[i] + 18);
+            }
+
             else if (std::strcmp(argv[i], "--clang") == 0) {
                 mSettings->clang = true;
             }
@@ -913,6 +917,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("argument to '--template' is missing.");
                     return false;
                 }
+            }
+
+            else if (std::strncmp(argv[i], "--template-max-time=", 20) == 0) {
+                mSettings->templateMaxTime = std::atoi(argv[i] + 20);
+            }
+
+            else if (std::strncmp(argv[i], "--typedef-max-time=", 19) == 0) {
+                mSettings->typedefMaxTime = std::atoi(argv[i] + 19);
             }
 
             else if (std::strncmp(argv[i], "--valueflow-max-iterations=", 27) == 0) {

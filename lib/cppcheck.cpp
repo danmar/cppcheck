@@ -1055,13 +1055,27 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
     const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
 
+    const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;
+
     // call all "runChecks" in all registered Check classes
     for (Check *check : Check::instances()) {
         if (Settings::terminated())
             return;
 
-        if (Tokenizer::isMaxTime())
+        if (maxTime > 0 && std::time(nullptr) > maxTime) {
+            if (mSettings.debugwarnings) {
+                ErrorMessage::FileLocation loc;
+                loc.setfile(tokenizer.list.getFiles()[0]);
+                ErrorMessage errmsg({std::move(loc)},
+                                    emptyString,
+                                    Severity::debug,
+                                    "Checks maximum time exceeded",
+                                    "checksMaxTime",
+                                    Certainty::normal);
+                reportErr(errmsg);
+            }
             return;
+        }
 
         if (doUnusedFunctionOnly && dynamic_cast<CheckUnusedFunctions*>(check) == nullptr)
             continue;
