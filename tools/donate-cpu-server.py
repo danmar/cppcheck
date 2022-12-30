@@ -756,7 +756,7 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
             suspicious_time_difference = False
             if show_gt and time_factor > factor:
                 suspicious_time_difference = True
-            elif not show_gt and time_factor <= factor:
+            elif not show_gt and time_factor < factor:
                 suspicious_time_difference = True
             if suspicious_time_difference:
                 pkg_name = filename[len(resultPath)+1:]
@@ -777,7 +777,7 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
     if show_gt:
         html += '&gt; {}'.format(format(factor, '.2f'))
     else:
-        html += '&lt;= {}'.format(format(factor, '.2f'))
+        html += '&lt; {}'.format(format(factor, '.2f'))
     html += ')\n'
     html += '\n'
     if total_time_base > 0.0:
