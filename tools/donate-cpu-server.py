@@ -774,10 +774,8 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
 
     html += '\n'
     html += '(listed above are all suspicious timings with a factor '
-    if show_gt:
-        html += '&gt; {}'.format(format(factor, '.2f'))
-    else:
-        html += '&lt; {}'.format(format(factor, '.2f'))
+    html += '&gt;' if show_gt else '&lt;'
+    html += ' {}'.format(format(factor, '.2f'))
     html += ')\n'
     html += '\n'
     if total_time_base > 0.0:
