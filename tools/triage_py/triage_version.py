@@ -68,7 +68,11 @@ except:
     # if you use the folder from the bisect script that contains the repo as a folder - so remove it from the list
     if versions.count('cppcheck'):
         versions.remove('cppcheck')
+    len_in = len(versions)
     versions = sort_commit_hashes(versions)
+    if len(versions) != len_in:
+        print('error: unexpected amount of versions after commit hash sorting')
+        sys.exit(1)
 
 if verbose:
     print("analyzing '{}'".format(input_file))
