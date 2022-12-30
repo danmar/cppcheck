@@ -690,8 +690,9 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
 
 
 def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
-    pkgs = '' if query_params and query_params.get('pkgs') == '1' else None
-    factor = 2.0
+    # no need for package report support in "improved" report
+    pkgs = '' if show_gt and query_params and query_params.get('pkgs') == '1' else None
+    factor = float(query_params.get('factor')) if query_params and 'factor' in query_params else 2.0
     if not show_gt:
         factor = 1.0 / factor
 
@@ -1045,7 +1046,7 @@ class HttpClientThread(Thread):
                 text = headMessageIdReport(self.resultPath, messageId, queryParams)
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url == '/time_lt.html':
-                text, mime = timeReport(self.resultPath, False, None) # no need for package report support
+                text, mime = timeReport(self.resultPath, False, queryParams)
                 httpGetResponse(self.connection, text, mime)
             elif url == '/time_gt.html':
                 text, mime = timeReport(self.resultPath, True, queryParams)
