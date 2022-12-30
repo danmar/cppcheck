@@ -73,7 +73,8 @@ def dateTimeFromStr(datestr: str) -> datetime.datetime:
 
 
 def overviewReport() -> str:
-    html = '<html><head><title>daca@home</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
     html += '<a href="crash.html">Crash report</a> - <a href="crash.html?pkgs=1">packages.txt</a><br>\n'
     html += '<a href="timeout.html">Timeout report</a><br>\n'
@@ -144,7 +145,8 @@ def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool 
 
 
 def latestReport(latestResults: list) -> str:
-    html = '<html><head><title>Latest daca@home results</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
     html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff', link=False) + '</b>\n'
 
@@ -185,7 +187,8 @@ def latestReport(latestResults: list) -> str:
 def crashReport(results_path: str, query_params: dict):
     pkgs = '' if query_params.get('pkgs') == '1' else None
 
-    html = '<html><head><title>Crash report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
@@ -287,7 +290,8 @@ def crashReport(results_path: str, query_params: dict):
 
 
 def timeoutReport(results_path: str) -> str:
-    html = '<html><head><title>Timeout report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Timeout report</title></head><body>\n'
     html += '<h1>Timeout report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
@@ -328,7 +332,8 @@ def timeoutReport(results_path: str) -> str:
 
 
 def staleReport(results_path: str) -> str:
-    html = '<html><head><title>Stale report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
@@ -418,7 +423,8 @@ def diffReport(resultsPath: str) -> str:
                 outToday[messageId][0] += sums[OLD_VERSION]
                 outToday[messageId][1] += sums['head']
 
-    html = '<html><head><title>Diff report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Diff report</title></head><body>\n'
     html += '<h1>Diff report</h1>\n'
     html += '<h2>Uploaded today</h2>'
     html += diffReportFromDict(outToday, 'today')
@@ -611,7 +617,8 @@ def headReport(resultsPath: str) -> str:
                     outToday[messageId] = 0
                 outToday[messageId] += 1
 
-    html = '<html><head><title>HEAD report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>HEAD report</title></head><body>\n'
     html += '<h1>HEAD report</h1>\n'
     html += '<h2>Uploaded today</h2>'
     html += headReportFromDict(outToday, 'today')
@@ -684,7 +691,8 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
 
 def timeReport(resultPath: str, show_gt: bool) -> str:
     title = 'Time report ({})'.format('regressed' if show_gt else 'improved')
-    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>{}</title></head><body>\n'.format(title)
     html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
     column_width = [40, 10, 10, 10, 10, 10]
@@ -772,7 +780,8 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
 
 def timeReportSlow(resultPath: str) -> str:
     title = 'Time report (slowest)'
-    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>{}</title></head><body>\n'.format(title)
     html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
     html += '<b>'
@@ -847,7 +856,8 @@ def check_library_report(result_path: str, message_id: str) -> str:
         m_column = 'Function'
 
     functions_shown_max = 5000
-    html = '<html><head><title>' + message_id + ' report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>' + message_id + ' report</title></head><body>\n'
     html += '<h1>' + message_id + ' report</h1>\n'
     html += 'Top ' + str(functions_shown_max) + ' ' + metric + ' are shown.'
     html += '<pre>\n'
