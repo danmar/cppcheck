@@ -4433,9 +4433,9 @@ class MisraChecker:
             self.executeCheck(2210, self.misra_22_10, cfg)
 
     def analyse_ctu_info(self, ctu_info_files):
-        all_typedef_info = []
-        all_tagname_info = []
-        all_macro_info = []
+        all_typedef_info = {}
+        all_tagname_info = {}
+        all_macro_info = {}
         all_external_identifiers_decl = {}
         all_external_identifiers_def = {}
         all_internal_identifiers = {}
@@ -4458,51 +4458,39 @@ class MisraChecker:
                     summary_data = s['data']
 
                     if summary_type == 'MisraTypedefInfo':
-                        typedef_cache = {}
                         for new_typedef_info in summary_data:
-                            cache_key = new_typedef_info['name']
-                            old_typedef_info = typedef_cache.get(cache_key, None)
-                            if old_typedef_info:
-                                if is_different_location(old_typedef_info, new_typedef_info):
-                                    self.reportError(Location(old_typedef_info), 5, 6)
+                            key = new_typedef_info['name']
+                            existing_typedef_info = all_typedef_info.get(key, None)
+                            if existing_typedef_info:
+                                if is_different_location(existing_typedef_info, new_typedef_info):
+                                    self.reportError(Location(existing_typedef_info), 5, 6)
                                     self.reportError(Location(new_typedef_info), 5, 6)
                                 else:
-                                    if new_typedef_info['used']:
-                                        old_typedef_info['used'] = True
+                                    existing_typedef_info['used'] = existing_typedef_info['used'] or new_typedef_info['used']
                             else:
-                                typedef_cache[cache_key] = new_typedef_info
-
-                        all_typedef_info = list(typedef_cache.values())
+                                all_typedef_info[key] = new_typedef_info
 
                     if summary_type == 'MisraTagName':
-                        tag_cache = {}
                         for new_tagname_info in summary_data:
-                            cache_key = new_tagname_info['name']
-                            old_tagname_info = tag_cache.get(cache_key, None)
-                            if old_tagname_info:
-                                if is_different_location(old_tagname_info, new_tagname_info):
-                                    self.reportError(Location(old_tagname_info), 5, 7)
+                            key = new_tagname_info['name']
+                            existing_tagname_info = all_tagname_info.get(key, None)
+                            if existing_tagname_info:
+                                if is_different_location(existing_tagname_info, new_tagname_info):
+                                    self.reportError(Location(existing_tagname_info), 5, 7)
                                     self.reportError(Location(new_tagname_info), 5, 7)
                                 else:
-                                    if new_tagname_info['used']:
-                                        old_tagname_info['used'] = True
+                                    existing_tagname_info['used'] = existing_tagname_info['used'] or new_tagname_info['used']
                             else:
-                                tag_cache[cache_key] = new_tagname_info
-
-                        all_tagname_info = list(tag_cache.values())
+                                all_tagname_info[key] = new_tagname_info
 
                     if summary_type == 'MisraMacro':
-                        macro_cache = {}
                         for new_macro in summary_data:
-                            cache_key = new_macro['name']
-                            old_macro = macro_cache.get(cache_key, None)
-                            if old_macro:
-                                if new_macro['used']:
-                                    old_macro['used'] = True
+                            key = new_macro['name']
+                            existing_macro = all_macro_info.get(key, None)
+                            if existing_macro:
+                                existing_macro['used'] = existing_macro['used'] or new_macro['used']
                             else:
-                                macro_cache[cache_key] = new_macro
-
-                        all_macro_info = list(macro_cache.values())
+                                all_macro_info[key] = new_macro
 
                     if summary_type == 'MisraExternalIdentifiers':
                         for s in summary_data:
@@ -4541,17 +4529,17 @@ class MisraChecker:
         except FileNotFoundError:
             return
 
-        for ti in all_typedef_info:
-            if not ti['used']:
-                self.reportError(Location(ti), 2, 3)
+        unused_typedefs = [tdi for tdi in all_typedef_info.values() if not tdi['used']]
+        for tdi in unused_typedefs:
+            self.reportError(Location(tdi), 2, 3)
 
-        for ti in all_tagname_info:
-            if not ti['used']:
-                self.reportError(Location(ti), 2, 4)
+        unused_tags = [tag for tag in all_tagname_info.values() if not tag['used']]
+        for tag in unused_tags:
+            self.reportError(Location(tag), 2, 4)
 
-        for m in all_macro_info:
-            if not m['used']:
-                self.reportError(Location(m), 2, 5)
+        unused_macros = [m for m in all_macro_info.values() if not m['used']]
+        for m in unused_macros:
+            self.reportError(Location(m), 2, 5)
 
         all_external_identifiers = all_external_identifiers_decl
         all_external_identifiers.update(all_external_identifiers_def)
