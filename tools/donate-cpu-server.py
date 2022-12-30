@@ -83,7 +83,7 @@ def overviewReport() -> str:
     html += '<a href="head.html">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
-    html += '<a href="time_gt.html">Time report (regressed)</a><br>\n'
+    html += '<a href="time_gt.html">Time report (regressed)</a> - <a href="time_gt.html?pkgs=1">packages.txt</a><br>\n'
     html += '<a href="time_slow.html">Time report (slowest)</a><br>\n'
     html += '<br>\n'
     html += '--check-library:<br>\n'
@@ -689,7 +689,9 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-def timeReport(resultPath: str, show_gt: bool) -> str:
+def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
+    pkgs = '' if query_params and query_params.get('pkgs') == '1' else None
+
     title = 'Time report ({})'.format('regressed' if show_gt else 'improved')
     html = '<!DOCTYPE html>\n'
     html += '<html><head><title>{}</title></head><body>\n'.format(title)
@@ -710,6 +712,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = None
+        package_url = None
         for line in open(filename, 'rt'):
             line = line.strip()
             if line.startswith('cppcheck: '):
@@ -722,6 +725,8 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
             if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
+            elif pkgs is not None and package_url is None and line.startswith('ftp://'):
+                package_url = line
             if not line.startswith('elapsed-time:'):
                 continue
             split_line = line.split()
@@ -744,6 +749,9 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
                     time_factor = 0.0
                 pkg_name = filename[len(resultPath)+1:]
                 data[pkg_name] = (datestr, split_line[2], split_line[1], time_factor)
+
+                if package_url is not None:
+                    pkgs += '{}\n'.format(package_url)
             break
 
     sorted_data = sorted(data.items(), key=lambda kv: kv[1][3], reverse=show_gt)
@@ -775,7 +783,9 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     html += '</pre>\n'
     html += '</body></html>\n'
 
-    return html
+    if pkgs is not None:
+        return pkgs, 'text/plain'
+    return html, 'text/html'
 
 
 def timeReportSlow(resultPath: str) -> str:
@@ -1024,11 +1034,11 @@ class HttpClientThread(Thread):
                 text = headMessageIdReport(self.resultPath, messageId, queryParams)
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url == '/time_lt.html':
-                text = timeReport(self.resultPath, False)
-                httpGetResponse(self.connection, text, 'text/html')
+                text, mime = timeReport(self.resultPath, False, None) # no need for package report support
+                httpGetResponse(self.connection, text, mime)
             elif url == '/time_gt.html':
-                text = timeReport(self.resultPath, True)
-                httpGetResponse(self.connection, text, 'text/html')
+                text, mime = timeReport(self.resultPath, True, queryParams)
+                httpGetResponse(self.connection, text, mime)
             elif url == '/time_slow.html':
                 text = timeReportSlow(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
