@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.33"
+SERVER_VERSION = "1.3.34"
 
 OLD_VERSION = '2.9'
 
@@ -73,16 +73,17 @@ def dateTimeFromStr(datestr: str) -> datetime.datetime:
 
 
 def overviewReport() -> str:
-    html = '<html><head><title>daca@home</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
-    html += '<a href="crash.html">Crash report</a><br>\n'
+    html += '<a href="crash.html">Crash report</a> - <a href="crash.html?pkgs=1">packages.txt</a><br>\n'
     html += '<a href="timeout.html">Timeout report</a><br>\n'
     html += '<a href="stale.html">Stale report</a><br>\n'
     html += '<a href="diff.html">Diff report</a><br>\n'
     html += '<a href="head.html">HEAD report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
-    html += '<a href="time_gt.html">Time report (regressed)</a><br>\n'
+    html += '<a href="time_gt.html">Time report (regressed)</a> - <a href="time_gt.html?pkgs=1">packages.txt</a><br>\n'
     html += '<a href="time_slow.html">Time report (slowest)</a><br>\n'
     html += '<br>\n'
     html += '--check-library:<br>\n'
@@ -144,7 +145,8 @@ def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool 
 
 
 def latestReport(latestResults: list) -> str:
-    html = '<html><head><title>Latest daca@home results</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
     html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff', link=False) + '</b>\n'
 
@@ -185,7 +187,8 @@ def latestReport(latestResults: list) -> str:
 def crashReport(results_path: str, query_params: dict):
     pkgs = '' if query_params.get('pkgs') == '1' else None
 
-    html = '<html><head><title>Crash report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
@@ -287,7 +290,8 @@ def crashReport(results_path: str, query_params: dict):
 
 
 def timeoutReport(results_path: str) -> str:
-    html = '<html><head><title>Timeout report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Timeout report</title></head><body>\n'
     html += '<h1>Timeout report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
@@ -328,7 +332,8 @@ def timeoutReport(results_path: str) -> str:
 
 
 def staleReport(results_path: str) -> str:
-    html = '<html><head><title>Stale report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
@@ -418,7 +423,8 @@ def diffReport(resultsPath: str) -> str:
                 outToday[messageId][0] += sums[OLD_VERSION]
                 outToday[messageId][1] += sums['head']
 
-    html = '<html><head><title>Diff report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Diff report</title></head><body>\n'
     html += '<h1>Diff report</h1>\n'
     html += '<h2>Uploaded today</h2>'
     html += diffReportFromDict(outToday, 'today')
@@ -611,7 +617,8 @@ def headReport(resultsPath: str) -> str:
                     outToday[messageId] = 0
                 outToday[messageId] += 1
 
-    html = '<html><head><title>HEAD report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>HEAD report</title></head><body>\n'
     html += '<h1>HEAD report</h1>\n'
     html += '<h2>Uploaded today</h2>'
     html += headReportFromDict(outToday, 'today')
@@ -682,9 +689,16 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-def timeReport(resultPath: str, show_gt: bool) -> str:
+def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
+    # no need for package report support in "improved" report
+    pkgs = '' if show_gt and query_params and query_params.get('pkgs') == '1' else None
+    factor = float(query_params.get('factor')) if query_params and 'factor' in query_params else 2.0
+    if not show_gt:
+        factor = 1.0 / factor
+
     title = 'Time report ({})'.format('regressed' if show_gt else 'improved')
-    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>{}</title></head><body>\n'.format(title)
     html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
     column_width = [40, 10, 10, 10, 10, 10]
@@ -702,6 +716,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = None
+        package_url = None
         for line in open(filename, 'rt'):
             line = line.strip()
             if line.startswith('cppcheck: '):
@@ -714,6 +729,8 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
             if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
+            elif pkgs is not None and package_url is None and line.startswith('ftp://'):
+                package_url = line
             if not line.startswith('elapsed-time:'):
                 continue
             split_line = line.split()
@@ -722,20 +739,31 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
             if time_base < 0.0 or time_head < 0.0:
                 # ignore results with crashes / errors for the time report
                 break
+            if time_base == 0.0 and time_head == 0.0:
+                # no difference possible
+                break
             total_time_base += time_base
             total_time_head += time_head
+            if time_base == time_head:
+                # no difference
+                break
+            if time_base > 0.0 and time_head > 0.0:
+                time_factor = time_head / time_base
+            elif time_base == 0.0:
+                time_factor = time_head
+            else:
+                time_factor = 0.0
             suspicious_time_difference = False
-            if show_gt and time_base > 1 and time_base*2 < time_head:
+            if show_gt and time_factor > factor:
                 suspicious_time_difference = True
-            elif not show_gt and time_head > 1 and time_head*2 < time_base:
+            elif not show_gt and time_factor < factor:
                 suspicious_time_difference = True
             if suspicious_time_difference:
-                if time_base > 0.0:
-                    time_factor = time_head / time_base
-                else:
-                    time_factor = 0.0
                 pkg_name = filename[len(resultPath)+1:]
                 data[pkg_name] = (datestr, split_line[2], split_line[1], time_factor)
+
+                if package_url is not None:
+                    pkgs += '{}\n'.format(package_url)
             break
 
     sorted_data = sorted(data.items(), key=lambda kv: kv[1][3], reverse=show_gt)
@@ -746,10 +774,8 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
 
     html += '\n'
     html += '(listed above are all suspicious timings with a factor '
-    if show_gt:
-        html += '&gt;2.00'
-    else:
-        html += '&lt;=0.50'
+    html += '&gt;' if show_gt else '&lt;'
+    html += ' {}'.format(format(factor, '.2f'))
     html += ')\n'
     html += '\n'
     if total_time_base > 0.0:
@@ -767,12 +793,15 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     html += '</pre>\n'
     html += '</body></html>\n'
 
-    return html
+    if pkgs is not None:
+        return pkgs, 'text/plain'
+    return html, 'text/html'
 
 
 def timeReportSlow(resultPath: str) -> str:
     title = 'Time report (slowest)'
-    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>{}</title></head><body>\n'.format(title)
     html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
     html += '<b>'
@@ -847,7 +876,8 @@ def check_library_report(result_path: str, message_id: str) -> str:
         m_column = 'Function'
 
     functions_shown_max = 5000
-    html = '<html><head><title>' + message_id + ' report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>' + message_id + ' report</title></head><body>\n'
     html += '<h1>' + message_id + ' report</h1>\n'
     html += 'Top ' + str(functions_shown_max) + ' ' + metric + ' are shown.'
     html += '<pre>\n'
@@ -1014,11 +1044,11 @@ class HttpClientThread(Thread):
                 text = headMessageIdReport(self.resultPath, messageId, queryParams)
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url == '/time_lt.html':
-                text = timeReport(self.resultPath, False)
-                httpGetResponse(self.connection, text, 'text/html')
+                text, mime = timeReport(self.resultPath, False, queryParams)
+                httpGetResponse(self.connection, text, mime)
             elif url == '/time_gt.html':
-                text = timeReport(self.resultPath, True)
-                httpGetResponse(self.connection, text, 'text/html')
+                text, mime = timeReport(self.resultPath, True, queryParams)
+                httpGetResponse(self.connection, text, mime)
             elif url == '/time_slow.html':
                 text = timeReportSlow(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
