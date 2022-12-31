@@ -971,6 +971,15 @@ Settings MainWindow::getCppcheckSettings()
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())
                 json += ", \"python\":\"" + pythonCmd + "\"";
+            const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
+            if (addon == "misra" && !misraFile.isEmpty()) {
+                QString arg;
+                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
+                    arg = "--misra-pdf=" + misraFile;
+                else
+                    arg = "--rule-texts=" + misraFile;
+                json += ", \"args\":[\"" + arg + "\"]";
+            }
             json += " }";
             result.addons.emplace(json.toStdString());
         }
