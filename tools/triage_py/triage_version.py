@@ -22,8 +22,12 @@ args = parser.parse_args()
 def sort_commit_hashes(commits):
     git_cmd = 'git rev-list --abbrev-commit --topo-order --no-walk=sorted --reverse ' + ' '.join(commits)
     p = subprocess.Popen(git_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_repo, universal_newlines=True)
-    comm = p.communicate()
-    return comm[0].splitlines()
+    stdout, stderr = p.communicate()
+    if p.returncode != 0:
+        print('error: sorting commit hashes failed')
+        print(stderr)
+        sys.exit(1)
+    return stdout.splitlines()
 
 verbose = args.verbose
 do_compare = args.compare
@@ -45,27 +49,36 @@ for filename in os.listdir(directory):
         continue
     versions.append(filename)
 
-if len(versions):
-    try:
-        Version(versions[0])
-        use_hashes = False
-        versions.sort(key=Version)
-    except:
-        if verbose:
-            print("'{}' not a version - assuming commit hashes".format(versions[0]))
-        if not git_repo:
-            print('error: git repository argument required for commit hash sorting')
-            sys.exit(1)
-        if verbose:
-            print("using git repository '{}' to sort commit hashes".format(git_repo))
-        use_hashes = True
-        # if you use the folder from the bisect script that contains the repo as a folder - so remove it from the list
-        if versions.count('cppcheck'):
-            versions.remove('cppcheck')
-        versions = sort_commit_hashes(versions)
+if not len(versions):
+    print("error: no versions found in '{}'".format(directory))
+    sys.exit(1)
 
 if verbose:
     print("found {} versions in '{}'".format(len(versions), directory))
+
+try:
+    Version(versions[0])
+    use_hashes = False
+    versions.sort(key=Version)
+except:
+    if verbose:
+        print("'{}' not a version - assuming commit hashes".format(versions[0]))
+    if not git_repo:
+        print('error: git repository argument required for commit hash sorting')
+        sys.exit(1)
+    if verbose:
+        print("using git repository '{}' to sort commit hashes".format(git_repo))
+    use_hashes = True
+    # if you use the folder from the bisect script that contains the repo as a folder - so remove it from the list
+    if versions.count('cppcheck'):
+        versions.remove('cppcheck')
+    len_in = len(versions)
+    versions = sort_commit_hashes(versions)
+    if len(versions) != len_in:
+        print('error: unexpected amount of versions after commit hash sorting')
+        sys.exit(1)
+
+if verbose:
     print("analyzing '{}'".format(input_file))
 
 last_ec = None
