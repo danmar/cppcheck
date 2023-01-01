@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.34"
+SERVER_VERSION = "1.3.35"
 
 OLD_VERSION = '2.9'
 
@@ -750,7 +750,9 @@ def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
             if time_base > 0.0 and time_head > 0.0:
                 time_factor = time_head / time_base
             elif time_base == 0.0:
-                time_factor = time_head
+                # the smallest possible value is 0.1 so treat that as an increase of 100%
+                # on top of the existing 100% (treating the base 0.0 as such).
+                time_factor = 1.0 + (time_head * 10)
             else:
                 time_factor = 0.0
             suspicious_time_difference = False
