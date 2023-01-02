@@ -2302,6 +2302,8 @@ class MisraChecker:
                 continue
             if not token.isArithmeticalOp:
                 continue
+            if not is_composite_expr(token):
+                continue
             parent = token.astParent
             if parent is None:
                 continue
