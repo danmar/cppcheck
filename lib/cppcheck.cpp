@@ -821,7 +821,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 mCurrentConfig = mSettings.userDefines;
                 const std::vector<std::string> v1(split(mSettings.userDefines, ";"));
                 for (const std::string &cfg: split(currCfg, ";")) {
-                    if (std::find(v1.begin(), v1.end(), cfg) == v1.end()) {
+                    if (std::find(v1.cbegin(), v1.cend(), cfg) == v1.cend()) {
                         mCurrentConfig += ";" + cfg;
                     }
                 }
@@ -1055,13 +1055,27 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
     const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
     const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
 
+    const std::time_t maxTime = mSettings.checksMaxTime > 0 ? std::time(nullptr) + mSettings.checksMaxTime : 0;
+
     // call all "runChecks" in all registered Check classes
     for (Check *check : Check::instances()) {
         if (Settings::terminated())
             return;
 
-        if (Tokenizer::isMaxTime())
+        if (maxTime > 0 && std::time(nullptr) > maxTime) {
+            if (mSettings.debugwarnings) {
+                ErrorMessage::FileLocation loc;
+                loc.setfile(tokenizer.list.getFiles()[0]);
+                ErrorMessage errmsg({std::move(loc)},
+                                    emptyString,
+                                    Severity::debug,
+                                    "Checks maximum time exceeded",
+                                    "checksMaxTime",
+                                    Certainty::normal);
+                reportErr(errmsg);
+            }
             return;
+        }
 
         if (doUnusedFunctionOnly && dynamic_cast<CheckUnusedFunctions*>(check) == nullptr)
             continue;
@@ -1573,7 +1587,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         return;
 
     // Alert only about unique errors
-    if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) != mErrorList.end())
+    if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) != mErrorList.cend())
         return;
 
     if (!mSettings.buildDir.empty())
@@ -1640,7 +1654,7 @@ void CppCheck::getErrorMessages()
     tooManyConfigsError(emptyString,0U);
 
     // call all "getErrorMessages" in all registered Check classes
-    for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
+    for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
         (*it)->getErrorMessages(this, &s);
 
     Preprocessor::getErrorMessages(this, &s);
@@ -1733,8 +1747,8 @@ bool CppCheck::analyseWholeProgram()
     for (const Check::FileInfo *fi : mFileInfo) {
         const CTU::FileInfo *fi2 = dynamic_cast<const CTU::FileInfo *>(fi);
         if (fi2) {
-            ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.begin(), fi2->functionCalls.end());
-            ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.begin(), fi2->nestedCalls.end());
+            ctu.functionCalls.insert(ctu.functionCalls.end(), fi2->functionCalls.cbegin(), fi2->functionCalls.cend());
+            ctu.nestedCalls.insert(ctu.nestedCalls.end(), fi2->nestedCalls.cbegin(), fi2->nestedCalls.cend());
         }
     }
     for (Check *check : Check::instances())

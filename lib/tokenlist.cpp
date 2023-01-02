@@ -489,8 +489,6 @@ struct AST_state {
     explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
 };
 
-static Token * createAstAtToken(Token *tok, bool cpp);
-
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
     auto isDecltypeFuncParam = [](const Token* tok) -> bool {
@@ -691,7 +689,7 @@ static bool iscpp11init_impl(const Token * const tok)
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
     const Token *prev = nameToken;
-    while (Token::Match(prev, "%name%|::|:|<|>|,|%num%")) {
+    while (Token::Match(prev, "%name%|::|:|<|>|,|%num%|%cop%")) {
         if (Token::Match(prev, "class|struct|union|enum"))
             return false;
 
@@ -1008,9 +1006,6 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                         squareBracket->astOperand1(roundBracket);
                         roundBracket->astOperand1(curlyBracket);
                         state.op.push(squareBracket);
-                        for (tok = roundBracket->next(); precedes(tok, roundBracket->link()); tok = tok->next()) {
-                            tok = createAstAtToken(tok, state.cpp);
-                        }
                         tok = curlyBracket->link()->next();
                         continue;
                     }
@@ -1406,6 +1401,8 @@ const Token* isLambdaCaptureList(const Token * tok)
     return params->astOperand1();
 }
 
+static Token * createAstAtToken(Token *tok, bool cpp);
+
 // Compile inner expressions inside inner ({..}) and lambda bodies
 static void createAstAtTokenInner(Token * const tok1, const Token *endToken, bool cpp)
 {
@@ -1751,7 +1748,7 @@ void TokenList::validateAst() const
                     throw InternalError(tok, "AST broken: endless recursion from '" + tok->str() + "'", InternalError::AST);
                 astTokens.insert(parent);
             } while ((parent = parent->astParent()) != nullptr);
-            safeAstTokens.insert(astTokens.begin(), astTokens.end());
+            safeAstTokens.insert(astTokens.cbegin(), astTokens.cend());
         } else if (tok->str() == ";") {
             safeAstTokens.clear();
         } else {

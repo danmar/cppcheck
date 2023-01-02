@@ -131,7 +131,7 @@ static bool isAutoVarArray(const Token *tok)
 
     // ValueFlow
     if (var->isPointer() && !var->isArgument()) {
-        for (std::list<ValueFlow::Value>::const_iterator it = tok->values().begin(); it != tok->values().end(); ++it) {
+        for (std::list<ValueFlow::Value>::const_iterator it = tok->values().cbegin(); it != tok->values().cend(); ++it) {
             const ValueFlow::Value &val = *it;
             if (val.isTokValue() && isAutoVarArray(val.tokvalue))
                 return true;
@@ -418,7 +418,7 @@ static bool isInScope(const Token * tok, const Scope * scope)
         const Scope * tokScope = tok->scope();
         if (!tokScope)
             return false;
-        if (std::any_of(tokScope->nestedList.begin(), tokScope->nestedList.end(), [&](const Scope* argScope) {
+        if (std::any_of(tokScope->nestedList.cbegin(), tokScope->nestedList.cend(), [&](const Scope* argScope) {
             return argScope && argScope->isNestedIn(scope);
         }))
             return true;

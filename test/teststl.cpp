@@ -4658,6 +4658,17 @@ private:
               "    return s.end();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
+
+        // #11381
+        check("int f(std::map<int, int>& map) {\n"
+              "    auto it = map.find(1);\n"
+              "    if (it == map.end()) {\n"
+              "        bool bInserted;\n"
+              "        std::tie(it, bInserted) = map.emplace(1, 42);\n"
+              "    }\n"
+              "    return debug_valueflow(it)->second;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
@@ -5200,6 +5211,25 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("bool g(int);\n"
+              "int f(const std::vector<int>& v) {\n"
+              "    int ret = 0;\n"
+              "    for (const auto i : v)\n"
+              "        if (!g(i))\n"
+              "            ret = 1;\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int ret = 0;\n"
+              "    for (const auto i : v)\n"
+              "        if (i < 5)\n"
+              "            ret = 1;\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of algorithm instead of a raw loop.\n", errout.str());
     }
 
     void loopAlgoMinMax() {

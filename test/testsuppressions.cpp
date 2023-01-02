@@ -195,7 +195,7 @@ private:
             EXPECT_EQ("", r);
         }
 
-        unsigned int exitCode = std::accumulate(files.begin(), files.end(), 0U, [&](unsigned int v, const std::pair<std::string, std::string>& f) {
+        unsigned int exitCode = std::accumulate(files.cbegin(), files.cend(), 0U, [&](unsigned int v, const std::pair<std::string, std::string>& f) {
             return v | cppCheck.check(f.first, f.second);
         });
 
@@ -203,7 +203,7 @@ private:
             exitCode |= settings.exitCode;
 
         std::map<std::string, std::size_t> files_for_report;
-        for (std::map<std::string, std::string>::const_iterator file = files.begin(); file != files.end(); ++file)
+        for (std::map<std::string, std::string>::const_iterator file = files.cbegin(); file != files.cend(); ++file)
             files_for_report[file->first] = file->second.size();
 
         CppCheckExecutor::reportSuppressions(settings, false, files_for_report, *this);
@@ -228,7 +228,7 @@ private:
         ThreadExecutor executor(files, settings, *this);
         std::vector<ScopedFile> scopedfiles;
         scopedfiles.reserve(files.size());
-        for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
+        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
             scopedfiles.emplace_back(i->first, code);
 
         const unsigned int exitCode = executor.check();
@@ -256,7 +256,7 @@ private:
         ProcessExecutor executor(files, settings, *this);
         std::vector<ScopedFile> scopedfiles;
         scopedfiles.reserve(files.size());
-        for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
+        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
             scopedfiles.emplace_back(i->first, code);
 
         const unsigned int exitCode = executor.check();

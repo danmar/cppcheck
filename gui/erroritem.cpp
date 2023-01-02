@@ -52,8 +52,8 @@ ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     , hash(errmsg.hash)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
-    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
-         loc != errmsg.callStack.end();
+    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.cbegin();
+         loc != errmsg.callStack.cend();
          ++loc) {
         errorPath << QErrorPathItem(*loc);
     }

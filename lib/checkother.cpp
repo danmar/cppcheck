@@ -452,7 +452,7 @@ void CheckOther::checkRedundantAssignment()
                     if (tok->astOperand1()->valueType()->typeScope) {
                         const std::string op = "operator" + tok->str();
                         const std::list<Function>& fList = tok->astOperand1()->valueType()->typeScope->functionList;
-                        inconclusive = std::any_of(fList.begin(), fList.end(), [&](const Function& f) {
+                        inconclusive = std::any_of(fList.cbegin(), fList.cend(), [&](const Function& f) {
                             return f.name() == op;
                         });
                     }
@@ -1033,20 +1033,15 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
 
         if (loopVariable && noContinue && tok->scope() == scope && !forHeadEnd && scope->type != Scope::eSwitch && Token::Match(tok, "%varid% =", var->declarationId())) { // Assigned in outer scope.
             loopVariable = false;
-            int indent = 0;
-            for (const Token* tok2 = tok->tokAt(2); tok2; tok2 = tok2->next()) { // Ensure that variable isn't used on right side of =, too
-                if (tok2->str() == "(")
-                    indent++;
-                else if (tok2->str() == ")") {
-                    if (indent == 0)
-                        break;
-                    indent--;
-                } else if (tok2->str() == ";")
-                    break;
-                else if (tok2->varId() == var->declarationId()) {
-                    loopVariable = true;
-                    break;
-                }
+            std::pair<const Token*, const Token*> range = tok->next()->findExpressionStartEndTokens();
+            if (range.first)
+                range.first = range.first->next();
+            const Token* exprTok = findExpression(var->nameToken()->exprId(), range.first, range.second, [&](const Token* tok2) {
+                return tok2->varId() == var->declarationId();
+            });
+            if (exprTok) {
+                tok = exprTok;
+                loopVariable = true;
             }
         }
 
@@ -1182,13 +1177,13 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
         if (var.isArray())
-            size *= std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& d) {
+            size *= std::accumulate(var.dimensions().cbegin(), var.dimensions().cend(), 1, [](int v, const Dimension& d) {
                 return v *= d.num;
             });
 
         accumulateSize(cumulatedSize, size, isUnion);
     }
-    return std::accumulate(type->derivedFrom.begin(), type->derivedFrom.end(), cumulatedSize, [&](int v, const Type::BaseInfo& baseInfo) {
+    return std::accumulate(type->derivedFrom.cbegin(), type->derivedFrom.cend(), cumulatedSize, [&](int v, const Type::BaseInfo& baseInfo) {
         if (baseInfo.type && baseInfo.type->classScope)
             v += estimateSize(baseInfo.type, settings, symbolDatabase, recursionDepth + 1);
         return v;
@@ -1452,7 +1447,7 @@ void CheckOther::checkConstVariable()
         }
         if (function && Function::returnsReference(function) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
-            if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
+            if (std::any_of(returns.cbegin(), returns.cend(), [&](const Token* retTok) {
                 if (retTok->varId() == var->declarationId())
                     return true;
                 while (retTok && retTok->isCast())
@@ -1572,7 +1567,7 @@ void CheckOther::checkConstPointer()
             continue;
         if ((vt->pointer != 1 && !(vt->pointer == 2 && var->isArray())) || (vt->constness & 1) || vt->reference != Reference::None)
             continue;
-        if (std::find(nonConstPointers.begin(), nonConstPointers.end(), var) != nonConstPointers.end())
+        if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), var) != nonConstPointers.cend())
             continue;
         pointers.emplace_back(var);
         const Token* const parent = tok->astParent();
@@ -1616,7 +1611,7 @@ void CheckOther::checkConstPointer()
             if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
                 continue;
         }
-        if (std::find(nonConstPointers.begin(), nonConstPointers.end(), p) == nonConstPointers.end()) {
+        if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
             const Token *start = (p->isArgument()) ? p->scope()->bodyStart : p->nameToken()->next();
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
@@ -1643,8 +1638,8 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
     ErrorPath errorPath;
     std::string id = "const" + vartype;
     std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray;
-    errorPath.emplace_back(var ? var->nameToken() : nullptr, message);
-    if (var && var->isArgument() && function && function->functionPointerUsage) {
+    errorPath.emplace_back(var->nameToken(), message);
+    if (var->isArgument() && function && function->functionPointerUsage) {
         errorPath.emplace_front(function->functionPointerUsage, "You might need to cast the function pointer here");
         id += "Callback";
         message += ". However it seems that '" + function->name() + "' is a callback function, if '$symbol' is declared with const you might also need to cast function pointer(s).";
@@ -2359,8 +2354,8 @@ namespace {
                 functionsByName[func.tokenDef->str()].push_back(&func);
             }
             for (std::pair<const std::string, std::list<const Function*>>& it : functionsByName) {
-                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.begin(), it.second.end(), notconst);
-                if (nc == it.second.end()) {
+                const std::list<const Function*>::const_iterator nc = std::find_if(it.second.cbegin(), it.second.cend(), notconst);
+                if (nc == it.second.cend()) {
                     // ok to add all of them
                     constFunctions.splice(constFunctions.end(), it.second);
                 }
@@ -2521,7 +2516,7 @@ void CheckOther::checkDuplicateExpression()
                                          &errorPath) &&
                         isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
-                    else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP())) {
+                    else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, mTokenizer->isCPP())) {
                         auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) {
                             if (isSameExpression(mTokenizer->isCPP(), true, exp1, exp2, mSettings->library, true, true, &errorPath) &&
                                 isWithoutSideEffects(mTokenizer->isCPP(), exp1) &&
@@ -3487,7 +3482,7 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
         if (var.name() == varname)
             return var.nameToken();
     }
-    auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
+    auto it = std::find_if(scope->functionList.cbegin(), scope->functionList.cend(), [&](const Function& f) {
         return f.type == Function::Type::eFunction && f.name() == varname;
     });
     if (it != scope->functionList.end())
@@ -3518,7 +3513,7 @@ void CheckOther::checkShadowVariables()
 
             if (functionScope && functionScope->type == Scope::ScopeType::eFunction && functionScope->function) {
                 const auto argList = functionScope->function->argumentList;
-                auto it = std::find_if(argList.begin(), argList.end(), [&](const Variable& arg) {
+                auto it = std::find_if(argList.cbegin(), argList.cend(), [&](const Variable& arg) {
                     return arg.nameToken() && var.name() == arg.name();
                 });
                 if (it != argList.end()) {
@@ -3700,11 +3695,11 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
         verb = "Subtracting";
     if (v1) {
         errorPath.emplace_back(v1->tokvalue->variable()->nameToken(), "Variable declared here.");
-        errorPath.insert(errorPath.end(), v1->errorPath.begin(), v1->errorPath.end());
+        errorPath.insert(errorPath.end(), v1->errorPath.cbegin(), v1->errorPath.cend());
     }
     if (v2) {
         errorPath.emplace_back(v2->tokvalue->variable()->nameToken(), "Variable declared here.");
-        errorPath.insert(errorPath.end(), v2->errorPath.begin(), v2->errorPath.end());
+        errorPath.insert(errorPath.end(), v2->errorPath.cbegin(), v2->errorPath.cend());
     }
     errorPath.emplace_back(tok, "");
     reportError(

@@ -27,6 +27,7 @@
 
 #include "../cli/filelister.h"
 #include "../lib/pathmatch.h"
+#include "../lib/utils.h"
 
 static std::string builddir(std::string filename)
 {
@@ -56,10 +57,10 @@ static std::string objfiles(const std::vector<std::string> &files)
 
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
-    static const std::array<std::string, 4> externalfolders{"externals", "externals/picojson", "externals/simplecpp", "externals/tinyxml2"};
+    static const std::array<std::string, 3> externalfolders{"externals/picojson", "externals/simplecpp", "externals/tinyxml2"};
 
     // Is the dependency already included?
-    if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
+    if (std::find(depfiles.cbegin(), depfiles.cend(), filename) != depfiles.cend())
         return;
 
     std::ifstream f(filename.c_str());
@@ -102,10 +103,15 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
         pos1 += 10;
 
         const std::string::size_type pos2 = line.find(rightBracket, pos1);
-        std::string hfile = path + line.substr(pos1, pos2 - pos1);
+        std::string hfile(path);
+        hfile += line.substr(pos1, pos2 - pos1);
 
-        if (hfile.find("/../") != std::string::npos)    // TODO: Ugly fix
-            hfile.erase(0, 4 + hfile.find("/../"));
+        const std::string::size_type traverse_pos = hfile.find("/../");
+        if (traverse_pos != std::string::npos)    // TODO: Ugly fix
+            hfile.erase(0, 4 + traverse_pos);
+        // no need to look up extension-less headers
+        if (!endsWith(hfile, ".h"))
+            continue;
         getDeps(hfile, depfiles);
     }
 }
@@ -136,7 +142,7 @@ static std::string getCppFiles(std::vector<std::string> &files, const std::strin
 
     // add *.cpp files to the "files" vector..
     for (const std::pair<const std::string&, size_t> file : filemap) {
-        if (file.first.find(".cpp") != std::string::npos)
+        if (endsWith(file.first, ".cpp"))
             files.push_back(file.first);
     }
     return "";
@@ -481,7 +487,7 @@ int main(int argc, char **argv)
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
     fout << "tags:\n";
-    fout << "\tctags -R --exclude=doxyoutput --exclude=test/cfg --exclude=test/synthetic cli externals gui lib test\n\n";
+    fout << "\tctags -R --exclude=doxyoutput --exclude=test/cfg cli externals gui lib test\n\n";
     fout << "install: cppcheck\n";
     fout << "\tinstall -d ${BIN}\n";
     fout << "\tinstall cppcheck ${BIN}\n";

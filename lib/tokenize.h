@@ -680,15 +680,6 @@ public:
      */
     static const Token * startOfExecutableScope(const Token * tok);
 
-#ifdef MAXTIME
-    bool isMaxTime() const {
-        return (std::time(0) > mMaxTime);
-#else
-    static bool isMaxTime() {
-        return false;
-#endif
-    }
-
     const Settings *getSettings() const {
         return mSettings;
     }
@@ -758,11 +749,6 @@ private:
      * TimerResults
      */
     TimerResults *mTimerResults;
-
-#ifdef MAXTIME
-    /** Tokenizer maxtime */
-    const std::time_t mMaxTime;
-#endif
 
     const Preprocessor *mPreprocessor;
 };

@@ -466,7 +466,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     if (mProjectFile) {
         std::vector<std::string> v;
         const QStringList excluded = mProjectFile->getExcludedPaths();
-        std::transform(excluded.begin(), excluded.end(), std::back_inserter(v), [](const QString& e) {
+        std::transform(excluded.cbegin(), excluded.cend(), std::back_inserter(v), [](const QString& e) {
             return e.toStdString();
         });
         p.ignorePaths(v);
@@ -569,7 +569,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (!checkSettings.buildDir.empty()) {
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        std::transform(fileNames.begin(), fileNames.end(), std::back_inserter(sourcefiles), [](const QString& s) {
+        std::transform(fileNames.cbegin(), fileNames.cend(), std::back_inserter(sourcefiles), [](const QString& s) {
             return s.toStdString();
         });
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
@@ -681,7 +681,7 @@ void MainWindow::analyzeFiles()
 
         if (file0.endsWith(".sln")) {
             QStringList configs;
-            for (std::list<ImportProject::FileSettings>::const_iterator it = p.fileSettings.begin(); it != p.fileSettings.end(); ++it) {
+            for (std::list<ImportProject::FileSettings>::const_iterator it = p.fileSettings.cbegin(); it != p.fileSettings.cend(); ++it) {
                 const QString cfg(QString::fromStdString(it->cfg));
                 if (!configs.contains(cfg))
                     configs.push_back(cfg);
@@ -971,6 +971,15 @@ Settings MainWindow::getCppcheckSettings()
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())
                 json += ", \"python\":\"" + pythonCmd + "\"";
+            const QString misraFile = fromNativePath(mSettings->value(SETTINGS_MISRA_FILE).toString());
+            if (addon == "misra" && !misraFile.isEmpty()) {
+                QString arg;
+                if (misraFile.endsWith(".pdf", Qt::CaseInsensitive))
+                    arg = "--misra-pdf=" + misraFile;
+                else
+                    arg = "--rule-texts=" + misraFile;
+                json += ", \"args\":[\"" + arg + "\"]";
+            }
             json += " }";
             result.addons.emplace(json.toStdString());
         }

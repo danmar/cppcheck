@@ -131,7 +131,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     // Output a warning for the user if he tries to exclude headers
     const std::vector<std::string>& ignored = parser.getIgnoredPaths();
-    const bool warn = std::any_of(ignored.begin(), ignored.end(), [](const std::string& i) {
+    const bool warn = std::any_of(ignored.cbegin(), ignored.cend(), [](const std::string& i) {
         return Path::isHeader(i);
     });
     if (warn) {
@@ -152,7 +152,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         std::list<ImportProject::FileSettings> newList;
 
         const std::list<ImportProject::FileSettings>& fileSettings = settings.project.fileSettings;
-        std::copy_if(fileSettings.begin(), fileSettings.end(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
+        std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
             return matchglobs(mSettings->fileFilters, fs.filename);
         });
         if (!newList.empty())
@@ -179,7 +179,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         return false;
     } else if (!mSettings->fileFilters.empty() && settings.project.fileSettings.empty()) {
         std::map<std::string, std::size_t> newMap;
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             if (matchglobs(mSettings->fileFilters, i->first)) {
                 newMap[i->first] = i->second;
             }
@@ -250,7 +250,7 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 
     bool err = false;
     if (settings.jointSuppressionReport) {
-        for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i) {
+        for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
             err |= errorLogger.reportUnmatchedSuppressions(
                 settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled));
         }
@@ -311,7 +311,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         settings.loadSummaries();
 
         std::list<std::string> fileNames;
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             fileNames.emplace_back(i->first);
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.project.fileSettings);
     }
@@ -321,14 +321,14 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         // Single process
         settings.jointSuppressionReport = true;
 
-        const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
+        const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
             return v + f.second;
         });
 
         std::size_t processedsize = 0;
         unsigned int c = 0;
         if (settings.project.fileSettings.empty()) {
-            for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
+            for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
                 if (!mSettings->library.markupFile(i->first)
                     || !mSettings->library.processMarkupAfterCode(i->first)) {
                     returnValue += cppcheck.check(i->first);
@@ -353,7 +353,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 
         // second loop to parse all markup files which may not work until all
         // c/cpp files have been parsed and checked
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
             if (mSettings->library.markupFile(i->first) && mSettings->library.processMarkupAfterCode(i->first)) {
                 returnValue += cppcheck.check(i->first);
                 processedsize += i->second;

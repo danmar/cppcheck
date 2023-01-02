@@ -102,10 +102,10 @@ struct ForwardTraversal {
             return std::make_pair(false, false);
         std::vector<MathLib::bigint> result = analyzer->evaluate(tok, ctx);
         // TODO: We should convert to bool
-        const bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
+        const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
             return x != 0;
         });
-        const bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
+        const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](int x) {
             return x == 0;
         });
         return std::make_pair(checkThen, checkElse);
@@ -805,6 +805,18 @@ struct ForwardTraversal {
                 if (updateRecursive(tok->next()->astOperand2()) == Progress::Break)
                     return Break();
                 return Break();
+            } else if (Token* callTok = callExpr(tok)) {
+                // Since the call could be an unknown macro, traverse the tokens as a range instead of recursively
+                if (!Token::simpleMatch(callTok, "( )") &&
+                    updateRange(callTok->next(), callTok->link(), depth - 1) == Progress::Break)
+                    return Break();
+                if (updateTok(callTok) == Progress::Break)
+                    return Break();
+                if (start != callTok && updateRecursive(callTok->astOperand1()) == Progress::Break)
+                    return Break();
+                tok = callTok->link();
+                if (!tok)
+                    return Break();
             } else {
                 if (updateTok(tok, &next) == Progress::Break)
                     return Break();
@@ -812,7 +824,7 @@ struct ForwardTraversal {
                     if (precedes(next, end))
                         tok = next->previous();
                     else
-                        return Break();
+                        return Progress::Continue;
                 }
             }
             // Prevent infinite recursion
@@ -849,6 +861,20 @@ struct ForwardTraversal {
                 return tok->astParent();
             tok = tok->astParent();
         }
+        return nullptr;
+    }
+
+    static Token* callExpr(Token* tok)
+    {
+        while (tok->astParent() && astIsLHS(tok)) {
+            if (!Token::Match(tok, "%name%|::|<|."))
+                break;
+            if (Token::simpleMatch(tok, "<") && !tok->link())
+                break;
+            tok = tok->astParent();
+        }
+        if (isFunctionCall(tok))
+            return tok;
         return nullptr;
     }
 

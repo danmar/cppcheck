@@ -53,15 +53,16 @@
 #include <unistd.h>
 #endif
 
-static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
+static bool addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
 {
-    // To keep things initially simple, if the file can't be opened, just be silent and move on.
     std::istream *files;
     std::ifstream infile;
     if (fileList == "-") { // read from stdin
         files = &std::cin;
     } else {
         infile.open(fileList);
+        if (!infile.is_open())
+            return false;
         files = &infile;
     }
     if (files && *files) {
@@ -74,6 +75,7 @@ static void addFilesToList(const std::string& fileList, std::vector<std::string>
             }
         }
     }
+    return true;
 }
 
 static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
@@ -104,7 +106,7 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>* se
     std::list<std::string> templist;
     if (!addIncludePathsToList(fileName, &templist))
         return false;
-    set->insert(templist.begin(), templist.end());
+    set->insert(templist.cbegin(), templist.cend());
     return true;
 }
 
@@ -126,6 +128,8 @@ void CmdLineParser::printError(const std::string &message)
     printMessage("error: " + message);
 }
 
+// TODO: normalize/simplify/native all path parameters
+// TODO: error out on all missing given files/paths
 bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
     bool def = false;
@@ -246,6 +250,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->addEnabled("information");
             }
 
+            else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
+                mSettings->checksMaxTime = std::atoi(argv[i] + 18);
+            }
+
             else if (std::strcmp(argv[i], "--clang") == 0) {
                 mSettings->clang = true;
             }
@@ -338,7 +346,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const std::string temp = argv[i]+17;
                 std::istringstream iss(temp);
                 if (!(iss >> mSettings->exitCode)) {
-                    mSettings->exitCode = 0;
                     printError("argument must be an integer. Try something like '--error-exitcode=1'.");
                     return false;
                 }
@@ -382,9 +389,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->fileFilters.emplace_back(argv[i] + 14);
 
             // file list specified
-            else if (std::strncmp(argv[i], "--file-list=", 12) == 0)
+            else if (std::strncmp(argv[i], "--file-list=", 12) == 0) {
                 // open this file and read every input file (1 file name per line)
-                addFilesToList(12 + argv[i], mPathNames);
+                const std::string fileList = argv[i] + 12;
+                if (!addFilesToList(fileList, mPathNames)) {
+                    printError("couldn't open the file: \"" + fileList + "\".");
+                    return false;
+                }
+            }
 
             // Force checking of files that have "too many" configurations
             else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
@@ -639,7 +651,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->libraries.emplace_back(lib);
 
                     const auto& excludedPaths = mSettings->project.guiProject.excludedPaths;
-                    std::copy(excludedPaths.begin(), excludedPaths.end(), std::back_inserter(mIgnoredPaths));
+                    std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
 
                     const std::string platform(mSettings->project.guiProject.platform);
 
@@ -831,8 +843,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     std::string message("couldn't open the file: \"");
                     message += filename;
                     message += "\".";
-                    if (std::count(filename.begin(), filename.end(), ',') > 0 ||
-                        std::count(filename.begin(), filename.end(), '.') > 1) {
+                    if (std::count(filename.cbegin(), filename.cend(), ',') > 0 ||
+                        std::count(filename.cbegin(), filename.cend(), '.') > 1) {
                         // If user tried to pass multiple files (we can only guess that)
                         // e.g. like this: --suppressions-list=a.txt,b.txt
                         // print more detailed error message to tell user how he can solve the problem
@@ -905,6 +917,29 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("argument to '--template' is missing.");
                     return false;
                 }
+            }
+
+            else if (std::strncmp(argv[i], "--template-max-time=", 20) == 0) {
+                mSettings->templateMaxTime = std::atoi(argv[i] + 20);
+            }
+
+            else if (std::strncmp(argv[i], "--typedef-max-time=", 19) == 0) {
+                mSettings->typedefMaxTime = std::atoi(argv[i] + 19);
+            }
+
+            else if (std::strncmp(argv[i], "--valueflow-max-iterations=", 27) == 0) {
+                long tmp;
+                try {
+                    tmp = std::stol(argv[i] + 27);
+                } catch (const std::invalid_argument &) {
+                    printError("argument to '--valueflow-max-iteration' is invalid.");
+                    return false;
+                }
+                if (tmp < 0) {
+                    printError("argument to '--valueflow-max-iteration' needs to be at least 0.");
+                    return false;
+                }
+                mSettings->valueFlowMaxIterations = static_cast<std::size_t>(tmp);
             }
 
             else if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--verbose") == 0)

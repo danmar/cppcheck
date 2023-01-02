@@ -766,8 +766,8 @@ nonneg int Token::getStrLength(const Token *tok)
 
     int len = 0;
     const std::string str(getStringLiteral(tok->str()));
-    std::string::const_iterator it = str.begin();
-    const std::string::const_iterator end = str.end();
+    std::string::const_iterator it = str.cbegin();
+    const std::string::const_iterator end = str.cend();
 
     while (it != end) {
         if (*it == '\\') {
@@ -2236,7 +2236,7 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         if (vars.empty())
             return nullptr;
         if (std::all_of(
-                vars.begin(), vars.end(), [&](const Variable* var) {
+                vars.cbegin(), vars.cend(), [&](const Variable* var) {
             return var->type() == vars.front()->type();
         }))
             return vars.front()->type();
@@ -2255,6 +2255,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
         const Variable *var = tok->variable();
         if (!var->typeStartToken() || !var->typeEndToken())
             return {};
+        std::pair<const Token*, const Token*> result;
         if (Token::simpleMatch(var->typeStartToken(), "auto")) {
             const Token * tok2 = var->declEndToken();
             if (Token::Match(tok2, "; %varid% =", var->declarationId()))
@@ -2270,8 +2271,19 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                     const Token* declEnd = nextAfterAstRightmostLeaf(tok2->astOperand1());
                     if (Token::simpleMatch(declEnd, "<") && declEnd->link())
                         declEnd = declEnd->link()->next();
-                    return { tok2->next(),  declEnd };
+                    return { tok2->next(), declEnd };
                 }
+                const Token *typeBeg{}, *typeEnd{};
+                if (tok2->str() == "::" && Token::simpleMatch(tok2->astOperand2(), "{")) { // empty initlist
+                    typeBeg = previousBeforeAstLeftmostLeaf(tok2);
+                    typeEnd = tok2->astOperand2();
+                }
+                else if (tok2->str() == "{") {
+                    typeBeg = previousBeforeAstLeftmostLeaf(tok2);
+                    typeEnd = tok2;
+                }
+                if (typeBeg)
+                    result = { typeBeg->next(), typeEnd }; // handle smart pointers/iterators first
             }
             if (astIsRangeBasedForDecl(var->nameToken()) && astIsContainer(var->nameToken()->astParent()->astOperand2())) { // range-based for
                 const ValueType* vt = var->nameToken()->astParent()->astOperand2()->valueType();
@@ -2288,6 +2300,8 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                 if (vt && vt->containerTypeToken)
                     return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
+            if (result.first)
+                return result;
         }
         return {var->typeStartToken(), var->typeEndToken()->next()};
     } else if (Token::simpleMatch(tok, "return")) {

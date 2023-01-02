@@ -122,8 +122,12 @@ public:
         else if (classDef_ && classDef_->str() == "using") {
             typeStart = classDef->tokAt(3);
             typeEnd = typeStart;
-            while (typeEnd->next() && typeEnd->next()->str() != ";")
-                typeEnd = typeEnd->next();
+            while (typeEnd->next() && typeEnd->next()->str() != ";") {
+                if (Token::simpleMatch(typeEnd, "decltype ("))
+                    typeEnd = typeEnd->linkAt(1);
+                else
+                    typeEnd = typeEnd->next();
+            }
         }
     }
 
@@ -1075,7 +1079,7 @@ public:
     }
 
     const Enumerator * findEnumerator(const std::string & name) const {
-        auto it = std::find_if(enumeratorList.begin(), enumeratorList.end(), [&](const Enumerator& i) {
+        auto it = std::find_if(enumeratorList.cbegin(), enumeratorList.cend(), [&](const Enumerator& i) {
             return i.name->str() == name;
         });
         return it == enumeratorList.end() ? nullptr : &*it;

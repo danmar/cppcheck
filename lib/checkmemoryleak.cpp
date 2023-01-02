@@ -154,7 +154,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         return No;
 
     // Prevent recursion
-    if (callstack && std::find(callstack->begin(), callstack->end(), func) != callstack->end())
+    if (callstack && std::find(callstack->cbegin(), callstack->cend(), func) != callstack->cend())
         return No;
 
     std::list<const Function*> cs;

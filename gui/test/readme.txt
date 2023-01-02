@@ -1,4 +1,4 @@
-GUI tests + benchmark tests
+GUI tests
 ===========================
 
 As the GUI uses Qt framework, the GUI tests also use Qt's Testlib. This is

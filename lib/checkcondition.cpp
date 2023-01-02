@@ -651,7 +651,7 @@ void CheckCondition::multiCondition2()
                       [&varsInCond](const Token *cond) {
             if (cond->variable()) {
                 const Variable *var = cond->variable();
-                if (std::find(varsInCond.begin(), varsInCond.end(), var) == varsInCond.end())
+                if (std::find(varsInCond.cbegin(), varsInCond.cend(), var) == varsInCond.cend())
                     varsInCond.push_back(var);
             }
             return ChildrenToVisit::op1_and_op2;
@@ -752,7 +752,7 @@ void CheckCondition::multiCondition2()
                         // Incomplete code
                         break;
                     }
-                    const bool changed = std::any_of(vars.begin(), vars.end(), [&](int varid) {
+                    const bool changed = std::any_of(vars.cbegin(), vars.cend(), [&](int varid) {
                         return isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP());
                     });
                     if (changed)

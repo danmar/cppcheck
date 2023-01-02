@@ -366,7 +366,7 @@ man/cppcheck.1:	$(MAN_SOURCE)
 	$(XP) $(DB2MAN) $(MAN_SOURCE)
 
 tags:
-	ctags -R --exclude=doxyoutput --exclude=test/cfg --exclude=test/synthetic cli externals gui lib test
+	ctags -R --exclude=doxyoutput --exclude=test/cfg cli externals gui lib test
 
 install: cppcheck
 	install -d ${BIN}
@@ -852,6 +852,6 @@ externals/simplecpp/simplecpp.o: externals/simplecpp/simplecpp.cpp externals/sim
 externals/tinyxml2/tinyxml2.o: externals/tinyxml2/tinyxml2.cpp externals/tinyxml2/tinyxml2.h
 	$(CXX)  $(CPPFLAGS) $(CXXFLAGS) -w -c -o $@ externals/tinyxml2/tinyxml2.cpp
 
-tools/dmake.o: tools/dmake.cpp cli/filelister.h lib/config.h lib/pathmatch.h
+tools/dmake.o: tools/dmake.cpp cli/filelister.h lib/config.h lib/pathmatch.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ tools/dmake.cpp
 

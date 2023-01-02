@@ -45,10 +45,10 @@ struct ReverseTraversal {
     std::pair<bool, bool> evalCond(const Token* tok) {
         std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
-        const bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
+        const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
             return x == 1;
         });
-        const bool checkElse = std::any_of(result.begin(), result.end(), [](int x) {
+        const bool checkElse = std::any_of(result.cbegin(), result.cend(), [](int x) {
             return x == 0;
         });
         return std::make_pair(checkThen, checkElse);
@@ -244,7 +244,7 @@ struct ReverseTraversal {
                         // Assignment to
                     } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() &&
                                assignTok->astOperand2()->exprId() > 0 &&
-                               isConstExpression(assignTok->astOperand2(), settings->library, true, true)) {
+                               isConstExpression(assignTok->astOperand2(), settings->library, true)) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {

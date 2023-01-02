@@ -140,6 +140,7 @@ private:
         TEST_CASE(nullpointer94); // #11040
         TEST_CASE(nullpointer95); // #11142
         TEST_CASE(nullpointer96); // #11416
+        TEST_CASE(nullpointer97); // #11229
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2779,6 +2780,20 @@ private:
               "    }\n"
               "  }\n"
               "  if (s) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer97() // #11229
+    {
+        check("struct B { virtual int f() = 0; };\n"
+              "struct D : public B { int f() override; };\n"
+              "int g(B* p) {\n"
+              "    if (p) {\n"
+              "        auto d = dynamic_cast<B*>(p);\n"
+              "        return d ? d->f() : 0;\n"
+              "    }\n"
+              "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
