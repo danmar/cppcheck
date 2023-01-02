@@ -1473,6 +1473,13 @@ void CheckOther::checkConstVariable()
                         break;
                     }
                 }
+                if (astIsRangeBasedForDecl(tok) && Token::Match(tok->astParent()->astOperand2(), "%varid%", var->declarationId())) {
+                    const Variable* refvar = tok->astParent()->astOperand1()->variable();
+                    if (refvar && refvar->isReference() && !refvar->isConst()) {
+                        usedInAssignment = true;
+                        break;
+                    }
+                }
             }
             if (usedInAssignment)
                 continue;
