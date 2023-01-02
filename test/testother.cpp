@@ -285,6 +285,8 @@ private:
         TEST_CASE(checkOverlappingWrite);
 
         TEST_CASE(constVariableArrayMember); // #10371
+
+        TEST_CASE(ternaryOmittedOperand);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -10730,6 +10732,14 @@ private:
               "    int m_Arr[1];\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void ternaryOmittedOperand() {
+        check("void f(int x, int y) {\n"
+              "    g(x ? x : y);\n"
+              "    h(x ? : y);\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (portability) The ternary operator without a second operand is a GNU C extension.\n", errout.str());
     }
 };
 

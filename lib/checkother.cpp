@@ -3869,3 +3869,20 @@ void CheckOther::overlappingWriteFunction(const Token *tok)
     const std::string &funcname = tok ? tok->str() : emptyString;
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }
+
+// see https://gcc.gnu.org/onlinedocs/gcc/Conditionals.html
+void CheckOther::checkTernaryOmittedOperand()
+{
+    if (!mSettings->severity.isEnabled(Severity::portability))
+        return;
+
+    for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+        if (tok->str() == "?" && Token::simpleMatch(tok->astOperand2(), ":") && !tok->astOperand2()->astOperand1()) {
+            ternaryOmittedOperandError(tok->astOperand2());
+        }
+    }
+}
+
+void CheckOther::ternaryOmittedOperandError(const Token* tok) {
+    reportError(tok, Severity::portability, "ternaryOmittedOperand", "The ternary operator without a second operand is a GNU C extension.");
+}

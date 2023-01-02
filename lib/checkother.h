@@ -100,6 +100,7 @@ public:
         checkOther.checkAccessOfMovedVariable();
         checkOther.checkModuloOfOne();
         checkOther.checkOverlappingWrite();
+        checkOther.checkTernaryOmittedOperand();
     }
 
     /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
@@ -226,6 +227,8 @@ public:
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token *tok);
 
+    void checkTernaryOmittedOperand();
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
@@ -282,6 +285,7 @@ private:
     void knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr, bool isVariableExpressionHidden);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
+    void ternaryOmittedOperandError(const Token *tok);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
@@ -353,6 +357,7 @@ private:
         c.comparePointersError(nullptr, nullptr, nullptr);
         c.redundantAssignmentError(nullptr, nullptr, "var", false);
         c.redundantInitializationError(nullptr, nullptr, "var", false);
+        c.ternaryOmittedOperandError(nullptr);
 
         const std::vector<const Token *> nullvec;
         c.funcArgOrderDifferent("function", nullptr, nullptr, nullvec, nullvec);
