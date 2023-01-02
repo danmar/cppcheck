@@ -4995,8 +4995,11 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
 
         while (Token::Match(tok1->tokAt(-2), "%type% ::") ||
                (Token::simpleMatch(tok1->tokAt(-2), "> ::") && tok1->linkAt(-2) && Token::Match(tok1->linkAt(-2)->tokAt(-1), "%type%"))) {
-            if (tok1->strAt(-1) == "::")
+            if (tok1->strAt(-1) == "::") {
+                if (tok1->tokAt(-2)->isKeyword())
+                    break;
                 tok1 = tok1->tokAt(-2);
+            }
             else
                 tok1 = tok1->linkAt(-2)->tokAt(-1);
         }
