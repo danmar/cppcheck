@@ -1744,6 +1744,8 @@ static bool isConvertedToIntegral(const Token* tok, const Settings* settings)
 
 static bool isSameToken(const Token* tok1, const Token* tok2)
 {
+    if (!tok1 || !tok2)
+        return false;
     if (tok1->exprId() != 0 && tok1->exprId() == tok2->exprId())
         return true;
     if (tok1->hasKnownIntValue() && tok2->hasKnownIntValue())
