@@ -78,6 +78,7 @@ private:
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_return3);
         TEST_CASE(testautovar_return4);
+        TEST_CASE(testautovar_return5);
         TEST_CASE(testautovar_extern);
         TEST_CASE(testautovar_reassigned);
         TEST_CASE(testinvaliddealloc);
@@ -574,6 +575,14 @@ private:
               "  int cond2;\n"
               "  dostuff([&cond2]() { return &cond2; });\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar_return5() { // #11465
+        check("struct S {};\n"
+              "const std::type_info* f() {\n"
+              "    return &typeid(S);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
