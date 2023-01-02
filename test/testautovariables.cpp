@@ -3750,6 +3750,16 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        // #11472
+        check("namespace N {\n"
+              "    struct T { int m; };\n"
+              "    int i;\n"
+              "    const T& f(const T* p) {\n"
+              "        return p != nullptr ? *p : *reinterpret_cast<const ::N::T*>(&i);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()
