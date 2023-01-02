@@ -6839,6 +6839,12 @@ private:
                "    std::shared_ptr<B> m;\n"
                "};\n";
         valueOfTok(code, "r");
+
+        code = "void g(int);\n"
+               "void f(int x, int y) {\n"
+               "    g(x < y ? : 1);\n"
+               "};\n";
+        valueOfTok(code, "?");
     }
 
     void valueFlowHang() {
