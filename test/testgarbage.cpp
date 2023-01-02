@@ -1320,6 +1320,8 @@ private:
                                "{ return return { | { - name3 1 enum != >= 1 >= ++ { name6 | ; ++}}}}}}}"), InternalError);
         ASSERT_THROW(checkCode("else return % name5 name2 - =name1 return enum | { - name3 1 enum != >= 1 >= ++ { { || "
                                "{ return return { | { - name3 1 enum != >= 1 >= ++ { { || ; ++}}}}}}}}"), InternalError);
+
+        ASSERT_THROW(checkCode("f(x < y ? : 1);"), InternalError);
     }
 
     void templateSimplifierCrashes() {
