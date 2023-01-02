@@ -6249,7 +6249,7 @@ private:
                         "    S s2 = s1;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         // #11460
         valueFlowUninit("struct B { int i; };\n"
                         "    struct H {\n"
