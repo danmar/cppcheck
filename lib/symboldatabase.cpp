@@ -6342,8 +6342,14 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 setValueType(autoToken, autovt);
                 setAutoTokenProperties(autoToken);
                 ValueType varvt(autovt);
-                if (isconst)
-                    varvt.constness |= 1;
+                if (autoToken->strAt(1) == "*" && autovt.pointer)
+                    autovt.pointer--;
+                if (isconst) {
+                    if (autovt.pointer)
+                        varvt.constness |= (1 << autovt.pointer);
+                    else
+                        varvt.constness |= 1;
+                }
                 setValueType(parent->previous(), varvt);
                 Variable * var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
