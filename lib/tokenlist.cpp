@@ -85,10 +85,7 @@ void TokenList::determineCppC()
 {
     // only try to determine it if it wasn't enforced
     if (mLang == Standards::Language::None) {
-        if (Path::isC(getSourceFilePath()))
-            mLang = Standards::Language::C;
-        else if (Path::isCPP(getSourceFilePath()))
-            mLang = Standards::Language::CPP;
+        mLang = Path::identify(getSourceFilePath());
     }
 }
 
