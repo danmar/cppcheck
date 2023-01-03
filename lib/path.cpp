@@ -270,6 +270,13 @@ Standards::Language Path::identify(const std::string &path, bool *header)
     return Standards::Language::None;
 }
 
+bool Path::isHeader2(const std::string &path)
+{
+    bool header;
+    (void)Path::identify(path, &header);
+    return header;
+}
+
 std::string Path::getAbsoluteFilePath(const std::string& filePath)
 {
     std::string absolute_path;

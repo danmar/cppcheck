@@ -46,6 +46,7 @@ private:
         TEST_CASE(sameFileName);
         TEST_CASE(getFilenameExtension);
         TEST_CASE(identify);
+        TEST_CASE(is_header_2);
     }
 
     void removeQuotationMarks() const {
@@ -363,6 +364,20 @@ private:
         ASSERT_EQUALS(Standards::Language::None, Path::identify("index.header"));
         ASSERT_EQUALS(Standards::Language::None, Path::identify("index.htm"));
         ASSERT_EQUALS(Standards::Language::None, Path::identify("index.html"));
+    }
+
+    void is_header_2() const {
+        ASSERT(Path::isHeader2("index.h"));
+        ASSERT(Path::isHeader2("index.hpp"));
+        ASSERT(Path::isHeader2("index.hxx"));
+        ASSERT(Path::isHeader2("index.h++"));
+        ASSERT(Path::isHeader2("index.hh"));
+
+        ASSERT(Path::isHeader2("index.c")==false);
+        ASSERT(Path::isHeader2("index.cpp")==false);
+        ASSERT(Path::isHeader2("index.header")==false);
+        ASSERT(Path::isHeader2("index.htm")==false);
+        ASSERT(Path::isHeader2("index.html")==false);
     }
 };
 
