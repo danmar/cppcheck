@@ -500,6 +500,7 @@ private:
         TEST_CASE(auto15); // C++17 auto deduction from braced-init-list
         TEST_CASE(auto16);
         TEST_CASE(auto17); // #11163
+        TEST_CASE(auto18);
 
         TEST_CASE(unionWithConstructor);
 
@@ -8469,14 +8470,14 @@ private:
         autotok = Token::findsimplematch(autotok, "auto v4");
         ASSERT(autotok);
         ASSERT(autotok->valueType());
-        TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
+        ASSERT_EQUALS(3, autotok->valueType()->constness);
         ASSERT_EQUALS(1, autotok->valueType()->pointer);
         ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
         ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v4 =");
         ASSERT(autotok);
         ASSERT(autotok->valueType());
-        ASSERT_EQUALS(1, vartok->valueType()->constness);
+        ASSERT_EQUALS(3, vartok->valueType()->constness);
         ASSERT_EQUALS(1, vartok->valueType()->pointer);
         ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
         ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -8549,14 +8550,14 @@ private:
         autotok = Token::findsimplematch(autotok, "auto v9");
         ASSERT(autotok);
         ASSERT(autotok->valueType());
-        TODO_ASSERT_EQUALS(0, 1, autotok->valueType()->constness);
+        ASSERT_EQUALS(3, autotok->valueType()->constness);
         ASSERT_EQUALS(1, autotok->valueType()->pointer);
         ASSERT_EQUALS(ValueType::SIGNED, autotok->valueType()->sign);
         ASSERT_EQUALS(ValueType::INT, autotok->valueType()->type);
         vartok = Token::findsimplematch(autotok, "v9 =");
         ASSERT(autotok);
         ASSERT(autotok->valueType());
-        ASSERT_EQUALS(1, vartok->valueType()->constness);
+        ASSERT_EQUALS(3, vartok->valueType()->constness);
         ASSERT_EQUALS(1, vartok->valueType()->pointer);
         ASSERT_EQUALS(ValueType::SIGNED, vartok->valueType()->sign);
         ASSERT_EQUALS(ValueType::INT, vartok->valueType()->type);
@@ -8748,6 +8749,34 @@ private:
                       "    auto w = std::weak_ptr(s);\n"
                       "}\n");
         ASSERT_EQUALS(5, db->variableList().size());
+    }
+
+    void auto18() {
+        GET_SYMBOL_DB("void f(const int* p) {\n"
+                      "    const int* const& r = p;\n"
+                      "    const auto& s = p;\n"
+                      "}\n");
+        ASSERT_EQUALS(4, db->variableList().size());
+
+        const Variable* r = db->variableList()[2];
+        ASSERT(r->isReference());
+        ASSERT(r->isConst());
+        ASSERT(r->isPointer());
+        const Token* varTok = Token::findsimplematch(tokenizer.tokens(), "r");
+        ASSERT(varTok && varTok->valueType());
+        ASSERT_EQUALS(varTok->valueType()->constness, 3);
+        ASSERT_EQUALS(varTok->valueType()->pointer, 1);
+        ASSERT(varTok->valueType()->reference == Reference::LValue);
+
+        const Variable* s = db->variableList()[3];
+        ASSERT(s->isReference());
+        ASSERT(s->isConst());
+        ASSERT(s->isPointer());
+        const Token* autoTok = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(autoTok && autoTok->valueType());
+        ASSERT_EQUALS(autoTok->valueType()->constness, 3);
+        ASSERT_EQUALS(autoTok->valueType()->pointer, 1);
+        TODO_ASSERT(autoTok->valueType()->reference == Reference::LValue);
     }
 
     void unionWithConstructor() {

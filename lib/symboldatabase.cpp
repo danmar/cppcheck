@@ -6131,8 +6131,12 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                     vt.constness &= ~(1 << vt.pointer);
                 if (autoTok->strAt(1) == "*" && vt.pointer)
                     vt.pointer--;
-                if (Token::Match(autoTok->tokAt(-1), "const|constexpr"))
-                    vt.constness |= 1;
+                if (Token::Match(autoTok->tokAt(-1), "const|constexpr")) {
+                    if (vt.pointer)
+                        vt.constness |= (1 << vt.pointer);
+                    else
+                        vt.constness |= 1;
+                }
                 setValueType(autoTok, vt);
                 setAutoTokenProperties(autoTok);
                 if (vt2->pointer > vt.pointer)
