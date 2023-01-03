@@ -3923,7 +3923,13 @@ struct LifetimeStore {
     }
 
     template<class Predicate>
-    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred, SourceLocation loc = SourceLocation::current()) const {
+    bool byRef(Token* tok,
+               TokenList* tokenlist,
+               ErrorLogger* errorLogger,
+               const Settings* settings,
+               Predicate pred,
+               SourceLocation loc = SourceLocation::current()) const
+    {
         if (!argtok)
             return false;
         bool update = false;
@@ -3958,14 +3964,31 @@ struct LifetimeStore {
         return update;
     }
 
-    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, SourceLocation loc = SourceLocation::current()) const {
-        return byRef(tok, tokenlist, errorLogger, settings, [](const Token*) {
+    bool byRef(Token* tok,
+               TokenList* tokenlist,
+               ErrorLogger* errorLogger,
+               const Settings* settings,
+               SourceLocation loc = SourceLocation::current()) const
+    {
+        return byRef(
+            tok,
+            tokenlist,
+            errorLogger,
+            settings,
+            [](const Token*) {
             return true;
-        }, loc);
+        },
+            loc);
     }
 
     template<class Predicate>
-    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred, SourceLocation loc = SourceLocation::current()) const {
+    bool byVal(Token* tok,
+               TokenList* tokenlist,
+               ErrorLogger* errorLogger,
+               const Settings* settings,
+               Predicate pred,
+               SourceLocation loc = SourceLocation::current()) const
+    {
         if (!argtok)
             return false;
         bool update = false;
@@ -4036,14 +4059,31 @@ struct LifetimeStore {
         return update;
     }
 
-    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, SourceLocation loc = SourceLocation::current()) const {
-        return byVal(tok, tokenlist, errorLogger, settings, [](const Token*) {
+    bool byVal(Token* tok,
+               TokenList* tokenlist,
+               ErrorLogger* errorLogger,
+               const Settings* settings,
+               SourceLocation loc = SourceLocation::current()) const
+    {
+        return byVal(
+            tok,
+            tokenlist,
+            errorLogger,
+            settings,
+            [](const Token*) {
             return true;
-        }, loc);
+        },
+            loc);
     }
 
     template<class Predicate>
-    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred, SourceLocation loc = SourceLocation::current()) const {
+    void byDerefCopy(Token* tok,
+                     TokenList* tokenlist,
+                     ErrorLogger* errorLogger,
+                     const Settings* settings,
+                     Predicate pred,
+                     SourceLocation loc = SourceLocation::current()) const
+    {
         if (!settings->certainty.isEnabled(Certainty::inconclusive) && inconclusive)
             return;
         if (!argtok)
@@ -4070,10 +4110,21 @@ struct LifetimeStore {
         }
     }
 
-    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, SourceLocation loc = SourceLocation::current()) const {
-        byDerefCopy(tok, tokenlist, errorLogger, settings, [](const Token *) {
+    void byDerefCopy(Token* tok,
+                     TokenList* tokenlist,
+                     ErrorLogger* errorLogger,
+                     const Settings* settings,
+                     SourceLocation loc = SourceLocation::current()) const
+    {
+        byDerefCopy(
+            tok,
+            tokenlist,
+            errorLogger,
+            settings,
+            [](const Token*) {
             return true;
-        }, loc);
+        },
+            loc);
     }
 
 private:
