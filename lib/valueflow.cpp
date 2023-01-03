@@ -3923,7 +3923,7 @@ struct LifetimeStore {
     }
 
     template<class Predicate>
-    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred) const {
+    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred, SourceLocation loc = SourceLocation::current()) const {
         if (!argtok)
             return false;
         bool update = false;
@@ -3948,6 +3948,8 @@ struct LifetimeStore {
             // Don't add the value a second time
             if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                 return false;
+            if (settings->debugnormal)
+                setSourceLocation(value, loc, tok);
             setTokenValue(tok, value, tokenlist->getSettings());
             update = true;
         }
@@ -3956,14 +3958,14 @@ struct LifetimeStore {
         return update;
     }
 
-    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
+    bool byRef(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, SourceLocation loc = SourceLocation::current()) const {
         return byRef(tok, tokenlist, errorLogger, settings, [](const Token*) {
             return true;
-        });
+        }, loc);
     }
 
     template<class Predicate>
-    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred) const {
+    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred, SourceLocation loc = SourceLocation::current()) const {
         if (!argtok)
             return false;
         bool update = false;
@@ -3989,7 +3991,8 @@ struct LifetimeStore {
                 // Don't add the value a second time
                 if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                     continue;
-
+                if (settings->debugnormal)
+                    setSourceLocation(value, loc, tok);
                 setTokenValue(tok, value, tokenlist->getSettings());
                 update = true;
             }
@@ -4022,6 +4025,8 @@ struct LifetimeStore {
                 // Don't add the value a second time
                 if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                     continue;
+                if (settings->debugnormal)
+                    setSourceLocation(value, loc, tok);
                 setTokenValue(tok, value, tokenlist->getSettings());
                 update = true;
             }
@@ -4031,14 +4036,14 @@ struct LifetimeStore {
         return update;
     }
 
-    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
+    bool byVal(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, SourceLocation loc = SourceLocation::current()) const {
         return byVal(tok, tokenlist, errorLogger, settings, [](const Token*) {
             return true;
-        });
+        }, loc);
     }
 
     template<class Predicate>
-    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred, SourceLocation loc = SourceLocation::current()) const {
         if (!settings->certainty.isEnabled(Certainty::inconclusive) && inconclusive)
             return;
         if (!argtok)
@@ -4058,17 +4063,17 @@ struct LifetimeStore {
             const Token * const varDeclEndToken = var->declEndToken();
             for (const Token *tok3 = tok; tok3 && tok3 != varDeclEndToken; tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
-                    LifetimeStore{tok3, message, type, inconclusive}.byVal(tok, tokenlist, errorLogger, settings, pred);
+                    LifetimeStore{tok3, message, type, inconclusive}.byVal(tok, tokenlist, errorLogger, settings, pred, loc);
                     break;
                 }
             }
         }
     }
 
-    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
+    void byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, SourceLocation loc = SourceLocation::current()) const {
         byDerefCopy(tok, tokenlist, errorLogger, settings, [](const Token *) {
             return true;
-        });
+        }, loc);
     }
 
 private:
