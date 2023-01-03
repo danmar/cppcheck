@@ -4038,7 +4038,8 @@ struct LifetimeStore {
     }
 
     template<class Predicate>
-    bool byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings, Predicate pred) const {
+    bool byDerefCopy(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings, Predicate pred) const
+    {
         bool update = false;
         if (!settings->certainty.isEnabled(Certainty::inconclusive) && inconclusive)
             return update;
@@ -4059,7 +4060,8 @@ struct LifetimeStore {
             const Token * const varDeclEndToken = var->declEndToken();
             for (const Token *tok3 = tok; tok3 && tok3 != varDeclEndToken; tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
-                    update |= LifetimeStore{tok3, message, type, inconclusive}.byVal(tok, tokenlist, errorLogger, settings, pred);
+                    update |=
+                        LifetimeStore{tok3, message, type, inconclusive}.byVal(tok, tokenlist, errorLogger, settings, pred);
                     break;
                 }
             }
@@ -4067,8 +4069,9 @@ struct LifetimeStore {
         return update;
     }
 
-    bool byDerefCopy(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings) const {
-        return byDerefCopy(tok, tokenlist, errorLogger, settings, [](const Token *) {
+    bool byDerefCopy(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const
+    {
+        return byDerefCopy(tok, tokenlist, errorLogger, settings, [](const Token*) {
             return true;
         });
     }
