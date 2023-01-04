@@ -4352,7 +4352,6 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                     ls.errorPath = v.errorPath;
                     ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
                     int thisIndirect = v.lifetimeScope == ValueFlow::Value::LifetimeScope::ThisValue ? 0 : 1;
-                    // if (Token::Match(memtok->astParent(), ".") && memtok->astParent()->originalName() == "->")
                     if (derefShared(memtok->astParent()))
                         thisIndirect--;
                     if (thisIndirect == -1)
