@@ -766,8 +766,8 @@ nonneg int Token::getStrLength(const Token *tok)
 
     int len = 0;
     const std::string str(getStringLiteral(tok->str()));
-    std::string::const_iterator it = str.begin();
-    const std::string::const_iterator end = str.end();
+    std::string::const_iterator it = str.cbegin();
+    const std::string::const_iterator end = str.cend();
 
     while (it != end) {
         if (*it == '\\') {
@@ -2236,7 +2236,7 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         if (vars.empty())
             return nullptr;
         if (std::all_of(
-                vars.begin(), vars.end(), [&](const Variable* var) {
+                vars.cbegin(), vars.cend(), [&](const Variable* var) {
             return var->type() == vars.front()->type();
         }))
             return vars.front()->type();

@@ -199,7 +199,7 @@ void Variables::alias(nonneg int varid1, nonneg int varid2, bool replace)
 
     if (replace) {
         // remove var1 from all aliases
-        for (std::set<nonneg int>::const_iterator i = var1->_aliases.begin(); i != var1->_aliases.end(); ++i) {
+        for (std::set<nonneg int>::const_iterator i = var1->_aliases.cbegin(); i != var1->_aliases.cend(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)
@@ -211,7 +211,7 @@ void Variables::alias(nonneg int varid1, nonneg int varid2, bool replace)
     }
 
     // var1 gets all var2s aliases
-    for (std::set<nonneg int>::const_iterator i = var2->_aliases.begin(); i != var2->_aliases.end(); ++i) {
+    for (std::set<nonneg int>::const_iterator i = var2->_aliases.cbegin(); i != var2->_aliases.cend(); ++i) {
         if (*i != varid1)
             var1->_aliases.insert(*i);
     }
@@ -233,7 +233,7 @@ void Variables::clearAliases(nonneg int varid)
         // remove usage from all aliases
         std::set<nonneg int>::const_iterator i;
 
-        for (i = usage->_aliases.begin(); i != usage->_aliases.end(); ++i) {
+        for (i = usage->_aliases.cbegin(); i != usage->_aliases.cend(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)
@@ -250,7 +250,7 @@ void Variables::eraseAliases(nonneg int varid)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases)
+        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases)
             erase(*aliases);
     }
 }
@@ -330,7 +330,7 @@ void Variables::writeAliases(nonneg int varid, const Token* tok)
     VariableUsage *usage = find(varid);
 
     if (usage) {
-        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
+        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -355,7 +355,7 @@ void Variables::use(nonneg int varid, const Token* tok)
         usage->use();
         usage->_lastAccess = tok;
 
-        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
+        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -376,7 +376,7 @@ void Variables::modified(nonneg int varid, const Token* tok)
         usage->_modified = true;
         usage->_lastAccess = tok;
 
-        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.begin(); aliases != usage->_aliases.end(); ++aliases) {
+        for (std::set<nonneg int>::const_iterator aliases = usage->_aliases.cbegin(); aliases != usage->_aliases.cend(); ++aliases) {
             VariableUsage *aliased = find(*aliases);
 
             if (aliased) {
@@ -695,7 +695,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
     // Find declarations if the scope is executable..
     if (scope->isExecutable()) {
         // Find declarations
-        for (std::list<Variable>::const_iterator i = scope->varlist.begin(); i != scope->varlist.end(); ++i) {
+        for (std::list<Variable>::const_iterator i = scope->varlist.cbegin(); i != scope->varlist.cend(); ++i) {
             if (i->isThrow() || i->isExtern())
                 continue;
             Variables::VariableType type = Variables::none;
@@ -776,7 +776,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         tok = scope->classDef->next();
     for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok != scope->bodyStart && !tok->previous()->varId()) {
-            if (std::any_of(scope->nestedList.begin(), scope->nestedList.end(), [&](const Scope* s) {
+            if (std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [&](const Scope* s) {
                 return s->bodyStart == tok;
             })) {
                 checkFunctionVariableUsage_iterateScopes(tok->scope(), variables); // Scan child scope
@@ -1308,8 +1308,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
 
         // Check usage of all variables in the current scope..
-        for (std::map<nonneg int, Variables::VariableUsage>::const_iterator it = variables.varUsage().begin();
-             it != variables.varUsage().end();
+        for (std::map<nonneg int, Variables::VariableUsage>::const_iterator it = variables.varUsage().cbegin();
+             it != variables.varUsage().cend();
              ++it) {
             const Variables::VariableUsage &usage = it->second;
 
@@ -1423,7 +1423,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
         if (const Preprocessor *preprocessor = mTokenizer->getPreprocessor()) {
             const auto& directives = preprocessor->getDirectives();
-            const bool isPacked = std::any_of(directives.begin(), directives.end(), [&](const Directive& d) {
+            const bool isPacked = std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
                 return d.linenr < scope.bodyStart->linenr() && d.str == "#pragma pack(1)" && d.file == mTokenizer->list.getFiles().front();
             });
             if (isPacked)
@@ -1439,9 +1439,9 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // bail out if struct is inherited
-        bool bailout = std::any_of(symbolDatabase->scopeList.begin(), symbolDatabase->scopeList.end(), [&](const Scope& derivedScope) {
+        bool bailout = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) {
             const Type* dType = derivedScope.definedType;
-            return dType && std::any_of(dType->derivedFrom.begin(), dType->derivedFrom.end(), [&](const Type::BaseInfo& derivedFrom) {
+            return dType && std::any_of(dType->derivedFrom.cbegin(), dType->derivedFrom.cend(), [&](const Type::BaseInfo& derivedFrom) {
                 return derivedFrom.type == scope.definedType;
             });
         });
@@ -1581,7 +1581,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     }
 
     // Derived from type that has side effects?
-    if (std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [this](const Type::BaseInfo& derivedFrom) {
+    if (std::any_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [this](const Type::BaseInfo& derivedFrom) {
         return !isRecordTypeWithoutSideEffects(derivedFrom.type);
     }))
         return (withoutSideEffects = false);
@@ -1630,7 +1630,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 
     if (type && type->classScope && type->classScope->numConstructors == 0 &&
         (type->classScope->varlist.empty())) {
-        return (emptyType = std::all_of(type->derivedFrom.begin(), type->derivedFrom.end(), [this](const Type::BaseInfo& bi) {
+        return (emptyType = std::all_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [this](const Type::BaseInfo& bi) {
             return isEmptyType(bi.type);
         }));
     }
@@ -1683,7 +1683,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         // check nested function
         const Function* bodyFunction = bodyToken->function();
         if (bodyFunction) {
-            if (std::find(checkedFuncs.begin(), checkedFuncs.end(), bodyFunction) != checkedFuncs.end()) { // recursion found
+            if (std::find(checkedFuncs.cbegin(), checkedFuncs.cend(), bodyFunction) != checkedFuncs.cend()) { // recursion found
                 continue;
             }
             checkedFuncs.push_back(bodyFunction);

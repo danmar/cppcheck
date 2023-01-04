@@ -171,7 +171,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
         if (!mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage())) {
             // Alert only about unique errors
             std::string errmsg = msg.toString(mSettings.verbose);
-            if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
+            if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
                 mErrorList.emplace_back(std::move(errmsg));
                 if (type == PipeWriter::REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
@@ -218,7 +218,7 @@ unsigned int ProcessExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
+    const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
         return v + p.second;
     });
 
@@ -226,12 +226,12 @@ unsigned int ProcessExecutor::check()
     std::map<pid_t, std::string> childFile;
     std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
-    std::map<std::string, std::size_t>::const_iterator iFile = mFiles.begin();
-    std::list<ImportProject::FileSettings>::const_iterator iFileSettings = mSettings.project.fileSettings.begin();
+    std::map<std::string, std::size_t>::const_iterator iFile = mFiles.cbegin();
+    std::list<ImportProject::FileSettings>::const_iterator iFileSettings = mSettings.project.fileSettings.cbegin();
     for (;;) {
         // Start a new child
         const size_t nchildren = childFile.size();
-        if ((iFile != mFiles.end() || iFileSettings != mSettings.project.fileSettings.end()) && nchildren < mSettings.jobs && checkLoadAverage(nchildren)) {
+        if ((iFile != mFiles.cend() || iFileSettings != mSettings.project.fileSettings.cend()) && nchildren < mSettings.jobs && checkLoadAverage(nchildren)) {
             int pipes[2];
             if (pipe(pipes) == -1) {
                 std::cerr << "#### ThreadExecutor::check, pipe() failed: "<< std::strerror(errno) << std::endl;
@@ -293,12 +293,12 @@ unsigned int ProcessExecutor::check()
         if (!rpipes.empty()) {
             fd_set rfds;
             FD_ZERO(&rfds);
-            for (std::list<int>::const_iterator rp = rpipes.begin(); rp != rpipes.end(); ++rp)
+            for (std::list<int>::const_iterator rp = rpipes.cbegin(); rp != rpipes.cend(); ++rp)
                 FD_SET(*rp, &rfds);
             struct timeval tv; // for every second polling of load average condition
             tv.tv_sec = 1;
             tv.tv_usec = 0;
-            const int r = select(*std::max_element(rpipes.begin(), rpipes.end()) + 1, &rfds, nullptr, nullptr, &tv);
+            const int r = select(*std::max_element(rpipes.cbegin(), rpipes.cend()) + 1, &rfds, nullptr, nullptr, &tv);
 
             if (r > 0) {
                 std::list<int>::iterator rp = rpipes.begin();

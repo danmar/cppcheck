@@ -451,7 +451,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 ;
             else if (astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
                 const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
-                if (it != variableValue.end() && it->second != 0)
+                if (it != variableValue.cend() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
                 else {
                     condVarId = condVarTok->varId();
@@ -467,7 +467,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     vartok = vartok->astOperand2();
                 if (vartok && vartok->varId() && numtok && numtok->hasKnownIntValue()) {
                     const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
-                    if (it != variableValue.end() && it->second != numtok->getKnownIntValue())
+                    if (it != variableValue.cend() && it->second != numtok->getKnownIntValue())
                         return true;   // this scope is not fully analysed => return true
                     condVarId = vartok->varId();
                     condVarValue = VariableValue(numtok->getKnownIntValue());
@@ -559,9 +559,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     if (initif || initelse || possibleInitElse)
                         ++number_of_if;
                     if (!initif && !noreturnIf)
-                        variableValue.insert(varValueIf.begin(), varValueIf.end());
+                        variableValue.insert(varValueIf.cbegin(), varValueIf.cend());
                     if (!initelse && !noreturnElse)
-                        variableValue.insert(varValueElse.begin(), varValueElse.end());
+                        variableValue.insert(varValueElse.cbegin(), varValueElse.cend());
                 }
             }
         }
@@ -1604,8 +1604,8 @@ void CheckUninitVar::valueFlowUninit()
                 if (isVoidCast(parent))
                     continue;
                 auto v = std::find_if(
-                    tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
-                if (v == tok->values().end())
+                    tok->values().cbegin(), tok->values().cend(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+                if (v == tok->values().cend())
                     continue;
                 if (v->tokvalue && ids.count(v->tokvalue->exprId()) > 0)
                     continue;

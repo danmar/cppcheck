@@ -6249,6 +6249,18 @@ private:
                         "    S s2 = s1;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11460
+        valueFlowUninit("struct B { int i; };\n"
+                        "    struct H {\n"
+                        "    void e() const;\n"
+                        "    static const B b;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    H h;\n"
+                        "    h.e();\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {

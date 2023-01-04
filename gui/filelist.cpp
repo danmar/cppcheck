@@ -110,7 +110,7 @@ void FileList::addExcludeList(const QStringList &paths)
 static std::vector<std::string> toStdStringList(const QStringList &stringList)
 {
     std::vector<std::string> ret;
-    std::transform(stringList.begin(), stringList.end(), std::back_inserter(ret), [](const QString& s) {
+    std::transform(stringList.cbegin(), stringList.cend(), std::back_inserter(ret), [](const QString& s) {
         return s.toStdString();
     });
     return ret;

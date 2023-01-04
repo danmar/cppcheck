@@ -311,7 +311,7 @@ void ImportProject::FileSettings::parseCommand(std::string command)
             std::string i = fval;
             if (i.size() > 1 && i[0] == '\"' && i.back() == '\"')
                 i = unescape(i.substr(1, i.size() - 2));
-            if (std::find(includePaths.begin(), includePaths.end(), i) == includePaths.end())
+            if (std::find(includePaths.cbegin(), includePaths.cend(), i) == includePaths.cend())
                 includePaths.push_back(std::move(i));
         } else if (F=='s' && fval.compare(0,2,"td") == 0) {
             ++pos;
@@ -762,7 +762,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         for (const ProjectConfiguration &p : projectConfigurationList) {
 
             if (!guiProject.checkVsConfigs.empty()) {
-                const bool doChecking = std::any_of(guiProject.checkVsConfigs.begin(), guiProject.checkVsConfigs.end(), [&](const std::string& c) {
+                const bool doChecking = std::any_of(guiProject.checkVsConfigs.cbegin(), guiProject.checkVsConfigs.cend(), [&](const std::string& c) {
                     return c == p.configuration;
                 });
                 if (!doChecking)
@@ -906,7 +906,7 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
             { "-tWV","-WV" }
         };
 
-        for (std::map<std::string, std::string>::const_iterator i = synonyms.begin(); i != synonyms.end(); ++i) {
+        for (std::map<std::string, std::string>::const_iterator i = synonyms.cbegin(); i != synonyms.cend(); ++i) {
             if (cflags.erase(i->first) > 0) {
                 cflags.insert(i->second);
             }
@@ -1297,7 +1297,7 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
 
 std::list<std::string> ImportProject::getVSConfigs()
 {
-    return std::list<std::string>(mAllVSConfigs.begin(), mAllVSConfigs.end());
+    return std::list<std::string>(mAllVSConfigs.cbegin(), mAllVSConfigs.cend());
 }
 
 void ImportProject::setRelativePaths(const std::string &filename)

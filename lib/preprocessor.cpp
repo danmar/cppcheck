@@ -112,7 +112,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!errmsg.empty())
             bad->emplace_back(tok->location, std::move(errmsg));
 
-        std::copy_if(suppressions.begin(), suppressions.end(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
+        std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
             return !s.errorId.empty();
         });
     } else {
@@ -193,7 +193,7 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
         return;
     std::list<BadInlineSuppression> err;
     ::addinlineSuppressions(tokens, mSettings, &err);
-    for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
+    for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (it->second)
             ::addinlineSuppressions(*it->second, mSettings, &err);
     }
@@ -210,7 +210,7 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
     std::vector<const simplecpp::TokenList *> list;
     list.reserve(1U + mTokenLists.size());
     list.push_back(&tokens);
-    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
+    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         list.push_back(it->second);
     }
 
@@ -327,7 +327,7 @@ static bool hasDefine(const std::string &userDefines, const std::string &cfg)
 
 static std::string cfg(const std::vector<std::string> &configs, const std::string &userDefines)
 {
-    std::set<std::string> configs2(configs.begin(), configs.end());
+    std::set<std::string> configs2(configs.cbegin(), configs.cend());
     std::string ret;
     for (const std::string &c : configs2) {
         if (c.empty())
@@ -538,7 +538,7 @@ std::set<std::string> Preprocessor::getConfigs(const simplecpp::TokenList &token
 
     ::getConfigs(tokens, defined, mSettings.userDefines, mSettings.userUndefs, ret);
 
-    for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
+    for (std::map<std::string, simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (!mSettings.configurationExcluded(it->first))
             ::getConfigs(*(it->second), defined, mSettings.userDefines, mSettings.userUndefs, ret);
     }
@@ -631,7 +631,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
 
 static bool hasErrors(const simplecpp::OutputList &outputList)
 {
-    for (simplecpp::OutputList::const_iterator it = outputList.begin(); it != outputList.end(); ++it) {
+    for (simplecpp::OutputList::const_iterator it = outputList.cbegin(); it != outputList.cend(); ++it) {
         switch (it->type) {
         case simplecpp::Output::ERROR:
         case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
@@ -980,7 +980,7 @@ std::size_t Preprocessor::calculateHash(const simplecpp::TokenList &tokens1, con
         if (!tok->comment)
             hashData += tok->str();
     }
-    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
+    for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         for (const simplecpp::Token *tok = it->second->cfront(); tok; tok = tok->next) {
             if (!tok->comment)
                 hashData += tok->str();

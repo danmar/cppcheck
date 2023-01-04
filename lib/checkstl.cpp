@@ -728,7 +728,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
 static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
     std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, false, path);
-    auto it = std::find_if(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+    auto it = std::find_if(values.cbegin(), values.cend(), [](const ValueFlow::Value& v) {
         return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
     });
     if (it != values.end())
@@ -950,7 +950,7 @@ struct InvalidContainerAnalyzer {
 
         std::vector<Reference> invalidTokens() const {
             std::vector<Reference> result;
-            std::transform(expressions.begin(), expressions.end(), std::back_inserter(result), SelectMapValues{});
+            std::transform(expressions.cbegin(), expressions.cend(), std::back_inserter(result), SelectMapValues{});
             return result;
         }
     };
@@ -967,7 +967,7 @@ struct InvalidContainerAnalyzer {
             auto it = invalidMethods.find(f);
             if (it != invalidMethods.end()) {
                 std::vector<Info::Reference> refs = it->second.invalidTokens();
-                std::copy_if(refs.begin(), refs.end(), std::back_inserter(result), [&](const Info::Reference& r) {
+                std::copy_if(refs.cbegin(), refs.cend(), std::back_inserter(result), [&](const Info::Reference& r) {
                     const Variable* var = r.tok->variable();
                     if (!var)
                         return false;
@@ -1056,7 +1056,7 @@ static const ValueFlow::Value* getInnerLifetime(const Token* tok,
             if (val.capturetok)
                 return getInnerLifetime(val.capturetok, id, errorPath, depth - 1);
             if (errorPath)
-                errorPath->insert(errorPath->end(), val.errorPath.begin(), val.errorPath.end());
+                errorPath->insert(errorPath->end(), val.errorPath.cbegin(), val.errorPath.cend());
             return getInnerLifetime(val.tokvalue, id, errorPath, depth - 1);
         }
         if (!val.tokvalue->variable())
@@ -1179,8 +1179,8 @@ void CheckStl::invalidContainer()
                     });
                     if (!info.tok)
                         continue;
-                    errorPath.insert(errorPath.end(), info.errorPath.begin(), info.errorPath.end());
-                    errorPath.insert(errorPath.end(), r.errorPath.begin(), r.errorPath.end());
+                    errorPath.insert(errorPath.end(), info.errorPath.cbegin(), info.errorPath.cend());
+                    errorPath.insert(errorPath.end(), r.errorPath.cbegin(), r.errorPath.cend());
                     if (v) {
                         invalidContainerError(info.tok, r.tok, v, errorPath);
                     } else {
@@ -1211,7 +1211,7 @@ void CheckStl::invalidContainerError(const Token *tok, const Token * /*contTok*/
 {
     const bool inconclusive = val ? val->isInconclusive() : false;
     if (val)
-        errorPath.insert(errorPath.begin(), val->errorPath.begin(), val->errorPath.end());
+        errorPath.insert(errorPath.begin(), val->errorPath.cbegin(), val->errorPath.cend());
     std::string msg = "Using " + lifetimeMessage(tok, val, errorPath);
     errorPath.emplace_back(tok, "");
     reportError(errorPath, Severity::error, "invalidContainer", msg + " that may be invalid.", CWE664, inconclusive ? Certainty::inconclusive : Certainty::normal);
@@ -2375,7 +2375,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
             continue;
 
         std::vector<ValueFlow::Value> contValues;
-        std::copy_if(tok->values().begin(), tok->values().end(), std::back_inserter(contValues), [&](const ValueFlow::Value& value) {
+        std::copy_if(tok->values().cbegin(), tok->values().cend(), std::back_inserter(contValues), [&](const ValueFlow::Value& value) {
             if (value.isImpossible())
                 return false;
             if (!printInconclusive && value.isInconclusive())
@@ -2399,7 +2399,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
             } else if (value.isIteratorStartValue() && value.intvalue < 0) {
                 isInvalidIterator = true;
             } else {
-                auto it = std::find_if(contValues.begin(), contValues.end(), [&](const ValueFlow::Value& c) {
+                auto it = std::find_if(contValues.cbegin(), contValues.cend(), [&](const ValueFlow::Value& c) {
                     if (value.path != c.path)
                         return false;
                     if (value.isIteratorStartValue() && value.intvalue >= c.intvalue)

@@ -51,12 +51,12 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     data.reserve(mResults.size());
     {
         std::lock_guard<std::mutex> l(mResultsSync);
-        data.insert(data.begin(), mResults.begin(), mResults.end());
+        data.insert(data.begin(), mResults.cbegin(), mResults.cend());
     }
     std::sort(data.begin(), data.end(), more_second_sec);
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
-    for (std::vector<dataElementType>::const_iterator iter=data.begin(); iter!=data.end(); ++iter) {
+    for (std::vector<dataElementType>::const_iterator iter=data.cbegin(); iter!=data.cend(); ++iter) {
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
         overallData.mClocks += iter->second.mClocks;

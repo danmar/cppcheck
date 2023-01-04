@@ -164,11 +164,8 @@ Tokenizer::Tokenizer() :
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
-    mTimerResults(nullptr)
-#ifdef MAXTIME
-    , mMaxTime(std::time(0) + MAXTIME)
-#endif
-    , mPreprocessor(nullptr)
+    mTimerResults(nullptr),
+    mPreprocessor(nullptr)
 {}
 
 Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
@@ -180,11 +177,8 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
-    mTimerResults(nullptr)
-#ifdef MAXTIME
-    ,mMaxTime(std::time(0) + MAXTIME)
-#endif
-    , mPreprocessor(nullptr)
+    mTimerResults(nullptr),
+    mPreprocessor(nullptr)
 {
     // make sure settings are specified
     assert(mSettings);
@@ -614,6 +608,8 @@ void Tokenizer::simplifyTypedef()
     // Convert "using a::b;" to corresponding typedef statements
     simplifyUsingToTypedef();
 
+    const std::time_t maxTime = mSettings->typedefMaxTime > 0 ? std::time(nullptr) + mSettings->typedefMaxTime: 0;
+
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (mErrorLogger && !list.getFiles().empty())
             mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
@@ -621,8 +617,20 @@ void Tokenizer::simplifyTypedef()
         if (Settings::terminated())
             return;
 
-        if (isMaxTime())
+        if (maxTime > 0 && std::time(nullptr) > maxTime) {
+            if (mSettings->debugwarnings) {
+                ErrorMessage::FileLocation loc;
+                loc.setfile(list.getFiles()[0]);
+                ErrorMessage errmsg({std::move(loc)},
+                                    emptyString,
+                                    Severity::debug,
+                                    "Typedef simplification instantation maximum time exceeded",
+                                    "typedefMaxTime",
+                                    Certainty::normal);
+                mErrorLogger->reportErr(errmsg);
+            }
             return;
+        }
 
         if (goback) {
             //jump back once, see the comment at the end of the function
@@ -1879,7 +1887,7 @@ namespace {
         }
 
         bool hasChild(const std::string &childName) const {
-            return std::any_of(children.begin(), children.end(), [&](const ScopeInfo3& child) {
+            return std::any_of(children.cbegin(), children.cend(), [&](const ScopeInfo3& child) {
                 return child.name == childName;
             });
         }
@@ -1901,7 +1909,7 @@ namespace {
             const ScopeInfo3 * tempScope = this;
             while (tempScope) {
                 // check children
-                auto it = std::find_if(tempScope->children.begin(), tempScope->children.end(), [&](const ScopeInfo3& child) {
+                auto it = std::find_if(tempScope->children.cbegin(), tempScope->children.cend(), [&](const ScopeInfo3& child) {
                     return &child != this && child.type == Record && (child.name == scope || child.fullName == scope);
                 });
                 if (it != tempScope->children.end())
@@ -2189,7 +2197,7 @@ namespace {
                         return true;
                 } else {
                     const std::string suffix = " :: " + qualification;
-                    if (std::any_of(usingNS.begin(), usingNS.end(), [&](const std::string& ns) {
+                    if (std::any_of(usingNS.cbegin(), usingNS.cend(), [&](const std::string& ns) {
                         return scope == ns + suffix;
                     }))
                         return true;
@@ -3461,12 +3469,9 @@ void Tokenizer::simplifyTemplates()
     if (isC())
         return;
 
+    const std::time_t maxTime = mSettings->templateMaxTime > 0 ? std::time(nullptr) + mSettings->templateMaxTime : 0;
     mTemplateSimplifier->simplifyTemplates(
-#ifdef MAXTIME
-        mMaxTime,
-#else
-        0, // ignored
-#endif
+        maxTime,
         mCodeWithTemplates);
 }
 //---------------------------------------------------------------------------
@@ -4242,11 +4247,11 @@ static std::string getScopeName(const std::list<ScopeInfo2> &scopeInfo)
 
 static Token * matchMemberName(const std::list<std::string> &scope, const Token *nsToken, Token *memberToken, const std::list<ScopeInfo2> &scopeInfo)
 {
-    std::list<ScopeInfo2>::const_iterator scopeIt = scopeInfo.begin();
+    std::list<ScopeInfo2>::const_iterator scopeIt = scopeInfo.cbegin();
 
     // Current scope..
-    for (std::list<std::string>::const_iterator it = scope.begin(); it != scope.end(); ++it) {
-        if (scopeIt == scopeInfo.end() || scopeIt->name != *it)
+    for (std::list<std::string>::const_iterator it = scope.cbegin(); it != scope.cend(); ++it) {
+        if (scopeIt == scopeInfo.cend() || scopeIt->name != *it)
             return nullptr;
         ++scopeIt;
     }
@@ -4450,7 +4455,7 @@ void Tokenizer::setVarIdPass2()
                     scopeName3.erase(pos + 4);
                 }
                 const std::map<std::string, nonneg int>& baseClassVars = varsByClass[baseClassName];
-                thisClassVars.insert(baseClassVars.begin(), baseClassVars.end());
+                thisClassVars.insert(baseClassVars.cbegin(), baseClassVars.cend());
             }
             tokStart = tokStart->next();
         }
@@ -4458,7 +4463,7 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // What member variables are there in this class?
-        std::transform(classnameTokens.begin(), classnameTokens.end(), std::back_inserter(scopeInfo), [&](const Token* tok) {
+        std::transform(classnameTokens.cbegin(), classnameTokens.cend(), std::back_inserter(scopeInfo), [&](const Token* tok) {
             return ScopeInfo2(tok->str(), tokStart->link());
         });
 
@@ -9551,7 +9556,7 @@ void Tokenizer::printUnknownTypes() const
         std::string last;
         int count = 0;
 
-        for (auto it = unknowns.begin(); it != unknowns.end(); ++it) {
+        for (auto it = unknowns.cbegin(); it != unknowns.cend(); ++it) {
             // skip types is std namespace because they are not interesting
             if (it->first.find("std::") != 0) {
                 if (it->first != last) {
@@ -9850,7 +9855,7 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
     if (!mPreprocessor)
         return false;
-    return std::any_of(mPreprocessor->getDirectives().begin(), mPreprocessor->getDirectives().end(), [&](const Directive& d) {
+    return std::any_of(mPreprocessor->getDirectives().cbegin(), mPreprocessor->getDirectives().cend(), [&](const Directive& d) {
         return d.str.compare(0, 3, "#if") == 0 &&
         d.linenr >= start->linenr() &&
         d.linenr <= end->linenr() &&
