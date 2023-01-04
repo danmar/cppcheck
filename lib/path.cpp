@@ -253,6 +253,7 @@ Standards::Language Path::identify(const std::string &path, bool *header)
         return Standards::Language::CPP;
     if (c_src_exts.find(ext) != c_src_exts.end())
         return Standards::Language::C;
+    // cppcheck-suppress knownConditionTrueFalse - TODO: FP
     if (!caseInsensitiveFilesystem())
         strTolower(ext);
     if (ext == ".h") {
