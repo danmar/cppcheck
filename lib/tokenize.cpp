@@ -4156,7 +4156,7 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
     it->second = ++mVarId;
 }
 
-static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap, bool executableScope, bool cpp, bool c)
+static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap, bool executableScope)
 {
     const Token* const tok1 = *tok;
     Token* tok2 = *tok;
@@ -4174,14 +4174,14 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
                 tok2 = tok2->linkAt(1)->next();
                 continue;
             }
-            if (cpp && Token::Match(tok2, "namespace|public|private|protected"))
+            if (tok2->isCpp() && Token::Match(tok2, "namespace|public|private|protected"))
                 return false;
-            if (cpp && Token::simpleMatch(tok2, "decltype (")) {
+            if (tok2->isCpp() && Token::simpleMatch(tok2, "decltype (")) {
                 typeCount = 1;
                 tok2 = tok2->linkAt(1)->next();
                 continue;
             }
-            if (Token::Match(tok2, "struct|union|enum") || (!c && Token::Match(tok2, "class|typename"))) {
+            if (Token::Match(tok2, "struct|union|enum") || (tok2->isCpp() && Token::Match(tok2, "class|typename"))) {
                 hasstruct = true;
                 typeCount = 0;
                 singleNameCount = 0;
@@ -4197,8 +4197,8 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
                     ++typeCount;
                 ++singleNameCount;
             }
-        } else if (!c && ((TemplateSimplifier::templateParameters(tok2) > 0) ||
-                          Token::simpleMatch(tok2, "< >") /* Ticket #4764 */)) {
+        } else if (tok2->isCpp() && ((TemplateSimplifier::templateParameters(tok2) > 0) ||
+                                     Token::simpleMatch(tok2, "< >") /* Ticket #4764 */)) {
             const Token *start = *tok;
             if (Token::Match(start->previous(), "%or%|%oror%|&&|&|^|+|-|*|/"))
                 return false;
@@ -4263,7 +4263,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
                 }
             }
 
-            if (cpp && tok3 && Token::simpleMatch(tok3->previous(), "] (") &&
+            if (tok3 && tok3->isCpp() && Token::simpleMatch(tok3->previous(), "] (") &&
                 (Token::simpleMatch(tok3->link(), ") {") || Token::Match(tok3->link(), ") . %name%")))
                 isLambdaArg = true;
         }
@@ -4683,7 +4683,7 @@ void Tokenizer::setVarIdPass1()
             }
 
             try { /* Ticket #8151 */
-                decl = setVarIdParseDeclaration(&tok2, variableMap, scopeStack.top().isExecutable, isCPP(), isC());
+                decl = setVarIdParseDeclaration(&tok2, variableMap, scopeStack.top().isExecutable);
             } catch (const Token * errTok) {
                 syntaxError(errTok);
             }

@@ -2812,6 +2812,14 @@ private:
     }
 
     void varid_header() {
+        ASSERT_EQUALS("1: class A@1 ;\n"
+                      "2: struct B {\n"
+                      "3: void setData ( const A@1 & a ) ;\n"
+                      "4: } ;\n",
+                      tokenize("class A;\n"
+                               "struct B {\n"
+                               "    void setData(const A & a);\n"
+                               "}; ", "test.h"));
         ASSERT_EQUALS("1: class A ;\n"
                       "2: struct B {\n"
                       "3: void setData ( const A & a@1 ) ;\n"
@@ -2819,7 +2827,15 @@ private:
                       tokenize("class A;\n"
                                "struct B {\n"
                                "    void setData(const A & a);\n"
-                               "}; ", "test.h"));
+                               "}; ", "test.hpp"));
+        ASSERT_EQUALS("1: void f ( )\n"
+                      "2: {\n"
+                      "3: int class@1 ;\n"
+                      "4: }\n",
+                      tokenize("void f()\n"
+                               "{\n"
+                               "    int class;\n"
+                               "}", "test.h"));
     }
 
     void varid_rangeBasedFor() {
