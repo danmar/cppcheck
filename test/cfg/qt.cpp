@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <QCoreApplication>
 #include <QLoggingCategory>
-#include <QTest>
+#include <QtTest>
 
 
 void QString1(QString s)
