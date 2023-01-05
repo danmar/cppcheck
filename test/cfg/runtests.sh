@@ -33,7 +33,7 @@ CC_OPT='-Wno-format -Wno-stringop-overread -Wno-nonnull -Wno-implicit-function-d
 
 function get_pkg_config_cflags {
     set +e
-    PKGCONFIG=$(pkg-config --cflags $*)
+    PKGCONFIG=$(pkg-config --cflags "$*")
     PKGCONFIG_RETURNCODE=$?
     set -e
     if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
