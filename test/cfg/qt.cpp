@@ -412,6 +412,13 @@ void MacroTest2_test()
 #endif
 }
 
+void MacroTest3()
+{
+    QByteArray message = QByteArrayLiteral("Test1");
+    message += QByteArrayLiteral("Test2");
+    QVERIFY2(2 >= 0, message.constData());
+}
+
 void validCode(int * pIntPtr, QString & qstrArg)
 {
     if (QFile::exists("test")) {}
