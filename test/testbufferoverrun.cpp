@@ -1914,14 +1914,15 @@ private:
     }
 
     // #11461
-    void array_index_71() {
+    void array_index_71()
+    {
         check("unsigned int f(unsigned int Idx) {\n"
-"  if (Idx < 64)\n"
-"    return 0;\n"
-"  Idx -= 64;\n"
-"  int arr[64] = { 0 };\n"
-"  return arr[Idx];\n"
-"}\n");
+              "  if (Idx < 64)\n"
+              "    return 0;\n"
+              "  Idx -= 64;\n"
+              "  int arr[64] = { 0 };\n"
+              "  return arr[Idx];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
