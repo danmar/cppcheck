@@ -9197,6 +9197,9 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& s
         return {};
     if (size.bound == ValueFlow::Value::Bound::Lower)
         return {};
+    // Checking for underflow doesnt mean it could be out of bounds
+    if (indexValue->intvalue == 0)
+        return {};
     ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);
     if (!value.isKnown())
         return {};
