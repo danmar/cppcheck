@@ -2495,21 +2495,6 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
                 "Possible dereference of an invalid iterator: $symbol. Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, Certainty::normal);
 }
 
-void CheckStl::readingEmptyStlContainerError(const Token *tok, const ValueFlow::Value *value)
-{
-    const std::string varname = tok ? tok->str() : std::string("var");
-
-    std::string errmsg;
-    if (value && value->condition)
-        errmsg = "Reading from container '$symbol'. " + ValueFlow::eitherTheConditionIsRedundant(value->condition) + " or '$symbol' can be empty.";
-    else
-        errmsg = "Reading from empty STL container '$symbol'";
-
-    const ErrorPath errorPath = getErrorPath(tok, value, "Reading from empty container");
-
-    reportError(errorPath, value ? (value->errorSeverity() ? Severity::error : Severity::warning) : Severity::style, "reademptycontainer", "$symbol:" + varname +"\n" + errmsg, CWE398, !value ? Certainty::inconclusive : Certainty::normal);
-}
-
 void CheckStl::useStlAlgorithmError(const Token *tok, const std::string &algoName)
 {
     reportError(tok, Severity::style, "useStlAlgorithm",

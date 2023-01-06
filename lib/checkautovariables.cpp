@@ -330,21 +330,6 @@ bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inc
 
 //---------------------------------------------------------------------------
 
-void CheckAutoVariables::errorReturnAddressToAutoVariable(const Token *tok)
-{
-    reportError(tok, Severity::error, "returnAddressOfAutoVariable", "Address of an auto-variable returned.", CWE562, Certainty::normal);
-}
-
-void CheckAutoVariables::errorReturnAddressToAutoVariable(const Token *tok, const ValueFlow::Value *value)
-{
-    reportError(tok, Severity::error, "returnAddressOfAutoVariable", "Address of auto-variable '" + value->tokvalue->astOperand1()->expressionString() + "' returned", CWE562, Certainty::normal);
-}
-
-void CheckAutoVariables::errorReturnPointerToLocalArray(const Token *tok)
-{
-    reportError(tok, Severity::error, "returnLocalVariable", "Pointer to local array variable returned.", CWE562, Certainty::normal);
-}
-
 void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inconclusive)
 {
     if (!inconclusive) {
@@ -364,16 +349,6 @@ void CheckAutoVariables::errorAutoVariableAssignment(const Token *tok, bool inco
                     CWE562,
                     Certainty::inconclusive);
     }
-}
-
-void CheckAutoVariables::errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname)
-{
-    reportError(tok, Severity::error, "returnAddressOfFunctionParameter",
-                "$symbol:" + varname + "\n"
-                "Address of function parameter '$symbol' returned.\n"
-                "Address of the function parameter '$symbol' becomes invalid after the function exits because "
-                "function parameters are stored on the stack which is freed when the function exits. Thus the returned "
-                "value is invalid.", CWE562, Certainty::normal);
 }
 
 void CheckAutoVariables::errorUselessAssignmentArg(const Token *tok)
