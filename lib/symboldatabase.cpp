@@ -6131,12 +6131,8 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                     vt.constness &= ~(1 << vt.pointer);
                 if (autoTok->strAt(1) == "*" && vt.pointer)
                     vt.pointer--;
-                if (Token::Match(autoTok->tokAt(-1), "const|constexpr")) {
-                    if (vt.pointer)
-                        vt.constness |= (1 << vt.pointer);
-                    else
-                        vt.constness |= 1;
-                }
+                if (Token::Match(autoTok->tokAt(-1), "const|constexpr"))
+                    vt.constness |= (1 << vt.pointer);
                 setValueType(autoTok, vt);
                 setAutoTokenProperties(autoTok);
                 if (vt2->pointer > vt.pointer)
@@ -6344,12 +6340,8 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 ValueType varvt(autovt);
                 if (autoToken->strAt(1) == "*" && autovt.pointer)
                     autovt.pointer--;
-                if (isconst) {
-                    if (autovt.pointer)
-                        varvt.constness |= (1 << autovt.pointer);
-                    else
-                        varvt.constness |= 1;
-                }
+                if (isconst)
+                    varvt.constness |= (1 << autovt.pointer);
                 setValueType(parent->previous(), varvt);
                 Variable * var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {
