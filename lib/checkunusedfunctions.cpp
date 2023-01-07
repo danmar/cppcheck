@@ -214,7 +214,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             funcname = tok->next();
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
-        } else if (Token::Match(tok, "[;{}.,()[=+-/|!?:]")) {
+        } else if (tok->scope()->type != Scope::ScopeType::eEnum && Token::Match(tok, "[;{}.,()[=+-/|!?:]")) {
             funcname = tok->next();
             if (funcname && funcname->str() == "&")
                 funcname = funcname->next();
