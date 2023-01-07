@@ -96,7 +96,6 @@ private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckString c(nullptr, settings, errorLogger);
-
         c.stringLiteralWriteError(nullptr, nullptr);
         c.sprintfOverlappingDataError(nullptr, nullptr, "varname");
         c.strPlusCharError(nullptr);

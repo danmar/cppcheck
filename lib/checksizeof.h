@@ -103,7 +103,6 @@ private:
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckSizeof c(nullptr, settings, errorLogger);
-
         c.sizeofForArrayParameterError(nullptr);
         c.sizeofForPointerError(nullptr, "varname");
         c.divideBySizeofError(nullptr, "memset");
