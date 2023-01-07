@@ -311,8 +311,7 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
         if (func.usedOtherFile || func.filename.empty())
             continue;
         if (it->first == "main" ||
-            (settings.isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")) ||
-            it->first == "if")
+            (settings.isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")))
             continue;
         if (!func.usedSameFile) {
             if (isOperatorFunction(it->first))
