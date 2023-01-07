@@ -68,7 +68,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
     // Function declarations..
     for (const Scope* scope : symbolDatabase->functionScopes) {
         const Function* func = scope->function;
-        if (!func || !func->token || scope->bodyStart->fileIndex() != 0)
+        if (!func || !func->token)
             continue;
 
         // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
