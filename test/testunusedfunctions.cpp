@@ -61,6 +61,7 @@ private:
         TEST_CASE(initializer_list);
         TEST_CASE(member_function_ternary);
         TEST_CASE(boost);
+        TEST_CASE(enumValues);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -440,6 +441,18 @@ private:
               "{}\n"
               "parse(line, blanks_p >> ident[&_xy] >> blanks_p >> eol_p).full");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enumValues() { // #11486
+        check("enum E1 { Break1 };\n"
+              "struct S {\n"
+              "    enum class E { Break };\n"
+              "    void Break() {}\n"
+              "    void Break1() {}\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Break' is never used.\n"
+                      "[test.cpp:5]: (style) The function 'Break1' is never used.\n",
+                      errout.str());
     }
 
     void multipleFiles() {
