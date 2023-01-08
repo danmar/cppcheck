@@ -75,6 +75,7 @@ public:
     /**
      * Return if help is shown to user.
      */
+     // cppcheck-suppress unusedFunction - only used in unit tests
     bool getShowHelp() const {
         return mShowHelp;
     }

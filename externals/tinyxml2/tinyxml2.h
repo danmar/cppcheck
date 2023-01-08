@@ -1141,16 +1141,6 @@ public:
         return _next;
     }
 
-    /** IntValue interprets the attribute as an integer, and returns the value.
-        If the value isn't an integer, 0 will be returned. There is no error checking;
-    	use QueryIntValue() if you need error checking.
-    */
-	int	IntValue() const {
-		int i = 0;
-		QueryIntValue(&i);
-		return i;
-	}
-
 	int64_t Int64Value() const {
 		int64_t i = 0;
 		QueryInt64Value(&i);

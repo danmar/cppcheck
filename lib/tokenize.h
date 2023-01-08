@@ -621,12 +621,6 @@ private:
 
 public:
 
-    /** Was there templates in the code? */
-    bool codeWithTemplates() const {
-        return mCodeWithTemplates;
-    }
-
-
     void setSettings(const Settings *settings) {
         mSettings = settings;
         list.setSettings(settings);

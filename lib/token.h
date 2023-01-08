@@ -460,12 +460,6 @@ public:
     void isSigned(const bool sign) {
         setFlag(fIsSigned, sign);
     }
-    bool isPointerCompare() const {
-        return getFlag(fIsPointerCompare);
-    }
-    void isPointerCompare(const bool b) {
-        setFlag(fIsPointerCompare, b);
-    }
     bool isLong() const {
         return getFlag(fIsLong);
     }
@@ -561,9 +555,6 @@ public:
     }
     bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const {
         return mImpl->getCppcheckAttribute(type, value);
-    }
-    bool hasCppcheckAttributes() const {
-        return nullptr != mImpl->mCppcheckAttributes;
     }
     bool isControlFlowKeyword() const {
         return getFlag(fIsControlFlowKeyword);
@@ -690,9 +681,6 @@ public:
         setFlag(fIsFinalType, b);
     }
 
-    bool isBitfield() const {
-        return mImpl->mBits > 0;
-    }
     unsigned char bits() const {
         return mImpl->mBits;
     }
@@ -936,6 +924,7 @@ public:
             options.files = true;
             return options;
         }
+        // cppcheck-suppress unusedFunction - only used in unit tests
         static stringifyOptions forDebugVarId() {
             stringifyOptions options = forDebug();
             options.varid = true;
@@ -1264,7 +1253,7 @@ private:
     enum : uint64_t {
         fIsUnsigned             = (1 << 0),
         fIsSigned               = (1 << 1),
-        fIsPointerCompare       = (1 << 2),
+
         fIsLong                 = (1 << 3),
         fIsStandardType         = (1 << 4),
         fIsExpandedMacro        = (1 << 5),

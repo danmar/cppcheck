@@ -113,6 +113,7 @@ public:
     }
 
     /** get allocation id for function by name (deprecated, use other alloc) */
+    // cppcheck-suppress unusedFunction - only used in unit tests
     int allocId(const char name[]) const {
         const AllocFunc* af = getAllocDealloc(mAlloc, name);
         return af ? af->groupId : 0;
@@ -125,16 +126,19 @@ public:
     }
 
     /** set allocation id for function */
+    // cppcheck-suppress unusedFunction - only used in unit tests
     void setalloc(const std::string &functionname, int id, int arg) {
         mAlloc[functionname].groupId = id;
         mAlloc[functionname].arg = arg;
     }
 
+    // cppcheck-suppress unusedFunction - only used in unit tests
     void setdealloc(const std::string &functionname, int id, int arg) {
         mDealloc[functionname].groupId = id;
         mDealloc[functionname].arg = arg;
     }
 
+    // cppcheck-suppress unusedFunction - only used in unit tests
     void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
         mRealloc[functionname].groupId = id;
         mRealloc[functionname].arg = arg;
@@ -142,6 +146,7 @@ public:
     }
 
     /** add noreturn function setting */
+    // cppcheck-suppress unusedFunction - only used in unit tests
     void setnoreturn(const std::string& funcname, bool noreturn) {
         mNoReturn[funcname] = noreturn ? FalseTrueMaybe::True : FalseTrueMaybe::False;
     }
