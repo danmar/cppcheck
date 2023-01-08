@@ -98,7 +98,7 @@ private:
         ret.errorId = errorId;
         ret.hash = 0;
         ret.lineNumber = 0;
-        ret.certainty = Certainty::CertaintyLevel::normal;
+        ret.certainty = Certainty::normal;
         return ret;
     }
 

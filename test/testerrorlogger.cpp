@@ -254,7 +254,7 @@ private:
         ASSERT_EQUALS("errorId", msg.id);
         ASSERT_EQUALS(Severity::error, msg.severity);
         ASSERT_EQUALS(123u, msg.cwe.id);
-        ASSERT_EQUALS(Certainty::inconclusive, msg.certainty);
+        ASSERT_EQUALS(static_cast<int>(Certainty::inconclusive), static_cast<int>(msg.certainty));
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS(456u, msg.hash);
@@ -303,7 +303,7 @@ private:
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
         ASSERT_EQUALS("test.cpp", msg2.file0);
-        ASSERT_EQUALS(Certainty::inconclusive, msg2.certainty);
+        ASSERT_EQUALS(static_cast<int>(Certainty::inconclusive), static_cast<int>(msg2.certainty));
         ASSERT_EQUALS("Programming error", msg2.shortMessage());
         ASSERT_EQUALS("Programming error", msg2.verboseMessage());
     }
