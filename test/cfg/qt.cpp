@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <QCoreApplication>
 #include <QLoggingCategory>
+#include <QTest>
 
 
 void QString1(QString s)
@@ -410,6 +411,13 @@ void MacroTest2_test()
     ba = str.toLatin1();
     printf(ba.data());
 #endif
+}
+
+void MacroTest3()
+{
+    QByteArray message = QByteArrayLiteral("Test1");
+    message += QByteArrayLiteral("Test2");
+    QVERIFY2(2 >= 0, message.constData());
 }
 
 void validCode(int * pIntPtr, QString & qstrArg)

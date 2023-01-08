@@ -154,7 +154,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         return No;
 
     // Prevent recursion
-    if (callstack && std::find(callstack->begin(), callstack->end(), func) != callstack->end())
+    if (callstack && std::find(callstack->cbegin(), callstack->cend(), func) != callstack->cend())
         return No;
 
     std::list<const Function*> cs;
@@ -338,19 +338,9 @@ void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &var
     reportErr(tok, Severity::error, "resourceLeak", errmsg, CWE(775U));
 }
 
-void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname) const
-{
-    reportErr(tok, Severity::error, "deallocDealloc", "$symbol:" + varname + "\nDeallocating a deallocated pointer: $symbol", CWE(415U));
-}
-
 void CheckMemoryLeak::deallocuseError(const Token *tok, const std::string &varname) const
 {
     reportErr(tok, Severity::error, "deallocuse", "$symbol:" + varname + "\nDereferencing '$symbol' after it is deallocated / released", CWE(416U));
-}
-
-void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz) const
-{
-    reportErr(tok, Severity::error, "mismatchSize", "The allocated size " + sz + " is not a multiple of the underlying type's size.", CWE(131U));
 }
 
 void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname) const

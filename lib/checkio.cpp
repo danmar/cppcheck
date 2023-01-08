@@ -497,8 +497,8 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
         *formatArgTok = argTok->nextArgument();
         if (!argTok->values().empty()) {
             const std::list<ValueFlow::Value>::const_iterator value = std::find_if(
-                argTok->values().begin(), argTok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
-            if (value != argTok->values().end() && value->isTokValue() && value->tokvalue &&
+                argTok->values().cbegin(), argTok->values().cend(), std::mem_fn(&ValueFlow::Value::isTokValue));
+            if (value != argTok->values().cend() && value->isTokValue() && value->tokvalue &&
                 value->tokvalue->tokType() == Token::eString) {
                 *formatStringTok = value->tokvalue;
             }
@@ -604,7 +604,7 @@ void CheckIO::checkFormatString(const Token * const tok,
         if (*i == '%') {
             percent = !percent;
         } else if (percent && *i == '[') {
-            while (i != formatString.end()) {
+            while (i != formatString.cend()) {
                 if (*i == ']') {
                     numFormat++;
                     if (argListTok)
@@ -620,7 +620,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                     argListTok = argListTok->nextArgument();
                 }
             }
-            if (i == formatString.end())
+            if (i == formatString.cend())
                 break;
         } else if (percent) {
             percent = false;
@@ -630,7 +630,7 @@ void CheckIO::checkFormatString(const Token * const tok,
             std::string width;
             int parameterPosition = 0;
             bool hasParameterPosition = false;
-            while (i != formatString.end() && *i != '[' && !std::isalpha((unsigned char)*i)) {
+            while (i != formatString.cend() && *i != '[' && !std::isalpha((unsigned char)*i)) {
                 if (*i == '*') {
                     skip = true;
                     if (scan)
@@ -649,10 +649,10 @@ void CheckIO::checkFormatString(const Token * const tok,
                 }
                 ++i;
             }
-            auto bracketBeg = formatString.end();
-            if (i != formatString.end() && *i == '[') {
+            auto bracketBeg = formatString.cend();
+            if (i != formatString.cend() && *i == '[') {
                 bracketBeg = i;
-                while (i != formatString.end()) {
+                while (i != formatString.cend()) {
                     if (*i == ']')
                         break;
 
@@ -665,7 +665,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                     }
                 }
             }
-            if (i == formatString.end())
+            if (i == formatString.cend())
                 break;
             if (_continue)
                 continue;
@@ -923,13 +923,13 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 done = true;
                                 break;
                             case 'I':
-                                if ((i+1 != formatString.end() && *(i+1) == '6' &&
-                                     i+2 != formatString.end() && *(i+2) == '4') ||
-                                    (i+1 != formatString.end() && *(i+1) == '3' &&
-                                     i+2 != formatString.end() && *(i+2) == '2')) {
+                                if ((i+1 != formatString.cend() && *(i+1) == '6' &&
+                                     i+2 != formatString.cend() && *(i+2) == '4') ||
+                                    (i+1 != formatString.cend() && *(i+1) == '3' &&
+                                     i+2 != formatString.cend() && *(i+2) == '2')) {
                                     specifier += *i++;
                                     specifier += *i++;
-                                    if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
+                                    if ((i+1) != formatString.cend() && !isalpha(*(i+1))) {
                                         specifier += *i;
                                         invalidLengthModifierError(tok, numFormat, specifier);
                                         done = true;
@@ -937,7 +937,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                         specifier += *i++;
                                     }
                                 } else {
-                                    if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
+                                    if ((i+1) != formatString.cend() && !isalpha(*(i+1))) {
                                         specifier += *i;
                                         invalidLengthModifierError(tok, numFormat, specifier);
                                         done = true;
@@ -948,7 +948,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 break;
                             case 'h':
                             case 'l':
-                                if (i+1 != formatString.end() && *(i+1) == *i)
+                                if (i+1 != formatString.cend() && *(i+1) == *i)
                                     specifier += *i++;
                                 FALLTHROUGH;
                             case 'j':

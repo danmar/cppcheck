@@ -107,7 +107,7 @@ private:
         ASSERT(tokenizer.tokenize(sample, "test.cpp"));
 
         const SymbolDatabase* sd = tokenizer.getSymbolDatabase();
-        const Scope& scope = *std::next(sd->scopeList.begin(), 3); //The scope of the if block
+        const Scope& scope = *std::next(sd->scopeList.cbegin(), 3); //The scope of the if block
 
         std::ostringstream contents;
         for (const Token* t : ConstTokenRange{ scope.bodyStart->next(), scope.bodyEnd }) {

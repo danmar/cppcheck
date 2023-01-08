@@ -16,7 +16,8 @@ endif()
 if (CPPCHK_GLIBCXX_DEBUG AND UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         if (USE_LIBCXX)
-            add_definitions(-DLIBCXX_ENABLE_DEBUG_MODE)
+            add_definitions(-D_LIBCPP_ENABLE_ASSERTIONS=1)
+            # TODO: also add _LIBCPP_ENABLE_THREAD_SAFETY_ANNOTATIONS?
         endif()
     else()
         # TODO: check if this can be enabled again for Clang - also done in Makefile

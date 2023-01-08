@@ -56,7 +56,6 @@ static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
 static const CWE CWE170(170U);  // Improper Null Termination
 static const CWE CWE_ARGUMENT_SIZE(398U);  // Indicator of Poor Code Quality
 static const CWE CWE_ARRAY_INDEX_THEN_CHECK(398U);  // Indicator of Poor Code Quality
-static const CWE CWE682(682U);  // Incorrect Calculation
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE_POINTER_ARITHMETIC_OVERFLOW(758U); // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE_BUFFER_UNDERRUN(786U);  // Access of Memory Location Before Start of Buffer
@@ -67,8 +66,8 @@ static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After 
 static const ValueFlow::Value *getBufferSizeValue(const Token *tok)
 {
     const std::list<ValueFlow::Value> &tokenValues = tok->values();
-    const auto it = std::find_if(tokenValues.begin(), tokenValues.end(), std::mem_fn(&ValueFlow::Value::isBufferSizeValue));
-    return it == tokenValues.end() ? nullptr : &*it;
+    const auto it = std::find_if(tokenValues.cbegin(), tokenValues.cend(), std::mem_fn(&ValueFlow::Value::isBufferSizeValue));
+    return it == tokenValues.cend() ? nullptr : &*it;
 }
 
 static int getMinFormatStringOutputLength(const std::vector<const Token*> &parameters, nonneg int formatStringArgNr)
@@ -385,7 +384,7 @@ static std::string arrayIndexMessage(const Token* tok,
     auto add_dim = [](const std::string &s, const Dimension &dim) {
         return s + "[" + MathLib::toString(dim.num) + "]";
     };
-    const std::string array = std::accumulate(dimensions.begin(), dimensions.end(), tok->astOperand1()->expressionString(), add_dim);
+    const std::string array = std::accumulate(dimensions.cbegin(), dimensions.cend(), tok->astOperand1()->expressionString(), add_dim);
 
     std::ostringstream errmsg;
     if (condition)
@@ -557,7 +556,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     if (!var)
         return ValueFlow::Value(-1);
 
-    const MathLib::bigint dim = std::accumulate(var->dimensions().begin(), var->dimensions().end(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
+    const MathLib::bigint dim = std::accumulate(var->dimensions().cbegin(), var->dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
         return i1 * dim.num;
     });
 
@@ -762,7 +761,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
                 continue;
             if (Token::simpleMatch(args[1], "(") && Token::simpleMatch(args[1]->astOperand1(), ". c_str") && args[1]->astOperand1()->astOperand1()) {
                 const std::list<ValueFlow::Value>& contValues = args[1]->astOperand1()->astOperand1()->values();
-                auto it = std::find_if(contValues.begin(), contValues.end(), [](const ValueFlow::Value& value) {
+                auto it = std::find_if(contValues.cbegin(), contValues.cend(), [](const ValueFlow::Value& value) {
                     return value.isContainerSizeValue() && !value.isImpossible();
                 });
                 if (it != contValues.end() && it->intvalue < sizeToken->getKnownIntValue())
@@ -1063,15 +1062,15 @@ void CheckBufferOverrun::objectIndex()
                 }
                 if (v.path != 0) {
                     std::vector<ValueFlow::Value> idxValues;
-                    std::copy_if(idx->values().begin(),
-                                 idx->values().end(),
+                    std::copy_if(idx->values().cbegin(),
+                                 idx->values().cend(),
                                  std::back_inserter(idxValues),
                                  [&](const ValueFlow::Value& vidx) {
                         if (!vidx.isIntValue())
                             return false;
                         return vidx.path == v.path || vidx.path == 0;
                     });
-                    if (std::any_of(idxValues.begin(), idxValues.end(), [&](const ValueFlow::Value& vidx) {
+                    if (std::any_of(idxValues.cbegin(), idxValues.cend(), [&](const ValueFlow::Value& vidx) {
                         if (vidx.isImpossible())
                             return (vidx.intvalue == 0);
                         else

@@ -54,11 +54,11 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
         known = true;
         return std::make_pair(tok->values().front().intvalue, !tok->values().front().intvalue);
     }
-    auto it = std::find_if(tok->values().begin(), tok->values().end(), [](const ValueFlow::Value& v) {
+    auto it = std::find_if(tok->values().cbegin(), tok->values().cend(), [](const ValueFlow::Value& v) {
         return v.isIntValue();
     });
     // If all possible values are the same, then assume all paths have the same value
-    if (it != tok->values().end() && std::all_of(it, tok->values().end(), [&](const ValueFlow::Value& v) {
+    if (it != tok->values().cend() && std::all_of(it, tok->values().cend(), [&](const ValueFlow::Value& v) {
         if (v.isIntValue())
             return v.intvalue == it->intvalue;
         return true;
@@ -191,6 +191,6 @@ bool reaches(const Token * start, const Token * dest, const Library& library, Er
     if (!info.tok)
         return false;
     if (errorPath)
-        errorPath->insert(errorPath->end(), info.errorPath.begin(), info.errorPath.end());
+        errorPath->insert(errorPath->end(), info.errorPath.cbegin(), info.errorPath.cend());
     return true;
 }

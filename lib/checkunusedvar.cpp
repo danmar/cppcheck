@@ -233,7 +233,7 @@ void Variables::clearAliases(nonneg int varid)
         // remove usage from all aliases
         std::set<nonneg int>::const_iterator i;
 
-        for (i = usage->_aliases.begin(); i != usage->_aliases.end(); ++i) {
+        for (i = usage->_aliases.cbegin(); i != usage->_aliases.cend(); ++i) {
             VariableUsage *temp = find(*i);
 
             if (temp)
@@ -776,7 +776,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         tok = scope->classDef->next();
     for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok != scope->bodyStart && !tok->previous()->varId()) {
-            if (std::any_of(scope->nestedList.begin(), scope->nestedList.end(), [&](const Scope* s) {
+            if (std::any_of(scope->nestedList.cbegin(), scope->nestedList.cend(), [&](const Scope* s) {
                 return s->bodyStart == tok;
             })) {
                 checkFunctionVariableUsage_iterateScopes(tok->scope(), variables); // Scan child scope
@@ -1423,7 +1423,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
         if (const Preprocessor *preprocessor = mTokenizer->getPreprocessor()) {
             const auto& directives = preprocessor->getDirectives();
-            const bool isPacked = std::any_of(directives.begin(), directives.end(), [&](const Directive& d) {
+            const bool isPacked = std::any_of(directives.cbegin(), directives.cend(), [&](const Directive& d) {
                 return d.linenr < scope.bodyStart->linenr() && d.str == "#pragma pack(1)" && d.file == mTokenizer->list.getFiles().front();
             });
             if (isPacked)
@@ -1439,9 +1439,9 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // bail out if struct is inherited
-        bool bailout = std::any_of(symbolDatabase->scopeList.begin(), symbolDatabase->scopeList.end(), [&](const Scope& derivedScope) {
+        bool bailout = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) {
             const Type* dType = derivedScope.definedType;
-            return dType && std::any_of(dType->derivedFrom.begin(), dType->derivedFrom.end(), [&](const Type::BaseInfo& derivedFrom) {
+            return dType && std::any_of(dType->derivedFrom.cbegin(), dType->derivedFrom.cend(), [&](const Type::BaseInfo& derivedFrom) {
                 return derivedFrom.type == scope.definedType;
             });
         });
@@ -1581,7 +1581,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     }
 
     // Derived from type that has side effects?
-    if (std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [this](const Type::BaseInfo& derivedFrom) {
+    if (std::any_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [this](const Type::BaseInfo& derivedFrom) {
         return !isRecordTypeWithoutSideEffects(derivedFrom.type);
     }))
         return (withoutSideEffects = false);
@@ -1630,7 +1630,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 
     if (type && type->classScope && type->classScope->numConstructors == 0 &&
         (type->classScope->varlist.empty())) {
-        return (emptyType = std::all_of(type->derivedFrom.begin(), type->derivedFrom.end(), [this](const Type::BaseInfo& bi) {
+        return (emptyType = std::all_of(type->derivedFrom.cbegin(), type->derivedFrom.cend(), [this](const Type::BaseInfo& bi) {
             return isEmptyType(bi.type);
         }));
     }
@@ -1683,7 +1683,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         // check nested function
         const Function* bodyFunction = bodyToken->function();
         if (bodyFunction) {
-            if (std::find(checkedFuncs.begin(), checkedFuncs.end(), bodyFunction) != checkedFuncs.end()) { // recursion found
+            if (std::find(checkedFuncs.cbegin(), checkedFuncs.cend(), bodyFunction) != checkedFuncs.cend()) { // recursion found
                 continue;
             }
             checkedFuncs.push_back(bodyFunction);

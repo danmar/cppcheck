@@ -78,6 +78,7 @@ private:
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_return3);
         TEST_CASE(testautovar_return4);
+        TEST_CASE(testautovar_return5);
         TEST_CASE(testautovar_extern);
         TEST_CASE(testautovar_reassigned);
         TEST_CASE(testinvaliddealloc);
@@ -574,6 +575,14 @@ private:
               "  int cond2;\n"
               "  dostuff([&cond2]() { return &cond2; });\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar_return5() { // #11465
+        check("struct S {};\n"
+              "const std::type_info* f() {\n"
+              "    return &typeid(S);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1995,6 +2004,24 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:11] -> [test.cpp:2] -> [test.cpp:11] -> [test.cpp:12]: (error) Using reference to dangling temporary.\n",
             errout.str());
+
+        check("struct C {\n"
+              "  std::vector<std::vector<int>> v;\n"
+              "};\n"
+              "struct P {\n"
+              "  std::vector<C*>::const_iterator find() const { return pv.begin(); }\n"
+              "  std::vector<C*> pv;\n"
+              "};\n"
+              "struct M {\n"
+              "  const P* get() const { return p; }\n"
+              "  P* p;\n"
+              "};\n"
+              "void f(const M* m) {\n"
+              "  auto it = m->get()->find();\n"
+              "  auto e = (*it)->v.begin();\n"
+              "  const int& x = (*e)[1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
@@ -3740,6 +3767,16 @@ private:
               "   return value.get() == nullptr ? empty : *value;\n"
               "}\n",
               true);
+        ASSERT_EQUALS("", errout.str());
+
+        // #11472
+        check("namespace N {\n"
+              "    struct T { int m; };\n"
+              "    int i;\n"
+              "    const T& f(const T* p) {\n"
+              "        return p != nullptr ? *p : *reinterpret_cast<const ::N::T*>(&i);\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

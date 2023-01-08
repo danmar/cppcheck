@@ -125,6 +125,9 @@ public:
     /** Check for incomplete info in library files? */
     bool checkLibrary;
 
+    /** @brief The maximum time in seconds for the checks of a single file */
+    std::size_t checksMaxTime;
+
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
@@ -342,6 +345,12 @@ public:
      *  text mode, e.g. "{file}:{line} {info}" */
     std::string templateLocation;
 
+    /** @brief The maximum time in seconds for the template instantation */
+    std::size_t templateMaxTime;
+
+    /** @brief The maximum time in seconds for the typedef simplification */
+    std::size_t typedefMaxTime;
+
     /** @brief defines given by the user */
     std::string userDefines;
 
@@ -392,7 +401,7 @@ public:
 
     /** Is posix library specified? */
     bool posix() const {
-        return std::find(libraries.begin(), libraries.end(), "posix") != libraries.end();
+        return std::find(libraries.cbegin(), libraries.cend(), "posix") != libraries.cend();
     }
 
     /** @brief Request termination of checking */

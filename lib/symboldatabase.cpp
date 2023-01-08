@@ -929,7 +929,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                             if (var.isClass()) {
                                 if (var.type()) {
                                     // does this type need initialization?
-                                    if (var.type()->needInitialization == Type::NeedInitialization::True && !var.hasDefault())
+                                    if (var.type()->needInitialization == Type::NeedInitialization::True && !var.hasDefault() && !var.isStatic())
                                         needInitialization = true;
                                     else if (var.type()->needInitialization == Type::NeedInitialization::Unknown) {
                                         if (!(var.valueType() && var.valueType()->type == ValueType::CONTAINER))
@@ -1046,7 +1046,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
                 bool isEndOfScope = false;
                 for (Scope* innerScope: scope.nestedList) {
                     const auto &list = innerScope->bodyStartList;
-                    if (std::find(list.begin(), list.end(), tok) != list.end()) {     // Is begin of inner scope
+                    if (std::find(list.cbegin(), list.cend(), tok) != list.cend()) {     // Is begin of inner scope
                         tok = tok->link();
                         if (tok->next() == bodyEnd || !tok->next()) {
                             isEndOfScope = true;
@@ -1983,7 +1983,7 @@ void SymbolDatabase::debugSymbolDatabase() const
             ErrorPath errorPath;
             if (tok->valueType()) {
                 msg += tok->valueType()->str();
-                errorPath.insert(errorPath.end(), tok->valueType()->debugPath.begin(), tok->valueType()->debugPath.end());
+                errorPath.insert(errorPath.end(), tok->valueType()->debugPath.cbegin(), tok->valueType()->debugPath.cend());
 
             } else {
                 msg += "missing";
@@ -3434,7 +3434,7 @@ bool Type::hasCircularDependencies(std::set<BaseInfo>* ancestors) const
 
 bool Type::findDependency(const Type* ancestor) const
 {
-    return this == ancestor || std::any_of(derivedFrom.begin(), derivedFrom.end(), [&](const BaseInfo& d) {
+    return this == ancestor || std::any_of(derivedFrom.cbegin(), derivedFrom.cend(), [&](const BaseInfo& d) {
         return d.type && (d.type == this || d.type->findDependency(ancestor));
     });
 }
@@ -4073,7 +4073,7 @@ static const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
     if (!(Token::simpleMatch(tok, "{") && tok->link()))
         return nullptr;
     return tok->link()->next();
-};
+}
 
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
 {
@@ -5010,7 +5010,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
         // find start of qualified function name
         const Token *tok1 = typeTok;
 
-        while (Token::Match(tok1->tokAt(-2), "%type% ::") ||
+        while ((Token::Match(tok1->tokAt(-2), "%type% ::") && !tok1->tokAt(-2)->isKeyword()) ||
                (Token::simpleMatch(tok1->tokAt(-2), "> ::") && tok1->linkAt(-2) && Token::Match(tok1->linkAt(-2)->tokAt(-1), "%type%"))) {
             if (tok1->strAt(-1) == "::")
                 tok1 = tok1->tokAt(-2);
@@ -5146,7 +5146,7 @@ std::vector<const Scope*> Scope::findAssociatedScopes() const
                 if (contains(result, base->classScope))
                     continue;
                 std::vector<const Scope*> baseScopes = base->classScope->findAssociatedScopes();
-                result.insert(result.end(), baseScopes.begin(), baseScopes.end());
+                result.insert(result.end(), baseScopes.cbegin(), baseScopes.cend());
             }
         }
     }
@@ -5587,7 +5587,7 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
 
 const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 {
-    auto it = std::find_if(scopeList.begin(), scopeList.end(), [&](const Scope& s) {
+    auto it = std::find_if(scopeList.cbegin(), scopeList.cend(), [&](const Scope& s) {
         return s.className == name;
     });
     return it == scopeList.end() ? nullptr : &*it;
@@ -5650,7 +5650,7 @@ const Type* Scope::findType(const std::string & name) const
 
 Scope *Scope::findInNestedListRecursive(const std::string & name)
 {
-    auto it = std::find_if(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
+    auto it = std::find_if(nestedList.cbegin(), nestedList.cend(), [&](const Scope* s) {
         return s->className == name;
     });
     if (it != nestedList.end())
@@ -5668,7 +5668,7 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 const Function *Scope::getDestructor() const
 {
-    auto it = std::find_if(functionList.begin(), functionList.end(), [](const Function& f) {
+    auto it = std::find_if(functionList.cbegin(), functionList.cend(), [](const Function& f) {
         return f.type == Function::eDestructor;
     });
     return it == functionList.end() ? nullptr : &*it;

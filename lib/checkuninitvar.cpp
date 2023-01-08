@@ -51,7 +51,6 @@ namespace tinyxml2 {
 
 // CWE ids used:
 static const struct CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
-static const struct CWE CWE_USE_OF_POTENTIALLY_DANGEROUS_FUNCTION(676U);
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -451,7 +450,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 ;
             else if (astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
                 const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
-                if (it != variableValue.end() && it->second != 0)
+                if (it != variableValue.cend() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
                 else {
                     condVarId = condVarTok->varId();
@@ -467,7 +466,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     vartok = vartok->astOperand2();
                 if (vartok && vartok->varId() && numtok && numtok->hasKnownIntValue()) {
                     const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
-                    if (it != variableValue.end() && it->second != numtok->getKnownIntValue())
+                    if (it != variableValue.cend() && it->second != numtok->getKnownIntValue())
                         return true;   // this scope is not fully analysed => return true
                     condVarId = vartok->varId();
                     condVarValue = VariableValue(numtok->getKnownIntValue());
@@ -559,9 +558,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     if (initif || initelse || possibleInitElse)
                         ++number_of_if;
                     if (!initif && !noreturnIf)
-                        variableValue.insert(varValueIf.begin(), varValueIf.end());
+                        variableValue.insert(varValueIf.cbegin(), varValueIf.cend());
                     if (!initelse && !noreturnElse)
-                        variableValue.insert(varValueElse.begin(), varValueElse.end());
+                        variableValue.insert(varValueElse.cbegin(), varValueElse.cend());
                 }
             }
         }
@@ -1497,11 +1496,6 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
     return false;
 }
 
-void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname, bool strncpy_)
-{
-    reportError(tok, Severity::error, "uninitstring", "$symbol:" + varname + "\nDangerous usage of '$symbol'" + (strncpy_ ? " (strncpy doesn't always null-terminate it)." : " (not null-terminated)."), CWE_USE_OF_POTENTIALLY_DANGEROUS_FUNCTION, Certainty::normal);
-}
-
 void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::error, "uninitdata", "$symbol:" + varname + "\nMemory is allocated but not initialized: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
@@ -1604,8 +1598,8 @@ void CheckUninitVar::valueFlowUninit()
                 if (isVoidCast(parent))
                     continue;
                 auto v = std::find_if(
-                    tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isUninitValue));
-                if (v == tok->values().end())
+                    tok->values().cbegin(), tok->values().cend(), std::mem_fn(&ValueFlow::Value::isUninitValue));
+                if (v == tok->values().cend())
                     continue;
                 if (v->tokvalue && ids.count(v->tokvalue->exprId()) > 0)
                     continue;

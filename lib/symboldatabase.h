@@ -1079,7 +1079,7 @@ public:
     }
 
     const Enumerator * findEnumerator(const std::string & name) const {
-        auto it = std::find_if(enumeratorList.begin(), enumeratorList.end(), [&](const Enumerator& i) {
+        auto it = std::find_if(enumeratorList.cbegin(), enumeratorList.cend(), [&](const Enumerator& i) {
             return i.name->str() == name;
         });
         return it == enumeratorList.end() ? nullptr : &*it;

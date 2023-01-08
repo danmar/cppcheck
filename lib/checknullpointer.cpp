@@ -170,7 +170,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         if (ftok && ftok->previous()) {
             std::list<const Token *> varlist;
             parseFunctionCall(*ftok->previous(), varlist, &settings->library);
-            if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
+            if (std::find(varlist.cbegin(), varlist.cend(), tok) != varlist.cend()) {
                 return true;
             }
         }

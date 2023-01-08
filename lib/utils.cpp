@@ -44,7 +44,7 @@ bool isValidGlobPattern(const std::string& pattern)
     for (std::string::const_iterator i = pattern.cbegin(); i != pattern.cend(); ++i) {
         if (*i == '*' || *i == '?') {
             const std::string::const_iterator j = i + 1;
-            if (j != pattern.end() && (*j == '*' || *j == '?')) {
+            if (j != pattern.cend() && (*j == '*' || *j == '?')) {
                 return false;
             }
         }
@@ -126,7 +126,7 @@ void strTolower(std::string& str)
 {
     // This wrapper exists because Sun's CC does not allow a static_cast
     // from extern "C" int(*)(int) to int(*)(int).
-    std::transform(str.begin(), str.end(), str.begin(), [](int c) {
+    std::transform(str.cbegin(), str.cend(), str.begin(), [](int c) {
         return std::tolower(c);
     });
 }
