@@ -40,9 +40,12 @@ class Token;
  */
 
 class CPPCHECKLIB CheckVaarg : public Check {
+    friend class TestFixture;
+
 public:
     CheckVaarg() : Check(myName()) {}
 
+private:
     CheckVaarg(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
@@ -55,7 +58,6 @@ public:
     void va_start_argument();
     void va_list_usage();
 
-private:
     void wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName);
     void referenceAs_va_start_error(const Token *tok, const std::string& paramName);
     void va_end_missingError(const Token *tok, const std::string& varname);

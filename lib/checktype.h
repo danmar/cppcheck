@@ -42,10 +42,13 @@ class ValueType;
 /** @brief Various small checks */
 
 class CPPCHECKLIB CheckType : public Check {
+    friend class TestFixture;
+
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckType() : Check(myName()) {}
 
+private:
     /** @brief This constructor is used when running checks. */
     CheckType(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -76,8 +79,6 @@ public:
     /** @brief %Check for float to integer overflow */
     void checkFloatToIntegerOverflow();
     void checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> &floatValues);
-
-private:
 
     // Error messages..
     void tooBigBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);

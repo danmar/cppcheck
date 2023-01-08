@@ -48,10 +48,13 @@ namespace ValueFlow {
  */
 
 class CPPCHECKLIB CheckCondition : public Check {
+    friend class TestFixture;
+
 public:
     /** This constructor is used when registering the CheckAssignIf */
     CheckCondition() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     CheckCondition(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -128,7 +131,6 @@ public:
     /** @brief Assignment in condition */
     void checkAssignmentInCondition();
 
-private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
     bool diag(const Token* tok, bool insert=true);
