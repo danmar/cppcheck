@@ -300,7 +300,6 @@ public:
     /**
      * Simplify templates
      * @param maxtime time when the simplification should be stopped
-     * @param codeWithTemplates output parameter that is set if code contains templates
      */
     void simplifyTemplates(
         const std::time_t maxtime);
