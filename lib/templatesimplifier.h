@@ -303,8 +303,7 @@ public:
      * @param codeWithTemplates output parameter that is set if code contains templates
      */
     void simplifyTemplates(
-        const std::time_t maxtime,
-        bool &codeWithTemplates);
+        const std::time_t maxtime);
 
     /**
      * Simplify constant calculations such as "1+2" => "3"
