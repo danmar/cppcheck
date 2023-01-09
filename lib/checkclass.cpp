@@ -3390,6 +3390,44 @@ void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &
                 CWE(0), Certainty::normal);
 }
 
+/* multifile checking; one definition rule violations */
+class MyFileInfo : public Check::FileInfo {
+public:
+    struct NameLoc {
+        std::string className;
+        std::string fileName;
+        int lineNumber;
+        int column;
+        std::size_t hash;
+
+        bool operator==(const NameLoc& other) const {
+            return isSameLocation(other) && hash == other.hash;
+        }
+
+        bool isSameLocation(const NameLoc& other) const {
+            return fileName == other.fileName &&
+                   lineNumber == other.lineNumber &&
+                   column == other.column;
+        }
+    };
+    std::vector<NameLoc> classDefinitions;
+
+    /** Convert MyFileInfo data into xml string */
+    std::string toString() const override
+    {
+        std::string ret;
+        for (const MyFileInfo::NameLoc &nameLoc: classDefinitions) {
+            ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
+                   "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
+                   "\" line=\"" + std::to_string(nameLoc.lineNumber) +
+                   "\" col=\"" + std::to_string(nameLoc.column) +
+                   "\" hash=\"" + std::to_string(nameLoc.hash) +
+                   "\"/>\n";
+        }
+        return ret;
+    }
+};
+
 Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
     if (!tokenizer->isCPP())
@@ -3457,20 +3495,6 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
     MyFileInfo *fileInfo = new MyFileInfo;
     fileInfo->classDefinitions.swap(classDefinitions);
     return fileInfo;
-}
-
-std::string CheckClass::MyFileInfo::toString() const
-{
-    std::string ret;
-    for (const MyFileInfo::NameLoc &nameLoc: classDefinitions) {
-        ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
-               "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
-               "\" line=\"" + std::to_string(nameLoc.lineNumber) +
-               "\" col=\"" + std::to_string(nameLoc.column) +
-               "\" hash=\"" + std::to_string(nameLoc.hash) +
-               "\"/>\n";
-    }
-    return ret;
 }
 
 Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const

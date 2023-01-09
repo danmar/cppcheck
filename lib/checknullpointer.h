@@ -102,16 +102,6 @@ private:
     }
     void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
 
-    /* data for multifile checking */
-    class MyFileInfo : public Check::FileInfo {
-    public:
-        /** function arguments that are dereferenced without checking if they are null */
-        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
-
-        /** Convert MyFileInfo data into xml string */
-        std::string toString() const override;
-    };
-
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
 

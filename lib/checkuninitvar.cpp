@@ -1680,11 +1680,6 @@ void CheckUninitVar::valueFlowUninit()
     }
 }
 
-std::string CheckUninitVar::MyFileInfo::toString() const
-{
-    return CTU::toString(unsafeUsage);
-}
-
 Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
     const CheckUninitVar checker(tokenizer, settings, nullptr);
@@ -1698,6 +1693,19 @@ static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bi
     const CheckUninitVar *c = dynamic_cast<const CheckUninitVar *>(check);
     return c && c->isVariableUsage(vartok, true, CheckUninitVar::Alloc::ARRAY);
 }
+
+/* data for multifile checking */
+class MyFileInfo : public Check::FileInfo {
+public:
+    /** function arguments that data are unconditionally read */
+    std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+
+    /** Convert MyFileInfo data into xml string */
+    std::string toString() const override
+    {
+        return CTU::toString(unsafeUsage);
+    }
+};
 
 Check::FileInfo *CheckUninitVar::getFileInfo() const
 {

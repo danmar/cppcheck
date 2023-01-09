@@ -547,11 +547,6 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
                 inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-std::string CheckNullPointer::MyFileInfo::toString() const
-{
-    return CTU::toString(unsafeUsage);
-}
-
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
 static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
@@ -560,6 +555,20 @@ static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigi
     bool unknown = false;
     return checkNullPointer && checkNullPointer->isPointerDeRef(vartok, unknown);
 }
+
+/* data for multifile checking */
+class MyFileInfo : public Check::FileInfo {
+public:
+    /** function arguments that are dereferenced without checking if they are null */
+    std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+
+    /** Convert MyFileInfo data into xml string */
+    std::string toString() const override
+    {
+        return CTU::toString(unsafeUsage);
+    }
+};
+
 
 Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
