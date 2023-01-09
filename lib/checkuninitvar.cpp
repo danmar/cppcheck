@@ -1694,18 +1694,20 @@ static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bi
     return c && c->isVariableUsage(vartok, true, CheckUninitVar::Alloc::ARRAY);
 }
 
-/* data for multifile checking */
-class MyFileInfo : public Check::FileInfo {
-public:
-    /** function arguments that data are unconditionally read */
-    std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+namespace {
+    /* data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        /** function arguments that data are unconditionally read */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
-    /** Convert MyFileInfo data into xml string */
-    std::string toString() const override
-    {
-        return CTU::toString(unsafeUsage);
-    }
-};
+        /** Convert data into xml string */
+        std::string toString() const override
+        {
+            return CTU::toString(unsafeUsage);
+        }
+    };
+}
 
 Check::FileInfo *CheckUninitVar::getFileInfo() const
 {

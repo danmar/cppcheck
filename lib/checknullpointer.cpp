@@ -556,18 +556,20 @@ static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigi
     return checkNullPointer && checkNullPointer->isPointerDeRef(vartok, unknown);
 }
 
-/* data for multifile checking */
-class MyFileInfo : public Check::FileInfo {
-public:
-    /** function arguments that are dereferenced without checking if they are null */
-    std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
+namespace {
+    /* data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        /** function arguments that are dereferenced without checking if they are null */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
-    /** Convert MyFileInfo data into xml string */
-    std::string toString() const override
-    {
-        return CTU::toString(unsafeUsage);
-    }
-};
+        /** Convert data into xml string */
+        std::string toString() const override
+        {
+            return CTU::toString(unsafeUsage);
+        }
+    };
+}
 
 
 Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const

@@ -3390,43 +3390,45 @@ void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &
                 CWE(0), Certainty::normal);
 }
 
-/* multifile checking; one definition rule violations */
-class MyFileInfo : public Check::FileInfo {
-public:
-    struct NameLoc {
-        std::string className;
-        std::string fileName;
-        int lineNumber;
-        int column;
-        std::size_t hash;
+namespace {
+    /* multifile checking; one definition rule violations */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        struct NameLoc {
+            std::string className;
+            std::string fileName;
+            int lineNumber;
+            int column;
+            std::size_t hash;
 
-        bool operator==(const NameLoc& other) const {
-            return isSameLocation(other) && hash == other.hash;
-        }
+            bool operator==(const NameLoc& other) const {
+                return isSameLocation(other) && hash == other.hash;
+            }
 
-        bool isSameLocation(const NameLoc& other) const {
-            return fileName == other.fileName &&
-                   lineNumber == other.lineNumber &&
-                   column == other.column;
+            bool isSameLocation(const NameLoc& other) const {
+                return fileName == other.fileName &&
+                       lineNumber == other.lineNumber &&
+                       column == other.column;
+            }
+        };
+        std::vector<NameLoc> classDefinitions;
+
+        /** Convert data into xml string */
+        std::string toString() const override
+        {
+            std::string ret;
+            for (const NameLoc &nameLoc: classDefinitions) {
+                ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
+                       "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
+                       "\" line=\"" + std::to_string(nameLoc.lineNumber) +
+                       "\" col=\"" + std::to_string(nameLoc.column) +
+                       "\" hash=\"" + std::to_string(nameLoc.hash) +
+                       "\"/>\n";
+            }
+            return ret;
         }
     };
-    std::vector<NameLoc> classDefinitions;
-
-    /** Convert MyFileInfo data into xml string */
-    std::string toString() const override
-    {
-        std::string ret;
-        for (const MyFileInfo::NameLoc &nameLoc: classDefinitions) {
-            ret += "<class name=\"" + ErrorLogger::toxml(nameLoc.className) +
-                   "\" file=\"" + ErrorLogger::toxml(nameLoc.fileName) +
-                   "\" line=\"" + std::to_string(nameLoc.lineNumber) +
-                   "\" col=\"" + std::to_string(nameLoc.column) +
-                   "\" hash=\"" + std::to_string(nameLoc.hash) +
-                   "\"/>\n";
-        }
-        return ret;
-    }
-};
+}
 
 Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {

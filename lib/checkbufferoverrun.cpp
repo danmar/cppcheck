@@ -883,26 +883,28 @@ void CheckBufferOverrun::argumentSizeError(const Token *tok, const std::string &
 // CTU..
 //---------------------------------------------------------------------------
 
-/** data for multifile checking */
-class MyFileInfo : public Check::FileInfo {
-public:
-    /** unsafe array index usage */
-    std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
+namespace {
+    /** data for multifile checking */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        /** unsafe array index usage */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
 
-    /** unsafe pointer arithmetics */
-    std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
+        /** unsafe pointer arithmetics */
+        std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
 
-    /** Convert MyFileInfo data into xml string */
-    std::string toString() const override
-    {
-        std::string xml;
-        if (!unsafeArrayIndex.empty())
-            xml = "    <array-index>\n" + CTU::toString(unsafeArrayIndex) + "    </array-index>\n";
-        if (!unsafePointerArith.empty())
-            xml += "    <pointer-arith>\n" + CTU::toString(unsafePointerArith) + "    </pointer-arith>\n";
-        return xml;
-    }
-};
+        /** Convert data into xml string */
+        std::string toString() const override
+        {
+            std::string xml;
+            if (!unsafeArrayIndex.empty())
+                xml = "    <array-index>\n" + CTU::toString(unsafeArrayIndex) + "    </array-index>\n";
+            if (!unsafePointerArith.empty())
+                xml += "    <pointer-arith>\n" + CTU::toString(unsafePointerArith) + "    </pointer-arith>\n";
+            return xml;
+        }
+    };
+}
 
 bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type)
 {
