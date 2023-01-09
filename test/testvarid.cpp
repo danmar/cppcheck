@@ -136,6 +136,7 @@ private:
         TEST_CASE(varid_in_class21);    // #7788
         TEST_CASE(varid_in_class22);    // #10872
         TEST_CASE(varid_in_class23);    // #11293
+        TEST_CASE(varid_in_class24);
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -1984,6 +1985,22 @@ private:
                                 "6: struct B : A :: S {\n"
                                 "7: void f ( ) { b@1 = false ; }\n"
                                 "8: } ;\n";
+
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
+    void varid_in_class24() {
+        const char code[] = "class A {\n"
+                            "    Q_OBJECT\n"
+                            "public:\n"
+                            "    using QPtr = QPointer<A>;\n"
+                            "};\n";
+
+        const char expected[] = "1: class A {\n"
+                                "2: Q_OBJECT\n"
+                                "3: public:\n"
+                                "4:\n"
+                                "5: } ;\n";
 
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
