@@ -2594,7 +2594,7 @@ private:
     void implicitIntExtern() {
         ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;", true, Settings::Native, "test.c"));
         ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;", true, Settings::Native, "test.c"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Settings::Native, "test.c");
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Settings::Native, "test.c"));
     }
 
     /**
