@@ -214,7 +214,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             funcname = tok->next();
             while (Token::Match(funcname, "%name% :: %name%"))
                 funcname = funcname->tokAt(2);
-        } else if (Token::Match(tok, "[;{}.,()[=+-/|!?:]")) {
+        } else if (tok->scope()->type != Scope::ScopeType::eEnum && Token::Match(tok, "[;{}.,()[=+-/|!?:]")) {
             funcname = tok->next();
             if (funcname && funcname->str() == "&")
                 funcname = funcname->next();
@@ -305,14 +305,15 @@ static bool isOperatorFunction(const std::string & funcName)
 
 bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings) const
 {
-    bool errors = false;
+    using ErrorParams = std::tuple<std::string, unsigned int, std::string>;
+    std::vector<ErrorParams> errors; // ensure well-defined order
+
     for (std::unordered_map<std::string, FunctionUsage>::const_iterator it = mFunctions.cbegin(); it != mFunctions.cend(); ++it) {
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
         if (it->first == "main" ||
-            (settings.isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")) ||
-            it->first == "if")
+            (settings.isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")))
             continue;
         if (!func.usedSameFile) {
             if (isOperatorFunction(it->first))
@@ -320,8 +321,7 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
             std::string filename;
             if (func.filename != "+")
                 filename = func.filename;
-            unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
-            errors = true;
+            errors.emplace_back(filename, func.lineNumber, it->first);
         } else if (!func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*
@@ -332,7 +332,10 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
              */
         }
     }
-    return errors;
+    std::sort(errors.begin(), errors.end());
+    for (const auto& e : errors)
+        unusedFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e));
+    return !errors.empty();
 }
 
 void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,

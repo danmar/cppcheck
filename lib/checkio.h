@@ -134,7 +134,6 @@ private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckIO c(nullptr, settings, errorLogger);
-
         c.coutCerrMisusageError(nullptr,  "cout");
         c.fflushOnInputStreamError(nullptr,  "stdin");
         c.ioWithoutPositioningError(nullptr);

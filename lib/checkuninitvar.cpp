@@ -51,7 +51,6 @@ namespace tinyxml2 {
 
 // CWE ids used:
 static const struct CWE CWE_USE_OF_UNINITIALIZED_VARIABLE(457U);
-static const struct CWE CWE_USE_OF_POTENTIALLY_DANGEROUS_FUNCTION(676U);
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -1495,11 +1494,6 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
         return true;
 
     return false;
-}
-
-void CheckUninitVar::uninitstringError(const Token *tok, const std::string &varname, bool strncpy_)
-{
-    reportError(tok, Severity::error, "uninitstring", "$symbol:" + varname + "\nDangerous usage of '$symbol'" + (strncpy_ ? " (strncpy doesn't always null-terminate it)." : " (not null-terminated)."), CWE_USE_OF_POTENTIALLY_DANGEROUS_FUNCTION, Certainty::normal);
 }
 
 void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varname)

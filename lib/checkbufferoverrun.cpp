@@ -56,7 +56,6 @@ static const CWE CWE131(131U);  // Incorrect Calculation of Buffer Size
 static const CWE CWE170(170U);  // Improper Null Termination
 static const CWE CWE_ARGUMENT_SIZE(398U);  // Indicator of Poor Code Quality
 static const CWE CWE_ARRAY_INDEX_THEN_CHECK(398U);  // Indicator of Poor Code Quality
-static const CWE CWE682(682U);  // Incorrect Calculation
 static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE_POINTER_ARITHMETIC_OVERFLOW(758U); // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const CWE CWE_BUFFER_UNDERRUN(786U);  // Access of Memory Location Before Start of Buffer
@@ -679,7 +678,7 @@ void CheckBufferOverrun::bufferOverflow()
     }
 }
 
-void CheckBufferOverrun::bufferOverflowError(const Token *tok, const ValueFlow::Value *value, const Certainty::CertaintyLevel &certainty)
+void CheckBufferOverrun::bufferOverflowError(const Token *tok, const ValueFlow::Value *value, Certainty certainty)
 {
     reportError(getErrorPath(tok, value, "Buffer overrun"), Severity::error, "bufferAccessOutOfBounds", "Buffer is accessed out of bounds: " + (tok ? tok->expressionString() : "buf"), CWE_BUFFER_OVERRUN, certainty);
 }

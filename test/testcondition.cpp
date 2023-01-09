@@ -2887,6 +2887,23 @@ private:
               "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11478
+        check("struct S {\n"
+              "    void run();\n"
+              "    bool b = false;\n"
+              "    const std::function<void(S&)> f;\n"
+              "};\n"
+              "void S::run() {\n"
+              "    while (true) {\n"
+              "        if (b)\n"
+              "            return;\n"
+              "        f(*this);\n"
+              "        if (b)\n"
+              "            return;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void innerConditionModified() {

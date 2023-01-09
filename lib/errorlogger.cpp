@@ -43,7 +43,7 @@ ErrorMessage::ErrorMessage()
     : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {}
 
-ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, Certainty::CertaintyLevel certainty) :
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
@@ -58,7 +58,7 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
 
 
 
-ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, const CWE &cwe, Certainty::CertaintyLevel certainty) :
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, const CWE &cwe, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
@@ -71,7 +71,7 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
     setmsg(msg);
 }
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, Certainty::CertaintyLevel certainty)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, Certainty certainty)
     : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
 {
     // Format callstack
@@ -90,7 +90,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, const CWE &cwe, Certainty certainty)
     : id(std::move(id)), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
@@ -110,7 +110,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
     hash = 0; // calculateWarningHash(list, hashWarning.str());
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
+ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
     : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack

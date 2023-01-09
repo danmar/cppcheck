@@ -111,7 +111,6 @@ private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckBool c(nullptr, settings, errorLogger);
-
         c.assignBoolToPointerError(nullptr);
         c.assignBoolToFloatError(nullptr);
         c.comparisonOfFuncReturningBoolError(nullptr, "func_name");

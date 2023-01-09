@@ -4079,19 +4079,20 @@ struct LifetimeStore {
     }
 
     template<class Predicate>
-    void byDerefCopy(Token* tok,
+    bool byDerefCopy(Token* tok,
                      TokenList* tokenlist,
                      ErrorLogger* errorLogger,
                      const Settings* settings,
                      Predicate pred,
                      SourceLocation loc = SourceLocation::current()) const
     {
+        bool update = false;
         if (!settings->certainty.isEnabled(Certainty::inconclusive) && inconclusive)
-            return;
+            return update;
         if (!argtok)
-            return;
+            return update;
         if (!tok)
-            return;
+            return update;
         for (const ValueFlow::Value &v : argtok->values()) {
             if (!v.isLifetimeValue())
                 continue;
@@ -4105,20 +4106,22 @@ struct LifetimeStore {
             const Token * const varDeclEndToken = var->declEndToken();
             for (const Token *tok3 = tok; tok3 && tok3 != varDeclEndToken; tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
-                    LifetimeStore{tok3, message, type, inconclusive}.byVal(tok, tokenlist, errorLogger, settings, pred, loc);
+                    update |= LifetimeStore{tok3, message, type, inconclusive}
+                    .byVal(tok, tokenlist, errorLogger, settings, pred, loc);
                     break;
                 }
             }
         }
+        return update;
     }
 
-    void byDerefCopy(Token* tok,
+    bool byDerefCopy(Token* tok,
                      TokenList* tokenlist,
                      ErrorLogger* errorLogger,
                      const Settings* settings,
                      SourceLocation loc = SourceLocation::current()) const
     {
-        byDerefCopy(
+        return byDerefCopy(
             tok,
             tokenlist,
             errorLogger,
@@ -4348,9 +4351,14 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                     ls.forward = false;
                     ls.errorPath = v.errorPath;
                     ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
-                    if (v.lifetimeScope == ValueFlow::Value::LifetimeScope::ThisValue)
+                    int thisIndirect = v.lifetimeScope == ValueFlow::Value::LifetimeScope::ThisValue ? 0 : 1;
+                    if (derefShared(memtok->astParent()))
+                        thisIndirect--;
+                    if (thisIndirect == -1)
+                        update |= ls.byDerefCopy(tok->next(), tokenlist, errorLogger, settings);
+                    else if (thisIndirect == 0)
                         update |= ls.byVal(tok->next(), tokenlist, errorLogger, settings);
-                    else
+                    else if (thisIndirect == 1)
                         update |= ls.byRef(tok->next(), tokenlist, errorLogger, settings);
                     continue;
                 }
