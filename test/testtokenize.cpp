@@ -223,6 +223,7 @@ private:
         TEST_CASE(vardecl27);  // #7850 - crash on valid C code
         TEST_CASE(vardecl28);
         TEST_CASE(vardecl29); // #9282
+        TEST_CASE(vardecl30);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -2516,6 +2517,15 @@ private:
                       "double f1 ( ) const noexcept ( true ) ; double f2 ( double ) const noexcept ( true ) ;\n"
                       "} ;",
                       tokenizeAndStringify(code));
+    }
+
+    void vardecl30() {
+        const char code[] = "struct D {} const d;";
+        ASSERT_EQUALS("struct D { } ; struct D const d ;",
+                      tokenizeAndStringify(code, true, Settings::Native, "test.cpp"));
+        TODO_ASSERT_EQUALS("struct D { } ; struct D const d ;",
+                           "struct D { } const int d ;",
+                           tokenizeAndStringify(code, true, Settings::Native, "test.c"));
     }
 
     void volatile_variables() {
