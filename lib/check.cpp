@@ -32,11 +32,11 @@
 
 //---------------------------------------------------------------------------
 
-Check::Check(const std::string &aname)
-    : mTokenizer(nullptr), mSettings(nullptr), mErrorLogger(nullptr), mName(aname)
+Check::Check()
+    : mTokenizer(nullptr), mSettings(nullptr), mErrorLogger(nullptr)
 {
     auto it = std::find_if(instances().begin(), instances().end(), [&](const Check* i) {
-        return i->name() > aname;
+        return i->name() > name();
     });
     if (it == instances().end())
         instances().push_back(this);

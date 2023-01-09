@@ -47,11 +47,11 @@ class Function;
 class CPPCHECKLIB CheckUnusedVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckUnusedVar() : Check(myName()) {}
+    CheckUnusedVar() : Check() {}
 
     /** @brief This constructor is used when running checks. */
     CheckUnusedVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -92,7 +92,7 @@ private:
         c.unusedStructMemberError(nullptr, "structname", "variable");
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "UnusedVar";
     }
 

@@ -47,11 +47,11 @@ namespace ValueFlow {
 class CPPCHECKLIB CheckAutoVariables : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckAutoVariables() : Check(myName()) {}
+    CheckAutoVariables() : Check() {}
 
     /** This constructor is used when running checks. */
     CheckAutoVariables(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -107,7 +107,7 @@ private:
         c.errorDanglingTemporaryLifetime(nullptr, nullptr, nullptr);
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Auto Variables";
     }
 

@@ -62,11 +62,11 @@ struct VariableValue {
 class CPPCHECKLIB CheckUninitVar : public Check {
 public:
     /** @brief This constructor is used when registering the CheckUninitVar */
-    CheckUninitVar() : Check(myName()) {}
+    CheckUninitVar() : Check() {}
 
     /** @brief This constructor is used when running checks. */
     CheckUninitVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -146,7 +146,7 @@ private:
         c.uninitStructMemberError(nullptr, "a.b");
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Uninitialized variables";
     }
 

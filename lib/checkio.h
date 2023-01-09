@@ -42,11 +42,11 @@ class ErrorLogger;
 class CPPCHECKLIB CheckIO : public Check {
 public:
     /** @brief This constructor is used when registering CheckIO */
-    CheckIO() : Check(myName()) {}
+    CheckIO() : Check() {}
 
     /** @brief This constructor is used when running checks. */
     CheckIO(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -159,7 +159,7 @@ private:
         c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "IO using format string";
     }
 

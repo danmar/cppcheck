@@ -45,11 +45,11 @@ class ErrorLogger;
 class CPPCHECKLIB CheckStl : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckStl() : Check(myName()) {}
+    CheckStl() : Check() {}
 
     /** This constructor is used when running checks. */
     CheckStl(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     /** run checks, the token list is not simplified */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -277,7 +277,7 @@ private:
         c.localMutexError(nullptr);
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "STL usage";
     }
 

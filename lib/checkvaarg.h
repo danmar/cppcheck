@@ -41,10 +41,10 @@ class Tokenizer;
 
 class CPPCHECKLIB CheckVaarg : public Check {
 public:
-    CheckVaarg() : Check(myName()) {}
+    CheckVaarg() : Check() {}
 
     CheckVaarg(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckVaarg check(tokenizer, settings, errorLogger);
@@ -71,7 +71,7 @@ private:
         c.va_start_subsequentCallsError(nullptr, "vl");
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Vaarg";
     }
 

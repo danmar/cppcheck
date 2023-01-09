@@ -42,11 +42,11 @@ class Token;
 class CPPCHECKLIB CheckPostfixOperator : public Check {
 public:
     /** This constructor is used when registering the CheckPostfixOperator */
-    CheckPostfixOperator() : Check(myName()) {}
+    CheckPostfixOperator() : Check() {}
 
     /** This constructor is used when running checks. */
     CheckPostfixOperator(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (tokenizer->isC())
@@ -68,7 +68,7 @@ private:
         c.postfixOperatorError(nullptr);
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Using postfix operators";
     }
 

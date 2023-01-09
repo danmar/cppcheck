@@ -49,11 +49,11 @@ class ErrorLogger;
 class CPPCHECKLIB CheckOther : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckOther() : Check(myName()) {}
+    CheckOther() : Check() {}
 
     /** @brief This constructor is used when running checks. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -357,7 +357,7 @@ private:
         c.checkModuloOfOneError(nullptr);
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Other";
     }
 

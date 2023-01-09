@@ -53,7 +53,7 @@ namespace tinyxml2 {
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {}
+    CheckClass() : Check(), mSymbolDatabase(nullptr) {}
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
@@ -272,7 +272,7 @@ private:
         c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Class";
     }
 

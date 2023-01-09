@@ -166,11 +166,11 @@ public:
 class CPPCHECKLIB CheckMemoryLeakInFunction : private Check, public CheckMemoryLeak {
 public:
     /** @brief This constructor is used when registering this class */
-    CheckMemoryLeakInFunction() : Check(myName()), CheckMemoryLeak(nullptr, nullptr, nullptr) {}
+    CheckMemoryLeakInFunction() : Check(), CheckMemoryLeak(nullptr, nullptr, nullptr) {}
 
     /** @brief This constructor is used when running checks */
     CheckMemoryLeakInFunction(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
+        : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckMemoryLeakInFunction checkMemoryLeak(tokenizer, settings, errorLogger);
@@ -201,7 +201,7 @@ private:
      * Get name of class (--doc)
      * @return name of class
      */
-    static std::string myName() {
+    std::string name() const override {
         return "Memory leaks (function variables)";
     }
 
@@ -222,10 +222,10 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakInClass : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakInClass() : Check(myName()), CheckMemoryLeak(nullptr, nullptr, nullptr) {}
+    CheckMemoryLeakInClass() : Check(), CheckMemoryLeak(nullptr, nullptr, nullptr) {}
 
     CheckMemoryLeakInClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
+        : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
     void runChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) override {
         if (!tokenizr->isCPP())
@@ -252,7 +252,7 @@ private:
         c.unsafeClassError(nullptr, "class", "class::varname");
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Memory leaks (class variables)";
     }
 
@@ -267,10 +267,10 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakStructMember : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakStructMember() : Check(myName()), CheckMemoryLeak(nullptr, nullptr, nullptr) {}
+    CheckMemoryLeakStructMember() : Check(), CheckMemoryLeak(nullptr, nullptr, nullptr) {}
 
     CheckMemoryLeakStructMember(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
+        : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckMemoryLeakStructMember checkMemoryLeak(tokenizer, settings, errorLogger);
@@ -288,7 +288,7 @@ private:
 
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const override {}
 
-    static std::string myName() {
+    std::string name() const override {
         return "Memory leaks (struct members)";
     }
 
@@ -303,10 +303,10 @@ private:
 
 class CPPCHECKLIB CheckMemoryLeakNoVar : private Check, private CheckMemoryLeak {
 public:
-    CheckMemoryLeakNoVar() : Check(myName()), CheckMemoryLeak(nullptr, nullptr, nullptr) {}
+    CheckMemoryLeakNoVar() : Check(), CheckMemoryLeak(nullptr, nullptr, nullptr) {}
 
     CheckMemoryLeakNoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
+        : Check(tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckMemoryLeakNoVar checkMemoryLeak(tokenizer, settings, errorLogger);
@@ -346,7 +346,7 @@ private:
         c.unsafeArgAllocError(nullptr, "funcName", "shared_ptr", "int");
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Memory leaks (address not taken)";
     }
 

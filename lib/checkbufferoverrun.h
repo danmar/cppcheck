@@ -60,11 +60,11 @@ class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
 
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check(myName()) {}
+    CheckBufferOverrun() : Check() {}
 
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
@@ -154,7 +154,7 @@ private:
     static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);
 
 
-    static std::string myName() {
+    std::string name() const override {
         return "Bounds checking";
     }
 

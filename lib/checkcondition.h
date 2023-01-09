@@ -50,11 +50,11 @@ namespace ValueFlow {
 class CPPCHECKLIB CheckCondition : public Check {
 public:
     /** This constructor is used when registering the CheckAssignIf */
-    CheckCondition() : Check(myName()) {}
+    CheckCondition() : Check() {}
 
     /** This constructor is used when running checks. */
     CheckCondition(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
@@ -198,7 +198,7 @@ private:
         c.compareValueOutOfTypeRangeError(nullptr, "unsigned char", 256, true);
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "Condition";
     }
 

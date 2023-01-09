@@ -49,11 +49,11 @@ namespace tinyxml2 {
 class CPPCHECKLIB CheckNullPointer : public Check {
 public:
     /** @brief This constructor is used when registering the CheckNullPointer */
-    CheckNullPointer() : Check(myName()) {}
+    CheckNullPointer() : Check() {}
 
     /** @brief This constructor is used when running checks. */
     CheckNullPointer(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
@@ -127,7 +127,7 @@ private:
     }
 
     /** Name of check */
-    static std::string myName() {
+    std::string name() const override {
         return "Null pointer";
     }
 

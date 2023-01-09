@@ -53,11 +53,11 @@ static const struct CWE CWE480(480U);   // Use of Incorrect Operator
 class CPPCHECKLIB CheckExceptionSafety : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckExceptionSafety() : Check(myName()) {}
+    CheckExceptionSafety() : Check() {}
 
     /** This constructor is used when running checks. */
     CheckExceptionSafety(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (tokenizer->isC())
@@ -119,7 +119,7 @@ private:
     }
 
     /** Short description of class (for --doc) */
-    static std::string myName() {
+    std::string name() const override {
         return "Exception Safety";
     }
 

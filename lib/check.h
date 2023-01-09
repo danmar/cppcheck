@@ -59,11 +59,11 @@ class Tokenizer;
 class CPPCHECKLIB Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    explicit Check(const std::string &aname);
+    explicit Check();
 
     /** This constructor is used when running checks. */
-    Check(std::string aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(std::move(aname)) {}
+    Check(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger) {}
 
     virtual ~Check() {
         if (!mTokenizer)
@@ -83,9 +83,7 @@ public:
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;
 
     /** class name, used to generate documentation */
-    const std::string& name() const {
-        return mName;
-    }
+    virtual std::string name() const = 0;
 
     /** get information about this class, used to generate documentation */
     virtual std::string classInfo() const = 0;
@@ -162,9 +160,6 @@ protected:
      * will call this method
      */
     bool wrongData(const Token *tok, const char *str);
-
-private:
-    const std::string mName;
 };
 
 /// @}

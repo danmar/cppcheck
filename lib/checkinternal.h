@@ -41,11 +41,11 @@ class Tokenizer;
 class CPPCHECKLIB CheckInternal : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckInternal() : Check(myName()) {}
+    CheckInternal() : Check() {}
 
     /** This constructor is used when running checks. */
     CheckInternal(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
+        : Check(tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (!settings->checks.isEnabled(Checks::internalCheck))
@@ -106,7 +106,7 @@ private:
         c.checkRedundantTokCheckError(nullptr);
     }
 
-    static std::string myName() {
+    std::string name() const override {
         return "cppcheck internal API usage";
     }
 
