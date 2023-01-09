@@ -635,9 +635,6 @@ static bool iscpp11init_impl(const Token * const tok)
     }
     if (!nameToken)
         return false;
-    if (nameToken->str() == ")" && Token::simpleMatch(nameToken->link()->previous(), "decltype (") &&
-        !Token::simpleMatch(nameToken->link()->tokAt(-2), "."))
-        return true;
     if (Token::simpleMatch(nameToken, ", {"))
         return true;
     if (nameToken->str() == ">" && nameToken->link())
@@ -689,7 +686,7 @@ static bool iscpp11init_impl(const Token * const tok)
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
     const Token *prev = nameToken;
-    while (Token::Match(prev, "%name%|::|:|<|>|,|%num%|%cop%")) {
+    while (Token::Match(prev, "%name%|::|:|<|>|(|)|,|%num%|%cop%")) {
         if (Token::Match(prev, "class|struct|union|enum"))
             return false;
 

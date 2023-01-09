@@ -7555,6 +7555,14 @@ private:
                         "};\n",
                         "{ } }",
                         TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("struct S { } s;\n"
+                        "struct T : decltype (s) {\n"
+                        "    template<typename U>\n"
+                        "    T() : decltype(s) (U{}) { }\n"
+                        "};\n",
+                        "{ } }",
+                        TokenImpl::Cpp11init::NOINIT);
         #undef testIsCpp11init
     }
 };
