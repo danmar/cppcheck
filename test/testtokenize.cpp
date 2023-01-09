@@ -2586,15 +2586,15 @@ private:
     }
 
     void implicitIntConst() {
-        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;"));
-        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Settings::Native, "test.c"));
     }
 
     void implicitIntExtern() {
-        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;"));
-        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Settings::Native, "test.c");
     }
 
     /**
