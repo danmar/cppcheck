@@ -6406,7 +6406,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 varName = varName->next();
             else
                 --typelen;
-            if (isCPP() && Token::Match(varName, "public:|private:|protected:"))
+            if (isCPP() && Token::Match(varName, "public:|private:|protected:|using"))
                 continue;
             //skip all the pointer part
             bool isPointerOrRef = false;
