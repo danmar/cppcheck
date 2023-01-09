@@ -2004,6 +2004,24 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:11] -> [test.cpp:2] -> [test.cpp:11] -> [test.cpp:12]: (error) Using reference to dangling temporary.\n",
             errout.str());
+
+        check("struct C {\n"
+              "  std::vector<std::vector<int>> v;\n"
+              "};\n"
+              "struct P {\n"
+              "  std::vector<C*>::const_iterator find() const { return pv.begin(); }\n"
+              "  std::vector<C*> pv;\n"
+              "};\n"
+              "struct M {\n"
+              "  const P* get() const { return p; }\n"
+              "  P* p;\n"
+              "};\n"
+              "void f(const M* m) {\n"
+              "  auto it = m->get()->find();\n"
+              "  auto e = (*it)->v.begin();\n"
+              "  const int& x = (*e)[1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {

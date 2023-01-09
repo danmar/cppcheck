@@ -112,34 +112,34 @@ public:
                  std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 std::string id, Certainty::CertaintyLevel certainty);
+                 std::string id, Certainty certainty);
     ErrorMessage(std::list<FileLocation> callStack,
                  std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
                  std::string id,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty);
+                 Certainty certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
                  std::string id,
                  const std::string& msg,
-                 Certainty::CertaintyLevel certainty);
+                 Certainty certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
                  std::string id,
                  const std::string& msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty);
+                 Certainty certainty);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
                  Severity::SeverityType severity,
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty);
+                 Certainty certainty);
     ErrorMessage();
     explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
@@ -175,7 +175,7 @@ public:
 
     Severity::SeverityType severity;
     CWE cwe;
-    Certainty::CertaintyLevel certainty;
+    Certainty certainty;
 
     /** Warning hash */
     std::size_t hash;

@@ -116,7 +116,6 @@ public:
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     void uninitvarError(const Token* tok, const ValueFlow::Value& v);
-    void uninitstringError(const Token *tok, const std::string &varname, bool strncpy_);
     void uninitdataError(const Token *tok, const std::string &varname);
     void uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath);
     void uninitvarError(const Token *tok, const std::string &varname) {
@@ -142,9 +141,7 @@ private:
 
         ValueFlow::Value v{};
 
-        // error
         c.uninitvarError(nullptr, v);
-        c.uninitstringError(nullptr, "varname", true);
         c.uninitdataError(nullptr, "varname");
         c.uninitStructMemberError(nullptr, "a.b");
     }

@@ -47,18 +47,12 @@ public:
     TerminateException() : std::runtime_error("terminate") {}
 };
 
-class CPPCHECKLIB Certainty {
-public:
-    enum CertaintyLevel {
-        normal, inconclusive, safe, experimental
-    };
+enum class Certainty {
+    normal, inconclusive, safe, experimental
 };
 
-class CPPCHECKLIB Checks {
-public:
-    enum CheckList {
-        unusedFunction, missingInclude, internalCheck
-    };
+enum class Checks {
+    unusedFunction, missingInclude, internalCheck
 };
 
 /** @brief enum class for severity. Used when reporting errors. */

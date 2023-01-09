@@ -59,7 +59,6 @@ static const struct CWE CWE362(362U);   // Concurrent Execution using Shared Res
 static const struct CWE CWE369(369U);   // Divide By Zero
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 static const struct CWE CWE475(475U);   // Undefined Behavior for Input to API
-static const struct CWE CWE482(482U);   // Comparing instead of Assigning
 static const struct CWE CWE561(561U);   // Dead Code
 static const struct CWE CWE563(563U);   // Assignment to Variable without Use ('Unused Variable')
 static const struct CWE CWE570(570U);   // Expression is Always False
@@ -509,14 +508,6 @@ void CheckOther::redundantCopyError(const Token *tok1, const Token* tok2, const 
     reportError(callstack, Severity::performance, "redundantCopy",
                 "$symbol:" + var + "\n"
                 "Buffer '$symbol' is being written before its old content has been used.", CWE563, Certainty::normal);
-}
-
-void CheckOther::redundantCopyInSwitchError(const Token *tok1, const Token* tok2, const std::string &var)
-{
-    const std::list<const Token *> callstack = { tok1, tok2 };
-    reportError(callstack, Severity::style, "redundantCopyInSwitch",
-                "$symbol:" + var + "\n"
-                "Buffer '$symbol' is being written before its old content has been used. 'break;' missing?", CWE563, Certainty::normal);
 }
 
 void CheckOther::redundantAssignmentError(const Token *tok1, const Token* tok2, const std::string& var, bool inconclusive)

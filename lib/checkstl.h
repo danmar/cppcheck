@@ -230,8 +230,6 @@ private:
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
     void dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
 
-    void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
-
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
     void knownEmptyContainerError(const Token *tok, const std::string& algo);
@@ -273,7 +271,6 @@ private:
         c.uselessCallsEmptyError(nullptr);
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
-        c.readingEmptyStlContainerError(nullptr);
         c.useStlAlgorithmError(nullptr, emptyString);
         c.knownEmptyContainerError(nullptr, emptyString);
         c.globalLockGuardError(nullptr);
