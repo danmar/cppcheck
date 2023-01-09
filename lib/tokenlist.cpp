@@ -667,7 +667,7 @@ static bool iscpp11init_impl(const Token * const tok)
         endtok = nameToken->linkAt(1)->linkAt(1);
     else if (Token::Match(nameToken->previous(), "%name%|> ( {"))
         endtok = nameToken->linkAt(1);
-    else if (nameToken->linkAt(1) && Token::simpleMatch(nameToken, "decltype"))
+    else if (Token::simpleMatch(nameToken, "decltype") && nameToken->linkAt(1))
         endtok = nameToken->linkAt(1)->linkAt(1);
     else
         return false;
