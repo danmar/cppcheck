@@ -638,7 +638,7 @@ private:
         givenACodeSampleToTokenize nonNumeric("abc", true);
         ASSERT_EQUALS(false, Token::Match(nonNumeric.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize binary("101010b", true);
+        givenACodeSampleToTokenize binary("0b101010", true);
         ASSERT_EQUALS(true, Token::Match(binary.tokens(), "%num%"));
 
         givenACodeSampleToTokenize octal("0123", true);
@@ -653,7 +653,7 @@ private:
         givenACodeSampleToTokenize floatingPoint("0.0f", true);
         ASSERT_EQUALS(true, Token::Match(floatingPoint.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize doublePrecision("0.0d", true);
+        givenACodeSampleToTokenize doublePrecision("0.0", true);
         ASSERT_EQUALS(true, Token::Match(doublePrecision.tokens(), "%num%"));
 
         givenACodeSampleToTokenize signedLong("0L", true);
@@ -685,6 +685,12 @@ private:
 
         givenACodeSampleToTokenize positiveNull("+.0", true);
         ASSERT_EQUALS(true, Token::Match(positiveNull.tokens(), "+ %num%"));
+
+        givenACodeSampleToTokenize decimalSeparated("123'456'678", true);
+        ASSERT_EQUALS(true, Token::Match(decimalSeparated.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize userDefinedLiteral("123_udl", true);
+        ASSERT_EQUALS(false, Token::Match(userDefinedLiteral.tokens(), "%num%"));
     }
 
 
@@ -950,6 +956,12 @@ private:
         ASSERT(tok.tokType() == Token::eBoolean);
         tok.str("false");
         ASSERT(tok.tokType() == Token::eBoolean);
+        tok.str("\"foo\"_userDefinedLiteral");
+        ASSERT(tok.tokType() == Token::eOther); // should be eLiteral
+        tok.str("123_userDefinedLiteral");
+        ASSERT(tok.tokType() == Token::eLiteral);
+        tok.str("0x123._userDefinedLiteral");
+        ASSERT(tok.tokType() == Token::eLiteral);
     }
 
     void isStandardType() const {

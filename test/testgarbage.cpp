@@ -267,6 +267,7 @@ private:
         TEST_CASE(enumTrailingComma);
 
         TEST_CASE(nonGarbageCode1); // #8346
+        TEST_CASE(userDefinedLiterals); // #11438, #10807
     }
 
 #define checkCodeInternal(code, filename) checkCodeInternal_(code, filename, __FILE__, __LINE__)
@@ -1822,6 +1823,22 @@ private:
             "void f() {\n"
             "    auto fn = []() -> foo* { return new foo(); };\n"
             "}");
+    }
+
+    void userDefinedLiterals() {
+        // #11438
+        ASSERT_NO_THROW(checkCode("bool f () { return 3ms < 3s; }"));
+        ASSERT_EQUALS("", errout.str());
+
+        // #10807
+        ASSERT_NO_THROW(checkCode("struct S {\n"
+                                  "    template <typename T>\n"
+                                  "    constexpr explicit S(const T& t) {}\n"
+                                  "    static S zero() {\n"
+                                  "        return S(0_s);\n"
+                                  "    }\n"
+                                  "};\n"));
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
