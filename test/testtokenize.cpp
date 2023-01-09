@@ -2523,9 +2523,8 @@ private:
         const char code[] = "struct D {} const d;";
         ASSERT_EQUALS("struct D { } ; struct D const d ;",
                       tokenizeAndStringify(code, true, Settings::Native, "test.cpp"));
-        TODO_ASSERT_EQUALS("struct D { } ; struct D const d ;",
-                           "struct D { } const int d ;",
-                           tokenizeAndStringify(code, true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("struct D { } ; struct D const d ;",
+                      tokenizeAndStringify(code, true, Settings::Native, "test.c"));
     }
 
     void volatile_variables() {
