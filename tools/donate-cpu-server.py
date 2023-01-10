@@ -1110,7 +1110,7 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
                 t += 0.2
         connection.close()
     except socket.error as e:
-        print_ts('Socket error occured ({}): {}'.format(cmd_name, e))
+        print_ts('Socket error occurred ({}): {}'.format(cmd_name, e))
         data = None
 
     if (timeout > 0 and t >= timeout):
