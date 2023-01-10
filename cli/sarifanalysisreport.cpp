@@ -94,8 +94,8 @@ std::string SARIFAnalysisReport::serialize() {
     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317550
     toolComponent["informationUri"] = picojson::value("http://cppcheck.net");
 
-    for (std::map<std::string, std::vector<ErrorMessage>>::iterator it = mFindings.begin(); it != mFindings.end(); ++it) {
-        const ErrorMessage rule = it->second[0];
+    for (auto it : mFindings) {
+        const ErrorMessage rule = it.second[0];
 
         // https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning#reportingdescriptor-object
         picojson::object properties = {
@@ -121,26 +121,26 @@ std::string SARIFAnalysisReport::serialize() {
 
         rules.emplace_back(std::move(reportingDescriptor));
 
-        for (const ErrorMessage& err : it->second) {
+        for (const ErrorMessage& err : it.second) {
             picojson::array locations;
 
-            for (std::list<ErrorMessage::FileLocation>::const_iterator loc = err.callStack.begin(); loc != err.callStack.end(); ++loc) {
+            for (const ErrorMessage::FileLocation& loc : err.callStack) {
                 // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317427
                 picojson::object artifactLocation = {
                     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317430
-                    {"uri", picojson::value(loc->getfile())}
+                    {"uri", picojson::value(loc.getfile())}
                 };
 
                 // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317685
                 picojson::object region = {
                     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317690
-                    {"startLine",   picojson::value(double(loc->line))},
+                    {"startLine",   picojson::value(double(loc.line))},
                     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317691
-                    {"startColumn", picojson::value(double(loc->column))},
+                    {"startColumn", picojson::value(double(loc.column))},
                     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317692
-                    {"endLine",     picojson::value(double(loc->line))},
+                    {"endLine",     picojson::value(double(loc.line))},
                     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317693
-                    {"endColumn",   picojson::value(double(loc->column))},
+                    {"endColumn",   picojson::value(double(loc.column))},
                 };
 
                 // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317678
