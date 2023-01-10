@@ -145,7 +145,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                         mFunctions[markupVarToken->str()].usedOtherFile = true;
                     else if (markupVarToken->next()->str() == "(") {
                         FunctionUsage &func = mFunctions[markupVarToken->str()];
-                        func.filename = tokenizer.list.getSourceFilePath();
+                        func.filename = tokenizer.list.getFiles()[markupVarToken->fileIndex()];
                         if (func.filename.empty() || func.filename == "+")
                             func.usedOtherFile = true;
                         else
@@ -259,7 +259,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (funcname) {
             const auto baseName = stripTemplateParameters(funcname->str());
             FunctionUsage &func = mFunctions[baseName];
-            const std::string& called_from_file = tokenizer.list.getSourceFilePath();
+            const std::string& called_from_file = tokenizer.list.getFiles()[funcname->fileIndex()];
 
             if (func.filename.empty() || func.filename == "+" || func.filename != called_from_file)
                 func.usedOtherFile = true;
