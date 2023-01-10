@@ -624,7 +624,7 @@ void Tokenizer::simplifyTypedef()
                 ErrorMessage errmsg({std::move(loc)},
                                     emptyString,
                                     Severity::debug,
-                                    "Typedef simplification instantation maximum time exceeded",
+                                    "Typedef simplification instantiation maximum time exceeded",
                                     "typedefMaxTime",
                                     Certainty::normal);
                 mErrorLogger->reportErr(errmsg);
