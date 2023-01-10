@@ -36,6 +36,7 @@
 #include "checkunusedfunctions.h"
 #include "xmlanalysisreport.h"
 #include "sarifanalysisreport.h"
+#include "clianalysisreport.h"
 
 #if defined(THREADING_MODEL_THREAD)
 #include "threadexecutor.h"
@@ -99,10 +100,16 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
             }
         }
 
-        if (settings.xml)
+        if (!settings.outputFile.empty()) {
+            mErrorOutput = new std::ofstream(settings.outputFile);
+        }
+
+        if (settings.xml || parser.getShowErrorMessages())
             mReport = std::unique_ptr<AnalysisReport>(new XMLAnalysisReport(settings.cppcheckCfgProductName));
-        if (settings.sarif)
+        else if (settings.sarif)
             mReport = std::unique_ptr<AnalysisReport>(new SARIFAnalysisReport(CppCheck::version()));
+        else
+            mReport = std::unique_ptr<AnalysisReport>(new CLIAnalysisReport(settings.verbose, settings.templateFormat, settings.templateLocation, mErrorOutput));
 
         if (parser.getShowErrorMessages()) {
             mShowAllErrors = true;
@@ -305,10 +312,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     if (settings.reportProgress)
         mLatestProgressOutputTime = std::time(nullptr);
 
-    if (!settings.outputFile.empty()) {
-        mErrorOutput = new std::ofstream(settings.outputFile);
-    }
-
     if (!settings.buildDir.empty()) {
         settings.loadSummaries();
 
@@ -410,9 +413,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         }
     }
 
-    if (settings.xml || settings.sarif) {
-        reportErr(mReport->serialize());
-    }
+    reportErr(mReport->serialize());
 
     mSettings = nullptr;
     if (returnValue)
@@ -509,10 +510,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
     if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
         return;
 
-    if (mSettings->xml || mSettings->sarif)
-        mReport->addFinding(msg);
-    else
-        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
+    mReport->addFinding(msg);
 }
 
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
