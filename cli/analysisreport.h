@@ -33,7 +33,7 @@ public:
     /**
      * Submit a CppCheck result for inclusion into the report.
      */
-    virtual void addFinding(const ErrorMessage &msg) = 0;
+    virtual void addFinding(ErrorMessage msg) = 0;
 
     /**
      * Output the results as a string.

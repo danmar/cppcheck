@@ -23,8 +23,8 @@
 SARIFAnalysisReport::SARIFAnalysisReport( std::string versionNumber)
     : mVersionNumber(std::move(versionNumber)) {}
 
-void SARIFAnalysisReport::addFinding(const ErrorMessage &msg) {
-    mFindings[msg.id].push_back(msg);
+void SARIFAnalysisReport::addFinding(ErrorMessage msg) {
+    mFindings[msg.id].emplace_back(std::move(msg));
 }
 
 static std::map<std::string, picojson::value> text(const std::string& s) {
@@ -119,7 +119,7 @@ std::string SARIFAnalysisReport::serialize() {
             {"properties", picojson::value(properties)},
         };
 
-        rules.emplace_back(reportingDescriptor);
+        rules.emplace_back(std::move(reportingDescriptor));
 
         for (const ErrorMessage& err : it->second) {
             picojson::array locations;
@@ -157,7 +157,7 @@ std::string SARIFAnalysisReport::serialize() {
                     {"physicalLocation", picojson::value(physicalLocation)},
                 };
 
-                locations.emplace_back(location);
+                locations.emplace_back(std::move(location));
             }
 
             // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317638
@@ -170,7 +170,7 @@ std::string SARIFAnalysisReport::serialize() {
                 {"locations", picojson::value(locations)},
             };
 
-            results.emplace_back(result);
+            results.emplace_back(std::move(result));
         }
     }
 
@@ -185,7 +185,7 @@ std::string SARIFAnalysisReport::serialize() {
 
     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317507
     run["results"] = picojson::value(results);
-    runs.emplace_back(run);
+    runs.emplace_back(std::move(run));
 
     // https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html#_Toc34317482
     sarifLog["runs"] = picojson::value(runs);
