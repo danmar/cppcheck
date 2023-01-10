@@ -20,7 +20,7 @@
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 #include "vfvalue.h"

@@ -17,8 +17,8 @@
  */
 
 
-#ifndef testsuiteH
-#define testsuiteH
+#ifndef fixtureH
+#define fixtureH
 
 #include "color.h"
 #include "config.h"
@@ -143,4 +143,4 @@ extern std::ostringstream output;
         } \
 } while (false)
 
-#endif
+#endif // fixtureH

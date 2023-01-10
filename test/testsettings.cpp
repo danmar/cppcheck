@@ -19,7 +19,7 @@
 
 #include "errortypes.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 class TestSettings : public TestFixture {
 public:

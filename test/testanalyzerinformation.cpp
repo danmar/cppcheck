@@ -18,7 +18,7 @@
 
 
 #include "analyzerinfo.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <sstream>
 

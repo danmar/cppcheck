@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testsuite.h"
+#include "fixture.h"
 
 #include "color.h"
 #include "options.h"

@@ -18,6 +18,6 @@
     </paths>
     <exclude>
         <path name="gui/temp/"/>
-        <path name="test/test.cxx"/>
+        <path name="test/data/test.cxx"/>
     </exclude>
 </project>

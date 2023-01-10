@@ -24,7 +24,7 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "timer.h"
 
 #include <cstdio>

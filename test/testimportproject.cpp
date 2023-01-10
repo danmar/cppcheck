@@ -18,7 +18,7 @@
 
 #include "importproject.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <list>
 #include <memory>

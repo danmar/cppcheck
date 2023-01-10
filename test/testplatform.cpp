@@ -17,7 +17,7 @@
  */
 
 #include "platform.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <tinyxml2.h>
 

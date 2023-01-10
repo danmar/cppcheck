@@ -15,7 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "options.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <set>
 #include <string>

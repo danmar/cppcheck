@@ -21,7 +21,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "suppressions.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <iosfwd>
 #include <list>

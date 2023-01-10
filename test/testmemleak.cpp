@@ -20,7 +20,7 @@
 #include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 

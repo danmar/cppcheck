@@ -18,7 +18,7 @@
 
 
 #include "mathlib.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <limits>
 #include <string>
