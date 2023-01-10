@@ -22,7 +22,7 @@
 #include "clianalysisreport.h"
 
 CLIAnalysisReport::CLIAnalysisReport(bool verbose, std::string templateFormat, std::string templateLocation, std::ofstream* errorOutput)
-: mVerbose(verbose), mTemplateFormat(std::move(templateFormat)), mTemplateLocation(std::move(templateLocation)), mErrorOutput(errorOutput) {}
+    : mVerbose(verbose), mTemplateFormat(std::move(templateFormat)), mTemplateLocation(std::move(templateLocation)), mErrorOutput(errorOutput) {}
 
 std::string CLIAnalysisReport::serialize() {
     return ""; // CLIAnalysisReport emits the findings immediately, so no need to return a report.
