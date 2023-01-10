@@ -345,7 +345,7 @@ public:
      *  text mode, e.g. "{file}:{line} {info}" */
     std::string templateLocation;
 
-    /** @brief The maximum time in seconds for the template instantation */
+    /** @brief The maximum time in seconds for the template instantiation */
     std::size_t templateMaxTime;
 
     /** @brief The maximum time in seconds for the typedef simplification */
