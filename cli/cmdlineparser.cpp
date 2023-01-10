@@ -1027,7 +1027,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         mSettings->basePaths = mPathNames;
 
     if (mSettings->xml && mSettings->sarif) {
-        printError("output format cannot be both XML and SARIF.");
+        printError("options --xml and --sarif are mutually exclusive; both cannot be used. Choose only one.");
         return false;
     }
 
