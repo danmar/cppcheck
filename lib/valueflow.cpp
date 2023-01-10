@@ -604,7 +604,8 @@ static void setTokenValue(Token* tok,
             return !Token::simpleMatch(p, ",");
         });
         // Ensure that the comma isnt a function call
-        if (!callParent || (!Token::Match(callParent->previous(), "%name%|> (") && !Token::simpleMatch(callParent, "{"))) {
+        if (!callParent || (!Token::Match(callParent->previous(), "%name%|> (") && !Token::simpleMatch(callParent, "{") &&
+                            (!Token::Match(callParent, "( %name%") || settings->library.isNotLibraryFunction(callParent->next())))) {
             setTokenValue(parent, std::move(value), settings);
             return;
         }
