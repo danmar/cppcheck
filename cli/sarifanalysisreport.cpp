@@ -95,7 +95,7 @@ std::string SARIFAnalysisReport::serialize() {
     toolComponent["informationUri"] = picojson::value("http://cppcheck.net");
 
     for (auto it : mFindings) {
-        const ErrorMessage rule = it.second[0];
+        const ErrorMessage& rule = it.second[0];
 
         // https://docs.github.com/en/code-security/code-scanning/integrating-with-code-scanning/sarif-support-for-code-scanning#reportingdescriptor-object
         picojson::object properties = {
