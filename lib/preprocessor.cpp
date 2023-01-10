@@ -626,6 +626,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         dui.std = mSettings.standards.getCPP();
     else
         dui.std = mSettings.standards.getC();
+    dui.clearIncludeCache = mSettings.clearIncludeCache;
     return dui;
 }
 
