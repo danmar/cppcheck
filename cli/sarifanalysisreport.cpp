@@ -27,13 +27,21 @@ void SARIFAnalysisReport::addFinding(ErrorMessage msg) {
     mFindings[msg.id].emplace_back(std::move(msg));
 }
 
-static std::map<std::string, picojson::value> text(const std::string& s) {
+static std::map<std::string, picojson::value> text(std::string s) {
+#ifdef PICOJSON_USE_RVALUE_REFERENCE
+    std::map<std::string, picojson::value> m = {{ "text", picojson::value(std::move(s)) }};
+#else
     std::map<std::string, picojson::value> m = {{ "text", picojson::value(s) }};
+#endif
     return m;
 }
 
-static std::map<std::string, picojson::value> level(const std::string& s) {
+static std::map<std::string, picojson::value> level(std::string s) {
+#ifdef PICOJSON_USE_RVALUE_REFERENCE
+    std::map<std::string, picojson::value> m = {{ "level", picojson::value(std::move(s)) }};
+#else
     std::map<std::string, picojson::value> m = {{ "level", picojson::value(s) }};
+#endif
     return m;
 }
 
