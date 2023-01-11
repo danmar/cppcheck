@@ -1079,7 +1079,7 @@ private:
 
     void xml() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--xml", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--output-format=xml", "file.cpp"};
         settings.xml_version = 1;
         settings.xml = false;
         ASSERT(defParser.parseFromArgs(3, argv));
@@ -1101,7 +1101,7 @@ private:
 
     void xmlver2both() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--xml", "--xml-version=2", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--output-format=xml", "--xml-version=2", "file.cpp"};
         settings.xml_version = 1;
         settings.xml = false;
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -1112,7 +1112,7 @@ private:
 
     void xmlver2both2() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--xml-version=2", "--xml", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--xml-version=2", "--output-format=xml", "file.cpp"};
         settings.xml_version = 1;
         settings.xml = false;
         ASSERT(defParser.parseFromArgs(4, argv));
@@ -1123,7 +1123,7 @@ private:
 
     void xmlverunknown() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--xml", "--xml-version=3", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--output-format=xml", "--xml-version=3", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: '--xml-version' can only be 2.\n", GET_REDIRECT_OUTPUT);
@@ -1131,7 +1131,7 @@ private:
 
     void xmlverinvalid() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--output-format=xml", "--xml-version=a", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--xml-version' is not a number.\n", GET_REDIRECT_OUTPUT);
