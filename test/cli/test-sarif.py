@@ -10,7 +10,7 @@ from testutils import cppcheck
 def cppcheck_local():
     cwd = os.getcwd()
     os.chdir('sarif')
-    ret, stdout, stderr = cppcheck(['--sarif', 'main.c'])
+    ret, stdout, stderr = cppcheck(['--output-format=sarif', 'main.c'])
     os.chdir(cwd)
     return ret, stdout, stderr
 

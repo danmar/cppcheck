@@ -941,8 +941,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // Write results in results.xml
-            else if (std::strcmp(argv[i], "--xml") == 0)
+            else if (std::strcmp(argv[i], "--xml") == 0) {
+                printMessage("option --xml is deprecated; use --output-format=xml instead.");
                 mSettings->xml = true;
+            }
 
             // Define the XML file version (and enable XML output)
             else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
@@ -964,9 +966,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->xml = true;
             }
 
-            // Write results in SARIF format.
-            else if (std::strcmp(argv[i], "--sarif") == 0)
-                mSettings->sarif = true;
+            // Specify output format (XML, SARIF, etc.)
+            else if (std::strncmp(argv[i], "--output-format=", 16) == 0) {
+                const std::string outputFormatArg(argv[i]+16);
+
+                if (outputFormatArg == "xml")
+                    mSettings->xml = true;
+                else if (outputFormatArg == "sarif")
+                    mSettings->sarif = true;
+                else {
+                    printError("invalid argument to --output-format option: " + outputFormatArg);
+                    return false;
+                }
+            }
 
             else {
                 std::string message("unrecognized command line option: \"");
@@ -1185,6 +1197,12 @@ void CmdLineParser::printHelp()
     "                         is 2. A larger value will mean more errors can be found\n"
     "                         but also means the analysis will be slower.\n"
     "    --output-file=<file> Write results to file, rather than standard error.\n"
+    "    --output-format=<format>\n"
+    "                         Write results in one of the supported file formats:\n"
+    "                          * xml\n"
+    "                                 XML format (equivalent to --xml)\n"
+    "                          * sarif\n"
+    "                                 Static Analysis Results Interchange Format v2.1.0\n"
     "    --platform=<type>, --platform=<file>\n"
     "                         Specifies platform specific types and sizes. The\n"
     "                         available builtin platforms are:\n"
@@ -1331,7 +1349,7 @@ void CmdLineParser::printHelp()
     "                         Example: '-UDEBUG'\n"
     "    -v, --verbose        Output more detailed error information.\n"
     "    --version            Print out version number.\n"
-    "    --xml                Write results in xml format to error stream (stderr).\n"
+    "    --xml                [DEPRECATED] Write results in xml format to error stream (stderr).\n"
     "\n"
     "Example usage:\n"
     "  # Recursively check the current folder. Print the progress on the screen and\n"
