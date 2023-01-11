@@ -27,23 +27,29 @@ void SARIFAnalysisReport::addFinding(ErrorMessage msg) {
     mFindings[msg.id].emplace_back(std::move(msg));
 }
 
+#ifdef PICOJSON_USE_RVALUE_REFERENCE
 static std::map<std::string, picojson::value> text(std::string s) {
-#ifdef PICOJSON_USE_RVALUE_REFERENCE
     std::map<std::string, picojson::value> m = {{ "text", picojson::value(std::move(s)) }};
+    return m;
+}
 #else
+static std::map<std::string, picojson::value> text(const std::string& s) {
     std::map<std::string, picojson::value> m = {{ "text", picojson::value(s) }};
-#endif
     return m;
 }
+#endif
 
-static std::map<std::string, picojson::value> level(std::string s) {
 #ifdef PICOJSON_USE_RVALUE_REFERENCE
+static std::map<std::string, picojson::value> level(std::string s) {
     std::map<std::string, picojson::value> m = {{ "level", picojson::value(std::move(s)) }};
-#else
-    std::map<std::string, picojson::value> m = {{ "level", picojson::value(s) }};
-#endif
     return m;
 }
+#else
+static std::map<std::string, picojson::value> level(const std::string& s) {
+    std::map<std::string, picojson::value> m = {{ "level", picojson::value(s) }};
+    return m;
+}
+#endif
 
 static std::string sarifSeverity(Severity::SeverityType severity) {
     switch (severity) {
