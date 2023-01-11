@@ -21,6 +21,10 @@
 
 #include "clianalysisreport.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 CLIAnalysisReport::CLIAnalysisReport(bool verbose, std::string templateFormat, std::string templateLocation, std::ofstream* errorOutput)
     : mVerbose(verbose), mTemplateFormat(std::move(templateFormat)), mTemplateLocation(std::move(templateLocation)), mErrorOutput(errorOutput) {}
 
