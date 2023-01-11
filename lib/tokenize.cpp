@@ -8485,6 +8485,10 @@ void Tokenizer::simplifyKeyword()
             // 1) struct name final { };   <- struct is final
             if (Token::Match(tok->previous(), "struct|class|union %type%")) {
                 Token* finalTok = tok->next();
+                if (tok->isUpperCaseName() && Token::Match(finalTok, "%type%") && finalTok->str() != "final") {
+                    tok = finalTok;
+                    finalTok = finalTok->next();
+                }
                 if (Token::simpleMatch(finalTok, "<")) { // specialization
                     finalTok = finalTok->findClosingBracket();
                     if (finalTok)
