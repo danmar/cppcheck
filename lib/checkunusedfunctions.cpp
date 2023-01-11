@@ -78,10 +78,6 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (func->isExtern())
             continue;
 
-        // Don't care about templates
-        if (tokenizer.isCPP() && func->templateDef != nullptr)
-            continue;
-
         mFunctionDecl.emplace_back(func);
 
         FunctionUsage &usage = mFunctions[func->name()];
@@ -227,7 +223,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
                 continue;
         }
 
-        if (!funcname)
+        if (!funcname || funcname->isKeyword() || funcname->isStandardType())
             continue;
 
         // funcname ( => Assert that the end parentheses isn't followed by {
