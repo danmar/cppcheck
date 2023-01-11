@@ -2022,6 +2022,13 @@ private:
               "  const int& x = (*e)[1];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int* g();\n" // #11188
+              "void f() {\n"
+              "    const auto& p = g();\n"
+              "    if (p != nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
