@@ -1265,7 +1265,7 @@ private:
     void valueFlowMaxIterations() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=0"};
-        settings.valueFlowMaxIterations = -1;
+        settings.valueFlowMaxIterations = SIZE_MAX;
         ASSERT(defParser.parseFromArgs(2, argv));
         ASSERT_EQUALS(0, settings.valueFlowMaxIterations);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1274,7 +1274,7 @@ private:
     void valueFlowMaxIterations2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=11"};
-        settings.valueFlowMaxIterations = -1;
+        settings.valueFlowMaxIterations = SIZE_MAX;
         ASSERT(defParser.parseFromArgs(2, argv));
         ASSERT_EQUALS(11, settings.valueFlowMaxIterations);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);

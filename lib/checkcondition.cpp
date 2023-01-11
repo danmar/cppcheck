@@ -790,7 +790,7 @@ void CheckCondition::multiCondition2()
                         if (!function || !function->isConst())
                             break;
                     }
-                    if (Token::Match(tok->previous(), "[(,] %name% [,)]") && isParameterChanged(tok))
+                    if (Token::Match(tok->previous(), "[(,] *|& %name% [,)]") && isParameterChanged(tok))
                         break;
                 }
             }

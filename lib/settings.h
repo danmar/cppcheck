@@ -328,8 +328,8 @@ public:
     SafeChecks safeChecks;
 
     SimpleEnableGroup<Severity::SeverityType> severity;
-    SimpleEnableGroup<Certainty::CertaintyLevel> certainty;
-    SimpleEnableGroup<Checks::CheckList> checks;
+    SimpleEnableGroup<Certainty> certainty;
+    SimpleEnableGroup<Checks> checks;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
     SHOWTIME_MODES showtime;

@@ -33,7 +33,7 @@ CC_OPT='-Wno-format -Wno-stringop-overread -Wno-nonnull -Wno-implicit-function-d
 
 function get_pkg_config_cflags {
     set +e
-    PKGCONFIG=$(pkg-config --cflags $1)
+    PKGCONFIG=$(pkg-config --cflags "$@")
     PKGCONFIG_RETURNCODE=$?
     set -e
     if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
@@ -60,9 +60,9 @@ function gnu_fn {
 # qt.cpp
 function qt_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        QTCONFIG=$(get_pkg_config_cflags Qt5Core)
+        QTCONFIG=$(get_pkg_config_cflags Qt5Core Qt5Test)
         if [ -n "$QTCONFIG" ]; then
-            QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core)
+            QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core Qt5Test)
             [[ $QTBUILDCONFIG =~ (^|[[:space:]])reduce_relocations($|[[:space:]]) ]] && QTCONFIG="${QTCONFIG} -fPIC"
             set +e
             echo -e "#include <QString>" | ${CXX} ${CXX_OPT} ${QTCONFIG} -x c++ -

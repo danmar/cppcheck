@@ -104,11 +104,19 @@ jobs:
       - name: Build CLI x64 release configuration using MSBuild
         run: msbuild -m cppcheck.sln -t:cli -p:Configuration=Release-PCRE -p:Platform=x64 || exit /b !errorlevel!
 
+      - name: Compile misra.py executable
+        run: |
+          pip install -U pyinstaller || exit /b !errorlevel!
+          cd addons || exit /b !errorlevel!
+          pyinstaller --hidden-import xml --hidden-import xml.etree --hidden-import xml.etree.ElementTree misra.py || exit /b !errorlevel!
+          del *.spec || exit /b !errorlevel!
+
       - name: Collect files
         run: |
           move Build\gui win_installer\files || exit /b !errorlevel!
           mkdir win_installer\files\addons || exit /b !errorlevel!
           copy addons\*.* win_installer\files\addons || exit /b !errorlevel!
+          copy addons\dist\misra\*.* win_installer\files\addons || exit /b !errorlevel!
           mkdir win_installer\files\cfg || exit /b !errorlevel!
           copy cfg\*.cfg win_installer\files\cfg || exit /b !errorlevel!
           :: "platforms" is a folder used by Qt as well so it already exists

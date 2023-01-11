@@ -111,7 +111,7 @@ private:
     void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
 
     void bufferOverflow();
-    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value, const Certainty::CertaintyLevel& certainty);
+    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value, Certainty certainty);
 
     void arrayIndexThenCheck();
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);

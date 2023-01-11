@@ -195,6 +195,7 @@ private:
         TEST_CASE(array_index_68); // #6655
         TEST_CASE(array_index_69); // #6370
         TEST_CASE(array_index_70); // #11355
+        TEST_CASE(array_index_71); // #11461
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1910,6 +1911,19 @@ private:
               "    printf(\"%c\", a[5]);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[5]' accessed at index 5, which is out of bounds.\n", errout.str());
+    }
+
+    // #11461
+    void array_index_71()
+    {
+        check("unsigned int f(unsigned int Idx) {\n"
+              "  if (Idx < 64)\n"
+              "    return 0;\n"
+              "  Idx -= 64;\n"
+              "  int arr[64] = { 0 };\n"
+              "  return arr[Idx];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
