@@ -448,15 +448,15 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 void CppCheckExecutor::reportErr(const std::string &errmsg)
 {
     if (mErrorOutput)
-        *mErrorOutput << errmsg << std::endl;
+        *mErrorOutput << errmsg;
     else {
-        std::cerr << ansiToOEM(errmsg, (mSettings == nullptr) ? true : !mSettings->xml) << std::endl;
+        std::cerr << ansiToOEM(errmsg, (mSettings == nullptr) ? true : !mSettings->xml);
     }
 }
 
 void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
+    std::cout << c << ansiToOEM(outmsg, true) << Color::Reset;
 }
 
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
