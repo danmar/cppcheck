@@ -311,7 +311,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
-    
 
     void template9() { // #7739
         check("template<class T>\n"
