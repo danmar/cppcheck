@@ -66,7 +66,7 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           version: ${{ env.QT_VERSION }}
-          modules: 'qtcharts qthelp'
+          modules: 'qtcharts'
           tools: 'tools_openssl_x64,1.1.1-10,qt.tools.openssl.win_x64'
           cache: true
 
