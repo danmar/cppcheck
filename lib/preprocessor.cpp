@@ -848,10 +848,18 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     errorMessage.setFileName(std::move(fname));
     errorMessage.lineNumber = linenr;
     if (mSettings.nomsg.isSuppressed(errorMessage))
+    {
+        if (mErrorLogger)
+            mErrorLogger->suppress(errorMessage);
         return;
+    }
     errorMessage.errorId = "missingIncludeSystem";
     if (headerType == SystemHeader && mSettings.nomsg.isSuppressed(errorMessage))
+    {
+        if (mErrorLogger)
+            mErrorLogger->suppress(errorMessage);
         return;
+    }
 
     if (headerType == SystemHeader)
         missingSystemIncludeFlag = true;

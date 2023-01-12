@@ -238,6 +238,8 @@ public:
      */
     virtual void reportErr(const ErrorMessage &msg) = 0;
 
+    virtual void suppress(const Suppressions::ErrorMessage& msg) = 0;
+
     /**
      * Report progress to client
      * @param filename main file that is checked

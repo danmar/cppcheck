@@ -76,6 +76,10 @@ public:
         report(msg, MessageType::REPORT_INFO);
     }
 
+    void suppress(const Suppressions::ErrorMessage& msg) override {
+        mThreadExecutor.mSettings.nomsg.isSuppressed(msg);
+    }
+
     ThreadExecutor &mThreadExecutor;
 
     std::map<std::string, std::size_t>::const_iterator mItNextFile;

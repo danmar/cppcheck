@@ -106,6 +106,7 @@ protected:
 public:
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
+    void suppress(const Suppressions::ErrorMessage&) override {}
     void run(const std::string &str);
     static void printHelp();
     const std::string classname;

@@ -43,6 +43,8 @@ private:
         void reportErr(const ErrorMessage &msg) override {
             id.push_back(msg.id);
         }
+
+        void suppress(const Suppressions::ErrorMessage&) {}
     };
 
     void run() override {
