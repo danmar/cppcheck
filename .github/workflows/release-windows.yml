@@ -67,7 +67,7 @@ jobs:
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
-          tools: 'tools_openssl_x64,1.1.1-10,qt.tools.openssl.win_x64'
+          tools: 'tools_openssl_x64,qt.tools.openssl.win_x64'
           cache: true
 
       - name: Create .qm
