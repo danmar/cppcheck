@@ -55,6 +55,13 @@ CheckUnusedFunctions CheckUnusedFunctions::instance;
 
 static const struct CWE CWE561(561U);   // Dead Code
 
+static std::string stripTemplateParameters(const std::string& funcName) {
+    std::string name = funcName;
+    const auto pos = name.find('<');
+    if (pos > 0 && pos != std::string::npos)
+        name.erase(pos - 1);
+    return name;
+}
 
 //---------------------------------------------------------------------------
 // FUNCTION USAGE - Check for unused functions etc
@@ -80,7 +87,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         mFunctionDecl.emplace_back(func);
 
-        FunctionUsage &usage = mFunctions[func->name()];
+        FunctionUsage &usage = mFunctions[stripTemplateParameters(func->name())];
 
         if (!usage.lineNumber)
             usage.lineNumber = func->token->linenr();
@@ -236,7 +243,8 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (funcname) {
-            FunctionUsage &func = mFunctions[funcname->str()];
+            const auto baseName = stripTemplateParameters(funcname->str());
+            FunctionUsage &func = mFunctions[baseName];
             const std::string& called_from_file = tokenizer.list.getSourceFilePath();
 
             if (func.filename.empty() || func.filename == "+" || func.filename != called_from_file)
@@ -244,7 +252,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             else
                 func.usedSameFile = true;
 
-            mFunctionCalls.insert(funcname->str());
+            mFunctionCalls.insert(baseName);
         }
     }
 }

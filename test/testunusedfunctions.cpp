@@ -51,6 +51,7 @@ private:
         TEST_CASE(template6); // #10475 crash
         TEST_CASE(template7); // #9766 crash
         TEST_CASE(template8);
+        TEST_CASE(template9);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -307,6 +308,23 @@ private:
               "int main() {\n"
               "    C c;\n"
               "    c.tf<int>(1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+    
+
+    void template9() { // #7739
+        check("template<class T>\n"
+              "void f(T const& t) {}\n"
+              "template<class T>\n"
+              "void g(T const& t) {\n"
+              "    f(t);\n"
+              "}\n"
+              "template<>\n"
+              "void f<double>(double const& d) {}\n"
+              "int main() {\n"
+              "    g(2);\n"
+              "    g(3.14);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
