@@ -664,7 +664,7 @@ private:
         ASSERT(settings->severity.isEnabled(Severity::portability));
         ASSERT(!settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT(!settings->checks.isEnabled(Checks::internalCheck));
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: '--enable=style' will no longer implicitly enable 'warning', 'performance' and 'portability' in a future version. Please specify them explicitly instead.\n", GET_REDIRECT_OUTPUT);
     }
 
     void enabledPerformance() {
@@ -777,7 +777,9 @@ private:
         ASSERT_EQUALS(false, settings->severity.isEnabled(Severity::debug));
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::missingInclude));
+#ifdef CHECK_INTERNAL
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::internalCheck));
+#endif
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -795,7 +797,9 @@ private:
         ASSERT_EQUALS(true, settings->severity.isEnabled(Severity::debug));
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::unusedFunction));
         ASSERT_EQUALS(true, settings->checks.isEnabled(Checks::missingInclude));
+#ifdef CHECK_INTERNAL
         ASSERT_EQUALS(false, settings->checks.isEnabled(Checks::internalCheck));
+#endif
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
