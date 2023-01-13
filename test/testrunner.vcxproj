@@ -71,6 +71,7 @@
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testprocessexecutor.cpp" />
     <ClCompile Include="testrunner.cpp" />
+    <ClCompile Include="testsettings.cpp" />
     <ClCompile Include="testsimplifytemplate.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
     <ClCompile Include="testsimplifytypedef.cpp" />

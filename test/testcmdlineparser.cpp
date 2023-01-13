@@ -88,6 +88,8 @@ private:
         TEST_CASE(enabledInternal);
 #endif
         TEST_CASE(enabledMultiple);
+        TEST_CASE(disableAll);
+        TEST_CASE(disableMultiple);
         TEST_CASE(inconclusive);
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
@@ -651,6 +653,42 @@ private:
         ASSERT(settings.severity.isEnabled(Severity::portability));
         ASSERT(!settings.checks.isEnabled(Checks::unusedFunction));
         ASSERT(settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableAll() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=all", "--disable=all"};
+        settings.severity.clear();
+        settings.checks.clear();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::style));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::performance));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::portability));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::debug));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::unusedFunction));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableMultiple() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=all", "--disable=style", "--disable=unusedFunction"};
+        settings.severity.clear();
+        settings.checks.clear();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::style));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::performance));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::portability));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::debug));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::unusedFunction));
+        ASSERT_EQUALS(true, settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
