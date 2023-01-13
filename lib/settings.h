@@ -328,8 +328,8 @@ public:
     SafeChecks safeChecks;
 
     SimpleEnableGroup<Severity::SeverityType> severity;
-    SimpleEnableGroup<Certainty::CertaintyLevel> certainty;
-    SimpleEnableGroup<Checks::CheckList> checks;
+    SimpleEnableGroup<Certainty> certainty;
+    SimpleEnableGroup<Checks> checks;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
     SHOWTIME_MODES showtime;
@@ -345,7 +345,7 @@ public:
      *  text mode, e.g. "{file}:{line} {info}" */
     std::string templateLocation;
 
-    /** @brief The maximum time in seconds for the template instantation */
+    /** @brief The maximum time in seconds for the template instantiation */
     std::size_t templateMaxTime;
 
     /** @brief The maximum time in seconds for the typedef simplification */

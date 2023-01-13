@@ -602,7 +602,7 @@ static void setTokenValue(Token* tok,
         const Token* callParent = findParent(parent, [](const Token* p) {
             return !Token::simpleMatch(p, ",");
         });
-        // Ensure that the comma isnt a function call
+        // Ensure that the comma isn't a function call
         if (!callParent || (!Token::Match(callParent->previous(), "%name%|> (") && !Token::simpleMatch(callParent, "{"))) {
             setTokenValue(parent, std::move(value), settings);
             return;
@@ -5482,7 +5482,7 @@ static void valueFlowForwardConst(Token* start,
                     }
                     return;
                 }
-                // Follow symbolic vaues
+                // Follow symbolic values
                 for (const ValueFlow::Value& v : tok->values()) {
                     if (!v.isSymbolicValue())
                         continue;
@@ -9205,7 +9205,7 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& s
         return {};
     if (size.bound == ValueFlow::Value::Bound::Lower)
         return {};
-    // Checking for underflow doesnt mean it could be out of bounds
+    // Checking for underflow doesn't mean it could be out of bounds
     if (indexValue->intvalue == 0)
         return {};
     ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);

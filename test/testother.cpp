@@ -2349,8 +2349,7 @@ private:
         check("void f(std::vector<int>& v) {\n"
               "    for(auto& x:v) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
-                      "[test.cpp:2]: (style) Variable 'x' can be declared as reference to const\n",
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' can be declared as reference to const\n",
                       errout.str());
 
         check("void f(std::vector<int>& v) {\n" // #10980
@@ -3018,6 +3017,16 @@ private:
         check("void f(std::map<int, int>& m) {\n"
               "    std::cout << m[0] << std::endl;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #11473
+              "void f(std::vector<std::vector<S>>&m, int*& p) {\n"
+              "    auto& a = m[0];\n"
+              "    for (auto& s : a) {\n"
+              "        p = &s.i;\n"
+              "        return;\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
