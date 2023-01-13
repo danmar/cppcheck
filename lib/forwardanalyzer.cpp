@@ -770,7 +770,7 @@ struct ForwardTraversal {
                 tryTraversal.updateRange(tok->next(), endBlock, depth - 1);
                 bool bail = tryTraversal.actions.isModified();
                 if (bail)
-                    analyzer->lowerToPossible();
+                    return Break();
 
                 while (Token::simpleMatch(endBlock, "} catch (")) {
                     Token* endCatch = endBlock->linkAt(2);
