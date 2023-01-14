@@ -265,6 +265,7 @@ private:
         TEST_CASE(moveCallback);
         TEST_CASE(moveClassVariable);
         TEST_CASE(forwardAndUsed);
+        TEST_CASE(moveAndReference);
 
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
@@ -10191,6 +10192,18 @@ private:
               "    T s = t;\n"
               "}", &keepTemplates);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
+    }
+
+    void moveAndReference() { // #9791
+        check("void g(std::string&&);\n"
+              "void h(const std::string&);\n"
+              "void f() {\n"
+              "    std::string s;\n"
+              "    const std::string& r = s;\n"
+              "    g(std::move(s));\n"
+              "    h(r);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable 'r'.\n", errout.str());
     }
 
     void funcArgNamesDifferent() {

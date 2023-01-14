@@ -5407,6 +5407,18 @@ private:
                         "		(void)p[i];\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11492
+        valueFlowUninit("void f() {\n"
+                        "    int i;\n"
+                        "    try {\n"
+                        "        i = 0;\n"
+                        "    }\n"
+                        "    catch (...) {\n"
+                        "        if (i) {}\n"
+                        "    }\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
