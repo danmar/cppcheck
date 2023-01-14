@@ -1129,8 +1129,19 @@ private:
     }
 
     void varid59() { // #6696
-        const char code[] = "class DLLSYM B;\n";
-        ASSERT_THROW(tokenize(code), InternalError);
+        const char code[] = "class DLLSYM B;\n"
+                            "struct B {\n"
+                            "    ~B() {}\n"
+                            "};";
+        const char expected[] = "1: class DLLSYM B@1 ;\n" // In this line, we cannot really do better...
+                                "2: struct B {\n"
+                                "3: ~ B@1 ( ) { }\n" // ...but here we could
+                                "4: } ;\n";
+        const char wanted[] = "1: class DLLSYM B@1 ;\n"
+                              "2: struct B {\n"
+                              "3: ~ B ( ) { }\n"
+                              "4: } ;\n";
+        TODO_ASSERT_EQUALS(wanted, expected, tokenize(code, "test.cpp"));
     }
 
     void varid60() { // #7267 - cast
