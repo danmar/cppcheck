@@ -17,6 +17,9 @@ parser.add_argument('--debug-warnings', action='store_true', help='passed throug
 parser.add_argument('--check-library', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--timeout', type=int, default=2, help='the amount of seconds to wait for the analysis to finish')
 parser.add_argument('--compact', action='store_true', help='only print versions with changes with --compare')
+parser.add_argument('--no-quiet', action='store_true', default=False, help='do not specify -q')
+parser.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
+parser.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
 args = parser.parse_args()
 
 def sort_commit_hashes(commits):
@@ -35,6 +38,10 @@ if args.compact:
     if not do_compare:
         print('error: --compact requires --compare')
         sys.exit(1)
+
+if args.no_stdout and args.no_stderr:
+    print('error: cannot specify --no-stdout and --no-stderr at once')
+    sys.exit(1)
 
 directory = args.dir
 input_file = args.infile
@@ -99,7 +106,7 @@ for entry in versions:
 
     cmd = exe
     cmd += ' '
-    if do_compare:
+    if do_compare and not args.no_quiet:
         cmd += ' -q '
     if args.debug and Version(version) >= Version('1.45'):
         cmd += '--debug '
@@ -121,7 +128,13 @@ for entry in versions:
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
         comm = p.communicate(timeout=args.timeout)
-        out = comm[0] + '\n' + comm[1]
+        out = ''
+        if not args.no_stdout:
+            out += comm[0]
+        if not args.no_stderr and not args.no_stderr:
+            out += '\n'
+        if not args.no_stderr:
+            out += comm[1]
     except subprocess.TimeoutExpired:
         out = "timeout"
         p.kill()
