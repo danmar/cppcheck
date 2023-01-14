@@ -122,7 +122,7 @@ std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnab
         while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
                 return std::string("--enable parameter is empty");
-            const std::string errmsg(parseEnabled(str.substr(prevPos, pos - prevPos), groups));
+            std::string errmsg(parseEnabled(str.substr(prevPos, pos - prevPos), groups));
             if (!errmsg.empty())
                 return errmsg;
             ++pos;
@@ -166,13 +166,14 @@ std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnab
     }
 #endif
     else {
+        // the actual option is prepending in the applyEnabled() call
         if (str.empty())
-            return std::string("cppcheck: --enable parameter is empty");
+            return " parameter is empty";
         else
-            return std::string("cppcheck: there is no --enable parameter with the name '" + str + "'");
+            return " parameter with the unknown name '" + str + "'";
     }
 
-    return std::string();
+    return "";
 }
 
 std::string Settings::addEnabled(const std::string &str)
@@ -188,9 +189,9 @@ std::string Settings::removeEnabled(const std::string &str)
 std::string Settings::applyEnabled(const std::string &str, bool enable)
 {
     std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> groups;
-    const std::string errmsg = parseEnabled(str, groups);
+    std::string errmsg = parseEnabled(str, groups);
     if (!errmsg.empty())
-        return errmsg;
+        return (enable ? "--enable" : "--disable") + errmsg;
 
     const auto s = std::get<0>(groups);
     const auto c = std::get<1>(groups);
