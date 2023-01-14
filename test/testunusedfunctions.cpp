@@ -50,6 +50,8 @@ private:
         TEST_CASE(template5);
         TEST_CASE(template6); // #10475 crash
         TEST_CASE(template7); // #9766 crash
+        TEST_CASE(template8);
+        TEST_CASE(template9);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -280,6 +282,50 @@ private:
               "    std::array<std::array<double,3>,3> array;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
+    }
+
+    void template8() { // #11485
+        check("struct S {\n"
+              "    template<typename T>\n"
+              "    void tf(const T&) { }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'tf' is never used.\n", errout.str());
+
+        check("struct S {\n"
+              "    template<typename T>\n"
+              "    void tf(const T&) { }\n"
+              "};\n"
+              "int main() {\n"
+              "    C c;\n"
+              "    c.tf(1.5);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    template<typename T>\n"
+              "    void tf(const T&) { }\n"
+              "};\n"
+              "int main() {\n"
+              "    C c;\n"
+              "    c.tf<int>(1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template9() { // #7739
+        check("template<class T>\n"
+              "void f(T const& t) {}\n"
+              "template<class T>\n"
+              "void g(T const& t) {\n"
+              "    f(t);\n"
+              "}\n"
+              "template<>\n"
+              "void f<double>(double const& d) {}\n"
+              "int main() {\n"
+              "    g(2);\n"
+              "    g(3.14);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void throwIsNotAFunction() {
