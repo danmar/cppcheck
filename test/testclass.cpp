@@ -6204,8 +6204,8 @@ private:
                       errout.str());
     }
 
-    void const81() { // #11330
-        checkConst("struct A {\n"
+    void const81() {
+        checkConst("struct A {\n" // #11330
                    "    bool f() const;\n"
                    "};\n"
                    "struct S {\n"
@@ -6215,6 +6215,20 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
+
+        checkConst("struct A {\n" // #11499
+                   "    void f() const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
                       errout.str());
     }
 

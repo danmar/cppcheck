@@ -2377,6 +2377,15 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     break;
             }
 
+            auto hasOverloadedMemberAccess = [](const Token* tok, const Scope* scope) -> bool {
+                if (!scope || !Token::simpleMatch(tok, "."))
+                    return false;
+                auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) {
+                    return f.name() == "operator.";
+                });
+                return it != scope->functionList.end() && it->isConst();
+            };
+
             if (end->strAt(1) == "(") {
                 const Variable *var = lastVarTok->variable();
                 if (!var)
@@ -2391,6 +2400,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                          (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator")))))
                     ;
                 else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
+                    ;
+                }
+                else if (hasOverloadedMemberAccess(end->astParent(), var->typeScope())) {
                     ;
                 } else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
                     return false;
