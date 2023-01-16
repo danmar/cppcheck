@@ -370,6 +370,7 @@ struct ForwardTraversal {
                     }
                 }
             } else {
+                // cppcheck-suppress varid0 - TODO: fix this
                 if (ft1.front().terminate == Analyzer::Terminate::Escape) {
                     branch.escape = true;
                     branch.escapeUnknown = false;
