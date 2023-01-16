@@ -4550,3 +4550,9 @@ public:
         for (std::vector<std::string>::reverse_iterator it = m_str.rbegin(); it != m_str.rend(); ++it) {;}
     }
 };
+
+void addressof(int a)
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::addressof(a);
+}
