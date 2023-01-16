@@ -197,6 +197,7 @@ private:
         TEST_CASE(const78); // ticket #10315
         TEST_CASE(const79); // ticket #9861
         TEST_CASE(const80); // ticket #11328
+        TEST_CASE(const81); // ticket #11330
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6200,6 +6201,20 @@ private:
                       "[test.cpp:14] -> [test.cpp:5]: (performance, inconclusive) Technically the member function 'S::h' can be static (but you may consider moving to unnamed namespace).\n"
                       "[test.cpp:17] -> [test.cpp:6]: (style, inconclusive) Technically the member function 'S::k' can be const.\n"
                       "[test.cpp:21] -> [test.cpp:7]: (performance, inconclusive) Technically the member function 'S::m' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
+    }
+
+    void const81() { // #11330
+        checkConst("struct A {\n"
+                   "    bool f() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    std::shared_ptr<A> a;\n"
+                   "    void g() {\n"
+                   "        if (a->f()) {}\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
                       errout.str());
     }
 

@@ -2263,7 +2263,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
 {
     if (!tok->function())
         return false;
-    else if (tok->function()->nestedIn == scope)
+    if (tok->function()->nestedIn == scope)
         return tok->function()->isConst();
 
     // not found in this class
@@ -2390,7 +2390,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                      && (tok1->previous()->isComparisonOp() ||
                          (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator")))))
                     ;
-                else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
+                else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
+                    ;
+                } else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
                     return false;
             }
 
