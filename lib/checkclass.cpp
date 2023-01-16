@@ -2390,7 +2390,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                      && (tok1->previous()->isComparisonOp() ||
                          (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator")))))
                     ;
-                else if (var->isSmartPointer() && var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
+                else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
                     ;
                 } else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
                     return false;
