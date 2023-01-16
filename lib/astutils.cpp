@@ -916,9 +916,10 @@ static const Token * getVariableInitExpression(const Variable * var)
     return varDeclEndToken->astOperand2();
 }
 
-static bool isInLoopCondition(const Token * tok)
+const Token* isInLoopCondition(const Token* tok)
 {
-    return Token::Match(tok->astTop()->previous(), "for|while (");
+    const Token* top = tok->astTop();
+    return top && Token::Match(top->previous(), "for|while (") ? top : nullptr;
 }
 
 /// If tok2 comes after tok1

@@ -2459,20 +2459,23 @@ void CheckOther::checkDuplicateExpression()
                                      followVar,
                                      &errorPath)) {
                     if (isWithoutSideEffects(cpp, tok->astOperand1())) {
-                        const bool assignment = tok->str() == "=";
-                        if (assignment && warningEnabled)
-                            selfAssignmentError(tok, tok->astOperand1()->expressionString());
-                        else if (styleEnabled) {
-                            if (cpp && mSettings->standards.cpp >= Standards::CPP11 && tok->str() == "==") {
-                                const Token* parent = tok->astParent();
-                                while (parent && parent->astParent()) {
-                                    parent = parent->astParent();
+                        const Token* loopTok = isInLoopCondition(tok);
+                        if (!loopTok || !isExpressionChanged(tok, tok, loopTok->link()->next()->link(), mSettings, cpp)) {
+                            const bool assignment = tok->str() == "=";
+                            if (assignment && warningEnabled)
+                                selfAssignmentError(tok, tok->astOperand1()->expressionString());
+                            else if (styleEnabled) {
+                                if (cpp && mSettings->standards.cpp >= Standards::CPP11 && tok->str() == "==") {
+                                    const Token* parent = tok->astParent();
+                                    while (parent && parent->astParent()) {
+                                        parent = parent->astParent();
+                                    }
+                                    if (parent && parent->previous() && parent->previous()->str() == "static_assert") {
+                                        continue;
+                                    }
                                 }
-                                if (parent && parent->previous() && parent->previous()->str() == "static_assert") {
-                                    continue;
-                                }
+                                duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
                             }
-                            duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
                         }
                     }
                 } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") &&
