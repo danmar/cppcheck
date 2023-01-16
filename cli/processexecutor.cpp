@@ -272,9 +272,7 @@ unsigned int ProcessExecutor::check()
                     resultOfCheck = fileChecker.check(iFile->first);
                 }
 
-                std::ostringstream oss;
-                oss << resultOfCheck;
-                pipewriter.writeEnd(oss.str());
+                pipewriter.writeEnd(std::to_string(resultOfCheck));
                 std::exit(EXIT_SUCCESS);
             }
 
