@@ -32,7 +32,6 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <utility>
 
@@ -2422,9 +2421,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
                     tok->deleteNext();
                     tok->deleteThis();
                     tok->deleteNext();
-                    std::ostringstream sz;
-                    sz << 1;
-                    tok->str(sz.str());
+                    tok->str(std::to_string(1));
                     again = true;
                 }
 
@@ -2433,9 +2430,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
                     tok->deleteNext();
                     tok->deleteThis();
                     tok->deleteNext();
-                    std::ostringstream ostr;
-                    ostr << (Token::getStrLength(tok) + 1);
-                    tok->str(ostr.str());
+                    tok->str(std::to_string(Token::getStrLength(tok) + 1));
                     again = true;
                 }
 
