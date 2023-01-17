@@ -6222,14 +6222,28 @@ private:
                    "};\n"
                    "template<class T>\n"
                    "struct P {\n"
+                   "    T* operator->();\n"
                    "    const T* operator->() const;\n"
                    "};\n"
                    "struct S {\n"
                    "    P<A> p;\n"
                    "    void g() { p->f(); }\n"
                    "};\n");
-        ASSERT_EQUALS("[test.cpp:10]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+        ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
                       errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f();\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {

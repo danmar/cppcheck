@@ -2377,13 +2377,16 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     break;
             }
 
-            auto hasOverloadedMemberAccess = [](const Token* tok, const Scope* scope) -> bool {
-                if (!scope || !Token::simpleMatch(tok, "."))
+            auto hasOverloadedMemberAccess = [this](const Token* end, const Scope* scope) -> bool {
+                if (!end || !scope || !Token::simpleMatch(end->astParent(), "."))
                     return false;
                 auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) {
-                    return f.name() == "operator.";
+                    return f.isConst() && f.name() == "operator.";
                 });
-                return it != scope->functionList.end() && it->isConst();
+                if (it == scope->functionList.end() || !it->retType || !it->retType->classScope)
+                    return false;
+                const Function* func = it->retType->classScope->findFunction(end, /*requireConst*/ true);
+                return func && func->isConst();
             };
 
             if (end->strAt(1) == "(") {
@@ -2402,7 +2405,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
                     ;
                 }
-                else if (hasOverloadedMemberAccess(end->astParent(), var->typeScope())) {
+                else if (hasOverloadedMemberAccess(end, var->typeScope())) {
                     ;
                 } else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
                     return false;
