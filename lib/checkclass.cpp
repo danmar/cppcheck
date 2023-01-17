@@ -2294,8 +2294,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
     auto getFuncTok = [](const Token* tok) -> const Token* {
         if (Token::simpleMatch(tok, "this"))
             tok = getFuncTokFromThis(tok);
-        if ((Token::Match(tok, "%name% (|{") || Token::simpleMatch(tok->astParent(), "return {")) && !tok->isStandardType() && !tok->isKeyword())
+        bool isReturn = false;
+        if ((Token::Match(tok, "%name% (|{") || (isReturn = Token::simpleMatch(tok->astParent(), "return {"))) && !tok->isStandardType() && !tok->isKeyword()) {
+            if (isReturn)
+                tok = tok->astParent();
             return tok;
+        }
         return nullptr;
     };
 

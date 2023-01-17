@@ -6247,6 +6247,23 @@ private:
         ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'S::g' can be const.\n", errout.str());
 
         checkConst("struct A {\n"
+                   "    void f(void*) const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "    P<T>& operator=(P) {\n"
+                   "        return *this;\n"
+                   "    }\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    std::vector<S> g() { p->f(nullptr); return {}; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:14]: (style, inconclusive) Technically the member function 'S::g' can be const.\n", errout.str());
+
+        checkConst("struct A {\n"
                    "    void f();\n"
                    "};\n"
                    "template<class T>\n"
