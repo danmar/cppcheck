@@ -2313,11 +2313,11 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
         const Token *lpar = funcTok->next();
         if (Token::simpleMatch(lpar, "( ) ("))
             lpar = lpar->tokAt(2);
-        for (const Token* tok2 = lpar->next(); tok2 && tok2 != funcTok->next()->link(); tok2 = tok2->next()) {
-            if (tok2->str() == "(")
-                tok2 = tok2->link();
-            else if ((tok2->isName() && isMemberVar(scope, tok2)) || (tok2->isUnaryOp("&") && (tok2 = tok2->astOperand1()))) {
-                const Variable* var = tok2->variable();
+        for (const Token* tok = lpar->next(); tok && tok != funcTok->next()->link(); tok = tok->next()) {
+            if (tok->str() == "(")
+                tok = tok->link();
+            else if ((tok->isName() && isMemberVar(scope, tok)) || (tok->isUnaryOp("&") && (tok = tok->astOperand1()))) {
+                const Variable* var = tok->variable();
                 if (!var || !var->isMutable())
                     return false; // TODO: Only bailout if function takes argument as non-const reference
             }
