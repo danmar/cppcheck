@@ -243,10 +243,11 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
 }
 
 bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger) {
-    for (const Suppressions::Suppression& suppression: settings.nomsg.getSuppressions()) {
-        if (suppression.errorId == "unmatchedSuppression" && suppression.fileName.empty() && suppression.lineNumber == Suppressions::Suppression::NO_LINE)
-            return false;
-    }
+    const auto& suppressions = settings.nomsg.getSuppressions();
+    if (std::any_of(suppressions.begin(), suppressions.end(), [](const Suppressions::Suppression& s) {
+        return s.errorId == "unmatchedSuppression" && s.fileName.empty() && s.lineNumber == Suppressions::Suppression::NO_LINE;
+    }))
+        return false;
 
     bool err = false;
     if (settings.jointSuppressionReport) {

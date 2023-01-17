@@ -4633,10 +4633,12 @@ const Token *Scope::checkVariable(const Token *tok, AccessControl varaccess, con
 
 const Variable *Scope::getVariable(const std::string &varname) const
 {
-    for (const Variable& var: varlist) {
-        if (var.name() == varname)
-            return &var;
-    }
+    auto it = std::find_if(varlist.begin(), varlist.end(), [&varname](const Variable& var) {
+        return var.name() == varname;
+    });
+    if (it != varlist.end())
+        return &*it;
+
     if (definedType) {
         for (const Type::BaseInfo& baseInfo: definedType->derivedFrom) {
             if (baseInfo.type && baseInfo.type->classScope) {
