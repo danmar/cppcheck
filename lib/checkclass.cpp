@@ -2299,6 +2299,28 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
         return nullptr;
     };
 
+    auto checkFuncCall = [this, &memberAccessed](const Token* funcTok, const Scope* scope) {
+        if (isMemberFunc(scope, funcTok) && (funcTok->strAt(-1) != "." || Token::simpleMatch(funcTok->tokAt(-2), "this ."))) {
+            if (!isConstMemberFunc(scope, funcTok))
+                return false;
+            memberAccessed = true;
+        }
+        // Member variable given as parameter
+        const Token *lpar = funcTok->next();
+        if (Token::simpleMatch(lpar, "( ) ("))
+            lpar = lpar->tokAt(2);
+        for (const Token* tok2 = lpar->next(); tok2 && tok2 != funcTok->next()->link(); tok2 = tok2->next()) {
+            if (tok2->str() == "(")
+                tok2 = tok2->link();
+            else if ((tok2->isName() && isMemberVar(scope, tok2)) || (tok2->isUnaryOp("&") && (tok2 = tok2->astOperand1()))) {
+                const Variable* var = tok2->variable();
+                if (!var || !var->isMutable())
+                    return false; // TODO: Only bailout if function takes argument as non-const reference
+            }
+        }
+        return true;
+    };
+
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
     for (const Token *tok1 = func->functionScope->bodyStart; tok1 && tok1 != func->functionScope->bodyEnd; tok1 = tok1->next()) {
@@ -2434,8 +2456,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
 
             tok1 = jumpBackToken?jumpBackToken:end; // Jump back to first [ to check inside, or jump to end of expression
-            if (tok1 == end && Token::Match(end->previous(), ". %name% ( !!)"))
-                tok1 = tok1->previous(); // check function call
+            if (tok1 == end && Token::Match(end->previous(), ". %name% ( !!)") && !checkFuncCall(tok1, scope)) // function call on member
+                return false;
         }
 
         // streaming: <<
@@ -2453,24 +2475,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
 
         // function/constructor call, return init list
         else if (const Token* funcTok = getFuncTok(tok1)) {
-            if (isMemberFunc(scope, funcTok) && (funcTok->strAt(-1) != "." || Token::simpleMatch(funcTok->tokAt(-2), "this ."))) {
-                if (!isConstMemberFunc(scope, funcTok))
-                    return false;
-                memberAccessed = true;
-            }
-            // Member variable given as parameter
-            const Token *lpar = funcTok->next();
-            if (Token::simpleMatch(lpar, "( ) ("))
-                lpar = lpar->tokAt(2);
-            for (const Token* tok2 = lpar->next(); tok2 && tok2 != funcTok->next()->link(); tok2 = tok2->next()) {
-                if (tok2->str() == "(")
-                    tok2 = tok2->link();
-                else if ((tok2->isName() && isMemberVar(scope, tok2)) || (tok2->isUnaryOp("&") && (tok2 = tok2->astOperand1()))) {
-                    const Variable* var = tok2->variable();
-                    if (!var || !var->isMutable())
-                        return false; // TODO: Only bailout if function takes argument as non-const reference
-                }
-            }
+            if (!checkFuncCall(funcTok, scope))
+                return false;
         } else if (Token::simpleMatch(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
             return false;
         }
