@@ -142,7 +142,7 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr) const {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
             if (tok == end)
