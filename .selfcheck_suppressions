@@ -2,7 +2,6 @@ shadowFunction
 bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
-useStlAlgorithm
 simplifyUsing:lib/valueptr.h
 varid0:gui/projectfile.cpp
 
