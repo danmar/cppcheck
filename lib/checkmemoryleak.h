@@ -183,7 +183,7 @@ public:
     /**
      * Checking for a memory leak caused by improper realloc usage.
      */
-    void checkReallocUsage();
+    void checkReallocUsage() const;
 
 private:
     /** Report all possible errors (for the --errorlist) */

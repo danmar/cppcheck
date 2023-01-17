@@ -452,7 +452,7 @@ bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, con
 //     a = malloc(10); a = realloc(a, 100);
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeakInFunction::checkReallocUsage()
+void CheckMemoryLeakInFunction::checkReallocUsage() const
 {
     // only check functions
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
