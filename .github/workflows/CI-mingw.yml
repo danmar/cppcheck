@@ -1,0 +1,37 @@
+# Some convenient links:
+# - https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
+#
+
+name: CI-mingw
+
+on: [push,pull_request]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  build_mingw:
+    strategy:
+      matrix:
+        os: [windows-2019] # fails to download with "windows-2022"
+        arch: [x64] # TODO: fix x86 build?
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: ${{ matrix.arch }}
+
+      # MinGW will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
+      - name: Build all and run test
+        run: |
+          mingw32-make VERBOSE=1 -j2 check
