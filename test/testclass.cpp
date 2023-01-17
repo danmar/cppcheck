@@ -6237,7 +6237,21 @@ private:
                    "};\n"
                    "template<class T>\n"
                    "struct P {\n"
+                   "    T* operator->();\n"
                    "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f() const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
                    "};\n"
                    "struct S {\n"
                    "    P<A> p;\n"

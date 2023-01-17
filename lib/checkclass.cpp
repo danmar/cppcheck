@@ -2377,7 +2377,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     break;
             }
 
-            auto hasOverloadedMemberAccess = [this](const Token* end, const Scope* scope) -> bool {
+            auto hasOverloadedMemberAccess = [](const Token* end, const Scope* scope) -> bool {
                 if (!end || !scope || !Token::simpleMatch(end->astParent(), "."))
                     return false;
                 auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) {
