@@ -3286,7 +3286,6 @@ void CheckOther::checkAccessOfMovedVariable()
 {
     if (!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11 || !mSettings->severity.isEnabled(Severity::warning))
         return;
-    CheckUninitVar checkUninitVar(mTokenizer, mSettings, mErrorLogger);
     const bool reportInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
