@@ -314,12 +314,13 @@ namespace simplecpp {
      * On the command line these are configured by -D, -U, -I, --include, -std
      */
     struct SIMPLECPP_LIB DUI {
-        DUI() {}
+        DUI() : clearIncludeCache(false) {}
         std::list<std::string> defines;
         std::set<std::string> undefined;
         std::list<std::string> includePaths;
         std::list<std::string> includes;
         std::string std;
+        bool clearIncludeCache;
     };
 
     SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);
