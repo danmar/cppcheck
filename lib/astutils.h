@@ -246,6 +246,8 @@ bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
 bool isStructuredBindingVariable(const Variable* var);
 
+const Token* isInLoopCondition(const Token* tok);
+
 /**
  * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
  */

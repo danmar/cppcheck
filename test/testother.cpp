@@ -6414,6 +6414,22 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The comparison 'a != 1' is always false.\n", errout.str());
+
+        check("struct T {\n" // #11083
+              "    std::string m;\n"
+              "    const std::string & str() const { return m; }\n"
+              "    T* next();\n"
+              "};\n"
+              "void f(T* t) {\n"
+              "    const std::string& s = t->str();\n"
+              "    while (t && t->str() == s)\n"
+              "        t = t->next();\n"
+              "    do {\n"
+              "        t = t->next();\n"
+              "    } while (t && t->str() == s);\n"
+              "    for (; t && t->str() == s; t = t->next());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionTernary() { // #6391
