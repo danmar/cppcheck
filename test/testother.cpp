@@ -4890,6 +4890,15 @@ private:
               "    int i;\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10337
+              "    int b[2] = { 1, 2 };\n"
+              "    int idx = 0;\n"
+              "    int& i = b[idx];\n"
+              "    idx++;\n"
+              "    i = b[idx];\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {

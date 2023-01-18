@@ -1481,8 +1481,16 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (!tok_str_eq) {
         const Token* refTok1 = followReferences(tok1, errors);
         const Token* refTok2 = followReferences(tok2, errors);
-        if (refTok1 != tok1 || refTok2 != tok2)
+        if (refTok1 != tok1 || refTok2 != tok2) {
+            if (refTok1 && !refTok1->varId() && refTok2 && !refTok2->varId()) { // complex reference expression
+                const Token *start = refTok1, *end = refTok2;
+                if (!precedes(start, end))
+                    std::swap(start, end);
+                if (isExpressionChanged(start, start, end, nullptr, cpp))
+                    return false;
+            }
             return isSameExpression(cpp, macro, refTok1, refTok2, library, pure, followVar, errors);
+        }
     }
     if (tok1->varId() != tok2->varId() || !tok_str_eq || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>") && Token::Match(tok2,"<|>")) ||
