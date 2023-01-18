@@ -982,7 +982,7 @@ std::string Library::getFunctionName(const Token *ftok, bool *error) const
 
 std::string Library::getFunctionName(const Token *ftok) const
 {
-    if (!Token::Match(ftok, "%name% (") && (ftok->strAt(-1) != "&" || ftok->previous()->astOperand2()))
+    if (!Token::Match(ftok, "%name% )| (") && (ftok->strAt(-1) != "&" || ftok->previous()->astOperand2()))
         return "";
 
     // Lookup function name using AST..
@@ -1228,6 +1228,8 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
 
 bool Library::matchArguments(const Token *ftok, const std::string &functionName) const
 {
+    if (functionName.empty())
+        return false;
     const int callargs = numberOfArgumentsWithoutAst(ftok);
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
     if (it == functions.cend())
