@@ -442,10 +442,10 @@ public:
     }
     bool isUnaryPreOp() const;
 
-    unsigned int flags() const {
+    uint64_t flags() const {
         return mFlags;
     }
-    void flags(const unsigned int flags_) {
+    void flags(const uint64_t flags_) {
         mFlags = flags_;
     }
     bool isUnsigned() const {
