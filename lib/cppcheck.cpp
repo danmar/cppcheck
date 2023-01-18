@@ -1764,7 +1764,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
         return;
     }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
-        CheckUnusedFunctions::analyseWholeProgram(this, buildDir);
+        CheckUnusedFunctions::analyseWholeProgram(mSettings, this, buildDir);
     std::list<Check::FileInfo*> fileInfoList;
     CTU::FileInfo ctuFileInfo;
 

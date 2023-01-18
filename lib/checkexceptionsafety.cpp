@@ -322,9 +322,7 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         // only check functions without exception specification
-        if (scope->function && !scope->function->isThrow() &&
-            scope->className != "main" && scope->className != "wmain" &&
-            scope->className != "_tmain" && scope->className != "WinMain") {
+        if (scope->function && !scope->function->isThrow() && !mSettings->library.isentrypoint(scope->className)) {
             for (const Token *tok = scope->function->functionScope->bodyStart->next();
                  tok != scope->function->functionScope->bodyEnd; tok = tok->next()) {
                 if (tok->str() == "try") {

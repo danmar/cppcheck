@@ -643,6 +643,13 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             }
         }
 
+        else if (nodename == "entrypoint") {
+            const char * const type_name = node->Attribute("name");
+            if (type_name == nullptr)
+                return Error(ErrorCode::MISSING_ATTRIBUTE, "name");
+            mEntrypoints.emplace(type_name);
+        }
+
         else
             unknown_elements.insert(nodename);
     }
