@@ -2573,6 +2573,8 @@ private:
             ASSERT_EQUALS("static void * thread_local_var ; "
                           "void * thread_local_var_2 ;", tokenizeAndStringify(code));
         }
+
+        ASSERT_EQUALS("class Fred { } ;", tokenizeAndStringify("class DLLEXPORT Fred final { };"));
     }
 
     void implicitIntConst() {
@@ -6647,7 +6649,7 @@ private:
     void removeMacroInClassDef() { // #6058
         ASSERT_EQUALS("class Fred { } ;", tokenizeAndStringify("class DLLEXPORT Fred { } ;"));
         ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class Fred FINAL : Base { } ;"));
-        ASSERT_EQUALS("class Fred final : Base { } ;", tokenizeAndStringify("class DLLEXPORT Fred final : Base { } ;")); // #11422
+        ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class DLLEXPORT Fred final : Base { } ;")); // #11422
         // Regression for C code:
         ASSERT_EQUALS("struct Fred { } ;", tokenizeAndStringify("struct DLLEXPORT Fred { } ;", true, Settings::Native, "test.c"));
     }
