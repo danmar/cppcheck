@@ -223,6 +223,7 @@ private:
         TEST_CASE(vardecl27);  // #7850 - crash on valid C code
         TEST_CASE(vardecl28);
         TEST_CASE(vardecl29); // #9282
+        TEST_CASE(vardecl30);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -2518,6 +2519,14 @@ private:
                       tokenizeAndStringify(code));
     }
 
+    void vardecl30() {
+        const char code[] = "struct D {} const d;";
+        ASSERT_EQUALS("struct D { } ; struct D const d ;",
+                      tokenizeAndStringify(code, true, Settings::Native, "test.cpp"));
+        ASSERT_EQUALS("struct D { } ; struct D const d ;",
+                      tokenizeAndStringify(code, true, Settings::Native, "test.c"));
+    }
+
     void volatile_variables() {
         {
             const char code[] = "volatile int a=0;\n"
@@ -2578,15 +2587,15 @@ private:
     }
 
     void implicitIntConst() {
-        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;"));
-        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Settings::Native, "test.c"));
     }
 
     void implicitIntExtern() {
-        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;"));
-        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Settings::Native, "test.c"));
     }
 
     /**
