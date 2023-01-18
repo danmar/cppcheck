@@ -1759,8 +1759,10 @@ bool CppCheck::analyseWholeProgram()
 void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
 {
     executeAddonsWholeProgram(files);
-    if (buildDir.empty())
+    if (buildDir.empty()) {
+        removeCtuInfoFiles(files);
         return;
+    }
     if (mSettings.checks.isEnabled(Checks::unusedFunction))
         CheckUnusedFunctions::analyseWholeProgram(this, buildDir);
     std::list<Check::FileInfo*> fileInfoList;
@@ -1820,4 +1822,15 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
 bool CppCheck::isUnusedFunctionCheckEnabled() const
 {
     return (mSettings.jobs == 1 && mSettings.checks.isEnabled(Checks::unusedFunction));
+}
+
+void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files)
+{
+    if (mSettings.buildDir.empty()) {
+        for (const auto& f: files) {
+            const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
+            const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
+            std::remove(ctuInfoFileName.c_str());
+        }
+    }
 }
