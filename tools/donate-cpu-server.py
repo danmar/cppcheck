@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.35"
+SERVER_VERSION = "1.3.36"
 
 OLD_VERSION = '2.9'
 
@@ -225,10 +225,10 @@ def crashReport(results_path: str, query_params: dict):
                     if counts[1] == 'Crash!':
                         c_head = 'Crash'
                     html += fmt(package, datestr, c_version, c_head) + '\n'
-                    if package_url is not None:
-                        pkgs += '{}\n'.format(package_url)
                     if c_head != 'Crash':
                         break
+                    if package_url is not None:
+                        pkgs += '{}\n'.format(package_url)
                 elif line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
                     location_index = crash_line.rfind(' at ')
