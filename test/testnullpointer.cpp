@@ -2790,7 +2790,7 @@ private:
               "struct D : public B { int f() override; };\n"
               "int g(B* p) {\n"
               "    if (p) {\n"
-              "        auto d = dynamic_cast<B*>(p);\n"
+              "        auto d = dynamic_cast<D*>(p);\n"
               "        return d ? d->f() : 0;\n"
               "    }\n"
               "    return 0;\n"
