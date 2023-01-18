@@ -1990,18 +1990,28 @@ private:
     }
 
     void varid_in_class24() {
-        const char code[] = "class A {\n"
-                            "    Q_OBJECT\n"
-                            "public:\n"
-                            "    using QPtr = QPointer<A>;\n"
-                            "};\n";
+        const char *code{}, *expected{};
 
-        const char expected[] = "1: class A {\n"
-                                "2: Q_OBJECT\n"
-                                "3: public:\n"
-                                "4:\n"
-                                "5: } ;\n";
+        code = "class A {\n"
+               "    Q_OBJECT\n"
+               "public:\n"
+               "    using QPtr = QPointer<A>;\n"
+               "};\n";
+        expected = "1: class A {\n"
+                   "2: Q_OBJECT\n"
+                   "3: public:\n"
+                   "4:\n"
+                   "5: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
 
+        code = "class A {\n"
+               "    Q_OBJECT\n"
+               "    using QPtr = QPointer<A>;\n"
+               "};\n";
+        expected = "1: class A {\n"
+                   "2: Q_OBJECT\n"
+                   "3:\n"
+                   "4: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
 
