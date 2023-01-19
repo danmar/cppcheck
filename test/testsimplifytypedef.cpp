@@ -3073,11 +3073,11 @@ private:
 
     void simplifyTypedef143() { // #11506
         const char code[] = "typedef struct { int i; } B;\n"
-                             "void f() {\n"
-                             "    struct D : B {\n"
-                             "        char c;\n"
-                             "    };\n"
-                             "}\n";
+                            "void f() {\n"
+                            "    struct D : B {\n"
+                            "        char c;\n"
+                            "    };\n"
+                            "}\n";
         ASSERT_EQUALS("struct B { int i ; } ; void f ( ) { struct D : B { char c ; } ; }", tok(code));
     }
 
