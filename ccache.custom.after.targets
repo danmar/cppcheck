@@ -1,0 +1,20 @@
+<Project>
+  <!--PropertyGroup>
+    <CLToolPath>C:\Users\runneradmin\.cargo\bin</CLToolPath>
+  </PropertyGroup-->
+
+  <!-- The following will set the needed properties described in Tips above. -->
+  <!-- Creation of a precompiled header will have to be disabled separately. -->
+  <PropertyGroup>
+    <UseMultiToolTask>true</UseMultiToolTask>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ForcedIncludeFiles />
+      <ObjectFileName>$(IntDir)%(FileName).obj</ObjectFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile></PrecompiledHeaderFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>

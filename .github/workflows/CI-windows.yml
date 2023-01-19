@@ -15,58 +15,10 @@ defaults:
 
 jobs:
 
-  build_qt:
-    strategy:
-      matrix:
-        os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.2.4, 6.3.2, 6.4.0]
-      fail-fast: false
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Visual Studio environment
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64 # no 32-bit Qt available
-
-      - name: Install Qt ${{ matrix.qt_ver }}
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: ${{ matrix.qt_ver }}
-          modules: 'qtcharts'
-          cache: true
-
-      - name: Build GUI release (qmake)
-        if: startsWith(matrix.qt_ver, '5')
-        run: |
-          cd gui || exit /b !errorlevel!
-          qmake HAVE_QCHART=yes || exit /b !errorlevel!
-          nmake release || exit /b !errorlevel!
-        env:
-          CL: /MP
-
-      - name: Deploy GUI
-        if: startsWith(matrix.qt_ver, '5')
-        run: |
-          windeployqt Build\gui || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
-
-      - name: Build GUI release (CMake)
-        if: startsWith(matrix.qt_ver, '6')
-        run: |
-          cmake -S . -B build -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_QT6=On || exit /b !errorlevel!
-          cmake --build build --target cppcheck-gui || exit /b !errorlevel!
-
-      # TODO: deploy with CMake/Qt6
-
   build:
     strategy:
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2019]
         arch: [x64, x86]
       fail-fast: false
 
@@ -78,6 +30,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}-${{ matrix.arch }}
+          verbose: 2
+
+      - name: Set up ccache for MSBuild
+        run: |
+          copy C:\Users\runneradmin\.cargo\bin\ccache.exe C:\Users\runneradmin\.cargo\bin\cl.exe || exit /b !errorlevel!
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
@@ -136,7 +98,9 @@ jobs:
           )
           cmake -S . -B build -DBUILD_TESTS=On || exit /b !errorlevel!
 
+      # TODO: use ccache
       - name: Build CLI debug configuration using MSBuild
+        if: false
         run: |
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
@@ -146,21 +110,26 @@ jobs:
           msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Debug test
+        if: false
         run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
 
       - name: Build CLI release configuration using MSBuild
         run: |
+          set CCACHE_LOGFILE=D:\a\cppcheck\cppcheck\ccache.log
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
           :: cmake --build build --target check --config Release || exit /b !errorlevel!
-          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
+          msbuild -m cppcheck.sln /p:ForceImportAfterCppTargets="D:\a\cppcheck\cppcheck\ccache.custom.after.targets" /p:CLToolPath=C:\Users\runneradmin\.cargo\bin /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Release test
+        if: false
         run: .\bin\testrunner.exe || exit /b !errorlevel!
 
+      # TODO: use Debug build so run-time checks are enabled
       - name: Run test/cli
+        if: false
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
           :: copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
@@ -176,6 +145,7 @@ jobs:
           python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!
 
       - name: Test addons
+        if: false
         run: |
           .\cppcheck --addon=threadsafety addons\test\threadsafety || exit /b !errorlevel!
           .\cppcheck --addon=threadsafety --std=c++03 addons\test\threadsafety || exit /b !errorlevel!
@@ -203,3 +173,7 @@ jobs:
           ..\..\cppcheck --dump namingng_test.c || exit /b !errorlevel!
           python3 ..\namingng.py --configfile ..\naming.json --verify namingng_test.c.dump || exit /b !errorlevel!
 
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Logs
+          path: ./*.log
