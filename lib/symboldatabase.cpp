@@ -7083,6 +7083,19 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 setValueType(tok, vt);
             }
         }
+        // ternary operator
+        else if (tok->str() == "?" && Token::simpleMatch(tok->astOperand2(), ":")) {
+            std::pair<const Token*, const ValueType*> ops[2] = { { tok->astOperand2()->astOperand1(), nullptr }, { tok->astOperand2()->astOperand2(), nullptr } };
+            for (auto& op : ops) {
+                if (!op.first)
+                    break;
+                op.second = op.first->valueType();
+                if (!op.second && op.first->variable())
+                    op.second = op.first->variable()->valueType();
+            }
+            if (ops[0].second && ops[1].second && ops[0].second->isTypeEqual(ops[1].second))
+                setValueType(tok, *ops[0].second);
+        }
     }
 
     if (reportDebugWarnings && mSettings->debugwarnings) {

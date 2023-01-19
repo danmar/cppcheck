@@ -501,6 +501,7 @@ private:
         TEST_CASE(auto16);
         TEST_CASE(auto17); // #11163
         TEST_CASE(auto18);
+        TEST_CASE(auto19);
 
         TEST_CASE(unionWithConstructor);
 
@@ -8777,6 +8778,23 @@ private:
         ASSERT_EQUALS(autoTok->valueType()->constness, 3);
         ASSERT_EQUALS(autoTok->valueType()->pointer, 1);
         TODO_ASSERT(autoTok->valueType()->reference == Reference::LValue);
+    }
+
+    void auto19() {
+        GET_SYMBOL_DB("std::vector<int> v1(1), v2(2);\n"
+                      "auto& v = b ? v1 : v2;");
+        ASSERT_EQUALS(4, db->variableList().size());
+
+        const Variable* v = db->variableList()[3];
+        ASSERT(v->isReference());
+        const Token* varTok = Token::findsimplematch(tokenizer.tokens(), "v");
+        ASSERT(varTok && varTok->valueType());
+        ASSERT(varTok->valueType()->container);
+        TODO_ASSERT(Reference::LValue == varTok->valueType()->reference);
+        const Token* autoTok = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(autoTok && autoTok->valueType());
+        ASSERT(autoTok->valueType()->container);
+        TODO_ASSERT(Reference::LValue == autoTok->valueType()->reference);
     }
 
     void unionWithConstructor() {
