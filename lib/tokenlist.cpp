@@ -1957,10 +1957,24 @@ void TokenList::simplifyPlatformTypes()
 
 void TokenList::simplifyStdType()
 {
+    auto isVarDeclC = [](const Token* tok) -> bool {
+        if (!Token::simpleMatch(tok, "}"))
+            return false;
+        tok = tok->link()->previous();
+        while (Token::Match(tok, "%name%")) {
+            if (Token::Match(tok, "struct|union|enum"))
+                return true;
+            tok = tok->previous();
+        }
+        return false;
+    };
+
     for (Token *tok = front(); tok; tok = tok->next()) {
 
-        if (Token::Match(tok, "const|extern *|&|%name%") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+        if (isC() && Token::Match(tok, "const|extern *|&|%name%") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
             if (Token::Match(tok->next(), "%name% !!;"))
+                continue;
+            if (isVarDeclC(tok->previous()))
                 continue;
 
             tok->insertToken("int");

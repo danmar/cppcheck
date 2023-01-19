@@ -2833,8 +2833,10 @@ int numberOfArguments(const Token* ftok) {
 
 int numberOfArgumentsWithoutAst(const Token* start)
 {
-    int arguments=0;
-    const Token* const openBracket = start->next();
+    int arguments = 0;
+    const Token* openBracket = start->next();
+    while (Token::simpleMatch(openBracket, ")"))
+        openBracket = openBracket->next();
     if (openBracket && openBracket->str()=="(" && openBracket->next() && openBracket->next()->str()!=")") {
         const Token* argument=openBracket->next();
         while (argument) {

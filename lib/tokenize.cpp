@@ -8163,7 +8163,7 @@ void Tokenizer::simplifyDeclspec()
 void Tokenizer::simplifyAttribute()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%type% (") && !mSettings->library.isNotLibraryFunction(tok)) {
+        if (!tok->isKeyword() && Token::Match(tok, "%type% (") && !mSettings->library.isNotLibraryFunction(tok)) {
             if (mSettings->library.isFunctionConst(tok->str(), true))
                 tok->isAttributePure(true);
             if (mSettings->library.isFunctionConst(tok->str(), false))

@@ -32,6 +32,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -476,6 +477,10 @@ public:
         return -1;
     }
 
+    bool isentrypoint(const std::string &func) const {
+        return func == "main" || mEntrypoints.find(func) != mEntrypoints.end();
+    }
+
     std::vector<std::string> defines; // to provide some library defines
 
     struct SmartPointer {
@@ -643,6 +648,7 @@ private:
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
     std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
     std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
+    std::unordered_set<std::string> mEntrypoints;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 
