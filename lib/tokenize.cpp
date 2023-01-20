@@ -1389,7 +1389,7 @@ void Tokenizer::simplifyTypedef()
 
                     // skip over class or struct in derived class declaration
                     bool structRemoved = false;
-                    if (isDerived && Token::Match(typeStart, "class|struct")) {
+                    if ((isDerived || inTemplate) && Token::Match(typeStart, "class|struct")) {
                         if (typeStart->str() == "struct")
                             structRemoved = true;
                         typeStart = typeStart->next();

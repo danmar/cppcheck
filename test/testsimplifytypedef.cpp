@@ -189,6 +189,7 @@ private:
         TEST_CASE(simplifyTypedef140); // #10798
         TEST_CASE(simplifyTypedef141); // #10144
         TEST_CASE(simplifyTypedef142); // T() when T is a pointer type
+        TEST_CASE(simplifyTypedef144); // #9353
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3068,6 +3069,12 @@ private:
         const char code2[] = "typedef int* T;\n"
                              "void f(T = T()){}\n";
         ASSERT_EQUALS("void f ( int * = ( int * ) 0 ) { }", tok(code2));
+    }
+
+    void simplifyTypedef144() { // #9353
+        const char code[] = "typedef struct {} X;\n"
+                            "std::vector<X> v;\n";
+        ASSERT_EQUALS("struct X { } ; std :: vector < X > v ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {
