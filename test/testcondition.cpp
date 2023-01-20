@@ -4951,12 +4951,12 @@ private:
         // #9353
         check("typedef struct { std::string s; } X;\n"
               "void f(const std::vector<X>&v) {\n"
-              "    for (std::vector<X>::const_iterator it it = v.begin(); it != v.end(); ++it)\n"
-              "        if (!it->name.empty()) {\n"
-              "            if (!it->name.empty()) {}\n"
+              "    for (std::vector<X>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
+              "        if (!it->s.empty()) {\n"
+              "            if (!it->s.empty()) {}\n"
               "        }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Condition '!it->s.empty()' is always true\n", errout.str());
 
         // #10508
         check("bool f(const std::string& a, const std::string& b) {\n"
