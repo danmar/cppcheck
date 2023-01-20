@@ -2483,6 +2483,7 @@ private:
         ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
 
         ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing.h\" not found.\n"
+                      "[test.c:2]: (information) Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n"
                       "[test.c:3]: (information) Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n", errout.str());
 
         Preprocessor::missingIncludeFlag = false;
