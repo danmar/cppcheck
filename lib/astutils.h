@@ -178,7 +178,7 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
 const Token* previousBeforeAstLeftmostLeaf(const Token* tok);
 Token* previousBeforeAstLeftmostLeaf(Token* tok);
 
-const Token * nextAfterAstRightmostLeaf(const Token * tok);
+CPPCHECKLIB const Token * nextAfterAstRightmostLeaf(const Token * tok);
 Token* nextAfterAstRightmostLeaf(Token* tok);
 
 Token* astParentSkipParens(Token* tok);
@@ -240,7 +240,7 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                                                 int depth = 20);
 const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 
-bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
+CPPCHECKLIB bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
@@ -251,7 +251,7 @@ const Token* isInLoopCondition(const Token* tok);
 /**
  * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
  */
-bool isUsedAsBool(const Token * const tok);
+CPPCHECKLIB bool isUsedAsBool(const Token * const tok);
 
 /**
  * Are two conditions opposite
@@ -277,10 +277,10 @@ bool isUniqueExpression(const Token* tok);
 bool isEscapeFunction(const Token* ftok, const Library* library);
 
 /** Is scope a return scope (scope will unconditionally return) */
-bool isReturnScope(const Token* const endToken,
-                   const Library* library = nullptr,
-                   const Token** unknownFunc = nullptr,
-                   bool functionScope = false);
+CPPCHECKLIB bool isReturnScope(const Token* const endToken,
+                               const Library* library = nullptr,
+                               const Token** unknownFunc = nullptr,
+                               bool functionScope = false);
 
 /** Is tok within a scope of the given type, nested within var's scope? */
 bool isWithinScope(const Token* tok,
@@ -312,10 +312,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int 
  * @param settings      program settings
  * @param inconclusive pointer to output variable which indicates that the answer of the question is inconclusive
  */
-bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive);
+CPPCHECKLIB bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+CPPCHECKLIB bool isVariableChanged(const Token *start, const Token *end, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 bool isVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
 bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth = 20);
@@ -380,14 +380,14 @@ int getArgumentPos(const Variable* var, const Function* f);
  */
 bool isIteratorPair(std::vector<const Token*> args);
 
-const Token *findLambdaStartToken(const Token *last);
+CPPCHECKLIB const Token *findLambdaStartToken(const Token *last);
 
 /**
  * find lambda function end token
  * \param first The [ token
  * \return nullptr or the }
  */
-const Token *findLambdaEndToken(const Token *first);
+CPPCHECKLIB const Token *findLambdaEndToken(const Token *first);
 Token* findLambdaEndToken(Token* first);
 
 bool isLikelyStream(bool cpp, const Token *stream);
@@ -418,7 +418,7 @@ const Token* findAllocFuncCallToken(const Token *expr, const Library &library);
 
 bool isScopeBracket(const Token* tok);
 
-bool isNullOperand(const Token *expr);
+CPPCHECKLIB bool isNullOperand(const Token *expr);
 
 bool isGlobalData(const Token *expr, bool cpp);
 
