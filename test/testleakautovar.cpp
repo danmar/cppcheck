@@ -240,8 +240,7 @@ private:
         settings.checkLibrary = true;
 
         // Check for leaks..
-        CheckLeakAutoVar c;
-        c.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void check_(const char* file, int line, const char code[], Settings & settings_) {
@@ -256,8 +255,7 @@ private:
         settings_.checkLibrary = true;
 
         // Check for leaks..
-        CheckLeakAutoVar c;
-        c.runChecks(&tokenizer, &settings_, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings_, this);
     }
 
     void assign1() {
@@ -2654,8 +2652,7 @@ private:
         settings.checkLibrary = true;
 
         // Check for leaks..
-        CheckLeakAutoVar c;
-        c.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
@@ -2705,8 +2702,7 @@ private:
         settings.checkLibrary = true;
 
         // Check for leaks..
-        CheckLeakAutoVar checkLeak;
-        checkLeak.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
@@ -2753,8 +2749,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.c"), file, line);
 
         // Check for leaks..
-        CheckLeakAutoVar checkLeak;
-        checkLeak.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
