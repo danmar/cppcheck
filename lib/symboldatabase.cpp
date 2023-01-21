@@ -6419,12 +6419,18 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             }
         } else if (ternary) {
             if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
-                setValueType(parent, *vt2);
+                if (vt2->isPrimitive())
+                    setValueType(parent, *vt1);
+                else
+                    setValueType(parent, *vt2);
                 return;
             }
 
             if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
-                setValueType(parent, *vt1);
+                if (vt1->isPrimitive())
+                    setValueType(parent, *vt2);
+                else
+                    setValueType(parent, *vt1);
                 return;
             }
         }
