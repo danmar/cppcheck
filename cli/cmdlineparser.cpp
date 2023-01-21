@@ -299,6 +299,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--debug-warnings") == 0)
                 mSettings->debugwarnings = true;
 
+            else if (std::strncmp(argv[i], "--disable=", 10) == 0) {
+                const std::string errmsg = mSettings->removeEnabled(argv[i] + 10);
+                if (!errmsg.empty()) {
+                    printError(errmsg);
+                    return false;
+                }
+            }
+
             // documentation..
             else if (std::strcmp(argv[i], "--doc") == 0) {
                 std::ostringstream doc;
@@ -321,13 +329,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->dump = true;
 
             else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
-                const std::string errmsg = mSettings->addEnabled(argv[i] + 9);
+                const std::string enable_arg = argv[i] + 9;
+                const std::string errmsg = mSettings->addEnabled(enable_arg);
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
-                if (mSettings->severity.isEnabled(Severity::style)) {
+                if (enable_arg.find("style") != std::string::npos) {
                     mSettings->addEnabled("warning");
                     mSettings->addEnabled("performance");
                     mSettings->addEnabled("portability");
@@ -1084,6 +1093,9 @@ void CmdLineParser::printHelp()
         "                         be considered for evaluation.\n"
         "    --config-excludes-file=<file>\n"
         "                         A file that contains a list of config-excludes\n"
+        "    --disable=<id>       Disable individual checks.\n"
+        "                         Please refer to the documentation of --enable=<id>\n"
+        "                         for futher details.\n"
         "    --dump               Dump xml data for each translation unit. The dump\n"
         "                         files have the extension .dump and contain ast,\n"
         "                         tokenlist, symboldatabase, valueflow.\n"

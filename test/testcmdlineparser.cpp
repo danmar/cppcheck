@@ -88,6 +88,15 @@ private:
         TEST_CASE(enabledInternal);
 #endif
         TEST_CASE(enabledMultiple);
+        TEST_CASE(enabledInvalid);
+        TEST_CASE(enabledError);
+        TEST_CASE(enabledEmpty);
+        TEST_CASE(disableAll);
+        TEST_CASE(disableMultiple);
+        TEST_CASE(disableStylePartial);
+        TEST_CASE(disableInvalid);
+        TEST_CASE(disableError);
+        TEST_CASE(disableEmpty);
         TEST_CASE(inconclusive);
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
@@ -652,6 +661,109 @@ private:
         ASSERT(!settings.checks.isEnabled(Checks::unusedFunction));
         ASSERT(settings.checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void enabledInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=warning,missingIncludeSystem,style", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --enable parameter with the unknown name 'missingIncludeSystem'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void enabledError() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=error", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --enable parameter with the unknown name 'error'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void enabledEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --enable parameter is empty\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableAll() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=all", "--disable=all"};
+        settings.severity.clear();
+        settings.checks.clear();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::style));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::performance));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::portability));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::debug));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::unusedFunction));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableMultiple() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=all", "--disable=style", "--disable=unusedFunction"};
+        settings.severity.clear();
+        settings.checks.clear();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::style));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::performance));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::portability));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::debug));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::unusedFunction));
+        ASSERT_EQUALS(true, settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    // make sure the implied "style" checks are not added when "--enable=style" is specified
+    void disableStylePartial() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=style", "--disable=performance", "--enable=unusedFunction"};
+        settings.severity.clear();
+        settings.checks.clear();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::style));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::performance));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::portability));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::debug));
+        ASSERT_EQUALS(true, settings.checks.isEnabled(Checks::unusedFunction));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=leaks", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --disable parameter with the unknown name 'leaks'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableError() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=error", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --disable parameter with the unknown name 'error'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --disable parameter is empty\n", GET_REDIRECT_OUTPUT);
     }
 
     void inconclusive() {

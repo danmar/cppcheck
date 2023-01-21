@@ -301,6 +301,7 @@ TESTOBJ =     test/options.o \
               test/testpreprocessor.o \
               test/testprocessexecutor.o \
               test/testrunner.o \
+              test/testsettings.o \
               test/testsimplifytemplate.o \
               test/testsimplifytokens.o \
               test/testsimplifytypedef.o \
@@ -767,6 +768,9 @@ test/testprocessexecutor.o: test/testprocessexecutor.cpp cli/executor.h cli/proc
 
 test/testrunner.o: test/testrunner.cpp externals/simplecpp/simplecpp.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/preprocessor.h lib/suppressions.h test/options.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testrunner.cpp
+
+test/testsettings.o: test/testsettings.cpp lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h test/testsuite.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testsettings.cpp
 
 test/testsimplifytemplate.o: test/testsimplifytemplate.cpp lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testsimplifytemplate.cpp
