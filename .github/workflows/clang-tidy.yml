@@ -32,19 +32,12 @@ jobs:
           sudo ./llvm.sh 15
           sudo apt-get install -y clang-tidy-15
 
-      - name: Cache Qt ${{ env.QT_VERSION }}
-        id: cache-qt
-        uses: actions/cache@v1  # not v2!
-        with:
-          path: ../Qt
-          key: Linux-QtCache-${{ env.QT_VERSION }}-qtcharts
-
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          cache: true
 
       - name: Verify clang-tidy configuration
         run: |

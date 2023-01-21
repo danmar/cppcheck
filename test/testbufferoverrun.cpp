@@ -1724,7 +1724,7 @@ private:
             errout.str());
     }
 
-    void array_index_59()
+    void array_index_59() // #10413
     {
         check("long f(long b) {\n"
               "  const long a[] = { 0, 1, };\n"
@@ -1732,6 +1732,22 @@ private:
               "  if (b < 0 || b >= c)\n"
               "    return 0;\n"
               "  return a[b];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "    const int S[2] = {};\n"
+              "    if (a < 0) {}\n"
+              "    else {\n"
+              "        if (b < 0) {}\n"
+              "        else if (S[b] > S[a]) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int a[2] = {};\n"
+              "void f(int i) {\n"
+              "    g(i < 0 ? 0 : a[i]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

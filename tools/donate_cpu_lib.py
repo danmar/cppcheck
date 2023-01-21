@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.41"
+CLIENT_VERSION = "1.3.42"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -291,18 +291,16 @@ def __handle_remove_readonly(func, path, exc):
 def __remove_tree(folder_name):
     if not os.path.exists(folder_name):
         return
+
+    def rmtree_func():
+        shutil.rmtree(folder_name, onerror=__handle_remove_readonly)
+
     print('Removing existing temporary data...')
-    count = 5
-    while count > 0:
-        count -= 1
-        try:
-            shutil.rmtree(folder_name, onerror=__handle_remove_readonly)
-            break
-        except OSError as err:
-            time.sleep(30)
-            if count == 0:
-                print('Failed to cleanup {}: {}'.format(folder_name, err))
-                sys.exit(1)
+    try:
+        try_retry(rmtree_func, max_tries=5, sleep_duration=30, sleep_factor=1)
+    except Exception as e:
+        print('Failed to cleanup {}: {}'.format(folder_name, e))
+        sys.exit(1)
 
 
 def __wget(url, destfile, bandwidth_limit):

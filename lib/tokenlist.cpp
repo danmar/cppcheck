@@ -637,7 +637,7 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (nameToken->str() == ")" && Token::simpleMatch(nameToken->link()->previous(), "decltype (") &&
         !Token::simpleMatch(nameToken->link()->tokAt(-2), "."))
-        return true;
+        nameToken = nameToken->link()->previous();
     if (Token::simpleMatch(nameToken, ", {"))
         return true;
     if (nameToken->str() == ">" && nameToken->link())
@@ -667,6 +667,8 @@ static bool iscpp11init_impl(const Token * const tok)
         endtok = nameToken->linkAt(1)->linkAt(1);
     else if (Token::Match(nameToken->previous(), "%name%|> ( {"))
         endtok = nameToken->linkAt(1);
+    else if (Token::simpleMatch(nameToken, "decltype") && nameToken->linkAt(1))
+        endtok = nameToken->linkAt(1)->linkAt(1);
     else
         return false;
     if (Token::Match(nameToken, "else|try|do|const|constexpr|override|volatile|&|&&"))
@@ -689,7 +691,7 @@ static bool iscpp11init_impl(const Token * const tok)
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
     const Token *prev = nameToken;
-    while (Token::Match(prev, "%name%|::|:|<|>|,|%num%|%cop%")) {
+    while (Token::Match(prev, "%name%|::|:|<|>|(|)|,|%num%|%cop%")) {
         if (Token::Match(prev, "class|struct|union|enum"))
             return false;
 
@@ -1955,10 +1957,24 @@ void TokenList::simplifyPlatformTypes()
 
 void TokenList::simplifyStdType()
 {
+    auto isVarDeclC = [](const Token* tok) -> bool {
+        if (!Token::simpleMatch(tok, "}"))
+            return false;
+        tok = tok->link()->previous();
+        while (Token::Match(tok, "%name%")) {
+            if (Token::Match(tok, "struct|union|enum"))
+                return true;
+            tok = tok->previous();
+        }
+        return false;
+    };
+
     for (Token *tok = front(); tok; tok = tok->next()) {
 
-        if (Token::Match(tok, "const|extern *|&|%name%") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+        if (isC() && Token::Match(tok, "const|extern *|&|%name%") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
             if (Token::Match(tok->next(), "%name% !!;"))
+                continue;
+            if (isVarDeclC(tok->previous()))
                 continue;
 
             tok->insertToken("int");

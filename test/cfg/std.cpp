@@ -7,6 +7,7 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <algorithm>
 #include <bitset>
 #include <cassert>
 #include <cctype>
@@ -34,10 +35,10 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
-#include <vector>
-#include <unordered_set>
-#include <algorithm>
 #include <numeric>
+#include <string_view>
+#include <unordered_set>
+#include <vector>
 
 int zerodiv_ldexp()
 {
@@ -4550,3 +4551,15 @@ public:
         for (std::vector<std::string>::reverse_iterator it = m_str.rbegin(); it != m_str.rend(); ++it) {;}
     }
 };
+
+void addressof(int a)
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::addressof(a);
+}
+
+void string_view_unused(std::string_view v)
+{
+    // cppcheck-suppress ignoredReturnValue
+    v.substr(1, 3);
+}

@@ -255,16 +255,6 @@ struct ForwardTraversal {
         return traverseRecursive(tok, f, false);
     }
 
-    template<class T, class F>
-    T* findRange(T* start, const Token* end, F pred) {
-        for (T* tok = start; tok && tok != end; tok = tok->next()) {
-            Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
-            if (pred(action))
-                return tok;
-        }
-        return nullptr;
-    }
-
     Analyzer::Action analyzeRecursive(const Token* start) {
         Analyzer::Action result = Analyzer::Action::None;
         auto f = [&](const Token* tok) {
@@ -770,7 +760,7 @@ struct ForwardTraversal {
                 tryTraversal.updateRange(tok->next(), endBlock, depth - 1);
                 bool bail = tryTraversal.actions.isModified();
                 if (bail)
-                    analyzer->lowerToPossible();
+                    return Break();
 
                 while (Token::simpleMatch(endBlock, "} catch (")) {
                     Token* endCatch = endBlock->linkAt(2);

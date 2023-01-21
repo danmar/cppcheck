@@ -2790,7 +2790,7 @@ private:
               "struct D : public B { int f() override; };\n"
               "int g(B* p) {\n"
               "    if (p) {\n"
-              "        auto d = dynamic_cast<B*>(p);\n"
+              "        auto d = dynamic_cast<D*>(p);\n"
               "        return d ? d->f() : 0;\n"
               "    }\n"
               "    return 0;\n"
@@ -2838,13 +2838,20 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
-    void nullpointer_cast() { // #4692
-        check("char *nasm_skip_spaces(const char *p) {\n"
+    void nullpointer_cast() {
+        check("char *nasm_skip_spaces(const char *p) {\n" // #4692
               "    if (p)\n"
               "        while (*p && nasm_isspace(*p))\n"
               "            p++;\n"
               "    return p;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char* origin) {\n" // #11449
+              "    char* cp = (strchr)(origin, '\\0');\n"
+              "    if (cp[-1] != '/')\n"
+              "        *cp++ = '/';\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

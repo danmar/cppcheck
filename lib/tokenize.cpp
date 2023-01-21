@@ -6406,7 +6406,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 varName = varName->next();
             else
                 --typelen;
-            if (isCPP() && Token::Match(varName, "public:|private:|protected:"))
+            if (isCPP() && Token::Match(varName, "public:|private:|protected:|using"))
                 continue;
             //skip all the pointer part
             bool isPointerOrRef = false;
@@ -8163,7 +8163,7 @@ void Tokenizer::simplifyDeclspec()
 void Tokenizer::simplifyAttribute()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%type% (") && !mSettings->library.isNotLibraryFunction(tok)) {
+        if (!tok->isKeyword() && Token::Match(tok, "%type% (") && !mSettings->library.isNotLibraryFunction(tok)) {
             if (mSettings->library.isFunctionConst(tok->str(), true))
                 tok->isAttributePure(true);
             if (mSettings->library.isFunctionConst(tok->str(), false))
@@ -8485,6 +8485,10 @@ void Tokenizer::simplifyKeyword()
             // 1) struct name final { };   <- struct is final
             if (Token::Match(tok->previous(), "struct|class|union %type%")) {
                 Token* finalTok = tok->next();
+                if (tok->isUpperCaseName() && Token::Match(finalTok, "%type%") && finalTok->str() != "final") {
+                    tok = finalTok;
+                    finalTok = finalTok->next();
+                }
                 if (Token::simpleMatch(finalTok, "<")) { // specialization
                     finalTok = finalTok->findClosingBracket();
                     if (finalTok)

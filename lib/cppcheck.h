@@ -145,6 +145,9 @@ public:
      * and if it's possible at all */
     bool isUnusedFunctionCheckEnabled() const;
 
+    /** Remove *.ctu-info files */
+    void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files);
+
 private:
     /** Are there "simple" rules */
     bool hasRule(const std::string &tokenlist) const;

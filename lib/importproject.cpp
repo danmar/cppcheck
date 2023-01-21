@@ -533,28 +533,37 @@ namespace {
             if (condAttr)
                 condition = condAttr;
             for (const tinyxml2::XMLElement *e1 = idg->FirstChildElement(); e1; e1 = e1->NextSiblingElement()) {
-                if (std::strcmp(e1->Name(), "ClCompile") != 0)
-                    continue;
-                enhancedInstructionSet = "StreamingSIMDExtensions2";
-                for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
-                    if (e->GetText()) {
-                        if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
-                            preprocessorDefinitions = e->GetText();
-                        else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0) {
-                            if (!additionalIncludePaths.empty())
-                                additionalIncludePaths += ';';
-                            additionalIncludePaths += e->GetText();
-                        } else if (std::strcmp(e->Name(), "LanguageStandard") == 0) {
-                            if (std::strcmp(e->GetText(), "stdcpp14") == 0)
-                                cppstd = Standards::CPP14;
-                            else if (std::strcmp(e->GetText(), "stdcpp17") == 0)
-                                cppstd = Standards::CPP17;
-                            else if (std::strcmp(e->GetText(), "stdcpp20") == 0)
-                                cppstd = Standards::CPP20;
-                            else if (std::strcmp(e->GetText(), "stdcpplatest") == 0)
-                                cppstd = Standards::CPPLatest;
-                        } else if (std::strcmp(e->Name(), "EnableEnhancedInstructionSet") == 0) {
-                            enhancedInstructionSet = e->GetText();
+                if (std::strcmp(e1->Name(), "ClCompile") == 0) {
+                    enhancedInstructionSet = "StreamingSIMDExtensions2";
+                    for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                        if (e->GetText()) {
+                            if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
+                                preprocessorDefinitions = e->GetText();
+                            else if (std::strcmp(e->Name(), "AdditionalIncludeDirectories") == 0) {
+                                if (!additionalIncludePaths.empty())
+                                    additionalIncludePaths += ';';
+                                additionalIncludePaths += e->GetText();
+                            } else if (std::strcmp(e->Name(), "LanguageStandard") == 0) {
+                                if (std::strcmp(e->GetText(), "stdcpp14") == 0)
+                                    cppstd = Standards::CPP14;
+                                else if (std::strcmp(e->GetText(), "stdcpp17") == 0)
+                                    cppstd = Standards::CPP17;
+                                else if (std::strcmp(e->GetText(), "stdcpp20") == 0)
+                                    cppstd = Standards::CPP20;
+                                else if (std::strcmp(e->GetText(), "stdcpplatest") == 0)
+                                    cppstd = Standards::CPPLatest;
+                            } else if (std::strcmp(e->Name(), "EnableEnhancedInstructionSet") == 0) {
+                                enhancedInstructionSet = e->GetText();
+                            }
+                        }
+                    }
+                }
+                else if (std::strcmp(e1->Name(), "Link") == 0) {
+                    for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
+                        if (!e->GetText())
+                            continue;
+                        if (std::strcmp(e->Name(), "EntryPointSymbol") == 0) {
+                            entryPointSymbol = e->GetText();
                         }
                     }
                 }
@@ -595,6 +604,7 @@ namespace {
         std::string enhancedInstructionSet;
         std::string preprocessorDefinitions;
         std::string additionalIncludePaths;
+        std::string entryPointSymbol; // TODO: use this
         Standards::cppstd_t cppstd = Standards::CPPLatest;
     };
 }

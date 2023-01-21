@@ -916,9 +916,10 @@ static const Token * getVariableInitExpression(const Variable * var)
     return varDeclEndToken->astOperand2();
 }
 
-static bool isInLoopCondition(const Token * tok)
+const Token* isInLoopCondition(const Token* tok)
 {
-    return Token::Match(tok->astTop()->previous(), "for|while (");
+    const Token* top = tok->astTop();
+    return top && Token::Match(top->previous(), "for|while (") ? top : nullptr;
 }
 
 /// If tok2 comes after tok1
@@ -1480,8 +1481,16 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (!tok_str_eq) {
         const Token* refTok1 = followReferences(tok1, errors);
         const Token* refTok2 = followReferences(tok2, errors);
-        if (refTok1 != tok1 || refTok2 != tok2)
+        if (refTok1 != tok1 || refTok2 != tok2) {
+            if (refTok1 && !refTok1->varId() && refTok2 && !refTok2->varId()) { // complex reference expression
+                const Token *start = refTok1, *end = refTok2;
+                if (!precedes(start, end))
+                    std::swap(start, end);
+                if (isExpressionChanged(start, start, end, nullptr, cpp))
+                    return false;
+            }
             return isSameExpression(cpp, macro, refTok1, refTok2, library, pure, followVar, errors);
+        }
     }
     if (tok1->varId() != tok2->varId() || !tok_str_eq || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>") && Token::Match(tok2,"<|>")) ||
@@ -2824,8 +2833,10 @@ int numberOfArguments(const Token* ftok) {
 
 int numberOfArgumentsWithoutAst(const Token* start)
 {
-    int arguments=0;
-    const Token* const openBracket = start->next();
+    int arguments = 0;
+    const Token* openBracket = start->next();
+    while (Token::simpleMatch(openBracket, ")"))
+        openBracket = openBracket->next();
     if (openBracket && openBracket->str()=="(" && openBracket->next() && openBracket->next()->str()!=")") {
         const Token* argument=openBracket->next();
         while (argument) {

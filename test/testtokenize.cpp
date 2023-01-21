@@ -223,6 +223,7 @@ private:
         TEST_CASE(vardecl27);  // #7850 - crash on valid C code
         TEST_CASE(vardecl28);
         TEST_CASE(vardecl29); // #9282
+        TEST_CASE(vardecl30);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -2518,6 +2519,14 @@ private:
                       tokenizeAndStringify(code));
     }
 
+    void vardecl30() {
+        const char code[] = "struct D {} const d;";
+        ASSERT_EQUALS("struct D { } ; struct D const d ;",
+                      tokenizeAndStringify(code, true, Settings::Native, "test.cpp"));
+        ASSERT_EQUALS("struct D { } ; struct D const d ;",
+                      tokenizeAndStringify(code, true, Settings::Native, "test.c"));
+    }
+
     void volatile_variables() {
         {
             const char code[] = "volatile int a=0;\n"
@@ -2573,18 +2582,20 @@ private:
             ASSERT_EQUALS("static void * thread_local_var ; "
                           "void * thread_local_var_2 ;", tokenizeAndStringify(code));
         }
+
+        ASSERT_EQUALS("class Fred { } ;", tokenizeAndStringify("class DLLEXPORT Fred final { };"));
     }
 
     void implicitIntConst() {
-        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;"));
-        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+        ASSERT_EQUALS("const int x ;", tokenizeAndStringify("const x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * x ;", tokenizeAndStringify("const *x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Settings::Native, "test.c"));
     }
 
     void implicitIntExtern() {
-        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;"));
-        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;"));
-        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();"));
+        ASSERT_EQUALS("extern int x ;", tokenizeAndStringify("extern x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("extern int * x ;", tokenizeAndStringify("extern *x;", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("const int * f ( ) ;", tokenizeAndStringify("const *f();", true, Settings::Native, "test.c"));
     }
 
     /**
@@ -6647,7 +6658,7 @@ private:
     void removeMacroInClassDef() { // #6058
         ASSERT_EQUALS("class Fred { } ;", tokenizeAndStringify("class DLLEXPORT Fred { } ;"));
         ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class Fred FINAL : Base { } ;"));
-        ASSERT_EQUALS("class Fred final : Base { } ;", tokenizeAndStringify("class DLLEXPORT Fred final : Base { } ;")); // #11422
+        ASSERT_EQUALS("class Fred : Base { } ;", tokenizeAndStringify("class DLLEXPORT Fred final : Base { } ;")); // #11422
         // Regression for C code:
         ASSERT_EQUALS("struct Fred { } ;", tokenizeAndStringify("struct DLLEXPORT Fred { } ;", true, Settings::Native, "test.c"));
     }
@@ -7552,6 +7563,13 @@ private:
         testIsCpp11init("template <std::size_t N>\n"
                         "struct C : public C<N - 1>, public B {\n"
                         "    ~C() {}\n"
+                        "};\n",
+                        "{ } }",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("struct S { int i; } s;\n"
+                        "struct T : decltype (s) {\n"
+                        "    T() : decltype(s) ({ 0 }) { }\n"
                         "};\n",
                         "{ } }",
                         TokenImpl::Cpp11init::NOINIT);

@@ -113,7 +113,7 @@ void Settings::loadCppcheckCfg()
     }
 }
 
-std::string Settings::addEnabled(const std::string &str)
+std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups)
 {
     // Enable parameters may be comma separated...
     if (str.find(',') != std::string::npos) {
@@ -122,7 +122,7 @@ std::string Settings::addEnabled(const std::string &str)
         while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
                 return std::string("--enable parameter is empty");
-            const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));
+            std::string errmsg(parseEnabled(str.substr(prevPos, pos - prevPos), groups));
             if (!errmsg.empty())
                 return errmsg;
             ++pos;
@@ -130,11 +130,18 @@ std::string Settings::addEnabled(const std::string &str)
         }
         if (prevPos >= str.length())
             return std::string("--enable parameter is empty");
-        return addEnabled(str.substr(prevPos));
+        return parseEnabled(str.substr(prevPos), groups);
     }
 
+    auto& severity = std::get<0>(groups);
+    auto& checks = std::get<1>(groups);
+
     if (str == "all") {
-        severity.fill();
+        // "error" is always enabled and cannot be controlled - so exclude it from "all"
+        SimpleEnableGroup<Severity::SeverityType> newSeverity;
+        newSeverity.fill();
+        newSeverity.disable(Severity::SeverityType::error);
+        severity.enable(newSeverity);
         checks.enable(Checks::missingInclude);
         checks.enable(Checks::unusedFunction);
     } else if (str == "warning") {
@@ -159,13 +166,46 @@ std::string Settings::addEnabled(const std::string &str)
     }
 #endif
     else {
+        // the actual option is prepending in the applyEnabled() call
         if (str.empty())
-            return std::string("cppcheck: --enable parameter is empty");
+            return " parameter is empty";
         else
-            return std::string("cppcheck: there is no --enable parameter with the name '" + str + "'");
+            return " parameter with the unknown name '" + str + "'";
     }
 
-    return std::string();
+    return "";
+}
+
+std::string Settings::addEnabled(const std::string &str)
+{
+    return applyEnabled(str, true);
+}
+
+std::string Settings::removeEnabled(const std::string &str)
+{
+    return applyEnabled(str, false);
+}
+
+std::string Settings::applyEnabled(const std::string &str, bool enable)
+{
+    std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> groups;
+    std::string errmsg = parseEnabled(str, groups);
+    if (!errmsg.empty())
+        return (enable ? "--enable" : "--disable") + errmsg;
+
+    const auto s = std::get<0>(groups);
+    const auto c = std::get<1>(groups);
+    if (enable) {
+        severity.enable(s);
+        checks.enable(c);
+    }
+    else {
+        severity.disable(s);
+        checks.disable(c);
+    }
+    // FIXME: hack to make sure "error" is always enabled
+    severity.enable(Severity::SeverityType::error);
+    return errmsg;
 }
 
 bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const

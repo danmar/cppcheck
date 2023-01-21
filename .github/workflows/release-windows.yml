@@ -12,8 +12,8 @@ on:
     - cron:  '0 0 * * *'
   workflow_dispatch:
 
-    permissions:
-      contents: read
+permissions:
+  contents: read
 
 defaults:
   run:
@@ -60,22 +60,15 @@ jobs:
           copy pcre.h ..\externals || exit /b !errorlevel!
           copy Release\pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
 
-      - name: Cache Qt ${{ env.QT_VERSION }}
-        id: cache-qt
-        uses: actions/cache@v1  # not v2!
-        with:
-          path: ../Qt
-          key: Windows-QtCache-${{ env.QT_VERSION }}-qtcharts-qthelp-openssl
-
       # available modules: https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-modules
       # available tools:   https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-tools
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: ${{ env.QT_VERSION }}
-          modules: 'qtcharts qthelp'
-          tools: 'tools_openssl_x64,1.1.1-10,qt.tools.openssl.win_x64'
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          modules: 'qtcharts'
+          tools: 'tools_openssl_x64,qt.tools.openssl.win_x64'
+          cache: true
 
       - name: Create .qm
         run: |

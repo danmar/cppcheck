@@ -68,6 +68,7 @@ Token::~Token()
  * e.g. for the sequence of tokens A B C D E, C.until(E) would yield the Range C D
  * note t can be nullptr to iterate all the way to the end.
  */
+// cppcheck-suppress unusedFunction // only used in testtokenrange.cpp
 ConstTokenRange Token::until(const Token* t) const
 {
     return ConstTokenRange(this, t);
