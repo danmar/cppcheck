@@ -74,7 +74,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check char variable usage..
-        CheckString checkString(&tokenizer, &settings, this);
+        CheckString checkString;
         checkString.runChecks(&tokenizer, &settings, this);
     }
 

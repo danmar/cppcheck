@@ -237,9 +237,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
+        settings.checkLibrary = true;
+
         // Check for leaks..
         CheckLeakAutoVar c;
-        settings.checkLibrary = true;
         c.runChecks(&tokenizer, &settings, this);
     }
 
@@ -252,9 +253,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
+        settings_.checkLibrary = true;
+
         // Check for leaks..
         CheckLeakAutoVar c;
-        settings_.checkLibrary = true;
         c.runChecks(&tokenizer, &settings_, this);
     }
 
@@ -2649,9 +2651,10 @@ private:
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
+        settings.checkLibrary = true;
+
         // Check for leaks..
         CheckLeakAutoVar c;
-        settings.checkLibrary = true;
         c.runChecks(&tokenizer, &settings, this);
     }
 
@@ -2699,9 +2702,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
+        settings.checkLibrary = true;
+
         // Check for leaks..
         CheckLeakAutoVar checkLeak;
-        settings.checkLibrary = true;
         checkLeak.runChecks(&tokenizer, &settings, this);
     }
 

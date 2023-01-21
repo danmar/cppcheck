@@ -62,7 +62,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check..
-        CheckType checkType(&tokenizer, settings, this);
+        CheckType checkType;
         checkType.runChecks(&tokenizer, settings, this);
     }
 

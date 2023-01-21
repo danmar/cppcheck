@@ -190,9 +190,9 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
 
-        CheckStl checkStl(&tokenizer, &settings, this);
-
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+
+        CheckStl checkStl;
         checkStl.runChecks(&tokenizer, &settings, this);
     }
 
@@ -211,7 +211,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckStl checkStl(&tokenizer, &settings, this);
+        CheckStl checkStl;
         checkStl.runChecks(&tokenizer, &settings, this);
     }
 

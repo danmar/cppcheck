@@ -66,7 +66,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check...
-        CheckSizeof checkSizeof(&tokenizer, &settings, this);
+        CheckSizeof checkSizeof;
         checkSizeof.runChecks(&tokenizer, &settings, this);
     }
 
@@ -90,7 +90,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check...
-        CheckSizeof checkSizeof(&tokenizer, &settings, this);
+        CheckSizeof checkSizeof;
         checkSizeof.runChecks(&tokenizer, &settings, this);
     }
 

@@ -312,7 +312,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
         // Check..
-        CheckOther checkOther(&tokenizer, settings, this);
+        CheckOther checkOther;
         checkOther.runChecks(&tokenizer, settings, this);
 
         (void)runSimpleChecks; // TODO Remove this
@@ -356,7 +356,7 @@ private:
         tokenizer.setPreprocessor(&preprocessor);
 
         // Check..
-        CheckOther checkOther(&tokenizer, settings, this);
+        CheckOther checkOther;
         checkOther.runChecks(&tokenizer, settings, this);
     }
 
