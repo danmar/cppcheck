@@ -113,7 +113,7 @@ namespace simplecpp {
             name = (std::isalpha(static_cast<unsigned char>(string[0])) || string[0] == '_' || string[0] == '$')
                    && (std::memchr(string.c_str(), '\'', string.size()) == nullptr);
             comment = string.size() > 1U && string[0] == '/' && (string[1] == '/' || string[1] == '*');
-            number = std::isdigit(static_cast<unsigned char>(string[0])) || (string.size() > 1U && string[0] == '-' && std::isdigit(static_cast<unsigned char>(string[1])));
+            number = isNumberLike(string);
             op = (string.size() == 1U) ? string[0] : '\0';
         }
 
@@ -162,6 +162,11 @@ namespace simplecpp {
 
         void printAll() const;
         void printOut() const;
+
+        static bool isNumberLike(const TokenString &string) {
+            return std::isdigit(static_cast<unsigned char>(string[0])) || (string.size() > 1U && string[0] == '-' && std::isdigit(static_cast<unsigned char>(string[1])));
+        }
+
     private:
         TokenString string;
 
