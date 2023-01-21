@@ -462,6 +462,8 @@ private:
 
         TEST_CASE(cpp20_default_bitfield_initializer);
 
+        TEST_CASE(userDefinedLiterals); // #11438, #10807
+
         TEST_CASE(cpp11init);
     }
 
@@ -7467,6 +7469,27 @@ private:
         ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, settings));
         settings.standards.cpp = Standards::CPP17;
         ASSERT_THROW(tokenizeAndStringify(code, settings), InternalError);
+    }
+
+    void userDefinedLiterals() {
+        Settings settings;
+
+        // #11438
+        const char code[] = "bool f () { return 3ms < 3s; }";
+        Tokenizer tokenizer(&settings1, this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        const Token* token = Token::findsimplematch(tokenizer.tokens(), "3ms");
+        ASSERT(token->tokType() == Token::eLiteral);
+
+        // #10807
+        ASSERT_NO_THROW(tokenizeAndStringify("struct S {\n"
+                                             "    template <typename T>\n"
+                                             "    constexpr explicit S(const T& t) {}\n"
+                                             "    static S zero() {\n"
+                                             "        return S(0_s);\n"
+                                             "    }\n"
+                                             "};\n", settings));
     }
 
     void cpp11init() {
