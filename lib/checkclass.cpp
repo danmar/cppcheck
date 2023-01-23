@@ -2173,6 +2173,9 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         }
     } while (again);
 
+    if (tok->isKeyword() || tok->isStandardType())
+        return false;
+
     for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {
             if (Token::Match(tok, "%name% ::"))
@@ -2302,7 +2305,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
     for (const Token *tok1 = func->functionScope->bodyStart; tok1 && tok1 != func->functionScope->bodyEnd; tok1 = tok1->next()) {
-        if (tok1->isName() && (!tok1->isKeyword() || tok1->str() == "this") && isMemberVar(scope, tok1)) {
+        if (tok1->isName() && isMemberVar(scope, tok1)) {
             memberAccessed = true;
             const Variable* v = tok1->variable();
             if (v && v->isMutable())
