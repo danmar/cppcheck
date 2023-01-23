@@ -2283,7 +2283,7 @@ std::string Variable::getTypeName() const
     for (const Token *typeTok = mTypeStartToken; Token::Match(typeTok, "%name%|::") && typeTok->varId() == 0; typeTok = typeTok->next()) {
         ret += typeTok->str();
         if (Token::simpleMatch(typeTok->next(), "<") && typeTok->next()->link()) // skip template arguments
-           typeTok = typeTok->next()->link();
+            typeTok = typeTok->next()->link();
     }
     return ret;
 }
