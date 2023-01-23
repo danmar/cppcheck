@@ -1222,6 +1222,8 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 
     // Set variable pointers
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
+        if (!tok->isName() || tok->isKeyword() || tok->isStandardType())
+            continue;
         if (tok->varId())
             const_cast<Token*>(tok)->variable(getVariableFromVarId(tok->varId()));
 
