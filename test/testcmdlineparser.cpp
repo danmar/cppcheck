@@ -37,7 +37,17 @@ class TestCmdlineParser : public TestFixture {
 public:
     TestCmdlineParser()
         : TestFixture("TestCmdlineParser")
-        , defParser(&settings) {}
+        , defParser(&settings) {
+#if defined(_WIN64) || defined(_WIN32)
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
+#endif
+    }
+
+    ~TestCmdlineParser() override {
+#if defined(_WIN64) || defined(_WIN32)
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+#endif
+    }
 
 private:
     Settings settings; // TODO: reset after each test
@@ -131,6 +141,10 @@ private:
         TEST_CASE(platformUnspecified);
         TEST_CASE(platformPlatformFile);
         TEST_CASE(platformUnknown);
+#if defined(_WIN64) || defined(_WIN32)
+        TEST_CASE(platformDefault);
+        TEST_CASE(platformDefault2);
+#endif
         TEST_CASE(plistEmpty);
         TEST_CASE(plistDoesNotExist);
         TEST_CASE(suppressionsOld);
@@ -1064,6 +1078,41 @@ private:
         ASSERT(!defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: \"win128\".\n", GET_REDIRECT_OUTPUT);
     }
+
+#if defined(_WIN64) || defined(_WIN32)
+    void platformDefault() {
+        REDIRECT;
+
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+
+        const char * const argv[] = {"cppcheck", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(2, argv));
+#if defined(_WIN64)
+        ASSERT_EQUALS(Settings::Win64, settings.platformType);
+        ASSERT_EQUALS("cppcheck: Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.\n", GET_REDIRECT_OUTPUT);
+#elif defined(_WIN32)
+        ASSERT_EQUALS(Settings::Win32A, settings.platformType);
+        ASSERT_EQUALS("cppcheck: Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.\n", GET_REDIRECT_OUTPUT);
+#endif
+
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
+    }
+
+    void platformDefault2() {
+        REDIRECT;
+
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+
+        const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(Settings::Unix64, settings.platformType);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
+    }
+#endif
 
     void plistEmpty() {
         REDIRECT;
