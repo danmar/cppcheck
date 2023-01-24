@@ -6558,6 +6558,17 @@ private:
                                              "    });\n"
                                              "}\n"));
 
+        ASSERT_NO_THROW(tokenizeAndStringify("void f(const std::vector<char>& v) {\n"
+                                             "    std::for_each(v.begin(), v.end(), [&](char c) {\n"
+                                             "        switch (c) {\n"
+                                             "            case 'r': {\n"
+                                             "                if (c) {}\n"
+                                             "            }\n"
+                                             "            break;\n"
+                                             "        }\n"
+                                             "    });\n"
+                                             "}\n"));
+
         // #11378
         ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
     }
