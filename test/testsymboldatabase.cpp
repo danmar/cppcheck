@@ -6990,7 +6990,7 @@ private:
         ASSERT(tok->tokAt(2)->function());
     }
 
-    const void valueTypeMatchParameter() {
+    void valueTypeMatchParameter() const {
         ValueType vt_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0);
         ValueType vt_const_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0, 1);
         ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_int));
