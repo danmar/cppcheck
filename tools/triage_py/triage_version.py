@@ -18,8 +18,9 @@ parser.add_argument('--check-library', action='store_true', help='passed through
 parser.add_argument('--timeout', type=int, default=2, help='the amount of seconds to wait for the analysis to finish')
 parser.add_argument('--compact', action='store_true', help='only print versions with changes with --compare')
 parser.add_argument('--no-quiet', action='store_true', default=False, help='do not specify -q')
-parser.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
-parser.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
+package_group = parser.add_mutually_exclusive_group()
+package_group.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
+package_group.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
 args = parser.parse_args()
 
 def sort_commit_hashes(commits):
@@ -38,10 +39,6 @@ if args.compact:
     if not do_compare:
         print('error: --compact requires --compare')
         sys.exit(1)
-
-if args.no_stdout and args.no_stderr:
-    print('error: cannot specify --no-stdout and --no-stderr at once')
-    sys.exit(1)
 
 directory = args.dir
 input_file = args.infile
