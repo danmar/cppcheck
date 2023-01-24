@@ -58,7 +58,10 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # TODO: verify this regression still exists in clang-15
         if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
             # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
-            add_compile_options_safe(-mllvm -inline-deferral)
+            check_cxx_compiler_flag("-mllvm -inline-deferral" _has_mllvm_inline_deferral)
+            if (_has_mllvm_inline_deferral)
+                add_compile_options(-mllvm -inline-deferral)
+            endif()
         endif()
 
         # use force DWARF 4 debug format since not all tools might be able to handle DWARF 5 yet - e.g. valgrind on ubuntu 20.04
