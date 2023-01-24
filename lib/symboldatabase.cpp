@@ -5397,7 +5397,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     else
                         unknownDeref = true;
                 }
-                const ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), var, funcarg);
+                const Token* valuetok = arguments[j];
+                if (valuetok->str() == "::") {
+                    const Token* rml = nextAfterAstRightmostLeaf(vartok);
+                    if (rml)
+                        valuetok = rml->previous();
+                }
+                const ValueType::MatchResult res = ValueType::matchParameter(valuetok->valueType(), var, funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
                 else if (res == ValueType::MatchResult::FALLBACK1)
