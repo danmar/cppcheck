@@ -62,7 +62,7 @@ private:
         ASSERT_EQUALS(8, platform.sizeof_long_long);
     }
 
-    void valid_config_native_1() {
+    void valid_config_native_1() const {
         // Verify if native Win32A platform is loaded correctly
         cppcheck::Platform platform;
         ASSERT(platform.platform(cppcheck::Platform::Win32A));
@@ -81,7 +81,7 @@ private:
         ASSERT_EQUALS(64, platform.long_long_bit);
     }
 
-    void valid_config_native_2() {
+    void valid_config_native_2() const {
         // Verify if native Unix64 platform is loaded correctly
         cppcheck::Platform platform;
         ASSERT(platform.platform(cppcheck::Platform::Unix64));
