@@ -122,6 +122,8 @@ for entry in versions:
         cmd += '--suppress=missingInclude --suppress=missingIncludeSystem --suppress=unmatchedSuppression --suppress=unusedFunction '
     if Version(version) >= Version('1.49'):
         cmd += '--inconclusive '
+    if Version(version) >= Version('1.69'):
+        cmd += '--platform=native '
     cmd += input_file
     if verbose:
         print("running '{}'". format(cmd))
