@@ -561,7 +561,7 @@ private:
         ASSERT_EQUALS(true, suppressions6.isSuppressed(errorMessage("abc", "test.cpp", 123)));
     }
 
-    void inlinesuppress() {
+    const void inlinesuppress() {
         Suppressions::Suppression s;
         std::string msg;
         ASSERT_EQUALS(false, s.parseComment("/* some text */", &msg));
@@ -593,7 +593,7 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
     }
 
-    void inlinesuppress_comment() {
+    const void inlinesuppress_comment() {
         Suppressions::Suppression s;
         std::string errMsg;
         ASSERT_EQUALS(true, s.parseComment("// cppcheck-suppress abc ; some comment", &errMsg));
@@ -604,7 +604,7 @@ private:
         ASSERT_EQUALS("", errMsg);
     }
 
-    void multi_inlinesuppress() {
+    const void multi_inlinesuppress() {
         std::vector<Suppressions::Suppression> suppressions;
         std::string errMsg;
 
@@ -669,7 +669,7 @@ private:
         ASSERT_EQUALS(false, errMsg.empty());
     }
 
-    void multi_inlinesuppress_comment() {
+    const void multi_inlinesuppress_comment() {
         std::vector<Suppressions::Suppression> suppressions;
         std::string errMsg;
 
