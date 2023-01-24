@@ -1473,7 +1473,7 @@ private:
     void createSymbolDatabaseNeedInitialization();
     void createSymbolDatabaseVariableSymbolTable();
     void createSymbolDatabaseSetScopePointers();
-    void createSymbolDatabaseSetFunctionPointers(bool firstPass);
+    void createSymbolDatabaseSetFunctionPointers(bool firstPass) const;
     void createSymbolDatabaseSetVariablePointers();
     // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();

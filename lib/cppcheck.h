@@ -146,7 +146,7 @@ public:
     bool isUnusedFunctionCheckEnabled() const;
 
     /** Remove *.ctu-info files */
-    void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files);
+    void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files) const;
 
 private:
     /** Are there "simple" rules */

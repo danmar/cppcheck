@@ -596,7 +596,7 @@ private:
     void setVarIdClassDeclaration(const Token * const startToken,
                                   const VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
-                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
+                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers) const;
 
     void setVarIdStructMembers(Token **tok1,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
@@ -607,7 +607,7 @@ private:
                                const Token * const endToken,
                                const std::map<std::string, nonneg int> &varlist,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int *varId_);
+                               nonneg int *varId_) const;
 
     /**
      * Output list of unknown types.

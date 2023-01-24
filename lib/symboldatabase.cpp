@@ -1074,7 +1074,7 @@ void SymbolDatabase::createSymbolDatabaseSetScopePointers()
     }
 }
 
-void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
+void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass) const
 {
     if (firstPass) {
         // Set function definition and declaration pointers

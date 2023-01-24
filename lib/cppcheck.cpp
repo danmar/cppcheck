@@ -1824,7 +1824,7 @@ bool CppCheck::isUnusedFunctionCheckEnabled() const
     return (mSettings.jobs == 1 && mSettings.checks.isEnabled(Checks::unusedFunction));
 }
 
-void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files)
+void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files) const
 {
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {
