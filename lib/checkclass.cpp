@@ -2465,7 +2465,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     tok2 = tok2->link();
                 else if ((tok2->isName() && isMemberVar(scope, tok2)) || (tok2->isUnaryOp("&") && (tok2 = tok2->astOperand1()) && isMemberVar(scope, tok2))) {
                     const Variable* var = tok2->variable();
-                    if (!var || !var->isMutable() && mayModifyArgs)
+                    if ((!var || !var->isMutable()) && mayModifyArgs)
                         return false; // TODO: Only bailout if function takes argument as non-const reference
                 }
             }
