@@ -76,6 +76,9 @@ except:
     # if you use the folder from the bisect script that contains the repo as a folder - so remove it from the list
     if versions.count('cppcheck'):
         versions.remove('cppcheck')
+    # this is the commit hash for the 2.9 release tag. it does not exist in the main branch so the version for it cannot be determined
+    if versions.count('aca3f6fef'):
+        versions.remove('aca3f6fef')
     len_in = len(versions)
     versions = sort_commit_hashes(versions)
     if len(versions) != len_in:
