@@ -7447,7 +7447,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         if (call->constness == 0 && func->constness != 0 && func->reference != Reference::None)
             return ValueType::MatchResult::NOMATCH;
     }
-    if (call->type != func->type) {
+    if (call->type != func->type || (call->isEnum() && !func->isEnum())) {
         if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
         if (call->pointer > 0)
