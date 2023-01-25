@@ -6148,7 +6148,7 @@ private:
                "        (kInput & (uint64_t(1) << 62)) ? 62 :\n"
                "        (kInput & (uint64_t(1) << 63)) ? 63 : 64;\n"
                "};\n";
-          ASSERT_NO_THROW(tokenizeAndStringify(code));
+        ASSERT_NO_THROW(tokenizeAndStringify(code));
     }
 
     void astnewdelete() {
