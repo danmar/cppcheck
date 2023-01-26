@@ -596,7 +596,7 @@ private:
     void setVarIdClassDeclaration(const Token * const startToken,
                                   const VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
-                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers) const;
+                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers); // cppcheck-suppress functionConst // has side effects
 
     void setVarIdStructMembers(Token **tok1,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,

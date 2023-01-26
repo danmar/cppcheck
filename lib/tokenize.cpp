@@ -3741,7 +3741,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
 void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
                                          const VariableMap &variableMap,
                                          const nonneg int scopeStartVarId,
-                                         std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers) const
+                                         std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
 {
     // end of scope
     const Token * const endToken = startToken->link();
