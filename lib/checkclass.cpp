@@ -2173,6 +2173,9 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         }
     } while (again);
 
+    if (tok->isKeyword() || tok->isStandardType())
+        return false;
+
     for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {
             if (Token::Match(tok, "%name% ::"))

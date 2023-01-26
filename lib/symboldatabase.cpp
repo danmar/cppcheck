@@ -1208,6 +1208,8 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
         membertok->varId(memberId->second);
 }
 
+static bool isContainerYieldElement(Library::Container::Yield yield);
+
 void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 {
     VarIdMap varIds;
@@ -1222,6 +1224,8 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 
     // Set variable pointers
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
+        if (!tok->isName() || tok->isKeyword() || tok->isStandardType())
+            continue;
         if (tok->varId())
             const_cast<Token*>(tok)->variable(getVariableFromVarId(tok->varId()));
 
@@ -1308,6 +1312,16 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                         setMemberVar(membervar, membertok, tok->function()->retDef);
                     }
                 }
+            }
+        }
+        else if (Token::simpleMatch(tok->astParent(), ".") && tok->next()->str() == "(" &&
+                 astIsContainer(tok->astParent()->astOperand1()) && Token::Match(tok->next()->link(), ") . %name% !!(")) {
+            const ValueType* vt = tok->astParent()->astOperand1()->valueType();
+            const Library::Container* cont = vt->container;
+            auto it = cont->functions.find(tok->str());
+            if (it != cont->functions.end() && isContainerYieldElement(it->second.yield) && vt->containerTypeToken && vt->containerTypeToken->scope()) {
+                Token* memberTok = tok->next()->link()->tokAt(2);
+                setMemberVar(vt->containerTypeToken->scope()->getVariable(memberTok->str()), memberTok, vt->containerTypeToken);
             }
         }
     }
@@ -6052,7 +6066,7 @@ static void setAutoTokenProperties(Token * const autoTok)
         autoTok->isStandardType(true);
 }
 
-static bool isContainerYieldElement(Library::Container::Yield yield)
+bool isContainerYieldElement(Library::Container::Yield yield)
 {
     return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX ||
            yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;

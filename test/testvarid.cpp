@@ -32,9 +32,15 @@ struct InternalError;
 
 class TestVarID : public TestFixture {
 public:
-    TestVarID() : TestFixture("TestVarID") {}
+    TestVarID() : TestFixture("TestVarID") {
+        settings.platform(Settings::Unix64);
+        settings.standards.c = Standards::C89;
+        settings.standards.cpp = Standards::CPPLatest;
+        settings.checkUnusedTemplates = true;
+    }
 
 private:
+    Settings settings;
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -137,6 +143,7 @@ private:
         TEST_CASE(varid_in_class22);    // #10872
         TEST_CASE(varid_in_class23);    // #11293
         TEST_CASE(varid_in_class24);
+        TEST_CASE(varid_in_class25);
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -235,12 +242,6 @@ private:
     std::string tokenize_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
-        Settings settings;
-        settings.platform(Settings::Unix64);
-        settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPPLatest;
-        settings.checkUnusedTemplates = true;
-
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
@@ -255,12 +256,6 @@ private:
     std::string tokenizeExpr_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
-        Settings settings;
-        settings.platform(Settings::Unix64);
-        settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPPLatest;
-        settings.checkUnusedTemplates = true;
-
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
@@ -274,12 +269,6 @@ private:
 #define compareVaridsForVariable(...) compareVaridsForVariable_(__FILE__, __LINE__, __VA_ARGS__)
     std::string compareVaridsForVariable_(const char* file, int line, const char code[], const char varname[], const char filename[] = "test.cpp") {
         errout.str("");
-
-        Settings settings;
-        settings.platform(Settings::Unix64);
-        settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPP11;
-        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -2013,6 +2002,27 @@ private:
                    "3:\n"
                    "4: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
+    void varid_in_class25() { // #11497
+        const char *code{}, *expected{};
+        Settings oldSettings = settings;
+        LOAD_LIB_2(settings.library, "std.cfg");
+
+        code = "struct F {\n"
+               "    int i;\n"
+               "    void f(const std::vector<F>&v) {\n"
+               "        if (v.front().i) {}\n"
+               "    }\n"
+               "};\n";
+        expected = "1: struct F {\n"
+                   "2: int i@1 ;\n"
+                   "3: void f ( const std :: vector < F > & v@2 ) {\n"
+                   "4: if ( v@2 . front ( ) . i@3 ) { }\n"
+                   "5: }\n"
+                   "6: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+        settings = oldSettings;
     }
 
     void varid_namespace_1() { // #7272
