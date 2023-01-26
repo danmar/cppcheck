@@ -55,22 +55,6 @@ public:
 };
 
 
-class SimpleSuppressor : public ErrorLogger {
-public:
-    SimpleSuppressor(Settings &settings, ErrorLogger *next)
-        : settings(settings), next(next) {}
-    void reportOut(const std::string &outmsg, Color /*c*/ = Color::Reset) override {
-        next->reportOut(outmsg);
-    }
-    void reportErr(const ErrorMessage &msg) override {
-        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg))
-            next->reportErr(msg);
-    }
-private:
-    Settings &settings;
-    ErrorLogger *next;
-};
-
 class ScopedFile {
 public:
     ScopedFile(std::string name, const std::string &content, std::string path = "");

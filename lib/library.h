@@ -403,15 +403,6 @@ public:
         return arg ? arg->valid : emptyString;
     }
 
-    struct InvalidArgValue {
-        enum class Type {le, lt, eq, ge, gt, range} type;
-        std::string op1;
-        std::string op2;
-        bool isInt() const {
-            return MathLib::isInt(op1);
-        }
-    };
-
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->iteratorInfo.it ? &arg->iteratorInfo : nullptr;
