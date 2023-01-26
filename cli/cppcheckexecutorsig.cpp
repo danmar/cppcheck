@@ -120,7 +120,6 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 
     const Signalmap_t::const_iterator it=listofsignals.find(signo);
     const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
-    bool printCallstack=true; // try to print a callstack?
     bool lowMem=false; // was low-memory condition detected? Be careful then! Avoid allocating much more memory then.
     bool unexpectedSignal=true; // unexpected indicates program failure
     bool terminate=true; // exit process/thread
@@ -241,7 +240,6 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         unexpectedSignal=false;     // legal usage: interrupt application via CTRL-C
         fputs("cppcheck received signal ", output);
         fputs(signame, output);
-        printCallstack=true;
         fputs(".\n", output);
         break;
     case SIGSEGV:
@@ -277,11 +275,9 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         fputs(".\n", output);
         break;
     }
-    if (printCallstack) {
 #ifdef USE_UNIX_BACKTRACE_SUPPORT
-        print_stacktrace(output, true, -1, lowMem);
+    print_stacktrace(output, true, -1, lowMem);
 #endif
-    }
     if (unexpectedSignal) {
         fputs("\nPlease report this to the cppcheck developers!\n", output);
     }
