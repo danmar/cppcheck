@@ -253,15 +253,18 @@ def get_cppcheck_versions():
 
 
 def get_packages_count():
-    print('Connecting to server to get count of packages..')
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect(__server_address)
-        sock.send(b'getPackagesCount\n')
-        packages = sock.recv(64)
-    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
-    if not packages:
-        raise Exception('received empty response')
-    return int(packages)
+    def __get_packages_count():
+        print('Connecting to server to get count of packages..')
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect(__server_address)
+            sock.send(b'getPackagesCount\n')
+            packages = sock.recv(64)
+        # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+        if not packages:
+            raise Exception('received empty response')
+        return int(packages)
+
+    return try_retry(__get_packages_count)
 
 
 def get_package(package_index=None):
