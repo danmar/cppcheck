@@ -46,7 +46,6 @@ class Type;
 class ValueType;
 class Variable;
 class TokenList;
-class ConstTokenRange;
 class Token;
 
 /**
@@ -195,8 +194,6 @@ public:
 
     explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
     ~Token();
-
-    ConstTokenRange until(const Token * t) const;
 
     template<typename T>
     void str(T&& s) {

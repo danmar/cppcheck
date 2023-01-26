@@ -315,7 +315,6 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("precompiled.h");
     libfiles_h.emplace_back("smallvector.h");
     libfiles_h.emplace_back("standards.h");
-    libfiles_h.emplace_back("tokenrange.h");
     libfiles_h.emplace_back("valueptr.h");
     libfiles_h.emplace_back("version.h");
     std::sort(libfiles_h.begin(), libfiles_h.end());
