@@ -30,6 +30,5 @@ if (BUILD_CORE_DLL)
 endif()
 
 if (REGISTER_GUI_TESTS)
-    # TODO: requires X session
-    #add_test(NAME test-xmlreportv2 COMMAND $<TARGET_FILE:test-xmlreportv2>)
+    add_test(NAME test-xmlreportv2 COMMAND $<TARGET_FILE:test-xmlreportv2>)
 endif()
