@@ -124,10 +124,12 @@ private:
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
         TEST_CASE(platformUnix32);
+        TEST_CASE(platformUnix32Unsigned);
         TEST_CASE(platformUnix64);
+        TEST_CASE(platformUnix64Unsigned);
         TEST_CASE(platformNative);
         TEST_CASE(platformUnspecified);
-        //TEST_CASE(platformPlatformFile);
+        TEST_CASE(platformPlatformFile);
         TEST_CASE(platformUnknown);
         TEST_CASE(plistEmpty);
         TEST_CASE(plistDoesNotExist);
@@ -1002,12 +1004,30 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void platformUnix32Unsigned() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=unix32-unsigned", "file.cpp"};
+        ASSERT(settings.platform(Settings::Unspecified));
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.platformType == Settings::Unix32);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void platformUnix64() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
         ASSERT(settings.platform(Settings::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(Settings::Unix64, settings.platformType);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void platformUnix64Unsigned() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=unix64-unsigned", "file.cpp"};
+        ASSERT(settings.platform(Settings::Unspecified));
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.platformType == Settings::Unix64);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -1029,17 +1049,14 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    /*
-       // TODO: the file is not found because of a bug in the lookup code
-       void platformPlatformFile() {
+    void platformPlatformFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=avr8", "file.cpp"};
         ASSERT(settings.platform(Settings::Unspecified));
-        TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS(Settings::PlatformFile, Settings::Unspecified, settings.platformType);
-        TODO_ASSERT_EQUALS("cppcheck: error: unrecognized platform: \"avr8\".\n", "", GET_REDIRECT_OUTPUT);
-       }
-     */
+        ASSERT_EQUALS(true, defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(Settings::PlatformFile, settings.platformType);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
 
     void platformUnknown() {
         REDIRECT;

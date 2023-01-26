@@ -611,13 +611,21 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->platform(Settings::Native);
                 else if (platform == "unspecified")
                     mSettings->platform(Settings::Unspecified);
-                else if (!mSettings->loadPlatformFile(argv[0], platform)) {
+                else if (!mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                     std::string message("unrecognized platform: \"");
                     message += platform;
                     message += "\".";
                     printError(message);
                     return false;
                 }
+
+                // TODO: remove
+                // these are loaded via external files and thus have Settings::PlatformFile set instead.
+                // override the type so they behave like the regular platforms.
+                if (platform == "unix32-unsigned")
+                    mSettings->platformType = Settings::Unix32;
+                else if (platform == "unix64-unsigned")
+                    mSettings->platformType = Settings::Unix64;
             }
 
             // Write results in results.plist
@@ -678,7 +686,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Native);
                     else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
                         ;
-                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
+                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform, mSettings->verbose) && !mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                         std::string message("unrecognized platform: \"");
                         message += platform;
                         message += "\".";

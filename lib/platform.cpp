@@ -21,6 +21,7 @@
 #include "path.h"
 
 #include <cstring>
+#include <iostream>
 #include <limits>
 #include <vector>
 
@@ -156,36 +157,45 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
     return false;
 }
 
-bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::string &filename)
+bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::string &filename, bool verbose)
 {
+    // TODO: only append .xml if missing
+    // TODO: use native separators
+    std::vector<std::string> filenames;
+    filenames.push_back(filename);
+    filenames.push_back(filename + ".xml");
+    filenames.push_back("platforms/" + filename);
+    filenames.push_back("platforms/" + filename + ".xml");
+    if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
+        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
+        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
+        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
+    }
+#ifdef FILESDIR
+    std::string filesdir = FILESDIR;
+    if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
+        filesdir += '/';
+    filenames.push_back(filesdir + ("platforms/" + filename));
+    filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
+#endif
+
     // open file..
     tinyxml2::XMLDocument doc;
-    if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS) {
-        std::vector<std::string> filenames;
-        filenames.push_back(filename + ".xml");
-        if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
-            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
-            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
-            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
-            filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
+    bool success = false;
+    for (const std::string & f : filenames) {
+        if (verbose)
+            std::cout << "try to load platform file '" << f << "' ... ";
+        if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
+            if (verbose)
+                std::cout << "Success" << std::endl;
+            success = true;
+            break;
         }
-#ifdef FILESDIR
-        std::string filesdir = FILESDIR;
-        if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
-            filesdir += '/';
-        filenames.push_back(filesdir + ("platforms/" + filename));
-        filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
-#endif
-        bool success = false;
-        for (const std::string & f : filenames) {
-            if (doc.LoadFile(f.c_str()) == tinyxml2::XML_SUCCESS) {
-                success = true;
-                break;
-            }
-        }
-        if (!success)
-            return false;
+        if (verbose)
+            std::cout << doc.ErrorStr() << std::endl;
     }
+    if (!success)
+        return false;
 
     return loadFromXmlDocument(&doc);
 }
