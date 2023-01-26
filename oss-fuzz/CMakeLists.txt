@@ -9,7 +9,7 @@ if (ENABLE_OSS_FUZZ AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_executable(fuzz-client EXCLUDE_FROM_ALL
             ${fuzz-client_SRC}
             $<TARGET_OBJECTS:simplecpp_objs>
-            $<TARGET_OBJECTS:lib_objs>)
+            $<TARGET_OBJECTS:cppcheck-core>)
     target_include_directories(fuzz-client PRIVATE ${CMAKE_SOURCE_DIR}/lib ${CMAKE_SOURCE_DIR}/externals/simplecpp ${CMAKE_SOURCE_DIR}/externals)
     if(USE_BUNDLED_TINYXML2)
         target_include_directories(fuzz-client PRIVATE ${CMAKE_SOURCE_DIR}/externals/tinyxml2/)

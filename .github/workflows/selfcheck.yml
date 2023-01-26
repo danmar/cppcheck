@@ -58,7 +58,7 @@ jobs:
       - name: Generate dependencies
         run: |
           # make sure the precompiled headers exist
-          make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
+          make -C cmake.output lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
           # make sure auto-generated GUI files exist
           make -C cmake.output autogen
@@ -81,7 +81,7 @@ jobs:
       - name: Generate dependencies (no test)
         run: |
           # make sure the precompiled headers exist
-          make -C cmake.output.notest lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
+          make -C cmake.output.notest lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           # make sure auto-generated GUI files exist
           make -C cmake.output.notest autogen
           make -C cmake.output.notest gui-build-deps
@@ -106,7 +106,7 @@ jobs:
       - name: Generate dependencies (corpus)
         run: |
           # make sure the precompiled headers exist
-          make -C cmake.output.notest lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
+          make -C cmake.output.notest lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           # make sure auto-generated GUI files exist
           make -C cmake.output.corpus autogen
           make -C cmake.output.corpus gui-build-deps

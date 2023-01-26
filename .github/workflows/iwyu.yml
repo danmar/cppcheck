@@ -33,7 +33,7 @@ jobs:
       - name: Prepare CMake dependencies
         run: |
           # make sure the precompiled headers exist
-          #make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
+          #make -C cmake.output lib/CMakeFiles/cppcheck-core.dir/cmake_pch.hxx.cxx
           #make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
           # make sure the auto-generated GUI sources exist
           make -C cmake.output autogen
