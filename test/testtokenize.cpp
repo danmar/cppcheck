@@ -7654,6 +7654,9 @@ private:
                         "};\n",
                         "{ } }",
                         TokenImpl::Cpp11init::NOINIT);
+
+        ASSERT_NO_THROW(tokenizeAndStringify("template<typename U> struct X {};\n" // don't crash
+                                             "template<typename T> auto f(T t) -> X<decltype(t + 1)> {}\n"));
         #undef testIsCpp11init
     }
 };
