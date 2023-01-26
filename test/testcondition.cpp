@@ -4947,6 +4947,22 @@ private:
               "       buffer.back() == '\\0') {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'buffer.back()=='\\0'' is always false\n", errout.str());
+
+        // #9353
+        check("typedef struct { std::string s; } X;\n"
+              "void f(const std::vector<X>&v) {\n"
+              "    for (std::vector<X>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
+              "        if (!it->s.empty()) {\n"
+              "            if (!it->s.empty()) {}\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Condition '!it->s.empty()' is always true\n", errout.str());
+
+        // #10508
+        check("bool f(const std::string& a, const std::string& b) {\n"
+              "    return a.empty() || (b.empty() && a.empty());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return value 'a.empty()' is always false\n", errout.str());
     }
 
     void alwaysTrueLoop()
