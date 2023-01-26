@@ -212,6 +212,7 @@ private:
         TEST_CASE(configuration3);
         TEST_CASE(configuration4);
         TEST_CASE(configuration5);
+        TEST_CASE(configuration6);
 
         TEST_CASE(ptrptr);
 
@@ -2501,6 +2502,14 @@ private:
               "    }\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: file\n", errout.str());
+    }
+
+    void configuration6() { // #11198
+        check("void f() {}\n"
+              "void g() {\n"
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ptrptr() {

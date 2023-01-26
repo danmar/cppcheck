@@ -437,6 +437,7 @@ private:
         TEST_CASE(findFunction41); // #10202
         TEST_CASE(findFunction42);
         TEST_CASE(findFunction43); // #10087
+        TEST_CASE(findFunction44); // #11182
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -6923,6 +6924,37 @@ private:
             ASSERT(functok->function());
             ASSERT(functok->function()->name() == "g");
             ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
+        }
+    }
+
+    void findFunction44() { // #11182
+        {
+            GET_SYMBOL_DB("struct T { enum E { E0 }; };\n"
+                          "struct S {\n"
+                          "    void f(const void*, T::E) {}\n"
+                          "    void f(const int&, T::E) {}\n"
+                          "    void g() { f(nullptr, T::E0); }\n"
+                          "};\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( nullptr");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "f");
+            ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("enum E { E0 };\n"
+                          "struct S {\n"
+                          "    void f(int*, int) {}\n"
+                          "    void f(int, int) {}\n"
+                          "    void g() { f(nullptr, E0); }\n"
+                          "};\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( nullptr");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "f");
+            ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
         }
     }
 
