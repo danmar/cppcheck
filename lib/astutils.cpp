@@ -31,6 +31,8 @@
 #include "utils.h"
 #include "valueflow.h"
 #include "valueptr.h"
+#include "vfvalue.h"
+
 #include "checkclass.h"
 
 #include <algorithm>

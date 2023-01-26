@@ -28,7 +28,7 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <list>
 #include <map>

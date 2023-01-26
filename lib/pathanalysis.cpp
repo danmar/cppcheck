@@ -21,7 +21,7 @@
 #include "astutils.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <memory>

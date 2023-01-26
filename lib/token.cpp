@@ -45,6 +45,15 @@
 #include <unordered_set>
 #include <utility>
 
+namespace {
+    struct less {
+        template<class T, class U>
+        bool operator()(const T &x, const U &y) const {
+            return x < y;
+        }
+    };
+}
+
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
@@ -1921,7 +1930,7 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 continue;
             if (!x.equalValue(y)) {
                 auto compare = [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
-                    return x.compareValue(y, ValueFlow::less{});
+                    return x.compareValue(y, less{});
                 };
                 const ValueFlow::Value& maxValue = std::max(x, y, compare);
                 const ValueFlow::Value& minValue = std::min(x, y, compare);
@@ -2012,9 +2021,9 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
                 if (y->bound != ValueFlow::Value::Bound::Point)
                     continue;
             }
-            if (x->bound == ValueFlow::Value::Bound::Lower && !y->compareValue(*x, ValueFlow::less{}))
+            if (x->bound == ValueFlow::Value::Bound::Lower && !y->compareValue(*x, less{}))
                 continue;
-            if (x->bound == ValueFlow::Value::Bound::Upper && !x->compareValue(*y, ValueFlow::less{}))
+            if (x->bound == ValueFlow::Value::Bound::Upper && !x->compareValue(*y, less{}))
                 continue;
             adjValues.push_back(y);
         }
@@ -2025,7 +2034,7 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
         std::sort(adjValues.begin(), adjValues.end(), [&values](ValueIterator xx, ValueIterator yy) {
             (void)values;
             assert(xx != values.end() && yy != values.end());
-            return xx->compareValue(*yy, ValueFlow::less{});
+            return xx->compareValue(*yy, less{});
         });
         if (x->bound == ValueFlow::Value::Bound::Lower)
             x = removeAdjacentValues(values, x, adjValues.rbegin(), adjValues.rend());

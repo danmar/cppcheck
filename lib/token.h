@@ -23,9 +23,9 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "valueflow.h"
 #include "templatesimplifier.h"
 #include "utils.h"
+#include "vfvalue.h"
 
 #include <cstdint>
 #include <cstddef>

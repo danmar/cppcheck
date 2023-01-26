@@ -28,7 +28,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
 
 #include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
 

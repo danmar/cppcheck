@@ -21,7 +21,7 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "valueflow.h" // needed for alias
+#include "vfvalue.h" // needed for alias
 
 #include <cstddef>
 #include <functional>

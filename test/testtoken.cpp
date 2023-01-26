@@ -22,7 +22,7 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <sstream> // IWYU pragma: keep

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenize.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <string>
 

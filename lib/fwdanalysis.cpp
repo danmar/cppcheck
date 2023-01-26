@@ -23,7 +23,7 @@
 #include "library.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <string>
 

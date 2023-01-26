@@ -26,7 +26,7 @@
 #include "check.h"
 #include "errorlogger.h"
 #include "mathlib.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <list>
 #include <map>
