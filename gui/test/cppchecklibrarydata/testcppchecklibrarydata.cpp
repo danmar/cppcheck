@@ -609,4 +609,20 @@ void TestCppcheckLibraryData::saveCfgFile(const QString &filename, CppcheckLibra
     file.close();
 }
 
+void TestCppcheckLibraryData::validateAllCfg()
+{
+    const QDir dir(QString(SRCDIR) + "/../../../cfg/");
+    const QStringList files = dir.entryList(QStringList() << "*.cfg",QDir::Files);
+    QVERIFY(files.size() != 0);
+    bool error = false;
+    for (const QString& f : files) {
+        loadCfgFile(dir.absolutePath() + "/" + f, fileLibraryData, result);
+        if (!result.isNull()) {
+            error = true;
+            qDebug() << f << " - " << result;
+        }
+    }
+    QCOMPARE(error, false);
+}
+
 QTEST_MAIN(TestCppcheckLibraryData)
