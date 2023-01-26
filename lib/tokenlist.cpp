@@ -42,7 +42,7 @@
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
 // there needs to be a limit.
-static const int AST_MAX_DEPTH = 100;
+static const int AST_MAX_DEPTH = 150;
 
 
 TokenList::TokenList(const Settings* settings) :
@@ -651,7 +651,7 @@ static bool iscpp11init_impl(const Token * const tok)
     }
 
     auto isCaseStmt = [](const Token* colonTok) {
-        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num% :"))
+        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num%|%char% :"))
             return false;
         const Token* caseTok = colonTok->tokAt(-2);
         while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
@@ -739,6 +739,8 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
         state.depth++;
         if (tok && state.depth <= AST_MAX_DEPTH)
             f(tok, state);
+        if (state.depth > AST_MAX_DEPTH)
+            throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST);
         state.depth--;
     }
 
@@ -1957,10 +1959,24 @@ void TokenList::simplifyPlatformTypes()
 
 void TokenList::simplifyStdType()
 {
+    auto isVarDeclC = [](const Token* tok) -> bool {
+        if (!Token::simpleMatch(tok, "}"))
+            return false;
+        tok = tok->link()->previous();
+        while (Token::Match(tok, "%name%")) {
+            if (Token::Match(tok, "struct|union|enum"))
+                return true;
+            tok = tok->previous();
+        }
+        return false;
+    };
+
     for (Token *tok = front(); tok; tok = tok->next()) {
 
-        if (Token::Match(tok, "const|extern *|&|%name%") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
+        if (isC() && Token::Match(tok, "const|extern *|&|%name%") && (!tok->previous() || Token::Match(tok->previous(), "[;{}]"))) {
             if (Token::Match(tok->next(), "%name% !!;"))
+                continue;
+            if (isVarDeclC(tok->previous()))
                 continue;
 
             tok->insertToken("int");

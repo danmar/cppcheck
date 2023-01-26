@@ -88,6 +88,15 @@ private:
         TEST_CASE(enabledInternal);
 #endif
         TEST_CASE(enabledMultiple);
+        TEST_CASE(enabledInvalid);
+        TEST_CASE(enabledError);
+        TEST_CASE(enabledEmpty);
+        TEST_CASE(disableAll);
+        TEST_CASE(disableMultiple);
+        TEST_CASE(disableStylePartial);
+        TEST_CASE(disableInvalid);
+        TEST_CASE(disableError);
+        TEST_CASE(disableEmpty);
         TEST_CASE(inconclusive);
         TEST_CASE(errorExitcode);
         TEST_CASE(errorExitcodeMissing);
@@ -115,10 +124,12 @@ private:
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
         TEST_CASE(platformUnix32);
+        TEST_CASE(platformUnix32Unsigned);
         TEST_CASE(platformUnix64);
+        TEST_CASE(platformUnix64Unsigned);
         TEST_CASE(platformNative);
         TEST_CASE(platformUnspecified);
-        //TEST_CASE(platformPlatformFile);
+        TEST_CASE(platformPlatformFile);
         TEST_CASE(platformUnknown);
         TEST_CASE(plistEmpty);
         TEST_CASE(plistDoesNotExist);
@@ -654,6 +665,109 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void enabledInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=warning,missingIncludeSystem,style", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --enable parameter with the unknown name 'missingIncludeSystem'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void enabledError() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=error", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --enable parameter with the unknown name 'error'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void enabledEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --enable parameter is empty\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableAll() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=all", "--disable=all"};
+        settings.severity.clear();
+        settings.checks.clear();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::style));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::performance));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::portability));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::debug));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::unusedFunction));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableMultiple() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=all", "--disable=style", "--disable=unusedFunction"};
+        settings.severity.clear();
+        settings.checks.clear();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::style));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::performance));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::portability));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::debug));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::unusedFunction));
+        ASSERT_EQUALS(true, settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    // make sure the implied "style" checks are not added when "--enable=style" is specified
+    void disableStylePartial() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=style", "--disable=performance", "--enable=unusedFunction"};
+        settings.severity.clear();
+        settings.checks.clear();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::error));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::warning));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::style));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::performance));
+        ASSERT_EQUALS(true, settings.severity.isEnabled(Severity::portability));
+        ASSERT_EQUALS(false, settings.severity.isEnabled(Severity::debug));
+        ASSERT_EQUALS(true, settings.checks.isEnabled(Checks::unusedFunction));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=leaks", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --disable parameter with the unknown name 'leaks'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableError() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=error", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --disable parameter with the unknown name 'error'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--disable=", "file.cpp"};
+        settings = Settings();
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: --disable parameter is empty\n", GET_REDIRECT_OUTPUT);
+    }
+
     void inconclusive() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--inconclusive"};
@@ -890,12 +1004,30 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void platformUnix32Unsigned() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=unix32-unsigned", "file.cpp"};
+        ASSERT(settings.platform(Settings::Unspecified));
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.platformType == Settings::Unix32);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void platformUnix64() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
         ASSERT(settings.platform(Settings::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(Settings::Unix64, settings.platformType);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void platformUnix64Unsigned() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=unix64-unsigned", "file.cpp"};
+        ASSERT(settings.platform(Settings::Unspecified));
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.platformType == Settings::Unix64);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -917,17 +1049,14 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    /*
-       // TODO: the file is not found because of a bug in the lookup code
-       void platformPlatformFile() {
+    void platformPlatformFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=avr8", "file.cpp"};
         ASSERT(settings.platform(Settings::Unspecified));
-        TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS(Settings::PlatformFile, Settings::Unspecified, settings.platformType);
-        TODO_ASSERT_EQUALS("cppcheck: error: unrecognized platform: \"avr8\".\n", "", GET_REDIRECT_OUTPUT);
-       }
-     */
+        ASSERT_EQUALS(true, defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(Settings::PlatformFile, settings.platformType);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
 
     void platformUnknown() {
         REDIRECT;

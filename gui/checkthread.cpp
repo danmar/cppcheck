@@ -108,13 +108,10 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        const std::string &buildDir = mCppcheck.settings().buildDir;
-        if (!buildDir.empty()) {
-            std::map<std::string,std::size_t> files2;
-            for (const QString& file : mFiles)
-                files2[file.toStdString()] = 0;
-            mCppcheck.analyseWholeProgram(buildDir, files2);
-        }
+        std::map<std::string,std::size_t> files2;
+        for (const QString& file : mFiles)
+            files2[file.toStdString()] = 0;
+        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2);
         mFiles.clear();
         emit done();
         return;

@@ -47,6 +47,7 @@ target_link_libraries(cppcheck ${CMAKE_THREAD_LIBS_INIT})
 
 add_dependencies(cppcheck copy_cfg)
 add_dependencies(cppcheck copy_addons)
+add_dependencies(cppcheck copy_platforms)
 add_dependencies(cppcheck run-dmake)
 
 install(TARGETS cppcheck

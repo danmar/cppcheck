@@ -49,6 +49,7 @@ private:
         TEST_CASE(nothrowThrow);
         TEST_CASE(unhandledExceptionSpecification1); // #4800
         TEST_CASE(unhandledExceptionSpecification2);
+        TEST_CASE(unhandledExceptionSpecification3);
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
         TEST_CASE(nothrowDeclspecThrow);
@@ -378,6 +379,32 @@ private:
               "    f();\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void unhandledExceptionSpecification3() {
+        const char code[] = "void f() const throw (std::runtime_error);\n"
+                            "int _init() {\n"
+                            "    f();\n"
+                            "}\n"
+                            "int _fini() {\n"
+                            "    f();\n"
+                            "}\n"
+                            "int main()\n"
+                            "{\n"
+                            "    f();\n"
+                            "}\n";
+
+        check(code, true);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n"
+                      "[test.cpp:6] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n", errout.str());
+
+        Settings settingsOld = settings;
+        LOAD_LIB_2(settings.library, "gnu.cfg");
+
+        check(code, true);
+        ASSERT_EQUALS("", errout.str());
+
+        settings = settingsOld;
     }
 
     void nothrowAttributeThrow() {

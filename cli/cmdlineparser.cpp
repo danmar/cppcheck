@@ -299,6 +299,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--debug-warnings") == 0)
                 mSettings->debugwarnings = true;
 
+            else if (std::strncmp(argv[i], "--disable=", 10) == 0) {
+                const std::string errmsg = mSettings->removeEnabled(argv[i] + 10);
+                if (!errmsg.empty()) {
+                    printError(errmsg);
+                    return false;
+                }
+            }
+
             // documentation..
             else if (std::strcmp(argv[i], "--doc") == 0) {
                 std::ostringstream doc;
@@ -321,13 +329,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->dump = true;
 
             else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
-                const std::string errmsg = mSettings->addEnabled(argv[i] + 9);
+                const std::string enable_arg = argv[i] + 9;
+                const std::string errmsg = mSettings->addEnabled(enable_arg);
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
-                if (mSettings->severity.isEnabled(Severity::style)) {
+                if (enable_arg.find("style") != std::string::npos) {
                     mSettings->addEnabled("warning");
                     mSettings->addEnabled("performance");
                     mSettings->addEnabled("portability");
@@ -602,13 +611,21 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->platform(Settings::Native);
                 else if (platform == "unspecified")
                     mSettings->platform(Settings::Unspecified);
-                else if (!mSettings->loadPlatformFile(argv[0], platform)) {
+                else if (!mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                     std::string message("unrecognized platform: \"");
                     message += platform;
                     message += "\".";
                     printError(message);
                     return false;
                 }
+
+                // TODO: remove
+                // these are loaded via external files and thus have Settings::PlatformFile set instead.
+                // override the type so they behave like the regular platforms.
+                if (platform == "unix32-unsigned")
+                    mSettings->platformType = Settings::Unix32;
+                else if (platform == "unix64-unsigned")
+                    mSettings->platformType = Settings::Unix64;
             }
 
             // Write results in results.plist
@@ -669,7 +686,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Native);
                     else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
                         ;
-                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
+                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform, mSettings->verbose) && !mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                         std::string message("unrecognized platform: \"");
                         message += platform;
                         message += "\".";
@@ -1084,6 +1101,9 @@ void CmdLineParser::printHelp()
         "                         be considered for evaluation.\n"
         "    --config-excludes-file=<file>\n"
         "                         A file that contains a list of config-excludes\n"
+        "    --disable=<id>       Disable individual checks.\n"
+        "                         Please refer to the documentation of --enable=<id>\n"
+        "                         for futher details.\n"
         "    --dump               Dump xml data for each translation unit. The dump\n"
         "                         files have the extension .dump and contain ast,\n"
         "                         tokenlist, symboldatabase, valueflow.\n"

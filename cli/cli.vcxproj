@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug-PCRE|Win32">
@@ -403,24 +403,23 @@
   <ItemGroup>
     <ResourceCompile Include="version.rc" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\lib\config.h" />
+  <ItemGroup Label="HeaderFiles">
     <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="cppcheckexecutor.h" />
-    <ClCompile Include="cppcheckexecutorseh.h" />
-    <ClCompile Include="cppcheckexecutorsig.h" />
+    <ClInclude Include="cppcheckexecutorseh.h" />
+    <ClInclude Include="cppcheckexecutorsig.h" />
     <ClInclude Include="executor.h" />
     <ClInclude Include="filelister.h" />
     <ClInclude Include="processexecutor.h" />
-    <ClInclude Include="threadexecutor.h" />
     <ClInclude Include="stacktrace.h" />
+    <ClInclude Include="threadexecutor.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\cppcheck.vcxproj">
       <Project>{c183db5b-ad6c-423d-80ca-1f9549555a1a}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="SourceFiles">
     <ClCompile Include="cmdlineparser.cpp" />
     <ClCompile Include="cppcheckexecutor.cpp" />
     <ClCompile Include="cppcheckexecutorseh.cpp" />
@@ -429,8 +428,8 @@
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="processexecutor.cpp" />
-    <ClCompile Include="threadexecutor.cpp" />
     <ClCompile Include="stacktrace.cpp" />
+    <ClCompile Include="threadexecutor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

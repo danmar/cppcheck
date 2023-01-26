@@ -305,8 +305,6 @@ static bool isOperatorFunction(const std::string & funcName)
     return std::find(additionalOperators.cbegin(), additionalOperators.cend(), funcName.substr(operatorPrefix.length())) != additionalOperators.cend();
 }
 
-
-
 bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings) const
 {
     using ErrorParams = std::tuple<std::string, unsigned int, std::string>;
@@ -316,8 +314,7 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
         const FunctionUsage &func = it->second;
         if (func.usedOtherFile || func.filename.empty())
             continue;
-        if (it->first == "main" ||
-            (settings.isWindowsPlatform() && (it->first == "WinMain" || it->first == "_tmain")))
+        if (settings.library.isentrypoint(it->first))
             continue;
         if (!func.usedSameFile) {
             if (isOperatorFunction(it->first))
@@ -401,7 +398,7 @@ namespace {
     };
 }
 
-void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir)
+void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir)
 {
     std::map<std::string, Location> decls;
     std::set<std::string> calls;
@@ -453,11 +450,7 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
     for (std::map<std::string, Location>::const_iterator decl = decls.cbegin(); decl != decls.cend(); ++decl) {
         const std::string &functionName = decl->first;
 
-        // TODO: move to configuration files
-        // TODO: WinMain, wmain and _tmain only apply to Windows code
-        // TODO: also skip other known entry functions i.e. annotated with "constructor" and "destructor" attributes
-        if (functionName == "main" || functionName == "WinMain" || functionName == "wmain" || functionName == "_tmain" ||
-            functionName == "if")
+        if (settings.library.isentrypoint(functionName))
             continue;
 
         if (calls.find(functionName) == calls.end() && !isOperatorFunction(functionName)) {

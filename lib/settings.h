@@ -36,6 +36,7 @@
 #include <list>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 #include <unordered_set>
 
@@ -71,8 +72,14 @@ public:
     void enable(T flag) {
         mFlags |= (1U << (uint32_t)flag);
     }
+    void enable(SimpleEnableGroup<T> group) {
+        mFlags |= group.intValue();
+    }
     void disable(T flag) {
         mFlags &= ~(1U << (uint32_t)flag);
+    }
+    void disable(SimpleEnableGroup<T> group) {
+        mFlags &= ~(group.intValue());
     }
     void setEnabled(T flag, bool enabled) {
         if (enabled)
@@ -394,6 +401,14 @@ public:
     std::string addEnabled(const std::string &str);
 
     /**
+     * @brief Disable extra checks by id
+     * @param str single id or list of id values to be enabled
+     * or empty string to enable all. e.g. "style,possibleError"
+     * @return error message. empty upon success
+     */
+    std::string removeEnabled(const std::string &str);
+
+    /**
      * @brief Returns true if given value can be shown
      * @return true if the value can be shown
      */
@@ -417,6 +432,10 @@ public:
     std::set<std::string> summaryReturn;
 
     void loadSummaries();
+
+private:
+    static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups);
+    std::string applyEnabled(const std::string &str, bool enable);
 };
 
 /// @}

@@ -72,6 +72,10 @@ private:
         TEST_CASE(ignore_declaration); // ignore declaration
 
         TEST_CASE(operatorOverload);
+
+        TEST_CASE(entrypointsWin);
+        TEST_CASE(entrypointsWinU);
+        TEST_CASE(entrypointsUnix);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -354,12 +358,6 @@ private:
     void unusedMain() {
         check("int main() { }");
         ASSERT_EQUALS("", errout.str());
-
-        check("int _tmain() { }", Settings::Win32A);
-        ASSERT_EQUALS("", errout.str());
-
-        check("int WinMain() { }", Settings::Win32A);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void initializationIsNotAFunction() {
@@ -609,6 +607,59 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void entrypointsWin() {
+        check("int WinMain() { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'WinMain' is never used.\n", errout.str());
+
+        check("int _tmain() { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
+
+        Settings settingsOld = settings;
+        LOAD_LIB_2(settings.library, "windows.cfg");
+
+        check("int WinMain() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int _tmain() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        settings = settingsOld;
+    }
+
+    void entrypointsWinU() {
+        check("int wWinMain() { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'wWinMain' is never used.\n", errout.str());
+
+        check("int _tmain() { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
+
+        Settings settingsOld = settings;
+        LOAD_LIB_2(settings.library, "windows.cfg");
+
+        check("int wWinMain() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int _tmain() { }");
+        ASSERT_EQUALS("", errout.str());
+
+        settings = settingsOld;
+    }
+
+    void entrypointsUnix() {
+        check("int _init() { }\n"
+              "int _fini() { }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function '_init' is never used.\n"
+                      "[test.cpp:2]: (style) The function '_fini' is never used.\n", errout.str());
+
+        Settings settingsOld = settings;
+        LOAD_LIB_2(settings.library, "gnu.cfg");
+
+        check("int _init() { }\n"
+              "int _fini() { }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        settings = settingsOld;
+    }
 };
 
 REGISTER_TEST(TestUnusedFunctions)

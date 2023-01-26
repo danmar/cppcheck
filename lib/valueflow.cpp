@@ -459,7 +459,7 @@ void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Val
         result->path = value1.path;
 }
 
-static const Token *getCastTypeStartToken(const Token *parent)
+static const Token *getCastTypeStartToken(const Token *parent, const Settings* settings)
 {
     // TODO: This might be a generic utility function?
     if (!Token::Match(parent, "{|("))
@@ -470,7 +470,8 @@ static const Token *getCastTypeStartToken(const Token *parent)
         return parent->astOperand1();
     if (parent->str() != "(")
         return nullptr;
-    if (!parent->astOperand2() && Token::Match(parent,"( %name%"))
+    if (!parent->astOperand2() && Token::Match(parent, "( %name%") &&
+        (parent->next()->isStandardType() || settings->library.isNotLibraryFunction(parent->next())))
         return parent->next();
     if (parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
         return parent->astOperand1()->tokAt(2);
@@ -603,7 +604,8 @@ static void setTokenValue(Token* tok,
             return !Token::simpleMatch(p, ",");
         });
         // Ensure that the comma isn't a function call
-        if (!callParent || (!Token::Match(callParent->previous(), "%name%|> (") && !Token::simpleMatch(callParent, "{"))) {
+        if (!callParent || (!Token::Match(callParent->previous(), "%name%|> (") && !Token::simpleMatch(callParent, "{") &&
+                            (!Token::Match(callParent, "( %name%") || settings->library.isNotLibraryFunction(callParent->next())))) {
             setTokenValue(parent, std::move(value), settings);
             return;
         }
@@ -729,7 +731,7 @@ static void setTokenValue(Token* tok,
     }
 
     // cast..
-    if (const Token *castType = getCastTypeStartToken(parent)) {
+    if (const Token *castType = getCastTypeStartToken(parent, settings)) {
         if (contains({ValueFlow::Value::ValueType::INT, ValueFlow::Value::ValueType::SYMBOLIC}, value.valueType) &&
             Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
