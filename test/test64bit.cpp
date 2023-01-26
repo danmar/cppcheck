@@ -152,6 +152,11 @@ private:
               "    std::array<double, 1> a = S::g(S::E::E0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("char* f(char* p) {\n"
+              "    return p ? p : 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember() {
