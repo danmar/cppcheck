@@ -15,3 +15,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # Q_UNUSED() in generated code
     target_compile_options_safe(test-cppchecklibrarydata -Wno-extra-semi-stmt)
 endif()
+
+if (REGISTER_GUI_TESTS)
+    add_test(NAME test-cppchecklibrarydata COMMAND $<TARGET_FILE:test-cppchecklibrarydata>)
+endif()
