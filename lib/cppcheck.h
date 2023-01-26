@@ -145,8 +145,8 @@ public:
      * and if it's possible at all */
     bool isUnusedFunctionCheckEnabled() const;
 
-    /** Remove *.ctu-info files */
-    void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files) const;
+    /** Remove *.ctu-info files */    
+    void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files); // cppcheck-suppress functionConst // has side effects
 
 private:
     /** Are there "simple" rules */
