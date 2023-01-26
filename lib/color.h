@@ -32,11 +32,7 @@ enum class Color {
     FgGreen    = 32,
     FgBlue     = 34,
     FgMagenta  = 35,
-    FgDefault  = 39,
-    BgRed      = 41,
-    BgGreen    = 42,
-    BgBlue     = 44,
-    BgDefault  = 49
+    FgDefault  = 39
 };
 CPPCHECKLIB std::ostream& operator<<(std::ostream& os, const Color& c);
 

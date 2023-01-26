@@ -71,7 +71,6 @@
 #include <QtNetwork/QNetworkReply>
 #include <QTemporaryFile>
 
-static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
 static QString fromNativePath(const QString& p) {

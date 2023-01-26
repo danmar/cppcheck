@@ -76,8 +76,7 @@ public:
      * Include file types.
      */
     enum HeaderTypes {
-        NoHeader = 0,
-        UserHeader,
+        UserHeader = 1,
         SystemHeader
     };
 
@@ -172,10 +171,6 @@ public:
 
 
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
-
-    void setFile0(const std::string &f) {
-        mFile0 = f;
-    }
 
     /**
      * dump all directives present in source file
