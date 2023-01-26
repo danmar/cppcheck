@@ -1827,9 +1827,8 @@ private:
     }
 
     void checkLibraryMatchFunctions() {
+        const auto settings_old = settings;
         settings.checkLibrary = true;
-        auto severity_old = settings.severity;
-        settings.severity.enable(Severity::information);
 
         check("void f() {\n"
               "    lib_func();"
@@ -1951,8 +1950,7 @@ private:
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
 
-        settings.severity = severity_old;
-        settings.checkLibrary = false;
+        settings = settings_old;
     }
 
     void checkUseStandardLibrary1() {

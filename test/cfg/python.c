@@ -2,7 +2,7 @@
 // Test library configuration for python.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=python --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/python.c
+// $ cppcheck --check-library --library=python --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/python.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

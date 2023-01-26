@@ -2,7 +2,7 @@
 // Test library configuration for cairo.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=cairo --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/cairo.c
+// $ cppcheck --check-library --library=cairo --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/cairo.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

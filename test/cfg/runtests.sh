@@ -23,7 +23,7 @@ CPPCHECK="$DIR"../../cppcheck
 CFG="$DIR"../../cfg/
 
 # Cppcheck options
-CPPCHECK_OPT='--check-library --platform=unix64 --enable=information --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
+CPPCHECK_OPT='--check-library --platform=unix64 --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
 
 # Compiler settings
 CXX=g++

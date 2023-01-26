@@ -169,7 +169,7 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const Token *dealloc
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
+    if (mSettings->checkLibrary) {
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",
