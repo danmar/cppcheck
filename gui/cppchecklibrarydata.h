@@ -238,6 +238,10 @@ public:
         bool unique;
     };
 
+    struct Entrypoint {
+        QString name;
+    };
+
     void clear() {
         containers.clear();
         defines.clear();
@@ -250,6 +254,7 @@ public:
         platformTypes.clear();
         reflections.clear();
         markups.clear();
+        entrypoints.clear();
     }
 
     void swap(CppcheckLibraryData &other) {
@@ -264,6 +269,7 @@ public:
         platformTypes.swap(other.platformTypes);
         reflections.swap(other.reflections);
         markups.swap(other.markups);
+        entrypoints.swap(other.entrypoints);
     }
 
     QString open(QIODevice &file);
@@ -280,6 +286,7 @@ public:
     QList<struct SmartPointer> smartPointers;
     QList<struct Reflection> reflections;
     QList<struct Markup> markups;
+    QList<struct Entrypoint> entrypoints;
 };
 
 #endif // CPPCHECKLIBRARYDATA_H
