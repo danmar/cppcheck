@@ -71,7 +71,9 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
            $${PWD}/vf/analyze.h \
+           $${PWD}/vf/common.h \
            $${PWD}/vf/enumvalue.h \
+           $${PWD}/vf/number.h \
            $${PWD}/vfvalue.h
 
 SOURCES += $${PWD}/analyzerinfo.cpp \
@@ -132,5 +134,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
            $${PWD}/valueflow.cpp \
+           $${PWD}/vf/common.cpp \
            $${PWD}/vf/enumvalue.cpp \
+           $${PWD}/vf/number.cpp \
            $${PWD}/vfvalue.cpp

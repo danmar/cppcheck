@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "mathlib.h"
+#include "sourcelocation.h"
 #include "vfvalue.h"
 
 #include <cstdlib>
