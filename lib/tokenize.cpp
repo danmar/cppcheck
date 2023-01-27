@@ -1360,7 +1360,7 @@ void Tokenizer::simplifyTypedef()
                     const bool sameStartEnd = (typeStart == typeEnd);
 
                     // check for derived class: class A : some_typedef {
-                    const bool isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
+                    const bool isDerived = Token::Match(tok2->previous(), "public|protected|private|: %type% {|,");
 
                     // check for cast: (some_typedef) A or static_cast<some_typedef>(A)
                     // todo: check for more complicated casts like: (const some_typedef *)A

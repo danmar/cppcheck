@@ -189,6 +189,7 @@ private:
         TEST_CASE(simplifyTypedef140); // #10798
         TEST_CASE(simplifyTypedef141); // #10144
         TEST_CASE(simplifyTypedef142); // T() when T is a pointer type
+        TEST_CASE(simplifyTypedef143); // #11506
         TEST_CASE(simplifyTypedef144); // #9353
 
         TEST_CASE(simplifyTypedefFunction1);
@@ -3069,6 +3070,16 @@ private:
         const char code2[] = "typedef int* T;\n"
                              "void f(T = T()){}\n";
         ASSERT_EQUALS("void f ( int * = ( int * ) 0 ) { }", tok(code2));
+    }
+
+    void simplifyTypedef143() { // #11506
+        const char code[] = "typedef struct { int i; } B;\n"
+                            "void f() {\n"
+                            "    struct D : B {\n"
+                            "        char c;\n"
+                            "    };\n"
+                            "}\n";
+        ASSERT_EQUALS("struct B { int i ; } ; void f ( ) { struct D : B { char c ; } ; }", tok(code));
     }
 
     void simplifyTypedef144() { // #9353
