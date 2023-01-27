@@ -263,7 +263,7 @@ int main(int argc, char **argv)
 
     // Get files..
     std::vector<std::string> libfiles;
-    std::string err = getCppFiles(libfiles, "lib/", false);
+    std::string err = getCppFiles(libfiles, "lib/", true);
     if (!err.empty()) {
         std::cerr << err << std::endl;
         return EXIT_FAILURE;
