@@ -6231,7 +6231,7 @@ private:
         checkConst("struct S {\n"
                    "    int i;\n"
                    "    void h(int, int*) const;\n"
-                   "    void g() { int a; h(i, a); }\n"
+                   "    void g() { int a; h(i, &a); }\n"
                    "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
                            "",
