@@ -18,8 +18,8 @@
 
 #include "redirect.h"
 #include "settings.h"
-#include "testsuite.h"
-#include "testutils.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "threadexecutor.h"
 #include "timer.h"
 

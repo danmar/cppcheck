@@ -20,7 +20,7 @@
 
 #include "tokenize.h"
 #include "checkinternal.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <sstream>
 

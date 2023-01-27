@@ -23,8 +23,8 @@
 #include "processexecutor.h"
 #include "settings.h"
 #include "suppressions.h"
-#include "testsuite.h"
-#include "testutils.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "threadexecutor.h"
 
 #include <algorithm>

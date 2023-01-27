@@ -330,11 +330,11 @@ int main(int argc, char **argv)
     }
 
     std::vector<std::string> testfiles_h;
+    testfiles_h.emplace_back("fixture.h");
+    testfiles_h.emplace_back("helpers.h");
     testfiles_h.emplace_back("options.h");
     testfiles_h.emplace_back("precompiled.h");
     testfiles_h.emplace_back("redirect.h");
-    testfiles_h.emplace_back("testsuite.h");
-    testfiles_h.emplace_back("testutils.h");
     std::sort(testfiles_h.begin(), testfiles_h.end());
 
     // TODO: write filter files
@@ -376,7 +376,7 @@ int main(int argc, char **argv)
 
         for (const std::string &testfile: testfiles) {
             const std::string t = testfile.substr(5);
-            outstr += make_vcxproj_cl_entry(t, t == "testsuite.cpp" ? PrecompileNoPCRE : Compile);
+            outstr += make_vcxproj_cl_entry(t, t == "fixture.cpp" ? PrecompileNoPCRE : Compile);
         }
     }, [&](std::string &outstr){
         for (const std::string &clifile_h: clifiles_h) {

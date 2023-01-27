@@ -25,8 +25,8 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "suppressions.h"
-#include "testsuite.h"
-#include "testutils.h"
+#include "fixture.h"
+#include "helpers.h"
 
 #include <atomic>
 #include <cstring>

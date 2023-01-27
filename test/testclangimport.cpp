@@ -20,7 +20,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <cstdint>
 #include <list>

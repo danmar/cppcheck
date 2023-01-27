@@ -20,7 +20,7 @@
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <algorithm>
 #include <functional>

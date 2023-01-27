@@ -17,7 +17,7 @@
  */
 
 #pragma once
-#include "testsuite.h"
+#include "fixture.h"
 #include "settings.h"
 #include "tokenize.h"
 #include "library.h"

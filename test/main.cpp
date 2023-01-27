@@ -18,7 +18,7 @@
 
 #include "options.h"
 #include "preprocessor.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <cstdlib>
 

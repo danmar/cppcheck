@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TestUtilsH
-#define TestUtilsH
+#ifndef helpersH
+#define helpersH
 
 #include "color.h"
 #include "errorlogger.h"
@@ -86,4 +86,4 @@ private:
     std::string mName;
 };
 
-#endif // TestUtilsH
+#endif // helpersH

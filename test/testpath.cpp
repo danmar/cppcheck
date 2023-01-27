@@ -17,7 +17,7 @@
  */
 
 #include "path.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <string>
 #include <vector>

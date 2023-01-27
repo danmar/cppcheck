@@ -22,7 +22,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 

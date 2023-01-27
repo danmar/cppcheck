@@ -17,7 +17,7 @@
  */
 
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenlist.h"
 

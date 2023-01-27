@@ -21,7 +21,7 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <sstream> // IWYU pragma: keep

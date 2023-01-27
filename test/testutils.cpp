@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testutils.h"
-#include "testsuite.h"
+#include "helpers.h"
+#include "fixture.h"
 #include "utils.h"
 
 const Settings givenACodeSampleToTokenize::settings;

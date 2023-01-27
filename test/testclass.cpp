@@ -21,7 +21,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <list>

@@ -19,7 +19,7 @@
 
 #include "settings.h"
 #include "summaries.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <sstream> // IWYU pragma: keep
