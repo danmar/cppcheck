@@ -37,6 +37,7 @@ private:
         TEST_CASE(valid_config_file_4);
         TEST_CASE(invalid_config_file_1);
         TEST_CASE(empty_elements);
+        TEST_CASE(default_platform);
     }
 
     static bool readPlatform(cppcheck::Platform& platform, const char* xmldata) {
@@ -312,6 +313,17 @@ private:
         ASSERT(!readPlatform(platform, xmldata));
         ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
         ASSERT(!platform.isWindowsPlatform());
+    }
+
+    void default_platform() {
+        cppcheck::Platform platform;
+#if defined(_WIN64)
+        ASSERT_EQUALS(cppcheck::Platform::Win64, platform.platformType);
+#elif defined(_WIN32)
+        ASSERT_EQUALS(cppcheck::Platform::Win32A, platform.platformType);
+#else
+        ASSERT_EQUALS(cppcheck::Platform::Native, platform.platformType);
+#endif
     }
 };
 
