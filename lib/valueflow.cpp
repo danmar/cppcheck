@@ -102,6 +102,8 @@
 #include "valueptr.h"
 #include "vfvalue.h"
 
+#include "vf/enumvalue.h"
+
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -1858,34 +1860,6 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok, value, settings);
-        }
-    }
-}
-
-static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings * settings)
-{
-
-    for (Scope & scope : symboldatabase->scopeList) {
-        if (scope.type != Scope::eEnum)
-            continue;
-        MathLib::bigint value = 0;
-        bool prev_enum_is_known = true;
-
-        for (Enumerator & enumerator : scope.enumeratorList) {
-            if (enumerator.start) {
-                Token *rhs = enumerator.start->previous()->astOperand2();
-                ValueFlow::valueFlowConstantFoldAST(rhs, settings);
-                if (rhs && rhs->hasKnownIntValue()) {
-                    enumerator.value = rhs->values().front().intvalue;
-                    enumerator.value_known = true;
-                    value = enumerator.value + 1;
-                    prev_enum_is_known = true;
-                } else
-                    prev_enum_is_known = false;
-            } else if (prev_enum_is_known) {
-                enumerator.value = value++;
-                enumerator.value_known = true;
-            }
         }
     }
 }
@@ -8835,13 +8809,13 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
-    valueFlowEnumValue(symboldatabase, settings);
+    ValueFlow::enumValue(symboldatabase, settings);
     valueFlowNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
     valueFlowUnknownFunctionReturn(tokenlist, settings);
     valueFlowGlobalConstVar(tokenlist, settings);
-    valueFlowEnumValue(symboldatabase, settings);
+    ValueFlow::enumValue(symboldatabase, settings);
     valueFlowNumber(tokenlist);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
