@@ -65,7 +65,6 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/token.h \
            $${PWD}/tokenize.h \
            $${PWD}/tokenlist.h \
-           $${PWD}/tokenrange.h \
            $${PWD}/utils.h \
            $${PWD}/valueflow.h \
            $${PWD}/valueptr.h \
