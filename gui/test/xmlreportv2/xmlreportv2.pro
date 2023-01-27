@@ -5,6 +5,10 @@ INCLUDEPATH += . ../../../externals/simplecpp
 OBJECTS_DIR = ../../temp
 MOC_DIR = ../../temp
 
+QT -= gui
+QT += core
+QT += testlib
+
 include(../common.pri)
 include(../../../lib/lib.pri)
 
