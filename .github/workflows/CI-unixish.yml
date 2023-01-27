@@ -250,8 +250,7 @@ jobs:
           pushd gui/test/filelist
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
-          # TODO: requires X session
-          #./test-filelist
+          ./test-filelist
           popd
           pushd gui/test/projectfile
           qmake CONFIG+=debug CONFIG+=ccache
@@ -261,14 +260,13 @@ jobs:
           pushd gui/test/translationhandler
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
-          # TODO: requires X session
+          # TODO: requires X session because of QApplication dependency in translationhandler.cpp
           #./test-translationhandler
           popd
           pushd gui/test/xmlreportv2
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
-          # TODO: requires X session
-          #./test-xmlreportv2
+          ./test-xmlreportv2
 
       - name: Generate Qt help file
         run: |

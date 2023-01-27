@@ -446,6 +446,13 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
     return markup;
 }
 
+static CppcheckLibraryData::Entrypoint loadEntrypoint(QXmlStreamReader &xmlReader)
+{
+    CppcheckLibraryData::Entrypoint entrypoint;
+    entrypoint.name = xmlReader.attributes().value("name").toString();
+    return entrypoint;
+}
+
 QString CppcheckLibraryData::open(QIODevice &file)
 {
     clear();
@@ -486,6 +493,8 @@ QString CppcheckLibraryData::open(QIODevice &file)
                     reflections.append(loadReflection(xmlReader));
                 else if (elementName == "markup")
                     markups.append(loadMarkup(xmlReader));
+                else if (elementName == "entrypoint")
+                    entrypoints.append(loadEntrypoint(xmlReader));
                 else
                     unhandledElement(xmlReader);
             } catch (std::runtime_error &e) {
@@ -916,6 +925,12 @@ QString CppcheckLibraryData::toString() const
 
     for (const Markup &mup : markups) {
         writeMarkup(xmlWriter, mup);
+    }
+
+    for (const Entrypoint &ent : entrypoints) {
+        xmlWriter.writeStartElement("entrypoint");
+        xmlWriter.writeAttribute("name", ent.name);
+        xmlWriter.writeEndElement();
     }
 
     xmlWriter.writeEndElement();

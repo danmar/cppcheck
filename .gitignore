@@ -125,7 +125,7 @@ stage
 compile_commands.json
 
 # qmake
-/gui/.qmake.stash
+.qmake.stash
 
 #vs code
 /.vscode

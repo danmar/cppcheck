@@ -28,3 +28,7 @@ if (BUILD_CORE_DLL)
     target_compile_definitions(test-xmlreportv2 PRIVATE CPPCHECKLIB_IMPORT TINYXML2_IMPORT)
     target_link_libraries(test-xmlreportv2 cppcheck-core)
 endif()
+
+if (REGISTER_GUI_TESTS)
+    add_test(NAME test-xmlreportv2 COMMAND $<TARGET_FILE:test-xmlreportv2>)
+endif()
