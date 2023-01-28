@@ -680,7 +680,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     const auto& excludedPaths = mSettings->project.guiProject.excludedPaths;
                     std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
 
-                    const std::string platform(mSettings->project.guiProject.platform);
+                    std::string platform(mSettings->project.guiProject.platform);
+
+                    if (platform == "Unspecified") {
+                        printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
+                        platform = "unspecified";
+                    }
+                    if (platform.empty())
+                        platform = "unspecified";
 
                     if (platform == "win32A")
                         mSettings->platform(Settings::Win32A);
@@ -694,7 +701,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Unix64);
                     else if (platform == "native")
                         mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
+                    else if (platform == "unspecified")
                         mSettings->platform(Settings::Unspecified);
                     else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform, mSettings->verbose) && !mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                         std::string message("unrecognized platform: \"");
