@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1274,13 +1274,13 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         if (expr->isComparisonOp()) {
             if (rhs.isIntValue()) {
                 std::vector<ValueFlow::Value> result =
-                    infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
+                    infer(ValueFlow::makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
                 if (result.empty() || !result.front().isKnown())
                     return unknown;
                 return result.front();
             } else if (lhs.isIntValue()) {
                 std::vector<ValueFlow::Value> result =
-                    infer(makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
+                    infer(ValueFlow::makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
                 if (result.empty() || !result.front().isKnown())
                     return unknown;
                 return result.front();
@@ -1353,7 +1353,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
                 ValueFlow::Value& v = pm.at(child->exprId());
                 if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
-                    if (isContainerSizeChanged(child, v.indirect, settings))
+                    if (ValueFlow::isContainerSizeChanged(child, v.indirect, settings))
                         v = unknown;
                 } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
                     if (isVariableChanged(child, v.indirect, settings, true))

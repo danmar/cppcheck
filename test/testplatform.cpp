@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 
 #include "platform.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <tinyxml2.h>
 
@@ -37,6 +37,7 @@ private:
         TEST_CASE(valid_config_file_4);
         TEST_CASE(invalid_config_file_1);
         TEST_CASE(empty_elements);
+        TEST_CASE(default_platform);
     }
 
     static bool readPlatform(cppcheck::Platform& platform, const char* xmldata) {
@@ -62,7 +63,7 @@ private:
         ASSERT_EQUALS(8, platform.sizeof_long_long);
     }
 
-    void valid_config_native_1() {
+    void valid_config_native_1() const {
         // Verify if native Win32A platform is loaded correctly
         cppcheck::Platform platform;
         ASSERT(platform.platform(cppcheck::Platform::Win32A));
@@ -81,7 +82,7 @@ private:
         ASSERT_EQUALS(64, platform.long_long_bit);
     }
 
-    void valid_config_native_2() {
+    void valid_config_native_2() const {
         // Verify if native Unix64 platform is loaded correctly
         cppcheck::Platform platform;
         ASSERT(platform.platform(cppcheck::Platform::Unix64));
@@ -312,6 +313,17 @@ private:
         ASSERT(!readPlatform(platform, xmldata));
         ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
         ASSERT(!platform.isWindowsPlatform());
+    }
+
+    void default_platform() {
+        cppcheck::Platform platform;
+#if defined(_WIN64)
+        ASSERT_EQUALS(cppcheck::Platform::Win64, platform.platformType);
+#elif defined(_WIN32)
+        ASSERT_EQUALS(cppcheck::Platform::Win32A, platform.platformType);
+#else
+        ASSERT_EQUALS(cppcheck::Platform::Native, platform.platformType);
+#endif
     }
 };
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -189,6 +189,8 @@ private:
         TEST_CASE(simplifyTypedef140); // #10798
         TEST_CASE(simplifyTypedef141); // #10144
         TEST_CASE(simplifyTypedef142); // T() when T is a pointer type
+        TEST_CASE(simplifyTypedef143); // #11506
+        TEST_CASE(simplifyTypedef144); // #9353
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -1921,7 +1923,7 @@ private:
                              "  B * b = new B;\n"
                              "  b->f = new A::F * [ 10 ];\n"
                              "}");
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS("[test.cpp:12]: (debug) valueflow.cpp:1319:valueFlowConditionExpressions bailout: Skipping function due to incomplete variable idx\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyTypedef83() { // ticket #2620
@@ -3068,6 +3070,22 @@ private:
         const char code2[] = "typedef int* T;\n"
                              "void f(T = T()){}\n";
         ASSERT_EQUALS("void f ( int * = ( int * ) 0 ) { }", tok(code2));
+    }
+
+    void simplifyTypedef143() { // #11506
+        const char code[] = "typedef struct { int i; } B;\n"
+                            "void f() {\n"
+                            "    struct D : B {\n"
+                            "        char c;\n"
+                            "    };\n"
+                            "}\n";
+        ASSERT_EQUALS("struct B { int i ; } ; void f ( ) { struct D : B { char c ; } ; }", tok(code));
+    }
+
+    void simplifyTypedef144() { // #9353
+        const char code[] = "typedef struct {} X;\n"
+                            "std::vector<X> v;\n";
+        ASSERT_EQUALS("struct X { } ; std :: vector < X > v ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {

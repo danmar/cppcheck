@@ -69,7 +69,8 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/utils.h \
            $${PWD}/valueflow.h \
            $${PWD}/valueptr.h \
-           $${PWD}/version.h
+           $${PWD}/version.h \
+           $${PWD}/vfvalue.h
 
 SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/astutils.cpp \
@@ -128,4 +129,5 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/tokenize.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
-           $${PWD}/valueflow.cpp
+           $${PWD}/valueflow.cpp \
+           $${PWD}/vfvalue.cpp

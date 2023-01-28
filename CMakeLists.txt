@@ -79,6 +79,11 @@ add_custom_target(copy_addons ALL
         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/addons"
     COMMENT "Copying addons files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
+add_custom_target(copy_platforms ALL
+    ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/platforms"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/platforms"
+    COMMENT "Copying platforms files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+
 if(USE_BUNDLED_TINYXML2)
     message(STATUS "Using bundled version of tinyxml2")
     add_subdirectory(externals/tinyxml2)

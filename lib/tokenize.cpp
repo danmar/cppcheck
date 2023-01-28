@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1360,7 +1360,7 @@ void Tokenizer::simplifyTypedef()
                     const bool sameStartEnd = (typeStart == typeEnd);
 
                     // check for derived class: class A : some_typedef {
-                    const bool isDerived = Token::Match(tok2->previous(), "public|protected|private %type% {|,");
+                    const bool isDerived = Token::Match(tok2->previous(), "public|protected|private|: %type% {|,");
 
                     // check for cast: (some_typedef) A or static_cast<some_typedef>(A)
                     // todo: check for more complicated casts like: (const some_typedef *)A
@@ -1389,7 +1389,7 @@ void Tokenizer::simplifyTypedef()
 
                     // skip over class or struct in derived class declaration
                     bool structRemoved = false;
-                    if (isDerived && Token::Match(typeStart, "class|struct")) {
+                    if ((isDerived || inTemplate) && Token::Match(typeStart, "class|struct")) {
                         if (typeStart->str() == "struct")
                             structRemoved = true;
                         typeStart = typeStart->next();
@@ -7172,11 +7172,11 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
     }
     if (unknown)
         *unknown = !unknownFunc.empty();
-    if (!unknownFunc.empty() && mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
+    if (!unknownFunc.empty() && mSettings->checkLibrary) {
         bool warn = true;
         if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
             const Token * const ftok = endScopeToken->linkAt(-2)->previous();
-            if (ftok && ftok->type()) // constructor call
+            if (ftok && (ftok->type() || (ftok->function() && ftok->function()->hasBody()))) // constructor call
                 warn = false;
         }
 

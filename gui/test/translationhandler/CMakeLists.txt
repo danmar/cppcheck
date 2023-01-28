@@ -12,5 +12,10 @@ target_link_libraries(test-translationhandler ${QT_CORE_LIB} ${QT_WIDGETS_LIB} $
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # Q_UNUSED() in generated code
-    target_compile_options_safe(test-projectfile -Wno-extra-semi-stmt)
+    target_compile_options_safe(test-translationhandler -Wno-extra-semi-stmt)
+endif()
+
+if (REGISTER_GUI_TESTS)
+    # TODO: requires X session
+    #add_test(NAME test-translationhandler COMMAND $<TARGET_FILE:test-translationhandler>)
 endif()

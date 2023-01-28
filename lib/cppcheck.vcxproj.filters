@@ -191,6 +191,9 @@
     <ClCompile Include="infer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vfvalue.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="checkbufferoverrun.h">
@@ -398,6 +401,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="valueptr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vfvalue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

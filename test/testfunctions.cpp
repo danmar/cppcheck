@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
@@ -1827,9 +1827,8 @@ private:
     }
 
     void checkLibraryMatchFunctions() {
+        const auto settings_old = settings;
         settings.checkLibrary = true;
-        auto severity_old = settings.severity;
-        settings.severity.enable(Severity::information);
 
         check("void f() {\n"
               "    lib_func();"
@@ -1951,8 +1950,7 @@ private:
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
 
-        settings.severity = severity_old;
-        settings.checkLibrary = false;
+        settings = settings_old;
     }
 
     void checkUseStandardLibrary1() {

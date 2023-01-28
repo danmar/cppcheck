@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@
 #include "tokenize.h"
 #include "utils.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
 #include "checkclass.h" // CheckClass::stl_containers_not_const
@@ -1445,7 +1446,7 @@ void CheckOther::checkConstVariable()
                     retTok = retTok->astOperand2();
                 while (Token::simpleMatch(retTok, "."))
                     retTok = retTok->astOperand2();
-                return hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
+                return ValueFlow::hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
             }))
                 continue;
         }
@@ -3670,8 +3671,8 @@ void CheckOther::checkComparePointers()
             const Token *tok2 = tok->astOperand2();
             if (!astIsPointer(tok1) || !astIsPointer(tok2))
                 continue;
-            ValueFlow::Value v1 = getLifetimeObjValue(tok1);
-            ValueFlow::Value v2 = getLifetimeObjValue(tok2);
+            ValueFlow::Value v1 = ValueFlow::getLifetimeObjValue(tok1);
+            ValueFlow::Value v2 = ValueFlow::getLifetimeObjValue(tok2);
             if (!v1.isLocalLifetimeValue() || !v2.isLocalLifetimeValue())
                 continue;
             const Variable *var1 = v1.tokvalue->variable();

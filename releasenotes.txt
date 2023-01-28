@@ -3,3 +3,5 @@ release notes for cppcheck-2.10
 - the deprecated Makefile option SRCDIR is no longer accepted
 - if the file provided via "--file-list" cannot be opened it will now error out
 - add command-line option "--disable=<id>" to individually disable checks
+- added CMake option BUILD_CORE_DLL to build lib as cppcheck-core.dll with Visual Studio
+- Windows binaries currently default to the "win32A" and "win64" platform respectively. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' or '--platform=win64' explicitly if you rely on this.

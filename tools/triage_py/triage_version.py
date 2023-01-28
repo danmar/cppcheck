@@ -18,8 +18,9 @@ parser.add_argument('--check-library', action='store_true', help='passed through
 parser.add_argument('--timeout', type=int, default=2, help='the amount of seconds to wait for the analysis to finish')
 parser.add_argument('--compact', action='store_true', help='only print versions with changes with --compare')
 parser.add_argument('--no-quiet', action='store_true', default=False, help='do not specify -q')
-parser.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
-parser.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
+package_group = parser.add_mutually_exclusive_group()
+package_group.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
+package_group.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
 args = parser.parse_args()
 
 def sort_commit_hashes(commits):
@@ -38,10 +39,6 @@ if args.compact:
     if not do_compare:
         print('error: --compact requires --compare')
         sys.exit(1)
-
-if args.no_stdout and args.no_stderr:
-    print('error: cannot specify --no-stdout and --no-stderr at once')
-    sys.exit(1)
 
 directory = args.dir
 input_file = args.infile
@@ -79,6 +76,9 @@ except:
     # if you use the folder from the bisect script that contains the repo as a folder - so remove it from the list
     if versions.count('cppcheck'):
         versions.remove('cppcheck')
+    # this is the commit hash for the 2.9 release tag. it does not exist in the main branch so the version for it cannot be determined
+    if versions.count('aca3f6fef'):
+        versions.remove('aca3f6fef')
     len_in = len(versions)
     versions = sort_commit_hashes(versions)
     if len(versions) != len_in:
@@ -122,6 +122,8 @@ for entry in versions:
         cmd += '--suppress=missingInclude --suppress=missingIncludeSystem --suppress=unmatchedSuppression --suppress=unusedFunction '
     if Version(version) >= Version('1.49'):
         cmd += '--inconclusive '
+    if Version(version) >= Version('1.69'):
+        cmd += '--platform=native '
     cmd += input_file
     if verbose:
         print("running '{}'". format(cmd))

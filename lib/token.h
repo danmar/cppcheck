@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "valueflow.h"
 #include "templatesimplifier.h"
 #include "utils.h"
+#include "vfvalue.h"
 
 #include <cstdint>
 #include <cstddef>
@@ -442,10 +442,10 @@ public:
     }
     bool isUnaryPreOp() const;
 
-    unsigned int flags() const {
+    uint64_t flags() const {
         return mFlags;
     }
-    void flags(const unsigned int flags_) {
+    void flags(const uint64_t flags_) {
         mFlags = flags_;
     }
     bool isUnsigned() const {

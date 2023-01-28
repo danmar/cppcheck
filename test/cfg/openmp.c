@@ -2,7 +2,7 @@
 // Test library configuration for openmp.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=openmp --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/openmp.c
+// $ cppcheck --check-library --library=openmp --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/openmp.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

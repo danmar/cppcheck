@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
 // there needs to be a limit.
-static const int AST_MAX_DEPTH = 100;
+static const int AST_MAX_DEPTH = 150;
 
 
 TokenList::TokenList(const Settings* settings) :
@@ -651,7 +651,7 @@ static bool iscpp11init_impl(const Token * const tok)
     }
 
     auto isCaseStmt = [](const Token* colonTok) {
-        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num% :"))
+        if (!Token::Match(colonTok->tokAt(-1), "%name%|%num%|%char% :"))
             return false;
         const Token* caseTok = colonTok->tokAt(-2);
         while (caseTok && Token::Match(caseTok->tokAt(-1), "::|%name%"))
@@ -677,7 +677,7 @@ static bool iscpp11init_impl(const Token * const tok)
         return false; // trailing return type. The only function body that can contain no semicolon is a void function.
     if (Token::simpleMatch(nameToken->previous(), "namespace") || Token::simpleMatch(nameToken, "namespace") /*anonymous namespace*/)
         return false;
-    if (endtok != nullptr && !Token::Match(nameToken, "return|:")) {
+    if (precedes(nameToken->next(), endtok) && !Token::Match(nameToken, "return|:")) {
         // If there is semicolon between {..} this is not a initlist
         for (const Token *tok2 = nameToken->next(); tok2 != endtok; tok2 = tok2->next()) {
             if (tok2->str() == ";")
@@ -739,6 +739,8 @@ static void compileBinOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, A
         state.depth++;
         if (tok && state.depth <= AST_MAX_DEPTH)
             f(tok, state);
+        if (state.depth > AST_MAX_DEPTH)
+            throw InternalError(tok, "maximum AST depth exceeded", InternalError::AST);
         state.depth--;
     }
 

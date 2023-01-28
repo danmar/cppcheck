@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -128,10 +128,18 @@ void CmdLineParser::printError(const std::string &message)
     printMessage("error: " + message);
 }
 
+#if defined(_WIN64) || defined(_WIN32)
+bool CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+#endif
+
 // TODO: normalize/simplify/native all path parameters
 // TODO: error out on all missing given files/paths
 bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
+#if defined(_WIN64) || defined(_WIN32)
+    bool default_platform = true;
+#endif
+
     bool def = false;
     bool maxconfigs = false;
 
@@ -246,8 +254,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings->checkLibrary = true;
-                // need to add "information" or no messages will be shown at all
-                mSettings->addEnabled("information");
             }
 
             else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
@@ -611,13 +617,25 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->platform(Settings::Native);
                 else if (platform == "unspecified")
                     mSettings->platform(Settings::Unspecified);
-                else if (!mSettings->loadPlatformFile(argv[0], platform)) {
+                else if (!mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                     std::string message("unrecognized platform: \"");
                     message += platform;
                     message += "\".";
                     printError(message);
                     return false;
                 }
+
+#if defined(_WIN64) || defined(_WIN32)
+                default_platform = false;
+#endif
+
+                // TODO: remove
+                // these are loaded via external files and thus have Settings::PlatformFile set instead.
+                // override the type so they behave like the regular platforms.
+                if (platform == "unix32-unsigned")
+                    mSettings->platformType = Settings::Unix32;
+                else if (platform == "unix64-unsigned")
+                    mSettings->platformType = Settings::Unix64;
             }
 
             // Write results in results.plist
@@ -678,7 +696,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Native);
                     else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
                         ;
-                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
+                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform, mSettings->verbose) && !mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                         std::string message("unrecognized platform: \"");
                         message += platform;
                         message += "\".";
@@ -1032,6 +1050,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         printHelp();
         return true;
     }
+
+#if defined(_WIN64)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+        printMessage("Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.");
+#elif defined(_WIN32)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+        printMessage("Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.");
+#endif
 
     // Print error only if we have "real" command and expect files
     if (!mExitAfterPrint && mPathNames.empty() && mSettings->project.fileSettings.empty()) {

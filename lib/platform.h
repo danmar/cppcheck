@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,9 +120,10 @@ namespace cppcheck {
          * load platform file
          * @param exename application path
          * @param filename platform filename
+         * @param verbose log verbose information about the lookup
          * @return returns true if file was loaded successfully
          */
-        bool loadPlatformFile(const char exename[], const std::string &filename);
+        bool loadPlatformFile(const char exename[], const std::string &filename, bool verbose = false);
 
         /** load platform from xml document, primarily for testing */
         bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);

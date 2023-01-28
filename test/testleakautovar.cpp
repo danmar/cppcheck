@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <map>
@@ -212,6 +212,7 @@ private:
         TEST_CASE(configuration3);
         TEST_CASE(configuration4);
         TEST_CASE(configuration5);
+        TEST_CASE(configuration6);
 
         TEST_CASE(ptrptr);
 
@@ -239,7 +240,6 @@ private:
         // Check for leaks..
         CheckLeakAutoVar c;
         settings.checkLibrary = true;
-        settings.severity.enable(Severity::information);
         c.runChecks(&tokenizer, &settings, this);
     }
 
@@ -255,7 +255,6 @@ private:
         // Check for leaks..
         CheckLeakAutoVar c;
         settings_.checkLibrary = true;
-        settings_.severity.enable(Severity::information);
         c.runChecks(&tokenizer, &settings_, this);
     }
 
@@ -2505,6 +2504,14 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: file\n", errout.str());
     }
 
+    void configuration6() { // #11198
+        check("void f() {}\n"
+              "void g() {\n"
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void ptrptr() {
         check("void f() {\n"
               "    char **p = malloc(10);\n"
@@ -2645,7 +2652,6 @@ private:
         // Check for leaks..
         CheckLeakAutoVar c;
         settings.checkLibrary = true;
-        settings.addEnabled("information");
         c.runChecks(&tokenizer, &settings, this);
     }
 
@@ -2696,7 +2702,6 @@ private:
         // Check for leaks..
         CheckLeakAutoVar checkLeak;
         settings.checkLibrary = true;
-        settings.severity.enable(Severity::information);
         checkLeak.runChecks(&tokenizer, &settings, this);
     }
 

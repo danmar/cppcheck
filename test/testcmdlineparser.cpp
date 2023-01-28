@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "timer.h"
 
 #include <cstdio>
@@ -37,7 +37,17 @@ class TestCmdlineParser : public TestFixture {
 public:
     TestCmdlineParser()
         : TestFixture("TestCmdlineParser")
-        , defParser(&settings) {}
+        , defParser(&settings) {
+#if defined(_WIN64) || defined(_WIN32)
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
+#endif
+    }
+
+    ~TestCmdlineParser() override {
+#if defined(_WIN64) || defined(_WIN32)
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+#endif
+    }
 
 private:
     Settings settings; // TODO: reset after each test
@@ -124,11 +134,17 @@ private:
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
         TEST_CASE(platformUnix32);
+        TEST_CASE(platformUnix32Unsigned);
         TEST_CASE(platformUnix64);
+        TEST_CASE(platformUnix64Unsigned);
         TEST_CASE(platformNative);
         TEST_CASE(platformUnspecified);
-        //TEST_CASE(platformPlatformFile);
+        TEST_CASE(platformPlatformFile);
         TEST_CASE(platformUnknown);
+#if defined(_WIN64) || defined(_WIN32)
+        TEST_CASE(platformDefault);
+        TEST_CASE(platformDefault2);
+#endif
         TEST_CASE(plistEmpty);
         TEST_CASE(plistDoesNotExist);
         TEST_CASE(suppressionsOld);
@@ -1002,12 +1018,30 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void platformUnix32Unsigned() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=unix32-unsigned", "file.cpp"};
+        ASSERT(settings.platform(Settings::Unspecified));
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.platformType == Settings::Unix32);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void platformUnix64() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
         ASSERT(settings.platform(Settings::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(Settings::Unix64, settings.platformType);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void platformUnix64Unsigned() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=unix64-unsigned", "file.cpp"};
+        ASSERT(settings.platform(Settings::Unspecified));
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.platformType == Settings::Unix64);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -1029,17 +1063,14 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    /*
-       // TODO: the file is not found because of a bug in the lookup code
-       void platformPlatformFile() {
+    void platformPlatformFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=avr8", "file.cpp"};
         ASSERT(settings.platform(Settings::Unspecified));
-        TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS(Settings::PlatformFile, Settings::Unspecified, settings.platformType);
-        TODO_ASSERT_EQUALS("cppcheck: error: unrecognized platform: \"avr8\".\n", "", GET_REDIRECT_OUTPUT);
-       }
-     */
+        ASSERT_EQUALS(true, defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(Settings::PlatformFile, settings.platformType);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
 
     void platformUnknown() {
         REDIRECT;
@@ -1047,6 +1078,41 @@ private:
         ASSERT(!defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: \"win128\".\n", GET_REDIRECT_OUTPUT);
     }
+
+#if defined(_WIN64) || defined(_WIN32)
+    void platformDefault() {
+        REDIRECT;
+
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+
+        const char * const argv[] = {"cppcheck", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(2, argv));
+#if defined(_WIN64)
+        ASSERT_EQUALS(Settings::Win64, settings.platformType);
+        ASSERT_EQUALS("cppcheck: Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.\n", GET_REDIRECT_OUTPUT);
+#elif defined(_WIN32)
+        ASSERT_EQUALS(Settings::Win32A, settings.platformType);
+        ASSERT_EQUALS("cppcheck: Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.\n", GET_REDIRECT_OUTPUT);
+#endif
+
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
+    }
+
+    void platformDefault2() {
+        REDIRECT;
+
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+
+        const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(Settings::Unix64, settings.platformType);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+
+        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
+    }
+#endif
 
     void plistEmpty() {
         REDIRECT;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <map>
@@ -207,6 +207,7 @@ private:
         TEST_CASE(array_index_negative4);
         TEST_CASE(array_index_negative5);    // #10526
         TEST_CASE(array_index_negative6);    // #11349
+        TEST_CASE(array_index_negative7);    // #5685
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -2269,6 +2270,18 @@ private:
               "  if (i == -3) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // #5685
+    void array_index_negative7()
+    {
+        check("void f() {\n"
+              "    int i = -9;\n"
+              "    int a[5];\n"
+              "    for (; i < 5; i++)\n"
+              "        a[i] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[5]' accessed at index -9, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_decr() {

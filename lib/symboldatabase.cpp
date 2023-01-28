@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1208,6 +1208,8 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
         membertok->varId(memberId->second);
 }
 
+static bool isContainerYieldElement(Library::Container::Yield yield);
+
 void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 {
     VarIdMap varIds;
@@ -1222,6 +1224,8 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 
     // Set variable pointers
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
+        if (!tok->isName() || tok->isKeyword() || tok->isStandardType())
+            continue;
         if (tok->varId())
             const_cast<Token*>(tok)->variable(getVariableFromVarId(tok->varId()));
 
@@ -1308,6 +1312,16 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                         setMemberVar(membervar, membertok, tok->function()->retDef);
                     }
                 }
+            }
+        }
+        else if (Token::simpleMatch(tok->astParent(), ".") && tok->next()->str() == "(" &&
+                 astIsContainer(tok->astParent()->astOperand1()) && Token::Match(tok->next()->link(), ") . %name% !!(")) {
+            const ValueType* vt = tok->astParent()->astOperand1()->valueType();
+            const Library::Container* cont = vt->container;
+            auto it = cont->functions.find(tok->str());
+            if (it != cont->functions.end() && isContainerYieldElement(it->second.yield) && vt->containerTypeToken && vt->containerTypeToken->scope()) {
+                Token* memberTok = tok->next()->link()->tokAt(2);
+                setMemberVar(vt->containerTypeToken->scope()->getVariable(memberTok->str()), memberTok, vt->containerTypeToken);
             }
         }
     }
@@ -2280,8 +2294,11 @@ std::string Variable::getTypeName() const
 {
     std::string ret;
     // TODO: For known types, generate the full type name
-    for (const Token *typeTok = mTypeStartToken; Token::Match(typeTok, "%name%|::") && typeTok->varId() == 0; typeTok = typeTok->next())
+    for (const Token *typeTok = mTypeStartToken; Token::Match(typeTok, "%name%|::") && typeTok->varId() == 0; typeTok = typeTok->next()) {
         ret += typeTok->str();
+        if (Token::simpleMatch(typeTok->next(), "<") && typeTok->next()->link()) // skip template arguments
+            typeTok = typeTok->next()->link();
+    }
     return ret;
 }
 
@@ -5397,7 +5414,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     else
                         unknownDeref = true;
                 }
-                const ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), var, funcarg);
+                const Token* valuetok = arguments[j];
+                if (valuetok->str() == "::") {
+                    const Token* rml = nextAfterAstRightmostLeaf(vartok);
+                    if (rml)
+                        valuetok = rml->previous();
+                }
+                const ValueType::MatchResult res = ValueType::matchParameter(valuetok->valueType(), var, funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
                 else if (res == ValueType::MatchResult::FALLBACK1)
@@ -6049,7 +6072,7 @@ static void setAutoTokenProperties(Token * const autoTok)
         autoTok->isStandardType(true);
 }
 
-static bool isContainerYieldElement(Library::Container::Yield yield)
+bool isContainerYieldElement(Library::Container::Yield yield)
 {
     return yield == Library::Container::Yield::ITEM || yield == Library::Container::Yield::AT_INDEX ||
            yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
@@ -6419,12 +6442,18 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             }
         } else if (ternary) {
             if (vt1->pointer != 0U && vt2 && vt2->pointer == 0U) {
-                setValueType(parent, *vt2);
+                if (vt2->isPrimitive())
+                    setValueType(parent, *vt1);
+                else
+                    setValueType(parent, *vt2);
                 return;
             }
 
             if (vt1->pointer == 0U && vt2 && vt2->pointer != 0U) {
-                setValueType(parent, *vt1);
+                if (vt1->isPrimitive())
+                    setValueType(parent, *vt2);
+                else
+                    setValueType(parent, *vt1);
                 return;
             }
         }
@@ -7441,7 +7470,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         if (call->constness == 0 && func->constness != 0 && func->reference != Reference::None)
             return ValueType::MatchResult::NOMATCH;
     }
-    if (call->type != func->type) {
+    if (call->type != func->type || (call->isEnum() && !func->isEnum())) {
         if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
         if (call->pointer > 0)
