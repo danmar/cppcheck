@@ -518,7 +518,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
-            for (const LifetimeToken& lt : getLifetimeTokens(tok, true)) {
+            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(tok, true)) {
                 if (!printInconclusive && lt.inconclusive)
                     continue;
                 const Variable* var = lt.token->variable();
@@ -537,14 +537,14 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                    tok->variable()->declarationId() == tok->varId() && tok->variable()->isStatic() &&
                    !tok->variable()->isArgument()) {
             ErrorPath errorPath;
-            const Variable *var = getLifetimeVariable(tok, errorPath);
+            const Variable *var = ValueFlow::getLifetimeVariable(tok, errorPath);
             if (var && isInScope(var->nameToken(), tok->scope())) {
                 errorDanglingReference(tok, var, errorPath);
                 continue;
             }
             // Reference to temporary
         } else if (tok->variable() && (tok->variable()->isReference() || tok->variable()->isRValueReference())) {
-            for (const LifetimeToken& lt : getLifetimeTokens(getParentLifetime(tok))) {
+            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(getParentLifetime(tok))) {
                 if (!printInconclusive && lt.inconclusive)
                     continue;
                 const Token * tokvalue = lt.token;
@@ -565,13 +565,13 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
             const Token* parent = getParentLifetime(mTokenizer->isCPP(), val.tokvalue, &mSettings->library);
             if (!exprs.insert(parent).second)
                 continue;
-            for (const LifetimeToken& lt : getLifetimeTokens(parent, escape || isAssignedToNonLocal(tok))) {
+            for (const ValueFlow::LifetimeToken& lt : ValueFlow::getLifetimeTokens(parent, escape || isAssignedToNonLocal(tok))) {
                 const Token * tokvalue = lt.token;
                 if (val.isLocalLifetimeValue()) {
                     if (escape) {
                         if (getPointerDepth(tok) < getPointerDepth(tokvalue))
                             continue;
-                        if (!isLifetimeBorrowed(tok, mSettings))
+                        if (!ValueFlow::isLifetimeBorrowed(tok, mSettings))
                             continue;
                         if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()) &&
                             !astIsContainerView(tok->astParent()))
@@ -604,7 +604,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     } else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
                         var = tok->variable();
                     }
-                    if (!isLifetimeBorrowed(tok, mSettings))
+                    if (!ValueFlow::isLifetimeBorrowed(tok, mSettings))
                         continue;
                     const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
                     if (!nextTok)

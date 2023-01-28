@@ -879,7 +879,7 @@ bool extractForLoopValues(const Token *forToken,
     const Token *incExpr  = forToken->next()->astOperand2()->astOperand2()->astOperand2();
     if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
-    std::vector<MathLib::bigint> minInitValue = getMinValue(makeIntegralInferModel(), initExpr->astOperand2()->values());
+    std::vector<MathLib::bigint> minInitValue = getMinValue(ValueFlow::makeIntegralInferModel(), initExpr->astOperand2()->values());
     *varid = initExpr->astOperand1()->varId();
     *knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
     *initValue = minInitValue.empty() ? 0 : minInitValue.front();
@@ -1289,10 +1289,10 @@ const Token* followReferences(const Token* tok, ErrorPath* errors)
 
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 {
-    ValueFlow::Value v1 = getLifetimeObjValue(tok1);
+    ValueFlow::Value v1 = ValueFlow::getLifetimeObjValue(tok1);
     if (!v1.isLifetimeValue())
         return false;
-    ValueFlow::Value v2 = getLifetimeObjValue(tok2);
+    ValueFlow::Value v2 = ValueFlow::getLifetimeObjValue(tok2);
     if (!v2.isLifetimeValue())
         return false;
     return v1.tokvalue == v2.tokvalue;
