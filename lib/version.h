@@ -2,7 +2,7 @@
 // After a release the DEVMINOR is incremented. MAJOR=x MINOR=y, DEVMINOR=y+1
 
 #define CPPCHECK_MAJOR 2
-#define CPPCHECK_MINOR 9
+#define CPPCHECK_MINOR 10
 #define CPPCHECK_DEVMINOR 10
 
 #define STRINGIFY(x) STRING(x)
