@@ -25,6 +25,7 @@
 
 #include <climits>
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -113,8 +114,11 @@ namespace cppcheck {
         /** platform type */
         PlatformType platformType;
 
-        /** set the platform type for predefined platforms */
+        /** set the platform type for predefined platforms - deprecated use platform(const std::string&) instead */
         bool platform(PlatformType type);
+
+        /** set the platform type */
+        bool platform(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths = {}, bool verbose = false);
 
         /**
          * load platform file

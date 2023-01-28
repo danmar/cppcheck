@@ -19,6 +19,7 @@
 #include "platform.h"
 
 #include "path.h"
+#include "settings.h"
 
 #include <cstring>
 #include <iostream>
@@ -155,6 +156,45 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
     }
     // unsupported platform
     return false;
+}
+
+bool cppcheck::Platform::platform(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
+{
+    if (platformstr == "win32A")
+        platform(Settings::Win32A);
+    else if (platformstr == "win32W")
+        platform(Settings::Win32W);
+    else if (platformstr == "win64")
+        platform(Settings::Win64);
+    else if (platformstr == "unix32")
+        platform(Settings::Unix32);
+    else if (platformstr == "unix64")
+        platform(Settings::Unix64);
+    else if (platformstr == "native")
+        platform(Settings::Native);
+    else if (platformstr == "unspecified")
+        platform(Settings::Unspecified);
+    else if (paths.empty()) {
+        errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
+        return false;
+    }
+    else {
+        bool found = false;
+        for (const std::string& path : paths) {
+            if (verbose)
+                std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
+            if (loadPlatformFile(path.c_str(), platformstr, verbose)) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            errstr = "unrecognized platform: '" + platformstr + "'.";
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::string &filename, bool verbose)
