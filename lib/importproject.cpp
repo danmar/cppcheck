@@ -1147,9 +1147,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         if (strcmp(node->Name(), CppcheckXml::RootPathName) == 0 && node->Attribute(CppcheckXml::RootPathNameAttrib)) {
             temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
             temp.relativePaths = true;
-        } else if (strcmp(node->Name(), CppcheckXml::BugHunting) == 0)
-            ;
-        else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
+        } if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
             temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
         else if (strcmp(node->Name(), CppcheckXml::IncludeDirElementName) == 0)
             temp.includePaths = readXmlStringList(node, path, CppcheckXml::DirElementName, CppcheckXml::DirNameAttrib);
