@@ -312,8 +312,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
         // Check..
-        CheckOther checkOther(&tokenizer, settings, this);
-        checkOther.runChecks(&tokenizer, settings, this);
+        runChecks<CheckOther>(&tokenizer, settings, this);
 
         (void)runSimpleChecks; // TODO Remove this
     }
@@ -356,8 +355,7 @@ private:
         tokenizer.setPreprocessor(&preprocessor);
 
         // Check..
-        CheckOther checkOther(&tokenizer, settings, this);
-        checkOther.runChecks(&tokenizer, settings, this);
+        runChecks<CheckOther>(&tokenizer, settings, this);
     }
 
     void checkInterlockedDecrement(const char code[]) {

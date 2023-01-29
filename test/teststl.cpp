@@ -190,10 +190,9 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
 
-        CheckStl checkStl(&tokenizer, &settings, this);
-
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-        checkStl.runChecks(&tokenizer, &settings, this);
+
+        runChecks<CheckStl>(&tokenizer, &settings, this);
     }
 
     void check_(const char* file, int line, const std::string& code, const bool inconclusive = false) {
@@ -211,8 +210,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckStl checkStl(&tokenizer, &settings, this);
-        checkStl.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckStl>(&tokenizer, &settings, this);
     }
 
     void outOfBounds() {

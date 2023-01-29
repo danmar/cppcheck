@@ -131,8 +131,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
-        CheckFunctions checkFunctions(&tokenizer, settings_, this);
-        checkFunctions.runChecks(&tokenizer, settings_, this);
+        runChecks<CheckFunctions>(&tokenizer, settings_, this);
     }
 
     void prohibitedFunctions_posix() {

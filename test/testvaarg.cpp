@@ -43,8 +43,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckVaarg checkVaarg;
-        checkVaarg.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckVaarg>(&tokenizer, &settings, this);
     }
 
     void run() override {

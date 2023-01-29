@@ -62,8 +62,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check..
-        CheckType checkType(&tokenizer, settings, this);
-        checkType.runChecks(&tokenizer, settings, this);
+        runChecks<CheckType>(&tokenizer, settings, this);
     }
 
     void checkTooBigShift_Unix32() {
