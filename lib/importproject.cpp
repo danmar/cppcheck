@@ -1227,8 +1227,10 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                     temp.safeChecks.internalFunctions = true;
                 else if (strcmp(child->Name(), Settings::SafeChecks::XmlExternalVariables) == 0)
                     temp.safeChecks.externalVariables = true;
-                else
+                else {
+                    printError("Unknown '" + std::string(Settings::SafeChecks::XmlRootName) + "' element '" + std::string(child->Name()) + "' in Cppcheck project file");
                     return false;
+                }
             }
         } else if (strcmp(node->Name(), CppcheckXml::TagWarningsElementName) == 0)
             ; // TODO
@@ -1243,8 +1245,10 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                     temp.premiumArgs += std::string(" --") + child->GetText();
             }
         }
-        else
+        else {
+            printError("Unknown element '" + std::string(node->Name()) + "' in Cppcheck project file");
             return false;
+        }
     }
     settings->basePaths = temp.basePaths;
     settings->relativePaths |= temp.relativePaths;
