@@ -39,21 +39,24 @@ def test_project_force_U(tmpdir):
     assert stderr == '[bug1.cpp:2]: (error) Division by zero.\n'
 
 
-def __write_cppcheck_project_file(tmpdir, platform=None):
+def __write_cppcheck_project_file(tmpdir, platform=None, importproject=None):
     project_file = os.path.join(tmpdir, 'Project.cppcheck')
 
     if platform is not None:
         platform = '<platform>{}</platform>'.format(platform)
+    if importproject is not None:
+        platform = '<importproject>{}</importproject>'.format(importproject)
 
     with open(project_file, 'wt') as f:
         f.write(
 """<?xml version="1.0" encoding="UTF-8"?>
 <project version="1">
     {}
+    {}
     <paths>
         <dir name="."/>
     </paths>
-</project>""".format(platform)
+</project>""".format(platform, importproject)
         )
 
     return project_file
@@ -63,7 +66,7 @@ def test_project_custom_platform(tmpdir):
     """
     import cppcheck project that contains a custom platform file
     """
-    project_file = __write_cppcheck_project_file(tmpdir, 'p1.xml')
+    project_file = __write_cppcheck_project_file(tmpdir, platform='p1.xml')
 
     with open(os.path.join(tmpdir, 'p1.xml'), 'wt') as f:
         f.write('<?xml version="1.0"?>\n<platform/>')
@@ -81,7 +84,7 @@ def test_project_empty_platform(tmpdir):
     """
     import cppcheck project that contains an empty platform type
     """
-    project_file = __write_cppcheck_project_file(tmpdir, '')
+    project_file = __write_cppcheck_project_file(tmpdir, platform='')
 
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
@@ -96,7 +99,7 @@ def test_project_unspecified_platform(tmpdir):
     """
     import cppcheck project that contains the deprecated platform type "Unspecified"
     """
-    project_file = __write_cppcheck_project_file(tmpdir, 'Unspecified')
+    project_file = __write_cppcheck_project_file(tmpdir, platform='Unspecified')
 
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
@@ -111,7 +114,7 @@ def test_project_unknown_platform(tmpdir):
     """
     import cppcheck project that contains an unknown platform type
     """
-    project_file = __write_cppcheck_project_file(tmpdir, 'dummy')
+    project_file = __write_cppcheck_project_file(tmpdir, platform='dummy')
 
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
@@ -209,4 +212,16 @@ def test_project_empty_fields(tmpdir):
     ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1'])
     assert ret == 1, stdout # do not crash
     assert stdout == 'cppcheck: error: no C or C++ source files found.\n'
+    assert stderr == ''
+
+
+def test_project_missing_subproject(tmpdir):
+    """
+    import cppcheck project that contains an unknown platform type
+    """
+    project_file = __write_cppcheck_project_file(tmpdir, importproject='dummy.json')
+
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
+    assert ret == 1, stdout
+    assert stdout == "cppcheck: error: failed to open project '{}/dummy.json'. The file does not exist.\n".format(str(tmpdir).replace('\\', '/'))
     assert stderr == ''

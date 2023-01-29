@@ -654,7 +654,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
-                const std::string projectFile = argv[i]+10;
+                std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 mSettings->project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
@@ -681,8 +681,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         return false;
                     }
 
-                    if (!mSettings->project.guiProject.projectFile.empty())
+                    if (!mSettings->project.guiProject.projectFile.empty()) {
+                        projectFile = mSettings->project.guiProject.projectFile;
                         projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
+                    }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
                     if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")
