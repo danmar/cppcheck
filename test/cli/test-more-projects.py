@@ -120,3 +120,93 @@ def test_project_unknown_platform(tmpdir):
     assert ret == 1, stdout
     assert stdout == "cppcheck: error: unrecognized platform: 'dummy'.\n"
     assert stderr == ''
+
+
+def test_project_empty_fields(tmpdir):
+    """
+    import cppcheck project that contains all empty fields - make sure there are no crashes
+    """
+    project_file = os.path.join(tmpdir, 'Project.cppcheck')
+
+    with open(project_file, 'wt') as f:
+        f.write(
+"""<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+  <root/>
+  <builddir/>
+  <includedir/>
+  <includedir>
+    <dir/>
+  </includedir>
+  <defines/>
+  <defines>
+    <define/>
+  </defines>
+  <undefines/>
+  <undefines>
+    <undefine/>
+  </undefines>
+  <importproject/>
+  <paths/>
+  <paths>
+    <dir/>
+  </paths>
+  <exclude/>
+  <exclude>
+    <paths/>
+  </exclude>
+  <function-contracts/>
+  <variable-contracts/>
+  <ignore/>
+  <ignore>
+    <path/>
+  </ignore>
+  <libraries/>
+  <libraries>
+    <library/>
+  </libraries>
+  <suppressions/>
+  <suppressions>
+    <suppression/>
+  </suppressions>
+  <vs-configurations/>
+  <vs-configurations>
+    <config/>
+  </vs-configurations>
+  <platform/>
+  <analyze-all-vs-configs/>
+  <parser/>
+  <addons/>
+  <addons>
+    <addon/>
+  </addons>
+  <tags/>
+  <tools/>
+  <tools>
+    <tool/>
+  </tools>
+  <check-headers/>
+  <check-unused-templates/>
+  <max-ctu-depth/>
+  <max-template-recursion/>
+  <check-unknown-function-return-values/>
+  <safe-checks/>
+  <safe-checks>
+    <class-public/>
+    <external-functions/>
+    <internal-functions/>
+    <external-variables/>
+  </safe-checks>
+  <tag-warnings/>
+  <bug-hunting/>
+  <cert-c-int-precision/>
+  <coding-standards/>
+  <coding-standards>
+    <coding-standard/>
+  </coding-standards>
+</project>""")
+
+    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1'])
+    assert ret == 1, stdout # do not crash
+    assert stdout == 'cppcheck: error: no C or C++ source files found.\n'
+    assert stderr == ''
