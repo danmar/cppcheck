@@ -1161,8 +1161,11 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), CppcheckXml::UndefinesElementName) == 0) {
             for (const std::string &u : readXmlStringList(node, "", CppcheckXml::UndefineName, nullptr))
                 temp.userUndefs.insert(u);
-        } else if (strcmp(node->Name(), CppcheckXml::ImportProjectElementName) == 0)
-            guiProject.projectFile = path + readSafe(node->GetText(), "");
+        } else if (strcmp(node->Name(), CppcheckXml::ImportProjectElementName) == 0) {
+            const std::string t_str = readSafe(node->GetText(), "");
+            if (!t_str.empty())
+                guiProject.projectFile = path + t_str;
+        }
         else if (strcmp(node->Name(), CppcheckXml::PathsElementName) == 0)
             paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::ExcludeElementName) == 0)
