@@ -140,6 +140,7 @@
     <addaction name="separator"/>
     <addaction name="mActionProjectMRU"/>
     <addaction name="mActionSave"/>
+    <addaction name="mActionComplianceReport"/>
     <addaction name="separator"/>
     <addaction name="mActionPrintPreview"/>
     <addaction name="mActionPrint"/>
@@ -914,6 +915,11 @@
     <string>C++23</string>
    </property>
   </action-->
+  <action name="mActionComplianceReport">
+   <property name="text">
+    <string>Compliance report...</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

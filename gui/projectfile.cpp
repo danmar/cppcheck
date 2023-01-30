@@ -61,6 +61,7 @@ void ProjectFile::clear()
     mExcludedPaths.clear();
     mLibraries.clear();
     mPlatform.clear();
+    mProjectName.clear();
     mSuppressions.clear();
     mAddons.clear();
     mClangAnalyzer = mClangTidy = false;
@@ -208,6 +209,8 @@ bool ProjectFile::read(const QString &filename)
                 readStringList(mCodingStandards, xmlReader, CppcheckXml::CodingStandardElementName);
             if (xmlReader.name() == QString(CppcheckXml::CertIntPrecisionElementName))
                 mCertIntPrecision = readInt(xmlReader, 0);
+            if (xmlReader.name() == QString(CppcheckXml::ProjectNameElementName))
+                mProjectName = readString(xmlReader);
 
             break;
 
@@ -328,6 +331,32 @@ int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
         switch (type) {
         case QXmlStreamReader::Characters:
             ret = reader.text().toString().toInt();
+            FALLTHROUGH;
+        case QXmlStreamReader::EndElement:
+            return ret;
+        // Not handled
+        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (true);
+}
+
+QString ProjectFile::readString(QXmlStreamReader &reader)
+{
+    QString ret;
+    do {
+        const QXmlStreamReader::TokenType type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::Characters:
+            ret = reader.text().toString();
             FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return ret;
@@ -956,6 +985,12 @@ bool ProjectFile::write(const QString &filename)
     if (mCertIntPrecision > 0) {
         xmlWriter.writeStartElement(CppcheckXml::CertIntPrecisionElementName);
         xmlWriter.writeCharacters(QString::number(mCertIntPrecision));
+        xmlWriter.writeEndElement();
+    }
+
+    if (!mProjectName.isEmpty()) {
+        xmlWriter.writeStartElement(CppcheckXml::ProjectNameElementName);
+        xmlWriter.writeCharacters(mProjectName);
         xmlWriter.writeEndElement();
     }
 

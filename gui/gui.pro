@@ -63,6 +63,7 @@ win32 {
 RESOURCES = gui.qrc
 FORMS = about.ui \
         applicationdialog.ui \
+        compliancereportdialog.ui \
         fileview.ui \
         helpdialog.ui \
         mainwindow.ui \
@@ -122,6 +123,7 @@ HEADERS += aboutdialog.h \
            codeeditstyledialog.h \
            codeeditor.h \
            common.h \
+           compliancereportdialog.h \
            csvreport.h \
            erroritem.h \
            filelist.h \
@@ -162,6 +164,7 @@ SOURCES += aboutdialog.cpp \
            codeeditstyledialog.cpp \
            codeeditor.cpp \
            common.cpp \
+           compliancereportdialog.cpp \
            csvreport.cpp \
            erroritem.cpp \
            filelist.cpp \
