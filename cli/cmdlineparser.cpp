@@ -667,18 +667,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                     std::string platform(mSettings->project.guiProject.platform);
 
-                    if (platform == "Unspecified") {
-                        printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
-                        platform = "unspecified";
-                    }
-                    if (platform.empty())
-                        platform = "unspecified";
+                    // keep existing platform from command-line intact
+                    if (!platform.empty()) {
+                        if (platform == "Unspecified") {
+                            printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
+                            platform = "unspecified";
+                        }
 
-                    std::string errstr;
-                    const std::vector<std::string> paths = {projectFile, argv[0]};
-                    if (!mSettings->platform(platform, errstr, paths)) {
-                        printError(errstr);
-                        return false;
+                        std::string errstr;
+                        const std::vector<std::string> paths = {projectFile, argv[0]};
+                        if (!mSettings->platform(platform, errstr, paths)) {
+                            printError(errstr);
+                            return false;
+                        }
                     }
 
                     if (!mSettings->project.guiProject.projectFile.empty()) {
