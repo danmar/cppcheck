@@ -392,10 +392,10 @@ void MainWindow::loadSettings()
     mUI->mActionToolBarFilter->setChecked(showFilterToolbar);
     mUI->mToolBarFilter->setVisible(showFilterToolbar);
 
-    const Settings::Language enforcedLanguage = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
-    if (enforcedLanguage == Settings::CPP)
+    const Standards::Language enforcedLanguage = (Standards::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    if (enforcedLanguage == Standards::Language::CPP)
         mUI->mActionEnforceCpp->setChecked(true);
-    else if (enforcedLanguage == Settings::C)
+    else if (enforcedLanguage == Standards::Language::C)
         mUI->mActionEnforceC->setChecked(true);
     else
         mUI->mActionAutoDetectLanguage->setChecked(true);
@@ -469,11 +469,11 @@ void MainWindow::saveSettings() const
     mSettings->setValue(SETTINGS_TOOLBARS_FILTER_SHOW, mUI->mToolBarFilter->isVisible());
 
     if (mUI->mActionEnforceCpp->isChecked())
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::CPP);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Standards::Language::CPP);
     else if (mUI->mActionEnforceC->isChecked())
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::C);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Standards::Language::C);
     else
-        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Settings::None);
+        mSettings->setValue(SETTINGS_ENFORCED_LANGUAGE, Standards::Language::None);
 
     mApplications->saveSettings();
 
@@ -1091,7 +1091,7 @@ Settings MainWindow::getCppcheckSettings()
         result.platform.set((Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
-    result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
+    result.enforcedLang = (Standards::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
 
     if (result.jobs <= 1) {
         result.jobs = 1;

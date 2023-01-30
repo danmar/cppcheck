@@ -1822,7 +1822,7 @@ private:
                       errout.str());
 
         Settings s = settings;
-        s.enforcedLang = Settings::C;
+        s.enforcedLang = Standards::Language::C;
         checkStructMemberUsage("struct A {\n" // #10852
                                "    struct B {\n"
                                "        int x;\n"

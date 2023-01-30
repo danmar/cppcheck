@@ -22,7 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "settings.h"
+#include "standards.h"
 
 #include <cstddef>
 #include <iosfwd>
@@ -31,6 +31,7 @@
 
 class Token;
 class TokenList;
+class Settings;
 
 namespace simplecpp {
     class TokenList;
@@ -61,12 +62,12 @@ public:
 
     /** Is the code C. Used for bailouts */
     bool isC() const {
-        return mLang == Settings::Language::C;
+        return mLang == Standards::Language::C;
     }
 
     /** Is the code CPP. Used for bailouts */
     bool isCPP() const {
-        return mLang == Settings::Language::CPP;
+        return mLang == Standards::Language::CPP;
     }
 
     /**
@@ -214,7 +215,7 @@ private:
     const Settings* const mSettings{};
 
     /** File is known to be C/C++ code */
-    Settings::Language mLang{Settings::Language::None};
+    Standards::Language mLang{Standards::Language::None};
 };
 
 /// @}

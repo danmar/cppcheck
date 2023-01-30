@@ -188,13 +188,13 @@ static void createDumpFile(const Settings& settings,
 
     std::string language;
     switch (settings.enforcedLang) {
-    case Settings::Language::C:
+    case Standards::Language::C:
         language = " language=\"c\"";
         break;
-    case Settings::Language::CPP:
+    case Standards::Language::CPP:
         language = " language=\"cpp\"";
         break;
-    case Settings::Language::None:
+    case Standards::Language::None:
         if (Path::isCPP(filename))
             language = " language=\"cpp\"";
         else if (Path::isC(filename))

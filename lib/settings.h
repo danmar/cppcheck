@@ -182,12 +182,8 @@ public:
     bool dump{};
     std::string dumpFile;
 
-    enum Language {
-        None, C, CPP
-    };
-
     /** @brief Name of the language that is enforced. Empty per default. */
-    Language enforcedLang{};
+    Standards::Language enforcedLang{};
 
 #if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
     /** @brief Is --exception-handling given */

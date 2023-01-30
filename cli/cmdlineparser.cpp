@@ -797,9 +797,9 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                 }
 
                 if (str == "c")
-                    mSettings.enforcedLang = Settings::Language::C;
+                    mSettings.enforcedLang = Standards::Language::C;
                 else if (str == "c++")
-                    mSettings.enforcedLang = Settings::Language::CPP;
+                    mSettings.enforcedLang = Standards::Language::CPP;
                 else {
                     mLogger.printError("unknown language '" + str + "' enforced.");
                     return Result::Fail;

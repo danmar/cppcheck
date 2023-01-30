@@ -34,6 +34,8 @@
  * This struct contains all possible standards that cppcheck recognize.
  */
 struct Standards {
+    enum Language { None, C, CPP };
+
     /** C code standard */
     enum cstd_t { C89, C99, C11, CLatest = C11 } c = CLatest;
 
