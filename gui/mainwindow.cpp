@@ -25,6 +25,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelist.h"
+#include "compliancereportdialog.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"
 #include "importproject.h"
@@ -68,6 +69,7 @@
 #include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
+#include <QTemporaryFile>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -154,6 +156,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     connect(mUI->mActionStop, &QAction::triggered, this, &MainWindow::stopAnalysis);
     connect(mUI->mActionSave, &QAction::triggered, this, &MainWindow::save);
+    connect(mUI->mActionComplianceReport, &QAction::triggered, this, &MainWindow::complianceReport);
 
     // About menu
     connect(mUI->mActionAbout, &QAction::triggered, this, &MainWindow::about);
@@ -190,6 +193,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
     else
         formatAndSetTitle();
+
+    mUI->mActionComplianceReport->setVisible(isCppcheckPremium());
 
     enableCheckButtons(true);
 
@@ -1290,6 +1295,10 @@ void MainWindow::enableCheckButtons(bool enable)
     }
 
     mUI->mActionAnalyzeDirectory->setEnabled(enable);
+
+    if (isCppcheckPremium()) {
+        mUI->mActionComplianceReport->setEnabled(enable && mProjectFile && mProjectFile->getAddons().contains("misra"));
+    }
 }
 
 void MainWindow::enableResultsButtons()
@@ -1456,6 +1465,20 @@ void MainWindow::save()
 
         mUI->mResults->save(selectedFile, type);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
+    }
+}
+
+void MainWindow::complianceReport()
+{
+    if (isCppcheckPremium() && mProjectFile && mProjectFile->getAddons().contains("misra")) {
+        QTemporaryFile tempResults;
+        tempResults.open();
+        tempResults.close();
+
+        mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
+
+        ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
+        dlg.exec();
     }
 }
 
