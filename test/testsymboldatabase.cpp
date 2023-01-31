@@ -8832,9 +8832,9 @@ private:
             GET_SYMBOL_DB("struct B { virtual void f() {} };\n"
                           "struct D : B {};\n"
                           "void g(const std::vector<B*>& v) {\n"
-                          "      for (auto* b : v)\n"
+                          "    for (auto* b : v)\n"
                           "        if (auto d = dynamic_cast<D*>(b))\n"
-                          "          d->f();\n"
+                          "            d->f();\n"
                           "}\n");
             ASSERT_EQUALS(4, db->variableList().size());
             
