@@ -1935,6 +1935,8 @@ private:
               "    x.push_back(1);\n"
               "}\n");
         TODO_ASSERT_EQUALS("",
+                           "[test.cpp:3]: (information) --check-library: There is no matching configuration for function auto::push_back()\n"
+                           "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n"
                            "[test.cpp:7]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
 
@@ -1947,6 +1949,16 @@ private:
         TODO_ASSERT_EQUALS("",
                            "[test.cpp:3]: (information) --check-library: There is no matching configuration for function auto::push_back()\n"
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
+                           errout.str());
+
+        check("struct F { void g(int); };\n"
+              "void f(std::list<F>& l) {\n"
+              "    std::list<F>::iterator it;\n"
+              "    for (it = l.begin(); it != l.end(); ++it)\n"
+              "        it->g(0);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:5]: (information) --check-library: There is no matching configuration for function F::g()\n",
                            errout.str());
 
         settings = settings_old;
