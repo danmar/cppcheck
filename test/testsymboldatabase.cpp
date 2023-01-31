@@ -8819,7 +8819,7 @@ private:
                           "        if (h) {}\n"
                           "}\n");
             ASSERT_EQUALS(3, db->variableList().size());
-            
+
             const Variable* h = db->variableList()[2];
             ASSERT(h->isPointer());
             ASSERT(!h->isConst());
@@ -8837,7 +8837,7 @@ private:
                           "            d->f();\n"
                           "}\n");
             ASSERT_EQUALS(4, db->variableList().size());
-            
+
             const Variable* b = db->variableList()[2];
             ASSERT(b->isPointer());
             ASSERT(!b->isConst());
