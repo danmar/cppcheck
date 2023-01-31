@@ -1935,8 +1935,6 @@ private:
               "    x.push_back(1);\n"
               "}\n");
         TODO_ASSERT_EQUALS("",
-                           "[test.cpp:3]: (information) --check-library: There is no matching configuration for function auto::push_back()\n"
-                           "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n"
                            "[test.cpp:7]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
 
