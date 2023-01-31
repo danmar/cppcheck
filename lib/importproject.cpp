@@ -1283,7 +1283,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     return true;
 }
 
-void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
+void ImportProject::selectOneVsConfig(cppcheck::Platform::PlatformType platform)
 {
     std::set<std::string> filenames;
     for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
@@ -1295,11 +1295,11 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
         bool remove = false;
         if (fs.cfg.compare(0,5,"Debug") != 0)
             remove = true;
-        if (platform == Settings::Win64 && fs.platformType != platform)
+        if (platform == cppcheck::Platform::Win64 && fs.platformType != platform)
             remove = true;
-        else if ((platform == Settings::Win32A || platform == Settings::Win32W) && fs.platformType == Settings::Win64)
+        else if ((platform == cppcheck::Platform::Win32A || platform == cppcheck::Platform::Win32W) && fs.platformType == cppcheck::Platform::Win64)
             remove = true;
-        else if (fs.platformType != Settings::Win64 && platform == Settings::Win64)
+        else if (fs.platformType != cppcheck::Platform::Win64 && platform == cppcheck::Platform::Win64)
             remove = true;
         else if (filenames.find(fs.filename) != filenames.end())
             remove = true;

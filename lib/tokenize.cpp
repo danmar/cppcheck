@@ -9049,7 +9049,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
     if (!mSettings->isWindowsPlatform())
         return;
 
-    const bool ansi = mSettings->platformType == Settings::Win32A;
+    const bool ansi = mSettings->platformType == cppcheck::Platform::Win32A;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->strAt(1) != "(")
             continue;

@@ -19,7 +19,6 @@
 #include "platform.h"
 
 #include "path.h"
-#include "settings.h"
 
 #include <cstring>
 #include <iostream>
@@ -161,19 +160,19 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
 bool cppcheck::Platform::platform(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
 {
     if (platformstr == "win32A")
-        platform(Settings::Win32A);
+        platform(Win32A);
     else if (platformstr == "win32W")
-        platform(Settings::Win32W);
+        platform(Win32W);
     else if (platformstr == "win64")
-        platform(Settings::Win64);
+        platform(Win64);
     else if (platformstr == "unix32")
-        platform(Settings::Unix32);
+        platform(Unix32);
     else if (platformstr == "unix64")
-        platform(Settings::Unix64);
+        platform(Unix64);
     else if (platformstr == "native")
-        platform(Settings::Native);
+        platform(Native);
     else if (platformstr == "unspecified")
-        platform(Settings::Unspecified);
+        platform(Unspecified);
     else if (paths.empty()) {
         errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
         return false;

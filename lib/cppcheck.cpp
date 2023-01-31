@@ -586,7 +586,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.standards.setCPP(fs.standard);
     else if (!fs.standard.empty())
         temp.mSettings.standards.setC(fs.standard);
-    if (fs.platformType != Settings::Unspecified)
+    if (fs.platformType != cppcheck::Platform::Unspecified)
         temp.mSettings.platform(fs.platformType);
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
