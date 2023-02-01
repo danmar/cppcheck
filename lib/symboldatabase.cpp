@@ -5474,13 +5474,10 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     auto itPure = std::find_if(matches.begin(), matches.end(), [](const Function* m) {
         return m->isPure();
     });
-    if (itPure != matches.end()) {
-        auto itVirtual = std::find_if(matches.begin(), matches.end(), [&](const Function* m) {
-            return m->isImplicitlyVirtual() && m != *itPure;
-        });
-        if (itVirtual != matches.end())
-            matches.erase(itPure);
-    }
+    if (itPure != matches.end() && std::any_of(matches.begin(), matches.end(), [&](const Function* m) {
+        return m->isImplicitlyVirtual() && m != *itPure;
+        }))
+        matches.erase(itPure);
 
     // Only one candidate left
     if (matches.size() == 1)
