@@ -5476,7 +5476,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     });
     if (itPure != matches.end() && std::any_of(matches.begin(), matches.end(), [&](const Function* m) {
         return m->isImplicitlyVirtual() && m != *itPure;
-        }))
+    }))
         matches.erase(itPure);
 
     // Only one candidate left
