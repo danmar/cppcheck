@@ -1949,6 +1949,16 @@ private:
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
 
+        check("struct F { void g(int); };\n"
+              "void f(std::list<F>& l) {\n"
+              "    std::list<F>::iterator it;\n"
+              "    for (it = l.begin(); it != l.end(); ++it)\n"
+              "        it->g(0);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:5]: (information) --check-library: There is no matching configuration for function F::g()\n",
+                           errout.str());
+
         settings = settings_old;
     }
 
