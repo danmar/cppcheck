@@ -249,7 +249,12 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
     if (!settings.dumpFile.empty())
         return settings.dumpFile;
 
-    std::string extension = "." + std::to_string(getPid()) + ".dump";
+    std::string extension;
+    if (settings.dump)
+        extension = ".dump";
+    else
+        extension = "." + std::to_string(getPid()) + ".dump";
+
     if (!settings.dump && !settings.buildDir.empty())
         return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, emptyString) + extension;
     return filename + extension;
