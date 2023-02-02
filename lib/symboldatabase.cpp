@@ -5580,6 +5580,8 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
                 return var->typeScope()->findFunction(tok, var->valueType()->constness == 1);
             if (var && var->smartPointerType() && var->smartPointerType()->classScope && tok1->next()->originalName() == "->")
                 return var->smartPointerType()->classScope->findFunction(tok, var->valueType()->constness == 1);
+            if (var && var->iteratorType() && var->iteratorType()->classScope && tok1->next()->originalName() == "->")
+                return var->iteratorType()->classScope->findFunction(tok, var->valueType()->constness == 1);
         } else if (Token::simpleMatch(tok->previous()->astOperand1(), "(")) {
             const Token *castTok = tok->previous()->astOperand1();
             if (castTok->isCast()) {
