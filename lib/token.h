@@ -1147,7 +1147,7 @@ public:
      * lists. Should be used only before Tokenizer::createLinks2() was called.
      * Returns 0, if there is no next argument.
      */
-    Token* nextArgumentBeforeCreateLinks2() const;
+    const Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
      * @return the first token of the next template argument. Does only work on template argument
