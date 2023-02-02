@@ -4405,11 +4405,11 @@ void Tokenizer::setVarIdPass2()
 
         std::list<const Token *> classnameTokens;
         classnameTokens.push_back(tok->next());
-        const Token* tokStart = tok->tokAt(2);
+        Token* tokStart = tok->tokAt(2);
         while (Token::Match(tokStart, ":: %name%") || tokStart->str() == "<") {
             if (tokStart->str() == "<") {
                 // skip the template part
-                const Token* closeTok = tokStart->findClosingBracket();
+                Token* closeTok = tokStart->findClosingBracket();
                 if (!closeTok)
                     syntaxError(tok);
                 tokStart = closeTok->next();
@@ -8339,7 +8339,7 @@ void Tokenizer::simplifyCPPAttribute()
                     head->previous()->isAttributeNodiscard(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link())) {
-                const Token* head = skipCPPOrAlignAttribute(tok);
+                Token* head = skipCPPOrAlignAttribute(tok);
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head);
                 head->next()->isAttributeMaybeUnused(true);

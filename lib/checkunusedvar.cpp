@@ -1668,7 +1668,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
 
     bool sideEffectReturnFound = false;
     std::set<const Variable*> pointersToGlobals;
-    for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
+    for (const Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
          bodyToken = bodyToken->next()) {
         // check variable inside function body
         const Variable* bodyVariable = bodyToken->variable();

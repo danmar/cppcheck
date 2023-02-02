@@ -1611,14 +1611,14 @@ void TemplateSimplifier::expandTemplate(
         Token * dstStart = dst->previous();
         bool isStatic = false;
         std::string scope;
-        Token * start;
-        Token * end;
+        const Token * start;
+        const Token * end;
         auto it = mTemplateForwardDeclarationsMap.find(dst);
         if (!isSpecialization && it != mTemplateForwardDeclarationsMap.end()) {
             dst = it->second;
             dstStart = dst->previous();
-            const Token * temp1 = dst->tokAt(1)->findClosingBracket();
-            const Token * temp2 = temp1->tokAt(getTemplateNamePosition(temp1));
+            Token * temp1 = dst->tokAt(1)->findClosingBracket();
+            Token * temp2 = temp1->tokAt(getTemplateNamePosition(temp1));
             start = temp1->next();
             end = temp2->linkAt(1)->next();
         } else {
@@ -1648,7 +1648,7 @@ void TemplateSimplifier::expandTemplate(
             if (end->str() == "(")
                 end = end->link()->next();
             else if (isVariable && end->str() == "=") {
-                Token *temp = end->next();
+                const Token *temp = end->next();
                 while (temp && temp->str() != ";") {
                     if (temp->link() && Token::Match(temp, "{|[|("))
                         temp = temp->link();
@@ -1765,7 +1765,7 @@ void TemplateSimplifier::expandTemplate(
                     // check if type is a template
                     if (start->strAt(1) == "<") {
                         // get the instantiated name
-                        Token * closing = start->next()->findClosingBracket();
+                        const Token * closing = start->next()->findClosingBracket();
                         if (closing) {
                             std::string name;
                             const Token * type = start;
@@ -2044,7 +2044,7 @@ void TemplateSimplifier::expandTemplate(
                     if (isVariadicTemplateArg && Token::Match(tok3, "%name% ... %name%"))
                         tok3 = tok3->tokAt(2);
                     const std::string endStr(isVariadicTemplateArg ? ">" : ",>");
-                    for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
+                    for (Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
                          typetok && (typeindentlevel > 0 || endStr.find(typetok->str()[0]) == std::string::npos);
                          typetok = typetok->next()) {
                         if (typeindentlevel == 0 && typetok->str() == "*")
@@ -3336,7 +3336,7 @@ void TemplateSimplifier::replaceTemplateUsage(
 
         // matching template usage => replace tokens..
         // Foo < int >  =>  Foo<int>
-        for (Token *tok = nameTok1->next(); tok != tok2; tok = tok->next()) {
+        for (const Token *tok = nameTok1->next(); tok != tok2; tok = tok->next()) {
             if (tok->isName() && tok->templateSimplifierPointers() && !tok->templateSimplifierPointers()->empty()) {
                 std::list<TokenAndName>::iterator ti;
                 for (ti = mTemplateInstantiations.begin(); ti != mTemplateInstantiations.end();) {
