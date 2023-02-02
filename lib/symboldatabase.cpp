@@ -6278,12 +6278,11 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             const Scope *typeScope = vt1->typeScope;
             if (!typeScope)
                 return;
-            for (std::list<Variable>::const_iterator it = typeScope->varlist.cbegin(); it != typeScope->varlist.cend(); ++it) {
-                if (it->nameToken()->str() == name) {
-                    var = &*it;
-                    break;
-                }
-            }
+            auto it = std::find_if(typeScope->varlist.begin(), typeScope->varlist.end(), [&name](const Variable& v) {
+                return v.nameToken()->str() == name;
+            });
+            if (it != typeScope->varlist.end())
+               var = &*it;
         }
         if (var)
             setValueType(parent, *var);

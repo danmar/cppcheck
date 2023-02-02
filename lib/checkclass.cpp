@@ -2865,13 +2865,9 @@ void CheckClass::checkCopyCtorAndEqOperator()
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
-        bool hasNonStaticVars = false;
-        for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
-            if (!var->isStatic()) {
-                hasNonStaticVars = true;
-                break;
-            }
-        }
+        const bool hasNonStaticVars = std::any_of(scope->varlist.begin(), scope->varlist.end(), [](const Variable& var) {
+            return !var.isStatic();
+        });
         if (!hasNonStaticVars)
             continue;
 

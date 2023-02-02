@@ -3809,12 +3809,10 @@ void TemplateSimplifier::simplifyTemplates(
         }
 
         for (std::list<TokenAndName>::const_iterator it = mInstantiatedTemplates.cbegin(); it != mInstantiatedTemplates.cend(); ++it) {
-            std::list<TokenAndName>::iterator decl;
-            for (decl = mTemplateDeclarations.begin(); decl != mTemplateDeclarations.end(); ++decl) {
-                if (decl->token() == it->token())
-                    break;
-            }
-            if (decl != mTemplateDeclarations.end()) {
+            auto decl = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), [&it](const TokenAndName& decl) {
+                return decl.token() == it->token();
+            });
+            if (it != mTemplateDeclarations.end()) {
                 if (it->isSpecialization()) {
                     // delete the "template < >"
                     Token * tok = it->token();
