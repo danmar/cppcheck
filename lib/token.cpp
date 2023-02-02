@@ -875,7 +875,7 @@ Token* Token::nextArgumentBeforeCreateLinks2() const
     return nullptr;
 }
 
-Token* Token::nextTemplateArgument() const
+const Token* Token::nextTemplateArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")

@@ -1154,7 +1154,7 @@ public:
      * lists. Requires that Tokenizer::createLinks2() has been called before.
      * Returns 0, if there is no next argument.
      */
-    Token* nextTemplateArgument() const;
+    const Token* nextTemplateArgument() const;
 
     /**
      * Returns the closing bracket of opening '<'. Should only be used if link()
