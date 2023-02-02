@@ -2300,19 +2300,19 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                 if (vt && vt->containerTypeToken)
                     return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
-            if (pointedToType && astIsSmartPointer(var->nameToken())) {
-                const ValueType* vt = var->valueType();
-                if (vt && vt->smartPointerTypeToken)
-                    return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
-            }
-            if (pointedToType && astIsIterator(var->nameToken())) {
-                const ValueType* vt = var->valueType();
-                if (vt && vt->containerTypeToken)
-                    return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
-            }
-            if (result.first)
-                return result;
         }
+        if (pointedToType && astIsSmartPointer(var->nameToken())) {
+            const ValueType* vt = var->valueType();
+            if (vt && vt->smartPointerTypeToken)
+                return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
+        }
+        if (pointedToType && astIsIterator(var->nameToken())) {
+            const ValueType* vt = var->valueType();
+            if (vt && vt->containerTypeToken)
+                return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+        }
+        if (result.first)
+            return result;
         return {var->typeStartToken(), var->typeEndToken()->next()};
     } else if (Token::simpleMatch(tok, "return")) {
         const Scope* scope = tok->scope();
