@@ -4563,3 +4563,26 @@ void string_view_unused(std::string_view v)
     // cppcheck-suppress ignoredReturnValue
     v.substr(1, 3);
 }
+
+void stdspan()
+{
+    std::vector<int> vec{1,2,3,4};
+    std::span spn{vec};
+    std::span spn2 = spn;
+
+    spn.begin();
+    spn.end();
+    spn.rbegin();
+    spn.end();
+
+    spn.front();
+    spn.back();
+    spn[0];
+    spn.data();
+    spn.size();
+    spn.size_bytes();
+    spn.empty();
+    spn.first(2);
+    spn.last(2);
+    subspan(1, 2);
+}
