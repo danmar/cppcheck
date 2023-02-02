@@ -4409,15 +4409,9 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
 
 bool Scope::hasDefaultConstructor() const
 {
-    if (numConstructors) {
-        std::list<Function>::const_iterator func;
-
-        for (func = functionList.cbegin(); func != functionList.cend(); ++func) {
-            if (func->type == Function::eConstructor && func->argCount() == 0)
-                return true;
-        }
-    }
-    return false;
+    return numConstructors > 0 && std::any_of(functionList.begin(), functionList.end(), [](const Function& func) {
+        return func.type == Function::eConstructor && func.argCount() == 0;
+    });
 }
 
 AccessControl Scope::defaultAccess() const
