@@ -39,6 +39,7 @@
 #include <string_view>
 #include <unordered_set>
 #include <vector>
+#include <span>
 
 int zerodiv_ldexp()
 {
@@ -4568,6 +4569,7 @@ void stdspan()
 {
     std::vector<int> vec{1,2,3,4};
     std::span spn{vec};
+    // cppcheck-suppress unreadVariable
     std::span spn2 = spn;
 
     spn.begin();
@@ -4577,12 +4579,23 @@ void stdspan()
 
     spn.front();
     spn.back();
+    //cppcheck-suppress constStatement
     spn[0];
     spn.data();
     spn.size();
     spn.size_bytes();
     spn.empty();
+    //cppcheck-suppress ignoredReturnValue
     spn.first(2);
+    //cppcheck-suppress ignoredReturnValue
     spn.last(2);
-    subspan(1, 2);
+    //cppcheck-suppress ignoredReturnValue
+    spn.subspan(1, 2);
+    spn.subspan<1>();
+
+    static constexpr std::array<int, 2> arr{1, 2};
+    constexpr std::span spn3{arr};
+    spn3.first<1>();
+    spn3.last<1>();
+    spn3.subspan<1, 1>();
 }
