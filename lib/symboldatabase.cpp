@@ -6282,7 +6282,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 return v.nameToken()->str() == name;
             });
             if (it != typeScope->varlist.end())
-               var = &*it;
+                var = &*it;
         }
         if (var)
             setValueType(parent, *var);
