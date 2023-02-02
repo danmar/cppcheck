@@ -3812,7 +3812,7 @@ void TemplateSimplifier::simplifyTemplates(
             auto decl = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), [&it](const TokenAndName& decl) {
                 return decl.token() == it->token();
             });
-            if (it != mTemplateDeclarations.end()) {
+            if (decl != mTemplateDeclarations.end()) {
                 if (it->isSpecialization()) {
                     // delete the "template < >"
                     Token * tok = it->token();
