@@ -1677,7 +1677,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (Token::Match(tok, "%name% ("))
             state.functionCallEndPar = tok->linkAt(1);
         compileExpression(tok, state);
-        const Token * const endToken = tok;
+        Token * const endToken = tok;
         if (endToken == tok1 || !endToken)
             return tok1;
 

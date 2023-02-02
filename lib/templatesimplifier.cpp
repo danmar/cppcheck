@@ -3199,7 +3199,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         Token *startToken = tok2;
         while (Token::Match(startToken->tokAt(-2), ">|%name% :: %name%")) {
             if (startToken->strAt(-2) == ">") {
-                const Token * tok3 = startToken->tokAt(-2)->findOpeningBracket();
+                Token * tok3 = startToken->tokAt(-2)->findOpeningBracket();
                 if (tok3)
                     startToken = tok3->previous();
                 else

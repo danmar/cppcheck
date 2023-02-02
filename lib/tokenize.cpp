@@ -7408,7 +7408,8 @@ static bool isAlignAttribute(const Token * tok)
     return Token::simpleMatch(tok, "alignas (") && tok->next()->link();
 }
 
-static const Token* skipCPPOrAlignAttribute(const Token * tok)
+template<typename T>
+static T* skipCPPOrAlignAttribute(T * tok)
 {
     if (isCPPAttribute(tok)) {
         return tok->link();
@@ -8318,7 +8319,7 @@ void Tokenizer::simplifyCPPAttribute()
         }
         if (isCPPAttribute(tok)) {
             if (Token::findsimplematch(tok->tokAt(2), "noreturn", tok->link())) {
-                const Token * head = skipCPPOrAlignAttribute(tok);
+                Token * head = skipCPPOrAlignAttribute(tok);
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head);
                 head = head->next();
@@ -8328,7 +8329,7 @@ void Tokenizer::simplifyCPPAttribute()
                     head->previous()->isAttributeNoreturn(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "nodiscard", tok->link())) {
-                const Token * head = skipCPPOrAlignAttribute(tok);
+                Token * head = skipCPPOrAlignAttribute(tok);
                 while (isCPPAttribute(head) || isAlignAttribute(head))
                     head = skipCPPOrAlignAttribute(head);
                 head = head->next();
@@ -8903,7 +8904,7 @@ void Tokenizer::simplifyNamespaceStd()
 
     std::set<std::string> userFunctions;
 
-    for (const Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
+    for (Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
             skipEnumBody(&tok);
