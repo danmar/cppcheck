@@ -1556,7 +1556,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
             continue; // ignore default/deleted constructors
         const bool emptyBody = (f.functionScope && Token::simpleMatch(f.functionScope->bodyStart, "{ }"));
 
-        Token* nextToken = f.argDef->link();
+        const Token* nextToken = f.argDef->link();
         if (Token::simpleMatch(nextToken, ") :")) {
             // validating initialization list
             nextToken = nextToken->next(); // goto ":"

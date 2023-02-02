@@ -240,9 +240,9 @@ nonneg int Tokenizer::sizeOfType(const Token *type) const
 bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef) const
 {
     // check for an end of definition
-    const Token * tok = *tokPtr;
+    Token * tok = *tokPtr;
     if (tok && Token::Match(tok->next(), ";|,|[|=|)|>|(|{")) {
-        const Token * end = tok->next();
+        Token * end = tok->next();
 
         if (end->str() == "[") {
             if (!end->link())
