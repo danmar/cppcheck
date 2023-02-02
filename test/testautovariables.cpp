@@ -2799,6 +2799,91 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3]: (error) Using object that is a temporary.\n",
                       errout.str());
+
+        check("std::span<int> f() {\n"
+              "    std::vector<int> v{};\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            errout.str());
+
+        check("std::span<int> f() {\n"
+              "    std::vector<int> v;\n"
+              "    std::span sp = v;\n"
+              "    return sp;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            errout.str());
+
+        check("std::span<int> f() {\n"
+              "    std::vector<int> v;\n"
+              "    return std::span{v};\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.back()\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.back()\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.front()\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.last(1)\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.first(1)\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
     }
 
     void danglingLifetimeUniquePtr()
