@@ -4142,6 +4142,19 @@ private:
                       "[test.cpp:12]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
                       "[test.cpp:14]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n",
                       errout.str());
+
+        check("struct S { std::string str; };\n"
+              "struct T { S s; };\n"
+              "struct U { T t[1]; };\n"
+              "void f(const T& t, const U& u, std::string& str) {\n"
+              "    if (str.empty())\n"
+              "        str = t.s.str.c_str();\n"
+              "    else\n"
+              "        str = u.t[0].s.str.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Assigning the result of c_str() to a std::string is slow and redundant.\n"
+                      "[test.cpp:8]: (performance) Assigning the result of c_str() to a std::string is slow and redundant.\n",
+                      errout.str());
     }
 
     void uselessCalls() {
