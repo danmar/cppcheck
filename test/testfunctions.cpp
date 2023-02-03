@@ -1959,6 +1959,11 @@ private:
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function F::g()\n",
                            errout.str());
 
+        check("auto f() {\n"
+              "    return std::runtime_error(\"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings = settings_old;
     }
 

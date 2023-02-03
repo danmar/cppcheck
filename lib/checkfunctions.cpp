@@ -637,6 +637,9 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (mSettings->library.podtype(tok->expressionString()))
             continue;
 
+        if (mSettings->library.getTypeCheck("unusedvar", functionName) != Library::TypeCheck::def)
+            continue;
+
         const Token* start = tok;
         while (Token::Match(start->tokAt(-2), "%name% ::"))
             start = start->tokAt(-2);
