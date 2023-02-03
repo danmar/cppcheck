@@ -1319,9 +1319,19 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
             const ValueType* vt = tok->astParent()->astOperand1()->valueType();
             const Library::Container* cont = vt->container;
             auto it = cont->functions.find(tok->str());
-            if (it != cont->functions.end() && isContainerYieldElement(it->second.yield) && vt->containerTypeToken && vt->containerTypeToken->scope()) {
+            if (it != cont->functions.end() && isContainerYieldElement(it->second.yield) && vt->containerTypeToken) {
                 Token* memberTok = tok->next()->link()->tokAt(2);
-                setMemberVar(vt->containerTypeToken->scope()->getVariable(memberTok->str()), memberTok, vt->containerTypeToken);
+                const Scope* scope = vt->containerTypeToken->scope();
+                const Type* contType{};
+                const std::string typeStr = vt->containerTypeToken->expressionString();
+                while (scope && !contType) {
+                    contType = scope->findType(typeStr); // find the type stored in the container
+                    scope = scope->nestedIn;
+                }
+                if (contType && contType->classScope) {
+                    const Variable* membervar = contType->classScope->getVariable(memberTok->str());
+                    setMemberVar(membervar, memberTok, vt->containerTypeToken);
+                }
             }
         }
     }
