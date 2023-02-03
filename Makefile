@@ -27,9 +27,12 @@ ifeq ($(MATCHCOMPILER),yes)
         $(error Did not find a Python interpreter)
     endif
     ifdef VERIFY
-        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --verify)
+        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --recursive --verify)
     else
-        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)
+        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --recursive)
+    endif
+    ifneq ($(.SHELLSTATUS),0)
+        $(error matchcompiler execution failed)
     endif
     libcppdir:=build
 else
