@@ -1976,8 +1976,9 @@ void CheckStl::string_c_str()
                     const Variable* var = tok->variable();
                     if (var->isPointer())
                         string_c_strError(tok);
-                } else if (printPerformance && Token::Match(tok->tokAt(2), "%var% . c_str|data ( ) ;")) {
-                    if (tok->variable() && tok->variable()->isStlStringType() && tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType())
+                } else if (printPerformance && tok->tokAt(1)->astOperand2() && Token::Match(tok->tokAt(1)->astOperand2()->tokAt(-3), "%var% . c_str|data ( ) ;")) {
+                    const Token* vartok = tok->tokAt(1)->astOperand2()->tokAt(-3);
+                    if (tok->variable() && tok->variable()->isStlStringType() && vartok->variable() && vartok->variable()->isStlStringType())
                         string_c_strAssignment(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
