@@ -1445,7 +1445,7 @@ void Tokenizer::simplifyTypedef()
                             if (it->recordTypes.find(start->str()) != it->recordTypes.end()) {
                                 std::string::size_type spaceIdx = 0;
                                 std::string::size_type startIdx = 0;
-                                while ((spaceIdx = removed1.find(" ", startIdx)) != std::string::npos) {
+                                while ((spaceIdx = removed1.find(' ', startIdx)) != std::string::npos) {
                                     tok2->previous()->insertToken(removed1.substr(startIdx, spaceIdx - startIdx));
                                     startIdx = spaceIdx + 1;
                                 }
@@ -2548,7 +2548,7 @@ bool Tokenizer::simplifyUsing()
                     tok1->deletePrevious();
                     break;
                 } else {
-                    const std::string::size_type idx = fullScope.rfind(" ");
+                    const std::string::size_type idx = fullScope.rfind(' ');
 
                     if (idx == std::string::npos)
                         break;
@@ -2695,7 +2695,7 @@ bool Tokenizer::simplifyUsing()
                             if (tempScope->recordTypes.find(start->str()) != tempScope->recordTypes.end()) {
                                 std::string::size_type spaceIdx = 0;
                                 std::string::size_type startIdx = 0;
-                                while ((spaceIdx = removed1.find(" ", startIdx)) != std::string::npos) {
+                                while ((spaceIdx = removed1.find(' ', startIdx)) != std::string::npos) {
                                     tok1->previous()->insertToken(removed1.substr(startIdx, spaceIdx - startIdx));
                                     startIdx = spaceIdx + 1;
                                 }

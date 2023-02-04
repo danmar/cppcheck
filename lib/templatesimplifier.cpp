@@ -1514,7 +1514,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
     std::string::size_type end = 0;
     bool inTemplate = false;
     int level = 0;
-    while ((end = templateDeclaration.scope().find(" ", start)) != std::string::npos) {
+    while ((end = templateDeclaration.scope().find(' ', start)) != std::string::npos) {
         std::string token = templateDeclaration.scope().substr(start, end - start);
         // done if scopes overlap
         if (token == tokStart->str() && tok->strAt(-1) != "::")

@@ -58,7 +58,6 @@ These do not (always) increase readability.
 
 To be documented.
 
-`performance-faster-string-find`<br>
 `bugprone-narrowing-conversions`<br>
 `performance-no-automatic-move`<br>
 
