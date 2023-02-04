@@ -2029,9 +2029,10 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(const std::vector<S>& v) {\n"
+        check("template<typename S, typename T>\n"
+              "void f(const std::vector<S>& v) {\n"
               "    T a;\n"
-              "    for (std::vector<S>::iterator it = v.begin(); it != v.end(); ++it) {\n"
+              "    for (typename std::vector<S>::iterator it = v.begin(); it != v.end(); ++it) {\n"
               "        const T& b = static_cast<const T&>(it->find(1));\n"
               "        a = b;\n"
               "    }\n"
