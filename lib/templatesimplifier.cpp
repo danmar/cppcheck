@@ -233,7 +233,7 @@ TemplateSimplifier::TokenAndName::TokenAndName(const TokenAndName& other) :
         mToken->templateSimplifierPointer(this);
 }
 
-TemplateSimplifier::TokenAndName::TokenAndName(TokenAndName&& other) :
+TemplateSimplifier::TokenAndName::TokenAndName(TokenAndName&& other) NOEXCEPT :
     mToken(other.mToken), mScope(std::move(other.mScope)), mName(std::move(other.mName)), mFullName(std::move(other.mFullName)),
     mNameToken(other.mNameToken), mParamEnd(other.mParamEnd), mFlags(other.mFlags)
 {
