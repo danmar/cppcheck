@@ -39,7 +39,10 @@
 #include <string_view>
 #include <unordered_set>
 #include <vector>
+#include <version>
+#ifdef __cpp_lib_span
 #include <span>
+#endif
 
 int zerodiv_ldexp()
 {
@@ -4567,6 +4570,9 @@ void string_view_unused(std::string_view v)
 
 void stdspan()
 {
+#ifndef __cpp_lib_span
+#warning "This compiler does not support std::span"
+#else
     std::vector<int> vec{1,2,3,4};
     std::span spn{vec};
     // cppcheck-suppress unreadVariable
@@ -4598,4 +4604,5 @@ void stdspan()
     spn3.first<1>();
     spn3.last<1>();
     spn3.subspan<1, 1>();
+    #endif
 }
