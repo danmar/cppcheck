@@ -16,15 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef vfEnumValueH
-#define vfEnumValueH
+#ifndef vfAnalyzeeH
+#define vfAnalyzeeH
 
-class SymbolDatabase;
-class Settings;
+#include "enumvalue.h"
 
-namespace ValueFlow
-{
-    void analyzeEnumValue(SymbolDatabase * symboldatabase, const Settings * settings);
-}
-
-#endif // vfEnumValueH
+#endif // vfAnalyzeeH

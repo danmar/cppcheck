@@ -102,7 +102,7 @@
 #include "valueptr.h"
 #include "vfvalue.h"
 
-#include "vf/enumvalue.h"
+#include "vf/analyze.h"
 
 #include <algorithm>
 #include <array>
@@ -8809,13 +8809,13 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
-    ValueFlow::enumValue(symboldatabase, settings);
+    ValueFlow::analyzeEnumValue(symboldatabase, settings);
     valueFlowNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
     valueFlowUnknownFunctionReturn(tokenlist, settings);
     valueFlowGlobalConstVar(tokenlist, settings);
-    ValueFlow::enumValue(symboldatabase, settings);
+    ValueFlow::analyzeEnumValue(symboldatabase, settings);
     valueFlowNumber(tokenlist);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);

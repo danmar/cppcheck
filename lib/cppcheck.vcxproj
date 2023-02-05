@@ -176,6 +176,7 @@
     <ClInclude Include="valueflow.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="vf/analyze.h" />
     <ClInclude Include="vf/enumvalue.h" />
     <ClInclude Include="vfvalue.h" />
   </ItemGroup>

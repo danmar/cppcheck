@@ -23,7 +23,9 @@
 #include "token.h"
 #include "valueflow.h"
 
-void ValueFlow::enumValue(SymbolDatabase * symboldatabase, const Settings * settings)
+using namespace ValueFlow;
+
+void ValueFlow::analyzeEnumValue(SymbolDatabase * symboldatabase, const Settings * settings)
 {
     for (Scope & scope : symboldatabase->scopeList) {
         if (scope.type != Scope::eEnum)
@@ -34,7 +36,7 @@ void ValueFlow::enumValue(SymbolDatabase * symboldatabase, const Settings * sett
         for (Enumerator & enumerator : scope.enumeratorList) {
             if (enumerator.start) {
                 Token *rhs = enumerator.start->previous()->astOperand2();
-                ValueFlow::valueFlowConstantFoldAST(rhs, settings);
+                valueFlowConstantFoldAST(rhs, settings);
                 if (rhs && rhs->hasKnownIntValue()) {
                     enumerator.value = rhs->values().front().intvalue;
                     enumerator.value_known = true;

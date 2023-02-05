@@ -70,6 +70,7 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/valueflow.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
+           $${PWD}/vf/analyze.h \
            $${PWD}/vf/enumvalue.h \
            $${PWD}/vfvalue.h
 
