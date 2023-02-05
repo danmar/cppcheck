@@ -25,25 +25,27 @@
 
 #include "common.h"
 
-void ValueFlow::number(TokenList *tokenlist) {
+using namespace ValueFlow;
+
+void ValueFlow::analyzeNumber(TokenList *tokenlist) {
     for (Token *tok = tokenlist->front(); tok;) {
-        tok = ValueFlow::valueFlowSetConstantValue(tok, tokenlist->getSettings(), tokenlist->isCPP());
+        tok = valueFlowSetConstantValue(tok, tokenlist->getSettings(), tokenlist->isCPP());
     }
 
     if (tokenlist->isCPP()) {
         for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
             if (tok->isName() && !tok->varId() && Token::Match(tok, "false|true")) {
-                ValueFlow::Value value(tok->str() == "true");
+                Value value(tok->str() == "true");
                 if (!tok->isTemplateArg())
                     value.setKnown();
-                ValueFlow::setTokenValue(tok, value, tokenlist->getSettings());
+                setTokenValue(tok, value, tokenlist->getSettings());
             } else if (Token::Match(tok, "[(,] NULL [,)]")) {
                 // NULL function parameters are not simplified in the
                 // normal tokenlist
-                ValueFlow::Value value(0);
+                Value value(0);
                 if (!tok->isTemplateArg())
                     value.setKnown();
-                ValueFlow::setTokenValue(tok->next(), value, tokenlist->getSettings());
+                setTokenValue(tok->next(), value, tokenlist->getSettings());
             }
         }
     }

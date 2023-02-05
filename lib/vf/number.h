@@ -23,7 +23,7 @@ class TokenList;
 
 namespace ValueFlow
 {
-    void number(TokenList *tokenlist);
+    void analyzeNumber(TokenList *tokenlist);
 }
 
 #endif // vfNumberH

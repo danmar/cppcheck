@@ -20,5 +20,6 @@
 #define vfAnalyzeeH
 
 #include "enumvalue.h"
+#include "number.h"
 
 #endif // vfAnalyzeeH

@@ -7873,13 +7873,13 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
         tok->clearValueFlow();
 
     ValueFlow::analyzeEnumValue(symboldatabase, settings);
-    ValueFlow::number(tokenlist);
+    ValueFlow::analyzeNumber(tokenlist);
     valueFlowString(tokenlist);
     valueFlowArray(tokenlist);
     valueFlowUnknownFunctionReturn(tokenlist, settings);
     valueFlowGlobalConstVar(tokenlist, settings);
     ValueFlow::analyzeEnumValue(symboldatabase, settings);
-    ValueFlow::number(tokenlist);
+    ValueFlow::analyzeNumber(tokenlist);
     valueFlowGlobalStaticVar(tokenlist, settings);
     valueFlowPointerAlias(tokenlist);
     valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
