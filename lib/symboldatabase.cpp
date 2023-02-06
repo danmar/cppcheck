@@ -6684,9 +6684,13 @@ static const Token* parsedecl(const Token* type,
                 valuetype->sign = vt->sign;
             valuetype->constness = vt->constness;
             valuetype->originalTypeName = vt->originalTypeName;
+            const bool hasConst = Token::simpleMatch(type->previous(), "const");
             while (Token::Match(type, "%name%|*|&|::") && !type->variable()) {
-                if (type->str() == "*")
-                    valuetype->pointer++;
+                if (type->str() == "*") {
+                    valuetype->pointer = 1;
+                    if (hasConst)
+                        valuetype->constness = 1;
+                }
                 if (type->str() == "const")
                     valuetype->constness |= (1 << valuetype->pointer);
                 type = type->next();

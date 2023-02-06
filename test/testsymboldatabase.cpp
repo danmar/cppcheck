@@ -502,6 +502,7 @@ private:
         TEST_CASE(auto16);
         TEST_CASE(auto17); // #11163
         TEST_CASE(auto18);
+        TEST_CASE(auto19);
 
         TEST_CASE(unionWithConstructor);
 
@@ -8809,6 +8810,42 @@ private:
         ASSERT_EQUALS(autoTok->valueType()->constness, 3);
         ASSERT_EQUALS(autoTok->valueType()->pointer, 1);
         TODO_ASSERT(autoTok->valueType()->reference == Reference::LValue);
+    }
+
+    void auto19() { // #11517
+        {
+            GET_SYMBOL_DB("void f(const std::vector<void*>& v) {\n"
+                          "    for (const auto* h : v)\n"
+                          "        if (h) {}\n"
+                          "}\n");
+            ASSERT_EQUALS(3, db->variableList().size());
+
+            const Variable* h = db->variableList()[2];
+            ASSERT(h->isPointer());
+            ASSERT(!h->isConst());
+            const Token* varTok = Token::findsimplematch(tokenizer.tokens(), "h )");
+            ASSERT(varTok && varTok->valueType());
+            ASSERT_EQUALS(varTok->valueType()->constness, 1);
+            ASSERT_EQUALS(varTok->valueType()->pointer, 1);
+        }
+        {
+            GET_SYMBOL_DB("struct B { virtual void f() {} };\n"
+                          "struct D : B {};\n"
+                          "void g(const std::vector<B*>& v) {\n"
+                          "    for (auto* b : v)\n"
+                          "        if (auto d = dynamic_cast<D*>(b))\n"
+                          "            d->f();\n"
+                          "}\n");
+            ASSERT_EQUALS(4, db->variableList().size());
+
+            const Variable* b = db->variableList()[2];
+            ASSERT(b->isPointer());
+            ASSERT(!b->isConst());
+            const Token* varTok = Token::findsimplematch(tokenizer.tokens(), "b )");
+            ASSERT(varTok && varTok->valueType());
+            ASSERT_EQUALS(varTok->valueType()->constness, 0);
+            ASSERT_EQUALS(varTok->valueType()->pointer, 1);
+        }
     }
 
     void unionWithConstructor() {
