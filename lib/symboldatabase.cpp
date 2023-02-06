@@ -5470,10 +5470,14 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     if (fallback2Func)
         return fallback2Func;
 
-    // remove pure virtual function
-    matches.erase(std::remove_if(matches.begin(), matches.end(), [](const Function* m) {
+    // remove pure virtual function if there is an overrider
+    auto itPure = std::find_if(matches.begin(), matches.end(), [](const Function* m) {
         return m->isPure();
-    }), matches.end());
+    });
+    if (itPure != matches.end() && std::any_of(matches.begin(), matches.end(), [&](const Function* m) {
+        return m->isImplicitlyVirtual() && m != *itPure;
+    }))
+        matches.erase(itPure);
 
     // Only one candidate left
     if (matches.size() == 1)
