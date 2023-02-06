@@ -630,13 +630,13 @@ $(libcppdir)/valueflow.o: lib/valueflow.cpp lib/analyzer.h lib/astutils.h lib/ca
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/valueflow.cpp
 
 $(libcppdir)/vf/common.o: lib/vf/common.cpp lib/vf/common.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf/common.cpp
+	$(CXX) ${INCLUDE_FOR_LIB} -Ilib/vf $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf/common.cpp
 
 $(libcppdir)/vf/enumvalue.o: lib/vf/enumvalue.cpp lib/vf/enumvalue.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf/enumvalue.cpp
+	$(CXX) ${INCLUDE_FOR_LIB} -Ilib/vf $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf/enumvalue.cpp
 
 $(libcppdir)/vf/number.o: lib/vf/number.cpp lib/vf/common.h lib/vf/number.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf/number.cpp
+	$(CXX) ${INCLUDE_FOR_LIB} -Ilib/vf $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vf/number.cpp
 
 $(libcppdir)/vfvalue.o: lib/vfvalue.cpp lib/config.h lib/errortypes.h lib/mathlib.h lib/templatesimplifier.h lib/token.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/vfvalue.cpp

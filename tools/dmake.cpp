@@ -30,6 +30,15 @@
 #include "../lib/pathmatch.h"
 #include "../lib/utils.h"
 
+static std::string incdir(std::string filename)
+{
+    // TODO: make this generic
+    if (filename.compare(0,7,"lib/vf/") == 0) {
+        return " -Ilib/vf";
+    }
+    return "";
+}
+
 static std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
@@ -127,7 +136,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         std::sort(depfiles.begin(), depfiles.end());
         for (const std::string &depfile : depfiles)
             fout << " " << depfile;
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " -c -o $@ " << builddir(file) << "\n\n";
+        fout << "\n\t$(CXX) " << args << incdir(file) << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " -c -o $@ " << builddir(file) << "\n\n";
     }
 }
 
