@@ -151,9 +151,12 @@ bool Path::isAbsolute(const std::string& path)
     return false;
 }
 
-std::string Path::getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths)
+std::string Path::getRelativePath(std::string absolutePath, const std::vector<std::string>& basePaths)
 {
-    for (const std::string &bp : basePaths) {
+    absolutePath = Path::fromNativeSeparators(std::move(absolutePath));
+
+    for (std::string bp : basePaths) {
+        bp = Path::fromNativeSeparators(std::move(bp));
         if (absolutePath == bp || bp.empty()) // Seems to be a file, or path is empty
             continue;
 
@@ -162,7 +165,7 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
 
         if (endsWith(bp,'/'))
             return absolutePath.substr(bp.length());
-        else if (absolutePath.size() > bp.size() && absolutePath[bp.length()] == '/')
+        if (absolutePath.size() > bp.size() && absolutePath[bp.length()] == '/')
             return absolutePath.substr(bp.length() + 1);
     }
     return absolutePath;

@@ -95,18 +95,48 @@ private:
     }
 
     void getRelative() const {
-        const std::vector<std::string> basePaths = {
-            "", // Don't crash with empty paths
-            "C:/foo",
-            "C:/bar/",
-            "C:/test.cpp"
-        };
+        {
+            const std::vector<std::string> basePaths = {
+                "",     // Don't crash with empty paths
+                "C:/foo",
+                "C:/bar/",
+                "C:/test.cpp"
+            };
 
-        ASSERT_EQUALS("x.c", Path::getRelativePath("C:/foo/x.c", basePaths));
-        ASSERT_EQUALS("y.c", Path::getRelativePath("C:/bar/y.c", basePaths));
-        ASSERT_EQUALS("foo/y.c", Path::getRelativePath("C:/bar/foo/y.c", basePaths));
-        ASSERT_EQUALS("C:/test.cpp", Path::getRelativePath("C:/test.cpp", basePaths));
-        ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
+            ASSERT_EQUALS("x.c", Path::getRelativePath("C:/foo/x.c", basePaths));
+            ASSERT_EQUALS("y.c", Path::getRelativePath("C:/bar/y.c", basePaths));
+            ASSERT_EQUALS("foo/y.c", Path::getRelativePath("C:/bar/foo/y.c", basePaths));
+            ASSERT_EQUALS("C:/test.cpp", Path::getRelativePath("C:/test.cpp", basePaths));
+            ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
+        }
+        {
+            const std::vector<std::string> basePaths = {
+                "",     // Don't crash with empty paths
+                "C:\\foo",
+                "C:\\bar\\",
+                "C:\\test.cpp"
+            };
+
+            ASSERT_EQUALS("x.c", Path::getRelativePath("C:\\foo\\x.c", basePaths));
+            ASSERT_EQUALS("y.c", Path::getRelativePath("C:\\bar\\y.c", basePaths));
+            ASSERT_EQUALS("foo/y.c", Path::getRelativePath("C:\\bar\\foo\\y.c", basePaths));
+            ASSERT_EQUALS("C:/test.cpp", Path::getRelativePath("C:\\test.cpp", basePaths));
+            ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:\\foobar\\test.cpp", basePaths));
+        }
+        {
+            const std::vector<std::string> basePaths = {
+                "",     // Don't crash with empty paths
+                "/c/foo",
+                "/c/bar/",
+                "/c/test.cpp"
+            };
+
+            ASSERT_EQUALS("x.c", Path::getRelativePath("/c/foo/x.c", basePaths));
+            ASSERT_EQUALS("y.c", Path::getRelativePath("/c/bar/y.c", basePaths));
+            ASSERT_EQUALS("foo/y.c", Path::getRelativePath("/c/bar/foo\\y.c", basePaths));
+            ASSERT_EQUALS("/c/test.cpp", Path::getRelativePath("/c/test.cpp", basePaths));
+            ASSERT_EQUALS("/c/foobar/test.cpp", Path::getRelativePath("/c/foobar/test.cpp", basePaths));
+        }
     }
 
     void is_c() const {
