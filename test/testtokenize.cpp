@@ -6641,6 +6641,13 @@ private:
 
         // #11378
         ASSERT_EQUALS("gT{(&[{= 0return", testAst("auto g = T{ [&]() noexcept -> int { return 0; } };"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("void f() {\n"
+                                             "    std::vector<int> v;\n"
+                                             "    auto g = [&v]() -> decltype(v.begin()) {\n"
+                                             "        return v.end();\n"
+                                             "    };\n"
+                                             "}\n"));
     }
 
     void astcase() {
