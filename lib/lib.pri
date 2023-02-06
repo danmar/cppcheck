@@ -3,6 +3,7 @@
 include($$PWD/pcrerules.pri)
 include($$PWD/../externals/externals.pri)
 INCLUDEPATH += $$PWD
+INCLUDEPATH += $$PWD/vf
 HEADERS += $${PWD}/analyzer.h \
            $${PWD}/analyzerinfo.h \
            $${PWD}/astutils.h \

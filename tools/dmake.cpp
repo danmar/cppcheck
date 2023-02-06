@@ -407,6 +407,7 @@ int main(int argc, char **argv)
             fout1 << "include($$PWD/pcrerules.pri)\n";
             fout1 << "include($$PWD/../externals/externals.pri)\n";
             fout1 << "INCLUDEPATH += $$PWD\n";
+            fout1 << "INCLUDEPATH += $$PWD/vf\n";
             fout1 << "HEADERS += ";
             for (const std::string &libfile_h : libfiles_h) {
                 fout1 << "$${PWD}/" << libfile_h;
