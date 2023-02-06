@@ -148,7 +148,9 @@ private:
         ASSERT_EQUALS("a", Path::join("", "a"));
         ASSERT_EQUALS("a/b", Path::join("a", "b"));
         ASSERT_EQUALS("a/b", Path::join("a/", "b"));
+        ASSERT_EQUALS("a/b", Path::join("a\\", "b"));
         ASSERT_EQUALS("/b", Path::join("a", "/b"));
+        ASSERT_EQUALS("/b", Path::join("a", "\\b"));
     }
 };
 

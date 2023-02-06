@@ -243,6 +243,8 @@ bool Path::fileExists(const std::string &file)
 }
 
 std::string Path::join(std::string path1, std::string path2) {
+    path1 = fromNativeSeparators(std::move(path1));
+    path2 = fromNativeSeparators(std::move(path2));
     if (path1.empty() || path2.empty())
         return path1 + path2;
     if (path2.front() == '/')
