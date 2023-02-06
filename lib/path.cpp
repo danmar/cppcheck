@@ -32,6 +32,7 @@
 #include <unistd.h>
 #else
 #include <direct.h>
+#include <stdexcept>
 #endif
 #if defined(__CYGWIN__)
 #include <strings.h>
@@ -211,9 +212,13 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
     if (_fullpath(absolute, filePath.c_str(), _MAX_PATH))
         absolute_path = absolute;
 #elif defined(__linux__) || defined(__sun) || defined(__hpux) || defined(__GNUC__) || defined(__CPPCHECK__)
+    // realpath() only works with files that actually exist
     char * absolute = realpath(filePath.c_str(), nullptr);
-    if (absolute)
-        absolute_path = absolute;
+    if (!absolute) {
+        const int err = errno;
+        throw std::runtime_error("realpath() failed with " + std::to_string(err));
+    }
+    absolute_path = absolute;
     free(absolute);
 #else
 #error Platform absolute path function needed
