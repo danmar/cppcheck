@@ -4417,7 +4417,7 @@ static const Function* findConstructor(const Scope* scope, const Token* tok, con
         f = nullptr;
         std::vector<const Function*> candidates;
         for (const Function& function : scope->functionList) {
-            if (function.argCount() != args.size())
+            if (function.minArgCount() > args.size())
                 continue;
             if (!function.isConstructor())
                 continue;
