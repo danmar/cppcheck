@@ -39,6 +39,7 @@ private:
         TEST_CASE(get_path_from_filename);
         TEST_CASE(join);
         TEST_CASE(getAbsoluteFilePath);
+        TEST_CASE(stripDirectoryPart);
     }
 
     void removeQuotationMarks() const {
@@ -166,6 +167,18 @@ private:
         ASSERT_EQUALS(Path::join(cwd_down, "inc/a.h"), Path::fromNativeSeparators(Path::getAbsoluteFilePath("../inc/a.h")));
         ASSERT_EQUALS(Path::join(cwd_down, "inc/a.h"), Path::fromNativeSeparators(Path::getAbsoluteFilePath("../inc/../inc/a.h")));
 #endif
+    }
+
+    void stripDirectoryPart() const {
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a/a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a/b/a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("/mnt/a/b/a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a\\a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a\\b\\a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("S:\\a\\b\\a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("S:/a/b/a.h"));
+
     }
 };
 

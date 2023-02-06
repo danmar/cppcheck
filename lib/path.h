@@ -172,7 +172,7 @@ public:
      * @param file filename to be stripped. path info is optional
      * @return filename without directory path part.
      */
-    static std::string stripDirectoryPart(const std::string &file);
+    static std::string stripDirectoryPart(std::string file);
 
     /**
      * @brief Checks if a File exists

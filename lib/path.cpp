@@ -226,15 +226,11 @@ std::string Path::getAbsoluteFilePath(const std::string& filePath)
     return absolute_path;
 }
 
-std::string Path::stripDirectoryPart(const std::string &file)
+std::string Path::stripDirectoryPart(std::string file)
 {
-#if defined(_WIN32) && !defined(__MINGW32__)
-    const char native = '\\';
-#else
-    const char native = '/';
-#endif
+    file = fromNativeSeparators(std::move(file));
 
-    const std::string::size_type p = file.rfind(native);
+    const std::string::size_type p = file.rfind('/');
     if (p != std::string::npos) {
         return file.substr(p + 1);
     }
