@@ -129,6 +129,3 @@ compile_commands.json
 
 #vs code
 /.vscode
-
-#debian build system
-/debian
