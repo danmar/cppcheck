@@ -4205,6 +4205,19 @@ void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwst
     testwstr.compare(L"wtest");
 }
 
+// cppcheck-suppress constParameter
+void ignoredReturnValue_container_access(std::string& s, std::string_view& sv, std::vector<int>& v)
+{
+  // cppcheck-suppress ignoredReturnValue
+  s.begin();
+  // cppcheck-suppress ignoredReturnValue
+  v.end();
+  // cppcheck-suppress ignoredReturnValue
+  sv.front();
+  // cppcheck-suppress ignoredReturnValue
+  s.at(0);
+}
+
 void ignoredReturnValue_locale_global(const std::locale& loc)
 {
     // no ignoredReturnValue shall be shown for
