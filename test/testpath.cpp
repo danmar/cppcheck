@@ -173,6 +173,12 @@ private:
         ASSERT_EQUALS("/tmp/", Path::getPathFromFilename("/tmp/index.h"));
         ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/index.h"));
         ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/"));
+        ASSERT_EQUALS("S:\\tmp\\", Path::getPathFromFilename("S:\\tmp\\index.h"));
+        ASSERT_EQUALS("a\\b\\c\\", Path::getPathFromFilename("a\\b\\c\\index.h"));
+        ASSERT_EQUALS("a\\b\\c\\", Path::getPathFromFilename("a\\b\\c\\"));
+        ASSERT_EQUALS("S:\\a\\b\\c\\", Path::getPathFromFilename("S:\\a\\b\\c\\"));
+        ASSERT_EQUALS("S:/tmp/", Path::getPathFromFilename("S:/tmp/index.h"));
+        ASSERT_EQUALS("S:/a/b/c/", Path::getPathFromFilename("S:/a/b/c/index.h"));
     }
 
     void join() const {
