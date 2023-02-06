@@ -141,7 +141,7 @@ namespace {
         /** xml output of errors */
         void reportErr(const ErrorMessage &msg) override;
 
-        void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
+        void reportProgress(const std::string &filename, const char stage[], std::size_t value) override;
 
         /**
          * Pointer to current settings; set while check() is running for reportError().

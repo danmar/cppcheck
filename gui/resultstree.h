@@ -378,7 +378,7 @@ protected:
      */
     QStandardItem *addBacktraceFiles(QStandardItem *parent,
                                      const ErrorLine &item,
-                                     const bool hide,
+                                     bool hide,
                                      const QString &icon,
                                      bool childOfMessage);
 

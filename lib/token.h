@@ -806,30 +806,30 @@ public:
     static const Token *findsimplematch(const Token * const startTok, const char (&pattern)[count]) {
         return findsimplematch(startTok, pattern, count-1);
     }
-    static const Token *findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len);
+    static const Token *findsimplematch(const Token * startTok, const char pattern[], size_t pattern_len);
 
     template<size_t count>
     static const Token *findsimplematch(const Token * const startTok, const char (&pattern)[count], const Token * const end) {
         return findsimplematch(startTok, pattern, count-1, end);
     }
-    static const Token *findsimplematch(const Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end);
+    static const Token *findsimplematch(const Token * startTok, const char pattern[], size_t pattern_len, const Token * end);
 
-    static const Token *findmatch(const Token * const startTok, const char pattern[], const nonneg int varId = 0);
-    static const Token *findmatch(const Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
+    static const Token *findmatch(const Token * startTok, const char pattern[], nonneg int varId = 0);
+    static const Token *findmatch(const Token * startTok, const char pattern[], const Token * end, nonneg int varId = 0);
 
     template<size_t count>
     static Token *findsimplematch(Token * const startTok, const char (&pattern)[count]) {
         return findsimplematch(startTok, pattern, count-1);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len);
+    static Token *findsimplematch(Token * startTok, const char pattern[], size_t pattern_len);
     template<size_t count>
     static Token *findsimplematch(Token * const startTok, const char (&pattern)[count], const Token * const end) {
         return findsimplematch(startTok, pattern, count-1, end);
     }
-    static Token *findsimplematch(Token * const startTok, const char pattern[], size_t pattern_len, const Token * const end);
+    static Token *findsimplematch(Token * startTok, const char pattern[], size_t pattern_len, const Token * end);
 
-    static Token *findmatch(Token * const startTok, const char pattern[], const nonneg int varId = 0);
-    static Token *findmatch(Token * const startTok, const char pattern[], const Token * const end, const nonneg int varId = 0);
+    static Token *findmatch(Token * startTok, const char pattern[], nonneg int varId = 0);
+    static Token *findmatch(Token * startTok, const char pattern[], const Token * end, nonneg int varId = 0);
 
 private:
     template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
@@ -1286,19 +1286,19 @@ public:
         return mImpl->mValues->front().intvalue;
     }
 
-    const ValueFlow::Value* getValue(const MathLib::bigint val) const;
+    const ValueFlow::Value* getValue(MathLib::bigint val) const;
 
     const ValueFlow::Value* getMaxValue(bool condition, MathLib::bigint path = 0) const;
     const ValueFlow::Value* getMinValue(bool condition, MathLib::bigint path = 0) const;
 
     const ValueFlow::Value* getMovedValue() const;
 
-    const ValueFlow::Value * getValueLE(const MathLib::bigint val, const Settings &settings) const;
-    const ValueFlow::Value * getValueGE(const MathLib::bigint val, const Settings &settings) const;
+    const ValueFlow::Value * getValueLE(MathLib::bigint val, const Settings &settings) const;
+    const ValueFlow::Value * getValueGE(MathLib::bigint val, const Settings &settings) const;
 
     const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings &settings) const;
 
-    const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
+    const ValueFlow::Value* getContainerSizeValue(MathLib::bigint val) const;
 
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize(const Settings &settings, MathLib::bigint* path = nullptr) const;
@@ -1432,7 +1432,7 @@ private:
     void update_property_isStandardType();
 
     /** Internal helper function to avoid excessive string allocations */
-    void astStringVerboseRecursive(std::string& ret, const nonneg int indent1 = 0, const nonneg int indent2 = 0) const;
+    void astStringVerboseRecursive(std::string& ret, nonneg int indent1 = 0, nonneg int indent2 = 0) const;
 
 public:
     void astOperand1(Token *tok);

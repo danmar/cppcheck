@@ -117,7 +117,6 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `bugprone-branch-clone`<br/>
 `modernize-return-braced-init-list`<br/>
 `misc-throw-by-value-catch-by-reference`<br/>
-`readability-avoid-const-params-in-decls`<br/>
 `bugprone-signed-char-misuse`<br/>
 `concurrency-mt-unsafe`<br/>
 `misc-use-anonymous-namespace`<br/>

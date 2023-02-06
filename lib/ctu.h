@@ -134,7 +134,7 @@ namespace CTU {
                                                                   const UnsafeUsage &unsafeUsage,
                                                                   const std::map<std::string, std::list<const CallBase *>> &callsMap,
                                                                   const char info[],
-                                                                  const FunctionCall ** const functionCallPtr,
+                                                                  const FunctionCall ** functionCallPtr,
                                                                   bool warning);
     };
 

@@ -1191,7 +1191,7 @@ private:
      * @param typetok populated with pointer to the type token, if found
      * @return true if tok points to a variable declaration, false otherwise
      */
-    bool isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const;
+    bool isVariableDeclaration(const Token* tok, const Token*& vartok, const Token*& typetok) const;
 
     void findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const;
 
