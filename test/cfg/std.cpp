@@ -4458,6 +4458,11 @@ void getline()
     in.close();
 }
 
+void stream_write(std::ofstream& s, std::vector<char> v) {
+    if (v.empty()) {}
+    s.write(v.data(), v.size());
+}
+
 void stdstring()
 {
     std::string s;
