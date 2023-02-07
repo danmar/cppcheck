@@ -4409,15 +4409,9 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
 
 bool Scope::hasDefaultConstructor() const
 {
-    if (numConstructors) {
-        std::list<Function>::const_iterator func;
-
-        for (func = functionList.cbegin(); func != functionList.cend(); ++func) {
-            if (func->type == Function::eConstructor && func->argCount() == 0)
-                return true;
-        }
-    }
-    return false;
+    return numConstructors > 0 && std::any_of(functionList.begin(), functionList.end(), [](const Function& func) {
+        return func.type == Function::eConstructor && func.argCount() == 0;
+    });
 }
 
 AccessControl Scope::defaultAccess() const
@@ -5584,6 +5578,8 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
                 return var->typeScope()->findFunction(tok, var->valueType()->constness == 1);
             if (var && var->smartPointerType() && var->smartPointerType()->classScope && tok1->next()->originalName() == "->")
                 return var->smartPointerType()->classScope->findFunction(tok, var->valueType()->constness == 1);
+            if (var && var->iteratorType() && var->iteratorType()->classScope && tok1->next()->originalName() == "->")
+                return var->iteratorType()->classScope->findFunction(tok, var->valueType()->constness == 1);
         } else if (Token::simpleMatch(tok->previous()->astOperand1(), "(")) {
             const Token *castTok = tok->previous()->astOperand1();
             if (castTok->isCast()) {
@@ -6280,12 +6276,11 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             const Scope *typeScope = vt1->typeScope;
             if (!typeScope)
                 return;
-            for (std::list<Variable>::const_iterator it = typeScope->varlist.cbegin(); it != typeScope->varlist.cend(); ++it) {
-                if (it->nameToken()->str() == name) {
-                    var = &*it;
-                    break;
-                }
-            }
+            auto it = std::find_if(typeScope->varlist.begin(), typeScope->varlist.end(), [&name](const Variable& v) {
+                return v.nameToken()->str() == name;
+            });
+            if (it != typeScope->varlist.end())
+                var = &*it;
         }
         if (var)
             setValueType(parent, *var);

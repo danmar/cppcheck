@@ -2860,7 +2860,8 @@ void CheckStl::useStlAlgorithm()
                 if (isEarlyExit(condBodyTok)) {
                     const Token *loopVar2 = Token::findmatch(condBodyTok, "%varid%", condBodyTok->link(), loopVar->varId());
                     std::string algo;
-                    if (loopVar2)
+                    if (loopVar2 ||
+                        (isIteratorLoop && loopVar->variable() && precedes(loopVar->variable()->nameToken(), tok))) // iterator declared outside the loop
                         algo = "std::find_if";
                     else
                         algo = "std::any_of";

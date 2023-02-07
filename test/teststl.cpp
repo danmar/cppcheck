@@ -5241,6 +5241,22 @@ private:
               "    return ret;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of algorithm instead of a raw loop.\n", errout.str());
+
+        check("struct T {\n"
+              "    std::vector<int> v0, v1;\n"
+              "    void g();\n"
+              "};\n"
+              "void T::g() {\n"
+              "    for (std::vector<int>::const_iterator it0 = v0.cbegin(); it0 != v0.cend(); ++it0) {\n"
+              "        std::vector<int>::iterator it1;\n"
+              "        for (it1 = v1.begin(); it1 != v1.end(); ++it1)\n"
+              "            if (*it0 == *it1)\n"
+              "                break;\n"
+              "        if (it1 != v1.end())\n"
+              "            v1.erase(it1);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
     }
 
     void loopAlgoMinMax() {
