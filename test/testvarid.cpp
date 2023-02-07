@@ -2004,12 +2004,12 @@ private:
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
 
-    void varid_in_class25() { // #11497
+    void varid_in_class25() {
         const char *code{}, *expected{};
         Settings oldSettings = settings;
         LOAD_LIB_2(settings.library, "std.cfg");
 
-        code = "struct F {\n"
+        code = "struct F {\n" // #11497
                "    int i;\n"
                "    void f(const std::vector<F>&v) {\n"
                "        if (v.front().i) {}\n"
@@ -2021,6 +2021,22 @@ private:
                    "4: if ( v@2 . front ( ) . i@3 ) { }\n"
                    "5: }\n"
                    "6: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+
+        code = "struct T { };\n" // 11533
+               "struct U { T t; };\n"
+               "std::vector<U*>* g();\n"
+               "void f() {\n"
+               "    std::vector<U*>* p = g();\n"
+               "    auto t = p->front()->t;\n"
+               "}\n";
+        expected = "1: struct T { } ;\n"
+                   "2: struct U { T t@1 ; } ;\n"
+                   "3: std :: vector < U * > * g ( ) ;\n"
+                   "4: void f ( ) {\n"
+                   "5: std :: vector < U * > * p@2 ; p@2 = g ( ) ;\n"
+                   "6: auto t@3 ; t@3 = p@2 . front ( ) . t@4 ;\n"
+                   "7: }\n";
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
         settings = oldSettings;
     }
