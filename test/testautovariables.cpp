@@ -2028,6 +2028,16 @@ private:
               "    if (p != nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("template<typename S, typename T>\n"
+              "void f(const std::vector<S>& v) {\n"
+              "    T a;\n"
+              "    for (typename std::vector<S>::iterator it = v.begin(); it != v.end(); ++it) {\n"
+              "        const T& b = static_cast<const T&>(it->find(1));\n"
+              "        a = b;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
