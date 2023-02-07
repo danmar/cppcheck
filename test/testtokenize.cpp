@@ -434,6 +434,7 @@ private:
         TEST_CASE(noCrash4);
         TEST_CASE(noCrash5); // #10603
         TEST_CASE(noCrash6); // #10212
+        TEST_CASE(noCrash7);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -7355,6 +7356,12 @@ private:
                                              "template <class, bool> struct c;\n"
                                              "template <template <class, class> class a, class e, class... d>\n"
                                              "struct c<a<e, d...>, true> {};\n"));
+    }
+
+    void noCrash7() {
+        ASSERT_THROW(tokenizeAndStringify("void g() {\n"// TODO: don't throw
+                                          "    for (using T = int; (T)false;) {}\n" // C++23 P2360R0: Extend init-statement to allow alias-declaration
+                                          "}\n"), InternalError);
     }
 
     void checkConfig(const char code[]) {

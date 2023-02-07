@@ -1598,7 +1598,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 semicolon2->astOperand2(state3.op.top());
             semicolon1->astOperand2(semicolon2);
         } else {
-            if (!cpp || !Token::simpleMatch(state2.op.top(), ":"))
+            if (!cpp || state2.op.empty() || !Token::simpleMatch(state2.op.top(), ":"))
                 throw InternalError(tok, "syntax error", InternalError::SYNTAX);
 
             semicolon1->astOperand2(state2.op.top());
