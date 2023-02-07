@@ -44,6 +44,7 @@ Settings::Settings()
     clang(false),
     clangExecutable("clang"),
     clangTidy(false),
+    clearIncludeCache(false),
     daca(false),
     debugnormal(false),
     debugSimplified(false),

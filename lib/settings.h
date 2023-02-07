@@ -150,6 +150,9 @@ public:
     /** Use clang-tidy */
     bool clangTidy;
 
+    /** Internal: Clear the simplecpp non-existing include cache */
+    bool clearIncludeCache;
+
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
 
