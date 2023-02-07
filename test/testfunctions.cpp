@@ -1957,6 +1957,11 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("auto f() {\n"
+              "    return std::runtime_error(\"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings = settings_old;
     }
 
