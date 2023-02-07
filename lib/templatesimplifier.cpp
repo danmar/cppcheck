@@ -1617,8 +1617,8 @@ void TemplateSimplifier::expandTemplate(
         if (!isSpecialization && it != mTemplateForwardDeclarationsMap.end()) {
             dst = it->second;
             dstStart = dst->previous();
-            Token * temp1 = dst->tokAt(1)->findClosingBracket();
-            Token * temp2 = temp1->tokAt(getTemplateNamePosition(temp1));
+            const Token * temp1 = dst->tokAt(1)->findClosingBracket();
+            const Token * temp2 = temp1->tokAt(getTemplateNamePosition(temp1));
             start = temp1->next();
             end = temp2->linkAt(1)->next();
         } else {
