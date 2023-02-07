@@ -2774,11 +2774,21 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
                  ((first->strAt(2) != "const" && second->strAt(2) == "const") ||
                   (first->strAt(2) == "const" && second->strAt(2) != "const"))) {
             if (first->strAt(2) != "const") {
-                first = first->next();
-                second = second->tokAt(2);
+                if (Token::Match(first->tokAt(2), "%name%| ,|)") && Token::Match(second->tokAt(3), "%name%| ,|)")) {
+                    first = first->tokAt(Token::Match(first->tokAt(2), "%name%") ? 2 : 1);
+                    second = second->tokAt(Token::Match(second->tokAt(3), "%name%") ? 3 : 2);
+                } else {
+                    first = first->next();
+                    second = second->tokAt(2);
+                }
             } else {
-                first = first->tokAt(2);
-                second = second->next();
+                if (Token::Match(second->tokAt(2), "%name%| ,|)") && Token::Match(first->tokAt(3), "%name%| ,|)")) {
+                    first = first->tokAt(Token::Match(first->tokAt(3), "%name%") ? 3 : 2);
+                    second = second->tokAt(Token::Match(second->tokAt(2), "%name%") ? 2 : 1);
+                } else {
+                    first = first->tokAt(2);
+                    second = second->next();
+                }
             }
         }
 
