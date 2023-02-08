@@ -135,7 +135,10 @@ public:
     static std::size_t runTests(const options& args);
 };
 
+// TODO: fix these
+// NOLINTNEXTLINE(readability-redundant-declaration)
 extern std::ostringstream errout;
+// NOLINTNEXTLINE(readability-redundant-declaration)
 extern std::ostringstream output;
 
 #define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); NAME(); } } while (false)

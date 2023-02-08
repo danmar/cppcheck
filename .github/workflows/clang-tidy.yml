@@ -53,6 +53,7 @@ jobs:
       - name: Prepare CMake dependencies
         run: |
           # make sure the precompiled headers exist
+          make -C cmake.output/gui cmake_pch.hxx.pch
           make -C cmake.output/lib cmake_pch.hxx.pch
           make -C cmake.output/test cmake_pch.hxx.pch
           # make sure the auto-generated GUI sources exist
