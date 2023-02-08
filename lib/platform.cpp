@@ -111,7 +111,15 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         t = Type::Unix32;
         platformFile = platformstr;
     }
+    else if (platformstr == "unix32-unsigned") {
+        t = Type::Unix32;
+        platformFile = platformstr;
+    }
     else if (platformstr == "unix64") {
+        t = Type::Unix64;
+        platformFile = platformstr;
+    }
+    else if (platformstr == "unix64-unsigned") {
         t = Type::Unix64;
         platformFile = platformstr;
     }

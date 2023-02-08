@@ -957,14 +957,6 @@ CmdLineParser::Result CmdLineParser::parseFromArgs(int argc, const char* const a
                     mLogger.printError(errstr);
                     return Result::Fail;
                 }
-
-                // TODO: remove
-                // these are loaded via external files and thus have Settings::PlatformFile set instead.
-                // override the type so they behave like the regular platforms.
-                if (platform == "unix32-unsigned")
-                    mSettings.platform.type = Platform::Type::Unix32;
-                else if (platform == "unix64-unsigned")
-                    mSettings.platform.type = Platform::Type::Unix64;
             }
 
             // Write results in results.plist
