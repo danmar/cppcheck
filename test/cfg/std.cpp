@@ -871,6 +871,13 @@ void std_unordered_map_insert_unnitvar(std::unordered_set<int>& u)
     u.insert(i);
 }
 
+void std_unordered_map_emplace_unnitvar(std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    u.emplace(i);
+}
+
 void valid_code()
 {
     std::vector<int> vecInt{0, 1, 2};
