@@ -864,6 +864,13 @@ void std_multimap_count_ignoredReturnValue(const std::multimap<int, int>& m)
     m.count(i);
 }
 
+void std_unordered_map_insert_unnitvar(std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    u.insert(i);
+}
+
 void valid_code()
 {
     std::vector<int> vecInt{0, 1, 2};
