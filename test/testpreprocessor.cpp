@@ -2420,6 +2420,8 @@ private:
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         ScopedFile header("header.h", "");
@@ -2446,6 +2448,8 @@ private:
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         std::string code("#include \"header.h\"");
@@ -2470,6 +2474,8 @@ private:
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         ScopedFile header("header.h", "", "inc");
@@ -2497,6 +2503,8 @@ private:
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         ScopedFile header("header.h", "", "inc");
@@ -2524,6 +2532,8 @@ private:
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         ScopedFile header("header.h", "", Path::getCurrentPath());
@@ -2550,6 +2560,8 @@ private:
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
@@ -2576,6 +2588,8 @@ private:
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         ScopedFile header("header.h", "");
@@ -2602,6 +2616,8 @@ private:
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         std::string code("#include <header.h>");
@@ -2627,6 +2643,8 @@ private:
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("system");
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         ScopedFile header("header.h", "", "system");
@@ -2654,6 +2672,8 @@ private:
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         ScopedFile header("header.h", "", Path::getCurrentPath());
@@ -2680,6 +2700,8 @@ private:
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
@@ -2706,6 +2728,8 @@ private:
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         Preprocessor preprocessor(settings, this);
 
         ScopedFile header("header.h", "");
@@ -2735,6 +2759,8 @@ private:
         settings.clearIncludeCache = true;
         settings.checkConfiguration = true;
         settings.severity.clear();
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         settings.includePaths.emplace_back("system");
         // needs to be reported regardless of enabled checks
         Preprocessor preprocessor(settings, this);
@@ -2765,12 +2791,12 @@ private:
         ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
         ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
 
-        ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing.h\" not found.\n"
-                      "[test.c:2]: (information) Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n"
-                      "[test.c:3]: (information) Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n"
-                      "[test.c:6]: (information) Include file: \"header4.h\" not found.\n"
-                      "[test.c:9]: (information) Include file: \"" + missing3 + "\" not found.\n"
-                      "[test.c:11]: (information) Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n", errout.str());
+        ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
+                      "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
+                      "test.c:3:0: information: Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
+                      "test.c:6:0: information: Include file: \"header4.h\" not found. [missingInclude]\n"
+                      "test.c:9:0: information: Include file: \"" + missing3 + "\" not found. [missingInclude]\n"
+                      "test.c:11:0: information: Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout.str());
 
         Preprocessor::missingIncludeFlag = false;
         Preprocessor::missingSystemIncludeFlag = false;

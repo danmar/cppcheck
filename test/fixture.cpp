@@ -401,6 +401,10 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
         mTemplateFormat = "{file}:{line}:{severity}:{message}";
         mTemplateLocation = "{file}:{line}:note:{info}";
     }
+    else if (templateFormat == "simple") {
+        mTemplateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+        mTemplateLocation = "";
+    }
     else {
         mTemplateFormat = templateFormat;
         mTemplateLocation = "";
