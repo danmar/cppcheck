@@ -15,7 +15,6 @@ functionStatic:*/ui_fileview.h
 # --debug-warnings suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
-autoNoType
 
 naming-varname:externals/simplecpp/simplecpp.h
 naming-privateMemberVariable:externals/simplecpp/simplecpp.h
