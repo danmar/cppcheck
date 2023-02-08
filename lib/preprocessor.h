@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include <atomic>
 #include <cstddef>
 #include <istream>
 #include <list>
@@ -86,9 +85,6 @@ public:
 
     explicit Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
-
-    static std::atomic<bool> missingIncludeFlag;
-    static std::atomic<bool> missingSystemIncludeFlag;
 
     void inlineSuppressions(const simplecpp::TokenList &tokens);
 
