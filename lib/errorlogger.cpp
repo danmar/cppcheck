@@ -118,8 +118,8 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
         const Token *tok = e.first;
         std::string info = e.second;
 
-        if (info.compare(0,8,"$symbol:") == 0 && info.find("\n") < info.size()) {
-            const std::string::size_type pos = info.find("\n");
+        if (info.compare(0,8,"$symbol:") == 0 && info.find('\n') < info.size()) {
+            const std::string::size_type pos = info.find('\n');
             const std::string &symbolName = info.substr(8, pos - 8);
             info = replaceStr(info.substr(pos+1), "$symbol", symbolName);
         }
@@ -361,7 +361,7 @@ void ErrorMessage::deserialize(const std::string &data)
                 break;
             }
             const std::string::size_type start = pos;
-            pos = temp.find("\t", pos);
+            pos = temp.find('\t', pos);
             if (pos == std::string::npos) {
                 substrings.push_back(temp.substr(start));
                 break;

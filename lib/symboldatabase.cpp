@@ -2051,12 +2051,12 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
         setFlag(fIsRValueRef, true);
     }
 
-    std::string::size_type pos = clangType.find("[");
+    std::string::size_type pos = clangType.find('[');
     if (pos != std::string::npos) {
         setFlag(fIsArray, true);
         do {
             const std::string::size_type pos1 = pos+1;
-            pos = clangType.find("]", pos1);
+            pos = clangType.find(']', pos1);
             Dimension dim;
             dim.tok = nullptr;
             dim.known = pos > pos1;
@@ -6613,7 +6613,7 @@ static const Token* parsedecl(const Token* type,
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings, isCpp);
         else if (Token::Match(type, "const|constexpr"))
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
-        else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find("<")) {
+        else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find('<')) {
             TokenList typeTokens(settings);
             std::string::size_type pos1 = 0;
             do {

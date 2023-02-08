@@ -162,7 +162,7 @@ namespace {
                 in >> json;
                 return parseAddonInfo(json, fileName, exename);
             }
-            if (fileName.find(".") == std::string::npos)
+            if (fileName.find('.') == std::string::npos)
                 return getAddonInfo(fileName + ".py", exename);
 
             if (endsWith(fileName, ".py")) {
@@ -170,12 +170,12 @@ namespace {
                 if (scriptFile.empty())
                     return "Did not find addon " + fileName;
 
-                std::string::size_type pos1 = scriptFile.rfind("/");
+                std::string::size_type pos1 = scriptFile.rfind('/');
                 if (pos1 == std::string::npos)
                     pos1 = 0;
                 else
                     pos1++;
-                std::string::size_type pos2 = scriptFile.rfind(".");
+                std::string::size_type pos2 = scriptFile.rfind('.');
                 if (pos2 < pos1)
                     pos2 = std::string::npos;
                 name = scriptFile.substr(pos1, pos2 - pos1);
@@ -201,7 +201,7 @@ namespace {
 static std::string cmdFileName(std::string f)
 {
     f = Path::toNativeSeparators(f);
-    if (f.find(" ") != std::string::npos)
+    if (f.find(' ') != std::string::npos)
         return "\"" + f + "\"";
     return f;
 }
@@ -215,7 +215,7 @@ static std::vector<std::string> split(const std::string &str, const std::string 
             break;
 
         if (str[startPos] == '\"') {
-            const std::string::size_type endPos = str.find("\"", startPos + 1);
+            const std::string::size_type endPos = str.find('\"', startPos + 1);
             ret.push_back(str.substr(startPos + 1, endPos - startPos - 1));
             startPos = (endPos < str.size()) ? (endPos + 1) : endPos;
             continue;
@@ -415,8 +415,8 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
             continue;
 
         // file:line:column: error: ....
-        const std::string::size_type pos2 = line.rfind(":", pos3 - 1);
-        const std::string::size_type pos1 = line.rfind(":", pos2 - 1);
+        const std::string::size_type pos2 = line.rfind(':', pos3 - 1);
+        const std::string::size_type pos1 = line.rfind(':', pos2 - 1);
 
         if (pos1 >= pos2 || pos2 >= pos3)
             continue;
@@ -424,7 +424,7 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         const std::string filename = line.substr(0, pos1);
         const std::string linenr = line.substr(pos1+1, pos2-pos1-1);
         const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
-        const std::string msg = line.substr(line.find(":", pos3+1) + 2);
+        const std::string msg = line.substr(line.find(':', pos3+1) + 2);
 
         const std::string locFile = Path::toNativeSeparators(filename);
         ErrorMessage::FileLocation loc;
@@ -1701,8 +1701,8 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
             endColumnPos = line.find(": warning:");
         }
 
-        const std::size_t endLinePos = line.rfind(":", endColumnPos-1);
-        const std::size_t endNamePos = line.rfind(":", endLinePos - 1);
+        const std::size_t endLinePos = line.rfind(':', endColumnPos-1);
+        const std::size_t endNamePos = line.rfind(':', endLinePos - 1);
         const std::size_t endMsgTypePos = line.find(':', endColumnPos + 2);
         const std::size_t endErrorPos = line.rfind('[', std::string::npos);
         if (endLinePos==std::string::npos || endNamePos==std::string::npos || endMsgTypePos==std::string::npos || endErrorPos==std::string::npos)

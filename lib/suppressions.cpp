@@ -123,8 +123,8 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
     std::vector<Suppression> suppressions;
 
     // If this function is called we assume that comment starts with "cppcheck-suppress[".
-    const std::string::size_type start_position = comment.find("[");
-    const std::string::size_type end_position = comment.find("]", start_position);
+    const std::string::size_type start_position = comment.find('[');
+    const std::string::size_type end_position = comment.find(']', start_position);
     if (end_position == std::string::npos) {
         if (errorMessage && errorMessage->empty())
             *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
@@ -134,7 +134,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
     // parse all suppressions
     for (std::string::size_type pos = start_position; pos < end_position;) {
         const std::string::size_type pos1 = pos + 1;
-        pos = comment.find(",", pos1);
+        pos = comment.find(',', pos1);
         const std::string::size_type pos2 = (pos < end_position) ? pos : end_position;
         if (pos1 == pos2)
             continue;
@@ -179,7 +179,7 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
     Suppressions::Suppression suppression;
 
     // Strip any end of line comments
-    std::string::size_type endpos = std::min(line.find("#"), line.find("//"));
+    std::string::size_type endpos = std::min(line.find('#'), line.find("//"));
     if (endpos != std::string::npos) {
         while (endpos > 0 && std::isspace(line[endpos-1])) {
             endpos--;
