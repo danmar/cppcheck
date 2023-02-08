@@ -37,6 +37,7 @@
 #include <iterator>
 #include <numeric>
 #include <string_view>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include <version>
@@ -847,6 +848,14 @@ void std_unordered_set_count_ignoredReturnValue(const std::unordered_set<int>& u
     // cppcheck-suppress [uninitvar, ignoredReturnValue]
     u.count(i);
 }
+
+void std_unordered_map_count_ignoredReturnValue(const std::unordered_map<int, int>& u)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    u.count(i);
+}
+
 
 void valid_code()
 {
