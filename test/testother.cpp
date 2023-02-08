@@ -3347,6 +3347,13 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p0' can be declared as pointer to const\n"
                       "[test.cpp:1]: (style) Parameter 'p1' can be declared as pointer to const\n",
                       errout.str());
+
+        check("void f() {\n"
+              "    std::array<int, 1> a{}, b{};\n"
+              "    const std::array<int, 1>& r = a;\n"
+              "    if (r == b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {

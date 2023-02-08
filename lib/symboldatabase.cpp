@@ -6037,7 +6037,7 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocatio
         valuetype.setDebugPath(tok, loc);
     if (var.nameToken())
         valuetype.bits = var.nameToken()->bits();
-    valuetype.pointer = var.dimensions().size();
+    valuetype.pointer = (var.valueType() && var.valueType()->container) ? 0 : var.dimensions().size();
     valuetype.typeScope = var.typeScope();
     if (var.valueType()) {
         valuetype.container = var.valueType()->container;
