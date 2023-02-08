@@ -35,6 +35,7 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <map>
 #include <numeric>
 #include <string_view>
 #include <unordered_map>
@@ -856,6 +857,12 @@ void std_unordered_map_count_ignoredReturnValue(const std::unordered_map<int, in
     u.count(i);
 }
 
+void std_multimap_count_ignoredReturnValue(const std::multimap<int, int>& m)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    m.count(i);
+}
 
 void valid_code()
 {
