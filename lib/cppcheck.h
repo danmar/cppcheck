@@ -214,11 +214,6 @@ private:
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
-    /**
-     * Output information messages.
-     */
-    void reportInfo(const ErrorMessage &msg) override;
-
     ErrorLogger &mErrorLogger;
 
     /** @brief Current preprocessor configuration */

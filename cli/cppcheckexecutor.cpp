@@ -450,11 +450,6 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportInfo(const ErrorMessage &msg)
-{
-    reportErr(msg);
-}
-
 void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal)
 {
     if (filecount > 1) {

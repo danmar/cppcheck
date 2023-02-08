@@ -116,14 +116,10 @@ public:
         report(msg, MessageType::REPORT_ERROR);
     }
 
-    void reportInfo(const ErrorMessage &msg) override {
-        report(msg, MessageType::REPORT_INFO);
-    }
-
     std::mutex mReportSync;
 
 private:
-    enum class MessageType {REPORT_ERROR, REPORT_INFO};
+    enum class MessageType {REPORT_ERROR};
 
     void report(const ErrorMessage &msg, MessageType msgType)
     {
@@ -135,9 +131,6 @@ private:
         switch (msgType) {
         case MessageType::REPORT_ERROR:
             mErrorLogger.reportErr(msg);
-            break;
-        case MessageType::REPORT_INFO:
-            mErrorLogger.reportInfo(msg);
             break;
         }
     }

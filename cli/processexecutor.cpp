@@ -68,7 +68,7 @@ ProcessExecutor::~ProcessExecutor()
 
 class PipeWriter : public ErrorLogger {
 public:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', REPORT_VERIFICATION='4', CHILD_END='5'};
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_VERIFICATION='4', CHILD_END='5'};
 
     explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 
@@ -80,25 +80,18 @@ public:
         report(msg, MessageType::REPORT_ERROR);
     }
 
-    void reportInfo(const ErrorMessage &msg) override {
-        report(msg, MessageType::REPORT_INFO);
-    }
-
     void writeEnd(const std::string& str) const {
         writeToPipe(CHILD_END, str);
     }
 
 private:
-    enum class MessageType {REPORT_ERROR, REPORT_INFO};
+    enum class MessageType {REPORT_ERROR};
 
     void report(const ErrorMessage &msg, MessageType msgType) const {
         PipeSignal pipeSignal;
         switch (msgType) {
         case MessageType::REPORT_ERROR:
             pipeSignal = REPORT_ERROR;
-            break;
-        case MessageType::REPORT_INFO:
-            pipeSignal = REPORT_INFO;
             break;
         }
 
@@ -137,7 +130,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
         return -1;
     }
 
-    if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::REPORT_INFO && type != PipeWriter::CHILD_END) {
+    if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::CHILD_END) {
         std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -160,7 +153,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
 
     if (type == PipeWriter::REPORT_OUT) {
         mErrorLogger.reportOut(buf);
-    } else if (type == PipeWriter::REPORT_ERROR || type == PipeWriter::REPORT_INFO) {
+    } else if (type == PipeWriter::REPORT_ERROR) {
         ErrorMessage msg;
         try {
             msg.deserialize(buf);
@@ -172,8 +165,6 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
         if (hasToLog(msg)) {
             if (type == PipeWriter::REPORT_ERROR)
                 mErrorLogger.reportErr(msg);
-            else
-                mErrorLogger.reportInfo(msg);
         }
     } else if (type == PipeWriter::CHILD_END) {
         std::istringstream iss(buf);
