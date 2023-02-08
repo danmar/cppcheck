@@ -16,7 +16,6 @@ functionStatic:*/ui_fileview.h
 
 # --debug-warnings suppressions
 valueFlowBailout
-valueFlowBailoutIncompleteVar
 autoNoType:externals/simplecpp/simplecpp.cpp
 autoNoType:cli/*.cpp
 autoNoType:lib/*.cpp
