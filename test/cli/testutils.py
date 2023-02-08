@@ -56,6 +56,7 @@ def lookup_cppcheck_exe():
         for path in ('', 'bin/', 'bin/debug/'):
             exe_path = base + path + exe_name
             if os.path.isfile(exe_path):
+                print("using '{}'".format(exe_path))
                 return exe_path
 
     return None

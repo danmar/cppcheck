@@ -1119,6 +1119,9 @@ static std::string istream_to_string(std::istream &istr)
     return std::string(std::istreambuf_iterator<char>(istr), eos);
 }
 
+static const char * readSafe(const char *s, const char *def) {
+    return s ? s : def;
+}
 
 bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *settings)
 {
@@ -1144,13 +1147,13 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     guiProject.analyzeAllVsConfigs.clear();
 
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (strcmp(node->Name(), CppcheckXml::RootPathName) == 0 && node->Attribute(CppcheckXml::RootPathNameAttrib)) {
-            temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
-            temp.relativePaths = true;
-        } else if (strcmp(node->Name(), CppcheckXml::BugHunting) == 0)
-            ;
-        else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
-            temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
+        if (strcmp(node->Name(), CppcheckXml::RootPathName) == 0) {
+            if (node->Attribute(CppcheckXml::RootPathNameAttrib)) {
+                temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
+                temp.relativePaths = true;
+            }
+        } else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
+            temp.buildDir = joinRelativePath(path, readSafe(node->GetText(), ""));
         else if (strcmp(node->Name(), CppcheckXml::IncludeDirElementName) == 0)
             temp.includePaths = readXmlStringList(node, path, CppcheckXml::DirElementName, CppcheckXml::DirNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::DefinesElementName) == 0)
@@ -1158,8 +1161,11 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), CppcheckXml::UndefinesElementName) == 0) {
             for (const std::string &u : readXmlStringList(node, "", CppcheckXml::UndefineName, nullptr))
                 temp.userUndefs.insert(u);
-        } else if (strcmp(node->Name(), CppcheckXml::ImportProjectElementName) == 0)
-            guiProject.projectFile = path + (node->GetText() ? node->GetText() : "");
+        } else if (strcmp(node->Name(), CppcheckXml::ImportProjectElementName) == 0) {
+            const std::string t_str = readSafe(node->GetText(), "");
+            if (!t_str.empty())
+                guiProject.projectFile = path + t_str;
+        }
         else if (strcmp(node->Name(), CppcheckXml::PathsElementName) == 0)
             paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::ExcludeElementName) == 0)
@@ -1176,25 +1182,22 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
                 if (strcmp(child->Name(), CppcheckXml::SuppressionElementName) != 0)
                     continue;
-                auto read = [](const char *s, const char *def) {
-                    return s ? s : def;
-                };
                 Suppressions::Suppression s;
-                s.errorId = read(child->GetText(), "");
-                s.fileName = read(child->Attribute("fileName"), "");
+                s.errorId = readSafe(child->GetText(), "");
+                s.fileName = readSafe(child->Attribute("fileName"), "");
                 if (!s.fileName.empty())
                     s.fileName = joinRelativePath(path, s.fileName);
                 s.lineNumber = child->IntAttribute("lineNumber", Suppressions::Suppression::NO_LINE);
-                s.symbolName = read(child->Attribute("symbolName"), "");
-                std::istringstream(read(child->Attribute("hash"), "0")) >> s.hash;
+                s.symbolName = readSafe(child->Attribute("symbolName"), "");
+                std::istringstream(readSafe(child->Attribute("hash"), "0")) >> s.hash;
                 suppressions.push_back(std::move(s));
             }
         } else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
             guiProject.checkVsConfigs = readXmlStringList(node, emptyString, CppcheckXml::VSConfigurationName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
-            guiProject.platform = node->GetText();
+            guiProject.platform = readSafe(node->GetText(), "");
         else if (strcmp(node->Name(), CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
-            guiProject.analyzeAllVsConfigs = node->GetText();
+            guiProject.analyzeAllVsConfigs = readSafe(node->GetText(), "");
         else if (strcmp(node->Name(), CppcheckXml::Parser) == 0)
             temp.clang = true;
         else if (strcmp(node->Name(), CppcheckXml::AddonsElementName) == 0) {
@@ -1210,13 +1213,13 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                     temp.clangTidy = true;
             }
         } else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
-            temp.checkHeaders = (strcmp(node->GetText(), "true") == 0);
+            temp.checkHeaders = (strcmp(readSafe(node->GetText(), ""), "true") == 0);
         else if (strcmp(node->Name(), CppcheckXml::CheckUnusedTemplatesElementName) == 0)
-            temp.checkUnusedTemplates = (strcmp(node->GetText(), "true") == 0);
+            temp.checkUnusedTemplates = (strcmp(readSafe(node->GetText(), ""), "true") == 0);
         else if (strcmp(node->Name(), CppcheckXml::MaxCtuDepthElementName) == 0)
-            temp.maxCtuDepth = std::atoi(node->GetText());
+            temp.maxCtuDepth = std::atoi(readSafe(node->GetText(), "")); // TODO: get rid of atoi()
         else if (strcmp(node->Name(), CppcheckXml::MaxTemplateRecursionElementName) == 0)
-            temp.maxTemplateRecursion = std::atoi(node->GetText());
+            temp.maxTemplateRecursion = std::atoi(readSafe(node->GetText(), "")); // TODO: get rid of atoi()
         else if (strcmp(node->Name(), CppcheckXml::CheckUnknownFunctionReturn) == 0)
             ; // TODO
         else if (strcmp(node->Name(), Settings::SafeChecks::XmlRootName) == 0) {
@@ -1229,8 +1232,10 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                     temp.safeChecks.internalFunctions = true;
                 else if (strcmp(child->Name(), Settings::SafeChecks::XmlExternalVariables) == 0)
                     temp.safeChecks.externalVariables = true;
-                else
+                else {
+                    printError("Unknown '" + std::string(Settings::SafeChecks::XmlRootName) + "' element '" + std::string(child->Name()) + "' in Cppcheck project file");
                     return false;
+                }
             }
         } else if (strcmp(node->Name(), CppcheckXml::TagWarningsElementName) == 0)
             ; // TODO
@@ -1238,15 +1243,17 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), CppcheckXml::BughuntingElementName) == 0)
             temp.premiumArgs += " --bughunting";
         else if (strcmp(node->Name(), CppcheckXml::CertIntPrecisionElementName) == 0)
-            temp.premiumArgs += std::string(" --cert-c-int-precision=") + (node->GetText() ? node->GetText() : "0");
+            temp.premiumArgs += std::string(" --cert-c-int-precision=") + readSafe(node->GetText(), "0");
         else if (strcmp(node->Name(), CppcheckXml::CodingStandardsElementName) == 0) {
             for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
                 if (strcmp(child->Name(), CppcheckXml::CodingStandardElementName) == 0 && child->GetText())
                     temp.premiumArgs += std::string(" --") + child->GetText();
             }
         }
-        else
+        else {
+            printError("Unknown element '" + std::string(node->Name()) + "' in Cppcheck project file");
             return false;
+        }
     }
     settings->basePaths = temp.basePaths;
     settings->relativePaths |= temp.relativePaths;
@@ -1276,7 +1283,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     return true;
 }
 
-void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
+void ImportProject::selectOneVsConfig(cppcheck::Platform::PlatformType platform)
 {
     std::set<std::string> filenames;
     for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
@@ -1288,11 +1295,11 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
         bool remove = false;
         if (fs.cfg.compare(0,5,"Debug") != 0)
             remove = true;
-        if (platform == Settings::Win64 && fs.platformType != platform)
+        if (platform == cppcheck::Platform::Win64 && fs.platformType != platform)
             remove = true;
-        else if ((platform == Settings::Win32A || platform == Settings::Win32W) && fs.platformType == Settings::Win64)
+        else if ((platform == cppcheck::Platform::Win32A || platform == cppcheck::Platform::Win32W) && fs.platformType == cppcheck::Platform::Win64)
             remove = true;
-        else if (fs.platformType != Settings::Win64 && platform == Settings::Win64)
+        else if (fs.platformType != cppcheck::Platform::Win64 && platform == cppcheck::Platform::Win64)
             remove = true;
         else if (filenames.find(fs.filename) != filenames.end())
             remove = true;
