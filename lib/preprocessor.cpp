@@ -859,7 +859,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                             "Include file: \"" + header + "\" not found.",
                             std::move(errorId),
                             Certainty::normal);
-        mErrorLogger->reportInfo(errmsg);
+        mErrorLogger->reportErr(errmsg);
     }
 }
 
