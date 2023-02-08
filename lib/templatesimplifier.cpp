@@ -2070,7 +2070,7 @@ void TemplateSimplifier::expandTemplate(
                             mTokenList.addtoken(typetok, tok3);
                             back = mTokenList.back();
                         } else
-                            back = const_cast<Token *>(typetok);
+                            back = typetok;
                         if (Token::Match(back, "{|(|["))
                             brackets1.push(back);
                         else if (back->str() == "}") {
