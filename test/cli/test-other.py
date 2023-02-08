@@ -23,7 +23,6 @@ def __test_missing_include(tmpdir, use_j):
 def test_missing_include(tmpdir):
     __test_missing_include(tmpdir, False)
 
-@pytest.mark.xfail
 def test_missing_include_j(tmpdir): #11283
     __test_missing_include(tmpdir, True)
 

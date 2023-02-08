@@ -208,6 +208,5 @@ def __test_missing_include_system(use_j):
 def test_missing_include_system():
     __test_missing_include_system(False)
 
-@pytest.mark.xfail
 def test_missing_include_system_j(): #11283
     __test_missing_include_system(True)
