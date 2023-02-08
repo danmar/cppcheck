@@ -1962,6 +1962,17 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S {\n" // #11543
+              "    S() {}\n"
+              "    std::vector<std::shared_ptr<S>> v;\n"
+              "    void f(int i) const;\n"
+              "};\n"
+              "void S::f(int i) const {\n"
+              "    for (const std::shared_ptr<S>& c : v)\n"
+              "        c->f(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings = settings_old;
     }
 
