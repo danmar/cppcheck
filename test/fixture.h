@@ -102,9 +102,10 @@ protected:
         mVerbose = v;
     }
 
+    void setTemplateFormat(const std::string &templateFormat);
+
     void setMultiline() {
-        mTemplateFormat = "{file}:{line}:{severity}:{message}";
-        mTemplateLocation = "{file}:{line}:note:{info}";
+        setTemplateFormat("multiline");
     }
 
     void processOptions(const options& args);

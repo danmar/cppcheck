@@ -394,3 +394,15 @@ void TestFixture::reportErr(const ErrorMessage &msg)
     if (errout.str().find(errormessage) == std::string::npos)
         errout << errormessage << std::endl;
 }
+
+void TestFixture::setTemplateFormat(const std::string &templateFormat)
+{
+    if (templateFormat == "multiline") {
+        mTemplateFormat = "{file}:{line}:{severity}:{message}";
+        mTemplateLocation = "{file}:{line}:note:{info}";
+    }
+    else {
+        mTemplateFormat = templateFormat;
+        mTemplateLocation = "";
+    }
+}
