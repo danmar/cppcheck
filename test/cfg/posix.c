@@ -2,7 +2,7 @@
 // Test library configuration for posix.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=posix --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/posix.c
+// $ cppcheck --check-library --library=posix --enable=style,information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/posix.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
