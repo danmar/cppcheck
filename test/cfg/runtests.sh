@@ -23,7 +23,7 @@ CPPCHECK="$DIR"../../cppcheck
 CFG="$DIR"../../cfg/
 
 # Cppcheck options
-CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
+CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
 
 # Compiler settings
 CXX=g++
@@ -412,7 +412,7 @@ function check_file {
     case $f in
         boost.cpp)
             boost_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         bsd.c)
             bsd_fn
@@ -424,7 +424,7 @@ function check_file {
             ;;
         cppunit.cpp)
             cppunit_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=$lib -f ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib -f ${DIR}$f
             ;;
         gnu.c)
             gnu_fn
@@ -432,16 +432,16 @@ function check_file {
             ;;
         googletest.cpp)
             googletest_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         gtk.c)
             gtk_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=$lib -f ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib -f ${DIR}$f
             ;;
         kde.cpp)
             # TODO: "kde-4config" is no longer commonly available in recent distros
             #kde_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         libcurl.c)
             libcurl_fn
@@ -478,29 +478,29 @@ function check_file {
             ;;
         qt.cpp)
             qt_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         sqlite3.c)
             sqlite3_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         std.c)
             std_c_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}$f
             ;;
         std.cpp)
             std_cpp_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}$f
             ;;
         windows.cpp)
             windows_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32A --library=$lib ${DIR}$f
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W --library=$lib ${DIR}$f
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win32A --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win32W --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win64  --library=$lib ${DIR}$f
             ;;
         wxwidgets.cpp)
             wxwidgets_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=$lib,windows -f ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib,windows -f ${DIR}$f
             ;;
         *)
           echo "Unhandled file $f"
