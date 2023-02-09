@@ -1,19 +1,26 @@
-file(GLOB_RECURSE hdrs "*.h")
-file(GLOB_RECURSE srcs "*.cpp")
+add_subdirectory(vf)
+
+file(GLOB hdrs "*.h")
+file(GLOB srcs "*.cpp")
 
 function(build_src output filename)
-    get_filename_component(file ${filename} NAME)
-    set(outfile ${CMAKE_CURRENT_BINARY_DIR}/build/mc_${file})
+    if (USE_MATCHCOMPILER_OPT STREQUAL "Off")
+        set(${output} ${${output}} ${filename} PARENT_SCOPE)
+        return()
+    endif()
+
+    file(RELATIVE_PATH file ${CMAKE_CURRENT_SOURCE_DIR} ${filename})
+    set(outfile ${CMAKE_CURRENT_BINARY_DIR}/build/${file})
     set(${output} ${${output}} ${outfile} PARENT_SCOPE)
     if (USE_MATCHCOMPILER STREQUAL "Verify")
         set(verify_option "--verify")
     endif()
     add_custom_command(
         OUTPUT ${outfile}
-        COMMAND ${PYTHON_EXECUTABLE} "${PROJECT_SOURCE_DIR}/tools/matchcompiler.py" 
-                --read-dir="${CMAKE_CURRENT_SOURCE_DIR}" 
-                --prefix="mc_" 
-                --line 
+        COMMAND ${PYTHON_EXECUTABLE} "${PROJECT_SOURCE_DIR}/tools/matchcompiler.py"
+                --read-dir="${CMAKE_CURRENT_SOURCE_DIR}"
+                --write-dir="${CMAKE_CURRENT_BINARY_DIR}/build"
+                --line
                 ${verify_option} 
                 ${file}
         DEPENDS ${file} 
@@ -22,21 +29,15 @@ function(build_src output filename)
     set_source_files_properties(${outfile} PROPERTIES GENERATED TRUE)
 endfunction()
 
-if (NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
-    foreach(file ${srcs})
-        build_src(srcs_build ${file})
-    endforeach()
-
-    set(srcs_lib ${srcs_build})
-else()
-    set(srcs_lib ${srcs})
-endif()
+foreach(file ${srcs} ${vf_srcs})
+    build_src(srcs_lib ${file})
+endforeach()
 
 if (BUILD_CORE_DLL)
-    add_library(cppcheck-core SHARED ${srcs_lib} ${hdrs} $<TARGET_OBJECTS:tinyxml2_objs> $<TARGET_OBJECTS:simplecpp_objs> version.rc)
+    add_library(cppcheck-core SHARED ${srcs_lib} ${hdrs} ${vf_hdrs} $<TARGET_OBJECTS:tinyxml2_objs> $<TARGET_OBJECTS:simplecpp_objs> version.rc)
     target_compile_definitions(cppcheck-core PRIVATE CPPCHECKLIB_EXPORT TINYXML2_EXPORT SIMPLECPP_EXPORT)
 else()
-    add_library(cppcheck-core OBJECT ${srcs_lib} ${hdrs})
+    add_library(cppcheck-core OBJECT ${srcs_lib} ${hdrs} ${vf_hdrs})
 endif()
 target_include_directories(cppcheck-core PRIVATE ${PROJECT_SOURCE_DIR}/externals/)
 if(USE_BUNDLED_TINYXML2)

@@ -30,6 +30,15 @@
 #include "../lib/pathmatch.h"
 #include "../lib/utils.h"
 
+static std::string incdir(std::string filename)
+{
+    // TODO: make this generic
+    if (filename.compare(0,7,"lib/vf/") == 0) {
+        return " -Ilib/vf";
+    }
+    return "";
+}
+
 static std::string builddir(std::string filename)
 {
     if (filename.compare(0,4,"lib/") == 0)
@@ -127,7 +136,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         std::sort(depfiles.begin(), depfiles.end());
         for (const std::string &depfile : depfiles)
             fout << " " << depfile;
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " -c -o $@ " << builddir(file) << "\n\n";
+        fout << "\n\t$(CXX) " << args << incdir(file) << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " -c -o $@ " << builddir(file) << "\n\n";
     }
 }
 
@@ -263,7 +272,7 @@ int main(int argc, char **argv)
 
     // Get files..
     std::vector<std::string> libfiles;
-    std::string err = getCppFiles(libfiles, "lib/", false);
+    std::string err = getCppFiles(libfiles, "lib/", true);
     if (!err.empty()) {
         std::cerr << err << std::endl;
         return EXIT_FAILURE;
@@ -318,6 +327,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("tokenrange.h");
     libfiles_h.emplace_back("valueptr.h");
     libfiles_h.emplace_back("version.h");
+    libfiles_h.emplace_back("vf/analyze.h");
     std::sort(libfiles_h.begin(), libfiles_h.end());
 
     std::vector<std::string> clifiles_h;
@@ -398,6 +408,7 @@ int main(int argc, char **argv)
             fout1 << "include($$PWD/pcrerules.pri)\n";
             fout1 << "include($$PWD/../externals/externals.pri)\n";
             fout1 << "INCLUDEPATH += $$PWD\n";
+            fout1 << "INCLUDEPATH += $$PWD/vf\n";
             fout1 << "HEADERS += ";
             for (const std::string &libfile_h : libfiles_h) {
                 fout1 << "$${PWD}/" << libfile_h;
@@ -455,9 +466,12 @@ int main(int argc, char **argv)
          << "        $(error Did not find a Python interpreter)\n"
          << "    endif\n"
          << "    ifdef VERIFY\n"
-         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --verify)\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --recursive --verify)\n"
          << "    else\n"
-         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py)\n"
+         << "        matchcompiler_S := $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --recursive)\n"
+         << "    endif\n"
+         << "    ifneq ($(.SHELLSTATUS),0)\n"
+         << "        $(error matchcompiler execution failed)\n"
          << "    endif\n"
          << "    libcppdir:=build\n"
          << "else\n"

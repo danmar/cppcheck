@@ -3,6 +3,7 @@
 include($$PWD/pcrerules.pri)
 include($$PWD/../externals/externals.pri)
 INCLUDEPATH += $$PWD
+INCLUDEPATH += $$PWD/vf
 HEADERS += $${PWD}/analyzer.h \
            $${PWD}/analyzerinfo.h \
            $${PWD}/astutils.h \
@@ -70,6 +71,10 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/valueflow.h \
            $${PWD}/valueptr.h \
            $${PWD}/version.h \
+           $${PWD}/vf/analyze.h \
+           $${PWD}/vf/common.h \
+           $${PWD}/vf/enumvalue.h \
+           $${PWD}/vf/number.h \
            $${PWD}/vfvalue.h
 
 SOURCES += $${PWD}/analyzerinfo.cpp \
@@ -130,4 +135,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
            $${PWD}/valueflow.cpp \
+           $${PWD}/vf/common.cpp \
+           $${PWD}/vf/enumvalue.cpp \
+           $${PWD}/vf/number.cpp \
            $${PWD}/vfvalue.cpp

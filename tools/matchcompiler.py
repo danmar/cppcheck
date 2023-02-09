@@ -746,10 +746,10 @@ def main():
                         help='directory from which files are read')
     parser.add_argument('--write-dir', default="build",
                         help='directory into which files are written')
-    parser.add_argument('--prefix', default="",
-                        help='prefix for build files')
     parser.add_argument('--line', action='store_true', default=False,
                         help='add line directive to input files into build files')
+    parser.add_argument('--recursive', action='store_true', default=False,
+                        help='scan input directory recursively when no files are specified')
     parser.add_argument('file', nargs='*',
                         help='file to compile')
     args = parser.parse_args()
@@ -758,38 +758,34 @@ def main():
     line_directive = args.line
     files = args.file
 
+    if len(files) > 0 and args.recursive:
+        print('--recursive has not effect since files were explicitly specified.')
+
     # Check if we are invoked from the right place
     if not os.path.exists(lib_dir):
         print('Directory "' + lib_dir + '"not found.')
         sys.exit(-1)
 
     # Create build directory if needed
-    try:
-        os.makedirs(build_dir)
-    except OSError as e:
-        # due to race condition in case of parallel build,
-        # makedirs may fail. Ignore that; if there's actual
-        # problem with directory creation, it'll be caught
-        # by the following isdir check
-        if e.errno != errno.EEXIST:
-            raise
+    os.makedirs(build_dir, exist_ok=True)
 
     if not os.path.isdir(build_dir):
         raise Exception(build_dir + ' is not a directory')
 
+    if not files:
+        # select all *.cpp files in lib_dir
+        for f in glob.glob(lib_dir + '/**/*.cpp', recursive=args.recursive):
+            files.append(f[len(lib_dir) + 1:])
+
     mc = MatchCompiler(verify_mode=args.verify,
                        show_skipped=args.show_skipped)
 
-    if not files:
-        # select all *.cpp files in lib_dir
-        for f in glob.glob(lib_dir + '/*.cpp'):
-            files.append(f[len(lib_dir) + 1:])
-
     # convert files
     for fi in files:
-        pi = lib_dir + '/' + fi
-        fo = args.prefix + fi
-        po = build_dir + '/' + fo
+        pi = os.path.join(lib_dir, fi)
+        po = os.path.join(build_dir, fi)
+        if args.recursive:
+            os.makedirs(os.path.dirname(po), exist_ok=True)
         print(pi + ' => ' + po)
         mc.convertFile(pi, po, line_directive)
 

@@ -103,6 +103,9 @@
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="valueflow.cpp" />
+    <ClCompile Include="vf/common.cpp" />
+    <ClCompile Include="vf/enumvalue.cpp" />
+    <ClCompile Include="vf/number.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
@@ -175,6 +178,10 @@
     <ClInclude Include="valueflow.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="vf/analyze.h" />
+    <ClInclude Include="vf/common.h" />
+    <ClInclude Include="vf/enumvalue.h" />
+    <ClInclude Include="vf/number.h" />
     <ClInclude Include="vfvalue.h" />
   </ItemGroup>
   <ItemGroup>
