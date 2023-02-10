@@ -166,6 +166,6 @@ extern std::ostringstream output;
         } \
 } while (false)
 
-#define PLATFORM( S, P ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, S.platform(cppcheck::Platform::platformString(P), errstr, {exename.c_str()}), errstr); } while (false)
+#define PLATFORM( S, P ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, S.platform(cppcheck::Platform::platformString(P), errstr, {exename}), errstr); } while (false)
 
 #endif // fixtureH
