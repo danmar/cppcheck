@@ -53,17 +53,8 @@ private:
         // An empty platform file does not change values, only the type.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n<platform/>";
         cppcheck::Platform platform;
-        ASSERT(platform.platform(cppcheck::Platform::Win64));
-        ASSERT(readPlatform(platform, xmldata));
-        ASSERT_EQUALS(cppcheck::Platform::PlatformFile, platform.platformType);
-        ASSERT(!platform.isWindowsPlatform());
-        ASSERT_EQUALS(8, platform.char_bit);
-        ASSERT_EQUALS('\0', platform.defaultSign);
-        ASSERT_EQUALS(1, platform.sizeof_bool);
-        ASSERT_EQUALS(2, platform.sizeof_short);
-        ASSERT_EQUALS(4, platform.sizeof_int);
-        ASSERT_EQUALS(4, platform.sizeof_long);
-        ASSERT_EQUALS(8, platform.sizeof_long_long);
+        // TODO: this should fail - platform files need to be complete
+        TODO_ASSERT(!readPlatform(platform, xmldata));
     }
 
     void valid_config_win32a() const {
@@ -306,17 +297,8 @@ private:
                                "  </sizeof1>\n"
                                " </platform>";
         cppcheck::Platform platform;
-        ASSERT(platform.platform(cppcheck::Platform::Win64));
-        ASSERT(readPlatform(platform, xmldata));
-        ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
-        ASSERT(!platform.isWindowsPlatform());
-        ASSERT_EQUALS(8, platform.char_bit);
-        ASSERT_EQUALS('\0', platform.defaultSign);
-        ASSERT_EQUALS(1, platform.sizeof_bool);
-        ASSERT_EQUALS(2, platform.sizeof_short);
-        ASSERT_EQUALS(4, platform.sizeof_int);
-        ASSERT_EQUALS(4, platform.sizeof_long);
-        ASSERT_EQUALS(8, platform.sizeof_long_long);
+        // TODO: needs to fail - files need to be complete
+        TODO_ASSERT(!readPlatform(platform, xmldata));
     }
 
     void valid_config_file_4() {
@@ -409,10 +391,7 @@ private:
                                "  </sizeof>\n"
                                " </platform>";
         cppcheck::Platform platform;
-        ASSERT(platform.platform(cppcheck::Platform::Win64));
         ASSERT(!readPlatform(platform, xmldata));
-        ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
-        ASSERT(!platform.isWindowsPlatform());
     }
 
     void default_platform() {
