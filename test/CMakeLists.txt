@@ -148,7 +148,7 @@ if (BUILD_TESTS)
         add_cfg(windows.cpp NAME windows32A PLATFORM win32A)
         add_cfg(windows.cpp NAME windows32W PLATFORM win32W)
         add_cfg(windows.cpp NAME windows64 PLATFORM win64)
-        add_cfg(wxwidgets.cpp ADD_LIBRARY windows)
+        add_cfg(wxwidgets.cpp)
 
         function(fixture_cost NAME COST)
             if(TEST ${NAME})
