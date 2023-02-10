@@ -67,6 +67,7 @@ static void f()
 ```
 make: python: No such file or directory
 ```
+RESOLVED: a hot-patch is applied before compilation.
 - 1.39 to 1.49 (possibly more versions - 1.54 and up work) cannot be compiled:
 ```
 lib/mathlib.cpp:70:42: error: invalid conversion from ‘char’ to ‘char**’ [-fpermissive]
