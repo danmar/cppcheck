@@ -23,7 +23,7 @@ CPPCHECK="$DIR"../../cppcheck
 CFG="$DIR"../../cfg/
 
 # Cppcheck options
-CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
+CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
 
 # Compiler settings
 CXX=g++
@@ -424,7 +424,7 @@ function check_file {
             ;;
         cppunit.cpp)
             cppunit_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib -f ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         gnu.c)
             gnu_fn
@@ -436,7 +436,7 @@ function check_file {
             ;;
         gtk.c)
             gtk_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib -f ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         kde.cpp)
             # TODO: "kde-4config" is no longer commonly available in recent distros
@@ -500,7 +500,7 @@ function check_file {
             ;;
         wxwidgets.cpp)
             wxwidgets_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib,windows -f ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib,windows ${DIR}$f
             ;;
         *)
           echo "Unhandled file $f"

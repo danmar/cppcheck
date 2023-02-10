@@ -116,6 +116,7 @@ if (BUILD_TESTS)
                         --library=${LIBRARY}
                         --enable=style,information
                         --inconclusive
+                        --force
                         --error-exitcode=1
                         --suppress=missingIncludeSystem
                         --inline-suppr
