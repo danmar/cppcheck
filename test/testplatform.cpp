@@ -29,8 +29,11 @@ public:
 private:
     void run() override {
         TEST_CASE(empty);
-        TEST_CASE(valid_config_native_1);
-        TEST_CASE(valid_config_native_2);
+        TEST_CASE(valid_config_win32a);
+        TEST_CASE(valid_config_unix64);
+        TEST_CASE(valid_config_win32w);
+        TEST_CASE(valid_config_unix32);
+        TEST_CASE(valid_config_win64);
         TEST_CASE(valid_config_file_1);
         TEST_CASE(valid_config_file_2);
         TEST_CASE(valid_config_file_3);
@@ -63,37 +66,134 @@ private:
         ASSERT_EQUALS(8, platform.sizeof_long_long);
     }
 
-    void valid_config_native_1() const {
+    void valid_config_win32a() const {
         // Verify if native Win32A platform is loaded correctly
         cppcheck::Platform platform;
-        ASSERT(platform.platform(cppcheck::Platform::Win32A));
+        std::string errstr;
+        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Win32A), errstr, {exename.c_str()}), errstr);
         ASSERT_EQUALS(cppcheck::Platform::Win32A, platform.platformType);
         ASSERT(platform.isWindowsPlatform());
-        ASSERT_EQUALS('\0', platform.defaultSign);
-        ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
         ASSERT_EQUALS(4, platform.sizeof_int);
         ASSERT_EQUALS(4, platform.sizeof_long);
         ASSERT_EQUALS(8, platform.sizeof_long_long);
+        ASSERT_EQUALS(4, platform.sizeof_float);
+        ASSERT_EQUALS(8, platform.sizeof_double);
+        ASSERT_EQUALS(8, platform.sizeof_long_double);
+        ASSERT_EQUALS(2, platform.sizeof_wchar_t);
+        ASSERT_EQUALS(4, platform.sizeof_size_t);
+        ASSERT_EQUALS(4, platform.sizeof_pointer);
+        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS(16, platform.short_bit);
         ASSERT_EQUALS(32, platform.int_bit);
         ASSERT_EQUALS(32, platform.long_bit);
         ASSERT_EQUALS(64, platform.long_long_bit);
     }
 
-    void valid_config_native_2() const {
+    void valid_config_unix64() const {
         // Verify if native Unix64 platform is loaded correctly
         cppcheck::Platform platform;
-        ASSERT(platform.platform(cppcheck::Platform::Unix64));
+        std::string errstr;
+        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Unix64), errstr, {exename.c_str()}), errstr);
         ASSERT_EQUALS(cppcheck::Platform::Unix64, platform.platformType);
         ASSERT(!platform.isWindowsPlatform());
+        ASSERT_EQUALS(1, platform.sizeof_bool);
+        ASSERT_EQUALS(2, platform.sizeof_short);
+        ASSERT_EQUALS(4, platform.sizeof_int);
+        ASSERT_EQUALS(8, platform.sizeof_long);
+        ASSERT_EQUALS(8, platform.sizeof_long_long);
+        ASSERT_EQUALS(4, platform.sizeof_float);
+        ASSERT_EQUALS(8, platform.sizeof_double);
+        ASSERT_EQUALS(16, platform.sizeof_long_double);
+        ASSERT_EQUALS(4, platform.sizeof_wchar_t);
+        ASSERT_EQUALS(8, platform.sizeof_size_t);
+        ASSERT_EQUALS(8, platform.sizeof_pointer);
         ASSERT_EQUALS('\0', platform.defaultSign);
         ASSERT_EQUALS(8, platform.char_bit);
-        ASSERT_EQUALS(4, platform.sizeof_int);
+        ASSERT_EQUALS(16, platform.short_bit);
         ASSERT_EQUALS(32, platform.int_bit);
-        ASSERT_EQUALS(8, platform.sizeof_long);
         ASSERT_EQUALS(64, platform.long_bit);
+        ASSERT_EQUALS(64, platform.long_long_bit);
+    }
+
+    void valid_config_win32w() const {
+        // Verify if native Win32W platform is loaded correctly
+        cppcheck::Platform platform;
+        std::string errstr;
+        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Win32W), errstr, { exename.c_str() }), errstr);
+        ASSERT_EQUALS(cppcheck::Platform::Win32W, platform.platformType);
+        ASSERT(platform.isWindowsPlatform());
+        ASSERT_EQUALS(1, platform.sizeof_bool);
+        ASSERT_EQUALS(2, platform.sizeof_short);
+        ASSERT_EQUALS(4, platform.sizeof_int);
+        ASSERT_EQUALS(4, platform.sizeof_long);
+        ASSERT_EQUALS(8, platform.sizeof_long_long);
+        ASSERT_EQUALS(4, platform.sizeof_float);
+        ASSERT_EQUALS(8, platform.sizeof_double);
+        ASSERT_EQUALS(8, platform.sizeof_long_double);
+        ASSERT_EQUALS(2, platform.sizeof_wchar_t);
+        ASSERT_EQUALS(4, platform.sizeof_size_t);
+        ASSERT_EQUALS(4, platform.sizeof_pointer);
+        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS(8, platform.char_bit);
+        ASSERT_EQUALS(16, platform.short_bit);
+        ASSERT_EQUALS(32, platform.int_bit);
+        ASSERT_EQUALS(32, platform.long_bit);
+        ASSERT_EQUALS(64, platform.long_long_bit);
+    }
+
+    void valid_config_unix32() const {
+        // Verify if native Unix32 platform is loaded correctly
+        cppcheck::Platform platform;
+        std::string errstr;
+        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Unix32), errstr, { exename.c_str() }), errstr);
+        ASSERT_EQUALS(cppcheck::Platform::Unix32, platform.platformType);
+        ASSERT(!platform.isWindowsPlatform());
+        ASSERT_EQUALS(1, platform.sizeof_bool);
+        ASSERT_EQUALS(2, platform.sizeof_short);
+        ASSERT_EQUALS(4, platform.sizeof_int);
+        ASSERT_EQUALS(4, platform.sizeof_long);
+        ASSERT_EQUALS(8, platform.sizeof_long_long);
+        ASSERT_EQUALS(4, platform.sizeof_float);
+        ASSERT_EQUALS(8, platform.sizeof_double);
+        ASSERT_EQUALS(12, platform.sizeof_long_double);
+        ASSERT_EQUALS(4, platform.sizeof_wchar_t);
+        ASSERT_EQUALS(4, platform.sizeof_size_t);
+        ASSERT_EQUALS(4, platform.sizeof_pointer);
+        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS(8, platform.char_bit);
+        ASSERT_EQUALS(16, platform.short_bit);
+        ASSERT_EQUALS(32, platform.int_bit);
+        ASSERT_EQUALS(32, platform.long_bit);
+        ASSERT_EQUALS(64, platform.long_long_bit);
+    }
+
+    void valid_config_win64() const {
+        // Verify if native Win64 platform is loaded correctly
+        cppcheck::Platform platform;
+        std::string errstr;
+        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Win64), errstr, { exename.c_str() }), errstr);
+        ASSERT_EQUALS(cppcheck::Platform::Win64, platform.platformType);
+        ASSERT(platform.isWindowsPlatform());
+        ASSERT_EQUALS(1, platform.sizeof_bool);
+        ASSERT_EQUALS(2, platform.sizeof_short);
+        ASSERT_EQUALS(4, platform.sizeof_int);
+        ASSERT_EQUALS(4, platform.sizeof_long);
+        ASSERT_EQUALS(8, platform.sizeof_long_long);
+        ASSERT_EQUALS(4, platform.sizeof_float);
+        ASSERT_EQUALS(8, platform.sizeof_double);
+        ASSERT_EQUALS(8, platform.sizeof_long_double);
+        ASSERT_EQUALS(2, platform.sizeof_wchar_t);
+        ASSERT_EQUALS(8, platform.sizeof_size_t);
+        ASSERT_EQUALS(8, platform.sizeof_pointer);
+        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS(8, platform.char_bit);
+        ASSERT_EQUALS(16, platform.short_bit);
+        ASSERT_EQUALS(32, platform.int_bit);
+        ASSERT_EQUALS(32, platform.long_bit);
+        ASSERT_EQUALS(64, platform.long_long_bit);
     }
 
     void valid_config_file_1() {
