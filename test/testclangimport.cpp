@@ -1052,10 +1052,15 @@ private:
 #define GET_SYMBOL_DB(AST) \
     Settings settings; \
     settings.clang = true; \
-    settings.platform(cppcheck::Platform::PlatformType::Unix64); \
+    { \
+        std::string errstr; \
+        ASSERT_EQUALS_MSG(true, settings.platform("unix64", errstr, {exename.c_str()}), errstr); \
+    } \
     Tokenizer tokenizer(&settings, this); \
-    std::istringstream istr(AST); \
-    clangimport::parseClangAstDump(&tokenizer, istr); \
+    { \
+        std::istringstream istr(AST); \
+        clangimport::parseClangAstDump(&tokenizer, istr); \
+    } \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
     ASSERT(db)
 

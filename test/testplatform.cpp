@@ -60,8 +60,7 @@ private:
     void valid_config_win32a() const {
         // Verify if native Win32A platform is loaded correctly
         cppcheck::Platform platform;
-        std::string errstr;
-        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Win32A), errstr, {exename.c_str()}), errstr);
+        PLATFORM(platform, cppcheck::Platform::Win32A);
         ASSERT_EQUALS(cppcheck::Platform::Win32A, platform.platformType);
         ASSERT(platform.isWindowsPlatform());
         ASSERT_EQUALS(1, platform.sizeof_bool);
@@ -86,8 +85,7 @@ private:
     void valid_config_unix64() const {
         // Verify if native Unix64 platform is loaded correctly
         cppcheck::Platform platform;
-        std::string errstr;
-        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Unix64), errstr, {exename.c_str()}), errstr);
+        PLATFORM(platform, cppcheck::Platform::Unix64);
         ASSERT_EQUALS(cppcheck::Platform::Unix64, platform.platformType);
         ASSERT(!platform.isWindowsPlatform());
         ASSERT_EQUALS(1, platform.sizeof_bool);
@@ -112,8 +110,7 @@ private:
     void valid_config_win32w() const {
         // Verify if native Win32W platform is loaded correctly
         cppcheck::Platform platform;
-        std::string errstr;
-        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Win32W), errstr, { exename.c_str() }), errstr);
+        PLATFORM(platform, cppcheck::Platform::Win32W);
         ASSERT_EQUALS(cppcheck::Platform::Win32W, platform.platformType);
         ASSERT(platform.isWindowsPlatform());
         ASSERT_EQUALS(1, platform.sizeof_bool);
@@ -138,8 +135,7 @@ private:
     void valid_config_unix32() const {
         // Verify if native Unix32 platform is loaded correctly
         cppcheck::Platform platform;
-        std::string errstr;
-        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Unix32), errstr, { exename.c_str() }), errstr);
+        PLATFORM(platform, cppcheck::Platform::Unix32);
         ASSERT_EQUALS(cppcheck::Platform::Unix32, platform.platformType);
         ASSERT(!platform.isWindowsPlatform());
         ASSERT_EQUALS(1, platform.sizeof_bool);
@@ -164,8 +160,7 @@ private:
     void valid_config_win64() const {
         // Verify if native Win64 platform is loaded correctly
         cppcheck::Platform platform;
-        std::string errstr;
-        ASSERT_EQUALS_MSG(true, platform.platform(cppcheck::Platform::platformString(cppcheck::Platform::Win64), errstr, { exename.c_str() }), errstr);
+        PLATFORM(platform, cppcheck::Platform::Win64);
         ASSERT_EQUALS(cppcheck::Platform::Win64, platform.platformType);
         ASSERT(platform.isWindowsPlatform());
         ASSERT_EQUALS(1, platform.sizeof_bool);
