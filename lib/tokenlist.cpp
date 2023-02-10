@@ -1768,8 +1768,8 @@ void TokenList::validateAst() const
             tok = tok->link();
             continue;
         }
-        if (Token::simpleMatch(tok, ". decltype (") && tok->linkAt(2)) { // skip trailing return type
-            tok = tok->linkAt(2);
+        if (Token::Match(tok, ". decltype (") && tok->tokAt(2)->link()) { // skip trailing return type
+            tok = tok->tokAt(2)->link();
             continue;
         }
 
