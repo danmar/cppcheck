@@ -6159,15 +6159,16 @@ struct ConditionHandler {
 
             bool inverted = cond.inverted;
             Token* ctx = skipNotAndCasts(condTok, &inverted);
+            bool then = cond.inverted ? !inverted : true;
 
             if (!Token::Match(condTok, "!=|=|(|.") && condTok != cond.vartok) {
                 thenValues.insert(thenValues.end(), cond.true_values.cbegin(), cond.true_values.cend());
-                if (allowImpossible && isConditionKnown(ctx, inverted))
+                if (allowImpossible && isConditionKnown(ctx, !then))
                     insertImpossible(elseValues, cond.false_values);
             }
             if (!Token::Match(condTok, "==|!")) {
                 elseValues.insert(elseValues.end(), cond.false_values.cbegin(), cond.false_values.cend());
-                if (allowImpossible && isConditionKnown(ctx, !inverted)) {
+                if (allowImpossible && isConditionKnown(ctx, then)) {
                     insertImpossible(thenValues, cond.true_values);
                     if (cond.isBool())
                         insertNegateKnown(thenValues, cond.true_values);
