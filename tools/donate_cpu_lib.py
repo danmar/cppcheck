@@ -716,7 +716,7 @@ class LibraryIncludes:
         for root, _, files in os.walk(path):
             for name in files:
                 filename = os.path.join(root, name)
-                for enc in ['utf-8', 'cp437']:
+                for enc in ['utf-8', 'cp437']: # TODO: add unit test
                     ex = None
                     try:
                         with open(filename, 'rt', encoding=enc) as f:
