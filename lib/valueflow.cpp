@@ -6156,7 +6156,7 @@ struct ConditionHandler {
 
             std::list<ValueFlow::Value> thenValues;
             std::list<ValueFlow::Value> elseValues;
-            
+
             bool inverted = cond.inverted;
             Token* ctx = skipNotAndCasts(condTok, &inverted);
 
