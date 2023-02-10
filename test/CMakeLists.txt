@@ -93,9 +93,10 @@ if (BUILD_TESTS)
 
             cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
             get_filename_component(LIBRARY ${CFG_TEST} NAME_WE)
+            # TODO: get rid of this
             if(PARSE_ADD_LIBRARY)
                 string(REPLACE ";" "," ADD_LIBRARY "${PARSE_ADD_LIBRARY}")
-                set(LIBRARY "${LIBRARY},${ADD_LIBRARY}")
+                set(LIBRARY "${ADD_LIBRARY},${LIBRARY}")
             endif()
             set(PLATFORM unix64)
             if(PARSE_PLATFORM)
@@ -129,6 +130,8 @@ if (BUILD_TESTS)
         add_cfg(bsd.c)
         add_cfg(cairo.c)
         add_cfg(cppunit.cpp)
+        # TODO: posix needs to specified first or it has a different mmap() config
+        # TODO: get rid of posix dependency
         add_cfg(gnu.c ADD_LIBRARY posix)
         add_cfg(googletest.cpp)
         add_cfg(gtk.c)

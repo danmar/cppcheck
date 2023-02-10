@@ -428,6 +428,8 @@ function check_file {
             ;;
         gnu.c)
             gnu_fn
+            # TODO: posix needs to specified first or it has a different mmap() config
+            # TODO: get rid of posix dependency
             ${CPPCHECK} ${CPPCHECK_OPT} --library=posix,$lib ${DIR}gnu.c
             ;;
         googletest.cpp)
