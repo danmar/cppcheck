@@ -89,13 +89,13 @@ if (BUILD_TESTS)
 
         function(add_cfg CFG_TEST)
             set(oneValueArgs PLATFORM NAME)
-            set(multiValueArgs LIBRARY)
+            set(multiValueArgs ADD_LIBRARY)
 
             cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-            if(PARSE_LIBRARY)
-                string(REPLACE ";" "," LIBRARY "${PARSE_LIBRARY}")
-            else()
-                get_filename_component(LIBRARY ${CFG_TEST} NAME_WE)
+            get_filename_component(LIBRARY ${CFG_TEST} NAME_WE)
+            if(PARSE_ADD_LIBRARY)
+                string(REPLACE ";" "," ADD_LIBRARY "${PARSE_ADD_LIBRARY}")
+                set(LIBRARY "${LIBRARY},${ADD_LIBRARY}")
             endif()
             set(PLATFORM unix64)
             if(PARSE_PLATFORM)
@@ -114,8 +114,7 @@ if (BUILD_TESTS)
                         --check-library
                         --platform=${PLATFORM}
                         --library=${LIBRARY}
-                        --enable=information
-                        --enable=style
+                        --enable=style,information
                         --inconclusive
                         --error-exitcode=1
                         --suppress=missingIncludeSystem
@@ -124,11 +123,12 @@ if (BUILD_TESTS)
                 )
             endif()
         endfunction()
+        # TODO: glob this
         add_cfg(boost.cpp)
         add_cfg(bsd.c)
         add_cfg(cairo.c)
         add_cfg(cppunit.cpp)
-        add_cfg(gnu.c LIBRARY posix;gnu)
+        add_cfg(gnu.c ADD_LIBRARY posix)
         add_cfg(googletest.cpp)
         add_cfg(gtk.c)
         add_cfg(kde.cpp)
@@ -147,7 +147,7 @@ if (BUILD_TESTS)
         add_cfg(windows.cpp NAME windows32A PLATFORM win32A)
         add_cfg(windows.cpp NAME windows32W PLATFORM win32W)
         add_cfg(windows.cpp NAME windows64 PLATFORM win64)
-        add_cfg(wxwidgets.cpp)
+        add_cfg(wxwidgets.cpp ADD_LIBRARY windows)
 
         function(fixture_cost NAME COST)
             if(TEST ${NAME})
