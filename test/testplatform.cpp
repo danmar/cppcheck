@@ -270,7 +270,7 @@ private:
         ASSERT_EQUALS(100, platform.long_long_bit);
     }
 
-    void valid_config_file_3() {
+    void valid_config_file_3() const {
         // Valid platform configuration without any usable information.
         // Similar like an empty file.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -364,7 +364,7 @@ private:
         ASSERT(!readPlatform(platform, xmldata));
     }
 
-    void empty_elements() {
+    void empty_elements() const {
         // Valid platform configuration without any usable information.
         // Similar like an empty file.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
