@@ -1323,7 +1323,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                 Token* memberTok = tok->next()->link()->tokAt(2);
                 const Scope* scope = vt->containerTypeToken->scope();
                 const Type* contType{};
-                const std::string& typeStr = vt->containerTypeToken->str(); // TODO: handle complex type expressions
+                const std::string typeStr = vt->containerTypeToken->expressionString();
                 while (scope && !contType) {
                     contType = scope->findType(typeStr); // find the type stored in the container
                     scope = scope->nestedIn;
@@ -2272,7 +2272,7 @@ void Variable::setValueType(const ValueType &valueType)
         setFlag(fIsSmartPointer, true);
 }
 
-const Type* Variable::smartPointerType() const
+const Type *Variable::smartPointerType() const
 {
     if (!isSmartPointer())
         return nullptr;
@@ -2280,19 +2280,12 @@ const Type* Variable::smartPointerType() const
     if (mValueType->smartPointerType)
         return mValueType->smartPointerType;
 
-    // TODO: Cache result, handle more complex type expression
-    const Token* typeTok = typeStartToken();
-    while (Token::Match(typeTok, "%name%|::"))
-        typeTok = typeTok->next();
-    if (Token::Match(typeTok, "< %name% >")) {
-        const Scope* scope = typeTok->scope();
-        const Type* ptrType{};
-        while (scope && !ptrType) {
-            ptrType = scope->findType(typeTok->next()->str());
-            scope = scope->nestedIn;
-        }
-        return ptrType;
-    }
+    // TODO: Cache result
+    const Token *ptrType = typeStartToken();
+    while (Token::Match(ptrType, "%name%|::"))
+        ptrType = ptrType->next();
+    if (Token::Match(ptrType, "< %name% >"))
+        return ptrType->scope()->findType(ptrType->next()->str());
     return nullptr;
 }
 
