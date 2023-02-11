@@ -44,6 +44,7 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/fwdanalysis.h \
            $${PWD}/importproject.h \
            $${PWD}/infer.h \
+           $${PWD}/json.h \
            $${PWD}/keywords.h \
            $${PWD}/library.h \
            $${PWD}/mathlib.h \

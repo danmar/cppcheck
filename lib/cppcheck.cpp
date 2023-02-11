@@ -63,8 +63,7 @@
 #include <process.h>
 #endif
 
-#define PICOJSON_USE_INT64
-#include <picojson.h>
+#include "json.h"
 
 #include <simplecpp.h>
 
