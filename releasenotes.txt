@@ -1,2 +1,3 @@
 release notes for cppcheck-2.11
 
+- The platform type 'Unspecified' within .cppcheck projects has been deprecated and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.

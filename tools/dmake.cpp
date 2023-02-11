@@ -341,7 +341,8 @@ int main(int argc, char **argv)
     // Visual Studio projects
     write_vcxproj("cli/cli.vcxproj", [&](std::string &outstr){
         for (const std::string &clifile: clifiles) {
-            outstr += make_vcxproj_cl_entry(clifile.substr(4), Compile);
+            const std::string c = clifile.substr(4);
+            outstr += make_vcxproj_cl_entry(c, c == "executor.cpp" ? Precompile : Compile);
         }
     }, [&](std::string &outstr){
         for (const std::string &clifile_h: clifiles_h) {

@@ -33,7 +33,7 @@ struct InternalError;
 class TestVarID : public TestFixture {
 public:
     TestVarID() : TestFixture("TestVarID") {
-        settings.platform(Settings::Unix64);
+        PLATFORM(settings, cppcheck::Platform::Unix64);
         settings.standards.c = Standards::C89;
         settings.standards.cpp = Standards::CPPLatest;
         settings.checkUnusedTemplates = true;

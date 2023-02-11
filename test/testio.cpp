@@ -94,7 +94,7 @@ private:
         if (portability)
             settings.severity.enable(Severity::portability);
         settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        settings.platform(platform);
+        PLATFORM(settings, platform);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

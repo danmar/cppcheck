@@ -1076,7 +1076,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win128", "file.cpp"};
         ASSERT(!defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: unrecognized platform: \"win128\".\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: unrecognized platform: 'win128'.\n", GET_REDIRECT_OUTPUT);
     }
 
 #if defined(_WIN64) || defined(_WIN32)

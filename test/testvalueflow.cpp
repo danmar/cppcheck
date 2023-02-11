@@ -989,7 +989,7 @@ private:
 
         // ~
         code  = "x = ~0U;";
-        settings.platform(cppcheck::Platform::Native); // ensure platform is native
+        PLATFORM(settings, cppcheck::Platform::Native); // ensure platform is native
         values = tokenValues(code,"~");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(~0U, values.back().intvalue);
@@ -6055,7 +6055,7 @@ private:
                "        return 0;\n"
                "    return v[0];\n"
                "}\n";
-        ASSERT_EQUALS(0U, tokenValues(code, "v [ 0 ]").size());
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v [ 0 ]"), 0));
 
         // container size => yields
         code = "void f() {\n"
@@ -6360,6 +6360,13 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        // #11548
+        code = "void f(const std::string& a, const std::string& b) {\n"
+               "  if (a.empty() && b.empty()) {}\n"
+               "  else if (a.empty() == false && b.empty() == false) {}\n"
+               "}\n";
+        ASSERT("" != isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0));
     }
 
     void valueFlowContainerElement()
