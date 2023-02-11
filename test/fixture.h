@@ -141,6 +141,7 @@ extern std::ostringstream errout;
 // NOLINTNEXTLINE(readability-redundant-declaration)
 extern std::ostringstream output;
 
+// TODO: most asserts do not actually assert i.e. do not return
 #define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); NAME(); } } while (false)
 #define ASSERT( CONDITION )  if (!assert_(__FILE__, __LINE__, (CONDITION))) return
 #define ASSERT_LOC( CONDITION, FILE_, LINE_ )  assert_(FILE_, LINE_, (CONDITION))
@@ -164,5 +165,7 @@ extern std::ostringstream output;
             return; \
         } \
 } while (false)
+
+#define PLATFORM( S, P ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, S.platform(cppcheck::Platform::platformString(P), errstr, {exename}), errstr); } while (false)
 
 #endif // fixtureH

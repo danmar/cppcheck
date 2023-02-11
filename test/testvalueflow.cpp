@@ -989,7 +989,7 @@ private:
 
         // ~
         code  = "x = ~0U;";
-        settings.platform(cppcheck::Platform::Native); // ensure platform is native
+        PLATFORM(settings, cppcheck::Platform::Native); // ensure platform is native
         values = tokenValues(code,"~");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(~0U, values.back().intvalue);
