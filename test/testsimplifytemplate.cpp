@@ -313,7 +313,7 @@ private:
         errout.str("");
 
         settings.debugwarnings = debugwarnings;
-        settings.platform(type);
+        PLATFORM(settings, type);
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);

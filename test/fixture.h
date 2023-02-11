@@ -20,6 +20,7 @@
 #ifndef fixtureH
 #define fixtureH
 
+#include "check.h"
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
@@ -103,6 +104,24 @@ protected:
     }
 
     void processOptions(const options& args);
+
+    template<typename T>
+    static T& getCheck()
+    {
+        for (Check *check : Check::instances()) {
+            //cppcheck-suppress [constVariable, useStlAlgorithm] - TODO: fix constVariable FP
+            if (T* c = dynamic_cast<T*>(check))
+                return *c;
+        }
+        throw std::runtime_error("instance not found");
+    }
+
+    template<typename T>
+    static void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    {
+        T& check = getCheck<T>();
+        check.runChecks(tokenizer, settings, errorLogger);
+    }
 public:
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
@@ -116,9 +135,13 @@ public:
     static std::size_t runTests(const options& args);
 };
 
+// TODO: fix these
+// NOLINTNEXTLINE(readability-redundant-declaration)
 extern std::ostringstream errout;
+// NOLINTNEXTLINE(readability-redundant-declaration)
 extern std::ostringstream output;
 
+// TODO: most asserts do not actually assert i.e. do not return
 #define TEST_CASE( NAME )  do { if (prepareTest(#NAME)) { setVerbose(false); NAME(); } } while (false)
 #define ASSERT( CONDITION )  if (!assert_(__FILE__, __LINE__, (CONDITION))) return
 #define ASSERT_LOC( CONDITION, FILE_, LINE_ )  assert_(FILE_, LINE_, (CONDITION))
@@ -142,5 +165,7 @@ extern std::ostringstream output;
             return; \
         } \
 } while (false)
+
+#define PLATFORM( S, P ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, S.platform(cppcheck::Platform::platformString(P), errstr, {exename}), errstr); } while (false)
 
 #endif // fixtureH

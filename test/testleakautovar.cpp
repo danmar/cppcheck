@@ -237,10 +237,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
-        // Check for leaks..
-        CheckLeakAutoVar c;
         settings.checkLibrary = true;
-        c.runChecks(&tokenizer, &settings, this);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void check_(const char* file, int line, const char code[], Settings & settings_) {
@@ -252,10 +252,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        // Check for leaks..
-        CheckLeakAutoVar c;
         settings_.checkLibrary = true;
-        c.runChecks(&tokenizer, &settings_, this);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings_, this);
     }
 
     void assign1() {
@@ -2649,10 +2649,10 @@ private:
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
-        // Check for leaks..
-        CheckLeakAutoVar c;
         settings.checkLibrary = true;
-        c.runChecks(&tokenizer, &settings, this);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
@@ -2699,10 +2699,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        // Check for leaks..
-        CheckLeakAutoVar checkLeak;
         settings.checkLibrary = true;
-        checkLeak.runChecks(&tokenizer, &settings, this);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
@@ -2749,8 +2749,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.c"), file, line);
 
         // Check for leaks..
-        CheckLeakAutoVar checkLeak;
-        checkLeak.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {

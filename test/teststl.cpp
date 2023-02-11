@@ -190,10 +190,9 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
 
-        CheckStl checkStl(&tokenizer, &settings, this);
-
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-        checkStl.runChecks(&tokenizer, &settings, this);
+
+        runChecks<CheckStl>(&tokenizer, &settings, this);
     }
 
     void check_(const char* file, int line, const std::string& code, const bool inconclusive = false) {
@@ -211,8 +210,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckStl checkStl(&tokenizer, &settings, this);
-        checkStl.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckStl>(&tokenizer, &settings, this);
     }
 
     void outOfBounds() {
@@ -4144,6 +4142,19 @@ private:
                       "[test.cpp:12]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
                       "[test.cpp:14]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n",
                       errout.str());
+
+        check("struct S { std::string str; };\n"
+              "struct T { S s; };\n"
+              "struct U { T t[1]; };\n"
+              "void f(const T& t, const U& u, std::string& str) {\n"
+              "    if (str.empty())\n"
+              "        str = t.s.str.c_str();\n"
+              "    else\n"
+              "        str = u.t[0].s.str.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (performance) Assigning the result of c_str() to a std::string is slow and redundant.\n"
+                      "[test.cpp:8]: (performance) Assigning the result of c_str() to a std::string is slow and redundant.\n",
+                      errout.str());
     }
 
     void uselessCalls() {
@@ -5230,6 +5241,22 @@ private:
               "    return ret;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of algorithm instead of a raw loop.\n", errout.str());
+
+        check("struct T {\n"
+              "    std::vector<int> v0, v1;\n"
+              "    void g();\n"
+              "};\n"
+              "void T::g() {\n"
+              "    for (std::vector<int>::const_iterator it0 = v0.cbegin(); it0 != v0.cend(); ++it0) {\n"
+              "        std::vector<int>::iterator it1;\n"
+              "        for (it1 = v1.begin(); it1 != v1.end(); ++it1)\n"
+              "            if (*it0 == *it1)\n"
+              "                break;\n"
+              "        if (it1 != v1.end())\n"
+              "            v1.erase(it1);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
     }
 
     void loopAlgoMinMax() {

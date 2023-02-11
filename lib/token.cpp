@@ -845,7 +845,7 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
         tok->mImpl->mProgressValue = newLocation->mImpl->mProgressValue;
 }
 
-Token* Token::nextArgument() const
+const Token* Token::nextArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
@@ -858,7 +858,7 @@ Token* Token::nextArgument() const
     return nullptr;
 }
 
-Token* Token::nextArgumentBeforeCreateLinks2() const
+const Token* Token::nextArgumentBeforeCreateLinks2() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
@@ -875,7 +875,7 @@ Token* Token::nextArgumentBeforeCreateLinks2() const
     return nullptr;
 }
 
-Token* Token::nextTemplateArgument() const
+const Token* Token::nextTemplateArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
@@ -2300,19 +2300,19 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                 if (vt && vt->containerTypeToken)
                     return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
-            if (pointedToType && astIsSmartPointer(var->nameToken())) {
-                const ValueType* vt = var->valueType();
-                if (vt && vt->smartPointerTypeToken)
-                    return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
-            }
-            if (pointedToType && astIsIterator(var->nameToken())) {
-                const ValueType* vt = var->valueType();
-                if (vt && vt->containerTypeToken)
-                    return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
-            }
-            if (result.first)
-                return result;
         }
+        if (pointedToType && astIsSmartPointer(var->nameToken())) {
+            const ValueType* vt = var->valueType();
+            if (vt && vt->smartPointerTypeToken)
+                return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
+        }
+        if (pointedToType && astIsIterator(var->nameToken())) {
+            const ValueType* vt = var->valueType();
+            if (vt && vt->containerTypeToken)
+                return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+        }
+        if (result.first)
+            return result;
         return {var->typeStartToken(), var->typeEndToken()->next()};
     } else if (Token::simpleMatch(tok, "return")) {
         const Scope* scope = tok->scope();

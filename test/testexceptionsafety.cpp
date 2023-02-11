@@ -71,8 +71,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check char variable usage..
-        CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
-        checkExceptionSafety.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckExceptionSafety>(&tokenizer, &settings, this);
     }
 
     void destructors() {

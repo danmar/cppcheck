@@ -50,8 +50,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckBoost checkBoost;
-        checkBoost.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckBoost>(&tokenizer, &settings, this);
     }
 
     void BoostForeachContainerModification() {

@@ -8128,7 +8128,7 @@ private:
 
     void ctu(const std::vector<std::string> &code) {
         Settings settings;
-        CheckClass check;
+        auto &check = getCheck<CheckClass>();
 
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;

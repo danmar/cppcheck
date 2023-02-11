@@ -74,16 +74,17 @@ private:
 
 class ScopedFile {
 public:
-    ScopedFile(std::string name, const std::string &content) : mName(std::move(name)) {
-        std::ofstream of(mName);
-        of << content;
-    }
+    ScopedFile(std::string name, const std::string &content, std::string path = "");
+    ~ScopedFile();
 
-    ~ScopedFile() {
-        remove(mName.c_str());
+    const std::string& path() const
+    {
+        return mFullPath;
     }
 private:
-    std::string mName;
+    const std::string mName;
+    const std::string mPath;
+    const std::string mFullPath;
 };
 
 #endif // helpersH

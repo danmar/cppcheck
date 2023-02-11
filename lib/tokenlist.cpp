@@ -1056,7 +1056,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             cast->astOperand1(tok1);
             tok = tok1->link()->next();
         } else if (state.cpp && tok->str() == "{" && iscpp11init(tok)) {
-            const Token* end = tok->link();
+            Token* end = tok->link();
             if (Token::simpleMatch(tok, "{ }"))
             {
                 compileUnaryOp(tok, state, nullptr);
@@ -1598,7 +1598,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
                 semicolon2->astOperand2(state3.op.top());
             semicolon1->astOperand2(semicolon2);
         } else {
-            if (!cpp || !Token::simpleMatch(state2.op.top(), ":"))
+            if (!cpp || state2.op.empty() || !Token::simpleMatch(state2.op.top(), ":"))
                 throw InternalError(tok, "syntax error", InternalError::SYNTAX);
 
             semicolon1->astOperand2(state2.op.top());
@@ -1677,7 +1677,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (Token::Match(tok, "%name% ("))
             state.functionCallEndPar = tok->linkAt(1);
         compileExpression(tok, state);
-        const Token * const endToken = tok;
+        Token * const endToken = tok;
         if (endToken == tok1 || !endToken)
             return tok1;
 

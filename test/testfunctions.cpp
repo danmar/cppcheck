@@ -131,8 +131,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
-        CheckFunctions checkFunctions(&tokenizer, settings_, this);
-        checkFunctions.runChecks(&tokenizer, settings_, this);
+        runChecks<CheckFunctions>(&tokenizer, settings_, this);
     }
 
     void prohibitedFunctions_posix() {
@@ -1452,6 +1451,10 @@ private:
               "}", "test.cpp", &settings2);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
 
+        check("void f(std::vector<int*> v) {\n"
+              "    delete *v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIgnoredErrorCode() {
@@ -1949,6 +1952,19 @@ private:
                            "[test.cpp:3]: (information) --check-library: There is no matching configuration for function auto::push_back()\n"
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
+
+        check("struct F { void g(int); };\n"
+              "void f(std::list<F>& l) {\n"
+              "    std::list<F>::iterator it;\n"
+              "    for (it = l.begin(); it != l.end(); ++it)\n"
+              "        it->g(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    return std::runtime_error(\"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         settings = settings_old;
     }

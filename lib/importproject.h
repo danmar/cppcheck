@@ -133,7 +133,6 @@ namespace CppcheckXml {
     const char ImportProjectElementName[] = "importproject";
     const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
     const char Parser[] = "parser";
-    const char BugHunting[] = "bug-hunting";
     const char IncludeDirElementName[] = "includedir";
     const char DirElementName[] = "dir";
     const char DirNameAttrib[] = "name";
@@ -184,6 +183,7 @@ namespace CppcheckXml {
     const char CodingStandardsElementName[] = "coding-standards";
     const char CodingStandardElementName[] = "coding-standard";
     const char CertIntPrecisionElementName[] = "cert-c-int-precision";
+    const char ProjectNameElementName[] = "project-name";
 }
 
 /// @}

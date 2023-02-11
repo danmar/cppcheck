@@ -120,7 +120,7 @@ private:
 
     void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
-        settings2.platform(Settings::Unspecified);
+        PLATFORM(settings2, cppcheck::Platform::Unspecified);
 
         // If there are unused templates, keep those
         settings1.checkUnusedTemplates = true;
@@ -367,6 +367,7 @@ private:
         TEST_CASE(symboldatabase101);
         TEST_CASE(symboldatabase102);
         TEST_CASE(symboldatabase103);
+        TEST_CASE(symboldatabase104);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -438,6 +439,7 @@ private:
         TEST_CASE(findFunction42);
         TEST_CASE(findFunction43); // #10087
         TEST_CASE(findFunction44); // #11182
+        TEST_CASE(findFunction45);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -502,6 +504,7 @@ private:
         TEST_CASE(auto16);
         TEST_CASE(auto17); // #11163
         TEST_CASE(auto18);
+        TEST_CASE(auto19);
 
         TEST_CASE(unionWithConstructor);
 
@@ -5073,6 +5076,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void symboldatabase104() { // #11535
+        GET_SYMBOL_DB("struct S {\n"
+                      "    void f1(char* const c);\n"
+                      "    void f2(char* const c);\n"
+                      "    void f3(char* const);\n"
+                      "    void f4(char* c);\n"
+                      "    void f5(char* c);\n"
+                      "    void f6(char*);\n"
+                      "};\n"
+                      "void S::f1(char* c) {}\n"
+                      "void S::f2(char*) {}\n"
+                      "void S::f3(char* c) {}\n"
+                      "void S::f4(char* const c) {}\n"
+                      "void S::f5(char* const) {}\n"
+                      "void S::f6(char* const c) {}\n");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -6958,6 +6980,19 @@ private:
         }
     }
 
+    void findFunction45() {
+        GET_SYMBOL_DB("struct S { void g(int); };\n"
+                      "void f(std::vector<S>& v) {\n"
+                      "    std::vector<S>::iterator it = v.begin();\n"
+                      "    it->g(1);\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "g ( 1");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "g");
+        ASSERT_EQUALS(1, functok->function()->tokenDef->linenr());
+    }
 
     void findFunctionContainer() {
         {
@@ -8809,6 +8844,42 @@ private:
         ASSERT_EQUALS(autoTok->valueType()->constness, 3);
         ASSERT_EQUALS(autoTok->valueType()->pointer, 1);
         TODO_ASSERT(autoTok->valueType()->reference == Reference::LValue);
+    }
+
+    void auto19() { // #11517
+        {
+            GET_SYMBOL_DB("void f(const std::vector<void*>& v) {\n"
+                          "    for (const auto* h : v)\n"
+                          "        if (h) {}\n"
+                          "}\n");
+            ASSERT_EQUALS(3, db->variableList().size());
+
+            const Variable* h = db->variableList()[2];
+            ASSERT(h->isPointer());
+            ASSERT(!h->isConst());
+            const Token* varTok = Token::findsimplematch(tokenizer.tokens(), "h )");
+            ASSERT(varTok && varTok->valueType());
+            ASSERT_EQUALS(varTok->valueType()->constness, 1);
+            ASSERT_EQUALS(varTok->valueType()->pointer, 1);
+        }
+        {
+            GET_SYMBOL_DB("struct B { virtual void f() {} };\n"
+                          "struct D : B {};\n"
+                          "void g(const std::vector<B*>& v) {\n"
+                          "    for (auto* b : v)\n"
+                          "        if (auto d = dynamic_cast<D*>(b))\n"
+                          "            d->f();\n"
+                          "}\n");
+            ASSERT_EQUALS(4, db->variableList().size());
+
+            const Variable* b = db->variableList()[2];
+            ASSERT(b->isPointer());
+            ASSERT(!b->isConst());
+            const Token* varTok = Token::findsimplematch(tokenizer.tokens(), "b )");
+            ASSERT(varTok && varTok->valueType());
+            ASSERT_EQUALS(varTok->valueType()->constness, 0);
+            ASSERT_EQUALS(varTok->valueType()->pointer, 1);
+        }
     }
 
     void unionWithConstructor() {

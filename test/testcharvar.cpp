@@ -34,7 +34,7 @@ private:
     Settings settings;
 
     void run() override {
-        settings.platform(Settings::Unspecified);
+        PLATFORM(settings, Settings::Unspecified);
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
 

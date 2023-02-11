@@ -25,6 +25,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelist.h"
+#include "compliancereportdialog.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"
 #include "importproject.h"
@@ -68,6 +69,7 @@
 #include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
+#include <QTemporaryFile>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -154,6 +156,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     connect(mUI->mActionStop, &QAction::triggered, this, &MainWindow::stopAnalysis);
     connect(mUI->mActionSave, &QAction::triggered, this, &MainWindow::save);
+    connect(mUI->mActionComplianceReport, &QAction::triggered, this, &MainWindow::complianceReport);
 
     // About menu
     connect(mUI->mActionAbout, &QAction::triggered, this, &MainWindow::about);
@@ -190,6 +193,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
     else
         formatAndSetTitle();
+
+    mUI->mActionComplianceReport->setVisible(isCppcheckPremium());
 
     enableCheckButtons(true);
 
@@ -252,11 +257,11 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const Settings::PlatformType defaultPlatform = Settings::Win32W;
+    const cppcheck::Platform::PlatformType defaultPlatform = cppcheck::Platform::Win32W;
 #else
-    const Settings::PlatformType defaultPlatform = Settings::Unspecified;
+    const cppcheck::Platform::PlatformType defaultPlatform = cppcheck::Platform::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    Platform &platform = mPlatforms.get((cppcheck::Platform::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
 
     mNetworkAccessManager = new QNetworkAccessManager(this);
@@ -472,7 +477,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            const Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const cppcheck::Platform::PlatformType platform = (cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             p.selectOneVsConfig(platform);
         }
     } else {
@@ -1290,6 +1295,10 @@ void MainWindow::enableCheckButtons(bool enable)
     }
 
     mUI->mActionAnalyzeDirectory->setEnabled(enable);
+
+    if (isCppcheckPremium()) {
+        mUI->mActionComplianceReport->setEnabled(enable && mProjectFile && mProjectFile->getAddons().contains("misra"));
+    }
 }
 
 void MainWindow::enableResultsButtons()
@@ -1456,6 +1465,20 @@ void MainWindow::save()
 
         mUI->mResults->save(selectedFile, type);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
+    }
+}
+
+void MainWindow::complianceReport()
+{
+    if (isCppcheckPremium() && mProjectFile && mProjectFile->getAddons().contains("misra")) {
+        QTemporaryFile tempResults;
+        tempResults.open();
+        tempResults.close();
+
+        mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
+
+        ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
+        dlg.exec();
     }
 }
 
@@ -1885,7 +1908,7 @@ void MainWindow::selectPlatform()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
-        const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
+        const cppcheck::Platform::PlatformType platform = (cppcheck::Platform::PlatformType) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
 }

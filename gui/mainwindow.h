@@ -168,6 +168,9 @@ public slots:
     /** @brief Slot to save results */
     void save();
 
+    /** @brief Slot to generate compliance report */
+    void complianceReport();
+
     /** @brief Slot to create new project file */
     void newProjectFile();
 

@@ -254,7 +254,7 @@ void CheckFunctions::checkIgnoredReturnValue()
 
             const Token *parent = tok->next()->astParent();
             while (Token::Match(parent, "%cop%")) {
-                if (Token::Match(parent, "<<|>>") && !parent->astParent())
+                if (Token::Match(parent, "<<|>>|*") && !parent->astParent())
                     break;
                 parent = parent->astParent();
             }
@@ -635,6 +635,9 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         if (mSettings->library.podtype(tok->expressionString()))
+            continue;
+
+        if (mSettings->library.getTypeCheck("unusedvar", functionName) != Library::TypeCheck::def)
             continue;
 
         const Token* start = tok;

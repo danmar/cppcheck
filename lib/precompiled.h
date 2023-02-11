@@ -17,11 +17,13 @@
  */
 
 #pragma once
-#include "config.h"
-#include "check.h"
+#include "astutils.h"
+#include "errorlogger.h"
 #include "library.h"
+//#include "matchcompiler.h"
+#include "mathlib.h"
 #include "token.h"
-#include "tokenize.h"
-#include "valueflow.h"
-#include "symboldatabase.h"
 #include "settings.h"
+#include "suppressions.h"
+#include "utils.h"
+#include "valueflow.h"

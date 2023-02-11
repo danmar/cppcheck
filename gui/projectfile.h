@@ -165,6 +165,14 @@ public:
         return mPlatform;
     }
 
+    QString getProjectName() const {
+        return mProjectName;
+    }
+
+    void setProjectName(QString projectName) {
+        mProjectName = std::move(projectName);
+    }
+
     /**
      * @brief Get "raw" suppressions.
      * @return list of suppressions.
@@ -420,6 +428,8 @@ protected:
 
     static int readInt(QXmlStreamReader &reader, int defaultValue);
 
+    static QString readString(QXmlStreamReader &reader);
+
     /**
      * @brief Read list of include directories from XML.
      * @param reader XML stream reader.
@@ -580,6 +590,9 @@ private:
      * @brief List of coding standards, checked by Cppcheck Premium.
      */
     QStringList mCodingStandards;
+
+    /** @brief Project name, used when generating compliance report */
+    QString mProjectName;
 
     int mCertIntPrecision;
 
