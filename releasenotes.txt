@@ -16,5 +16,6 @@ Deprecations:
 -
 
 Other:
-- Removed deperecated support for builds via qmake.
+- Removed deprecated support for builds via qmake.
+- The `win32a` and `win32w` aliases have been added for the platforms `win32A` and `win32W` respectively.
 -
