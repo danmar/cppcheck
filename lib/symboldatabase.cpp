@@ -2051,12 +2051,12 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
         setFlag(fIsRValueRef, true);
     }
 
-    std::string::size_type pos = clangType.find("[");
+    std::string::size_type pos = clangType.find('[');
     if (pos != std::string::npos) {
         setFlag(fIsArray, true);
         do {
             const std::string::size_type pos1 = pos+1;
-            pos = clangType.find("]", pos1);
+            pos = clangType.find(']', pos1);
             Dimension dim;
             dim.tok = nullptr;
             dim.known = pos > pos1;
@@ -6037,7 +6037,7 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocatio
         valuetype.setDebugPath(tok, loc);
     if (var.nameToken())
         valuetype.bits = var.nameToken()->bits();
-    valuetype.pointer = var.dimensions().size();
+    valuetype.pointer = (var.valueType() && var.valueType()->container) ? 0 : var.dimensions().size();
     valuetype.typeScope = var.typeScope();
     if (var.valueType()) {
         valuetype.container = var.valueType()->container;
@@ -6613,7 +6613,7 @@ static const Token* parsedecl(const Token* type,
             parsedecl(type->type()->typeStart, valuetype, defaultSignedness, settings, isCpp);
         else if (Token::Match(type, "const|constexpr"))
             valuetype->constness |= (1 << (valuetype->pointer - pointer0));
-        else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find("<")) {
+        else if (settings->clang && type->str().size() > 2 && type->str().find("::") < type->str().find('<')) {
             TokenList typeTokens(settings);
             std::string::size_type pos1 = 0;
             do {

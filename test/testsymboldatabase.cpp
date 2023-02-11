@@ -120,7 +120,7 @@ private:
 
     void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
-        settings2.platform(Settings::Unspecified);
+        PLATFORM(settings2, cppcheck::Platform::Unspecified);
 
         // If there are unused templates, keep those
         settings1.checkUnusedTemplates = true;

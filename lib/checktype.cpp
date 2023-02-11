@@ -57,7 +57,7 @@ static const struct CWE CWE190(190U);   // Integer Overflow or Wraparound
 void CheckType::checkTooBigBitwiseShift()
 {
     // unknown sizeof(int) => can't run this checker
-    if (mSettings->platformType == Settings::Unspecified)
+    if (mSettings->platformType == cppcheck::Platform::Unspecified)
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -160,7 +160,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
 void CheckType::checkIntegerOverflow()
 {
     // unknown sizeof(int) => can't run this checker
-    if (mSettings->platformType == Settings::Unspecified || mSettings->int_bit >= MathLib::bigint_bits)
+    if (mSettings->platformType == cppcheck::Platform::Unspecified || mSettings->int_bit >= MathLib::bigint_bits)
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -436,7 +436,7 @@ void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *v
             floatToIntegerOverflowError(tok, f);
         else if ((-f.floatValue) > std::exp2(mSettings->long_long_bit - 1))
             floatToIntegerOverflowError(tok, f);
-        else if (mSettings->platformType != Settings::Unspecified) {
+        else if (mSettings->platformType != cppcheck::Platform::Unspecified) {
             int bits = 0;
             if (vtint->type == ValueType::Type::CHAR)
                 bits = mSettings->char_bit;

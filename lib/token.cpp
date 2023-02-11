@@ -845,7 +845,7 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
         tok->mImpl->mProgressValue = newLocation->mImpl->mProgressValue;
 }
 
-Token* Token::nextArgument() const
+const Token* Token::nextArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
@@ -858,7 +858,7 @@ Token* Token::nextArgument() const
     return nullptr;
 }
 
-Token* Token::nextArgumentBeforeCreateLinks2() const
+const Token* Token::nextArgumentBeforeCreateLinks2() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
@@ -875,7 +875,7 @@ Token* Token::nextArgumentBeforeCreateLinks2() const
     return nullptr;
 }
 
-Token* Token::nextTemplateArgument() const
+const Token* Token::nextTemplateArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")

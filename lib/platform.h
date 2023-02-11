@@ -24,7 +24,9 @@
 #include "config.h"
 
 #include <climits>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -113,8 +115,11 @@ namespace cppcheck {
         /** platform type */
         PlatformType platformType;
 
-        /** set the platform type for predefined platforms */
+        /** set the platform type for predefined platforms - deprecated use platform(const std::string&) instead */
         bool platform(PlatformType type);
+
+        /** set the platform type */
+        bool platform(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths = {}, bool verbose = false);
 
         /**
          * load platform file
@@ -145,9 +150,9 @@ namespace cppcheck {
         static const char *platformString(PlatformType pt) {
             switch (pt) {
             case Unspecified:
-                return "Unspecified";
+                return "unspecified";
             case Native:
-                return "Native";
+                return "native";
             case Win32A:
                 return "win32A";
             case Win32W:
@@ -161,7 +166,7 @@ namespace cppcheck {
             case PlatformFile:
                 return "platformFile";
             default:
-                return "unknown";
+                throw std::runtime_error("unknown platform");
             }
         }
 
