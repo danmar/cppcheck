@@ -35,6 +35,7 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <list>
 #include <numeric>
 #include <string_view>
 #include <unordered_set>
@@ -4506,6 +4507,15 @@ void stdvector()
     v.back();
     // cppcheck-suppress ignoredReturnValue
     v.front();
+}
+
+void stdcontainer_pop_empty() { // #11553
+    std::vector<int> v;
+    // cppcheck-suppress containerOutOfBounds
+    v.pop_back();
+    std::list<int> l;
+    // cppcheck-suppress containerOutOfBounds
+    l.pop_front();
 }
 
 void stdbind_helper(int a)
