@@ -1108,7 +1108,7 @@ class Platform:
     This class contains type sizes
 
     Attributes:
-        name          Name of the platform: unspecified/native/win32A/win32W/win64/unix32/unix64/platformFile
+        name          Name of the platform: unspecified/native/win32A/win32W/win32a/win32w/win64/unix32/unix64/platformFile
         char_bit      CHAR_BIT value
         short_bit     SHORT_BIT value
         int_bit       INT_BIT value

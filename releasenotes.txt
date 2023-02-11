@@ -21,4 +21,5 @@ Deprecations:
 
 Other:
 - "missingInclude" is no longer implicitly enabled with "information" - you need to enable it explicitly now.
+- Added lowercase aliases 'win32a' and 'win32w' for platform types 'Win32A' and 'Win32W'. The mixed case versions will be deprecated in a future version.
 -

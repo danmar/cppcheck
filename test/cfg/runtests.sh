@@ -568,8 +568,8 @@ function check_file {
             ;;
         windows.cpp)
             windows_fn
-            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --platform=win32A --library="$lib" "${DIR}""$f"
-            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --platform=win32W --library="$lib" "${DIR}""$f"
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --platform=win32a --library="$lib" "${DIR}""$f"
+            "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --platform=win32w --library="$lib" "${DIR}""$f"
             "${CPPCHECK}" "${CPPCHECK_OPT[@]}" --platform=win64  --library="$lib" "${DIR}""$f"
             ;;
         wxwidgets.cpp)
