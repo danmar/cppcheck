@@ -154,8 +154,6 @@ static const std::string emptyString;
 #define SUPPRESS_WARNING_CLANG_PUSH(warning)
 #define SUPPRESS_WARNING_CLANG_POP
 #endif
-#define SUPPRESS_WARNING(warning, ...) SUPPRESS_WARNING_PUSH(warning) __VA_ARGS__ SUPPRESS_WARNING_POP
-#define SUPPRESS_DEPRECATED_WARNING(...) SUPPRESS_WARNING("-Wdeprecated", __VA_ARGS__)
 
 #if !defined(NO_WINDOWS_SEH) && defined(_WIN32) && defined(_MSC_VER)
 #define USE_WINDOWS_SEH
