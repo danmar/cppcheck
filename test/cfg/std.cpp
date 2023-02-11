@@ -35,8 +35,10 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <map>
 #include <numeric>
 #include <string_view>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include <version>
@@ -846,6 +848,34 @@ void std_unordered_set_count_ignoredReturnValue(const std::unordered_set<int>& u
     int i;
     // cppcheck-suppress [uninitvar, ignoredReturnValue]
     u.count(i);
+}
+
+void std_unordered_map_count_ignoredReturnValue(const std::unordered_map<int, int>& u)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    u.count(i);
+}
+
+void std_multimap_count_ignoredReturnValue(const std::multimap<int, int>& m)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    m.count(i);
+}
+
+void std_unordered_map_insert_unnitvar(std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    u.insert(i);
+}
+
+void std_unordered_map_emplace_unnitvar(std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    u.emplace(i);
 }
 
 void valid_code()
