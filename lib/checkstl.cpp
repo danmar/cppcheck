@@ -87,12 +87,19 @@ static bool containerAppendsElement(const Library::Container* container, const T
     return false;
 }
 
-static bool isContainerAccess(const Library::Container* container, const Token* parent)
+static bool containerYieldsElement(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
         const Library::Container::Yield yield = container->getYield(parent->strAt(1));
         if (isElementAccessYield(yield))
             return true;
+    }
+    return false;
+}
+
+static bool containerPopsElement(const Library::Container* container, const Token* parent)
+{
+    if (Token::Match(parent, ". %name% (")) {
         const Library::Container::Action action = container->getAction(parent->strAt(1));
         if (contains({ Library::Container::Action::POP }, action))
             return true;
@@ -151,8 +158,9 @@ void CheckStl::outOfBounds()
                     continue;
                 if (!value.errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
                     continue;
-                if (value.intvalue == 0 && (indexTok || (isContainerAccess(container, parent) &&
-                                                         !containerAppendsElement(container, parent)))) {
+                if (value.intvalue == 0 && (indexTok ||
+                                            (containerYieldsElement(container, parent) && !containerAppendsElement(container, parent)) ||
+                                            (value.isKnown() && containerPopsElement(container, parent)))) {
                     std::string indexExpr;
                     if (indexTok && !indexTok->hasKnownValue())
                         indexExpr = indexTok->expressionString();
