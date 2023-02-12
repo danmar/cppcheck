@@ -48,12 +48,12 @@ ThreadExecutor::~ThreadExecutor()
 class ThreadExecutor::Data
 {
 public:
-    Data(const ThreadExecutor &threadExecutor) : mFiles(threadExecutor.mFiles), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0)
+    Data(const ThreadExecutor &threadExecutor) : mFiles(threadExecutor.mFiles), mFileSettings(threadExecutor.mSettings.project.fileSettings), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0)
     {
         mItNextFile = mFiles.begin();
-        mItNextFileSettings = threadExecutor.mSettings.project.fileSettings.begin();
+        mItNextFileSettings = mFileSettings.begin();
 
-        mTotalFiles = mFiles.size() + threadExecutor.mSettings.project.fileSettings.size();
+        mTotalFiles = mFiles.size() + mFileSettings.size();
         mTotalFileSize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
             return v + p.second;
         });
@@ -61,6 +61,7 @@ public:
 
     const std::map<std::string, std::size_t> &mFiles;
     std::map<std::string, std::size_t>::const_iterator mItNextFile;
+    const std::list<ImportProject::FileSettings> &mFileSettings;
     std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
 
     std::size_t mProcessedFiles;
@@ -167,7 +168,7 @@ unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* lo
     data->mFileSync.lock();
 
     for (;;) {
-        if (itFile == data->mFiles.cend() && itFileSettings == logForwarder->mThreadExecutor.mSettings.project.fileSettings.cend()) {
+        if (itFile == data->mFiles.cend() && itFileSettings == data->mFileSettings.cend()) {
             data->mFileSync.unlock();
             break;
         }
