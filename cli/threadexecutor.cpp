@@ -48,7 +48,7 @@ ThreadExecutor::~ThreadExecutor()
 class ThreadExecutor::Data
 {
 public:
-    Data(const ThreadExecutor &threadExecutor) : mFiles(threadExecutor.mFiles), mFileSettings(threadExecutor.mSettings.project.fileSettings), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0)
+    Data(const ThreadExecutor &threadExecutor) : mFiles(threadExecutor.mFiles), mFileSettings(threadExecutor.mSettings.project.fileSettings), mProcessedFiles(0), mProcessedSize(0)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
