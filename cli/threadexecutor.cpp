@@ -144,7 +144,7 @@ unsigned int ThreadExecutor::check()
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
-            threadFutures.emplace_back(std::async(std::launch::async, threadProc, &data, &logforwarder));
+            threadFutures.emplace_back(std::async(std::launch::async, threadProc, &data, &logforwarder, mSettings));
         }
         catch (const std::system_error &e) {
             std::cerr << "#### ThreadExecutor::check exception :" << e.what() << std::endl;
@@ -157,7 +157,7 @@ unsigned int ThreadExecutor::check()
     });
 }
 
-unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* logForwarder)
+unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* logForwarder, const Settings &settings)
 {
     unsigned int result = 0;
 
@@ -174,7 +174,7 @@ unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* lo
         }
 
         CppCheck fileChecker(*logForwarder, false, CppCheckExecutor::executeCommand);
-        fileChecker.settings() = logForwarder->mThreadExecutor.mSettings;
+        fileChecker.settings() = settings;
 
         std::size_t fileSize = 0;
         if (itFile != data->mFiles.end()) {
@@ -191,7 +191,7 @@ unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* lo
             ++itFileSettings;
             data->mFileSync.unlock();
             result += fileChecker.check(fs);
-            if (logForwarder->mThreadExecutor.mSettings.clangTidy)
+            if (settings.clangTidy)
                 fileChecker.analyseClangTidy(fs);
         }
 
@@ -199,7 +199,7 @@ unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* lo
 
         data->mProcessedSize += fileSize;
         data->mProcessedFiles++;
-        if (!logForwarder->mThreadExecutor.mSettings.quiet) {
+        if (!settings.quiet) {
             std::lock_guard<std::mutex> lg(logForwarder->mReportSync);
             CppCheckExecutor::reportStatus(data->mProcessedFiles, data->mTotalFiles, data->mProcessedSize, data->mTotalFileSize);
         }

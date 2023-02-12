@@ -49,7 +49,7 @@ public:
 private:
     class Data;
     class SyncLogForwarder;
-    static unsigned int STDCALL threadProc(Data *data, SyncLogForwarder *logForwarder);
+    static unsigned int STDCALL threadProc(Data *data, SyncLogForwarder *logForwarder, const Settings &settings);
 };
 
 /// @}
