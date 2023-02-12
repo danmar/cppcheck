@@ -4634,6 +4634,17 @@ static bool isConvertedToView(const Token* tok, const Settings* settings)
     });
 }
 
+static bool isContainerOfPointers(const Token* tok, const Settings* settings)
+{
+    if (!tok)
+    {
+        return true;
+    }
+
+    ValueType vt = ValueType::parseDecl(tok, settings, true); // TODO: set isCpp
+    return vt.pointer > 0;
+}
+
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -4786,13 +4797,6 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             if (!Token::Match(parent, ". %name% ("))
                 continue;
 
-            bool isContainerOfPointers = true;
-            const Token* containerTypeToken = tok->valueType()->containerTypeToken;
-            if (containerTypeToken) {
-                ValueType vt = ValueType::parseDecl(containerTypeToken, settings, true); // TODO: set isCpp
-                isContainerOfPointers = vt.pointer > 0;
-            }
-
             ValueFlow::Value master;
             master.valueType = ValueFlow::Value::ValueType::LIFETIME;
             if (astIsContainerView(tok) && tok->isVariable() && tok->variable()->isArgument())
@@ -4807,7 +4811,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             if (astIsIterator(parent->tokAt(2))) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
-            } else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) ||
+            } else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers(tok->valueType()->containerTypeToken, settings)) ||
                        Token::Match(parent->next(), "data|c_str")) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
