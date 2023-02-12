@@ -59,11 +59,36 @@ public:
         });
     }
 
+    bool finished() {
+        std::lock_guard<std::mutex> l(mFileSync);
+        return mItNextFile == mFiles.cend() && mItNextFileSettings == mFileSettings.cend();
+    }
+
+    bool next(const std::string *&file, const ImportProject::FileSettings *&fs, std::size_t &fileSize) {
+        std::lock_guard<std::mutex> l(mFileSync);
+        if (mItNextFile != mFiles.end()) {
+            file = &mItNextFile->first;
+            fileSize = mItNextFile->second;
+            ++mItNextFile;
+            return true;
+        }
+        if (mItNextFileSettings != mFileSettings.end()) {
+            fs = &(*mItNextFileSettings);
+            fileSize = 0;
+            ++mItNextFileSettings;
+            return true;
+        }
+
+        return false;
+    }
+
+private:
     const std::map<std::string, std::size_t> &mFiles;
     std::map<std::string, std::size_t>::const_iterator mItNextFile;
     const std::list<ImportProject::FileSettings> &mFileSettings;
     std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
 
+public:
     std::size_t mProcessedFiles;
     std::size_t mTotalFiles;
     std::size_t mProcessedSize;
@@ -161,47 +186,38 @@ unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* lo
 {
     unsigned int result = 0;
 
-    std::map<std::string, std::size_t>::const_iterator &itFile = data->mItNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = data->mItNextFileSettings;
-
-    // guard static members of CppCheck against concurrent access
-    data->mFileSync.lock();
-
     for (;;) {
-        if (itFile == data->mFiles.cend() && itFileSettings == data->mFileSettings.cend()) {
-            data->mFileSync.unlock();
+        if (data->finished()) {
             break;
         }
+
+        const std::string *file = nullptr;
+        const ImportProject::FileSettings *fs = nullptr;
+        std::size_t fileSize;
+        if (!data->next(file, fs, fileSize))
+            break;
 
         CppCheck fileChecker(*logForwarder, false, CppCheckExecutor::executeCommand);
         fileChecker.settings() = settings;
 
-        std::size_t fileSize = 0;
-        if (itFile != data->mFiles.end()) {
-            const std::string &file = itFile->first;
-            fileSize = itFile->second;
-            ++itFile;
-
-            data->mFileSync.unlock();
-
-            // Read file from a file
-            result += fileChecker.check(file);
-        } else { // file settings..
-            const ImportProject::FileSettings &fs = *itFileSettings;
-            ++itFileSettings;
-            data->mFileSync.unlock();
-            result += fileChecker.check(fs);
+        if (fs) {
+            // file settings..
+            result += fileChecker.check(*fs);
             if (settings.clangTidy)
-                fileChecker.analyseClangTidy(fs);
+                fileChecker.analyseClangTidy(*fs);
+        } else {
+            // Read file from a file
+            result += fileChecker.check(*file);
         }
 
-        data->mFileSync.lock();
-
-        data->mProcessedSize += fileSize;
-        data->mProcessedFiles++;
-        if (!settings.quiet) {
-            std::lock_guard<std::mutex> lg(logForwarder->mReportSync);
-            CppCheckExecutor::reportStatus(data->mProcessedFiles, data->mTotalFiles, data->mProcessedSize, data->mTotalFileSize);
+        {
+            std::lock_guard<std::mutex> l(data->mFileSync);
+            data->mProcessedSize += fileSize;
+            data->mProcessedFiles++;
+            if (!settings.quiet) {
+                std::lock_guard<std::mutex> lg(logForwarder->mReportSync);
+                CppCheckExecutor::reportStatus(data->mProcessedFiles, data->mTotalFiles, data->mProcessedSize, data->mTotalFileSize);
+            }
         }
     }
     return result;
