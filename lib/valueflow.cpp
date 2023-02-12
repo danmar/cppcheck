@@ -124,6 +124,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <iostream>
 
 static void bailoutInternal(const std::string& type, TokenList *tokenlist, ErrorLogger *errorLogger, const Token *tok, const std::string &what, const std::string &file, int line, std::string function)
 {
@@ -3340,6 +3341,10 @@ static bool derefShared(const Token* tok)
 ValueFlow::Value ValueFlow::getLifetimeObjValue(const Token *tok, bool inconclusive)
 {
     std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(tok, inconclusive);
+    if (tok->str() == "svArg")
+    {
+        std::cout <<" LAMA: " << values.size() << '\n';
+    }
     // There should only be one lifetime
     if (values.size() != 1)
         return ValueFlow::Value{};
@@ -4790,7 +4795,14 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
 
             ValueFlow::Value master;
             master.valueType = ValueFlow::Value::ValueType::LIFETIME;
-            master.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
+            if (astIsContainerView(tok) && tok->isVariable() && tok->variable()->isArgument())
+            {
+                master.lifetimeScope = ValueFlow::Value::LifetimeScope::SubFunction;
+            }
+            else
+            {
+                master.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
+            }
 
             if (astIsIterator(parent->tokAt(2))) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
