@@ -48,18 +48,18 @@ ThreadExecutor::~ThreadExecutor()
 class ThreadExecutor::Data
 {
 public:
-    Data(const ThreadExecutor &threadExecutor) : mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0)
+    Data(const ThreadExecutor &threadExecutor) : mFiles(threadExecutor.mFiles), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0)
     {
-        const std::map<std::string, std::size_t>& files = threadExecutor.mFiles;
-        mItNextFile = files.begin();
+        mItNextFile = mFiles.begin();
         mItNextFileSettings = threadExecutor.mSettings.project.fileSettings.begin();
 
-        mTotalFiles = files.size() + threadExecutor.mSettings.project.fileSettings.size();
-        mTotalFileSize = std::accumulate(files.cbegin(), files.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
+        mTotalFiles = mFiles.size() + threadExecutor.mSettings.project.fileSettings.size();
+        mTotalFileSize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
             return v + p.second;
         });
     }
 
+    const std::map<std::string, std::size_t> &mFiles;
     std::map<std::string, std::size_t>::const_iterator mItNextFile;
     std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
 
@@ -167,7 +167,7 @@ unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* lo
     data->mFileSync.lock();
 
     for (;;) {
-        if (itFile == logForwarder->mThreadExecutor.mFiles.cend() && itFileSettings == logForwarder->mThreadExecutor.mSettings.project.fileSettings.cend()) {
+        if (itFile == data->mFiles.cend() && itFileSettings == logForwarder->mThreadExecutor.mSettings.project.fileSettings.cend()) {
             data->mFileSync.unlock();
             break;
         }
@@ -176,7 +176,7 @@ unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* lo
         fileChecker.settings() = logForwarder->mThreadExecutor.mSettings;
 
         std::size_t fileSize = 0;
-        if (itFile != logForwarder->mThreadExecutor.mFiles.end()) {
+        if (itFile != data->mFiles.end()) {
             const std::string &file = itFile->first;
             fileSize = itFile->second;
             ++itFile;
