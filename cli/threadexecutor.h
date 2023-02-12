@@ -47,8 +47,9 @@ public:
     unsigned int check() override;
 
 private:
+    class Data;
     class SyncLogForwarder;
-    static unsigned int STDCALL threadProc(SyncLogForwarder *logForwarder);
+    static unsigned int STDCALL threadProc(Data *data, SyncLogForwarder *logForwarder);
 };
 
 /// @}

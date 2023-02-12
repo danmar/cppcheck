@@ -45,21 +45,37 @@ ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, 
 ThreadExecutor::~ThreadExecutor()
 {}
 
-class ThreadExecutor::SyncLogForwarder : public ErrorLogger
+class ThreadExecutor::Data
 {
 public:
-    explicit SyncLogForwarder(ThreadExecutor &threadExecutor)
-        : mThreadExecutor(threadExecutor), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0) {
-
-        const std::map<std::string, std::size_t>& files = mThreadExecutor.mFiles;
+    Data(const ThreadExecutor &threadExecutor) : mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0)
+    {
+        const std::map<std::string, std::size_t>& files = threadExecutor.mFiles;
         mItNextFile = files.begin();
-        mItNextFileSettings = mThreadExecutor.mSettings.project.fileSettings.begin();
+        mItNextFileSettings = threadExecutor.mSettings.project.fileSettings.begin();
 
-        mTotalFiles = files.size() + mThreadExecutor.mSettings.project.fileSettings.size();
+        mTotalFiles = files.size() + threadExecutor.mSettings.project.fileSettings.size();
         mTotalFileSize = std::accumulate(files.cbegin(), files.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
             return v + p.second;
         });
     }
+
+    std::map<std::string, std::size_t>::const_iterator mItNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
+
+    std::size_t mProcessedFiles;
+    std::size_t mTotalFiles;
+    std::size_t mProcessedSize;
+    std::size_t mTotalFileSize;
+
+    std::mutex mFileSync;
+};
+
+class ThreadExecutor::SyncLogForwarder : public ErrorLogger
+{
+public:
+    explicit SyncLogForwarder(ThreadExecutor &threadExecutor)
+        : mThreadExecutor(threadExecutor) {}
 
     void reportOut(const std::string &outmsg, Color c) override
     {
@@ -78,15 +94,6 @@ public:
 
     ThreadExecutor &mThreadExecutor;
 
-    std::map<std::string, std::size_t>::const_iterator mItNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
-
-    std::size_t mProcessedFiles;
-    std::size_t mTotalFiles;
-    std::size_t mProcessedSize;
-    std::size_t mTotalFileSize;
-
-    std::mutex mFileSync;
     std::mutex mErrorSync;
     std::mutex mReportSync;
 
@@ -131,11 +138,12 @@ unsigned int ThreadExecutor::check()
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
+    Data data(*this);
     SyncLogForwarder logforwarder(*this);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
-            threadFutures.emplace_back(std::async(std::launch::async, threadProc, &logforwarder));
+            threadFutures.emplace_back(std::async(std::launch::async, threadProc, &data, &logforwarder));
         }
         catch (const std::system_error &e) {
             std::cerr << "#### ThreadExecutor::check exception :" << e.what() << std::endl;
@@ -148,19 +156,19 @@ unsigned int ThreadExecutor::check()
     });
 }
 
-unsigned int STDCALL ThreadExecutor::threadProc(SyncLogForwarder* logForwarder)
+unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* logForwarder)
 {
     unsigned int result = 0;
 
-    std::map<std::string, std::size_t>::const_iterator &itFile = logForwarder->mItNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = logForwarder->mItNextFileSettings;
+    std::map<std::string, std::size_t>::const_iterator &itFile = data->mItNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = data->mItNextFileSettings;
 
     // guard static members of CppCheck against concurrent access
-    logForwarder->mFileSync.lock();
+    data->mFileSync.lock();
 
     for (;;) {
         if (itFile == logForwarder->mThreadExecutor.mFiles.cend() && itFileSettings == logForwarder->mThreadExecutor.mSettings.project.fileSettings.cend()) {
-            logForwarder->mFileSync.unlock();
+            data->mFileSync.unlock();
             break;
         }
 
@@ -173,26 +181,26 @@ unsigned int STDCALL ThreadExecutor::threadProc(SyncLogForwarder* logForwarder)
             fileSize = itFile->second;
             ++itFile;
 
-            logForwarder->mFileSync.unlock();
+            data->mFileSync.unlock();
 
             // Read file from a file
             result += fileChecker.check(file);
         } else { // file settings..
             const ImportProject::FileSettings &fs = *itFileSettings;
             ++itFileSettings;
-            logForwarder->mFileSync.unlock();
+            data->mFileSync.unlock();
             result += fileChecker.check(fs);
             if (logForwarder->mThreadExecutor.mSettings.clangTidy)
                 fileChecker.analyseClangTidy(fs);
         }
 
-        logForwarder->mFileSync.lock();
+        data->mFileSync.lock();
 
-        logForwarder->mProcessedSize += fileSize;
-        logForwarder->mProcessedFiles++;
+        data->mProcessedSize += fileSize;
+        data->mProcessedFiles++;
         if (!logForwarder->mThreadExecutor.mSettings.quiet) {
             std::lock_guard<std::mutex> lg(logForwarder->mReportSync);
-            CppCheckExecutor::reportStatus(logForwarder->mProcessedFiles, logForwarder->mTotalFiles, logForwarder->mProcessedSize, logForwarder->mTotalFileSize);
+            CppCheckExecutor::reportStatus(data->mProcessedFiles, data->mTotalFiles, data->mProcessedSize, data->mTotalFileSize);
         }
     }
     return result;
