@@ -93,8 +93,6 @@ public:
         report(msg, MessageType::REPORT_INFO);
     }
 
-    ThreadExecutor &mThreadExecutor;
-
     std::mutex mErrorSync;
     std::mutex mReportSync;
 
@@ -132,6 +130,8 @@ private:
             }
         }
     }
+
+    ThreadExecutor &mThreadExecutor;
 };
 
 unsigned int ThreadExecutor::check()
