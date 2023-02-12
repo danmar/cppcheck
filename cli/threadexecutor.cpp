@@ -100,14 +100,14 @@ public:
 class ThreadExecutor::SyncLogForwarder : public ErrorLogger
 {
 public:
-    explicit SyncLogForwarder(ThreadExecutor &threadExecutor)
-        : mThreadExecutor(threadExecutor) {}
+    explicit SyncLogForwarder(ThreadExecutor &threadExecutor, Settings &settings, ErrorLogger &errorLogger)
+        : mThreadExecutor(threadExecutor), mSettings(settings), mErrorLogger(errorLogger) {}
 
     void reportOut(const std::string &outmsg, Color c) override
     {
         std::lock_guard<std::mutex> lg(mReportSync);
 
-        mThreadExecutor.mErrorLogger.reportOut(outmsg, c);
+        mErrorLogger.reportOut(outmsg, c);
     }
 
     void reportErr(const ErrorMessage &msg) override {
@@ -126,14 +126,14 @@ private:
 
     void report(const ErrorMessage &msg, MessageType msgType)
     {
-        if (mThreadExecutor.mSettings.nomsg.isSuppressed(msg))
+        if (mSettings.nomsg.isSuppressed(msg))
             return;
 
         // Alert only about unique errors
         bool reportError = false;
 
         {
-            std::string errmsg = msg.toString(mThreadExecutor.mSettings.verbose);
+            std::string errmsg = msg.toString(mSettings.verbose);
 
             std::lock_guard<std::mutex> lg(mErrorSync);
             if (std::find(mThreadExecutor.mErrorList.cbegin(), mThreadExecutor.mErrorList.cend(), errmsg) == mThreadExecutor.mErrorList.cend()) {
@@ -147,16 +147,18 @@ private:
 
             switch (msgType) {
             case MessageType::REPORT_ERROR:
-                mThreadExecutor.mErrorLogger.reportErr(msg);
+                mErrorLogger.reportErr(msg);
                 break;
             case MessageType::REPORT_INFO:
-                mThreadExecutor.mErrorLogger.reportInfo(msg);
+                mErrorLogger.reportInfo(msg);
                 break;
             }
         }
     }
 
     ThreadExecutor &mThreadExecutor;
+    Settings &mSettings;
+    ErrorLogger &mErrorLogger;
 };
 
 unsigned int ThreadExecutor::check()
@@ -165,7 +167,7 @@ unsigned int ThreadExecutor::check()
     threadFutures.reserve(mSettings.jobs);
 
     Data data(*this);
-    SyncLogForwarder logforwarder(*this);
+    SyncLogForwarder logforwarder(*this, mSettings, mErrorLogger);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
