@@ -55,7 +55,6 @@ namespace cppcheck {
         }
     public:
         Platform();
-        virtual ~Platform() {}
 
         bool isIntValue(long long value) const {
             return value >= min_value(int_bit) && value <= max_value(int_bit);
