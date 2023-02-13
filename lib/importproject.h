@@ -63,7 +63,7 @@ public:
 
     /** File settings. Multiple configurations for a file is allowed. */
     struct CPPCHECKLIB FileSettings {
-        FileSettings() : platformType(cppcheck::Platform::Unspecified), msc(false), useMfc(false) {}
+        FileSettings() : platformType(cppcheck::Platform::Type::Unspecified), msc(false), useMfc(false) {}
         std::string cfg;
         std::string filename;
         std::string defines;
@@ -74,7 +74,7 @@ public:
         std::list<std::string> includePaths;
         std::list<std::string> systemIncludePaths;
         std::string standard;
-        cppcheck::Platform::PlatformType platformType;
+        cppcheck::Platform::Type platformType;
         bool msc;
         bool useMfc;
 
@@ -90,7 +90,7 @@ public:
     ImportProject(const ImportProject&) = default;
     ImportProject& operator=(const ImportProject&) = default;
 
-    void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
+    void selectOneVsConfig(cppcheck::Platform::Type platform);
 
     std::list<std::string> getVSConfigs();
 

@@ -98,7 +98,7 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::PlatformType type = cppcheck::Platform::Native, bool debugwarnings = true) {
+    std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true) {
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
@@ -406,7 +406,7 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        TODO_ASSERT_THROW(tok(code, cppcheck::Platform::Native, false), InternalError); // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tok(code, cppcheck::Platform::Type::Native, false), InternalError); // TODO: Do not throw AST validation exception
         //ASSERT_EQUALS("", errout.str());
     }
 
@@ -696,11 +696,11 @@ private:
 
         const char exp[] = "int i ;";
 
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Unix32));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Unix64));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Win32A));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Win32W));
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Win64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix32));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32A));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32W));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
     }
 
     void simplifyUsing9042() {
@@ -720,7 +720,7 @@ private:
                            "} ; "
                            "template < class T > class s { } ;";
 
-        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Win64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
     }
 
     void simplifyUsing9191() {

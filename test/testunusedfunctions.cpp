@@ -79,7 +79,7 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], cppcheck::Platform::PlatformType platform = cppcheck::Platform::Native) {
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 

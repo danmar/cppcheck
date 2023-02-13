@@ -6828,7 +6828,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         pos -= 2;
                     } else break;
                 }
-                if (mSettings->platform.platformType != cppcheck::Platform::Unspecified) {
+                if (mSettings->platform.type != cppcheck::Platform::Type::Unspecified) {
                     if (type <= ValueType::Type::INT && mSettings->platform.isIntValue(unsignedSuffix ? (value >> 1) : value))
                         type = ValueType::Type::INT;
                     else if (type <= ValueType::Type::INT && !MathLib::isDec(tokStr) && mSettings->platform.isIntValue(value >> 2)) {
@@ -6919,7 +6919,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
-                if (mSettings->platform.platformType == cppcheck::Platform::Win64)
+                if (mSettings->platform.type == cppcheck::Platform::Type::Win64)
                     valuetype.type = ValueType::Type::LONGLONG;
 
                 valuetype.originalTypeName = "size_t";

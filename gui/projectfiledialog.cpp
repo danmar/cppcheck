@@ -61,13 +61,13 @@ static QStringList getPaths(const QListWidget *list)
 }
 
 /** Platforms shown in the platform combobox */
-static const cppcheck::Platform::PlatformType builtinPlatforms[] = {
-    cppcheck::Platform::Native,
-    cppcheck::Platform::Win32A,
-    cppcheck::Platform::Win32W,
-    cppcheck::Platform::Win64,
-    cppcheck::Platform::Unix32,
-    cppcheck::Platform::Unix64
+static const cppcheck::Platform::Type builtinPlatforms[] = {
+    cppcheck::Platform::Type::Native,
+    cppcheck::Platform::Type::Win32A,
+    cppcheck::Platform::Type::Win32W,
+    cppcheck::Platform::Type::Win64,
+    cppcheck::Platform::Type::Unix32,
+    cppcheck::Platform::Type::Unix64
 };
 
 static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
@@ -174,7 +174,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
 
     // Platforms..
     Platforms platforms;
-    for (const cppcheck::Platform::PlatformType builtinPlatform : builtinPlatforms)
+    for (const cppcheck::Platform::Type builtinPlatform : builtinPlatforms)
         mUI->mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
     for (QString sp : searchPaths) {
@@ -316,7 +316,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     } else {
         int i;
         for (i = 0; i < numberOfBuiltinPlatforms; ++i) {
-            const cppcheck::Platform::PlatformType p = builtinPlatforms[i];
+            const cppcheck::Platform::Type p = builtinPlatforms[i];
             if (platform == cppcheck::Platform::toString(p))
                 break;
         }

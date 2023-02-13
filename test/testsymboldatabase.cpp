@@ -120,7 +120,7 @@ private:
 
     void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
-        PLATFORM(settings2.platform, cppcheck::Platform::Unspecified);
+        PLATFORM(settings2.platform, cppcheck::Platform::Type::Unspecified);
 
         // If there are unused templates, keep those
         settings1.checkUnusedTemplates = true;
@@ -7901,7 +7901,7 @@ private:
         {
             // PodType
             Settings settingsWin64;
-            settingsWin64.platform.platformType = cppcheck::Platform::Win64;
+            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
             const Library::PodType u32 = { 4, 'u' };
             const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
@@ -7923,7 +7923,7 @@ private:
         {
             // PlatformType
             Settings settingsUnix32;
-            settingsUnix32.platform.platformType = cppcheck::Platform::Unix32;
+            settingsUnix32.platform.type = cppcheck::Platform::Type::Unix32;
             Library::PlatformType s32;
             s32.mType = "int";
             settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
@@ -7934,7 +7934,7 @@ private:
         {
             // PlatformType - wchar_t
             Settings settingsWin64;
-            settingsWin64.platform.platformType = cppcheck::Platform::Win64;
+            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
             Library::PlatformType lpctstr;
             lpctstr.mType = "wchar_t";
             settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;

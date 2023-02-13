@@ -101,7 +101,7 @@ namespace cppcheck {
 
         char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 
-        enum PlatformType {
+        enum Type {
             Unspecified, // No platform specified
             Native, // whatever system this code was compiled on
             Win32A,
@@ -109,14 +109,14 @@ namespace cppcheck {
             Win64,
             Unix32,
             Unix64,
-            PlatformFile
+            File
         };
 
         /** platform type */
-        PlatformType platformType;
+        Type type;
 
         /** set the platform type for predefined platforms - deprecated use set(const std::string&, std::string&) instead */
-        bool set(PlatformType type);
+        bool set(Type t);
 
         /** set the platform type */
         bool set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths = {}, bool verbose = false);
@@ -138,32 +138,32 @@ namespace cppcheck {
          * @return true if Windows platform type.
          */
         bool isWindows() const {
-            return platformType == Win32A ||
-                   platformType == Win32W ||
-                   platformType == Win64;
+            return type == Type::Win32A ||
+                   type == Type::Win32W ||
+                   type == Type::Win64;
         }
 
         const char *toString() const {
-            return toString(platformType);
+            return toString(type);
         }
 
-        static const char *toString(PlatformType pt) {
+        static const char *toString(Type pt) {
             switch (pt) {
-            case Unspecified:
+            case Type::Unspecified:
                 return "unspecified";
-            case Native:
+            case Type::Native:
                 return "native";
-            case Win32A:
+            case Type::Win32A:
                 return "win32A";
-            case Win32W:
+            case Type::Win32W:
                 return "win32W";
-            case Win64:
+            case Type::Win64:
                 return "win64";
-            case Unix32:
+            case Type::Unix32:
                 return "unix32";
-            case Unix64:
+            case Type::Unix64:
                 return "unix64";
-            case PlatformFile:
+            case Type::File:
                 return "platformFile";
             default:
                 throw std::runtime_error("unknown platform");

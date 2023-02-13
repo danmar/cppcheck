@@ -92,7 +92,7 @@ private:
     }
 
 
-    void check(const char code[], cppcheck::Platform::PlatformType platform = cppcheck::Platform::Native) {
+    void check(const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
@@ -621,7 +621,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
-              "};", cppcheck::Platform::Win32A);
+              "};", cppcheck::Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -634,7 +634,7 @@ private:
               "    }\n"
               "public:\n"
               "    Foo() { }\n"
-              "};", cppcheck::Platform::Win32A);
+              "};", cppcheck::Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 

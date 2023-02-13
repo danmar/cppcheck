@@ -787,9 +787,9 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fs.useMfc = useOfMfc;
             fs.defines = "_WIN32=1";
             if (p.platform == ProjectConfiguration::Win32)
-                fs.platformType = cppcheck::Platform::Win32W;
+                fs.platformType = cppcheck::Platform::Type::Win32W;
             else if (p.platform == ProjectConfiguration::x64) {
-                fs.platformType = cppcheck::Platform::Win64;
+                fs.platformType = cppcheck::Platform::Type::Win64;
                 fs.defines += ";_WIN64=1";
             }
             std::string additionalIncludePaths;
@@ -1284,7 +1284,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     return true;
 }
 
-void ImportProject::selectOneVsConfig(cppcheck::Platform::PlatformType platform)
+void ImportProject::selectOneVsConfig(cppcheck::Platform::Type platform)
 {
     std::set<std::string> filenames;
     for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
@@ -1296,11 +1296,11 @@ void ImportProject::selectOneVsConfig(cppcheck::Platform::PlatformType platform)
         bool remove = false;
         if (fs.cfg.compare(0,5,"Debug") != 0)
             remove = true;
-        if (platform == cppcheck::Platform::Win64 && fs.platformType != platform)
+        if (platform == cppcheck::Platform::Type::Win64 && fs.platformType != platform)
             remove = true;
-        else if ((platform == cppcheck::Platform::Win32A || platform == cppcheck::Platform::Win32W) && fs.platformType == cppcheck::Platform::Win64)
+        else if ((platform == cppcheck::Platform::Type::Win32A || platform == cppcheck::Platform::Type::Win32W) && fs.platformType == cppcheck::Platform::Type::Win64)
             remove = true;
-        else if (fs.platformType != cppcheck::Platform::Win64 && platform == cppcheck::Platform::Win64)
+        else if (fs.platformType != cppcheck::Platform::Type::Win64 && platform == cppcheck::Platform::Type::Win64)
             remove = true;
         else if (filenames.find(fs.filename) != filenames.end())
             remove = true;

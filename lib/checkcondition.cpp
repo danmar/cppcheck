@@ -1860,8 +1860,8 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    if (mSettings->platform.platformType == cppcheck::Platform::PlatformType::Native ||
-        mSettings->platform.platformType == cppcheck::Platform::PlatformType::Unspecified)
+    if (mSettings->platform.type == cppcheck::Platform::Type::Native ||
+        mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
