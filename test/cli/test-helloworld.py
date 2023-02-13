@@ -5,6 +5,7 @@ import os
 import re
 import tempfile
 import pytest
+import glob
 
 from testutils import create_gui_project_file, cppcheck
 
@@ -187,7 +188,12 @@ def test_build_dir_dump_output():
 
         cppcheck(args.split())
         cppcheck(args.split())
-        with open(f'{tempdir}/main.a1.dump', 'rt') as f:
+
+        filename = f'{tempdir}/main.a1.*.dump'
+        filelist = glob.glob(filename)
+        assert(len(filelist) == 1)
+
+        with open(filelist[0], 'rt') as f:
             dump = f.read()
             assert '</dump>' in dump, 'invalid dump data: ...' + dump[-100:]
 
