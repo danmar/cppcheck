@@ -115,11 +115,11 @@ namespace cppcheck {
         /** platform type */
         PlatformType platformType;
 
-        /** set the platform type for predefined platforms - deprecated use platform(const std::string&) instead */
-        bool platform(PlatformType type);
+        /** set the platform type for predefined platforms - deprecated use set(const std::string&, std::string&) instead */
+        bool set(PlatformType type);
 
         /** set the platform type */
-        bool platform(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths = {}, bool verbose = false);
+        bool set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths = {}, bool verbose = false);
 
         /**
          * load platform file
@@ -128,7 +128,7 @@ namespace cppcheck {
          * @param verbose log verbose information about the lookup
          * @return returns true if file was loaded successfully
          */
-        bool loadPlatformFile(const char exename[], const std::string &filename, bool verbose = false);
+        bool loadFromFile(const char exename[], const std::string &filename, bool verbose = false);
 
         /** load platform from xml document, primarily for testing */
         bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
@@ -137,17 +137,17 @@ namespace cppcheck {
          * @brief Returns true if platform type is Windows
          * @return true if Windows platform type.
          */
-        bool isWindowsPlatform() const {
+        bool isWindows() const {
             return platformType == Win32A ||
                    platformType == Win32W ||
                    platformType == Win64;
         }
 
-        const char *platformString() const {
-            return platformString(platformType);
+        const char *toString() const {
+            return toString(platformType);
         }
 
-        static const char *platformString(PlatformType pt) {
+        static const char *toString(PlatformType pt) {
             switch (pt) {
             case Unspecified:
                 return "unspecified";

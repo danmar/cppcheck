@@ -188,7 +188,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
             const QString platformFile = item.fileName();
 
             cppcheck::Platform plat2;
-            if (!plat2.loadPlatformFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
+            if (!plat2.loadFromFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
                 continue;
 
             if (platformFiles.indexOf(platformFile) == -1)
@@ -317,7 +317,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         int i;
         for (i = 0; i < numberOfBuiltinPlatforms; ++i) {
             const cppcheck::Platform::PlatformType p = builtinPlatforms[i];
-            if (platform == cppcheck::Platform::platformString(p))
+            if (platform == cppcheck::Platform::toString(p))
                 break;
         }
         if (i < numberOfBuiltinPlatforms)
@@ -416,7 +416,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     else {
         const int i = mUI->mComboBoxPlatform->currentIndex();
         if (i < numberOfBuiltinPlatforms)
-            projectFile->setPlatform(cppcheck::Platform::platformString(builtinPlatforms[i]));
+            projectFile->setPlatform(cppcheck::Platform::toString(builtinPlatforms[i]));
         else
             projectFile->setPlatform(QString());
     }

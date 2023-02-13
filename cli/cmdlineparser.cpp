@@ -608,7 +608,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                 std::string errstr;
                 const std::vector<std::string> paths = {argv[0]};
-                if (!mSettings->platform.platform(platform, errstr, paths)) {
+                if (!mSettings->platform.set(platform, errstr, paths)) {
                     printError(errstr);
                     return false;
                 }
@@ -679,7 +679,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                         std::string errstr;
                         const std::vector<std::string> paths = {projectFile, argv[0]};
-                        if (!mSettings->platform.platform(platform, errstr, paths)) {
+                        if (!mSettings->platform.set(platform, errstr, paths)) {
                             printError(errstr);
                             return false;
                         }

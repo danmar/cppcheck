@@ -3115,7 +3115,7 @@ void CheckOther::redundantPointerOpError(const Token* tok, const std::string &va
 
 void CheckOther::checkInterlockedDecrement()
 {
-    if (!mSettings->platform.isWindowsPlatform()) {
+    if (!mSettings->platform.isWindows()) {
         return;
     }
 

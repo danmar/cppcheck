@@ -121,7 +121,7 @@ namespace {
 
 void CheckIO::checkFileUsage()
 {
-    const bool windows = mSettings->platform.isWindowsPlatform();
+    const bool windows = mSettings->platform.isWindows();
     const bool printPortability = mSettings->severity.isEnabled(Severity::portability);
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
@@ -517,7 +517,7 @@ static inline bool typesMatch(const std::string& iToTest, const std::string& iTy
 void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const bool isWindows = mSettings->platform.isWindowsPlatform();
+    const bool isWindows = mSettings->platform.isWindows();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -590,7 +590,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 const bool scan,
                                 const bool scanf_s)
 {
-    const bool isWindows = mSettings->platform.isWindowsPlatform();
+    const bool isWindows = mSettings->platform.isWindows();
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
     const std::string &formatString = formatStringTok->str();
 

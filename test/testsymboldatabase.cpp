@@ -7926,7 +7926,7 @@ private:
             settingsUnix32.platform.platformType = cppcheck::Platform::Unix32;
             Library::PlatformType s32;
             s32.mType = "int";
-            settingsUnix32.library.mPlatforms[settingsUnix32.platform.platformString()].mPlatformTypes["s32"] = s32;
+            settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
@@ -7937,7 +7937,7 @@ private:
             settingsWin64.platform.platformType = cppcheck::Platform::Win64;
             Library::PlatformType lpctstr;
             lpctstr.mType = "wchar_t";
-            settingsWin64.library.mPlatforms[settingsWin64.platform.platformString()].mPlatformTypes["LPCTSTR"] = lpctstr;
+            settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);

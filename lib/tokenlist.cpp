@@ -1847,7 +1847,7 @@ void TokenList::simplifyPlatformTypes()
         }
     }
 
-    const std::string platform_type(mSettings->platform.platformString());
+    const std::string platform_type(mSettings->platform.toString());
 
     for (Token *tok = front(); tok; tok = tok->next()) {
         if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)

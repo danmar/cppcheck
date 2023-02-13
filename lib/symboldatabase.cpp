@@ -7248,7 +7248,7 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
         return true;
     }
 
-    const Library::PlatformType *platformType = settings->library.platform_type(typestr, settings->platform.platformString());
+    const Library::PlatformType *platformType = settings->library.platform_type(typestr, settings->platform.toString());
     if (platformType) {
         if (platformType->mType == "char")
             type = ValueType::Type::CHAR;

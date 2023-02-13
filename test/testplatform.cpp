@@ -61,7 +61,7 @@ private:
         cppcheck::Platform platform;
         PLATFORM(platform, cppcheck::Platform::Win32A);
         ASSERT_EQUALS(cppcheck::Platform::Win32A, platform.platformType);
-        ASSERT(platform.isWindowsPlatform());
+        ASSERT(platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
         ASSERT_EQUALS(4, platform.sizeof_int);
@@ -86,7 +86,7 @@ private:
         cppcheck::Platform platform;
         PLATFORM(platform, cppcheck::Platform::Unix64);
         ASSERT_EQUALS(cppcheck::Platform::Unix64, platform.platformType);
-        ASSERT(!platform.isWindowsPlatform());
+        ASSERT(!platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
         ASSERT_EQUALS(4, platform.sizeof_int);
@@ -111,7 +111,7 @@ private:
         cppcheck::Platform platform;
         PLATFORM(platform, cppcheck::Platform::Win32W);
         ASSERT_EQUALS(cppcheck::Platform::Win32W, platform.platformType);
-        ASSERT(platform.isWindowsPlatform());
+        ASSERT(platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
         ASSERT_EQUALS(4, platform.sizeof_int);
@@ -136,7 +136,7 @@ private:
         cppcheck::Platform platform;
         PLATFORM(platform, cppcheck::Platform::Unix32);
         ASSERT_EQUALS(cppcheck::Platform::Unix32, platform.platformType);
-        ASSERT(!platform.isWindowsPlatform());
+        ASSERT(!platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
         ASSERT_EQUALS(4, platform.sizeof_int);
@@ -161,7 +161,7 @@ private:
         cppcheck::Platform platform;
         PLATFORM(platform, cppcheck::Platform::Win64);
         ASSERT_EQUALS(cppcheck::Platform::Win64, platform.platformType);
-        ASSERT(platform.isWindowsPlatform());
+        ASSERT(platform.isWindows());
         ASSERT_EQUALS(1, platform.sizeof_bool);
         ASSERT_EQUALS(2, platform.sizeof_short);
         ASSERT_EQUALS(4, platform.sizeof_int);
@@ -205,7 +205,7 @@ private:
         cppcheck::Platform platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
-        ASSERT(!platform.isWindowsPlatform());
+        ASSERT(!platform.isWindows());
         ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS('u', platform.defaultSign);
         ASSERT_EQUALS(1, platform.sizeof_bool);
@@ -249,7 +249,7 @@ private:
         cppcheck::Platform platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
-        ASSERT(!platform.isWindowsPlatform());
+        ASSERT(!platform.isWindows());
         ASSERT_EQUALS(20, platform.char_bit);
         ASSERT_EQUALS('s', platform.defaultSign);
         ASSERT_EQUALS(1, platform.sizeof_bool);
@@ -319,7 +319,7 @@ private:
         cppcheck::Platform platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
-        ASSERT(!platform.isWindowsPlatform());
+        ASSERT(!platform.isWindows());
         ASSERT_EQUALS(0, platform.char_bit);
         ASSERT_EQUALS('z', platform.defaultSign);
         ASSERT_EQUALS(0, platform.sizeof_bool);

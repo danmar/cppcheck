@@ -31,16 +31,16 @@ cppcheck::Platform::Platform()
 {
     // This assumes the code you are checking is for the same architecture this is compiled on.
 #if defined(_WIN64)
-    platform(Win64);
+    set(Win64);
 #elif defined(_WIN32)
-    platform(Win32A);
+    set(Win32A);
 #else
-    platform(Native);
+    set(Native);
 #endif
 }
 
 
-bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
+bool cppcheck::Platform::set(PlatformType type)
 {
     switch (type) {
     case Unspecified: // unknown type sizes (sizes etc are set but are not known)
@@ -157,22 +157,22 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
     return false;
 }
 
-bool cppcheck::Platform::platform(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
+bool cppcheck::Platform::set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
 {
     if (platformstr == "win32A")
-        platform(Win32A);
+        set(Win32A);
     else if (platformstr == "win32W")
-        platform(Win32W);
+        set(Win32W);
     else if (platformstr == "win64")
-        platform(Win64);
+        set(Win64);
     else if (platformstr == "unix32")
-        platform(Unix32);
+        set(Unix32);
     else if (platformstr == "unix64")
-        platform(Unix64);
+        set(Unix64);
     else if (platformstr == "native")
-        platform(Native);
+        set(Native);
     else if (platformstr == "unspecified")
-        platform(Unspecified);
+        set(Unspecified);
     else if (paths.empty()) {
         errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
         return false;
@@ -182,7 +182,7 @@ bool cppcheck::Platform::platform(const std::string& platformstr, std::string& e
         for (const std::string& path : paths) {
             if (verbose)
                 std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
-            if (loadPlatformFile(path.c_str(), platformstr, verbose)) {
+            if (loadFromFile(path.c_str(), platformstr, verbose)) {
                 found = true;
                 break;
             }
@@ -196,7 +196,7 @@ bool cppcheck::Platform::platform(const std::string& platformstr, std::string& e
     return true;
 }
 
-bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::string &filename, bool verbose)
+bool cppcheck::Platform::loadFromFile(const char exename[], const std::string &filename, bool verbose)
 {
     // TODO: only append .xml if missing
     // TODO: use native separators

@@ -2972,7 +2972,7 @@ void Tokenizer::combineStringAndCharLiterals()
 
         while (Token::Match(tok->next(), "%str%") || Token::Match(tok->next(), "_T|_TEXT|TEXT ( %str% )")) {
             if (tok->next()->isName()) {
-                if (!mSettings->platform.isWindowsPlatform())
+                if (!mSettings->platform.isWindows())
                     break;
                 tok->deleteNext(2);
                 tok->next()->deleteNext();
@@ -8123,7 +8123,7 @@ void Tokenizer::simplifyStructDecl()
 
 void Tokenizer::simplifyCallingConvention()
 {
-    const bool windows = mSettings->platform.isWindowsPlatform();
+    const bool windows = mSettings->platform.isWindows();
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         while (Token::Match(tok, "__cdecl|__stdcall|__fastcall|__thiscall|__clrcall|__syscall|__pascal|__fortran|__far|__near") || (windows && Token::Match(tok, "WINAPI|APIENTRY|CALLBACK"))) {
@@ -8947,7 +8947,7 @@ void Tokenizer::simplifyNamespaceStd()
 void Tokenizer::simplifyMicrosoftMemoryFunctions()
 {
     // skip if not Windows
-    if (!mSettings->platform.isWindowsPlatform())
+    if (!mSettings->platform.isWindows())
         return;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -9042,7 +9042,7 @@ namespace {
 void Tokenizer::simplifyMicrosoftStringFunctions()
 {
     // skip if not Windows
-    if (!mSettings->platform.isWindowsPlatform())
+    if (!mSettings->platform.isWindows())
         return;
 
     const bool ansi = mSettings->platform.platformType == cppcheck::Platform::Win32A;
@@ -9078,7 +9078,7 @@ void Tokenizer::simplifyMicrosoftStringFunctions()
 void Tokenizer::simplifyBorland()
 {
     // skip if not Windows
-    if (!mSettings->platform.isWindowsPlatform())
+    if (!mSettings->platform.isWindows())
         return;
     if (isC())
         return;

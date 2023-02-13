@@ -986,7 +986,7 @@ private:
     void platformWin64() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win64", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Win64, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -995,7 +995,7 @@ private:
     void platformWin32A() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win32A", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Win32A, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1004,7 +1004,7 @@ private:
     void platformWin32W() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win32W", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Win32W, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1013,7 +1013,7 @@ private:
     void platformUnix32() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix32", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Unix32, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1022,7 +1022,7 @@ private:
     void platformUnix32Unsigned() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix32-unsigned", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Unix32, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1031,7 +1031,7 @@ private:
     void platformUnix64() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Unix64, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1040,7 +1040,7 @@ private:
     void platformUnix64Unsigned() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unix64-unsigned", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Unix64, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1049,7 +1049,7 @@ private:
     void platformNative() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=native", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Native, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1058,7 +1058,7 @@ private:
     void platformUnspecified() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=unspecified", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Native));
+        ASSERT(settings.platform.set(cppcheck::Platform::Native));
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::Unspecified, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1067,7 +1067,7 @@ private:
     void platformPlatformFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=avr8", "file.cpp"};
-        ASSERT(settings.platform.platform(cppcheck::Platform::Unspecified));
+        ASSERT(settings.platform.set(cppcheck::Platform::Unspecified));
         ASSERT_EQUALS(true, defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(cppcheck::Platform::PlatformFile, settings.platform.platformType);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
