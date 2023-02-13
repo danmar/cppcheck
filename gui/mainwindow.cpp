@@ -941,12 +941,12 @@ Settings MainWindow::getCppcheckSettings()
         const QString platform = mProjectFile->getPlatform();
         if (platform.endsWith(".xml")) {
             const QString applicationFilePath = QCoreApplication::applicationFilePath();
-            result.loadPlatformFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
+            result.platform.loadPlatformFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
         } else {
             for (int i = cppcheck::Platform::Native; i <= cppcheck::Platform::Unix64; i++) {
                 const cppcheck::Platform::PlatformType p = (cppcheck::Platform::PlatformType)i;
                 if (platform == cppcheck::Platform::platformString(p)) {
-                    result.platform(p);
+                    result.platform.platform(p);
                     break;
                 }
             }
@@ -1029,8 +1029,8 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
-    if (!mProjectFile || result.platformType == cppcheck::Platform::Unspecified)
-        result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
+    if (!mProjectFile || result.platform.platformType == cppcheck::Platform::Unspecified)
+        result.platform.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();

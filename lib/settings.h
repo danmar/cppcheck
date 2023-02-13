@@ -96,7 +96,7 @@ public:
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
-class CPPCHECKLIB Settings : public cppcheck::Platform {
+class CPPCHECKLIB Settings {
 private:
 
     /** @brief terminate checking */
@@ -248,6 +248,8 @@ public:
 
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
+
+    cppcheck::Platform platform;
 
     /** @brief Experimental: --performance-valueflow-max-time=T */
     int performanceValueFlowMaxTime;

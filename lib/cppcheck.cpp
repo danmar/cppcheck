@@ -303,13 +303,13 @@ static void createDumpFile(const Settings& settings,
     fdump << "<?xml version=\"1.0\"?>" << std::endl;
     fdump << "<dumps" << language << ">" << std::endl;
     fdump << "  <platform"
-          << " name=\"" << settings.platformString() << '\"'
-          << " char_bit=\"" << settings.char_bit << '\"'
-          << " short_bit=\"" << settings.short_bit << '\"'
-          << " int_bit=\"" << settings.int_bit << '\"'
-          << " long_bit=\"" << settings.long_bit << '\"'
-          << " long_long_bit=\"" << settings.long_long_bit << '\"'
-          << " pointer_bit=\"" << (settings.sizeof_pointer * settings.char_bit) << '\"'
+          << " name=\"" << settings.platform.platformString() << '\"'
+          << " char_bit=\"" << settings.platform.char_bit << '\"'
+          << " short_bit=\"" << settings.platform.short_bit << '\"'
+          << " int_bit=\"" << settings.platform.int_bit << '\"'
+          << " long_bit=\"" << settings.platform.long_bit << '\"'
+          << " long_long_bit=\"" << settings.platform.long_long_bit << '\"'
+          << " pointer_bit=\"" << (settings.platform.sizeof_pointer * settings.platform.char_bit) << '\"'
           << "/>\n";
 }
 
@@ -611,7 +611,7 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
     else if (!fs.standard.empty())
         temp.mSettings.standards.setC(fs.standard);
     if (fs.platformType != cppcheck::Platform::Unspecified)
-        temp.mSettings.platform(fs.platformType);
+        temp.mSettings.platform.platform(fs.platformType);
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         return temp.check(Path::simplifyPath(fs.filename));
@@ -651,7 +651,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             for (const std::string &I : mSettings.includePaths)
                 includePaths += " -I" + I;
             mErrorLogger.reportOut("Includes:" + includePaths);
-            mErrorLogger.reportOut(std::string("Platform:") + mSettings.platformString());
+            mErrorLogger.reportOut(std::string("Platform:") + mSettings.platform.platformString());
         }
     }
 
