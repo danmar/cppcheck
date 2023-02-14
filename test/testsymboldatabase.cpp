@@ -386,6 +386,7 @@ private:
         TEST_CASE(enum9);
         TEST_CASE(enum10); // #11001
         TEST_CASE(enum11);
+        TEST_CASE(enum12);
 
         TEST_CASE(sizeOfType);
 
@@ -5478,6 +5479,22 @@ private:
     void enum11() {
         check("enum class E;\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum12() { // #11559
+        GET_SYMBOL_DB_C("struct { enum E { E0 }; } t;\n"
+                        "void f() {\n"
+                        "    if (t.E0) {}\n"
+                        "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* E0 = it->findEnumerator("E0");
+        ASSERT(E0 && E0->value_known);
+        ASSERT_EQUALS(E0->value, 0);
+        const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 )");
+        ASSERT(e && e->enumerator());
+        ASSERT_EQUALS(e->enumerator(), E0);
     }
 
     void sizeOfType() {

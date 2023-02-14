@@ -1373,11 +1373,15 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
     // find enumerators
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
-        if (tok->tokType() != Token::eName)
+        const bool isVariable = (tok->tokType() == Token::eVariable && !tok->variable());
+        if (tok->tokType() != Token::eName && !isVariable)
             continue;
         const Enumerator * enumerator = findEnumerator(tok, tokensThatAreNotEnumeratorValues);
-        if (enumerator)
-            const_cast<Token *>(tok)->enumerator(enumerator);
+        if (enumerator) {
+            if (isVariable)
+                const_cast<Token*>(tok)->varId(0);
+            const_cast<Token*>(tok)->enumerator(enumerator);
+        }
     }
 }
 
@@ -4918,6 +4922,13 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
 
         if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
             return enumerator;
+
+        if (Token::simpleMatch(tok->astParent(), ".")) {
+            const Token* varTok = tok->astParent()->astOperand1();
+            if (varTok && varTok->variable() && varTok->variable()->type() && varTok->variable()->type()->classScope)
+                scope = varTok->variable()->type()->classScope;
+        }
+
 
         for (std::vector<Scope *>::const_iterator s = scope->nestedList.cbegin(); s != scope->nestedList.cend(); ++s) {
             enumerator = (*s)->findEnumerator(tokStr);
