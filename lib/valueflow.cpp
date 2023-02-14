@@ -5033,13 +5033,13 @@ static const Token* findIncompleteVar(const Token* start, const Token* end)
 static ValueFlow::Value makeConditionValue(long long val,
                                            const Token* condTok,
                                            bool assume,
-                                           bool invert = false,
+                                           bool impossible = false,
                                            const Settings* settings = nullptr,
                                            SourceLocation loc = SourceLocation::current())
 {
     ValueFlow::Value v(val);
     v.setKnown();
-    if (invert) {
+    if (impossible) {
         v.intvalue = !v.intvalue;
         v.setImpossible();
     }
@@ -5121,7 +5121,8 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             {
                 for (const Token* condTok2 : getConditions(condTok, "&&")) {
                     if (is1) {
-                        SameExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, /*assume*/ true, /*invert*/ true), tokenlist);
+                        const bool isBool = astIsBool(condTok2->astOperand1()) && astIsBool(condTok2->astOperand2());
+                        SameExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, /*assume*/ true, !isBool), tokenlist); // don't set '1' for non-boolean expressions
                         valueFlowGenericForward(startTok, startTok->link(), a1, settings);
                     }
 
