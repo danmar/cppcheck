@@ -4492,7 +4492,7 @@ private:
               "        if (o[1] == '\\0') {}\n"
               "    }\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\0'' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
     }
 
     void alwaysTrueSymbolic()
