@@ -5481,7 +5481,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void enum12() { // #11559
+    void enum12() {
         GET_SYMBOL_DB_C("struct { enum E { E0 }; } t;\n"
                         "void f() {\n"
                         "    if (t.E0) {}\n"
