@@ -256,8 +256,7 @@ private:
             preprocessor.setDirectives(*directives);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
-        tokenizer.setPreprocessor(&preprocessor);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

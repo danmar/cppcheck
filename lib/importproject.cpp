@@ -588,7 +588,7 @@ namespace {
             // TODO : Better evaluation
             Settings s;
             std::istringstream istr(c);
-            Tokenizer tokenizer(&s, nullptr);
+            Tokenizer tokenizer(&s);
             tokenizer.tokenize(istr,"vcxproj");
             for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
                 if (tok->str() == "(" && tok->astOperand1() && tok->astOperand2()) {
