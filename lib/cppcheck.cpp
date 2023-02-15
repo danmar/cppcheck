@@ -800,10 +800,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // Run define rules on raw code
-        for (const Settings::Rule &rule : mSettings.rules) {
-            if (rule.tokenlist != "define")
-                continue;
-
+        const auto it = std::find_if(mSettings.rules.cbegin(), mSettings.rules.cend(), [](const Settings::Rule& rule) {
+            return rule.tokenlist == "define";
+        });
+        if (it != mSettings.rules.cend()) {
             std::string code;
             const std::list<Directive> &directives = preprocessor.getDirectives();
             for (const Directive &dir : directives) {
@@ -814,7 +814,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             std::istringstream istr2(code);
             tokenizer2.list.createTokens(istr2);
             executeRules("define", tokenizer2);
-            break;
         }
 
         if (!mSettings.force && configurations.size() > mSettings.maxConfigs) {
