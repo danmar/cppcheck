@@ -6042,7 +6042,7 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocatio
     // HACK: don't set pointer for plain std::array
     if (var.valueType() && var.valueType()->container && Token::simpleMatch(var.typeStartToken(), "std :: array") && !Token::simpleMatch(var.nameToken()->next(), "["))
         valuetype.pointer = 0;
-    
+
     valuetype.typeScope = var.typeScope();
     if (var.valueType()) {
         valuetype.container = var.valueType()->container;

@@ -573,7 +573,7 @@ private:
         ASSERT_EQUALS(1U, v->dimensions().size());
         ASSERT_EQUALS(20U, v->dimension(0));
     }
-    
+
     void stlarray3() {
         GET_SYMBOL_DB("std::array<int, 4> a;\n"
                       "std::array<int, 4> b[2];\n"
@@ -588,10 +588,10 @@ private:
         ASSERT(!(*it)->isReference());
         ASSERT_EQUALS(1U, (*it)->dimensions().size());
         ASSERT_EQUALS(4U, (*it)->dimension(0));
-        auto vt = (*it)->valueType();
+        const ValueType* vt = (*it)->valueType();
         ASSERT(vt && vt->container);
         ASSERT_EQUALS(vt->pointer, 0);
-        auto tok = (*it)->nameToken();
+        const Token* tok = (*it)->nameToken();
         ASSERT(tok && (vt = tok->valueType()));
         ASSERT_EQUALS(vt->pointer, 0);
 
