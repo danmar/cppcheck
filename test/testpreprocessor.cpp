@@ -64,7 +64,7 @@ public:
             simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI(), &outputList);
 
             if (errorLogger) {
-                static Settings settings;
+                Settings settings;
                 Preprocessor p(settings, errorLogger);
                 p.reportOutput(outputList, true);
             }

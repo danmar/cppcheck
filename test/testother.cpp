@@ -358,7 +358,7 @@ private:
     }
 
     void checkInterlockedDecrement(const char code[]) {
-        static Settings settings;
+        Settings settings;
         settings.platformType = Settings::Win32A;
 
         check(code, nullptr, false, false, true, false, &settings);
@@ -1542,7 +1542,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        static Settings settings;
+        Settings settings;
         settings.severity.enable(Severity::style);
         settings.standards.cpp = Standards::CPP03; // #5560
 

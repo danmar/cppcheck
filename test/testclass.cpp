@@ -7419,24 +7419,21 @@ private:
 
 
 #define checkVirtualFunctionCall(...) checkVirtualFunctionCall_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkVirtualFunctionCall_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkVirtualFunctionCall_(const char* file, int line, const char code[], bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
         // Check..
-        if (!s) {
-            static Settings settings_;
-            s = &settings_;
-            s->severity.enable(Severity::warning);
-        }
-        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        Settings settings;
+        settings.severity.enable(Severity::warning);
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
-        Tokenizer tokenizer(s, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, s, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkVirtualFunctionCallInConstructor();
     }
 
