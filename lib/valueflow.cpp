@@ -4820,7 +4820,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
                 }
             } else if (astIsContainerView(tok)) {
                 for (const ValueFlow::Value& v : tok->values()) {
-                    if (v.isLifetimeValue())
+                    if (!v.isLocalLifetimeValue())
                         continue;
                     if (!v.tokvalue)
                         continue;
