@@ -67,7 +67,7 @@ private:
 
     void checkTooBigShift_Unix32() {
         Settings settings;
-        settings.platform(Settings::Unix32);
+        PLATFORM(settings, Settings::Unix32);
 
         // unsigned types getting promoted to int sizeof(int) = 4 bytes
         // and unsigned types having already a size of 4 bytes
@@ -241,7 +241,7 @@ private:
 
     void checkIntegerOverflow() {
         Settings settings;
-        settings.platform(Settings::Unix32);
+        PLATFORM(settings, Settings::Unix32);
         settings.severity.enable(Severity::warning);
 
         check("x = (int)0x10000 * (int)0x10000;", &settings);
@@ -283,7 +283,7 @@ private:
 
     void signConversion() {
         Settings settings;
-        settings.platform(Settings::Unix64);
+        PLATFORM(settings, Settings::Unix64);
         check("x = -4 * (unsigned)y;");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
@@ -334,7 +334,7 @@ private:
     void longCastAssign() {
         Settings settings;
         settings.severity.enable(Severity::style);
-        settings.platform(Settings::Unix64);
+        PLATFORM(settings, Settings::Unix64);
 
         check("long f(int x, int y) {\n"
               "  const long ret = x * y;\n"

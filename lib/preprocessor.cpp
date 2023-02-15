@@ -100,7 +100,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         return false;
 
     // skip spaces after "cppcheck-suppress"
-    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+cppchecksuppress.size());
+    const std::string::size_type pos2 = comment.find_first_not_of(' ', pos1+cppchecksuppress.size());
     if (pos2 == std::string::npos)
         return false;
 
@@ -626,6 +626,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         dui.std = mSettings.standards.getCPP();
     else
         dui.std = mSettings.standards.getC();
+    dui.clearIncludeCache = mSettings.clearIncludeCache;
     return dui;
 }
 

@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.43"
+CLIENT_VERSION = "1.3.44"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -37,7 +37,7 @@ def detect_make():
     for m in make_cmds:
         try:
             #print('{} --version'.format(m))
-            subprocess.call([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.check_call([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except OSError as e:
             #print("'{}' not found ({})".format(m, e))
             continue
@@ -65,7 +65,7 @@ def check_requirements():
     for app in apps:
         try:
             #print('{} --version'.format(app))
-            subprocess.call([app, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.check_call([app, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
@@ -191,7 +191,7 @@ def compile_version(cppcheck_path):
     else:
         exclude_bin = 'cppcheck'
     # TODO: how to support multiple compilers on the same machine? this will clean msbuild.exe files in a mingw32-make build and vice versa
-    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
+    subprocess.check_call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
     return ret
 
 

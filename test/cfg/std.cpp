@@ -35,8 +35,10 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
+#include <map>
 #include <numeric>
 #include <string_view>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 #include <version>
@@ -846,6 +848,34 @@ void std_unordered_set_count_ignoredReturnValue(const std::unordered_set<int>& u
     int i;
     // cppcheck-suppress [uninitvar, ignoredReturnValue]
     u.count(i);
+}
+
+void std_unordered_map_count_ignoredReturnValue(const std::unordered_map<int, int>& u)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    u.count(i);
+}
+
+void std_multimap_count_ignoredReturnValue(const std::multimap<int, int>& m)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    m.count(i);
+}
+
+void std_unordered_map_insert_unnitvar(std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    u.insert(i);
+}
+
+void std_unordered_map_emplace_unnitvar(std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    u.emplace(i);
 }
 
 void valid_code()
@@ -4205,6 +4235,19 @@ void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwst
     testwstr.compare(L"wtest");
 }
 
+// cppcheck-suppress constParameter
+void ignoredReturnValue_container_access(std::string& s, std::string_view& sv, std::vector<int>& v)
+{
+  // cppcheck-suppress ignoredReturnValue
+  s.begin();
+  // cppcheck-suppress ignoredReturnValue
+  v.end();
+  // cppcheck-suppress ignoredReturnValue
+  sv.front();
+  // cppcheck-suppress ignoredReturnValue
+  s.at(0);
+}
+
 void ignoredReturnValue_locale_global(const std::locale& loc)
 {
     // no ignoredReturnValue shall be shown for
@@ -4443,6 +4486,11 @@ void getline()
     in.getline(cBuf, 100, 'a');
 
     in.close();
+}
+
+void stream_write(std::ofstream& s, std::vector<char> v) {
+    if (v.empty()) {}
+    s.write(v.data(), v.size());
 }
 
 void stdstring()

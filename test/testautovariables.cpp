@@ -33,7 +33,7 @@ private:
     Settings settings;
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false, const char* filename = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool inconclusive = true, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -2028,6 +2028,16 @@ private:
               "    if (p != nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("template<typename S, typename T>\n"
+              "void f(const std::vector<S>& v) {\n"
+              "    T a;\n"
+              "    for (typename std::vector<S>::iterator it = v.begin(); it != v.end(); ++it) {\n"
+              "        const T& b = static_cast<const T&>(it->find(1));\n"
+              "        a = b;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
@@ -3675,21 +3685,16 @@ private:
     }
 
     void danglingTemporaryLifetime() {
-        check("struct MyClass\n" // FP - #11091
-              "{\n"
-              "    MyClass(MyClass& rhs);\n"
-              "    explicit MyClass(const wxString& name, const wxString& path = {});\n"
-              "    bool IsAnotherRunning() const;\n"
-              " \n"
-              "    wxString m_fn;\n"
+        check("struct C {\n" // #11091
+              "    C(C& rhs);\n"
+              "    explicit C(const S& n, const S& p = {});\n"
+              "    bool f() const;\n"
+              "    S m;\n"
               "};\n"
-              " \n"
-              "void bar()\n"
-              "{\n"
-              "    MyClass mutex(\"\");\n"
-              "    while (mutex.IsAnotherRunning())\n"
-              "        DoSomething();\n"
-              "}");
+              "void f() {\n"
+              "    C c(\"\");\n"
+              "    while (c.f()) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("const int& g(const int& x) {\n"

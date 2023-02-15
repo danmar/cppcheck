@@ -434,6 +434,7 @@ private:
         TEST_CASE(noCrash4);
         TEST_CASE(noCrash5); // #10603
         TEST_CASE(noCrash6); // #10212
+        TEST_CASE(noCrash7);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -471,7 +472,7 @@ private:
         errout.str("");
 
         settings1.debugwarnings = true;
-        settings1.platform(platform);
+        PLATFORM(settings1, platform);
         settings1.standards.cpp = std;
 
         // tokenize..
@@ -500,7 +501,7 @@ private:
         errout.str("");
 
         settings_windows.debugwarnings = true;
-        settings_windows.platform(platform);
+        PLATFORM(settings_windows, platform);
         settings_windows.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
 
         // tokenize..
@@ -7357,6 +7358,12 @@ private:
                                              "struct c<a<e, d...>, true> {};\n"));
     }
 
+    void noCrash7() {
+        ASSERT_THROW(tokenizeAndStringify("void g() {\n"// TODO: don't throw
+                                          "    for (using T = int; (T)false;) {}\n" // C++23 P2360R0: Extend init-statement to allow alias-declaration
+                                          "}\n"), InternalError);
+    }
+
     void checkConfig(const char code[]) {
         errout.str("");
 
@@ -7653,6 +7660,16 @@ private:
                         "    T() : decltype(s) ({ 0 }) { }\n"
                         "};\n",
                         "{ } }",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("struct S {};\n"
+                        "template<class... Args>\n"
+                        "struct T;\n"
+                        "template<class... Args>\n"
+                        "struct T<void, Args...> final : S {\n"
+                        "    void operator()(Args...) {}\n"
+                        "};\n",
+                        "{ void",
                         TokenImpl::Cpp11init::NOINIT);
 
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename U> struct X {};\n" // don't crash

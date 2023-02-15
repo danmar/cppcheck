@@ -214,7 +214,7 @@ private:
 
         settings0.certainty.enable(Certainty::inconclusive);
         settings0.debugwarnings = debugwarnings;   // show warnings about unhandled typedef
-        settings0.platform(type);
+        PLATFORM(settings0, type);
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);

@@ -141,6 +141,7 @@ private:
         TEST_CASE(nullpointer95); // #11142
         TEST_CASE(nullpointer96); // #11416
         TEST_CASE(nullpointer97); // #11229
+        TEST_CASE(nullpointer98); // #11458
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2792,6 +2793,17 @@ private:
               "        return d ? d->f() : 0;\n"
               "    }\n"
               "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer98() // #11458
+    {
+        check("struct S { double* d() const; };\n"
+              "struct T {\n"
+              "    virtual void g(double* b, double* d) const = 0;\n"
+              "    void g(S* b) const { g(b->d(), nullptr); }\n"
+              "    void g(S* b, S* d) const { g(b->d(), d->d()); }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

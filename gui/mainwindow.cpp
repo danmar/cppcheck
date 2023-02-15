@@ -257,11 +257,11 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const Settings::PlatformType defaultPlatform = Settings::Win32W;
+    const cppcheck::Platform::PlatformType defaultPlatform = cppcheck::Platform::Win32W;
 #else
-    const Settings::PlatformType defaultPlatform = Settings::Unspecified;
+    const cppcheck::Platform::PlatformType defaultPlatform = cppcheck::Platform::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    Platform &platform = mPlatforms.get((cppcheck::Platform::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
 
     mNetworkAccessManager = new QNetworkAccessManager(this);
@@ -477,7 +477,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            const Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const cppcheck::Platform::PlatformType platform = (cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             p.selectOneVsConfig(platform);
         }
     } else {
@@ -1908,7 +1908,7 @@ void MainWindow::selectPlatform()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
-        const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
+        const cppcheck::Platform::PlatformType platform = (cppcheck::Platform::PlatformType) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
 }

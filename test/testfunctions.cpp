@@ -1451,6 +1451,10 @@ private:
               "}", "test.cpp", &settings2);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
 
+        check("void f(std::vector<int*> v) {\n"
+              "    delete *v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIgnoredErrorCode() {
@@ -1955,9 +1959,12 @@ private:
               "    for (it = l.begin(); it != l.end(); ++it)\n"
               "        it->g(0);\n"
               "}\n");
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:5]: (information) --check-library: There is no matching configuration for function F::g()\n",
-                           errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    return std::runtime_error(\"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         settings = settings_old;
     }

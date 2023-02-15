@@ -492,11 +492,11 @@ Token* previousBeforeAstLeftmostLeaf(Token* tok)
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 static T* nextAfterAstRightmostLeafGeneric(T* tok)
 {
-    const Token * rightmostLeaf = tok;
+    T * rightmostLeaf = tok;
     if (!rightmostLeaf || !rightmostLeaf->astOperand1())
         return nullptr;
     do {
-        if (const Token* lam = findLambdaEndToken(rightmostLeaf)) {
+        if (T* lam = findLambdaEndToken(rightmostLeaf)) {
             rightmostLeaf = lam;
             break;
         }
@@ -2890,7 +2890,7 @@ T* findLambdaEndTokenGeneric(T* first)
         return nullptr;
     if (first->astOperand1() != first->link()->next())
         return nullptr;
-    const Token * tok = first;
+    T * tok = first;
 
     if (tok->astOperand1() && tok->astOperand1()->str() == "(")
         tok = tok->astOperand1();
