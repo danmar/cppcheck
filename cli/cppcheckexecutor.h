@@ -160,7 +160,7 @@ private:
     int check_internal(CppCheck& cppcheck);
 
     /**
-     * Pointer to current settings; set while check() is running.
+     * Pointer to current settings; set while check() is running for reportError().
      */
     const Settings* mSettings;
 

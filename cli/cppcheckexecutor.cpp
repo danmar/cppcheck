@@ -147,13 +147,13 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilters.empty()) {
+    if (!settings.project.fileSettings.empty() && !settings.fileFilters.empty()) {
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
         const std::list<ImportProject::FileSettings>& fileSettings = settings.project.fileSettings;
         std::copy_if(fileSettings.cbegin(), fileSettings.cend(), std::back_inserter(newList), [&](const ImportProject::FileSettings& fs) {
-            return matchglobs(mSettings->fileFilters, fs.filename);
+            return matchglobs(settings.fileFilters, fs.filename);
         });
         if (!newList.empty())
             settings.project.fileSettings = newList;
@@ -165,7 +165,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
         for (const std::string &pathname : pathnames) {
-            std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), mSettings->library.markupExtensions(), matcher);
+            std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), settings.library.markupExtensions(), matcher);
             if (!err.empty()) {
                 std::cout << "cppcheck: " << err << std::endl;
             }
@@ -177,10 +177,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
         return false;
-    } else if (!mSettings->fileFilters.empty() && settings.project.fileSettings.empty()) {
+    } else if (!settings.fileFilters.empty() && settings.project.fileSettings.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
-            if (matchglobs(mSettings->fileFilters, i->first)) {
+            if (matchglobs(settings.fileFilters, i->first)) {
                 newMap[i->first] = i->second;
             }
         mFiles = newMap;
@@ -261,7 +261,6 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
-    mSettings = &settings;
     const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
 
     for (const std::string &lib : settings.libraries) {
@@ -325,8 +324,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         unsigned int c = 0;
         if (settings.project.fileSettings.empty()) {
             for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-                if (!mSettings->library.markupFile(i->first)
-                    || !mSettings->library.processMarkupAfterCode(i->first)) {
+                if (!settings.library.markupFile(i->first)
+                    || !settings.library.processMarkupAfterCode(i->first)) {
                     returnValue += cppcheck.check(i->first);
                     processedsize += i->second;
                     if (!settings.quiet)
@@ -350,7 +349,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         // second loop to parse all markup files which may not work until all
         // c/cpp files have been parsed and checked
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-            if (mSettings->library.markupFile(i->first) && mSettings->library.processMarkupAfterCode(i->first)) {
+            if (settings.library.markupFile(i->first) && settings.library.processMarkupAfterCode(i->first)) {
                 returnValue += cppcheck.check(i->first);
                 processedsize += i->second;
                 if (!settings.quiet)
@@ -369,7 +368,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         returnValue = executor.check();
     }
 
-    cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
+    cppcheck.analyseWholeProgram(settings.buildDir, mFiles);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
         const bool err = reportSuppressions(settings, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, *this);
@@ -408,7 +407,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         reportErr(ErrorMessage::getXMLFooter());
     }
 
-    mSettings = nullptr;
     if (returnValue)
         return settings.exitCode;
     return 0;
