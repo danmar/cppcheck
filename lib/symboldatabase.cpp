@@ -5444,6 +5444,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     if (rml)
                         valuetok = rml->previous();
                 }
+                if (vartok->isEnumerator())
+                    valuetok = vartok;
                 const ValueType::MatchResult res = ValueType::matchParameter(valuetok->valueType(), var, funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
