@@ -668,7 +668,7 @@ static void setTokenValue(Token* tok,
                 v.valueType = ValueFlow::Value::ValueType::INT;
                 if (value.isImpossible() && value.intvalue == 0)
                     v.setKnown();
-                else 
+                else
                     v.intvalue = !v.intvalue;
                 setTokenValue(parent->astParent(), v, settings);
             }
