@@ -5891,9 +5891,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"

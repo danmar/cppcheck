@@ -1313,9 +1313,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings2.library.load(doc);
+        ASSERT(settings2.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
@@ -1468,9 +1466,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings2.library.load(doc);
+        ASSERT(settings2.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"

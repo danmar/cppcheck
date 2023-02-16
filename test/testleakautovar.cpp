@@ -65,9 +65,7 @@ private:
                                "<def>\n"
                                "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // Assign
         TEST_CASE(assign1);
@@ -2594,9 +2592,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settingsFunctionCall.library.load(doc);
+        ASSERT(settingsFunctionCall.library.loadxmldata(xmldata, sizeof(xmldata)));
         check("void test_func()\n"
               "{\n"
               "    char * buf = malloc(4);\n"
@@ -2616,9 +2612,7 @@ private:
                                "    <arg nr=\"1\" direction=\"in\"/>\n"
                                "  </function>\n"
                                "</def>\n";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settingsLeakIgnore.library.load(doc);
+        ASSERT(settingsLeakIgnore.library.loadxmldata(xmldata, sizeof(xmldata)));
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
