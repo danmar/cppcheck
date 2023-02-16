@@ -395,7 +395,7 @@ private:
 
     void getStrSize() const {
         Token tok;
-        Settings settings;
+        const Settings settings;
 
         tok.str("\"\"");
         ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok, &settings));
