@@ -482,6 +482,8 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
         return false;
     if (hasVolatileCastOrVar(expr))
         return false;
+    if (Token::simpleMatch(expr, "[") && astIsContainerView(expr->astOperand1()))
+        return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
