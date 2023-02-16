@@ -24,6 +24,7 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
+#include "settings.h"
 
 #include <cstddef>
 #include <list>
@@ -125,6 +126,72 @@ protected:
         T& check = getCheck<T>();
         check.runChecks(tokenizer, settings, errorLogger);
     }
+
+    // TODO: bail out on redundant settings
+    class SettingsBuilder
+    {
+    public:
+        explicit SettingsBuilder(const TestFixture &fixture) : fixture(fixture) {}
+        SettingsBuilder(const TestFixture &fixture, Settings settings) : fixture(fixture), settings(std::move(settings)) {}
+
+        SettingsBuilder& severity(Severity::SeverityType sev) {
+            settings.severity.enable(sev);
+            return *this;
+        }
+
+        SettingsBuilder& certainty(Certainty cert, bool b = true) {
+            settings.certainty.setEnabled(cert, b);
+            return *this;
+        }
+
+        SettingsBuilder& clang() {
+            settings.clang = true;
+            return *this;
+        }
+
+        SettingsBuilder& checkLibrary() {
+            settings.checkLibrary = true;
+            return *this;
+        }
+
+        SettingsBuilder& checkUnusedTemplates() {
+            settings.checkUnusedTemplates = true;
+            return *this;
+        }
+
+        SettingsBuilder& debugwarnings(bool b = true) {
+            settings.debugwarnings = b;
+            return *this;
+        }
+
+        SettingsBuilder& c(Standards::cstd_t std) {
+            settings.standards.c = std;
+            return *this;
+        }
+
+        SettingsBuilder& cpp(Standards::cppstd_t std) {
+            settings.standards.cpp = std;
+            return *this;
+        }
+
+        SettingsBuilder& library(const char lib[]);
+
+        Settings build() {
+            return std::move(settings);
+        }
+    private:
+        const TestFixture &fixture;
+        Settings settings;
+    };
+
+    SettingsBuilder settingsBuilder() const {
+        return SettingsBuilder(*this);
+    }
+
+    SettingsBuilder settingsBuilder(Settings settings) const {
+        return SettingsBuilder(*this, std::move(settings));
+    }
+
 public:
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
@@ -163,7 +230,8 @@ extern std::ostringstream output;
 #define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_ ## CLASSNAME; }
 
-#define LOAD_LIB_2( LIB, NAME ) do { if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) throw std::runtime_error("library '" + std::string(NAME) + "' not found"); } while (false)
+#define LOAD_LIB_2_EXE( LIB, NAME, EXE ) do { if (((LIB).load((EXE), NAME).errorcode != Library::ErrorCode::OK)) throw std::runtime_error("library '" + std::string(NAME) + "' not found"); } while (false)
+#define LOAD_LIB_2( LIB, NAME ) LOAD_LIB_2_EXE(LIB, NAME, exename.c_str())
 
 #define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(cppcheck::Platform::toString(T), errstr, {exename}), errstr); } while (false)
 

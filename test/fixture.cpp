@@ -20,6 +20,7 @@
 
 #include "errortypes.h"
 #include "options.h"
+#include "path.h"
 #include "redirect.h"
 
 #include <cstdio>
@@ -396,4 +397,16 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
         mTemplateFormat = templateFormat;
         mTemplateLocation = "";
     }
+}
+
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char lib[]) {
+    LOAD_LIB_2_EXE(settings.library, lib, fixture.exename.c_str());
+    // strip extension
+    std::string lib_s(lib);
+    const std::string ext(".cfg");
+    const auto pos = lib_s.find(ext);
+    if (pos != std::string::npos)
+        lib_s.erase(pos, ext.size());
+    settings.libraries.emplace_back(lib_s);
+    return *this;
 }
