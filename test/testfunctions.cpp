@@ -1966,14 +1966,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("struct T { enum E { E0 }; } t;\n" // #11559
-              "void f(const void*, T::E) {}\n"
-              "void f(const int&, T::E) {}\n"
-              "void g() {\n"
-              "    f(nullptr, t.E0);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         settings = settings_old;
     }
 

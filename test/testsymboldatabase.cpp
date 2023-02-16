@@ -6995,6 +6995,20 @@ private:
             ASSERT(functok->function()->name() == "f");
             ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
         }
+        {
+            GET_SYMBOL_DB("struct T { enum E { E0 }; } t; \n" // #11559
+                          "void f(const void*, T::E) {}\n"
+                          "void f(const int&, T::E) {}\n"
+                          "void g() {\n"
+                          "    f(nullptr, t.E0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( nullptr");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "f");
+            ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
+        }
     }
 
     void findFunction45() {
