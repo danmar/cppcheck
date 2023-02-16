@@ -67,7 +67,7 @@ private:
               "    CharArray foo = \"\";\n"
               "}");
         ASSERT_EQUALS("", errout.str());
-        
+
         check("struct T { std::vector<int>*a[2][2]; };\n" // #11560
               "void f(T& t, int i, int j) {\n"
               "    t.a[i][j] = new std::vector<int>;\n"
