@@ -103,3 +103,5 @@ std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::s
 
     return ret;
 }
+
+const Settings givenACodeSampleToTokenize::settings;
