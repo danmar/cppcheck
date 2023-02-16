@@ -306,8 +306,10 @@ private:
         settings->certainty.setEnabled(Certainty::experimental, experimental);
         settings->verbose = verbose;
 
+        Preprocessor preprocessor(*settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
@@ -1546,8 +1548,10 @@ private:
         settings.severity.enable(Severity::style);
         settings.standards.cpp = Standards::CPP03; // #5560
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizerCpp(&settings, this);
+        Tokenizer tokenizerCpp(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizerCpp.tokenize(istr, "test.cpp"), file, line);
 
@@ -1748,10 +1752,12 @@ private:
         if (portability)
             settings.severity.enable(Severity::portability);
         settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
-
         settings.defaultSign = 's';
+
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

@@ -9841,8 +9841,7 @@ void Tokenizer::simplifyNamespaceAliases()
 bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
     assert(mPreprocessor);
-    if (!mPreprocessor)
-        return false;
+
     return std::any_of(mPreprocessor->getDirectives().cbegin(), mPreprocessor->getDirectives().cend(), [&](const Directive& d) {
         return d.str.compare(0, 3, "#if") == 0 &&
         d.linenr >= start->linenr() &&

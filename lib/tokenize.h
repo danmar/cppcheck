@@ -25,6 +25,7 @@
 #include "errortypes.h"
 #include "tokenlist.h"
 
+#include <cassert>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -377,6 +378,7 @@ public:
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
 
     const Preprocessor *getPreprocessor() const {
+        assert(mPreprocessor);
         return mPreprocessor;
     }
 

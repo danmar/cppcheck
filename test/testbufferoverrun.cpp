@@ -23,7 +23,6 @@
 #include "errortypes.h"
 #include "standards.h"
 #include "library.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
@@ -99,11 +98,8 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, nullptr);
-        preprocessor.setDirectives(tokens1);
-
         // Tokenizer..
-        Tokenizer tokenizer(settings, this, &preprocessor);
+        Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
