@@ -226,11 +226,6 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     return ret;
 }
 
-void CppCheckExecutor::setSettings(const Settings &settings)
-{
-    mSettings = &settings;
-}
-
 int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
 {
 #ifdef USE_WINDOWS_SEH
