@@ -45,9 +45,7 @@ class TestPreprocessor : public TestFixture {
 public:
     TestPreprocessor()
         : TestFixture("TestPreprocessor")
-        , preprocessor0(settings0, this) {
-        settings0.severity.enable(Severity::information);
-    }
+        , preprocessor0(settings0, this) {}
 
     class OurPreprocessor : public Preprocessor {
     public:
@@ -72,7 +70,7 @@ public:
     };
 
 private:
-    Settings settings0;
+    Settings settings0 = settingsBuilder().severity(Severity::information).build();
     Preprocessor preprocessor0;
 
     void run() override {

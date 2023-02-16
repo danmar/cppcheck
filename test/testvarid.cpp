@@ -33,13 +33,10 @@ class TestVarID : public TestFixture {
 public:
     TestVarID() : TestFixture("TestVarID") {
         PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
-        settings.standards.c = Standards::C89;
-        settings.standards.cpp = Standards::CPPLatest;
-        settings.checkUnusedTemplates = true;
     }
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).checkUnusedTemplates().build();
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);

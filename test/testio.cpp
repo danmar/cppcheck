@@ -35,14 +35,9 @@ public:
     TestIO() : TestFixture("TestIO") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").library("windows.cfg").library("qt.cfg").build();
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-        LOAD_LIB_2(settings.library, "windows.cfg");
-        LOAD_LIB_2(settings.library, "qt.cfg");
-        settings.libraries.emplace_back("qt");
-
         TEST_CASE(coutCerrMisusage);
 
         TEST_CASE(wrongMode_simple);
@@ -91,22 +86,23 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.severity.clear();
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::style);
+        Settings settings1 = settings;
+        settings1.severity.clear();
+        settings1.severity.enable(Severity::warning);
+        settings1.severity.enable(Severity::style);
         if (portability)
-            settings.severity.enable(Severity::portability);
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        PLATFORM(settings.platform, platform);
+            settings1.severity.enable(Severity::portability);
+        settings1.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        PLATFORM(settings1.platform, platform);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         const std::string file_in = cpp ? "test.cpp" : "test.c";
         ASSERT_LOC(tokenizer.tokenize(istr, file_in.c_str()), file, line);
 
         // Check..
-        CheckIO checkIO(&tokenizer, &settings, this);
+        CheckIO checkIO(&tokenizer, &settings1, this);
         checkIO.checkWrongPrintfScanfArguments();
         if (!onlyFormatStr) {
             checkIO.checkCoutCerrMisusage();

@@ -71,8 +71,9 @@ public:
 private:
     const Token* vartok;
     const Token* typetok;
-    Settings settings1;
-    Settings settings2;
+    // If there are unused templates, keep those
+    Settings settings1 = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
+    Settings settings2 = settingsBuilder().checkUnusedTemplates().build();
 
     void reset() {
         vartok = nullptr;
@@ -117,12 +118,7 @@ private:
     }
 
     void run() override {
-        LOAD_LIB_2(settings1.library, "std.cfg");
         PLATFORM(settings2.platform, cppcheck::Platform::Type::Unspecified);
-
-        // If there are unused templates, keep those
-        settings1.checkUnusedTemplates = true;
-        settings2.checkUnusedTemplates = true;
 
         TEST_CASE(array);
         TEST_CASE(array_ptr);
@@ -2311,17 +2307,15 @@ private:
         errout.str("");
 
         // Check..
-        settings1.debugwarnings = debug;
+        const Settings settings = settingsBuilder(settings1).debugwarnings(debug).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // force symbol database creation
         tokenizer.createSymbolDatabase();
-
-        settings1.debugwarnings = false;
     }
 
     void functionArgs1() {

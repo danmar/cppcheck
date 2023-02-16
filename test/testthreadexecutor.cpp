@@ -39,7 +39,7 @@ public:
     TestThreadExecutor() : TestFixture("TestThreadExecutor") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").build();
 
     /**
      * Execute check using n jobs for y files which are have
@@ -64,12 +64,13 @@ private:
             }
         }
 
-        settings.jobs = jobs;
-        settings.showtime = showtime;
+        Settings settings1 = settings;
+        settings1.jobs = jobs;
+        settings1.showtime = showtime;
         if (plistOutput)
-            settings.plistOutput = plistOutput;
+            settings1.plistOutput = plistOutput;
         // TODO: test with settings.project.fileSettings;
-        ThreadExecutor executor(filemap, settings, *this);
+        ThreadExecutor executor(filemap, settings1, *this);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
@@ -79,8 +80,6 @@ private:
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(many_threads_showtime);
