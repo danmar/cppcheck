@@ -5298,8 +5298,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         return matches.empty() ? nullptr : matches[0];
     }
 
-    const Function* fallback1Func = nullptr;
-    const Function* fallback2Func = nullptr;
+    std::vector<const Function*> fallback1Func, fallback2Func;
 
     // check each function against the arguments in the function call for a match
     for (std::size_t i = 0; i < matches.size();) {
@@ -5461,16 +5460,16 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         // check if all arguments matched
         if (same == hasToBe) {
             if (constFallback || (!requireConst && func->isConst()))
-                fallback1Func = func;
+                fallback1Func.emplace_back(func);
             else
                 return func;
         }
 
-        else if (!fallback1Func) {
+        else {
             if (same + fallback1 == hasToBe)
-                fallback1Func = func;
-            else if (!fallback2Func && same + fallback2 + fallback1 == hasToBe)
-                fallback2Func = func;
+                fallback1Func.emplace_back(func);
+            else if (same + fallback2 + fallback1 == hasToBe)
+                fallback2Func.emplace_back(func);
         }
 
         if (!erased)
@@ -5478,11 +5477,16 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     }
 
     // Fallback cases
-    if (fallback1Func)
-        return fallback1Func;
-
-    if (fallback2Func)
-        return fallback2Func;
+    for (const auto& fb : { fallback1Func, fallback2Func }) {
+        if (fb.size() == 1)
+            return fb.front();
+        if (fb.size() == 2) {
+            if (fb[0]->isConst() && !fb[1]->isConst())
+                return fb[1];
+            if (fb[1]->isConst() && !fb[0]->isConst())
+                return fb[0];
+        }
+    }
 
     // remove pure virtual function if there is an overrider
     auto itPure = std::find_if(matches.begin(), matches.end(), [](const Function* m) {
