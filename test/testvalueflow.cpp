@@ -1617,8 +1617,8 @@ private:
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
-        code ="void g(int&);" 
-              "void f(int x) {\n"
+        code = "void g(int&);"
+               "void f(int x) {\n"
                "   g(x);\n"
                "   if (x == 5);\n"
                "}";

@@ -7741,7 +7741,8 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
         return tok->exprId() == expr->exprId() || (astIsIterator(tok) && isAliasOf(tok, expr->exprId()));
     }
 
-    Action isWritable(const Token* tok, Direction) const override {
+    Action isWritable(const Token* tok, Direction) const override
+    {
         if (astIsIterator(tok))
             return Action::None;
         if (!getValue(tok))
