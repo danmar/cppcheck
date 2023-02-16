@@ -56,12 +56,12 @@ struct ReverseTraversal {
 
     bool update(Token* tok) {
         Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
-        if (!action.isNone())
-            analyzer->update(tok, action, Analyzer::Direction::Reverse);
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
             return false;
         if (action.isInvalid())
             return false;
+        if (!action.isNone())
+            analyzer->update(tok, action, Analyzer::Direction::Reverse);
         return true;
     }
 
