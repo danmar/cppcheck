@@ -2585,7 +2585,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} "); // <- CheckOther reports: checking if unsigned expression is less than zero
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.empty()' is always false\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
