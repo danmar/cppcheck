@@ -537,11 +537,6 @@ private:
     void simplifyBorland();
 
     /**
-     * Remove Qt signals and slots
-     */
-    void simplifyQtSignalsSlots();
-
-    /**
      * Collapse operator name tokens into single token
      * operator = => operator=
      */
