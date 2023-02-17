@@ -130,6 +130,7 @@ private:
         TEST_CASE(array_ptr);
         TEST_CASE(stlarray1);
         TEST_CASE(stlarray2);
+        TEST_CASE(stlarray3);
 
         TEST_CASE(test_isVariableDeclarationCanHandleNull);
         TEST_CASE(test_isVariableDeclarationIdentifiesSimpleDeclaration);
@@ -571,6 +572,56 @@ private:
         ASSERT(v->isArray());
         ASSERT_EQUALS(1U, v->dimensions().size());
         ASSERT_EQUALS(20U, v->dimension(0));
+    }
+
+    void stlarray3() {
+        GET_SYMBOL_DB("std::array<int, 4> a;\n"
+                      "std::array<int, 4> b[2];\n"
+                      "const std::array<int, 4>& r = a;\n");
+        ASSERT(db != nullptr);
+
+        ASSERT_EQUALS(4, db->variableList().size()); // the first one is not used
+        auto it = db->variableList().begin() + 1;
+
+        ASSERT((*it)->isArray());
+        ASSERT(!(*it)->isPointer());
+        ASSERT(!(*it)->isReference());
+        ASSERT_EQUALS(1U, (*it)->dimensions().size());
+        ASSERT_EQUALS(4U, (*it)->dimension(0));
+        const ValueType* vt = (*it)->valueType();
+        ASSERT(vt && vt->container);
+        ASSERT_EQUALS(vt->pointer, 0);
+        const Token* tok = (*it)->nameToken();
+        ASSERT(tok && (vt = tok->valueType()));
+        ASSERT_EQUALS(vt->pointer, 0);
+
+        ++it;
+        ASSERT((*it)->isArray());
+        ASSERT(!(*it)->isPointer());
+        ASSERT(!(*it)->isReference());
+        ASSERT_EQUALS(1U, (*it)->dimensions().size());
+        ASSERT_EQUALS(4U, (*it)->dimension(0));
+        vt = (*it)->valueType();
+        ASSERT_EQUALS(vt->pointer, 0);
+        tok = (*it)->nameToken();
+        ASSERT(tok && (vt = tok->valueType()));
+        ASSERT_EQUALS(vt->pointer, 1);
+
+        ++it;
+        ASSERT((*it)->isArray());
+        ASSERT(!(*it)->isPointer());
+        ASSERT((*it)->isReference());
+        ASSERT((*it)->isConst());
+        ASSERT_EQUALS(1U, (*it)->dimensions().size());
+        ASSERT_EQUALS(4U, (*it)->dimension(0));
+        vt = (*it)->valueType();
+        ASSERT_EQUALS(vt->pointer, 0);
+        ASSERT(vt->reference == Reference::LValue);
+        tok = (*it)->nameToken();
+        ASSERT(tok && (vt = tok->valueType()));
+        ASSERT_EQUALS(vt->pointer, 0);
+        ASSERT_EQUALS(vt->constness, 1);
+        ASSERT(vt->reference == Reference::LValue);
     }
 
     void test_isVariableDeclarationCanHandleNull() {
