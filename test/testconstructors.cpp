@@ -1952,7 +1952,8 @@ private:
 
     void initvar_smartptr() { // #10237
         Settings s;
-        s.libraries.emplace_back("std");
+        // TODO: test shuld probably not pass without library
+        //LOAD_LIB_2(s.library, "std.cfg");
         check("struct S {\n"
               "    explicit S(const std::shared_ptr<S>& sp) {\n"
               "        set(*sp);\n"
@@ -3589,7 +3590,9 @@ private:
 
     void uninitVarInheritClassInit() {
         Settings s;
-        s.libraries.emplace_back("vcl");
+        // TODO: test should probably not pass without library
+        //LOAD_LIB_2(s.library, "vcl.cfg");
+        //s.libraries.emplace_back("vcl");
 
         check("class Fred: public TObject\n"
               "{\n"

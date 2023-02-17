@@ -472,6 +472,7 @@ private:
     void assign23() {
         Settings s = settings;
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
         check("void f() {\n"
               "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
               "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
@@ -1852,6 +1853,7 @@ private:
         Settings s;
         LOAD_LIB_2(s.library, "std.cfg");
         LOAD_LIB_2(s.library, "posix.cfg");
+        s.libraries.emplace_back("posix");
 
         check("void f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"

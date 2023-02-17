@@ -49,6 +49,7 @@ private:
         PLATFORM(settings1, cppcheck::Platform::Native);
 
         LOAD_LIB_2(settings0.library, "qt.cfg");
+        settings0.libraries.emplace_back("qt");
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.severity.enable(Severity::style);

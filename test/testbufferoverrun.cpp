@@ -5488,6 +5488,7 @@ private:
 
         Settings settings;
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         check("void f(){\n"
               "int pipefd[1];\n" // <--  array of two integers is needed
