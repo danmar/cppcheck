@@ -116,7 +116,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return New;
         }
 
-        if (mSettings_->posix()) {
+        if (mSettings_->hasLib("posix")) {
             if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp|socket (")) {
                 // simple sanity check of function parameters..
                 // TODO: Make such check for all these functions
@@ -237,7 +237,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
                 if (tok->str() == "realloc" && Token::simpleMatch(vartok->next(), ", 0 )"))
                     return Malloc;
 
-                if (mSettings_->posix()) {
+                if (mSettings_->hasLib("posix")) {
                     if (tok->str() == "close")
                         return Fd;
                     if (tok->str() == "pclose")
@@ -276,7 +276,7 @@ bool CheckMemoryLeak::isReopenStandardStream(const Token *tok) const
 
 bool CheckMemoryLeak::isOpenDevNull(const Token *tok) const
 {
-    if (mSettings_->posix() && tok->str() == "open" && numberOfArguments(tok) == 2) {
+    if (mSettings_->hasLib("posix") && tok->str() == "open" && numberOfArguments(tok) == 2) {
         const Token* arg = getArguments(tok).at(0);
         if (Token::simpleMatch(arg, "\"/dev/null\""))
             return true;

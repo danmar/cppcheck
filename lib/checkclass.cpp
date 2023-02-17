@@ -102,13 +102,6 @@ static bool isVariableCopyNeeded(const Variable &var, Function::Type type)
             (var.valueType() && var.valueType()->type >= ValueType::Type::CHAR));
 }
 
-static bool isVcl(const Settings *settings)
-{
-    return std::any_of(settings->libraries.cbegin(), settings->libraries.cend(), [](const std::string& library) {
-        return library == "vcl";
-    });
-}
-
 static bool isVclTypeInit(const Type *type)
 {
     if (!type)
@@ -141,7 +134,7 @@ void CheckClass::constructors()
 
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
-        if (isVcl(mSettings) && isVclTypeInit(scope->definedType))
+        if (mSettings->hasLib("vcl") && isVclTypeInit(scope->definedType))
             continue;
 
         const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");

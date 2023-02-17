@@ -417,9 +417,9 @@ public:
      */
     bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
 
-    /** Is posix library specified? */
-    bool posix() const {
-        return std::find(libraries.cbegin(), libraries.cend(), "posix") != libraries.cend();
+    /** Is library specified? */
+    bool hasLib(const std::string &lib) const {
+        return std::find(libraries.cbegin(), libraries.cend(), lib) != libraries.cend();
     }
 
     /** @brief Request termination of checking */
