@@ -494,4 +494,73 @@ namespace {
         }
         void slot() {};
     };
+
+    // findFunction11
+    class Fred : public QObject {
+        Q_OBJECT
+    private slots:
+        void foo();
+    };
+    void Fred::foo() { }
+
+    // bitfields14
+    class X {
+    signals:
+    };
+
+    // simplifyQtSignalsSlots1
+    class Counter1 : public QObject {
+        Q_OBJECT
+    public:
+        Counter1() { m_value = 0; }
+        int value() const { return m_value; }
+    public slots:
+        void setValue(int value);
+    signals:
+        void valueChanged(int newValue);
+    private:
+        int m_value;
+    };
+    void Counter1::setValue(int value) {
+        if (value != m_value) {
+            m_value = value;
+            emit valueChanged(value);
+        }
+    }
+
+    class Counter2 : public QObject {
+        Q_OBJECT
+    public:
+        Counter2() { m_value = 0; }
+        int value() const { return m_value; }
+    public Q_SLOTS:
+        void setValue(int value);
+    Q_SIGNALS:
+        void valueChanged(int newValue);
+    private:
+        int m_value;
+    };
+    void Counter2::setValue(int value) {
+        if (value != m_value) {
+            m_value = value;
+            emit valueChanged(value);
+        }
+    }
+
+    class MyObject1 : public QObject {
+        MyObject1() {}
+        ~MyObject1() {}
+    public slots:
+    signals:
+        void test() {}
+    };
+
+    class MyObject2 : public QObject {
+        Q_OBJECT
+    public slots:
+    };
+
+    // simplifyQtSignalsSlots2
+    namespace Foo { class Bar; }
+    class Foo::Bar : public QObject { private slots: };
 }
