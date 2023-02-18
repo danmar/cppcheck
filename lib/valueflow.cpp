@@ -4629,6 +4629,17 @@ static bool isConvertedToView(const Token* tok, const Settings* settings)
     });
 }
 
+static bool isContainerOfPointers(const Token* tok, const Settings* settings)
+{
+    if (!tok)
+    {
+        return true;
+    }
+
+    ValueType vt = ValueType::parseDecl(tok, settings, true); // TODO: set isCpp
+    return vt.pointer > 0;
+}
+
 static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -4781,13 +4792,6 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             if (!Token::Match(parent, ". %name% ("))
                 continue;
 
-            bool isContainerOfPointers = true;
-            const Token* containerTypeToken = tok->valueType()->containerTypeToken;
-            if (containerTypeToken) {
-                ValueType vt = ValueType::parseDecl(containerTypeToken, settings, true); // TODO: set isCpp
-                isContainerOfPointers = vt.pointer > 0;
-            }
-
             ValueFlow::Value master;
             master.valueType = ValueFlow::Value::ValueType::LIFETIME;
             master.lifetimeScope = ValueFlow::Value::LifetimeScope::Local;
@@ -4795,7 +4799,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             if (astIsIterator(parent->tokAt(2))) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
-            } else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers) ||
+            } else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers(tok->valueType()->containerTypeToken, settings)) ||
                        Token::Match(parent->next(), "data|c_str")) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
@@ -4816,7 +4820,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
                 }
             } else if (astIsContainerView(tok)) {
                 for (const ValueFlow::Value& v : tok->values()) {
-                    if (!v.isLifetimeValue())
+                    if (!v.isLocalLifetimeValue())
                         continue;
                     if (!v.tokvalue)
                         continue;
@@ -5033,11 +5037,16 @@ static const Token* findIncompleteVar(const Token* start, const Token* end)
 static ValueFlow::Value makeConditionValue(long long val,
                                            const Token* condTok,
                                            bool assume,
+                                           bool impossible = false,
                                            const Settings* settings = nullptr,
                                            SourceLocation loc = SourceLocation::current())
 {
     ValueFlow::Value v(val);
     v.setKnown();
+    if (impossible) {
+        v.intvalue = !v.intvalue;
+        v.setImpossible();
+    }
     v.condition = condTok;
     if (assume)
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is true");
@@ -5116,7 +5125,8 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             {
                 for (const Token* condTok2 : getConditions(condTok, "&&")) {
                     if (is1) {
-                        SameExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
+                        const bool isBool = astIsBool(condTok2) || Token::Match(condTok2, "%comp%|%oror%|&&");
+                        SameExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, /*assume*/ true, !isBool), tokenlist); // don't set '1' for non-boolean expressions
                         valueFlowGenericForward(startTok, startTok->link(), a1, settings);
                     }
 
