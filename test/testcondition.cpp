@@ -4483,6 +4483,16 @@ private:
               "    g(s ? s->get() : 0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (style) Condition 's' is always true\n", errout.str());
+
+        check("void f(const char* o) {\n" // #11558
+              "    if (!o || !o[0])\n"
+              "        return;\n"
+              "    if (o[0] == '-' && o[1]) {\n"
+              "        if (o[1] == '-') {}\n"
+              "        if (o[1] == '\\0') {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
     }
 
     void alwaysTrueSymbolic()
