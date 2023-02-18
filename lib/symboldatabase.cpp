@@ -7023,13 +7023,14 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 }
 
                 if (typestr.empty() || typestr == "iterator") {
+                    //Is iterator fetching function invoked on container?
                     if (Token::simpleMatch(tok->astOperand1(), ".") &&
                         tok->astOperand1()->astOperand1() &&
                         tok->astOperand1()->astOperand2() &&
                         tok->astOperand1()->astOperand1()->valueType() &&
                         tok->astOperand1()->astOperand1()->valueType()->container) {
                         const Library::Container *cont = tok->astOperand1()->astOperand1()->valueType()->container;
-                        const std::map<std::string, Library::Container::Function>::const_iterator it = cont->functions.find(tok->astOperand1()->astOperand2()->str());
+                        const auto it = cont->functions.find(tok->astOperand1()->astOperand2()->str());
                         if (it != cont->functions.end()) {
                             if (it->second.yield == Library::Container::Yield::START_ITERATOR ||
                                 it->second.yield == Library::Container::Yield::END_ITERATOR ||
@@ -7041,6 +7042,26 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                                     tok->astOperand1()->astOperand1()->valueType()->containerTypeToken;
                                 setValueType(tok, vt);
                             }
+                        }
+                        //Is iterator fetching function called?
+                    } else if (Token::simpleMatch(tok->astOperand1(), " :: ") &&
+                               tok->astOperand2() &&
+                               tok->astOperand2()->valueType() &&
+                               tok->astOperand2()->valueType()->container) {
+                        const auto function = mSettings->library.getFunction(tok->previous());
+                        if (!function)
+                        {
+                            continue;
+                        }
+
+                        if (function->containerYield == Library::Container::Yield::START_ITERATOR ||
+                            function->containerYield == Library::Container::Yield::END_ITERATOR ||
+                            function->containerYield == Library::Container::Yield::ITERATOR)
+                        {
+                            ValueType vt;
+                            vt.type = ValueType::Type::ITERATOR;
+                            vt.container = tok->astOperand2()->valueType()->container;
+                            setValueType(tok, vt);
                         }
                     }
                     continue;
