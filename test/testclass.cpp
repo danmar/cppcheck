@@ -259,7 +259,7 @@ private:
     void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        const Settings settings = settingsBuilder().severity(Severity::warning).build();
+        static const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
         Preprocessor preprocessor(settings);
 
@@ -2886,7 +2886,7 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
+        static const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
         checkNoMemset_(file, line, code, settings);
     }
 
@@ -3150,7 +3150,7 @@ private:
                       errout.str());
 
         // #1655
-        const Settings s = settingsBuilder().library("std.cfg").build();
+        static const Settings s = settingsBuilder().library("std.cfg").build();
         checkNoMemset("void f() {\n"
                       "    char c[] = \"abc\";\n"
                       "    std::string s;\n"
@@ -7279,7 +7279,7 @@ private:
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder().severity(Severity::performance).build();
+        static const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
         Preprocessor preprocessor(settings);
 
@@ -7960,7 +7960,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        const Settings settings = settingsBuilder().severity(Severity::style).build();
+        static const Settings settings = settingsBuilder().severity(Severity::style).build();
 
         Preprocessor preprocessor(settings);
 
@@ -8317,7 +8317,7 @@ private:
 
 
     void ctu(const std::vector<std::string> &code) {
-        const Settings settings;
+        static const Settings settings;
         auto &check = getCheck<CheckClass>();
 
         // getFileInfo

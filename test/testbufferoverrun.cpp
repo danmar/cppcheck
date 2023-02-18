@@ -5520,7 +5520,7 @@ private:
 
     void checkPipeParameterSize() { // #3521
 
-        const Settings settings = settingsBuilder().library("posix.cfg").build();
+        static const Settings settings = settingsBuilder().library("posix.cfg").build();
 
         check("void f(){\n"
               "int pipefd[1];\n" // <--  array of two integers is needed
