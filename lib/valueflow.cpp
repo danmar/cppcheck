@@ -2186,8 +2186,8 @@ class SelectValueFromVarIdMapRange {
         using pointer = value_type *;
         using reference = value_type &;
 
-        explicit Iterator(const M::const_iterator &it)
-            : mIt(it) {}
+        explicit Iterator(M::const_iterator it)
+            : mIt(std::move(it)) {}
 
         reference operator*() const {
             return mIt->second;
