@@ -1714,6 +1714,13 @@ private:
               "    return it->foo;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("static std::vector<int> A[2];\n"
+              "static std::vector<int> B;\n"
+              "std::vector<int>& g(int i) {\n"
+              "    return i ? A[i] : B;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceLiteral() {
