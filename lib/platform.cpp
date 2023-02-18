@@ -178,6 +178,8 @@ bool cppcheck::Platform::platform(const std::string& platformstr, std::string& e
         return false;
     }
     else {
+        if (verbose)
+            std::cout << "current working directory '" + Path::getCurrentPath() + "'" << std::endl;
         bool found = false;
         for (const std::string& path : paths) {
             if (verbose)
