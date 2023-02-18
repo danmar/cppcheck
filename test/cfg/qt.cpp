@@ -524,6 +524,7 @@ namespace {
     void Counter1::setValue(int value) {
         if (value != m_value) {
             m_value = value;
+            // cppcheck-suppress checkLibraryNoReturn
             emit valueChanged(value);
         }
     }
@@ -543,6 +544,7 @@ namespace {
     void Counter2::setValue(int value) {
         if (value != m_value) {
             m_value = value;
+            // cppcheck-suppress checkLibraryNoReturn
             emit valueChanged(value);
         }
     }
