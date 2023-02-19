@@ -7054,14 +7054,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                             continue;
                         }
 
-                        const auto function = mSettings->library.getFunction(tok->previous());
-                        if (!function) {
-                            continue;
-                        }
-
-                        if (function->containerYield == Library::Container::Yield::START_ITERATOR ||
-                            function->containerYield == Library::Container::Yield::END_ITERATOR ||
-                            function->containerYield == Library::Container::Yield::ITERATOR) {
+                        const auto yield = astFunctionYield(tok->previous(), mSettings);
+                        if (yield == Library::Container::Yield::START_ITERATOR ||
+                            yield == Library::Container::Yield::END_ITERATOR ||
+                            yield == Library::Container::Yield::ITERATOR) {
                             ValueType vt;
                             vt.type = ValueType::Type::ITERATOR;
                             vt.container = paramVariable->valueType()->container;

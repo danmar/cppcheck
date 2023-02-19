@@ -2184,8 +2184,8 @@ class SelectValueFromVarIdMapRange {
         using pointer = value_type *;
         using reference = value_type &;
 
-        explicit Iterator(M::const_iterator it)
-            : mIt(std::move(it)) {}
+        explicit Iterator(const M::const_iterator & it)
+            : mIt(it) {}
 
         reference operator*() const {
             return mIt->second;
@@ -4840,7 +4840,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
                     ValueFlow::Value value = master;
                     value.tokvalue = rt.token;
                     value.errorPath.insert(value.errorPath.begin(), rt.errors.cbegin(), rt.errors.cend());
-                    if (Token::Match(parent, "("))
+                    if (Token::simpleMatch(parent, "("))
                         setTokenValue(parent, value, tokenlist->getSettings());
                     else
                         setTokenValue(parent->tokAt(2), value, tokenlist->getSettings());
