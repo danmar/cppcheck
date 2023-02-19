@@ -7741,7 +7741,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
         return tok->exprId() == expr->exprId() || (astIsIterator(tok) && isAliasOf(tok, expr->exprId()));
     }
 
-    Action isWritable(const Token* tok, Direction) const override
+    Action isWritable(const Token* tok, Direction /*d*/) const override
     {
         if (astIsIterator(tok))
             return Action::None;
@@ -7795,11 +7795,11 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             if (rhs->tokType() == Token::eString)
                 n = Token::getStrLength(rhs);
             else if (rhsContainer && rhsContainer->stdStringLike) {
-                for (const ValueFlow::Value &rhsval : rhs->values()) {
-                    if (rhsval.isKnown() && rhsval.isContainerSizeValue()) {
-                        n = rhsval.intvalue;
-                    }
-                }
+                auto it = std::find_if(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value &rhsval) {
+                    return rhsval.isKnown() && rhsval.isContainerSizeValue();
+                });
+                if (it != rhs->values().end())
+                    n = it->intvalue;
             }
         } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
             const Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
