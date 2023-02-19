@@ -654,7 +654,6 @@ static void setTokenValue(Token* tok,
                 }
             }
         }
-
         else if (Token::Match(parent, ". %name% (") && parent->astParent() == parent->tokAt(2) &&
                  parent->astOperand1() && parent->astOperand1()->valueType()) {
             const Library::Container* c = getLibraryContainer(parent->astOperand1());
@@ -680,18 +679,9 @@ static void setTokenValue(Token* tok,
                     v.intvalue = !v.intvalue;
                     v.valueType = ValueFlow::Value::ValueType::INT;
                     setTokenValue(parent, v, settings);
-                } else if (f->containerYield == Library::Container::Yield::START_ITERATOR) {
-                    ValueFlow::Value v(value);
-                    v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
-                    setTokenValue(parent, v, settings);
-                } else if (f->containerYield == Library::Container::Yield::END_ITERATOR) {
-                    ValueFlow::Value v(value);
-                    v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
-                    setTokenValue(parent, v, settings);
                 }
             }
         }
-
         return;
     }
 

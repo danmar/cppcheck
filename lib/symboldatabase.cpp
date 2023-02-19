@@ -7050,25 +7050,22 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         const auto paramVariable = tok->astOperand2()->variable();
                         if (!paramVariable ||
                             !paramVariable->valueType() ||
-                            !paramVariable->valueType()->container)
-                        {
+                            !paramVariable->valueType()->container) {
                             continue;
                         }
 
                         const auto function = mSettings->library.getFunction(tok->previous());
-                        if (!function)
-                        {
+                        if (!function) {
                             continue;
                         }
 
                         if (function->containerYield == Library::Container::Yield::START_ITERATOR ||
                             function->containerYield == Library::Container::Yield::END_ITERATOR ||
-                            function->containerYield == Library::Container::Yield::ITERATOR)
-                        {
+                            function->containerYield == Library::Container::Yield::ITERATOR) {
                             ValueType vt;
                             vt.type = ValueType::Type::ITERATOR;
-                            vt.container = tok->astOperand2()->valueType()->container;
-                            vt.containerTypeToken = tok->astOperand2()->valueType()->containerTypeToken;
+                            vt.container = paramVariable->valueType()->container;
+                            vt.containerTypeToken = paramVariable->valueType()->containerTypeToken;
                             setValueType(tok, vt);
                         }
                     }
