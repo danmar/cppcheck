@@ -22,6 +22,7 @@
 #include "astutils.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "keywords.h"
 #include "library.h"
 #include "mathlib.h"
 #include "path.h"
@@ -52,41 +53,6 @@ TokenList::TokenList(const Settings* settings) :
     mIsCpp(false)
 {
     mTokensFrontBack.list = this;
-    mKeywords.insert("asm");
-    mKeywords.insert("auto");
-    mKeywords.insert("break");
-    mKeywords.insert("case");
-    //mKeywords.insert("char"); // type
-    mKeywords.insert("const");
-    mKeywords.insert("continue");
-    mKeywords.insert("default");
-    mKeywords.insert("do");
-    //mKeywords.insert("double"); // type
-    mKeywords.insert("else");
-    mKeywords.insert("enum");
-    mKeywords.insert("extern");
-    //mKeywords.insert("float"); // type
-    mKeywords.insert("for");
-    mKeywords.insert("goto");
-    mKeywords.insert("if");
-    mKeywords.insert("inline");
-    //mKeywords.insert("int"); // type
-    //mKeywords.insert("long"); // type
-    mKeywords.insert("register");
-    mKeywords.insert("restrict");
-    mKeywords.insert("return");
-    //mKeywords.insert("short"); // type
-    mKeywords.insert("signed");
-    mKeywords.insert("sizeof");
-    mKeywords.insert("static");
-    mKeywords.insert("struct");
-    mKeywords.insert("switch");
-    mKeywords.insert("typedef");
-    mKeywords.insert("union");
-    mKeywords.insert("unsigned");
-    mKeywords.insert("void");
-    mKeywords.insert("volatile");
-    mKeywords.insert("while");
 }
 
 TokenList::~TokenList()
@@ -123,57 +89,6 @@ void TokenList::determineCppC()
     } else {
         mIsC = mSettings->enforcedLang == Settings::Language::C || (mSettings->enforcedLang == Settings::Language::None && Path::isC(getSourceFilePath()));
         mIsCpp = mSettings->enforcedLang == Settings::Language::CPP || (mSettings->enforcedLang == Settings::Language::None && Path::isCPP(getSourceFilePath()));
-    }
-
-    if (mIsCpp) {
-        //mKeywords.insert("bool"); // type
-        mKeywords.insert("catch");
-        mKeywords.insert("class");
-        mKeywords.insert("constexpr");
-        mKeywords.insert("const_cast");
-        mKeywords.insert("decltype");
-        mKeywords.insert("delete");
-        mKeywords.insert("dynamic_cast");
-        mKeywords.insert("explicit");
-        mKeywords.insert("export");
-        //mKeywords.insert("false"); // literal
-        mKeywords.insert("friend");
-        mKeywords.insert("mutable");
-        mKeywords.insert("namespace");
-        mKeywords.insert("new");
-        mKeywords.insert("noexcept");
-        mKeywords.insert("operator");
-        mKeywords.insert("private");
-        mKeywords.insert("protected");
-        mKeywords.insert("public");
-        mKeywords.insert("reinterpret_cast");
-        mKeywords.insert("static_assert");
-        mKeywords.insert("static_cast");
-        mKeywords.insert("template");
-        mKeywords.insert("this");
-        mKeywords.insert("thread_local");
-        mKeywords.insert("throw");
-        //mKeywords.insert("true"); // literal
-        mKeywords.insert("try");
-        mKeywords.insert("typeid");
-        mKeywords.insert("typename");
-        mKeywords.insert("typeof");
-        mKeywords.insert("using");
-        mKeywords.insert("virtual");
-        //mKeywords.insert("wchar_t"); // type
-        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
-            mKeywords.insert("alignas");
-            mKeywords.insert("alignof");
-            mKeywords.insert("axiom");
-            mKeywords.insert("co_await");
-            mKeywords.insert("co_return");
-            mKeywords.insert("co_yield");
-            mKeywords.insert("concept");
-            mKeywords.insert("synchronized");
-            mKeywords.insert("consteval");
-            mKeywords.insert("reflexpr");
-            mKeywords.insert("requires");
-        }
     }
 }
 
@@ -2050,5 +1965,30 @@ void TokenList::simplifyStdType()
 
 bool TokenList::isKeyword(const std::string &str) const
 {
-    return mKeywords.find(str) != mKeywords.end();
+    if (mIsCpp) {
+        // TODO: integrate into keywords?
+        // types and literals are not handled as keywords
+        static const std::unordered_set<std::string> cpp_types = {"bool", "false", "true"};
+        if (cpp_types.find(str) != cpp_types.end())
+            return false;
+
+        // TODO: properly apply configured standard
+        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
+            static const auto& cpp20_keywords = Keywords::getAll(Standards::cppstd_t::CPP20);
+            return cpp20_keywords.find(str) != cpp20_keywords.end();
+        }
+
+        static const auto& cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPP11);
+        return cpp_keywords.find(str) != cpp_keywords.end();
+    }
+
+    // TODO: integrate into Keywords?
+    // types are not handled as keywords
+    static const std::unordered_set<std::string> c_types = {"char", "double", "float", "int", "long", "short"};
+    if (c_types.find(str) != c_types.end())
+        return false;
+
+    // TODO: use configured standard
+    static const auto& c_keywords = Keywords::getAll(Standards::cstd_t::C99);
+    return c_keywords.find(str) != c_keywords.end();
 }
