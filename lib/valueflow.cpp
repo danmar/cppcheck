@@ -8085,6 +8085,9 @@ static Library::Container::Yield findIteratorYield(Token* tok, const Token** fto
     if (*ftok)
         return yield;
 
+    if (!tok->astParent())
+        return yield;
+
     //begin/end free functions
     return astFunctionYield(tok->astParent()->previous(), settings, ftok);
 }

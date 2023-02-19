@@ -1926,8 +1926,8 @@ private:
               "    if(std::begin(f())+1 == std::end(f())) {}\n"
               "    if(std::begin(f())+1 == std::end(f())+1) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dereference of an invalid iterator: f().end()+1\n"
-                      "[test.cpp:7]: (error) Dereference of an invalid iterator: f().end()+1\n",
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dereference of an invalid iterator: std::end(f())+1\n"
+                      "[test.cpp:7]: (error) Dereference of an invalid iterator: std::end(f())+1\n",
                       errout.str());
 
         check("template<int N>\n"
