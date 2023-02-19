@@ -63,14 +63,11 @@ class TestSymbolDatabase;
 
 class TestSymbolDatabase : public TestFixture {
 public:
-    TestSymbolDatabase()
-        : TestFixture("TestSymbolDatabase")
-        ,vartok(nullptr)
-        ,typetok(nullptr) {}
+    TestSymbolDatabase() : TestFixture("TestSymbolDatabase") {}
 
 private:
-    const Token* vartok;
-    const Token* typetok;
+    const Token* vartok{nullptr};
+    const Token* typetok{nullptr};
     // If there are unused templates, keep those
     Settings settings1 = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
     Settings settings2 = settingsBuilder().checkUnusedTemplates().build();
