@@ -400,6 +400,7 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
 }
 
 TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char lib[]) {
+    // TODO: exename is not yet set
     LOAD_LIB_2_EXE(settings.library, lib, fixture.exename.c_str());
     // strip extension
     std::string lib_s(lib);
