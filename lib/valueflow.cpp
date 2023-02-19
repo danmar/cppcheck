@@ -7795,7 +7795,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             if (rhs->tokType() == Token::eString)
                 n = Token::getStrLength(rhs);
             else if (rhsContainer && rhsContainer->stdStringLike) {
-                auto it = std::find_if(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value &rhsval) {
+                auto it = std::find_if(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value& rhsval) {
                     return rhsval.isKnown() && rhsval.isContainerSizeValue();
                 });
                 if (it != rhs->values().end())
