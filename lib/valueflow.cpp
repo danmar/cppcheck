@@ -8079,6 +8079,16 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
     }
 }
 
+static Library::Container::Yield findIteratorYield(Token* tok, const Token** ftok, const Settings *settings)
+{
+    auto yield = astContainerYield(tok, ftok);
+    if (*ftok)
+        return yield;
+
+    //begin/end free functions
+    return astFunctionYield(tok->astParent()->previous(), settings, ftok);
+}
+
 static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -8089,7 +8099,7 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
         if (!astIsContainer(tok))
             continue;
         const Token* ftok = nullptr;
-        const Library::Container::Yield yield = astContainerYield(tok, &ftok);
+        const Library::Container::Yield yield = findIteratorYield(tok, &ftok, settings);
         if (ftok) {
             ValueFlow::Value v(0);
             v.setKnown();
