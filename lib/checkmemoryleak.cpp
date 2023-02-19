@@ -728,6 +728,8 @@ void CheckMemoryLeakStructMember::check()
 
 bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 {
+    if (!variable)
+        return false;
     const int declarationId(variable->declarationId());
     bool alloc = false;
     for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
@@ -742,6 +744,8 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 
 void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
 {
+    if (!variable)
+        return;
     // Is struct variable a pointer?
     if (variable->isArrayOrPointer()) {
         // Check that variable is allocated with malloc

@@ -154,7 +154,7 @@ public:
         return ((id > 0) && ((id & 1) == 0));
     }
     static bool ismemory(const AllocFunc* const func) {
-        return ((func->groupId > 0) && ((func->groupId & 1) == 0));
+        return func && (func->groupId > 0) && ((func->groupId & 1) == 0);
     }
 
     /** is allocation type resource? */
@@ -162,7 +162,7 @@ public:
         return ((id > 0) && ((id & 1) == 1));
     }
     static bool isresource(const AllocFunc* const func) {
-        return ((func->groupId > 0) && ((func->groupId & 1) == 1));
+        return func && (func->groupId > 0) && ((func->groupId & 1) == 1);
     }
 
     bool formatstr_function(const Token* ftok) const;
@@ -652,7 +652,7 @@ private:
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 
-    std::string getFunctionName(const Token *ftok, bool *error) const;
+    std::string getFunctionName(const Token *ftok, bool &error) const;
 
     static const AllocFunc* getAllocDealloc(const std::map<std::string, AllocFunc> &data, const std::string &name) {
         const std::map<std::string, AllocFunc>::const_iterator it = data.find(name);

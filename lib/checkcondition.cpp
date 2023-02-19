@@ -1004,11 +1004,11 @@ static inline T getvalue(const int test, const T value1, const T value2)
     return 0;
 }
 
-static bool parseComparison(const Token *comp, bool *not1, std::string *op, std::string *value, const Token **expr, bool* inconclusive)
+static bool parseComparison(const Token *comp, bool &not1, std::string &op, std::string &value, const Token *&expr, bool &inconclusive)
 {
-    *not1 = false;
+    not1 = false;
     while (comp && comp->str() == "!") {
-        *not1 = !(*not1);
+        not1 = !(not1);
         comp = comp->astOperand1();
     }
 
@@ -1018,37 +1018,37 @@ static bool parseComparison(const Token *comp, bool *not1, std::string *op, std:
     const Token* op1 = comp->astOperand1();
     const Token* op2 = comp->astOperand2();
     if (!comp->isComparisonOp() || !op1 || !op2) {
-        *op = "!=";
-        *value = "0";
-        *expr = comp;
+        op = "!=";
+        value = "0";
+        expr = comp;
     } else if (op1->isLiteral()) {
         if (op1->isExpandedMacro())
             return false;
-        *op = invertOperatorForOperandSwap(comp->str());
+        op = invertOperatorForOperandSwap(comp->str());
         if (op1->enumerator() && op1->enumerator()->value_known)
-            *value = MathLib::toString(op1->enumerator()->value);
+            value = MathLib::toString(op1->enumerator()->value);
         else
-            *value = op1->str();
-        *expr = op2;
+            value = op1->str();
+        expr = op2;
     } else if (comp->astOperand2()->isLiteral()) {
         if (op2->isExpandedMacro())
             return false;
-        *op = comp->str();
+        op = comp->str();
         if (op2->enumerator() && op2->enumerator()->value_known)
-            *value = MathLib::toString(op2->enumerator()->value);
+            value = MathLib::toString(op2->enumerator()->value);
         else
-            *value = op2->str();
-        *expr = op1;
+            value = op2->str();
+        expr = op1;
     } else {
-        *op = "!=";
-        *value = "0";
-        *expr = comp;
+        op = "!=";
+        value = "0";
+        expr = comp;
     }
 
-    *inconclusive = *inconclusive || ((*value)[0] == '\'' && !(*op == "!=" || *op == "=="));
+    inconclusive = inconclusive || ((value)[0] == '\'' && !(op == "!=" || op == "=="));
 
     // Only float and int values are currently handled
-    if (!MathLib::isInt(*value) && !MathLib::isFloat(*value) && (*value)[0] != '\'')
+    if (!MathLib::isInt(value) && !MathLib::isFloat(value) && (value)[0] != '\'')
         return false;
 
     return true;
@@ -1076,7 +1076,7 @@ static std::string conditionString(const Token * tok)
         bool not_;
         std::string op, value;
         const Token *expr;
-        if (parseComparison(tok, &not_, &op, &value, &expr, &inconclusive) && expr->isName()) {
+        if (parseComparison(tok, not_, op, value, expr, inconclusive) && expr->isName()) {
             return conditionString(not_, expr, op, value);
         }
     }
@@ -1192,13 +1192,13 @@ void CheckCondition::checkIncorrectLogicOperator()
             bool not1;
             std::string op1, value1;
             const Token *expr1 = nullptr;
-            parseable &= (parseComparison(comp1, &not1, &op1, &value1, &expr1, &inconclusive));
+            parseable &= (parseComparison(comp1, not1, op1, value1, expr1, inconclusive));
 
             // Parse RHS
             bool not2;
             std::string op2, value2;
             const Token *expr2 = nullptr;
-            parseable &= (parseComparison(comp2, &not2, &op2, &value2, &expr2, &inconclusive));
+            parseable &= (parseComparison(comp2, not2, op2, value2, expr2, inconclusive));
 
             if (inconclusive && !printInconclusive)
                 continue;

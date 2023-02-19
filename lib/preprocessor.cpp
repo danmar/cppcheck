@@ -84,7 +84,7 @@ namespace {
     };
 }
 
-static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
+static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> &bad)
 {
     const std::string cppchecksuppress("cppcheck-suppress");
 
@@ -110,7 +110,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         std::vector<Suppressions::Suppression> suppressions = Suppressions::parseMultiSuppressComment(comment, &errmsg);
 
         if (!errmsg.empty())
-            bad->emplace_back(tok->location, std::move(errmsg));
+            bad.emplace_back(tok->location, std::move(errmsg));
 
         std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
             return !s.errorId.empty();
@@ -126,13 +126,13 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             inlineSuppressions.push_back(std::move(s));
 
         if (!errmsg.empty())
-            bad->emplace_back(tok->location, std::move(errmsg));
+            bad.emplace_back(tok->location, std::move(errmsg));
     }
 
     return true;
 }
 
-static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> &bad)
 {
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
@@ -192,10 +192,10 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::addinlineSuppressions(tokens, mSettings, &err);
+    ::addinlineSuppressions(tokens, mSettings, err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (it->second)
-            ::addinlineSuppressions(*it->second, mSettings, &err);
+            ::addinlineSuppressions(*it->second, mSettings, err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
