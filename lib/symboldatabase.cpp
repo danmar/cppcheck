@@ -7044,10 +7044,17 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                             }
                         }
                         //Is iterator fetching function called?
-                    } else if (Token::simpleMatch(tok->astOperand1(), " :: ") &&
+                    } else if (Token::simpleMatch(tok->astOperand1(), "::") &&
                                tok->astOperand2() &&
-                               tok->astOperand2()->valueType() &&
-                               tok->astOperand2()->valueType()->container) {
+                               tok->astOperand2()->isVariable()) {
+                        const auto paramVariable = tok->astOperand2()->variable();
+                        if (!paramVariable ||
+                            !paramVariable->valueType() ||
+                            !paramVariable->valueType()->container)
+                        {
+                            continue;
+                        }
+
                         const auto function = mSettings->library.getFunction(tok->previous());
                         if (!function)
                         {
@@ -7061,6 +7068,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                             ValueType vt;
                             vt.type = ValueType::Type::ITERATOR;
                             vt.container = tok->astOperand2()->valueType()->container;
+                            vt.containerTypeToken = tok->astOperand2()->valueType()->containerTypeToken;
                             setValueType(tok, vt);
                         }
                     }

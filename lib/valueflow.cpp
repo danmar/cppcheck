@@ -680,6 +680,14 @@ static void setTokenValue(Token* tok,
                     v.intvalue = !v.intvalue;
                     v.valueType = ValueFlow::Value::ValueType::INT;
                     setTokenValue(parent, v, settings);
+                } else if (f->containerYield == Library::Container::Yield::START_ITERATOR) {
+                    ValueFlow::Value v(value);
+                    v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
+                    setTokenValue(parent, v, settings);
+                } else if (f->containerYield == Library::Container::Yield::END_ITERATOR) {
+                    ValueFlow::Value v(value);
+                    v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
+                    setTokenValue(parent, v, settings);
                 }
             }
         }
@@ -4789,7 +4797,8 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
         // container lifetimes
         else if (astIsContainer(tok)) {
             Token * parent = astParentSkipParens(tok);
-            if (!Token::Match(parent, ". %name% ("))
+            if (!Token::Match(parent, ". %name% (") &&
+                !Token::simpleMatch(parent, "("))
                 continue;
 
             ValueFlow::Value master;
@@ -4799,8 +4808,12 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             if (astIsIterator(parent->tokAt(2))) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
-            } else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers(tok->valueType()->containerTypeToken, settings)) ||
-                       Token::Match(parent->next(), "data|c_str")) {
+            } else if (astIsIterator(parent)) {
+                master.errorPath.emplace_back(parent, "Iterator to container is created here.");
+                master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
+            }
+            else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers(tok->valueType()->containerTypeToken, settings)) ||
+                     Token::Match(parent->next(), "data|c_str")) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
             } else {
@@ -4837,7 +4850,10 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
                     ValueFlow::Value value = master;
                     value.tokvalue = rt.token;
                     value.errorPath.insert(value.errorPath.begin(), rt.errors.cbegin(), rt.errors.cend());
-                    setTokenValue(parent->tokAt(2), value, tokenlist->getSettings());
+                    if (Token::Match(parent, "("))
+                        setTokenValue(parent, value, tokenlist->getSettings());
+                    else
+                        setTokenValue(parent->tokAt(2), value, tokenlist->getSettings());
 
                     if (!rt.token->variable()) {
                         LifetimeStore ls = LifetimeStore{
