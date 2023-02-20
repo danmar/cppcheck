@@ -4963,19 +4963,19 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return value 'a.empty()' is always false\n", errout.str());
 
         check("struct A {\n"
-                  "    struct iterator;\n"
-                  "    iterator begin() const;\n"
-                  "    iterator end() const;\n"
-                  "};\n"
-                  "A g();\n"
-                  "void f(bool b) {\n"
-                  "    std::set<int> s;\n"
-                  "    auto v = g();\n"
-                  "    s.insert(v.begin(), v.end());\n"
-                  "    if(!b && s.size() != 1)\n"
-                  "        return;\n"
-                  "    if(!s.empty()) {}\n"
-                  "}\n");
+              "    struct iterator;\n"
+              "    iterator begin() const;\n"
+              "    iterator end() const;\n"
+              "};\n"
+              "A g();\n"
+              "void f(bool b) {\n"
+              "    std::set<int> s;\n"
+              "    auto v = g();\n"
+              "    s.insert(v.begin(), v.end());\n"
+              "    if(!b && s.size() != 1)\n"
+              "        return;\n"
+              "    if(!s.empty()) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
