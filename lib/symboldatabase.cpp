@@ -7047,7 +7047,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     } else if (Token::simpleMatch(tok->astOperand1(), "::") &&
                                tok->astOperand2() &&
                                tok->astOperand2()->isVariable()) {
-                        const auto paramVariable = tok->astOperand2()->variable();
+                        const auto* const paramVariable = tok->astOperand2()->variable();
                         if (!paramVariable ||
                             !paramVariable->valueType() ||
                             !paramVariable->valueType()->container) {

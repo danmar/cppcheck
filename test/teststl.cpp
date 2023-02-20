@@ -1882,7 +1882,6 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("std::vector<int>& f();\n"
-              "std::vector<int>& g();\n"
               "void foo() {\n"
               "    auto it = f().end() - 1;\n"
               "    f().begin() - it;\n"
@@ -1907,7 +1906,6 @@ private:
         ASSERT_EQUALS("[test.cpp:10]: (error) Dereference of an invalid iterator: f().end()+1\n", errout.str());
 
         check("std::vector<int>& f();\n"
-              "std::vector<int>& g();\n"
               "void foo() {\n"
               "    if(f().begin() == f().end()) {}\n"
               "    if(f().begin() == f().end()+1) {}\n"
@@ -1919,7 +1917,6 @@ private:
                       errout.str());
 
         check("std::vector<int>& f();\n"
-              "std::vector<int>& g();\n"
               "void foo() {\n"
               "    if(std::begin(f()) == std::end(f())) {}\n"
               "    if(std::begin(f()) == std::end(f())+1) {}\n"
