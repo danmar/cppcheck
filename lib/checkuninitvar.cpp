@@ -1641,13 +1641,13 @@ void CheckUninitVar::valueFlowUninit()
                     const bool isarray = tok->variable()->isArray();
                     if (isarray && tok->variable()->isMember())
                         continue; // Todo: this is a bailout
-                    const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
+                    const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings);
                     uninitderef = deref && v->indirect == 0;
                     const bool isleaf = isLeafDot(tok) || uninitderef;
                     if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
                         continue;
                 }
-                const ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);
+                const ExprUsage usage = getExprUsage(tok, v->indirect, *mSettings);
                 if (usage == ExprUsage::NotUsed || usage == ExprUsage::Inconclusive)
                     continue;
                 if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)
@@ -1670,10 +1670,10 @@ void CheckUninitVar::valueFlowUninit()
 }
 
 // NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
-static bool isVariableUsage(const Settings *settings, const Token *vartok, MathLib::bigint *value)
+static bool isVariableUsage(const Settings &settings, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;
-    return CheckUninitVar::isVariableUsage(vartok, settings->library, true, CheckUninitVar::Alloc::ARRAY);
+    return CheckUninitVar::isVariableUsage(vartok, settings.library, true, CheckUninitVar::Alloc::ARRAY);
 }
 
 // a Clang-built executable will crash when using the anonymous MyFileInfo later on - so put it in a unique namespace for now
@@ -1698,7 +1698,7 @@ namespace
     };
 }
 
-Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
+Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const
 {
     const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, ::isVariableUsage);
     if (unsafeUsage.empty())

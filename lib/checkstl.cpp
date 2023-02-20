@@ -2479,7 +2479,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
                     emptyAdvance = tok->astParent();
                 }
             }
-            if (!CheckNullPointer::isPointerDeRef(tok, unknown, mSettings) && !isInvalidIterator && !emptyAdvance) {
+            if (!CheckNullPointer::isPointerDeRef(tok, unknown, *mSettings) && !isInvalidIterator && !emptyAdvance) {
                 if (!unknown)
                     continue;
                 inconclusive = true;

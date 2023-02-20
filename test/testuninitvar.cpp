@@ -7763,12 +7763,12 @@ private:
         SimpleTokenizer tokenizer(settings, *this);
         ASSERT_LOC(tokenizer.tokenize(code), file, line);
 
-        CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
+        CTU::FileInfo *ctu = CTU::getFileInfo(tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
         Check& c = getCheck<CheckUninitVar>();
-        fileInfo.push_back(c.getFileInfo(&tokenizer, &settings));
+        fileInfo.push_back(c.getFileInfo(tokenizer, settings));
         c.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();

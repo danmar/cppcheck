@@ -92,7 +92,7 @@ private:
     }
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
+    Check::FileInfo *getFileInfo(const Tokenizer &tokenizer, const Settings &settings) const override;
 
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
@@ -130,9 +130,9 @@ private:
     ValueFlow::Value getBufferSize(const Token *bufTok) const;
 
     // CTU
-    static bool isCtuUnsafeBufferUsage(const Settings *settings, const Token *argtok, MathLib::bigint *offset, int type);
-    static bool isCtuUnsafeArrayIndex(const Settings *settings, const Token *argtok, MathLib::bigint *offset);
-    static bool isCtuUnsafePointerArith(const Settings *settings, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafeBufferUsage(const Settings &settings, const Token *argtok, MathLib::bigint *offset, int type);
+    static bool isCtuUnsafeArrayIndex(const Settings &settings, const Token *argtok, MathLib::bigint *offset);
+    static bool isCtuUnsafePointerArith(const Settings &settings, const Token *argtok, MathLib::bigint *offset);
 
     Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
     static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);

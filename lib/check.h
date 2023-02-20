@@ -109,9 +109,7 @@ public:
         }
     };
 
-    virtual FileInfo * getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const {
-        (void)tokenizer;
-        (void)settings;
+    virtual FileInfo * getFileInfo(const Tokenizer& /*tokenizer*/, const Settings& /*settings*/) const {
         return nullptr;
     }
 

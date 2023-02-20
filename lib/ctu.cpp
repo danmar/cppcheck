@@ -57,13 +57,13 @@ static constexpr char ATTR_VALUE[] = "value";
 
 int CTU::maxCtuDepth = 2;
 
-std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *function)
+std::string CTU::getFunctionId(const Tokenizer &tokenizer, const Function *function)
 {
-    return tokenizer->list.file(function->tokenDef) + ':' + std::to_string(function->tokenDef->linenr()) + ':' + std::to_string(function->tokenDef->column());
+    return tokenizer.list.file(function->tokenDef) + ':' + std::to_string(function->tokenDef->linenr()) + ':' + std::to_string(function->tokenDef->column());
 }
 
-CTU::FileInfo::Location::Location(const Tokenizer *tokenizer, const Token *tok)
-    : fileName(tokenizer->list.file(tok))
+CTU::FileInfo::Location::Location(const Tokenizer &tokenizer, const Token *tok)
+    : fileName(tokenizer.list.file(tok))
     , lineNumber(tok->linenr())
     , column(tok->column())
 {}
@@ -156,13 +156,13 @@ std::string CTU::toString(const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsa
     return ret.str();
 }
 
-CTU::FileInfo::CallBase::CallBase(const Tokenizer *tokenizer, const Token *callToken)
+CTU::FileInfo::CallBase::CallBase(const Tokenizer &tokenizer, const Token *callToken)
     : callId(getFunctionId(tokenizer, callToken->function()))
     , callFunctionName(callToken->next()->astOperand1()->expressionString())
     , location(CTU::FileInfo::Location(tokenizer, callToken))
 {}
 
-CTU::FileInfo::NestedCall::NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken)
+CTU::FileInfo::NestedCall::NestedCall(const Tokenizer &tokenizer, const Function *myFunction, const Token *callToken)
     : CallBase(tokenizer, callToken)
     , myId(getFunctionId(tokenizer, myFunction))
 {}
@@ -306,9 +306,9 @@ static int isCallFunction(const Scope *scope, int argnr, const Token *&tok)
 }
 
 
-CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
+CTU::FileInfo *CTU::getFileInfo(const Tokenizer &tokenizer)
 {
-    const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
+    const SymbolDatabase * const symbolDatabase = tokenizer.getSymbolDatabase();
 
     auto *fileInfo = new FileInfo;
 
@@ -346,7 +346,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.callArgValue = value.intvalue;
                     functionCall.warning = !value.errorSeverity();
                     for (const ErrorPathItem &i : value.errorPath) {
-                        const std::string& file = tokenizer->list.file(i.first);
+                        const std::string& file = tokenizer.list.file(i.first);
                         const std::string& info = i.second;
                         const int line = i.first->linenr();
                         const int column = i.first->column();
@@ -364,7 +364,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
-                    const auto typeSize = argtok->valueType()->typeSize(tokenizer->getSettings().platform);
+                    const auto typeSize = argtok->valueType()->typeSize(tokenizer.getSettings().platform);
                     functionCall.callArgValue = typeSize > 0 ? argtok->variable()->dimension(0) * typeSize : -1;
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(std::move(functionCall));
@@ -378,7 +378,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
-                    functionCall.callArgValue = argtok->astOperand1()->valueType()->typeSize(tokenizer->getSettings().platform);
+                    functionCall.callArgValue = argtok->astOperand1()->valueType()->typeSize(tokenizer.getSettings().platform);
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(std::move(functionCall));
                 }
@@ -437,7 +437,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
     return fileInfo;
 }
 
-static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Settings *settings, const Scope *scope, int argnr, bool (*isUnsafeUsage)(const Settings *settings, const Token *argtok, MathLib::bigint *value))
+static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(const Settings &settings, const Scope *scope, int argnr, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, MathLib::bigint *value))
 {
     std::list<std::pair<const Token *, MathLib::bigint>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
@@ -451,7 +451,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
             int indirect = 0;
             if (argvar->valueType())
                 indirect = argvar->valueType()->pointer;
-            if (isVariableChanged(tok2->link(), tok2, indirect, argvar->declarationId(), false, settings))
+            if (isVariableChanged(tok2->link(), tok2, indirect, argvar->declarationId(), false, &settings))
                 return ret;
         }
         if (Token::Match(tok2, "%oror%|&&|?")) {
@@ -469,12 +469,12 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
     return ret;
 }
 
-std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer *tokenizer, const Settings *settings, bool (*isUnsafeUsage)(const Settings *settings, const Token *argtok, MathLib::bigint *value))
+std::list<CTU::FileInfo::UnsafeUsage> CTU::getUnsafeUsage(const Tokenizer &tokenizer, const Settings &settings, bool (*isUnsafeUsage)(const Settings &settings, const Token *argtok, MathLib::bigint *value))
 {
     std::list<CTU::FileInfo::UnsafeUsage> unsafeUsage;
 
     // Parse all functions in TU
-    const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
+    const SymbolDatabase * const symbolDatabase = tokenizer.getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
         if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)

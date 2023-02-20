@@ -3400,7 +3400,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     }
 
     if (!mSettings.buildDir.empty())
-        Summaries::create(this, configuration);
+        Summaries::create(*this, configuration);
 
     // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
     const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
@@ -5232,7 +5232,7 @@ void Tokenizer::setVarIdPass2()
     }
 }
 
-static void linkBrackets(const Tokenizer * const tokenizer, std::stack<const Token*>& type, std::stack<Token*>& links, Token * const token, const char open, const char close)
+static void linkBrackets(const Tokenizer & tokenizer, std::stack<const Token*>& type, std::stack<Token*>& links, Token * const token, const char open, const char close)
 {
     if (token->str()[0] == open) {
         links.push(token);
@@ -5240,10 +5240,10 @@ static void linkBrackets(const Tokenizer * const tokenizer, std::stack<const Tok
     } else if (token->str()[0] == close) {
         if (links.empty()) {
             // Error, { and } don't match.
-            tokenizer->unmatchedToken(token);
+            tokenizer.unmatchedToken(token);
         }
         if (type.top()->str()[0] != open) {
-            tokenizer->unmatchedToken(type.top());
+            tokenizer.unmatchedToken(type.top());
         }
         type.pop();
 
@@ -5263,11 +5263,11 @@ void Tokenizer::createLinks()
             token->link(nullptr);
         }
 
-        linkBrackets(this, type, links1, token, '{', '}');
+        linkBrackets(*this, type, links1, token, '{', '}');
 
-        linkBrackets(this, type, links2, token, '(', ')');
+        linkBrackets(*this, type, links2, token, '(', ')');
 
-        linkBrackets(this, type, links3, token, '[', ']');
+        linkBrackets(*this, type, links3, token, '[', ']');
     }
 
     if (!links1.empty()) {
