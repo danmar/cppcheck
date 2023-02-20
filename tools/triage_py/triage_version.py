@@ -25,13 +25,15 @@ args = parser.parse_args()
 
 def sort_commit_hashes(commits):
     git_cmd = 'git rev-list --abbrev-commit --topo-order --no-walk=sorted --reverse ' + ' '.join(commits)
-    p = subprocess.Popen(git_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_repo, universal_newlines=True)
+    p = subprocess.Popen(git_cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_repo)
     stdout, stderr = p.communicate()
+    # TODO: instead of using decode() we should pass the following to subprocess.Popen() but "encoding" and "errors" is not supported until Python 3.6:
+    # universal_newlines=True, encoding='utf-8', errors='ignore'
     if p.returncode != 0:
         print('error: sorting commit hashes failed')
-        print(stderr)
+        print(stderr.decode(encoding='utf-8', errors='ignore'))
         sys.exit(1)
-    return stdout.splitlines()
+    return stdout.decode(encoding='utf-8', errors='ignore').splitlines()
 
 verbose = args.verbose
 do_compare = args.compare
@@ -100,7 +102,9 @@ for entry in versions:
     else:
         # get version string
         version_cmd = exe + ' ' + '--version'
-        version = subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE, universal_newlines=True).stdout.read().strip()
+        # TODO: instead of using decode() we should pass the following to subprocess.Popen() but "encoding" and "errors" is not supported until Python 3.6:
+        # universal_newlines=True, encoding='utf-8', errors='ignore'
+        version = subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE).stdout.read().decode(encoding='utf-8', errors='ignore').strip()
         # sanitize version
         version = version.replace('Cppcheck ', '').replace(' dev', '')
 
@@ -127,20 +131,22 @@ for entry in versions:
     cmd += input_file
     if verbose:
         print("running '{}'". format(cmd))
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
+    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path)
     try:
         comm = p.communicate(timeout=args.timeout)
+        # TODO: instead of using decode() we should pass the following to subprocess.Popen() but "encoding" and "errors" is not supported until Python 3.6:
+        # universal_newlines=True, encoding='utf-8', errors='ignore'
         out = ''
         if not args.no_stdout:
-            out += comm[0]
+            out += comm[0].decode(encoding='utf-8', errors='ignore')
         if not args.no_stderr and not args.no_stderr:
             out += '\n'
         if not args.no_stderr:
-            out += comm[1]
+            out += comm[1].decode(encoding='utf-8', errors='ignore')
     except subprocess.TimeoutExpired:
         out = "timeout"
         p.kill()
-        comm = p.communicate()
+        p.communicate()
 
     ec = p.returncode
 
