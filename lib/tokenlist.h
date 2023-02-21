@@ -50,10 +50,6 @@ public:
         mSettings = settings;
     }
 
-    const Settings *getSettings() const {
-        return mSettings;
-    }
-
     /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
 
