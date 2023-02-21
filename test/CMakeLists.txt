@@ -122,7 +122,7 @@ if (BUILD_TESTS)
                         --check-library
                         --platform=${PLATFORM}
                         --library=${LIBRARY}
-                        --enable=style,information
+                        --enable=style,performance,portability,warning,information
                         --inconclusive
                         --force
                         --error-exitcode=1

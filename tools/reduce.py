@@ -279,7 +279,7 @@ def main():
         print('')
         print("Example. source file = foo/bar.c")
         print(
-            "  reduce.py --cmd='./cppcheck --enable=style foo/bar.c' --expected=\"Variable 'x' is reassigned\" --file=foo/bar.c")
+            "  reduce.py --cmd='./cppcheck --enable=style,performance,portability,warning foo/bar.c' --expected=\"Variable 'x' is reassigned\" --file=foo/bar.c")
         sys.exit(1)
 
     if len(sys.argv) == 1:
