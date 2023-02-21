@@ -128,8 +128,12 @@ for entry in versions:
         cmd.append('--platform=native')
     if Version(version) >= Version('1.52') and Version(version) < Version('2.0'):
         # extend Cppcheck 1.x format with error ID
-        # TODO: re-add inconclusive
-        cmd.append('--template={callstack}: ({severity}) {message} [{id}]')
+        if Version(version) < Version('1.61'):
+            # TODO: re-add inconclusive
+            cmd.append('--template=[{file}:{line}]: ({severity}) {message} [{id}]')
+        else:
+            # TODO: re-add inconclusive: {callstack}: ({severity}{inconclusive:, inconclusive}) {message
+            cmd.append('--template={callstack}: ({severity}) {message} [{id}]')
     cmd.append(input_file)
     if verbose:
         print("running '{}'". format(' '.join(cmd)))
