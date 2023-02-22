@@ -7,11 +7,11 @@ set -x
 hash_good=$1
 hash_bad=$2
 options=$3
+expected=$4
 
 # TODO: verify "good" commit happened before "bad" commit
 
 hang=0
-expected=""
 
 script_dir="$(dirname "$(realpath "$0")")"
 
