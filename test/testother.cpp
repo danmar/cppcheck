@@ -10653,6 +10653,12 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #11576
+              "int f(S s) {\n"
+              "    return &s.i - (int*)&s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n", errout.str());
     }
 
     void unusedVariableValueTemplate() {

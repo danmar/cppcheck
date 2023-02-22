@@ -3685,6 +3685,10 @@ void CheckOther::checkComparePointers()
                 continue;
             if (var1->isRValueReference() || var2->isRValueReference())
                 continue;
+            if (var1->scope() && var1->scope()->isClassOrStructOrUnion() && var1->scope()->isNestedIn(var2->typeScope()))
+                continue;
+            if (var2->scope() && var2->scope()->isClassOrStructOrUnion() && var2->scope()->isNestedIn(var1->typeScope()))
+                continue;
             comparePointersError(tok, &v1, &v2);
         }
     }
