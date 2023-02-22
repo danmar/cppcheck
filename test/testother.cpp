@@ -2653,7 +2653,7 @@ private:
               "    U* y = (U*)(&x)\n"
               "    y->mutate();\n" //to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
 
         check("struct C { void f() const; };\n" // #9875 - crash
               "\n"
