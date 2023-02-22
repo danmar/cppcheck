@@ -436,14 +436,6 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
     ++haystack;
     // Compare only the first character of the string for optimization reasons
     switch (haystack[0]) {
-    case '\0':
-    case ' ':
-    case '|':
-        //simple '%' character
-        haystack += 1;
-        if (tok->isArithmeticalOp() && tok->str() == "%")
-            return 1;
-        break;
     case 'v':
         if (haystack[3] == '%') { // %var%
             haystack += 4;
