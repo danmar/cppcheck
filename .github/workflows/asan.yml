@@ -142,7 +142,7 @@ jobs:
       - name: Self check
         if: false
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude,information --exception-handling --debug-warnings --check-level=exhaustive"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=file-total -D__GNUC__=10 -D__GNUC_MINOR__=2 -D__GNUC_PATCHLEVEL__=1 -D__linux__ -D__gnu_linux__ -D__x86_64__ -D__STDC__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --inconclusive --enable=style,performance,portability,warning,missingInclude,information --exception-handling --debug-warnings --check-level=exhaustive"
           cppcheck_options="-D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2"
           gui_options="-DQT_VERSION=0x060000 -DQ_MOC_OUTPUT_REVISION=69 -DQT_CHARTS_LIB -DQT_MOC_HAS_STRINGDATA --library=qt"
           gui_options="$gui_options --suppress=autoNoType:*/moc_*.cpp --suppress=symbolDatabaseWarning:*/moc_*.cpp"
