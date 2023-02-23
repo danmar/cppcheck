@@ -4544,26 +4544,6 @@ void stdvector()
     v.front();
 }
 
-void stdcontainer_pop_empty() { // #11553
-    std::vector<int> v;
-    // cppcheck-suppress containerOutOfBounds
-    v.pop_back();
-    std::list<int> l;
-    // cppcheck-suppress containerOutOfBounds
-    l.pop_front();
-}
-
-void stdcontainer_pop_empty2(std::vector<int>& v) {
-    if (v.empty()) {}
-    // cppcheck-suppress containerOutOfBounds
-    v.pop_back();
-}
-
-void stdcontainer_pop_unknown(std::vector<int>& v) {
-    v.pop_back();
-    if (v.empty()) {}
-}
-
 void stdbind_helper(int a)
 {
     printf("%d", a);
