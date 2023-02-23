@@ -498,7 +498,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                     if (c.find(configs_ifndef.back()) != std::string::npos)
                         ret.insert(c);
                     else if (c.empty())
-                        ret.insert(configs.empty() ? configs_ifndef.back() : "");
+                        ret.insert("");
                     else
                         ret.insert(c + ";" + configs_ifndef.back());
                 }

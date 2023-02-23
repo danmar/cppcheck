@@ -375,6 +375,8 @@ std::vector<const Token *> getArguments(const Token *ftok);
 
 int getArgumentPos(const Variable* var, const Function* f);
 
+const Token* getIteratorExpression(const Token* tok);
+
 /**
  * Are the arguments a pair of iterators/pointers?
  */

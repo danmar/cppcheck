@@ -665,8 +665,11 @@ static void setTokenValue(Token* tok,
                 setTokenValue(parent->astParent(), v, settings);
             } else if (yields == Library::Container::Yield::EMPTY) {
                 ValueFlow::Value v(value);
-                v.intvalue = !v.intvalue;
                 v.valueType = ValueFlow::Value::ValueType::INT;
+                if (value.isImpossible() && value.intvalue == 0)
+                    v.setKnown();
+                else
+                    v.intvalue = !v.intvalue;
                 setTokenValue(parent->astParent(), v, settings);
             }
         } else if (Token::Match(parent->previous(), "%name% (")) {
@@ -8430,6 +8433,11 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                     ValueFlow::Value value(tok->tokAt(2)->astOperand2()->values().front());
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
+                    valueFlowForward(tok->linkAt(2), containerTok, value, tokenlist);
+                } else if (action == Library::Container::Action::PUSH && !isIteratorPair(getArguments(tok->tokAt(2)))) {
+                    ValueFlow::Value value(0);
+                    value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                    value.setImpossible();
                     valueFlowForward(tok->linkAt(2), containerTok, value, tokenlist);
                 }
             }

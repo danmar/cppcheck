@@ -2863,10 +2863,52 @@ int getArgumentPos(const Variable* var, const Function* f)
     return std::distance(f->argumentList.cbegin(), arg_it);
 }
 
+const Token* getIteratorExpression(const Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    if (tok->isUnaryOp("*"))
+        return nullptr;
+    if (!tok->isName()) {
+        const Token* iter1 = getIteratorExpression(tok->astOperand1());
+        if (iter1)
+            return iter1;
+        if (tok->str() == "(")
+            return nullptr;
+        const Token* iter2 = getIteratorExpression(tok->astOperand2());
+        if (iter2)
+            return iter2;
+    } else if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
+        if (Token::Match(tok->previous(), ". %name% ( ) !!."))
+            return tok->previous()->astOperand1();
+        if (!Token::simpleMatch(tok->previous(), ".") && Token::Match(tok, "%name% ( !!)") &&
+            !Token::simpleMatch(tok->linkAt(1), ") ."))
+            return tok->next()->astOperand2();
+    }
+    return nullptr;
+}
+
 bool isIteratorPair(std::vector<const Token*> args)
 {
-    return args.size() == 2 &&
-           ((astIsIterator(args[0]) && astIsIterator(args[1])) || (astIsPointer(args[0]) && astIsPointer(args[1])));
+    if (args.size() != 2)
+        return false;
+    if (astIsPointer(args[0]) && astIsPointer(args[1]))
+        return true;
+    // Check if iterator is from same container
+    const Token* tok1 = nullptr;
+    const Token* tok2 = nullptr;
+    if (astIsIterator(args[0]) && astIsIterator(args[1])) {
+        tok1 = ValueFlow::getLifetimeObjValue(args[0]).tokvalue;
+        tok2 = ValueFlow::getLifetimeObjValue(args[1]).tokvalue;
+        if (!tok1 || !tok2)
+            return true;
+    } else {
+        tok1 = getIteratorExpression(args[0]);
+        tok2 = getIteratorExpression(args[1]);
+    }
+    if (tok1 && tok2)
+        return tok1->exprId() == tok2->exprId();
+    return tok1 || tok2;
 }
 
 const Token *findLambdaStartToken(const Token *last)

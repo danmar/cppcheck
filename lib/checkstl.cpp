@@ -678,30 +678,6 @@ void CheckStl::sameIteratorExpressionError(const Token *tok)
     reportError(tok, Severity::style, "sameIteratorExpression", "Same iterators expression are used for algorithm.", CWE664, Certainty::normal);
 }
 
-static const Token * getIteratorExpression(const Token * tok)
-{
-    if (!tok)
-        return nullptr;
-    if (tok->isUnaryOp("*"))
-        return nullptr;
-    if (!tok->isName()) {
-        const Token *iter1 = getIteratorExpression(tok->astOperand1());
-        if (iter1)
-            return iter1;
-        if (tok->str() == "(")
-            return nullptr;
-        const Token *iter2 = getIteratorExpression(tok->astOperand2());
-        if (iter2)
-            return iter2;
-    } else if (Token::Match(tok, "begin|cbegin|rbegin|crbegin|end|cend|rend|crend (")) {
-        if (Token::Match(tok->previous(), ". %name% ( ) !!."))
-            return tok->previous()->astOperand1();
-        if (!Token::simpleMatch(tok->previous(), ".") && Token::Match(tok, "%name% ( !!)") && !Token::simpleMatch(tok->linkAt(1), ") ."))
-            return tok->next()->astOperand2();
-    }
-    return nullptr;
-}
-
 static const Token* getAddressContainer(const Token* tok)
 {
     if (Token::simpleMatch(tok, "[") && tok->astOperand1())

@@ -6378,6 +6378,13 @@ private:
                "  else if (a.empty() == false && b.empty() == false) {}\n"
                "}\n";
         ASSERT("" != isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0));
+
+        code = "bool g(std::vector<int>& v) {\n"
+               "    v.push_back(1);\n"
+               "    int x = v.empty();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
     }
 
     void valueFlowContainerElement()
