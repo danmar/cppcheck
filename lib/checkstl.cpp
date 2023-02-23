@@ -160,7 +160,7 @@ void CheckStl::outOfBounds()
                     continue;
                 if (value.intvalue == 0 && (indexTok ||
                                             (containerYieldsElement(container, parent) && !containerAppendsElement(container, parent)) ||
-                                            (value.isKnown() && containerPopsElement(container, parent)))) {
+                                            containerPopsElement(container, parent))) {
                     std::string indexExpr;
                     if (indexTok && !indexTok->hasKnownValue())
                         indexExpr = indexTok->expressionString();
