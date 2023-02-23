@@ -7529,7 +7529,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         ProgramMemory programMemory;
         for (std::size_t i = 0; i < parvalues.size(); ++i) {
             const Variable * const arg = function->getArgumentVar(i);
-            if (!arg || !Token::Match(arg->typeStartToken(), "%type% %name% ,|)")) {
+            if (!arg) {
                 if (tokenlist->getSettings()->debugwarnings)
                     bailout(tokenlist, errorLogger, tok, "function return; unhandled argument type");
                 programMemory.clear();
