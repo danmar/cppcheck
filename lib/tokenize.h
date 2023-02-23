@@ -267,6 +267,7 @@ public:
      * A c;
      */
     void simplifyTypedef();
+    void simplifyTypedefCpp();
 
     /**
      */
