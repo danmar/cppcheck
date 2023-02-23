@@ -35,7 +35,6 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
-#include <list>
 #include <map>
 #include <numeric>
 #include <string_view>
