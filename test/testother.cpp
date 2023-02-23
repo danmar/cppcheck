@@ -5159,7 +5159,7 @@ private:
     }
 
     void testMisusedScopeObjectNamespace() {
-        check("namespace M {\n" // #4479
+        check("namespace M {\n" // #4779
               "    namespace N {\n"
               "        struct S {};\n"
               "    }\n"
