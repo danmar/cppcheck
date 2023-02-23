@@ -303,7 +303,7 @@ void CheckOther::warningOldStylePointerCast()
             tok = scope->bodyStart;
         for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * *| *| const|&| ) (| %name%|%num%|%bool%|%char%|%str%"))
+            if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * *| *| const|&| ) (| %name%|%num%|%bool%|%char%|%str%|&"))
                 continue;
             if (Token::Match(tok->previous(), "%type%"))
                 continue;
@@ -3685,6 +3685,12 @@ void CheckOther::checkComparePointers()
                 continue;
             if (var1->isRValueReference() || var2->isRValueReference())
                 continue;
+            if (const Token* parent2 = getParentLifetime(mTokenizer->isCPP(), v2.tokvalue, &mSettings->library))
+                if (var1 == parent2->variable())
+                    continue;
+            if (const Token* parent1 = getParentLifetime(mTokenizer->isCPP(), v1.tokvalue, &mSettings->library))
+                if (var2 == parent1->variable())
+                    continue;
             comparePointersError(tok, &v1, &v2);
         }
     }
