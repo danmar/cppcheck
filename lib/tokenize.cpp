@@ -85,13 +85,13 @@ static bool isEnumStart(const Token* tok)
 }
 
 template<typename T>
-static void skipEnumBody(T **tok)
+static void skipEnumBody(T *&tok)
 {
-    T *defStart = *tok;
+    T *defStart = tok;
     while (Token::Match(defStart, "%name%|::|:"))
         defStart = defStart->next();
     if (defStart && defStart->str() == "{")
-        *tok = defStart->link()->next();
+        tok = defStart->link()->next();
 }
 
 const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &endsWith)
@@ -212,10 +212,10 @@ nonneg int Tokenizer::sizeOfType(const Token *type) const
 //---------------------------------------------------------------------------
 
 // check if this statement is a duplicate definition
-bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef) const
+bool Tokenizer::duplicateTypedef(Token *&tokPtr, const Token *name, const Token *typeDef) const
 {
     // check for an end of definition
-    Token * tok = *tokPtr;
+    Token * tok = tokPtr;
     if (tok && Token::Match(tok->next(), ";|,|[|=|)|>|(|{")) {
         Token * end = tok->next();
 
@@ -253,7 +253,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 if (!Token::Match(tok->tokAt(-3), ",|<"))
                     return false;
 
-                *tokPtr = end->link();
+                tokPtr = end->link();
                 return true;
             }
         }
@@ -264,7 +264,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                 if (Token::Match(tok->previous(), "%type%") &&
                     !Token::Match(tok->previous(), "return|new|const|struct")) {
                     // duplicate definition so skip entire function
-                    *tokPtr = end->next()->link();
+                    tokPtr = end->next()->link();
                     return true;
                 }
             } else if (end->str() == ">") { // template parameter ?
@@ -275,7 +275,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                     while (end && end->str() != "{")
                         end = end->next();
                     if (end) {
-                        *tokPtr = end->link();
+                        tokPtr = end->link();
                         return true;
                     }
                 }
@@ -320,7 +320,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                             tok = tok->previous();
                     }
 
-                    if ((*tokPtr)->strAt(1) != "(" || !Token::Match((*tokPtr)->linkAt(1), ") .|(|["))
+                    if (tokPtr->strAt(1) != "(" || !Token::Match(tokPtr->linkAt(1), ") .|(|["))
                         return true;
                 }
             }
@@ -1844,7 +1844,7 @@ void Tokenizer::simplifyTypedefCpp()
                             }
                         } else if (Token::Match(tok2->previous(), "case|;|{|} %type% :")) {
                             tok2 = tok2->next();
-                        } else if (duplicateTypedef(&tok2, typeName, typeDef)) {
+                        } else if (duplicateTypedef(tok2, typeName, typeDef)) {
                             // skip to end of scope if not already there
                             if (tok2->str() != "}") {
                                 while (tok2->next()) {
@@ -2492,22 +2492,22 @@ namespace {
         }
     };
 
-    void setScopeInfo(Token *tok, ScopeInfo3 **scopeInfo, bool debug=false)
+    void setScopeInfo(Token *tok, ScopeInfo3 *&scopeInfo, bool debug=false)
     {
         if (!tok)
             return;
-        if (tok->str() == "{" && (*scopeInfo)->parent && tok == (*scopeInfo)->bodyStart)
+        if (tok->str() == "{" && scopeInfo->parent && tok == scopeInfo->bodyStart)
             return;
         if (tok->str() == "}") {
-            if ((*scopeInfo)->parent && tok == (*scopeInfo)->bodyEnd)
-                *scopeInfo = (*scopeInfo)->parent;
+            if (scopeInfo->parent && tok == scopeInfo->bodyEnd)
+                scopeInfo = scopeInfo->parent;
             else {
                 // Try to find parent scope
-                ScopeInfo3 *parent = (*scopeInfo)->parent;
+                ScopeInfo3 *parent = scopeInfo->parent;
                 while (parent && parent->bodyEnd != tok)
                     parent = parent->parent;
                 if (parent) {
-                    *scopeInfo = parent;
+                    scopeInfo = parent;
                     if (debug)
                         throw std::runtime_error("Internal error: unmatched }");
                 }
@@ -2525,7 +2525,7 @@ namespace {
                     nameSpace += tok1->str();
                     tok1 = tok1->next();
                 }
-                (*scopeInfo)->usingNamespaces.insert(std::move(nameSpace));
+                scopeInfo->usingNamespaces.insert(std::move(nameSpace));
             }
             // check for member function
             else if (tok->str() == "{") {
@@ -2562,13 +2562,13 @@ namespace {
                             scope = tok1->strAt(-3) + " :: " + scope;
                             tok1 = tok1->tokAt(-2);
                         }
-                        *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::MemberFunction, scope, tok, tok->link());
+                        scopeInfo = scopeInfo->addChild(ScopeInfo3::MemberFunction, scope, tok, tok->link());
                         added = true;
                     }
                 }
 
                 if (!added)
-                    *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::Other, emptyString, tok, tok->link());
+                    scopeInfo = scopeInfo->addChild(ScopeInfo3::Other, emptyString, tok, tok->link());
             }
             return;
         }
@@ -2583,7 +2583,7 @@ namespace {
 
         // add record type to scope info
         if (record)
-            (*scopeInfo)->recordTypes.insert(classname);
+            scopeInfo->recordTypes.insert(classname);
         tok = tok->next();
 
         // skip template parameters
@@ -2623,8 +2623,8 @@ namespace {
         }
 
         if (tok && tok->str() == "{") {
-            *scopeInfo = (*scopeInfo)->addChild(record ? ScopeInfo3::Record : ScopeInfo3::Namespace, classname, tok, tok->link());
-            (*scopeInfo)->baseTypes = std::move(baseTypes);
+            scopeInfo = scopeInfo->addChild(record ? ScopeInfo3::Record : ScopeInfo3::Namespace, classname, tok, tok->link());
+            scopeInfo->baseTypes = std::move(baseTypes);
         }
     }
 
@@ -2645,19 +2645,19 @@ namespace {
     bool usingMatch(
         const Token *nameToken,
         const std::string &scope,
-        Token **tok,
+        Token *&tok,
         const std::string &scope1,
         const ScopeInfo3 *currentScope,
         const ScopeInfo3 *memberClassScope)
     {
-        Token *tok1 = *tok;
+        Token *tok1 = tok;
 
         if (tok1 && tok1->str() != nameToken->str())
             return false;
 
         // skip this using
         if (tok1 == nameToken) {
-            *tok = findSemicolon(tok1);
+            tok = findSemicolon(tok1);
             return false;
         }
 
@@ -2666,7 +2666,7 @@ namespace {
             // fixme: this is wrong
             // skip to end of scope
             if (currentScope->bodyEnd)
-                *tok = const_cast<Token*>(currentScope->bodyEnd->previous());
+                tok = const_cast<Token*>(currentScope->bodyEnd->previous());
             return false;
         }
 
@@ -2898,7 +2898,7 @@ bool Tokenizer::simplifyUsing()
         if (Token::Match(tok, "{|}|namespace|class|struct|union") ||
             Token::Match(tok, "using namespace %name% ;|::")) {
             try {
-                setScopeInfo(tok, &currentScope, mSettings.debugwarnings);
+                setScopeInfo(tok, currentScope, mSettings.debugwarnings);
             } catch (const std::runtime_error &) {
                 reportError(tok, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
                             "simplifyUsing: unmatched body end");
@@ -3055,7 +3055,7 @@ bool Tokenizer::simplifyUsing()
             if ((Token::Match(tok1, "{|}|namespace|class|struct|union") && tok1->strAt(-1) != "using") ||
                 Token::Match(tok1, "using namespace %name% ;|::")) {
                 try {
-                    setScopeInfo(tok1, &currentScope1, mSettings.debugwarnings);
+                    setScopeInfo(tok1, currentScope1, mSettings.debugwarnings);
                 } catch (const std::runtime_error &) {
                     reportError(tok1, Severity::debug, "simplifyUsingUnmatchedBodyEnd",
                                 "simplifyUsing: unmatched body end");
@@ -3106,9 +3106,9 @@ bool Tokenizer::simplifyUsing()
                 continue;
             }
             if (inMemberFunc && memberFuncScope) {
-                if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1, memberFuncScope))
+                if (!usingMatch(nameToken, scope, tok1, scope1, currentScope1, memberFuncScope))
                     continue;
-            } else if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1, nullptr))
+            } else if (!usingMatch(nameToken, scope, tok1, scope1, currentScope1, nullptr))
                 continue;
 
             const auto nReplace = tokDistance(start, usingEnd);
@@ -3749,9 +3749,9 @@ void Tokenizer::simplifyDoublePlusAndDoubleMinus()
 
 void Tokenizer::arraySize()
 {
-    auto getStrTok = [](Token* tok, bool addLength, Token** endStmt) -> Token* {
+    auto getStrTok = [](Token* tok, bool addLength, Token*& endStmt) -> Token* {
         if (addLength) {
-            *endStmt = tok->tokAt(5);
+            endStmt = tok->tokAt(5);
             return tok->tokAt(4);
         }
         if (Token::Match(tok, "%var% [ ] =")) {
@@ -3762,7 +3762,7 @@ void Tokenizer::arraySize()
                 tok = tok->next();
             }
             if (Token::Match(tok, "%str%")) {
-                *endStmt = tok->tokAt(parCount + 1);
+                endStmt = tok->tokAt(parCount + 1);
                 return tok;
             }
         }
@@ -3781,7 +3781,7 @@ void Tokenizer::arraySize()
         }
 
         Token* endStmt{};
-        if (const Token* strTok = getStrTok(tok, addlength, &endStmt)) {
+        if (const Token* strTok = getStrTok(tok, addlength, endStmt)) {
             const int sz = Token::getStrArraySize(strTok);
             tok->next()->insertToken(std::to_string(sz));
             tok = endStmt;
@@ -4162,10 +4162,10 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
     it->second = ++mVarId;
 }
 
-static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap, bool executableScope)
+static bool setVarIdParseDeclaration(Token*& tok, const VariableMap& variableMap, bool executableScope)
 {
-    const Token* const tok1 = *tok;
-    Token* tok2 = *tok;
+    const Token* const tok1 = tok;
+    Token* tok2 = tok;
     if (!tok2->isName())
         return false;
 
@@ -4205,7 +4205,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
             }
         } else if (tok2->isCpp() && ((TemplateSimplifier::templateParameters(tok2) > 0) ||
                                      Token::simpleMatch(tok2, "< >") /* Ticket #4764 */)) {
-            const Token *start = *tok;
+            const Token *start = tok;
             if (Token::Match(start->previous(), "%or%|%oror%|&&|&|^|+|-|*|/"))
                 return false;
             Token* const closingBracket = tok2->findClosingBracket();
@@ -4249,7 +4249,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
     if (tok2) {
         bool isLambdaArg = false;
         {
-            const Token *tok3 = (*tok)->previous();
+            const Token *tok3 = tok->previous();
             if (tok3 && tok3->str() == ",") {
                 while (tok3 && !Token::Match(tok3,";|(|[|{")) {
                     if (Token::Match(tok3, ")|]"))
@@ -4275,7 +4275,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
         }
 
 
-        *tok = tok2;
+        tok = tok2;
 
         // In executable scopes, references must be assigned
         // Catching by reference is an exception
@@ -4304,11 +4304,11 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
 }
 
 
-static void setVarIdStructMembers(Token **tok1,
+static void setVarIdStructMembers(Token *&tok1,
                                   std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                   nonneg int &varId)
 {
-    Token *tok = *tok1;
+    Token *tok = tok1;
 
     if (Token::Match(tok, "%name% = { . %name% =|{")) {
         const nonneg int struct_varid = tok->varId();
@@ -4366,7 +4366,7 @@ static void setVarIdStructMembers(Token **tok1,
         }
     }
     // tok can't be null
-    *tok1 = tok;
+    tok1 = tok;
 }
 
 static bool setVarIdClassDeclaration(Token* const startToken,
@@ -4434,7 +4434,7 @@ static bool setVarIdClassDeclaration(Token* const startToken,
                     const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
                     if (it != variableMap.map(false).end()) {
                         tok->varId(it->second);
-                        setVarIdStructMembers(&tok, structMembers, variableMap.getVarId());
+                        setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
                     }
                 }
             }
@@ -4472,7 +4472,7 @@ void Tokenizer::setVarIdClassFunction(const std::string &classname,
         const std::map<std::string, nonneg int>::const_iterator it = varlist.find(tok2->str());
         if (it != varlist.end()) {
             tok2->varId(it->second);
-            setVarIdStructMembers(&tok2, structMembers, varId_);
+            setVarIdStructMembers(tok2, structMembers, varId_);
         }
     }
 }
@@ -4689,7 +4689,7 @@ void Tokenizer::setVarIdPass1()
             }
 
             try { /* Ticket #8151 */
-                decl = setVarIdParseDeclaration(&tok2, variableMap, scopeStack.top().isExecutable);
+                decl = setVarIdParseDeclaration(tok2, variableMap, scopeStack.top().isExecutable);
             } catch (const Token * errTok) {
                 syntaxError(errTok);
             }
@@ -4852,7 +4852,7 @@ void Tokenizer::setVarIdPass1()
                 const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(globalNamespace).find(tok->str());
                 if (it != variableMap.map(globalNamespace).end()) {
                     tok->varId(it->second);
-                    setVarIdStructMembers(&tok, structMembers, variableMap.getVarId());
+                    setVarIdStructMembers(tok, structMembers, variableMap.getVarId());
                 }
             }
         } else if (Token::Match(tok, "::|. %name%") && Token::Match(tok->previous(), ")|]|>|%name%")) {
@@ -9760,7 +9760,7 @@ void Tokenizer::simplifyNamespaceStd()
     for (Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
         bool insert = false;
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
-            skipEnumBody(&tok);
+            skipEnumBody(tok);
         }
         if (!tok->isName() || tok->isKeyword() || tok->isStandardType() || tok->varId())
             continue;

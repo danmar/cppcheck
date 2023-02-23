@@ -97,11 +97,11 @@ void ProgramMemory::setIntValue(const Token* expr, MathLib::bigint value, bool i
     setValue(expr, v);
 }
 
-bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
+bool ProgramMemory::getTokValue(nonneg int exprid, const Token*& result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isTokValue()) {
-        *result = value->tokvalue;
+        result = value->tokvalue;
         return true;
     }
     return false;
@@ -1469,7 +1469,7 @@ namespace {
                 return lhs;
             } else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
                 const Token* tokvalue = nullptr;
-                if (!pm->getTokValue(expr->astOperand1()->exprId(), &tokvalue)) {
+                if (!pm->getTokValue(expr->astOperand1()->exprId(), tokvalue)) {
                     auto tokvalue_it = std::find_if(expr->astOperand1()->values().cbegin(),
                                                     expr->astOperand1()->values().cend(),
                                                     std::mem_fn(&ValueFlow::Value::isTokValue));

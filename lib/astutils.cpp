@@ -771,7 +771,7 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
     if (Token::simpleMatch(tok->astParent(), "(") && ftok && !tok->astParent()->isCast() &&
         ftok->tokType() != Token::eType)
         return {};
-    if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
+    if (parent && Token::Match(tok->astParent(), "return|(|{|%assign%")) {
         *parent = tok->astParent();
     }
     if (tok->astParent()->valueType())

@@ -538,7 +538,7 @@ private:
     void reportError(const Token* tok, const Severity severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
     void reportError(const std::list<const Token*>& callstack, Severity severity, const std::string& id, const std::string& msg, bool inconclusive = false) const;
 
-    bool duplicateTypedef(Token **tokPtr, const Token *name, const Token *typeDef) const;
+    bool duplicateTypedef(Token *&tokPtr, const Token *name, const Token *typeDef) const;
 
     void unsupportedTypedef(const Token *tok) const;
 
