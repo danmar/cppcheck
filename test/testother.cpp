@@ -303,7 +303,6 @@ private:
         settings->standards.c = Standards::CLatest;
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        settings->certainty.setEnabled(Certainty::experimental, experimental);
         settings->verbose = verbose;
 
         // Tokenize..
@@ -333,7 +332,6 @@ private:
         settings->standards.c = Standards::CLatest;
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.enable(Certainty::inconclusive);
-        settings->certainty.disable(Certainty::experimental);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -9230,7 +9228,7 @@ private:
               "    return a++,\n"
               "  do_something();\n"
               "}", nullptr, true, false, false);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", "", errout.str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"
@@ -9243,7 +9241,7 @@ private:
               "    return a+5,\n"
               "  do_something();\n"
               "}", nullptr, true, false, false);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Comma is used in return statement. The comma can easily be misread as a ';'.\n", "", errout.str());
 
         check("int fun(int a) {\n"
               "  if (a < 0)\n"

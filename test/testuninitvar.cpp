@@ -121,7 +121,6 @@ private:
         checkuninitvar.check();
 
         settings.debugwarnings = false;
-        settings.certainty.enable(Certainty::experimental);
     }
 
     void uninitvar1() {
@@ -4670,7 +4669,6 @@ private:
 
         // Tokenize..
         settings.debugwarnings = false;
-        settings.certainty.disable(Certainty::experimental);
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);

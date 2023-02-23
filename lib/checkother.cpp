@@ -1097,10 +1097,7 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 void CheckOther::checkCommaSeparatedReturn()
 {
     // This is experimental for now. See #5076
-    if (!mSettings->certainty.isEnabled(Certainty::experimental))
-        return;
-
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if ((true) || !mSettings->severity.isEnabled(Severity::style))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
