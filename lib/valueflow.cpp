@@ -7751,10 +7751,9 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
         return tok->exprId() == expr->exprId() || (astIsIterator(tok) && isAliasOf(tok, expr->exprId()));
     }
 
-    Action isWritable(const Token* tok, Direction d) const override {
+    Action isWritable(const Token* tok, Direction /*d*/) const override
+    {
         if (astIsIterator(tok))
-            return Action::None;
-        if (d == Direction::Reverse)
             return Action::None;
         if (!getValue(tok))
             return Action::None;
@@ -7788,8 +7787,6 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
     }
 
     void writeValue(ValueFlow::Value* val, const Token* tok, Direction d) const override {
-        if (d == Direction::Reverse)
-            return;
         if (!val)
             return;
         if (!tok->astParent())
@@ -7800,26 +7797,31 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             return;
         const Token* parent = tok->astParent();
         const Library::Container* container = getLibraryContainer(tok);
+        int n = 0;
 
         if (container->stdStringLike && Token::simpleMatch(parent, "+=") && parent->astOperand2()) {
             const Token* rhs = parent->astOperand2();
             const Library::Container* rhsContainer = getLibraryContainer(rhs);
             if (rhs->tokType() == Token::eString)
-                val->intvalue += Token::getStrLength(rhs);
+                n = Token::getStrLength(rhs);
             else if (rhsContainer && rhsContainer->stdStringLike) {
-                for (const ValueFlow::Value &rhsval : rhs->values()) {
-                    if (rhsval.isKnown() && rhsval.isContainerSizeValue()) {
-                        val->intvalue += rhsval.intvalue;
-                    }
-                }
+                auto it = std::find_if(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value& rhsval) {
+                    return rhsval.isKnown() && rhsval.isContainerSizeValue();
+                });
+                if (it != rhs->values().end())
+                    n = it->intvalue;
             }
         } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
             const Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
             if (action == Library::Container::Action::PUSH)
-                val->intvalue++;
+                n = 1;
             if (action == Library::Container::Action::POP)
-                val->intvalue--;
+                n = -1;
         }
+        if (d == Direction::Reverse)
+            val->intvalue -= n;
+        else
+            val->intvalue += n;
     }
 
     int getIndirect(const Token* tok) const override
