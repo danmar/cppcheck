@@ -178,6 +178,8 @@ bool cppcheck::Platform::platform(const std::string& platformstr, std::string& e
         return false;
     }
     else {
+        if (verbose)
+            std::cout << "current working directory '" + Path::getCurrentPath() + "'" << std::endl;
         bool found = false;
         for (const std::string& path : paths) {
             if (verbose)
@@ -203,19 +205,19 @@ bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::strin
     std::vector<std::string> filenames;
     filenames.push_back(filename);
     filenames.push_back(filename + ".xml");
-    filenames.push_back("platforms/" + filename);
-    filenames.push_back("platforms/" + filename + ".xml");
+    filenames.push_back(Path::join("platforms", filename));
+    filenames.push_back(Path::join("platforms", filename + ".xml"));
     if (exename && (std::string::npos != Path::fromNativeSeparators(exename).find('/'))) {
         filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + filename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename);
-        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + "platforms/" + filename + ".xml");
+        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + Path::join("platforms", filename));
+        filenames.push_back(Path::getPathFromFilename(Path::fromNativeSeparators(exename)) + Path::join("platforms", filename + ".xml"));
     }
 #ifdef FILESDIR
     std::string filesdir = FILESDIR;
     if (!filesdir.empty() && filesdir[filesdir.size()-1] != '/')
         filesdir += '/';
-    filenames.push_back(filesdir + ("platforms/" + filename));
-    filenames.push_back(filesdir + ("platforms/" + filename + ".xml"));
+    filenames.push_back(filesdir + Path::join("platforms", filename));
+    filenames.push_back(filesdir + Path::join("platforms", filename + ".xml"));
 #endif
 
     // open file..

@@ -38,6 +38,8 @@ private:
         TEST_CASE(is_cpp);
         TEST_CASE(get_path_from_filename);
         TEST_CASE(join);
+        TEST_CASE(getAbsoluteFilePath);
+        TEST_CASE(stripDirectoryPart);
     }
 
     void removeQuotationMarks() const {
@@ -93,18 +95,48 @@ private:
     }
 
     void getRelative() const {
-        const std::vector<std::string> basePaths = {
-            "", // Don't crash with empty paths
-            "C:/foo",
-            "C:/bar/",
-            "C:/test.cpp"
-        };
+        {
+            const std::vector<std::string> basePaths = {
+                "",     // Don't crash with empty paths
+                "C:/foo",
+                "C:/bar/",
+                "C:/test.cpp"
+            };
 
-        ASSERT_EQUALS("x.c", Path::getRelativePath("C:/foo/x.c", basePaths));
-        ASSERT_EQUALS("y.c", Path::getRelativePath("C:/bar/y.c", basePaths));
-        ASSERT_EQUALS("foo/y.c", Path::getRelativePath("C:/bar/foo/y.c", basePaths));
-        ASSERT_EQUALS("C:/test.cpp", Path::getRelativePath("C:/test.cpp", basePaths));
-        ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
+            ASSERT_EQUALS("x.c", Path::getRelativePath("C:/foo/x.c", basePaths));
+            ASSERT_EQUALS("y.c", Path::getRelativePath("C:/bar/y.c", basePaths));
+            ASSERT_EQUALS("foo/y.c", Path::getRelativePath("C:/bar/foo/y.c", basePaths));
+            ASSERT_EQUALS("C:/test.cpp", Path::getRelativePath("C:/test.cpp", basePaths));
+            ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:/foobar/test.cpp", basePaths));
+        }
+        {
+            const std::vector<std::string> basePaths = {
+                "",     // Don't crash with empty paths
+                "C:\\foo",
+                "C:\\bar\\",
+                "C:\\test.cpp"
+            };
+
+            ASSERT_EQUALS("x.c", Path::getRelativePath("C:\\foo\\x.c", basePaths));
+            ASSERT_EQUALS("y.c", Path::getRelativePath("C:\\bar\\y.c", basePaths));
+            ASSERT_EQUALS("foo/y.c", Path::getRelativePath("C:\\bar\\foo\\y.c", basePaths));
+            ASSERT_EQUALS("C:/test.cpp", Path::getRelativePath("C:\\test.cpp", basePaths));
+            ASSERT_EQUALS("C:/foobar/test.cpp", Path::getRelativePath("C:\\foobar\\test.cpp", basePaths));
+        }
+        {
+            const std::vector<std::string> basePaths = {
+                "",     // Don't crash with empty paths
+                "/c/foo",
+                "/c/bar/",
+                "/c/test.cpp"
+            };
+
+            ASSERT_EQUALS("x.c", Path::getRelativePath("/c/foo/x.c", basePaths));
+            ASSERT_EQUALS("y.c", Path::getRelativePath("/c/bar/y.c", basePaths));
+            ASSERT_EQUALS("foo/y.c", Path::getRelativePath("/c/bar/foo\\y.c", basePaths));
+            ASSERT_EQUALS("/c/test.cpp", Path::getRelativePath("/c/test.cpp", basePaths));
+            ASSERT_EQUALS("/c/foobar/test.cpp", Path::getRelativePath("/c/foobar/test.cpp", basePaths));
+        }
     }
 
     void is_c() const {
@@ -141,6 +173,12 @@ private:
         ASSERT_EQUALS("/tmp/", Path::getPathFromFilename("/tmp/index.h"));
         ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/index.h"));
         ASSERT_EQUALS("a/b/c/", Path::getPathFromFilename("a/b/c/"));
+        ASSERT_EQUALS("S:\\tmp\\", Path::getPathFromFilename("S:\\tmp\\index.h"));
+        ASSERT_EQUALS("a\\b\\c\\", Path::getPathFromFilename("a\\b\\c\\index.h"));
+        ASSERT_EQUALS("a\\b\\c\\", Path::getPathFromFilename("a\\b\\c\\"));
+        ASSERT_EQUALS("S:\\a\\b\\c\\", Path::getPathFromFilename("S:\\a\\b\\c\\"));
+        ASSERT_EQUALS("S:/tmp/", Path::getPathFromFilename("S:/tmp/index.h"));
+        ASSERT_EQUALS("S:/a/b/c/", Path::getPathFromFilename("S:/a/b/c/index.h"));
     }
 
     void join() const {
@@ -148,7 +186,35 @@ private:
         ASSERT_EQUALS("a", Path::join("", "a"));
         ASSERT_EQUALS("a/b", Path::join("a", "b"));
         ASSERT_EQUALS("a/b", Path::join("a/", "b"));
+        ASSERT_EQUALS("a/b", Path::join("a\\", "b"));
         ASSERT_EQUALS("/b", Path::join("a", "/b"));
+        ASSERT_EQUALS("/b", Path::join("a", "\\b"));
+    }
+
+    // TODO: this is quite messy - should Path::getAbsoluteFilePath() return normalized separators?
+    void getAbsoluteFilePath() const {
+        // Path::getAbsoluteFilePath() only works with existing paths on Linux
+#ifdef _WIN32
+        const std::string cwd = Path::getCurrentPath();
+        ASSERT_EQUALS(Path::join(cwd, "a.h"), Path::fromNativeSeparators(Path::getAbsoluteFilePath("a.h")));
+        ASSERT_EQUALS(Path::join(cwd, "inc/a.h"), Path::fromNativeSeparators(Path::getAbsoluteFilePath("inc/a.h")));
+        const std::string cwd_down = Path::getPathFromFilename(cwd);
+        ASSERT_EQUALS(Path::join(cwd_down, "a.h"), Path::fromNativeSeparators(Path::getAbsoluteFilePath("../a.h")));
+        ASSERT_EQUALS(Path::join(cwd_down, "inc/a.h"), Path::fromNativeSeparators(Path::getAbsoluteFilePath("../inc/a.h")));
+        ASSERT_EQUALS(Path::join(cwd_down, "inc/a.h"), Path::fromNativeSeparators(Path::getAbsoluteFilePath("../inc/../inc/a.h")));
+#endif
+    }
+
+    void stripDirectoryPart() const {
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a/a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a/b/a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("/mnt/a/b/a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a\\a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("a\\b\\a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("S:\\a\\b\\a.h"));
+        ASSERT_EQUALS("a.h", Path::stripDirectoryPart("S:/a/b/a.h"));
+
     }
 };
 
