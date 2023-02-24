@@ -972,7 +972,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
 {
     // create variable symbol table
     mVariableList.resize(mTokenizer->varIdCount() + 1);
-    std::fill_n(mVariableList.begin(), mVariableList.size(), (const Variable*)nullptr);
+    std::fill_n(mVariableList.begin(), mVariableList.size(), nullptr);
 
     // check all scopes for variables
     for (Scope& scope : scopeList) {
