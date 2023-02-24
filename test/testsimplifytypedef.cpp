@@ -351,7 +351,7 @@ private:
         const char code[] = "typedef void (*fp)(void);\n"
                             "typedef fp t;\n"
                             "void foo(t p);";
-        ASSERT_EQUALS("; void foo ( void ( * p ) ( void ) ) ;", simplifyTypedef(code));
+        ASSERT_EQUALS("void foo ( void ( * p ) ( void ) ) ;", simplifyTypedef(code));
     }
 
     void carray1() {
@@ -377,7 +377,7 @@ private:
         const char code[] = "typedef void (*fp)(void);\n"
                             "typedef fp t;\n"
                             "void foo(t p);";
-        ASSERT_EQUALS("; void foo ( void ( * p ) ( ) ) ;", tok(code));
+        ASSERT_EQUALS("void foo ( void ( * p ) ( ) ) ;", tok(code));
     }
 
     void simplifyTypedef1() {
@@ -547,7 +547,7 @@ private:
                             "RCUINT trcui;";
 
         const char expected[] =
-            "; int ti ; "
+            "int ti ; "
             "unsigned int tui ; "
             "int * tpi ; "
             "unsigned int * tpui ; "
@@ -1019,7 +1019,7 @@ private:
                             "int_array ia;";
 
         const char expected[] =
-            "; int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : -1 ] ; "
+            "int a [ ice_or < is_int < int > :: value , is_int < UDT > :: value > :: value ? 1 : -1 ] ; "
             "int a1 [ N ] ; "
             "int a2 [ N ] [ M ] ; "
             "int t ; "
@@ -2626,19 +2626,19 @@ private:
                             "const mat3x3 & Fred::mc() const { return m3x3; }";
         const char exp[] = "float v3 [ 3 ] ; "
                            "float m3x3 [ 3 ] [ 3 ] ; "
-                           "const float ( & gv ( ) ) [ 3 ] { return v3 ; } "
-                           "const float ( & gm ( ) ) [ 3 ] [ 3 ] { return m3x3 ; } "
+                           "const float * & gv ( ) { return v3 ; } "
+                           "const float * * & gm ( ) { return m3x3 ; } "
                            "class Fred { "
                            "public: "
-                           "float ( & v ( ) ) [ 3 ] ; "
-                           "float ( & m ( ) ) [ 3 ] [ 3 ] ; "
-                           "const float ( & vc ( ) const ) [ 3 ] ; "
-                           "const float ( & mc ( ) const ) [ 3 ] [ 3 ] ; "
+                           "float * & v ( ) ; "
+                           "float * * & m ( ) ; "
+                           "const float * & vc ( ) const ; "
+                           "const float * * & mc ( ) const ; "
                            "} ; "
-                           "float ( & Fred :: v ( ) ) [ 3 ] { return v3 ; } "
-                           "float ( & Fred :: m ( ) ) [ 3 ] [ 3 ] { return m3x3 ; } "
-                           "const float ( & Fred :: vc ( ) const ) [ 3 ] { return v3 ; } "
-                           "const float ( & Fred :: mc ( ) const ) [ 3 ] [ 3 ] { return m3x3 ; }";
+                           "float * & Fred :: v ( ) { return v3 ; } "
+                           "float * * & Fred :: m ( ) { return m3x3 ; } "
+                           "const float * & Fred :: vc ( ) const { return v3 ; } "
+                           "const float * * & Fred :: mc ( ) const { return m3x3 ; }";
         ASSERT_EQUALS(exp, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -3428,7 +3428,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const char expected[] = "C f1 ( ) ; "
+            const char expected[] = "; C f1 ( ) ; "
                                     "C ( * f2 ) ( ) ; "
                                     "C ( & f3 ) ( ) ; "
                                     "C ( * f4 ) ( ) ; "
@@ -3457,7 +3457,7 @@ private:
 
             // The expected result..
             // C const -> const C
-            const char expected[] = "const C f1 ( ) ; "
+            const char expected[] = "; const C f1 ( ) ; "
                                     "const C ( * f2 ) ( ) ; "
                                     "const C ( & f3 ) ( ) ; "
                                     "const C ( * f4 ) ( ) ; "
@@ -3485,7 +3485,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const char expected[] = "const C f1 ( ) ; "
+            const char expected[] = "; const C f1 ( ) ; "
                                     "const C ( * f2 ) ( ) ; "
                                     "const C ( & f3 ) ( ) ; "
                                     "const C ( * f4 ) ( ) ; "
@@ -3513,7 +3513,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const char expected[] = "C * f1 ( ) ; "
+            const char expected[] = "; C * f1 ( ) ; "
                                     "C * ( * f2 ) ( ) ; "
                                     "C * ( & f3 ) ( ) ; "
                                     "C * ( * f4 ) ( ) ; "
@@ -3541,7 +3541,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const char expected[] = "const C * f1 ( ) ; "
+            const char expected[] = "; const C * f1 ( ) ; "
                                     "const C * ( * f2 ) ( ) ; "
                                     "const C * ( & f3 ) ( ) ; "
                                     "const C * ( * f4 ) ( ) ; "
@@ -3570,7 +3570,7 @@ private:
 
             // The expected result..
             // C const -> const C
-            const char expected[] = "const C * f1 ( ) ; "
+            const char expected[] = "; const C * f1 ( ) ; "
                                     "const C * ( * f2 ) ( ) ; "
                                     "const C * ( & f3 ) ( ) ; "
                                     "const C * ( * f4 ) ( ) ; "

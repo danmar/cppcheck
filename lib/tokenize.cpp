@@ -595,7 +595,8 @@ namespace {
         std::pair<Token*, Token*> mRangeAfterVar;
         std::string mTypedefName;  // Name of typedef type
         Token* mNameToken{nullptr};
-        bool mFail{false};
+        bool mFail = false;
+        bool mReplaceFailed = false;
 
     public:
         TypedefSimplifier(Token* typedefToken, int &num) : mTypedefToken(typedefToken) {
@@ -603,10 +604,6 @@ namespace {
 
             // TODO handle unnamed structs etc
             if (Token::Match(start, "const| enum|struct|union|class %name% {")) {
-                // TODO: do not fail
-                mFail = true;
-                return;
-
                 const std::pair<Token*, Token*> rangeBefore(start, Token::findsimplematch(start, "{"));
 
                 // find typedef name token
@@ -633,14 +630,6 @@ namespace {
             }
 
             for (Token* type = start; Token::Match(type, "%name%|*|&"); type = type->next()) {
-                // TODO handle pointers better
-                if (type->str() == "*")
-                    break;
-
-                // TODO handle structs better
-                if (Token::Match(type, "struct|class"))
-                    break;
-
                 if (Token::Match(type, "%name% ;")) {
                     mRangeType.first = start;
                     mRangeType.second = type;
@@ -648,8 +637,7 @@ namespace {
                     mEndToken = mNameToken->next();
                     return;
                 }
-                // TODO handle arrays
-                if (false && Token::Match(type, "%name% [")) {
+                if (Token::Match(type, "%name% [")) {
                     Token* end = type->linkAt(1);
                     while (Token::simpleMatch(end, "] ["))
                         end = end->linkAt(1);
@@ -663,8 +651,7 @@ namespace {
                     mRangeAfterVar.second = mEndToken;
                     return;
                 }
-                // TODO handle function pointers
-                if (false && Token::Match(type->next(), "( * const| %name% ) (") && Token::simpleMatch(type->linkAt(1)->linkAt(1), ") ;")) {
+                if (Token::Match(type->next(), "( * const| %name% ) (") && Token::simpleMatch(type->linkAt(1)->linkAt(1), ") ;")) {
                     mNameToken = type->linkAt(1)->previous();
                     mEndToken = type->linkAt(1)->linkAt(1)->next();
                     mRangeType.first = start;
@@ -680,6 +667,10 @@ namespace {
 
         bool fail() const {
             return mFail || Token::simpleMatch(mTypedefToken, "typedef typename");
+        }
+
+        bool replaceFailed() const {
+            return mReplaceFailed;
         }
 
         bool isStructEtc() const {
@@ -738,6 +729,8 @@ namespace {
                 if (Token::Match(mRangeType.first, "const| struct|class %name% %name% ;")) {
                     tok->originalName(tok->str());
                     tok->str(mRangeType.second->previous()->str());
+                } else {
+                    mReplaceFailed = true;
                 }
                 return;
             }
@@ -959,8 +952,10 @@ void Tokenizer::simplifyTypedef()
         if (!typedefs.empty())
         {
             // remove typedefs
-            for (auto &t: typedefs)
-                t.second.removeDeclaration();
+            for (auto &t: typedefs) {
+                if (!t.second.replaceFailed())
+                    t.second.removeDeclaration();
+            }
 
             while (Token::Match(list.front(), "; %any%"))
                 list.front()->deleteThis();
@@ -1002,9 +997,10 @@ void Tokenizer::simplifyTypedef()
 
     if (!typedefs.empty())
     {
-        // remove typedefs
-        for (auto &t: typedefs)
-            t.second.removeDeclaration();
+        for (auto &t: typedefs) {
+            if (!t.second.replaceFailed())
+                t.second.removeDeclaration();
+        }
 
         while (Token::Match(list.front(), "; %any%"))
             list.front()->deleteThis();
