@@ -6297,6 +6297,9 @@ private:
         ASSERT_EQUALS("ab4<<c--+1:?", testAst("a ? (b << 4) + --c : 1"));
         ASSERT_EQUALS("ab4<<c--+1:?", testAst("a ? (b << 4) + c-- : 1"));
         ASSERT_EQUALS("ai[i= i--", testAst("a[i]=i; --i;"));
+
+        ASSERT_EQUALS("fint0{1&(", testAst("f(int{ 0 } & 1);")); // #11572
+        ASSERT_EQUALS("int0{1&return", testAst("int g() { return int{ 0 } & 1; }"));
     }
 
     void astfunction() { // function calls
@@ -7529,6 +7532,16 @@ private:
                         "    T() : decltype(s) ({ 0 }) { }\n"
                         "};\n",
                         "{ } }",
+                        TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("struct S {};\n"
+                        "template<class... Args>\n"
+                        "struct T;\n"
+                        "template<class... Args>\n"
+                        "struct T<void, Args...> final : S {\n"
+                        "    void operator()(Args...) {}\n"
+                        "};\n",
+                        "{ void",
                         TokenImpl::Cpp11init::NOINIT);
 
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename U> struct X {};\n" // don't crash

@@ -2653,7 +2653,7 @@ private:
               "    U* y = (U*)(&x)\n"
               "    y->mutate();\n" //to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
 
         check("struct C { void f() const; };\n" // #9875 - crash
               "\n"
@@ -5159,7 +5159,7 @@ private:
     }
 
     void testMisusedScopeObjectNamespace() {
-        check("namespace M {\n" // #4479
+        check("namespace M {\n" // #4779
               "    namespace N {\n"
               "        struct S {};\n"
               "    }\n"
@@ -10653,6 +10653,19 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #11576
+              "int f(S s) {\n"
+              "    return &s.i - (int*)&s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n", errout.str());
+
+        check("struct S { int i; };\n"
+              "int f(S s1, S s2) {\n"
+              "    return &s1.i - reinterpret_cast<int*>(&s2);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (error) Subtracting pointers that point to different objects\n",
+                      errout.str());
     }
 
     void unusedVariableValueTemplate() {

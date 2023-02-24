@@ -587,7 +587,7 @@ QString ProjectFileDialog::getImportProject() const
 
 void ProjectFileDialog::addIncludeDir(const QString &dir)
 {
-    if (dir.isNull() || dir.isEmpty())
+    if (dir.isEmpty())
         return;
 
     const QString newdir = QDir::toNativeSeparators(dir);
@@ -598,7 +598,7 @@ void ProjectFileDialog::addIncludeDir(const QString &dir)
 
 void ProjectFileDialog::addCheckPath(const QString &path)
 {
-    if (path.isNull() || path.isEmpty())
+    if (path.isEmpty())
         return;
 
     const QString newpath = QDir::toNativeSeparators(path);
@@ -609,7 +609,7 @@ void ProjectFileDialog::addCheckPath(const QString &path)
 
 void ProjectFileDialog::addExcludePath(const QString &path)
 {
-    if (path.isNull() || path.isEmpty())
+    if (path.isEmpty())
         return;
 
     const QString newpath = QDir::toNativeSeparators(path);

@@ -56,6 +56,12 @@
 #include <utility>
 #include <vector>
 
+#ifndef _WIN32
+#include <unistd.h>
+#else
+#include <process.h>
+#endif
+
 #define PICOJSON_USE_INT64
 #include <picojson.h>
 
@@ -229,13 +235,29 @@ static std::vector<std::string> split(const std::string &str, const std::string 
     return ret;
 }
 
+static int getPid()
+{
+#ifndef _WIN32
+    return getpid();
+#else
+    return _getpid();
+#endif
+}
+
 static std::string getDumpFileName(const Settings& settings, const std::string& filename)
 {
     if (!settings.dumpFile.empty())
         return settings.dumpFile;
+
+    std::string extension;
+    if (settings.dump)
+        extension = ".dump";
+    else
+        extension = "." + std::to_string(getPid()) + ".dump";
+
     if (!settings.dump && !settings.buildDir.empty())
-        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, emptyString) + ".dump";
-    return filename + ".dump";
+        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, emptyString) + extension;
+    return filename + extension;
 }
 
 static std::string getCtuInfoFileName(const std::string &dumpFile)
