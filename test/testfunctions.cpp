@@ -1966,6 +1966,15 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("namespace N {\n"
+              "    struct S { static const std::set<std::string> s; };\n"
+              "}\n"
+              "void f() {\n"
+              "    const auto& t = N::S::s;\n"
+              "    if (t.find(\"abc\") != t.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings = settings_old;
     }
 
