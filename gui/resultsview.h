@@ -197,7 +197,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    const ShowTypes * getShowTypes() const;
+    const ShowTypes & getShowTypes() const;
 
 signals:
 
