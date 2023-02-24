@@ -671,6 +671,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     if (name.empty())
         return Error(ErrorCode::OK);
 
+    // TODO: write debug warning if we modify an existing entry
     Function& func = functions[name];
 
     for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
