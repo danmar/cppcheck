@@ -88,15 +88,15 @@ if (BUILD_TESTS)
         endforeach()
 
         function(add_cfg CFG_TEST)
-            set(options INCONCLUSIVE)
             set(oneValueArgs PLATFORM NAME)
-            set(multiValueArgs LIBRARY)
+            set(multiValueArgs ADD_LIBRARY)
 
             cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-            if(PARSE_LIBRARY)
-                string(REPLACE ";" "," LIBRARY "${PARSE_LIBRARY}")
-            else()
-                get_filename_component(LIBRARY ${CFG_TEST} NAME_WE)
+            get_filename_component(LIBRARY ${CFG_TEST} NAME_WE)
+            # TODO: get rid of this
+            if(PARSE_ADD_LIBRARY)
+                string(REPLACE ";" "," ADD_LIBRARY "${PARSE_ADD_LIBRARY}")
+                set(LIBRARY "${ADD_LIBRARY},${LIBRARY}")
             endif()
             set(PLATFORM unix64)
             if(PARSE_PLATFORM)
@@ -107,10 +107,6 @@ if (BUILD_TESTS)
             else()
                 string(MAKE_C_IDENTIFIER ${CFG_TEST} TEST_NAME)
             endif()
-            set(INCONCLUSIVE)
-            if(PARSE_INCONCLUSIVE)
-                set(INCONCLUSIVE "--inconclusive")
-            endif()
             if ("cfg-${TEST_NAME}" IN_LIST SKIP_TESTS)
             else()
                 # TODO: add syntax check
@@ -119,24 +115,27 @@ if (BUILD_TESTS)
                         --check-library
                         --platform=${PLATFORM}
                         --library=${LIBRARY}
-                        --enable=information
-                        --enable=style
+                        --enable=style,information
+                        --inconclusive
+                        --force
                         --error-exitcode=1
                         --suppress=missingIncludeSystem
                         --inline-suppr
-                        ${INCONCLUSIVE}
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
             endif()
         endfunction()
-        add_cfg(boost.cpp INCONCLUSIVE)
+        # TODO: glob this
+        add_cfg(boost.cpp)
         add_cfg(bsd.c)
         add_cfg(cairo.c)
-        add_cfg(cppunit.cpp INCONCLUSIVE)
-        add_cfg(gnu.c LIBRARY posix;gnu)
-        add_cfg(googletest.cpp INCONCLUSIVE)
-        add_cfg(gtk.c INCONCLUSIVE)
-        add_cfg(kde.cpp INCONCLUSIVE)
+        add_cfg(cppunit.cpp)
+        # TODO: posix needs to specified first or it has a different mmap() config
+        # TODO: get rid of posix dependency
+        add_cfg(gnu.c ADD_LIBRARY posix)
+        add_cfg(googletest.cpp)
+        add_cfg(gtk.c)
+        add_cfg(kde.cpp)
         add_cfg(libcurl.c)
         add_cfg(libsigc++.cpp)
         add_cfg(lua.c)
@@ -145,14 +144,14 @@ if (BUILD_TESTS)
         add_cfg(openssl.c)
         add_cfg(posix.c)
         add_cfg(python.c)
-        add_cfg(qt.cpp INCONCLUSIVE)
-        add_cfg(sqlite3.c INCONCLUSIVE)
-        add_cfg(std.c INCONCLUSIVE)
-        add_cfg(std.cpp INCONCLUSIVE)
-        add_cfg(windows.cpp INCONCLUSIVE NAME windows32A PLATFORM win32A)
-        add_cfg(windows.cpp INCONCLUSIVE NAME windows32W PLATFORM win32W)
-        add_cfg(windows.cpp INCONCLUSIVE NAME windows64 PLATFORM win64)
-        add_cfg(wxwidgets.cpp INCONCLUSIVE)
+        add_cfg(qt.cpp)
+        add_cfg(sqlite3.c)
+        add_cfg(std.c)
+        add_cfg(std.cpp)
+        add_cfg(windows.cpp NAME windows32A PLATFORM win32A)
+        add_cfg(windows.cpp NAME windows32W PLATFORM win32W)
+        add_cfg(windows.cpp NAME windows64 PLATFORM win64)
+        add_cfg(wxwidgets.cpp)
 
         function(fixture_cost NAME COST)
             if(TEST ${NAME})

@@ -510,7 +510,7 @@ static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
  * code that generated it deals in some way with functions, then this
  * function will probably need to be extended to handle a new function
  * related pattern */
-Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
+const Token *Tokenizer::processFunc(const Token *tok2, bool inOperator) const
 {
     if (tok2->next() && tok2->next()->str() != ")" &&
         tok2->next()->str() != ",") {
@@ -568,6 +568,11 @@ Token *Tokenizer::processFunc(Token *tok2, bool inOperator) const
         }
     }
     return tok2;
+}
+
+Token *Tokenizer::processFunc(Token *tok2, bool inOperator)
+{
+    return const_cast<Token*>(processFunc(const_cast<const Token*>(tok2), inOperator));
 }
 
 void Tokenizer::simplifyUsingToTypedef()

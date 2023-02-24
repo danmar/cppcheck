@@ -972,7 +972,7 @@ void SymbolDatabase::createSymbolDatabaseVariableSymbolTable()
 {
     // create variable symbol table
     mVariableList.resize(mTokenizer->varIdCount() + 1);
-    std::fill_n(mVariableList.begin(), mVariableList.size(), (const Variable*)nullptr);
+    std::fill_n(mVariableList.begin(), mVariableList.size(), nullptr);
 
     // check all scopes for variables
     for (Scope& scope : scopeList) {
@@ -1373,11 +1373,15 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
     // find enumerators
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
-        if (tok->tokType() != Token::eName)
+        const bool isVariable = (tok->tokType() == Token::eVariable && !tok->variable());
+        if (tok->tokType() != Token::eName && !isVariable)
             continue;
         const Enumerator * enumerator = findEnumerator(tok, tokensThatAreNotEnumeratorValues);
-        if (enumerator)
-            const_cast<Token *>(tok)->enumerator(enumerator);
+        if (enumerator) {
+            if (isVariable)
+                const_cast<Token*>(tok)->varId(0);
+            const_cast<Token*>(tok)->enumerator(enumerator);
+        }
     }
 }
 
@@ -1743,7 +1747,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     // function returning function pointer? '... ( ... %name% ( ... ))( ... ) {'
     // function returning reference to array '... ( & %name% ( ... ))[ ... ] {'
     // TODO: Activate this again
-    if (false && tok->str() == "(" && tok->strAt(1) != "*" &&
+    if ((false) && tok->str() == "(" && tok->strAt(1) != "*" &&
         (tok->link()->previous()->str() == ")" || Token::simpleMatch(tok->link()->tokAt(-2), ") const"))) {
         const Token* tok2 = tok->link()->next();
         if (tok2 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "{|;|const|=")) {
@@ -4926,6 +4930,12 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
             return enumerator;
 
+        if (Token::simpleMatch(tok->astParent(), ".")) {
+            const Token* varTok = tok->astParent()->astOperand1();
+            if (varTok && varTok->variable() && varTok->variable()->type() && varTok->variable()->type()->classScope)
+                scope = varTok->variable()->type()->classScope;
+        }
+
         for (std::vector<Scope *>::const_iterator s = scope->nestedList.cbegin(); s != scope->nestedList.cend(); ++s) {
             enumerator = (*s)->findEnumerator(tokStr);
 
@@ -5440,6 +5450,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     if (rml)
                         valuetok = rml->previous();
                 }
+                if (vartok->isEnumerator())
+                    valuetok = vartok;
                 const ValueType::MatchResult res = ValueType::matchParameter(valuetok->valueType(), var, funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;

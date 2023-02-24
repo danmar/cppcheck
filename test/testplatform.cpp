@@ -182,7 +182,7 @@ private:
         ASSERT_EQUALS(64, platform.long_long_bit);
     }
 
-    void valid_config_file_1() {
+    void valid_config_file_1() const {
         // Valid platform configuration with all possible values specified.
         // Similar to the avr8 platform file.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -226,7 +226,7 @@ private:
         ASSERT_EQUALS(64, platform.long_long_bit);
     }
 
-    void valid_config_file_2() {
+    void valid_config_file_2() const {
         // Valid platform configuration with all possible values specified and
         // char_bit > 8.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -296,7 +296,7 @@ private:
         TODO_ASSERT(!readPlatform(platform, xmldata));
     }
 
-    void valid_config_file_4() {
+    void valid_config_file_4() const {
         // Valid platform configuration with all possible values specified and
         // set to 0.
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
