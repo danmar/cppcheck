@@ -168,7 +168,7 @@ static void setSourceLocation(ValueFlow::Value& v,
     std::string file = ctx.file_name();
     if (file.empty())
         return;
-    std::string s = Path::stripDirectoryPart(std::move(file)) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
+    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
                     " => " + local.function_name() + ": " + debugString(v);
     v.debugPath.emplace_back(tok, std::move(s));
 }

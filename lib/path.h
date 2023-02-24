@@ -117,7 +117,7 @@ public:
      * @param basePaths Paths to which it may be made relative.
      * @return relative path, if possible. Otherwise absolutePath is returned unchanged
      */
-    static std::string getRelativePath(std::string absolutePath, const std::vector<std::string>& basePaths);
+    static std::string getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths);
 
     /**
      * @brief Get an absolute file path from a relative one.
@@ -172,7 +172,7 @@ public:
      * @param file filename to be stripped. path info is optional
      * @return filename without directory path part.
      */
-    static std::string stripDirectoryPart(std::string file);
+    static std::string stripDirectoryPart(const std::string &file);
 
     /**
      * @brief Checks if a File exists
