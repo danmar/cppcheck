@@ -965,7 +965,7 @@ void TemplateSimplifier::getTemplateInstantiations()
                                 // insert using namespace into token stream
                                 std::string::size_type offset = 0;
                                 std::string::size_type pos = 0;
-                                while ((pos = nameSpace.substr(offset).find(' ')) != std::string::npos) {
+                                while ((pos = nameSpace.find(' ', offset)) != std::string::npos) {
                                     qualificationTok->insertToken(nameSpace.substr(offset, pos), emptyString, true);
                                     offset = offset + pos + 1;
                                 }
