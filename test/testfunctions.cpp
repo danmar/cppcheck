@@ -1451,6 +1451,10 @@ private:
               "}", "test.cpp", &settings2);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
 
+        check("void f(std::vector<int*> v) {\n"
+              "    delete *v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIgnoredErrorCode() {

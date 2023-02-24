@@ -2402,6 +2402,12 @@ private:
         ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function x() should have <noreturn> configuration\n"
                       "[test.c:4]: (information) --check-library: Function x() should have <use>/<leak-ignore> configuration\n",
                       errout.str());
+
+        check("void cb();\n" // #11190, #11523
+              "void f() {\n"
+              "    cb();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void configuration2() {

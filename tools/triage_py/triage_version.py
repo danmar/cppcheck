@@ -104,30 +104,40 @@ for entry in versions:
         # sanitize version
         version = version.replace('Cppcheck ', '').replace(' dev', '')
 
-    cmd = exe
-    cmd += ' '
+    cmd = [exe]
     if do_compare and not args.no_quiet:
-        cmd += ' -q '
+        cmd.append('-q')
     if args.debug and Version(version) >= Version('1.45'):
-        cmd += '--debug '
+        cmd.append('--debug')
     if args.debug_warnings and Version(version) >= Version('1.45'):
-        cmd += '--debug-warnings '
+        cmd.append('--debug-warnings')
     if args.check_library and Version(version) >= Version('1.61'):
-        cmd += '--check-library '
+        cmd.append('--check-library')
     if Version(version) >= Version('1.39'):
-        cmd += '--enable=all '
+        cmd.append('--enable=all')
     if Version(version) >= Version('1.40'):
-        cmd += '--inline-suppr '
+        cmd.append('--inline-suppr')
     if Version(version) >= Version('1.48'):
-        cmd += '--suppress=missingInclude --suppress=missingIncludeSystem --suppress=unmatchedSuppression --suppress=unusedFunction '
+        cmd.append('--suppress=missingInclude')
+        cmd.append('--suppress=missingIncludeSystem')
+        cmd.append('--suppress=unmatchedSuppression')
+        cmd.append('--suppress=unusedFunction')
     if Version(version) >= Version('1.49'):
-        cmd += '--inconclusive '
+        cmd.append('--inconclusive')
     if Version(version) >= Version('1.69'):
-        cmd += '--platform=native '
-    cmd += input_file
+        cmd.append('--platform=native')
+    if Version(version) >= Version('1.52') and Version(version) < Version('2.0'):
+        # extend Cppcheck 1.x format with error ID
+        if Version(version) < Version('1.61'):
+            # TODO: re-add inconclusive
+            cmd.append('--template=[{file}:{line}]: ({severity}) {message} [{id}]')
+        else:
+            # TODO: re-add inconclusive: {callstack}: ({severity}{inconclusive:, inconclusive}) {message
+            cmd.append('--template={callstack}: ({severity}) {message} [{id}]')
+    cmd.append(input_file)
     if verbose:
-        print("running '{}'". format(cmd))
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
+        print("running '{}'". format(' '.join(cmd)))
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
         comm = p.communicate(timeout=args.timeout)
         out = ''

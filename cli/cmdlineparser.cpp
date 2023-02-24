@@ -603,25 +603,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
                 const std::string platform(11+argv[i]);
 
-                if (platform == "win32A")
-                    mSettings->platform(Settings::Win32A);
-                else if (platform == "win32W")
-                    mSettings->platform(Settings::Win32W);
-                else if (platform == "win64")
-                    mSettings->platform(Settings::Win64);
-                else if (platform == "unix32")
-                    mSettings->platform(Settings::Unix32);
-                else if (platform == "unix64")
-                    mSettings->platform(Settings::Unix64);
-                else if (platform == "native")
-                    mSettings->platform(Settings::Native);
-                else if (platform == "unspecified")
-                    mSettings->platform(Settings::Unspecified);
-                else if (!mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
-                    std::string message("unrecognized platform: \"");
-                    message += platform;
-                    message += "\".";
-                    printError(message);
+                std::string errstr;
+                const std::vector<std::string> paths = {argv[0]};
+                if (!mSettings->platform(platform, errstr, paths)) {
+                    printError(errstr);
                     return false;
                 }
 
@@ -669,7 +654,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
-                const std::string projectFile = argv[i]+10;
+                std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 mSettings->project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
@@ -680,32 +665,27 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     const auto& excludedPaths = mSettings->project.guiProject.excludedPaths;
                     std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
 
-                    const std::string platform(mSettings->project.guiProject.platform);
+                    std::string platform(mSettings->project.guiProject.platform);
 
-                    if (platform == "win32A")
-                        mSettings->platform(Settings::Win32A);
-                    else if (platform == "win32W")
-                        mSettings->platform(Settings::Win32W);
-                    else if (platform == "win64")
-                        mSettings->platform(Settings::Win64);
-                    else if (platform == "unix32")
-                        mSettings->platform(Settings::Unix32);
-                    else if (platform == "unix64")
-                        mSettings->platform(Settings::Unix64);
-                    else if (platform == "native")
-                        mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
-                        ;
-                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform, mSettings->verbose) && !mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
-                        std::string message("unrecognized platform: \"");
-                        message += platform;
-                        message += "\".";
-                        printError(message);
-                        return false;
+                    // keep existing platform from command-line intact
+                    if (!platform.empty()) {
+                        if (platform == "Unspecified") {
+                            printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
+                            platform = "unspecified";
+                        }
+
+                        std::string errstr;
+                        const std::vector<std::string> paths = {projectFile, argv[0]};
+                        if (!mSettings->platform(platform, errstr, paths)) {
+                            printError(errstr);
+                            return false;
+                        }
                     }
 
-                    if (!mSettings->project.guiProject.projectFile.empty())
+                    if (!mSettings->project.guiProject.projectFile.empty()) {
+                        projectFile = mSettings->project.guiProject.projectFile;
                         projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
+                    }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
                     if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")

@@ -989,7 +989,7 @@ private:
 
         // ~
         code  = "x = ~0U;";
-        settings.platform(cppcheck::Platform::Native); // ensure platform is native
+        PLATFORM(settings, cppcheck::Platform::Native); // ensure platform is native
         values = tokenValues(code,"~");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(~0U, values.back().intvalue);
@@ -1529,6 +1529,7 @@ private:
                "   if (x == 4);\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 2));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 2));
 
         code = "void f(int x) {\n"
                "   a = x;\n"
@@ -1536,6 +1537,7 @@ private:
                "   if (x == 4);\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 6));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 6));
 
         code = "void f(int x) {\n"
                "   a = x;\n"
@@ -1543,6 +1545,7 @@ private:
                "   if (x == 42);\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 21));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 21));
 
         code = "void f(int x) {\n"
                "   a = x;\n"
@@ -1550,6 +1553,7 @@ private:
                "   if (x == 42);\n"
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 2U, 210));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 210));
 
         // bailout: assignment
         bailout("void f(int x) {\n"
@@ -1612,6 +1616,13 @@ private:
                "  if (x) {}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "void g(int&);"
+               "void f(int x) {\n"
+               "   g(x);\n"
+               "   if (x == 5);\n"
+               "}";
+        ASSERT_EQUALS(false, testValueOfX(code, 2U, 5));
     }
 
     void valueFlowBeforeConditionLoop() { // while, for, do-while
@@ -5666,7 +5677,7 @@ private:
                "  ints.pop_back();\n"
                "  if (ints.empty()) {}\n"
                "}";
-        ASSERT(tokenValues(code, "ints . front").empty());
+        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 1));
 
         code = "void f(std::vector<int> v) {\n"
                "  v[10] = 0;\n" // <- container size can be 10
@@ -6055,7 +6066,7 @@ private:
                "        return 0;\n"
                "    return v[0];\n"
                "}\n";
-        ASSERT_EQUALS(0U, tokenValues(code, "v [ 0 ]").size());
+        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v [ 0 ]"), 0));
 
         // container size => yields
         code = "void f() {\n"
@@ -6360,6 +6371,20 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        // #11548
+        code = "void f(const std::string& a, const std::string& b) {\n"
+               "  if (a.empty() && b.empty()) {}\n"
+               "  else if (a.empty() == false && b.empty() == false) {}\n"
+               "}\n";
+        ASSERT("" != isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0));
+
+        code = "bool g(std::vector<int>& v) {\n"
+               "    v.push_back(1);\n"
+               "    int x = v.empty();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
     }
 
     void valueFlowContainerElement()

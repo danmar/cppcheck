@@ -1991,7 +1991,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         Settings settings1;
-        settings1.platform(Settings::Win64);
+        PLATFORM(settings1, cppcheck::Platform::Win64);
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*experimental*/ false, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2137,12 +2137,12 @@ private:
                                 "void f(X x) {}";
 
             Settings s32(_settings);
-            s32.platform(cppcheck::Platform::Unix32);
+            PLATFORM(s32, cppcheck::Platform::Unix32);
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
             Settings s64(_settings);
-            s64.platform(cppcheck::Platform::Unix64);
+            PLATFORM(s64, cppcheck::Platform::Unix64);
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -2653,7 +2653,7 @@ private:
               "    U* y = (U*)(&x)\n"
               "    y->mutate();\n" //to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n", errout.str());
 
         check("struct C { void f() const; };\n" // #9875 - crash
               "\n"
@@ -3347,6 +3347,13 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p0' can be declared as pointer to const\n"
                       "[test.cpp:1]: (style) Parameter 'p1' can be declared as pointer to const\n",
                       errout.str());
+
+        check("void f() {\n"
+              "    std::array<int, 1> a{}, b{};\n"
+              "    const std::array<int, 1>& r = a;\n"
+              "    if (r == b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -5152,7 +5159,7 @@ private:
     }
 
     void testMisusedScopeObjectNamespace() {
-        check("namespace M {\n" // #4479
+        check("namespace M {\n" // #4779
               "    namespace N {\n"
               "        struct S {};\n"
               "    }\n"
@@ -7414,7 +7421,7 @@ private:
 
         // #9040
         Settings settings1;
-        settings1.platform(Settings::Win64);
+        PLATFORM(settings1, cppcheck::Platform::Win64);
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"
@@ -10646,6 +10653,19 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #11576
+              "int f(S s) {\n"
+              "    return &s.i - (int*)&s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) C-style pointer casting\n", errout.str());
+
+        check("struct S { int i; };\n"
+              "int f(S s1, S s2) {\n"
+              "    return &s1.i - reinterpret_cast<int*>(&s2);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:3]: (error) Subtracting pointers that point to different objects\n",
+                      errout.str());
     }
 
     void unusedVariableValueTemplate() {

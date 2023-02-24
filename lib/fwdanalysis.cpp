@@ -264,7 +264,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             // TODO: This is a quick bailout to avoid FP #9420, there are false negatives (TODO_ASSERT_EQUALS)
             return Result(Result::Type::BAILOUT);
 
-        if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find("<") != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
+        if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find('<') != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
             return Result(Result::Type::BAILOUT);
 
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
@@ -481,6 +481,8 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
     if (isEscapedAlias(expr))
         return false;
     if (hasVolatileCastOrVar(expr))
+        return false;
+    if (Token::simpleMatch(expr, "[") && astIsContainerView(expr->astOperand1()))
         return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);

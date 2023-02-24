@@ -691,7 +691,7 @@ static bool iscpp11init_impl(const Token * const tok)
     if (!Token::simpleMatch(endtok, "} ;"))
         return true;
     const Token *prev = nameToken;
-    while (Token::Match(prev, "%name%|::|:|<|>|(|)|,|%num%|%cop%")) {
+    while (Token::Match(prev, "%name%|::|:|<|>|(|)|,|%num%|%cop%|...")) {
         if (Token::Match(prev, "class|struct|union|enum"))
             return false;
 
@@ -934,9 +934,14 @@ static void compileScope(Token *&tok, AST_state& state)
 static bool isPrefixUnary(const Token* tok, bool cpp)
 {
     if (!tok->previous()
-        || ((Token::Match(tok->previous(), "(|[|{|%op%|;|}|?|:|,|.|return|::") || (cpp && tok->strAt(-1) == "throw"))
+        || ((Token::Match(tok->previous(), "(|[|{|%op%|;|?|:|,|.|return|::") || (cpp && tok->strAt(-1) == "throw"))
             && (tok->previous()->tokType() != Token::eIncDecOp || tok->tokType() == Token::eIncDecOp)))
         return true;
+
+    if (tok->previous()->str() == "}") {
+        const Token* parent = tok->linkAt(-1)->tokAt(-1);
+        return !Token::Match(parent, "%type%") || parent->isKeyword();
+    }
 
     if (tok->str() == "*" && tok->previous()->tokType() == Token::eIncDecOp && isPrefixUnary(tok->previous(), cpp))
         return true;
@@ -1056,7 +1061,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             cast->astOperand1(tok1);
             tok = tok1->link()->next();
         } else if (state.cpp && tok->str() == "{" && iscpp11init(tok)) {
-            const Token* end = tok->link();
+            Token* end = tok->link();
             if (Token::simpleMatch(tok, "{ }"))
             {
                 compileUnaryOp(tok, state, nullptr);
@@ -1677,7 +1682,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (Token::Match(tok, "%name% ("))
             state.functionCallEndPar = tok->linkAt(1);
         compileExpression(tok, state);
-        const Token * const endToken = tok;
+        Token * const endToken = tok;
         if (endToken == tok1 || !endToken)
             return tok1;
 

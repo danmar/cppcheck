@@ -53,7 +53,6 @@ void ProjectFile::clear()
     mRootPath.clear();
     mBuildDir.clear();
     mImportProject.clear();
-    mAnalyzeAllVsConfigs = true;
     mIncludeDirs.clear();
     mDefines.clear();
     mUndefines.clear();

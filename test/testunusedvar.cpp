@@ -6000,6 +6000,11 @@ private:
                            "[test.cpp:2]: (style) Variable 'p' is assigned a value that is never used.\n"
                            "[test.cpp:3]: (style) Variable 'q' is assigned a value that is never used.\n",
                            errout.str());
+
+        functionVariableUsage("void f(std::span<int> s) {\n" // #11545
+                              "    s[0] = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localVarClass() {

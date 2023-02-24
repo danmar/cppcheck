@@ -1140,21 +1140,24 @@ public:
      * lists. Requires that Tokenizer::createLinks2() has been called before.
      * Returns 0, if there is no next argument.
      */
-    Token* nextArgument() const;
+    const Token* nextArgument() const;
+    Token *nextArgument() {
+        return const_cast<Token *>(const_cast<const Token *>(this)->nextArgument());
+    }
 
     /**
      * @return the first token of the next argument. Does only work on argument
      * lists. Should be used only before Tokenizer::createLinks2() was called.
      * Returns 0, if there is no next argument.
      */
-    Token* nextArgumentBeforeCreateLinks2() const;
+    const Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
      * @return the first token of the next template argument. Does only work on template argument
      * lists. Requires that Tokenizer::createLinks2() has been called before.
      * Returns 0, if there is no next argument.
      */
-    Token* nextTemplateArgument() const;
+    const Token* nextTemplateArgument() const;
 
     /**
      * Returns the closing bracket of opening '<'. Should only be used if link()

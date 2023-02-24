@@ -83,7 +83,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.platform(platform);
+        PLATFORM(settings, platform);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

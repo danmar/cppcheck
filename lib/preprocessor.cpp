@@ -100,7 +100,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         return false;
 
     // skip spaces after "cppcheck-suppress"
-    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+cppchecksuppress.size());
+    const std::string::size_type pos2 = comment.find_first_not_of(' ', pos1+cppchecksuppress.size());
     if (pos2 == std::string::npos)
         return false;
 
@@ -498,7 +498,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                     if (c.find(configs_ifndef.back()) != std::string::npos)
                         ret.insert(c);
                     else if (c.empty())
-                        ret.insert(configs.empty() ? configs_ifndef.back() : "");
+                        ret.insert("");
                     else
                         ret.insert(c + ";" + configs_ifndef.back());
                 }

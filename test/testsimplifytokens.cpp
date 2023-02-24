@@ -178,7 +178,7 @@ private:
     std::string tok_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
-        settings0.platform(type);
+        PLATFORM(settings0, type);
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
@@ -207,7 +207,7 @@ private:
         errout.str("");
 
         settings1.debugwarnings = true;
-        settings1.platform(platform);
+        PLATFORM(settings1, platform);
         settings1.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
 
         // tokenize..

@@ -96,7 +96,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.platform(platform);
+        PLATFORM(settings, platform);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
