@@ -1388,6 +1388,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
 void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 {
+    // TODO: replace with Keywords::getX()
     static const std::unordered_set<std::string> cpp20keywords = {
         "alignas",
         "alignof",
@@ -1477,6 +1478,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         // Skip goto labels
         if (Token::simpleMatch(tok->previous(), "goto"))
             continue;
+        // TODO: handle all C/C++ standards
         if (cppkeywords.count(tok->str()) > 0)
             continue;
         if (mSettings->standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
