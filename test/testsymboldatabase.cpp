@@ -387,6 +387,7 @@ private:
         TEST_CASE(enum9);
         TEST_CASE(enum10); // #11001
         TEST_CASE(enum11);
+        TEST_CASE(enum12);
 
         TEST_CASE(sizeOfType);
 
@@ -5532,6 +5533,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void enum12() {
+        GET_SYMBOL_DB_C("struct { enum E { E0 }; } t;\n"
+                        "void f() {\n"
+                        "    if (t.E0) {}\n"
+                        "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* E0 = it->findEnumerator("E0");
+        ASSERT(E0 && E0->value_known);
+        ASSERT_EQUALS(E0->value, 0);
+        const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 )");
+        ASSERT(e && e->enumerator());
+        ASSERT_EQUALS(e->enumerator(), E0);
+    }
+
     void sizeOfType() {
         // #7615 - crash in Symboldatabase::sizeOfType()
         GET_SYMBOL_DB("enum e;\n"
@@ -7010,6 +7027,20 @@ private:
             ASSERT(functok->function());
             ASSERT(functok->function()->name() == "f");
             ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("struct T { enum E { E0 }; } t; \n" // #11559
+                          "void f(const void*, T::E) {}\n"
+                          "void f(const int&, T::E) {}\n"
+                          "void g() {\n"
+                          "    f(nullptr, t.E0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( nullptr");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "f");
+            ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
         }
     }
 
