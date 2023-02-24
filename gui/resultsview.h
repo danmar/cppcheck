@@ -189,7 +189,7 @@ public:
      * @brief Return checking statistics.
      * @return Pointer to checking statistics.
      */
-    CheckStatistics *getStatistics() const {
+    const CheckStatistics *getStatistics() const {
         return mStatistics;
     }
 
@@ -197,7 +197,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    ShowTypes * getShowTypes() const;
+    const ShowTypes & getShowTypes() const;
 
 signals:
 

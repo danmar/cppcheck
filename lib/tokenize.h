@@ -693,7 +693,8 @@ public:
     Tokenizer &operator=(const Tokenizer &) = delete;
 
 private:
-    Token *processFunc(Token *tok2, bool inOperator) const;
+    const Token *processFunc(const Token *tok2, bool inOperator) const;
+    Token *processFunc(Token *tok2, bool inOperator);
 
     /**
      * Get new variable id.
