@@ -280,23 +280,6 @@ jobs:
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
 
-  build_fuzz:
-
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04] # only needs to build on ubuntu
-      fail-fast: false # Prefer quick result
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build Fuzzer
-        run: |
-          pushd oss-fuzz
-          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
-
   build:
 
     strategy:
