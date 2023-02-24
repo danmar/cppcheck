@@ -38,7 +38,7 @@
 #endif
 
 #define C23_KEYWORDS \
-    "alignas", "alignof", "bool", "false", "nullptr", "static_assert", "thread_local", "true", "typeof", "typeof_unqual", \
+    "alignas", "alignof", "bool", "constexpr", "false", "nullptr", "static_assert", "thread_local", "true", "typeof", "typeof_unqual", \
     "_BitInt", "_Decimal128", "_Decimal32", "_Decimal64"
 
 #ifdef __clang__
@@ -86,6 +86,7 @@ static const std::unordered_set<std::string> c11_keywords = {
     "float", "for", "friend", "goto", "if", "inline", "int", "long", \
     "mutable", "namespace", "new", "not", "not_eq",  "operator", \
     "or", "or_eq", "private", "protected", "public", "register", "reinterpret_cast", \
+    "return", "short", "signed", "sizeof", "static", \
     "static_cast", "struct", "switch", "template", "this", "throw", \
     "true", "try", "typedef", "typeid", "typename", "union", "unsigned", "using", \
     "virtual", "void", "volatile", "wchar_t", "while", "xor", "xor_eq"
@@ -95,7 +96,7 @@ static const std::unordered_set<std::string> c11_keywords = {
     "noexcept", "nullptr", "static_assert", "thread_local"
 
 #define CPP20_KEYWORDS \
-    "concept", "consteval", "constinit", "co_await", \
+    "char8_t", "concept", "consteval", "constinit", "co_await", \
     "co_return", "co_yield", "requires"
 
 #ifdef __clang__
