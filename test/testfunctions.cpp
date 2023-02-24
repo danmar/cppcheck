@@ -1975,6 +1975,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
+              "    auto& s = v[i][j];\n"
+              "    s.insert(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings = settings_old;
     }
 
