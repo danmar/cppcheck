@@ -335,7 +335,7 @@ void MainWindow::loadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    ShowTypes *types = mUI->mResults->getShowTypes();
+    const ShowTypes *types = mUI->mResults->getShowTypes();
     mUI->mActionShowStyle->setChecked(types->isShown(ShowTypes::ShowStyle));
     mUI->mActionShowErrors->setChecked(types->isShown(ShowTypes::ShowErrors));
     mUI->mActionShowWarnings->setChecked(types->isShown(ShowTypes::ShowWarnings));

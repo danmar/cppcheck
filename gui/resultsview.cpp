@@ -113,7 +113,7 @@ void ResultsView::clearRecheckFile(const QString &filename)
     mUI->mTree->clearRecheckFile(filename);
 }
 
-ShowTypes * ResultsView::getShowTypes() const
+const ShowTypes * ResultsView::getShowTypes() const
 {
     return &mUI->mTree->mShowSeverities;
 }
