@@ -44,6 +44,7 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/fwdanalysis.h \
            $${PWD}/importproject.h \
            $${PWD}/infer.h \
+           $${PWD}/keywords.h \
            $${PWD}/library.h \
            $${PWD}/mathlib.h \
            $${PWD}/path.h \
@@ -110,6 +111,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/fwdanalysis.cpp \
            $${PWD}/importproject.cpp \
            $${PWD}/infer.cpp \
+           $${PWD}/keywords.cpp \
            $${PWD}/library.cpp \
            $${PWD}/mathlib.cpp \
            $${PWD}/path.cpp \

@@ -2,7 +2,7 @@
 // Test library configuration for posix.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=posix --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/posix.c
+// $ cppcheck --check-library --library=posix --enable=style,information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/posix.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -1235,11 +1235,11 @@ void uninitvar_types(void)
 {
     // cppcheck-suppress unassignedVariable
     blkcnt_t b;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,constStatement]
     b + 1;
 
     struct dirent d;
-    // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress constStatement - TODO: uninitvar
     d.d_ino + 1;
 }
 

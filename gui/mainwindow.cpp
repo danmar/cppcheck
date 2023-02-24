@@ -335,13 +335,13 @@ void MainWindow::loadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    ShowTypes *types = mUI->mResults->getShowTypes();
-    mUI->mActionShowStyle->setChecked(types->isShown(ShowTypes::ShowStyle));
-    mUI->mActionShowErrors->setChecked(types->isShown(ShowTypes::ShowErrors));
-    mUI->mActionShowWarnings->setChecked(types->isShown(ShowTypes::ShowWarnings));
-    mUI->mActionShowPortability->setChecked(types->isShown(ShowTypes::ShowPortability));
-    mUI->mActionShowPerformance->setChecked(types->isShown(ShowTypes::ShowPerformance));
-    mUI->mActionShowInformation->setChecked(types->isShown(ShowTypes::ShowInformation));
+    const ShowTypes &types = mUI->mResults->getShowTypes();
+    mUI->mActionShowStyle->setChecked(types.isShown(ShowTypes::ShowStyle));
+    mUI->mActionShowErrors->setChecked(types.isShown(ShowTypes::ShowErrors));
+    mUI->mActionShowWarnings->setChecked(types.isShown(ShowTypes::ShowWarnings));
+    mUI->mActionShowPortability->setChecked(types.isShown(ShowTypes::ShowPortability));
+    mUI->mActionShowPerformance->setChecked(types.isShown(ShowTypes::ShowPerformance));
+    mUI->mActionShowInformation->setChecked(types.isShown(ShowTypes::ShowInformation));
     mUI->mActionShowCppcheck->setChecked(true);
     mUI->mActionShowClang->setChecked(true);
 

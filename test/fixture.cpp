@@ -19,11 +19,13 @@
 #include "fixture.h"
 
 #include "color.h"
+#include "errortypes.h"
 #include "options.h"
 #include "redirect.h"
 
 #include <cstdio>
 #include <cctype>
+#include <exception>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -311,12 +313,27 @@ void TestFixture::printHelp()
 void TestFixture::run(const std::string &str)
 {
     testToRun = str;
-    if (quiet_tests) {
-        std::cout << '\n' << classname << ':';
-        REDIRECT;
-        run();
-    } else
-        run();
+    try {
+        if (quiet_tests) {
+            std::cout << '\n' << classname << ':';
+            REDIRECT;
+            run();
+        }
+        else
+            run();
+    }
+    catch (const InternalError& e) {
+        ++fails_counter;
+        errmsg << "InternalError: " << e.errorMessage << std::endl;
+    }
+    catch (const std::exception& error) {
+        ++fails_counter;
+        errmsg << "exception: " << error.what() << std::endl;
+    }
+    catch (...) {
+        ++fails_counter;
+        errmsg << "Unknown exception" << std::endl;
+    }
 }
 
 void TestFixture::processOptions(const options& args)

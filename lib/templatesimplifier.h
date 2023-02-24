@@ -156,6 +156,7 @@ public:
                    mNameToken == rhs.mNameToken && mParamEnd == rhs.mParamEnd && mFlags == rhs.mFlags;
         }
 
+        // TODO: do not return non-const pointer from const object
         Token * token() const {
             return mToken;
         }
