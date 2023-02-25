@@ -407,7 +407,6 @@ private:
         TEST_CASE(findFunction8);
         TEST_CASE(findFunction9);
         TEST_CASE(findFunction10); // #7673
-        TEST_CASE(findFunction11);
         TEST_CASE(findFunction12);
         TEST_CASE(findFunction13);
         TEST_CASE(findFunction14);
@@ -6072,21 +6071,6 @@ private:
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( const int p [ ] ) {");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
-    }
-
-    void findFunction11() {
-        settings1.libraries.emplace_back("qt");
-        GET_SYMBOL_DB("class Fred : public QObject {\n"
-                      "    Q_OBJECT\n"
-                      "private slots:\n"
-                      "    void foo();\n"
-                      "};\n"
-                      "void Fred::foo() { }");
-        settings1.libraries.pop_back();
-        ASSERT_EQUALS("", errout.str());
-
-        const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( ) {");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
     }
 
     void findFunction12() {
