@@ -583,14 +583,13 @@ unsigned int CppCheck::check(const std::string &path)
         return mExitCode;
     }
 
-    std::ifstream fin(path);
-    return checkFile(Path::simplifyPath(path), emptyString, fin);
+    return checkFile(Path::simplifyPath(path), emptyString);
 }
 
 unsigned int CppCheck::check(const std::string &path, const std::string &content)
 {
     std::istringstream iss(content);
-    return checkFile(Path::simplifyPath(path), emptyString, iss);
+    return checkFile(Path::simplifyPath(path), emptyString, &iss);
 }
 
 unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
@@ -615,13 +614,20 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         return temp.check(Path::simplifyPath(fs.filename));
     }
-    std::ifstream fin(fs.filename);
-    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
+    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg);
     mSettings.nomsg.addSuppressions(temp.mSettings.nomsg.getSuppressions());
     return returnValue;
 }
 
-unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
+static simplecpp::TokenList createTokenList(const std::string& filename, std::vector<std::string>& files, simplecpp::OutputList* outputList, std::istream* fileStream)
+{
+    if (fileStream)
+        return {*fileStream, files, filename, outputList};
+
+    return {filename, files, outputList};
+}
+
+unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream* fileStream)
 {
     mExitCode = 0;
 
@@ -663,7 +669,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
+        simplecpp::TokenList tokens1 = createTokenList(filename, files, &outputList, fileStream);
 
         // If there is a syntax error, report it and stop
         for (const simplecpp::Output &output : outputList) {
