@@ -2857,10 +2857,8 @@ void CheckClass::checkCopyCtorAndEqOperator()
 {
     // This is disabled because of #8388
     // The message must be clarified. How is the behaviour different?
-    return;
-
     // cppcheck-suppress unreachableCode - remove when code is enabled again
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if ((true) || !mSettings->severity.isEnabled(Severity::warning))
         return;
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {

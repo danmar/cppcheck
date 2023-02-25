@@ -2,7 +2,7 @@
 // Test library configuration for std.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=std --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/std.cpp
+// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/std.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -4238,14 +4238,14 @@ void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwst
 // cppcheck-suppress constParameter
 void ignoredReturnValue_container_access(std::string& s, std::string_view& sv, std::vector<int>& v)
 {
-  // cppcheck-suppress ignoredReturnValue
-  s.begin();
-  // cppcheck-suppress ignoredReturnValue
-  v.end();
-  // cppcheck-suppress ignoredReturnValue
-  sv.front();
-  // cppcheck-suppress ignoredReturnValue
-  s.at(0);
+    // cppcheck-suppress ignoredReturnValue
+    s.begin();
+    // cppcheck-suppress ignoredReturnValue
+    v.end();
+    // cppcheck-suppress ignoredReturnValue
+    sv.front();
+    // cppcheck-suppress ignoredReturnValue
+    s.at(0);
 }
 
 void ignoredReturnValue_locale_global(const std::locale& loc)

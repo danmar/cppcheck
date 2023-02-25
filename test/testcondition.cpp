@@ -2585,7 +2585,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} "); // <- CheckOther reports: checking if unsigned expression is less than zero
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.empty()' is always false\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
@@ -4483,6 +4483,16 @@ private:
               "    g(s ? s->get() : 0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (style) Condition 's' is always true\n", errout.str());
+
+        check("void f(const char* o) {\n" // #11558
+              "    if (!o || !o[0])\n"
+              "        return;\n"
+              "    if (o[0] == '-' && o[1]) {\n"
+              "        if (o[1] == '-') {}\n"
+              "        if (o[1] == '\\0') {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4961,6 +4971,22 @@ private:
               "    return a.empty() || (b.empty() && a.empty());\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return value 'a.empty()' is always false\n", errout.str());
+
+        check("struct A {\n"
+              "    struct iterator;\n"
+              "    iterator begin() const;\n"
+              "    iterator end() const;\n"
+              "};\n"
+              "A g();\n"
+              "void f(bool b) {\n"
+              "    std::set<int> s;\n"
+              "    auto v = g();\n"
+              "    s.insert(v.begin(), v.end());\n"
+              "    if(!b && s.size() != 1)\n"
+              "        return;\n"
+              "    if(!s.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueLoop()

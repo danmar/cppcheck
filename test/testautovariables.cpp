@@ -4194,6 +4194,27 @@ private:
               "  f(bar);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        check("void f(std::string_view text);\n" // #11508
+              "void g() {\n"
+              "  std::string teststr;\n"
+              "  f(teststr);"
+              "}\n"
+              "void f(std::string_view text) {"
+              "  g(text.data());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::span<int> data);\n" // #11508
+              "void g() {\n"
+              "  std::vector<int> v;\n"
+              "  f(v);"
+              "}\n"
+              "void f(std::span<int> data) {"
+              "  g(data.begin());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void deadPointer() {

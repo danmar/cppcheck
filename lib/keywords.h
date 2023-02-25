@@ -16,27 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "options.h"
-#include "preprocessor.h"
-#include "fixture.h"
+#ifndef keywordsH
+#define keywordsH
 
-#include <cstdlib>
+#include "standards.h"
 
-int main(int argc, char *argv[])
+#include <string>
+#include <unordered_set>
+
+class Keywords
 {
-    // MS Visual C++ memory leak debug tracing
-#if defined(_MSC_VER) && defined(_DEBUG)
-    _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
+public:
+    static const std::unordered_set<std::string>& getAll(Standards::cstd_t cStd);
+    static const std::unordered_set<std::string>& getAll(Standards::cppstd_t cppStd);
+
+    static const std::unordered_set<std::string>& getOnly(Standards::cstd_t cStd);
+    static const std::unordered_set<std::string>& getOnly(Standards::cppstd_t cppStd);
+};
+
 #endif
-
-    Preprocessor::macroChar = '$';     // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
-
-    options args(argc, argv);
-
-    if (args.help()) {
-        TestFixture::printHelp();
-        return EXIT_SUCCESS;
-    }
-    const std::size_t failedTestsCount = TestFixture::runTests(args);
-    return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
-}

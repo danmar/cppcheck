@@ -27,7 +27,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 class Settings;
@@ -211,8 +210,6 @@ private:
 
     /** settings */
     const Settings* mSettings;
-
-    std::unordered_set<std::string> mKeywords;
 
     /** File is known to be C/C++ code */
     bool mIsC;
