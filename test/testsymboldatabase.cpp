@@ -8075,16 +8075,16 @@ private:
 
     void valueType2() {
         GET_SYMBOL_DB("int i;\n"
-            "bool b;\n"
-            "Unknown u;\n"
-            "std::string s;\n"
-            "std::vector<int> v;\n"
-            "std::map<int, void*>::const_iterator it;\n"
-            "void* p;\n"
-            "\n"
-            "void f() {\n"
-            "    func(i, b, u, s, v, it, p);\n"
-            "}");
+                      "bool b;\n"
+                      "Unknown u;\n"
+                      "std::string s;\n"
+                      "std::vector<int> v;\n"
+                      "std::map<int, void*>::const_iterator it;\n"
+                      "void* p;\n"
+                      "\n"
+                      "void f() {\n"
+                      "    func(i, b, u, s, v, it, p);\n"
+                      "}");
 
         const Token* tok = tokenizer.tokens();
 
