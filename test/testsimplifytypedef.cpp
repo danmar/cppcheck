@@ -779,8 +779,8 @@ private:
                             "void    addCallback1(Callback callback, int j) { }";
 
         const char expected[] =
-            "void addCallback ( bool ( * callback ) ( ) ) { } "
-            "void addCallback1 ( bool ( * callback ) ( ) , int j ) { }";
+            "void addCallback ( bool ( * callback ) ( int ) ) { } "
+            "void addCallback1 ( bool ( * callback ) ( int ) , int j ) { }";
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
@@ -1132,7 +1132,7 @@ private:
             "class X { } ; "
             "int main ( ) "
             "{ "
-            "X ( * * Foo ) ( ) ; Foo = new X ( * ) ( const X & ) [ 2 ] ; "
+            "X ( * * Foo ) ( const X & ) ; Foo = new X ( * ) ( const X & ) [ 2 ] ; "
             "}";
 
         ASSERT_EQUALS(expected, tok(code, false));
@@ -1606,7 +1606,7 @@ private:
                             "    localEntitiyAddFunc_t f;\n"
                             "}";
         // The expected result..
-        const char expected[] = "enum qboolean { qfalse , qtrue } ; void f ( ) { qboolean b ; qboolean ( * f ) ( ) ; }";
+        const char expected[] = "enum qboolean { qfalse , qtrue } ; void f ( ) { qboolean b ; qboolean ( * f ) ( struct le_s * , entity_t * ) ; }";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS("", errout.str());
     }
@@ -2174,7 +2174,7 @@ private:
                             "};";
         const char expected[] = "class symbol_table { "
                                 "public: "
-                                "expression_error :: error_code ( * f ) ( ) ; "
+                                "expression_error :: error_code ( * f ) ( void * , const char * , expression_space ) ; "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code, true, Settings::Native, false));
         ASSERT_EQUALS("", errout.str());
@@ -3518,14 +3518,14 @@ private:
                             "type12 t12;";
 
         // The expected result..
-        const char expected[] = "int ( * t1 ) ( ) ; "
-                                "int ( * const t2 ) ( ) ; "
-                                "int ( * volatile t3 ) ( ) ; "
-                                "int ( * const volatile t4 ) ( ) ; "
-                                "int ( * t5 ) ( ) ; "
-                                "int ( * const t6 ) ( ) ; "
-                                "int ( * volatile t7 ) ( ) ; "
-                                "int ( * const volatile t8 ) ( ) ; "
+        const char expected[] = "int ( * t1 ) ( float ) ; "
+                                "int ( * const t2 ) ( float ) ; "
+                                "int ( * volatile t3 ) ( float ) ; "
+                                "int ( * const volatile t4 ) ( float ) ; "
+                                "int ( * t5 ) ( float ) ; "
+                                "int ( * const t6 ) ( float ) ; "
+                                "int ( * volatile t7 ) ( float ) ; "
+                                "int ( * const volatile t8 ) ( float ) ; "
                                 "int ( :: C :: * t9 ) ( float ) ; "
                                 "int ( :: C :: * const t10 ) ( float ) ; "
                                 "int ( :: C :: * volatile t11 ) ( float ) ; "
