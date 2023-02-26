@@ -190,6 +190,7 @@ private:
         TEST_CASE(varid_not); // #9689 'not x'
         TEST_CASE(varid_declInIfCondition);
         TEST_CASE(varid_globalScope);
+        TEST_CASE(varid_function_pointer_args);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2994,6 +2995,17 @@ private:
                             "8: memset ( :: Z :: b@3 . a , 123 , 5 ) ;\n"
                             "9: }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_function_pointer_args() {
+        const char code[] = "void foo() {\n"
+                            "    char *text;\n"
+                            "    void (*cb)(char* text);\n"
+                            "}\n";
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: char * text@1 ;\n"
+                      "3: void ( * cb@2 ) ( char * ) ;\n"
+                      "4: }\n", tokenize(code));
     }
 
     void varidclass1() {

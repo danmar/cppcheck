@@ -6173,20 +6173,26 @@ void Tokenizer::simplifyFunctionPointers()
             endTok->deleteNext();
 
         // ok simplify this function pointer to an ordinary pointer
-        Token::eraseTokens(tok->link(), endTok->next());
         if (Token::simpleMatch(tok->link()->previous(), ") )")) {
             // Function returning function pointer
             // void (*dostuff(void))(void) {}
+            Token::eraseTokens(tok->link(), endTok->next());
             tok->link()->deleteThis();
             tok->deleteThis();
         } else {
-            // Function pointer variable
-            // void (*p)(void) {}
-            tok->link()->insertToken("(");
-            Token *par1 = tok->link()->next();
-            par1->insertToken(")");
-            par1->link(par1->next());
-            par1->next()->link(par1);
+            Token::eraseTokens(tok->link()->linkAt(1), endTok->next());
+
+            // remove variable names
+            for (Token* tok3 = tok->link()->tokAt(2); Token::Match(tok3, "%name%|*|&|[|(|::|,|<"); tok3 = tok3->next()) {
+                if (tok3->str() == "<" && tok3->link())
+                    tok3 = tok3->link();
+                else if (Token::Match(tok3, "[|("))
+                    tok3 = tok3->link();
+                if (Token::Match(tok3, "%type%|*|&|> %name% [,)[]"))
+                    tok3->deleteNext();
+            }
+
+            // TODO Keep this info
             while (Token::Match(tok, "( %type% ::"))
                 tok->deleteNext(2);
         }
@@ -6424,8 +6430,10 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 varName = varName->next();
             }
             // Function pointer
-            if (Token::simpleMatch(varName, "( *") && Token::Match(varName->link()->previous(), "%name% ) ( ) =")) {
-                Token *endDecl = varName->link()->tokAt(2);
+            if (Token::simpleMatch(varName, "( *") &&
+                Token::Match(varName->link()->previous(), "%name% ) (") &&
+                Token::simpleMatch(varName->link()->linkAt(1), ") =")) {
+                Token *endDecl = varName->link()->linkAt(1);
                 varName = varName->link()->previous();
                 endDecl->insertToken(";");
                 endDecl = endDecl->next();

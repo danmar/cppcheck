@@ -224,6 +224,7 @@ private:
         TEST_CASE(vardecl28);
         TEST_CASE(vardecl29); // #9282
         TEST_CASE(vardecl30);
+        TEST_CASE(vardecl31); // function pointer init
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -2523,6 +2524,14 @@ private:
                       tokenizeAndStringify(code, true, Settings::Native, "test.c"));
     }
 
+    void vardecl31() {
+        const char code1[] = "void foo() { int (*fptr)() = 0; }";
+        ASSERT_EQUALS("void foo ( ) { int ( * fptr ) ( ) ; fptr = 0 ; }", tokenizeAndStringify(code1));
+
+        const char code2[] = "void foo() { int (*fptr)(int) = 0; }";
+        ASSERT_EQUALS("void foo ( ) { int ( * fptr ) ( int ) ; fptr = 0 ; }", tokenizeAndStringify(code2));
+    }
+
     void volatile_variables() {
         {
             const char code[] = "volatile int a=0;\n"
@@ -3557,7 +3566,7 @@ private:
         ASSERT_EQUALS("unsigned int ( * f ) ( ) ;", tokenizeAndStringify("unsigned int (*f)();"));
         ASSERT_EQUALS("unsigned int * ( * f ) ( ) ;", tokenizeAndStringify("unsigned int * (*f)();"));
         ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", tokenizeAndStringify("void (*f[2])();"));
-        TODO_ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", "void ( * f ) ( ) [ 2 ] ;", tokenizeAndStringify("typedef void func_t(void); func_t *f[2];"));
+        TODO_ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", "void ( * f ) ( void ) [ 2 ] ;", tokenizeAndStringify("typedef void func_t(void); func_t *f[2];"));
     }
 
     void simplifyFunctionPointers2() {
@@ -3598,7 +3607,7 @@ private:
 
     void simplifyFunctionPointers5() {
         const char code[] = ";void (*fp[])(int a) = {0,0,0};";
-        const char expected[] = "1: ; void ( * fp@1 [ ] ) ( ) = { 0 , 0 , 0 } ;\n"; // TODO: Array dimension
+        const char expected[] = "1: ; void ( * fp@1 [ ] ) ( int ) = { 0 , 0 , 0 } ;\n"; // TODO: Array dimension
         ASSERT_EQUALS(expected, tokenizeDebugListing(code));
     }
 
@@ -3709,7 +3718,7 @@ private:
 
     void functionAttributeBefore3() { // #10978
         const char code[] = "void __attribute__((__noreturn__)) (*func_notret)(void);";
-        const char expected[] = "void ( * func_notret ) ( ) ;";
+        const char expected[] = "void ( * func_notret ) ( void ) ;";
 
         errout.str("");
 
