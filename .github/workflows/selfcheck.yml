@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 5.15.2
+      QT_VERSION: 6.5.0
 
     steps:
       - uses: actions/checkout@v3
@@ -60,7 +60,7 @@ jobs:
 
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies
         run: |
@@ -83,7 +83,7 @@ jobs:
       # the following steps are duplicated from above since setting up the build node in a parallel step takes longer than the actual steps
       - name: CMake (no test)
         run: |
-          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output.notest -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies (no test)
         run: |
@@ -108,7 +108,7 @@ jobs:
 
       - name: CMake (corpus / no test)
         run: |
-          cmake -S cppcheck-2.8 -B cmake.output.corpus -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S cppcheck-2.8 -B cmake.output.corpus -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=Off -DBUILD_GUI=ON -DUSE_QT6=On -DWITH_QCHART=ON -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
 
       - name: Generate dependencies (corpus)
         run: |

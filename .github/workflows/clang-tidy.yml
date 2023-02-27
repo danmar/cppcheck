@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     env:
-      QT_VERSION: 5.15.2
+      QT_VERSION: 6.5.0
 
     steps:
       - uses: actions/checkout@v3
@@ -53,7 +53,7 @@ jobs:
 
       - name: Prepare CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DUSE_QT6=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off
         env:
           CC: clang-17
           CXX: clang++-17
