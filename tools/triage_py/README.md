@@ -5,9 +5,9 @@ A script to run a code sample against a given set of Cppcheck versions.
 ## Usage
 
 ```
-usage: triage_version.py [-h] [--compare] [--verbose] [--debug] [--debug-warnings] [--check-library] [--timeout TIMEOUT]
-                 [--compact]
-                 dir infile [repo]
+usage: triage_version.py [-h] [--compare] [--verbose] [--debug] [--debug-warnings] [--check-library]
+                         [--timeout TIMEOUT] [--compact] [--no-quiet] [--no-stderr | --no-stdout]
+                         dir infile [repo]
 
 positional arguments:
   dir                directory with versioned folders
@@ -23,6 +23,9 @@ options:
   --check-library    passed through to binary if supported
   --timeout TIMEOUT  the amount of seconds to wait for the analysis to finish
   --compact          only print versions with changes with --compare
+  --no-quiet         do not specify -q
+  --no-stderr        do not display stdout
+  --no-stdout        do not display stderr
 ```
 
 ### Structure of `dir`
