@@ -20,6 +20,7 @@ parser.add_argument('--timeout', type=int, default=2, help='the amount of second
 parser.add_argument('--compact', action='store_true', help='only print versions with changes with --compare')
 parser.add_argument('--no-quiet', action='store_true', default=False, help='do not specify -q')
 parser.add_argument('--perf', action='store_true', default=False, help='output duration of execution in seconds (CSV format)')
+parser.add_argument('--start', default=None, help='specify the start version/commit')
 package_group = parser.add_mutually_exclusive_group()
 package_group.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
 package_group.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
@@ -103,7 +104,14 @@ last_out = None
 if args.perf:
     print('version,time')
 
+start_entry = args.start
+
 for entry in versions:
+    if start_entry:
+        if start_entry != entry:
+            continue
+        start_entry = None
+
     exe_path = os.path.join(directory, entry)
     exe = os.path.join(exe_path, 'cppcheck')
 

@@ -6,7 +6,8 @@ A script to run a code sample against a given set of Cppcheck versions.
 
 ```
 usage: triage_version.py [-h] [--compare] [--verbose] [--debug] [--debug-warnings] [--check-library]
-                         [--timeout TIMEOUT] [--compact] [--no-quiet] [--perf] [--no-stderr | --no-stdout]
+                         [--timeout TIMEOUT] [--compact] [--no-quiet] [--perf] [--start START]
+                         [--no-stderr | --no-stdout]
                          dir infile [repo]
 
 positional arguments:
@@ -25,6 +26,7 @@ options:
   --compact          only print versions with changes with --compare
   --no-quiet         do not specify -q
   --perf             output duration of execution in seconds (CSV format)
+  --start START      specify the start version/commit
   --no-stderr        do not display stdout
   --no-stdout        do not display stderr
 ```
