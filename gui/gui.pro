@@ -1,4 +1,5 @@
 lessThan(QT_MAJOR_VERSION, 5): error(requires >= Qt 5 (You used: $$QT_VERSION))
+greaterThan(QT_MAJOR_VERSION, 5): error(Qt 6 is not supported via qmake - please use CMake instead)
 
 TEMPLATE = app
 TARGET = cppcheck-gui
