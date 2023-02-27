@@ -5131,121 +5131,121 @@ private:
     }
 
     void ctu_array() {
-        //ctu("void dostuff(char *p) {\n"
-        //    "    p[10] = 0;\n"
-        //    "}\n"
-        //    "int main() {\n"
-        //    "  char str[4];\n"
-        //    "  dostuff(str);\n"
-        //    "}");
-        //ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 10.\n", errout.str());
+        ctu("void dostuff(char *p) {\n"
+            "    p[10] = 0;\n"
+            "}\n"
+            "int main() {\n"
+            "  char str[4];\n"
+            "  dostuff(str);\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 10.\n", errout.str());
 
-        //ctu("static void memclr( char *data )\n"
-        //    "{\n"
-        //    "    data[10] = 0;\n"
-        //    "}\n"
-        //    "\n"
-        //    "static void f()\n"
-        //    "{\n"
-        //    "    char str[5];\n"
-        //    "    memclr( str );\n"
-        //    "}");
-        //ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
+        ctu("static void memclr( char *data )\n"
+            "{\n"
+            "    data[10] = 0;\n"
+            "}\n"
+            "\n"
+            "static void f()\n"
+            "{\n"
+            "    char str[5];\n"
+            "    memclr( str );\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
 
-        //ctu("static void memclr( int i, char *data )\n"
-        //    "{\n"
-        //    "    data[10] = 0;\n"
-        //    "}\n"
-        //    "\n"
-        //    "static void f()\n"
-        //    "{\n"
-        //    "    char str[5];\n"
-        //    "    memclr( 0, str );\n"
-        //    "}");
-        //ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
+        ctu("static void memclr( int i, char *data )\n"
+            "{\n"
+            "    data[10] = 0;\n"
+            "}\n"
+            "\n"
+            "static void f()\n"
+            "{\n"
+            "    char str[5];\n"
+            "    memclr( 0, str );\n"
+            "}");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds; 'data' buffer size is 5 and it is accessed at offset 10.\n", errout.str());
 
-        //ctu("static void memclr( int i, char *data )\n"
-        //    "{\n"
-        //    "    data[i] = 0;\n"
-        //    "}\n"
-        //    "\n"
-        //    "static void f()\n"
-        //    "{\n"
-        //    "    char str[5];\n"
-        //    "    memclr( 10, str );\n"
-        //    "}");
-        //TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds.\n",
-        //                   "", errout.str());
+        ctu("static void memclr( int i, char *data )\n"
+            "{\n"
+            "    data[i] = 0;\n"
+            "}\n"
+            "\n"
+            "static void f()\n"
+            "{\n"
+            "    char str[5];\n"
+            "    memclr( 10, str );\n"
+            "}");
+        TODO_ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:3]: (possible error) Array index out of bounds.\n",
+                           "", errout.str());
 
-        //// This is not an error
-        //ctu("static void memclr( char *data, int size )\n"
-        //    "{\n"
-        //    "    if( size > 10 )"
-        //    "      data[10] = 0;\n"
-        //    "}\n"
-        //    "\n"
-        //    "static void f()\n"
-        //    "{\n"
-        //    "    char str[5];\n"
-        //    "    memclr( str, 5 );\n"
-        //    "}");
-        //ASSERT_EQUALS("", errout.str());
+        // This is not an error
+        ctu("static void memclr( char *data, int size )\n"
+            "{\n"
+            "    if( size > 10 )"
+            "      data[10] = 0;\n"
+            "}\n"
+            "\n"
+            "static void f()\n"
+            "{\n"
+            "    char str[5];\n"
+            "    memclr( str, 5 );\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
 
-        //// #2097
-        //ctu("void foo(int *p)\n"
-        //    "{\n"
-        //    "    --p;\n"
-        //    "    p[2] = 0;\n"
-        //    "}\n"
-        //    "\n"
-        //    "void bar()\n"
-        //    "{\n"
-        //    "    int p[3];\n"
-        //    "    foo(p+1);\n"
-        //    "}");
-        //ASSERT_EQUALS("", errout.str());
+        // #2097
+        ctu("void foo(int *p)\n"
+            "{\n"
+            "    --p;\n"
+            "    p[2] = 0;\n"
+            "}\n"
+            "\n"
+            "void bar()\n"
+            "{\n"
+            "    int p[3];\n"
+            "    foo(p+1);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
 
-        //// #9112
-        //ctu("static void get_mac_address(const u8 *strbuf)\n"
-        //    "{\n"
-        //    "    (strbuf[2]);\n"
-        //    "}\n"
-        //    "\n"
-        //    "static void program_mac_address(u32 mem_base)\n"
-        //    "{\n"
-        //    "    u8 macstrbuf[17] = { 0 };\n"
-        //    "    get_mac_address(macstrbuf);\n"
-        //    "}");
-        //ASSERT_EQUALS("", errout.str());
+        // #9112
+        ctu("static void get_mac_address(const u8 *strbuf)\n"
+            "{\n"
+            "    (strbuf[2]);\n"
+            "}\n"
+            "\n"
+            "static void program_mac_address(u32 mem_base)\n"
+            "{\n"
+            "    u8 macstrbuf[17] = { 0 };\n"
+            "    get_mac_address(macstrbuf);\n"
+            "}");
+        ASSERT_EQUALS("", errout.str());
 
-        //// #9788
-        //ctu("void f1(char *s) { s[2] = 'B'; }\n"
-        //    "void f2(char s[]) { s[2] = 'B'; }\n"
-        //    "void g() {\n"
-        //    "    char str[2];\n"
-        //    "    f1(str);\n"
-        //    "    f2(str);\n"
-        //    "}\n");
-        //ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n"
-        //              "[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n",
-        //              errout.str());
+        // #9788
+        ctu("void f1(char *s) { s[2] = 'B'; }\n"
+            "void f2(char s[]) { s[2] = 'B'; }\n"
+            "void g() {\n"
+            "    char str[2];\n"
+            "    f1(str);\n"
+            "    f2(str);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n"
+                      "[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n",
+                      errout.str());
 
-        //// #5140
-        //ctu("void g(const char* argv[]) { std::cout << \"argv: \" << argv[4] << std::endl; }\n"
-        //    "void f() {\n"
-        //    "    const char* argv[] = { \"test\" };\n"
-        //    "    g(argv);\n"
-        //    "}\n");
-        //ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 4.\n",
-        //              errout.str());
+        // #5140
+        ctu("void g(const char* argv[]) { std::cout << \"argv: \" << argv[4] << std::endl; }\n"
+            "void f() {\n"
+            "    const char* argv[] = { \"test\" };\n"
+            "    g(argv);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 4.\n",
+                      errout.str());
 
-        //ctu("void g(const char* argv[]) { std::cout << \"argv: \" << argv[5] << std::endl; }\n"
-        //    "void f() {\n"
-        //    "    const char* argv[1] = { \"test\" };\n"
-        //    "    g(argv);\n"
-        //    "}\n");
-        //ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 5.\n",
-        //              errout.str());
+        ctu("void g(const char* argv[]) { std::cout << \"argv: \" << argv[5] << std::endl; }\n"
+            "void f() {\n"
+            "    const char* argv[1] = { \"test\" };\n"
+            "    g(argv);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 5.\n",
+                      errout.str());
 
         ctu("void g(int *b) { b[0] = 0; }\n"
             "void f() {\n"
