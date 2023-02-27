@@ -364,9 +364,7 @@ jobs:
         env:
           STRICT: 1
 
-      # FIXME: it seems macos has no "wc" command - use "gwc" from "brew coreutils" instead
       - name: Run showtimetop5 tests
-        if: contains(matrix.os, 'ubuntu')
         run: |
           ./tools/test_showtimetop5.sh
 
