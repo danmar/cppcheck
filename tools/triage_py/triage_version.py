@@ -143,7 +143,7 @@ for entry in versions:
         out = ''
         if not args.no_stdout:
             out += comm[0]
-        if not args.no_stderr and not args.no_stderr:
+        if not args.no_stdout and not args.no_stderr:
             out += '\n'
         if not args.no_stderr:
             out += comm[1]
