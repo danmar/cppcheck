@@ -35,7 +35,7 @@ void ThreadResult::reportOut(const std::string &outmsg, Color /*c*/)
 
 void ThreadResult::fileChecked(const QString &file)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
 
     mProgress += QFile(file).size();
     mFilesChecked++;
@@ -50,7 +50,7 @@ void ThreadResult::fileChecked(const QString &file)
 
 void ThreadResult::reportErr(const ErrorMessage &msg)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
     const ErrorItem item(msg);
     if (msg.severity != Severity::debug)
         emit error(item);
@@ -60,7 +60,7 @@ void ThreadResult::reportErr(const ErrorMessage &msg)
 
 QString ThreadResult::getNextFile()
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
     if (mFiles.isEmpty()) {
         return QString();
     }
@@ -70,7 +70,7 @@ QString ThreadResult::getNextFile()
 
 ImportProject::FileSettings ThreadResult::getNextFileSettings()
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
     if (mFileSettings.empty()) {
         return ImportProject::FileSettings();
     }
@@ -81,7 +81,7 @@ ImportProject::FileSettings ThreadResult::getNextFileSettings()
 
 void ThreadResult::setFiles(const QStringList &files)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
     mFiles = files;
     mProgress = 0;
     mFilesChecked = 0;
@@ -97,7 +97,7 @@ void ThreadResult::setFiles(const QStringList &files)
 
 void ThreadResult::setProject(const ImportProject &prj)
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
     mFiles.clear();
     mFileSettings = prj.fileSettings;
     mProgress = 0;
@@ -113,7 +113,7 @@ void ThreadResult::setProject(const ImportProject &prj)
 
 void ThreadResult::clearFiles()
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
     mFiles.clear();
     mFileSettings.clear();
     mFilesChecked = 0;
@@ -122,6 +122,6 @@ void ThreadResult::clearFiles()
 
 int ThreadResult::getFileCount() const
 {
-    QMutexLocker locker(&mutex);
+    std::lock_guard<std::mutex> locker(mutex);
     return mFiles.size() + mFileSettings.size();
 }
