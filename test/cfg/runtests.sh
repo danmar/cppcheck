@@ -27,9 +27,9 @@ CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inc
 
 # Compiler settings
 CXX=g++
-CXX_OPT='-fsyntax-only -std=c++2a -Wno-format -Wno-format-security -Wno-deprecated-declarations'
+CXX_OPT='-fsyntax-only -w -std=c++2a'
 CC=gcc
-CC_OPT='-Wno-format -Wno-stringop-overread -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
+CC_OPT='-fsyntax-only -w -std=c11'
 
 function get_pkg_config_cflags {
     set +e
