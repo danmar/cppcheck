@@ -314,7 +314,7 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils python3 pcre
+          brew install coreutils python3 pcre gnu-sed
 
       - name: Install missing Python packages
         run: |
@@ -335,9 +335,8 @@ jobs:
         run: |
           make -j$(nproc) check HAVE_RULES=yes
 
-      # FIXME: the script uses sed parameters not supported by MacOS - use "sed" from "brew gnu-sed" instead
+      # requires "gnu-sed" installed on macos
       - name: Run extra tests
-        if: contains(matrix.os, 'ubuntu')
         run: |
           tools/generate_and_run_more_tests.sh
 
