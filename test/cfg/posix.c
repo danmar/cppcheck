@@ -7,6 +7,8 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#define _BSD_SOURCE
+
 #include <aio.h>
 #include <stdio.h> // <- FILE
 #include <dirent.h>
@@ -19,7 +21,7 @@
 #include <pwd.h>
 #include <dlfcn.h>
 #include <fcntl.h>
-// unavailable on some linux systems #include <ndbm.h>
+// #include <ndbm.h> // unavailable on some linux systems
 #include <netdb.h>
 #include <regex.h>
 #include <time.h>
@@ -31,7 +33,6 @@
 #if !(defined(__APPLE__) && defined(__MACH__))
 #include <mqueue.h>
 #endif
-#define _XOPEN_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
 #include <wchar.h>

@@ -28,6 +28,8 @@
 #endif
 #include <inttypes.h>
 #include <float.h>
+#include <stdarg.h>
+#include <sys/types.h>
 
 size_t invalidFunctionArgStr_wcslen(void)
 {
