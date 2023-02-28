@@ -19,14 +19,14 @@
 #ifndef reverseanalyzerH
 #define reverseanalyzerH
 
+#include "valueptr.h"
+
 struct Analyzer;
 class ErrorLogger;
 class Settings;
 class Token;
 class TokenList;
-template<class T>
-class ValuePtr;
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings);
+void valueFlowGenericReverse(Token* start, const Token* end, ValuePtr<Analyzer> a, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings);
 
 #endif
