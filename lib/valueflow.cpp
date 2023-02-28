@@ -6497,6 +6497,9 @@ struct ConditionHandler {
         });
     }
     virtual ~ConditionHandler() {}
+    ConditionHandler(const ConditionHandler&) = default;
+protected:
+    ConditionHandler() = default;
 };
 
 static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
