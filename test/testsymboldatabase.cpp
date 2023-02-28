@@ -254,6 +254,7 @@ private:
         TEST_CASE(functionArgs16); // #9591
         TEST_CASE(functionArgs17);
         TEST_CASE(functionArgs18); // #10376
+        TEST_CASE(functionArgs19); // #10376
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -480,6 +481,7 @@ private:
 
         TEST_CASE(valueType1);
         TEST_CASE(valueType2);
+        TEST_CASE(valueType3);
         TEST_CASE(valueTypeThis);
 
         TEST_CASE(variadic1); // #7453
@@ -2668,6 +2670,15 @@ private:
         const Scope *scope = db->functionScopes.front();
         const Function *func = scope->function;
         ASSERT_EQUALS(2, func->argCount());
+    }
+
+    void functionArgs19() {
+        const char code[] = "void f(int (*fp)(int), int x, int y) {}";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        const Scope *scope = db->functionScopes.front();
+        const Function *func = scope->function;
+        ASSERT_EQUALS(3, func->argCount());
     }
 
     void functionImplicitlyVirtual() {
@@ -8097,6 +8108,19 @@ private:
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("iterator(std :: map|unordered_map <)", tok->valueType()->str());
         }
+    }
+
+    void valueType3() {
+        GET_SYMBOL_DB("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
+                      "    auto& s = v[i][j];\n"
+                      "    s.insert(0);\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        const Token* tok = tokenizer.tokens();
+        tok = Token::findsimplematch(tok, "s .");
+        ASSERT(tok && tok->valueType());
+        ASSERT_EQUALS("container(std :: set|unordered_set <)", tok->valueType()->str());
     }
 
     void valueTypeThis() {

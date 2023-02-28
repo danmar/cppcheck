@@ -1986,6 +1986,18 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
+              "    auto& s = v[i][j];\n"
+              "    s.insert(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<std::string>& v, int i, char c) {\n"
+              "    const auto& s = v[i];\n"
+              "    return s.find(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings = settings_old;
     }
 
