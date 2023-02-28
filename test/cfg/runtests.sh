@@ -194,7 +194,10 @@ function sqlite3_fn {
 
 # openmp.c
 function openmp_fn {
-    ${CC} ${CC_OPT} -fopenmp ${DIR}openmp.c
+    # MacOS compiler has no OpenMP by default
+    if ! which sw_vers; then
+      ${CC} ${CC_OPT} -fopenmp ${DIR}openmp.c
+    fi
 }
 
 # python.c
