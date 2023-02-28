@@ -7068,17 +7068,17 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     }
                     const Library::ArgumentChecks::IteratorInfo* info = mSettings->library.getArgIteratorInfo(tok->previous(), 1);
                     if (info && info->it) {
-                      const std::vector<const Token*> args = getArguments(tok);
-                      if (!args.empty() && Token::simpleMatch(args[0]->astOperand1(), ".") && args[0]->astOperand1()->astOperand1()) {
-                        const Token* contTok = args[0]->astOperand1()->astOperand1();
-                        if (contTok && contTok->variable() && contTok->variable()->valueType() && contTok->variable()->valueType()->container) {
-                          ValueType vt;
-                          vt.type = ValueType::Type::ITERATOR;
-                          vt.container = contTok->variable()->valueType()->container;
-                          vt.containerTypeToken = contTok->variable()->valueType()->containerTypeToken;
-                          setValueType(tok, vt);
+                        const std::vector<const Token*> args = getArguments(tok);
+                        if (!args.empty() && Token::simpleMatch(args[0]->astOperand1(), ".") && args[0]->astOperand1()->astOperand1()) {
+                            const Token* contTok = args[0]->astOperand1()->astOperand1();
+                            if (contTok && contTok->variable() && contTok->variable()->valueType() && contTok->variable()->valueType()->container) {
+                                ValueType vt;
+                                vt.type = ValueType::Type::ITERATOR;
+                                vt.container = contTok->variable()->valueType()->container;
+                                vt.containerTypeToken = contTok->variable()->valueType()->containerTypeToken;
+                                setValueType(tok, vt);
+                            }
                         }
-                      }
                     }
                     continue;
                 }
