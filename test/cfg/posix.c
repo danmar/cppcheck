@@ -28,7 +28,9 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#if !(defined(__APPLE__) && defined(__MACH__))
 #include <mqueue.h>
+#endif
 #define _XOPEN_SOURCE
 #include <stdlib.h>
 #include <unistd.h>
@@ -36,12 +38,14 @@
 #include <string.h>
 #include <strings.h>
 
+#if !(defined(__APPLE__) && defined(__MACH__))
 void nullPointer_mq_timedsend(mqd_t mqdes, const char* msg_ptr, size_t msg_len, unsigned msg_prio, const struct timespec* abs_timeout) {
     // cppcheck-suppress nullPointer
     (void) mq_timedsend(mqdes, NULL, msg_len, msg_prio, abs_timeout);
     // cppcheck-suppress nullPointer
     (void) mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, NULL);
 }
+#endif
 
 #if __TRACE_H__ // <trace.h>
 
@@ -143,6 +147,7 @@ int nullPointer_getopt(int argc, char* const argv[], const char* optstring)
     return getopt(argc, argv, optstring);
 }
 
+#if !(defined(__APPLE__) && defined(__MACH__))
 int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
 {
     // No warning is expected for:
@@ -150,6 +155,7 @@ int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_l
     (void) mq_send(mqdes, &msg, 1, 0);
     return mq_send(mqdes, msg_ptr, msg_len, 0);
 }
+#endif
 
 void invalidFunctionArgStr_mbsnrtowcs(void)
 {
