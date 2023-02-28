@@ -2,7 +2,7 @@
 # Script Used by generate_and_run_more_tests.sh
 
 # "gsed" is a GNU compatible version of "sed" on MacOS
-SED_CMD=$(which gsed || which sed)
+SED_CMD=$(command -v gsed || command -v sed)
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
