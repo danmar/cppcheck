@@ -2265,6 +2265,12 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
             if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=") && tok != tok2->astOperand2()) {
                 tok2 = tok2->astOperand2();
 
+                if (Token::simpleMatch(tok2, "[") && tok2->astOperand1()) {
+                    const ValueType* vt = tok2->astOperand1()->valueType();
+                    if (vt && vt->containerTypeToken)
+                        return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+                }
+
                 const Token* varTok = tok2; // try to find a variable
                 if (Token::Match(varTok, ":: %name%"))
                     varTok = varTok->next();

@@ -481,6 +481,7 @@ private:
 
         TEST_CASE(valueType1);
         TEST_CASE(valueType2);
+        TEST_CASE(valueType3);
         TEST_CASE(valueTypeThis);
 
         TEST_CASE(variadic1); // #7453
@@ -8107,6 +8108,19 @@ private:
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("iterator(std :: map|unordered_map <)", tok->valueType()->str());
         }
+    }
+
+    void valueType3() {
+        GET_SYMBOL_DB("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
+                      "    auto& s = v[i][j];\n"
+                      "    s.insert(0);\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        const Token* tok = tokenizer.tokens();
+        tok = Token::findsimplematch(tok, "s .");
+        ASSERT(tok && tok->valueType());
+        ASSERT_EQUALS("container(std :: set|unordered_set <)", tok->valueType()->str());
     }
 
     void valueTypeThis() {
