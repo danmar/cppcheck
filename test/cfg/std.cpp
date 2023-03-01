@@ -40,6 +40,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 #include <version>
 #ifdef __cpp_lib_span
@@ -4559,6 +4560,13 @@ void stdbind()
     auto f1 = std::bind(stdbind_helper, _1);
     // TODO cppcheck-suppress unreadVariable
     auto f2 = std::bind(stdbind_helper, 10);
+}
+
+int stdexchange() {
+    int i;
+    // cppcheck-suppress uninitvar
+    int j = std::exchange(i, 5);
+    return j;
 }
 
 class A
