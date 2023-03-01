@@ -471,9 +471,17 @@ static const Token *getCastTypeStartToken(const Token *parent, const Settings* s
         return parent->astOperand1();
     if (parent->str() != "(")
         return nullptr;
-    if (!parent->astOperand2() && Token::Match(parent, "( %name%") &&
-        (parent->next()->isStandardType() || settings->library.isNotLibraryFunction(parent->next())))
-        return parent->next();
+    if (!parent->astOperand2() && Token::Match(parent, "( %name%|::")) {
+        const Token* ftok = parent->next();
+        if (ftok->isStandardType())
+            return ftok;        
+        if (Token::simpleMatch(ftok, "::"))
+            ftok = ftok->next();
+        while (Token::Match(ftok, "%name% ::"))
+            ftok = ftok->tokAt(2);
+        if (settings->library.isNotLibraryFunction(ftok))
+            return parent->next();
+    }
     if (parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
         return parent->astOperand1()->tokAt(2);
     return nullptr;
