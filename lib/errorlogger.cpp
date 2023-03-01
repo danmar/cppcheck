@@ -511,6 +511,31 @@ static std::string readCode(const std::string &file, int linenr, int column, con
     return line + endl + std::string((column>0 ? column-1 : 0), ' ') + '^';
 }
 
+static void replaceSpecialChars(std::string& source)
+{
+    // Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
+    // Substitution should be done first so messages from cppcheck never get translated.
+    static const std::unordered_map<char, std::string> substitutionMap = {
+        {'b', "\b"},
+        {'n', "\n"},
+        {'r', "\r"},
+        {'t', "\t"}
+    };
+
+    std::string::size_type index = 0;
+    while ((index = source.find('\\', index)) != std::string::npos) {
+        const char searchFor = source[index+1];
+        const auto it = substitutionMap.find(searchFor);
+        if (it == substitutionMap.end()) {
+            index += 1;
+            continue;
+        }
+        const std::string& replaceWith = it->second;
+        source.replace(index, 2, replaceWith);
+        index += replaceWith.length();
+    }
+}
+
 static void replaceColors(std::string& source)
 {
     static const std::unordered_map<std::string, std::string> substitutionMap =
@@ -566,12 +591,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
 
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
-    // Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
-    // Substitution should be done first so messages from cppcheck never get translated.
-    findAndReplace(result, "\\b", "\b");
-    findAndReplace(result, "\\n", "\n");
-    findAndReplace(result, "\\r", "\r");
-    findAndReplace(result, "\\t", "\t");
+    replaceSpecialChars(result);
 
     replaceColors(result);
     findAndReplace(result, "{id}", id);
@@ -616,10 +636,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         for (const FileLocation &fileLocation : callStack) {
             std::string text = templateLocation;
 
-            findAndReplace(text, "\\b", "\b");
-            findAndReplace(text, "\\n", "\n");
-            findAndReplace(text, "\\r", "\r");
-            findAndReplace(text, "\\t", "\t");
+            replaceSpecialChars(text);
 
             replaceColors(text);
             findAndReplace(text, "{file}", fileLocation.getfile());
