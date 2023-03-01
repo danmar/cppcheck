@@ -7381,7 +7381,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
         if (!function)
             continue;
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%name% ("))
+            if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
                 continue;
 
             const Function * const calledFunction = tok->function();
