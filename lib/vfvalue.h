@@ -46,6 +46,8 @@ namespace ValueFlow
         explicit Value(long long val = 0, Bound b = Bound::Point) :
             bound(b),
             intvalue(val),
+            varvalue(val),
+            wideintvalue(val),
             varvalue(val)
         {}
         Value(const Token* c, long long val, Bound b = Bound::Point);
