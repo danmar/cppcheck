@@ -474,7 +474,7 @@ static const Token *getCastTypeStartToken(const Token *parent, const Settings* s
     if (!parent->astOperand2() && Token::Match(parent, "( %name%|::")) {
         const Token* ftok = parent->next();
         if (ftok->isStandardType())
-            return ftok;        
+            return ftok;
         if (Token::simpleMatch(ftok, "::"))
             ftok = ftok->next();
         while (Token::Match(ftok, "%name% ::"))
