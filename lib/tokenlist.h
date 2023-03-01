@@ -209,7 +209,7 @@ private:
     std::vector<std::string> mOrigFiles;
 
     /** settings */
-    const Settings* mSettings;
+    const Settings* mSettings{};
 
     /** File is known to be C/C++ code */
     bool mIsC{};
