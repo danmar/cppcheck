@@ -53,7 +53,7 @@ namespace tinyxml2 {
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {}
+    CheckClass() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
@@ -191,7 +191,7 @@ public:
     static const std::set<std::string> stl_containers_not_const;
 
 private:
-    const SymbolDatabase *mSymbolDatabase;
+    const SymbolDatabase* mSymbolDatabase{};
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);

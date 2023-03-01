@@ -101,12 +101,12 @@ namespace simplecpp {
     class SIMPLECPP_LIB Token {
     public:
         Token(const TokenString &s, const Location &loc) :
-            location(loc), previous(nullptr), next(nullptr), string(s) {
+            location(loc), string(s) {
             flags();
         }
 
         Token(const Token &tok) :
-            macro(tok.macro), op(tok.op), comment(tok.comment), name(tok.name), number(tok.number), location(tok.location), previous(nullptr), next(nullptr), string(tok.string), mExpandedFrom(tok.mExpandedFrom) {
+            macro(tok.macro), op(tok.op), comment(tok.comment), name(tok.name), number(tok.number), location(tok.location), string(tok.string), mExpandedFrom(tok.mExpandedFrom) {
         }
 
         void flags() {
@@ -135,8 +135,8 @@ namespace simplecpp {
         bool name;
         bool number;
         Location location;
-        Token *previous;
-        Token *next;
+        Token* previous{};
+        Token* next{};
 
         const Token *previousSkipComments() const {
             const Token *tok = this->previous;

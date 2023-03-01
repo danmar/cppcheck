@@ -2033,8 +2033,7 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
     mAccess(access_),
     mFlags(0),
     mType(type_),
-    mScope(scope_),
-    mValueType(nullptr)
+    mScope(scope_)
 {
     if (!mTypeStartToken && mTypeEndToken) {
         mTypeStartToken = mTypeEndToken;
@@ -2082,14 +2081,12 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
 }
 
 Variable::Variable(const Variable &var, const Scope *scope)
-    : mValueType(nullptr)
 {
     *this = var;
     mScope = scope;
 }
 
 Variable::Variable(const Variable &var)
-    : mValueType(nullptr)
 {
     *this = var;
 }
@@ -2340,20 +2337,7 @@ Function::Function(const Tokenizer *mTokenizer,
                    const Token *tokArgDef)
     : tokenDef(tokDef),
     argDef(tokArgDef),
-    token(nullptr),
-    arg(nullptr),
-    retDef(nullptr),
-    retType(nullptr),
-    functionScope(nullptr),
-    nestedIn(scope),
-    initArgCount(0),
-    type(eFunction),
-    noexceptArg(nullptr),
-    throwArg(nullptr),
-    templateDef(nullptr),
-    functionPointerUsage(nullptr),
-    access(AccessControl::Public),
-    mFlags(0)
+    nestedIn(scope)
 {
     // operator function
     if (::isOperator(tokenDef)) {
@@ -2458,22 +2442,7 @@ Function::Function(const Tokenizer *mTokenizer,
 }
 
 Function::Function(const Token *tokenDef, const std::string &clangType)
-    : tokenDef(tokenDef),
-    argDef(nullptr),
-    token(nullptr),
-    arg(nullptr),
-    retDef(nullptr),
-    retType(nullptr),
-    functionScope(nullptr),
-    nestedIn(nullptr),
-    initArgCount(0),
-    type(eFunction),
-    noexceptArg(nullptr),
-    throwArg(nullptr),
-    templateDef(nullptr),
-    functionPointerUsage(nullptr),
-    access(AccessControl::Public),
-    mFlags(0)
+    : tokenDef(tokenDef)
 {
     // operator function
     if (::isOperator(tokenDef)) {

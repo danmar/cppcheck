@@ -249,7 +249,7 @@ public:
         bool arrayLike_indexOp{};
         bool stdStringLike{};
         bool stdAssociativeLike{};
-        bool opLessAllowed{};
+        bool opLessAllowed = true;
         bool hasInitializerListConstructor{};
         bool unstableErase{};
         bool unstableInsert{};

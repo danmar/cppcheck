@@ -127,7 +127,7 @@ public:
     /**
      * Check code in the headers, this is on by default but can
      * be turned off to save CPU */
-    bool checkHeaders{};
+    bool checkHeaders = true;
 
     /** Check for incomplete info in library files? */
     bool checkLibrary{};

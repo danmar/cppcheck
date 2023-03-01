@@ -74,9 +74,9 @@ private:
     /** Result of forward analysis */
     struct Result {
         enum class Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
-        explicit Result(Type type) : type(type), token(nullptr) {}
+        explicit Result(Type type) : type(type) {}
         Result(Type type, const Token *token) : type(type), token(token) {}
-        const Token *token;
+        const Token* token{};
     };
 
     struct Result check(const Token *expr, const Token *startToken, const Token *endToken);

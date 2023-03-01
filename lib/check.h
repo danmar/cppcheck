@@ -130,9 +130,9 @@ public:
     static std::string getMessageId(const ValueFlow::Value &value, const char id[]);
 
 protected:
-    const Tokenizer * const mTokenizer;
-    const Settings * const mSettings;
-    ErrorLogger * const mErrorLogger;
+    const Tokenizer* const mTokenizer{};
+    const Settings* const mSettings{};
+    ErrorLogger* const mErrorLogger{};
 
     /** report an error */
     void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg) {

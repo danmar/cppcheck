@@ -63,7 +63,6 @@ public:
 
     /** File settings. Multiple configurations for a file is allowed. */
     struct CPPCHECKLIB FileSettings {
-        FileSettings() : platformType(cppcheck::Platform::Unspecified) {}
         std::string cfg;
         std::string filename;
         std::string defines;
@@ -74,7 +73,7 @@ public:
         std::list<std::string> includePaths;
         std::list<std::string> systemIncludePaths;
         std::string standard;
-        cppcheck::Platform::PlatformType platformType;
+        cppcheck::Platform::PlatformType platformType{};
         bool msc{};
         bool useMfc{};
 

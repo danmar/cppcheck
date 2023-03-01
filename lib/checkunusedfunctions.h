@@ -101,10 +101,7 @@ private:
         return "Check for functions that are never called\n";
     }
 
-    class CPPCHECKLIB FunctionUsage {
-    public:
-        FunctionUsage() = default;
-
+    struct CPPCHECKLIB FunctionUsage {
         std::string filename;
         unsigned int lineNumber{};
         bool usedSameFile{};
