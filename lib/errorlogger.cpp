@@ -513,22 +513,33 @@ static std::string readCode(const std::string &file, int linenr, int column, con
 
 static void replaceColors(std::string& source)
 {
-    static const std::string reset_str = ::toString(Color::Reset);
-    findAndReplace(source, "{reset}", reset_str);
-    static const std::string bold_str = ::toString(Color::Bold);
-    findAndReplace(source, "{bold}", bold_str);
-    static const std::string dim_str = ::toString(Color::Dim);
-    findAndReplace(source, "{dim}", dim_str);
-    static const std::string red_str = ::toString(Color::FgRed);
-    findAndReplace(source, "{red}", red_str);
-    static const std::string green_str = ::toString(Color::FgGreen);
-    findAndReplace(source, "{green}", green_str);
-    static const std::string blue_str = ::toString(Color::FgBlue);
-    findAndReplace(source, "{blue}", blue_str);
-    static const std::string magenta_str = ::toString(Color::FgMagenta);
-    findAndReplace(source, "{magenta}", magenta_str);
-    static const std::string default_str = ::toString(Color::FgDefault);
-    findAndReplace(source, "{default}", default_str);
+    static const std::unordered_map<std::string, std::string> substitutionMap =
+    {
+        {"{reset}", ::toString(Color::Reset)},
+        {"{bold}", ::toString(Color::Bold)},
+        {"{dim}", ::toString(Color::Dim)},
+        {"{red}", ::toString(Color::FgRed)},
+        {"{green}", ::toString(Color::FgGreen)},
+        {"{blue}", ::toString(Color::FgBlue)},
+        {"{magenta}", ::toString(Color::FgMagenta)},
+        {"{default}", ::toString(Color::FgDefault)},
+    };
+
+    std::string::size_type index = 0;
+    while ((index = source.find('{', index)) != std::string::npos) {
+        const std::string::size_type end = source.find('}', index);
+        if (end == std::string::npos)
+            break;
+        const std::string searchFor = source.substr(index, end-index+1);
+        const auto it = substitutionMap.find(searchFor);
+        if (it == substitutionMap.end()) {
+            index += 1;
+            continue;
+        }
+        const std::string& replaceWith = it->second;
+        source.replace(index, searchFor.length(), replaceWith);
+        index += replaceWith.length();
+    }
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
