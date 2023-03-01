@@ -94,7 +94,7 @@ struct TokenImpl {
     Token* mAstParent{};
 
     // symbol database information
-    const Scope *mScope;
+    const Scope* mScope{};
     union {
         const Function *mFunction;
         const Variable *mVariable;
@@ -120,16 +120,16 @@ struct TokenImpl {
 
     // __cppcheck_in_range__
     struct CppcheckAttributes {
-        enum Type {LOW,HIGH} type;
-        MathLib::bigint value;
-        struct CppcheckAttributes *next;
+        enum Type { LOW, HIGH } type{};
+        MathLib::bigint value{};
+        struct CppcheckAttributes* next{};
     };
     CppcheckAttributes* mCppcheckAttributes{};
 
     // For memoization, to speed up parsing of huge arrays #8897
-    enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
+    enum class Cpp11init { UNKNOWN, CPP11INIT, NOINIT } mCpp11init{};
 
-    TokenDebug mDebug;
+    TokenDebug mDebug{};
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
