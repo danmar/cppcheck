@@ -4379,14 +4379,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     check(check_),
     classDef(classDef_),
     nestedIn(nestedIn_),
-    numConstructors(0),
-    numCopyOrMoveConstructors(0),
-    type(type_),
-    definedType(nullptr),
-    functionOf(nullptr),
-    function(nullptr),
-    enumType(nullptr),
-    enumClass(false)
+    type(type_)
 {
     setBodyStartEnd(start_);
 }
@@ -4394,16 +4387,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
 Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_) :
     check(check_),
     classDef(classDef_),
-    bodyStart(nullptr),
-    bodyEnd(nullptr),
-    nestedIn(nestedIn_),
-    numConstructors(0),
-    numCopyOrMoveConstructors(0),
-    definedType(nullptr),
-    functionOf(nullptr),
-    function(nullptr),
-    enumType(nullptr),
-    enumClass(false)
+    nestedIn(nestedIn_)
 {
     const Token *nameTok = classDef;
     if (!classDef) {

@@ -75,18 +75,14 @@ public:
     const Scope* enclosingScope;
     enum class NeedInitialization {
         Unknown, True, False
-    } needInitialization;
+    } needInitialization{};
 
-    class BaseInfo {
-    public:
-        BaseInfo() :
-            type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {}
-
+    struct BaseInfo {
         std::string name;
-        const Type* type;
-        const Token* nameTok;
-        AccessControl access;  // public/protected/private
-        bool isVirtual;
+        const Type* type{};
+        const Token* nameTok{};
+        AccessControl access{};  // public/protected/private
+        bool isVirtual{};
         // allow ordering within containers
         bool operator<(const BaseInfo& rhs) const {
             return this->type < rhs.type;
@@ -94,29 +90,22 @@ public:
     };
 
     struct FriendInfo {
-        FriendInfo() :
-            nameStart(nullptr), nameEnd(nullptr), type(nullptr) {}
-
-        const Token* nameStart;
-        const Token* nameEnd;
-        const Type* type;
+        const Token* nameStart{};
+        const Token* nameEnd{};
+        const Type* type{};
     };
 
     std::vector<BaseInfo> derivedFrom;
     std::vector<FriendInfo> friendList;
 
-    const Token * typeStart;
-    const Token * typeEnd;
-    MathLib::bigint sizeOf;
+    const Token* typeStart{};
+    const Token* typeEnd{};
+    MathLib::bigint sizeOf{};
 
     explicit Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
         classDef(classDef_),
         classScope(classScope_),
-        enclosingScope(enclosingScope_),
-        needInitialization(NeedInitialization::Unknown),
-        typeStart(nullptr),
-        typeEnd(nullptr),
-        sizeOf(0) {
+        enclosingScope(enclosingScope_) {
         if (classDef_ && classDef_->str() == "enum")
             needInitialization = NeedInitialization::True;
         else if (classDef_ && classDef_->str() == "using") {
@@ -167,15 +156,14 @@ public:
     bool isDerivedFrom(const std::string & ancestor) const;
 };
 
-class CPPCHECKLIB Enumerator {
-public:
-    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) {}
+struct CPPCHECKLIB Enumerator {
+    explicit Enumerator(const Scope * scope_) : scope(scope_) {}
     const Scope * scope;
-    const Token * name;
-    MathLib::bigint value;
-    const Token * start;
-    const Token * end;
-    bool value_known;
+    const Token* name{};
+    MathLib::bigint value{};
+    const Token* start{};
+    const Token* end{};
+    bool value_known{};
 };
 
 /** @brief Information about a member variable. */
@@ -1038,31 +1026,31 @@ public:
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
 
-    const SymbolDatabase *check;
+    const SymbolDatabase* check{};
     std::string className;
-    const Token *classDef;   ///< class/struct/union/namespace token
-    const Token *bodyStart;  ///< '{' token
-    const Token *bodyEnd;    ///< '}' token
+    const Token* classDef{};   ///< class/struct/union/namespace token
+    const Token* bodyStart{};  ///< '{' token
+    const Token* bodyEnd{};    ///< '}' token
     std::list<Function> functionList;
     std::multimap<std::string, const Function *> functionMap;
     std::list<Variable> varlist;
-    const Scope *nestedIn;
+    const Scope* nestedIn{};
     std::vector<Scope *> nestedList;
-    nonneg int numConstructors;
-    nonneg int numCopyOrMoveConstructors;
+    nonneg int numConstructors{};
+    nonneg int numCopyOrMoveConstructors{};
     std::vector<UsingInfo> usingList;
-    ScopeType type;
-    Type* definedType;
+    ScopeType type{};
+    Type* definedType{};
     std::map<std::string, Type*> definedTypesMap;
     std::vector<const Token *> bodyStartList;
 
     // function specific fields
-    const Scope *functionOf; ///< scope this function belongs to
-    Function *function; ///< function info for this function
+    const Scope* functionOf{}; ///< scope this function belongs to
+    Function* function{}; ///< function info for this function
 
     // enum specific fields
-    const Token * enumType;
-    bool enumClass;
+    const Token* enumType{};
+    bool enumClass{};
 
     std::vector<Enumerator> enumeratorList;
 

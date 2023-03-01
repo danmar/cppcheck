@@ -293,9 +293,7 @@ public:
     std::list<Rule> rules;
 
     /** Do not only check how interface is used. Also check that interface is safe. */
-    class CPPCHECKLIB SafeChecks {
-    public:
-        SafeChecks() : classes(false), externalFunctions(false), internalFunctions(false), externalVariables(false) {}
+    struct CPPCHECKLIB SafeChecks {
 
         static const char XmlRootName[];
         static const char XmlClasses[];
@@ -313,26 +311,26 @@ public:
          * - public functions can be called in any order
          * - public variables can have any value
          */
-        bool classes;
+        bool classes{};
 
         /**
          * External functions
          * - external functions can be called in any order
          * - function parameters can have any values
          */
-        bool externalFunctions;
+        bool externalFunctions{};
 
         /**
          * Experimental: assume that internal functions can be used in any way
          * This is only available in the GUI.
          */
-        bool internalFunctions;
+        bool internalFunctions{};
 
         /**
          * Global variables that can be modified outside the TU.
          * - Such variable can have "any" value
          */
-        bool externalVariables;
+        bool externalVariables{};
     };
 
     SafeChecks safeChecks;

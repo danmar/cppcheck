@@ -38,7 +38,7 @@
 #include <utility>
 #include <vector>
 
-class Enumerator;
+struct Enumerator;
 class Function;
 class Scope;
 class Settings;
