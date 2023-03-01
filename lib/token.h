@@ -154,7 +154,7 @@ struct TokenImpl {
  */
 class CPPCHECKLIB Token {
 private:
-    TokensFrontBack* mTokensFrontBack;
+    TokensFrontBack* mTokensFrontBack{};
 
 public:
     Token(const Token &) = delete;
@@ -1238,9 +1238,9 @@ private:
 
     std::string mStr;
 
-    Token *mNext;
-    Token *mPrevious;
-    Token *mLink;
+    Token* mNext{};
+    Token* mPrevious{};
+    Token* mLink{};
 
     enum : uint64_t {
         fIsUnsigned             = (1 << 0),
@@ -1285,11 +1285,11 @@ private:
         fIsFinalType            = (1ULL << 39), // Is this a type with final specifier
     };
 
-    Token::Type mTokType;
+    Token::Type mTokType{};
 
-    uint64_t mFlags;
+    uint64_t mFlags{};
 
-    TokenImpl *mImpl;
+    TokenImpl* mImpl{};
 
     /**
      * Get specified flag state.
