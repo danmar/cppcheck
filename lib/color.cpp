@@ -20,9 +20,9 @@
 
 #ifndef _WIN32
 #include <unistd.h>
-#endif
 #include <cstddef>
 #include <sstream> // IWYU pragma: keep
+#endif
 
 bool gDisableColors = false;
 
@@ -32,18 +32,26 @@ std::ostream& operator<<(std::ostream& os, const Color& /*c*/)
 #else
 std::ostream& operator<<(std::ostream & os, const Color& c)
 {
+#ifndef _WIN32
     // TODO: handle piping into file as well as other pipes like stderr
     static const bool s_is_tty = isatty(STDOUT_FILENO);
     if (!gDisableColors && s_is_tty)
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
+#else
+    (void)c;
 #endif
     return os;
 }
 
 std::string toString(const Color& c)
 {
+#ifndef _WIN32
     std::stringstream ss;
     ss << c;
     return ss.str();
+#else
+    (void)c;
+    return "";
+#endif
 }
 
