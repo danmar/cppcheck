@@ -119,39 +119,39 @@ public:
     std::string buildDir;
 
     /** @brief check all configurations (false if -D or --max-configs is used */
-    bool checkAllConfigurations;
+    bool checkAllConfigurations = true;
 
     /** Is the 'configuration checking' wanted? */
-    bool checkConfiguration;
+    bool checkConfiguration{};
 
     /**
      * Check code in the headers, this is on by default but can
      * be turned off to save CPU */
-    bool checkHeaders;
+    bool checkHeaders{};
 
     /** Check for incomplete info in library files? */
-    bool checkLibrary;
+    bool checkLibrary{};
 
     /** @brief The maximum time in seconds for the checks of a single file */
-    std::size_t checksMaxTime;
+    std::size_t checksMaxTime{};
 
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
     /** Check unused/uninstantiated templates */
-    bool checkUnusedTemplates;
+    bool checkUnusedTemplates = true;
 
     /** Use Clang */
-    bool clang;
+    bool clang{};
 
     /** Custom Clang executable */
-    std::string clangExecutable;
+    std::string clangExecutable = "clang";
 
     /** Use clang-tidy */
-    bool clangTidy;
+    bool clangTidy{};
 
     /** Internal: Clear the simplecpp non-existing include cache */
-    bool clearIncludeCache;
+    bool clearIncludeCache{};
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
@@ -163,22 +163,22 @@ public:
     std::string cppcheckCfgAbout;
 
     /** @brief Are we running from DACA script? */
-    bool daca;
+    bool daca{};
 
     /** @brief Is --debug-normal given? */
-    bool debugnormal;
+    bool debugnormal{};
 
     /** @brief Is --debug-simplified given? */
-    bool debugSimplified;
+    bool debugSimplified{};
 
     /** @brief Is --debug-template given? */
-    bool debugtemplate;
+    bool debugtemplate{};
 
     /** @brief Is --debug-warnings given? */
-    bool debugwarnings;
+    bool debugwarnings{};
 
     /** @brief Is --dump given? */
-    bool dump;
+    bool dump{};
     std::string dumpFile;
 
     enum Language {
@@ -186,39 +186,39 @@ public:
     };
 
     /** @brief Name of the language that is enforced. Empty per default. */
-    Language enforcedLang;
+    Language enforcedLang{};
 
     /** @brief Is --exception-handling given */
-    bool exceptionHandling;
+    bool exceptionHandling{};
 
     // argv[0]
     std::string exename;
 
     /** @brief If errors are found, this value is returned from main().
         Default value is 0. */
-    int exitCode;
+    int exitCode{};
 
     /** @brief List of --file-filter for analyzing special files */
     std::vector<std::string> fileFilters;
 
     /** @brief Force checking the files with "too many" configurations (--force). */
-    bool force;
+    bool force{};
 
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
 
     /** @brief Is --inline-suppr given? */
-    bool inlineSuppressions;
+    bool inlineSuppressions{};
 
     /** @brief How many processes/threads should do checking at the same
         time. Default is 1. (-j N) */
-    unsigned int jobs;
+    unsigned int jobs = 1;
 
     /** @brief Collect unmatched suppressions in one run.
      * This delays the reporting until all files are checked.
      * It is needed by checks that analyse the whole code base. */
-    bool jointSuppressionReport;
+    bool jointSuppressionReport{};
 
     /** @brief --library= */
     std::list<std::string> libraries;
@@ -227,17 +227,17 @@ public:
     Library library;
 
     /** @brief Load average value */
-    int loadAverage;
+    int loadAverage{};
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
-    int maxConfigs;
+    int maxConfigs = 12;
 
     /** @brief --max-ctu-depth */
-    int maxCtuDepth;
+    int maxCtuDepth = 2;
 
     /** @brief max template recursion */
-    int maxTemplateRecursion;
+    int maxTemplateRecursion = 100;
 
     /** @brief suppress exitcode */
     Suppressions nofail;
@@ -249,7 +249,7 @@ public:
     std::string outputFile;
 
     /** @brief Experimental: --performance-valueflow-max-time=T */
-    int performanceValueFlowMaxTime;
+    int performanceValueFlowMaxTime = -1;
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
@@ -258,18 +258,18 @@ public:
     std::string premiumArgs;
 
     /** @brief Using -E for debugging purposes */
-    bool preprocessOnly;
+    bool preprocessOnly{};
 
     ImportProject project;
 
     /** @brief Is --quiet given? */
-    bool quiet;
+    bool quiet{};
 
     /** @brief Use relative paths in output. */
-    bool relativePaths;
+    bool relativePaths{};
 
     /** @brief --report-progress */
-    bool reportProgress;
+    bool reportProgress{};
 
     /** Rule */
     class CPPCHECKLIB Rule {
@@ -342,7 +342,7 @@ public:
     SimpleEnableGroup<Checks> checks;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
-    SHOWTIME_MODES showtime;
+    SHOWTIME_MODES showtime{};
 
     /** Struct contains standards settings */
     Standards standards;
@@ -371,7 +371,7 @@ public:
     std::list<std::string> userIncludes;
 
     /** @brief the maximum iterations of valueflow (--valueflow-max-iterations=T) */
-    std::size_t valueFlowMaxIterations;
+    std::size_t valueFlowMaxIterations = 4;
 
     /** @brief Is --verbose given? */
     bool verbose;
@@ -380,7 +380,7 @@ public:
     bool xml;
 
     /** @brief XML version (--xml-version=..) */
-    int xml_version;
+    int xml_version = 2;
 
     /**
      * @brief return true if a included file is to be excluded in Preprocessor::getConfigs

@@ -61,15 +61,14 @@ namespace {
     // local struct used in setVarId
     // in order to store information about the scope
     struct VarIdScopeInfo {
-        VarIdScopeInfo()
-            : isExecutable(false), isStructInit(false), isEnum(false), startVarid(0) {}
+        VarIdScopeInfo() = default;
         VarIdScopeInfo(bool isExecutable, bool isStructInit, bool isEnum, nonneg int startVarid)
             : isExecutable(isExecutable), isStructInit(isStructInit), isEnum(isEnum), startVarid(startVarid) {}
 
-        const bool isExecutable;
-        const bool isStructInit;
-        const bool isEnum;
-        const nonneg int startVarid;
+        const bool isExecutable{};
+        const bool isStructInit{};
+        const bool isEnum{};
+        const nonneg int startVarid{};
     };
 }
 
@@ -424,11 +423,10 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 
 namespace {
     struct Space {
-        Space() : bodyEnd(nullptr), bodyEnd2(nullptr), isNamespace(false) {}
         std::string className;
-        const Token * bodyEnd;  // for body contains typedef define
-        const Token * bodyEnd2; // for body contains typedef using
-        bool isNamespace;
+        const Token* bodyEnd{};  // for body contains typedef define
+        const Token* bodyEnd2{}; // for body contains typedef using
+        bool isNamespace{};
         std::set<std::string> recordTypes;
     };
 }

@@ -121,10 +121,10 @@ private:
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;
     Settings *mSettings;
-    bool mShowHelp;
-    bool mShowVersion;
-    bool mShowErrorMessages;
-    bool mExitAfterPrint;
+    bool mShowHelp{};
+    bool mShowVersion{};
+    bool mShowErrorMessages{};
+    bool mExitAfterPrint{};
     std::string mVSConfig;
 };
 

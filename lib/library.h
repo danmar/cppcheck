@@ -206,18 +206,7 @@ public:
 
     class Container {
     public:
-        Container()
-            : type_templateArgNo(-1),
-            size_templateArgNo(-1),
-            arrayLike_indexOp(false),
-            stdStringLike(false),
-            stdAssociativeLike(false),
-            opLessAllowed(true),
-            hasInitializerListConstructor(false),
-            unstableErase(false),
-            unstableInsert(false),
-            view(false)
-        {}
+        Container() = default;
 
         enum class Action {
             RESIZE,
@@ -254,17 +243,17 @@ public:
         };
         std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
-        int type_templateArgNo;
+        int type_templateArgNo = -1;
         std::vector<RangeItemRecordTypeItem> rangeItemRecordType;
-        int size_templateArgNo;
-        bool arrayLike_indexOp;
-        bool stdStringLike;
-        bool stdAssociativeLike;
-        bool opLessAllowed;
-        bool hasInitializerListConstructor;
-        bool unstableErase;
-        bool unstableInsert;
-        bool view;
+        int size_templateArgNo = -1;
+        bool arrayLike_indexOp{};
+        bool stdStringLike{};
+        bool stdAssociativeLike{};
+        bool opLessAllowed{};
+        bool hasInitializerListConstructor{};
+        bool unstableErase{};
+        bool unstableInsert{};
+        bool view{};
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
@@ -288,47 +277,31 @@ public:
     const Container* detectIterator(const Token* typeStart) const;
     const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
 
-    class ArgumentChecks {
-    public:
-        ArgumentChecks() :
-            notbool(false),
-            notnull(false),
-            notuninit(-1),
-            formatstr(false),
-            strz(false),
-            optional(false),
-            variadic(false),
-            iteratorInfo(),
-            direction(Direction::DIR_UNKNOWN) {}
-
-        bool notbool;
-        bool notnull;
-        int notuninit;
-        bool formatstr;
-        bool strz;
-        bool optional;
-        bool variadic;
+    struct ArgumentChecks {
+        bool notbool{};
+        bool notnull{};
+        int notuninit = -1;
+        bool formatstr{};
+        bool strz{};
+        bool optional{};
+        bool variadic{};
         std::string valid;
 
-        class IteratorInfo {
-        public:
-            IteratorInfo() : container(0), it(false), first(false), last(false) {}
-
-            int container;
-            bool it;
-            bool first;
-            bool last;
+        struct IteratorInfo {
+            int container{};
+            bool it{};
+            bool first{};
+            bool last{};
         };
         IteratorInfo iteratorInfo;
 
-        class MinSize {
-        public:
+        struct MinSize {
             enum class Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
-            MinSize(Type t, int a) : type(t), arg(a), arg2(0), value(0) {}
+            MinSize(Type t, int a) : type(t), arg(a) {}
             Type type;
             int arg;
-            int arg2;
-            long long value;
+            int arg2{};
+            long long value{};
             std::string baseType;
         };
         std::vector<MinSize> minsizes;
@@ -339,35 +312,22 @@ public:
             DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
             DIR_UNKNOWN ///< direction not known / specified
         };
-        Direction direction;
+        Direction direction = Direction::DIR_UNKNOWN;
     };
 
     struct Function {
         std::map<int, ArgumentChecks> argumentChecks; // argument nr => argument data
-        bool use;
-        bool leakignore;
-        bool isconst;
-        bool ispure;
-        UseRetValType useretval;
-        bool ignore;  // ignore functions/macros from a library (gtk, qt etc)
-        bool formatstr;
-        bool formatstr_scan;
-        bool formatstr_secure;
-        Container::Action containerAction;
-        Container::Yield containerYield;
-        Function()
-            : use(false),
-            leakignore(false),
-            isconst(false),
-            ispure(false),
-            useretval(UseRetValType::NONE),
-            ignore(false),
-            formatstr(false),
-            formatstr_scan(false),
-            formatstr_secure(false),
-            containerAction(Container::Action::NO_ACTION),
-            containerYield(Container::Yield::NO_YIELD)
-        {}
+        bool use{};
+        bool leakignore{};
+        bool isconst{};
+        bool ispure{};
+        UseRetValType useretval = UseRetValType::NONE;
+        bool ignore{};  // ignore functions/macros from a library (gtk, qt etc)
+        bool formatstr{};
+        bool formatstr_scan{};
+        bool formatstr_secure{};
+        Container::Action containerAction = Container::Action::NO_ACTION;
+        Container::Yield containerYield = Container::Yield::NO_YIELD;
     };
 
     const Function *getFunction(const Token *ftok) const;
@@ -503,13 +463,6 @@ public:
     }
 
     struct PlatformType {
-        PlatformType()
-            : mSigned(false)
-            , mUnsigned(false)
-            , mLong(false)
-            , mPointer(false)
-            , mPtrPtr(false)
-            , mConstPtr(false) {}
         bool operator == (const PlatformType & type) const {
             return (mSigned == type.mSigned &&
                     mUnsigned == type.mUnsigned &&
@@ -523,12 +476,12 @@ public:
             return !(*this == type);
         }
         std::string mType;
-        bool mSigned;
-        bool mUnsigned;
-        bool mLong;
-        bool mPointer;
-        bool mPtrPtr;
-        bool mConstPtr;
+        bool mSigned{};
+        bool mUnsigned{};
+        bool mLong{};
+        bool mPointer{};
+        bool mPtrPtr{};
+        bool mConstPtr{};
     };
 
     struct Platform {

@@ -1329,14 +1329,7 @@ void CheckIO::checkFormatString(const Token * const tok,
 /// @todo add non-string literals, and generic expressions
 
 CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings, bool _isCPP)
-    : variableInfo(nullptr)
-    , typeToken(nullptr)
-    , functionInfo(nullptr)
-    , tempToken(nullptr)
-    , element(false)
-    , _template(false)
-    , address(false)
-    , isCPP(_isCPP)
+    : isCPP(_isCPP)
 {
     if (!arg)
         return;

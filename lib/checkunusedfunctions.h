@@ -103,12 +103,12 @@ private:
 
     class CPPCHECKLIB FunctionUsage {
     public:
-        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {}
+        FunctionUsage() = default;
 
         std::string filename;
-        unsigned int lineNumber;
-        bool usedSameFile;
-        bool usedOtherFile;
+        unsigned int lineNumber{};
+        bool usedSameFile{};
+        bool usedOtherFile{};
     };
 
     std::unordered_map<std::string, FunctionUsage> mFunctions;

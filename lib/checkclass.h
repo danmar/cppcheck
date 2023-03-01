@@ -324,16 +324,16 @@ private:
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     struct Usage {
-        explicit Usage(const Variable *var) : var(var), assign(false), init(false) {}
+        explicit Usage(const Variable *var) : var(var) {}
 
         /** Variable that this usage is for */
         const Variable *var;
 
         /** @brief has this variable been assigned? */
-        bool assign;
+        bool assign{};
 
         /** @brief has this variable been initialized? */
-        bool init;
+        bool init{};
     };
 
     static bool isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope);

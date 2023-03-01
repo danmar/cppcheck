@@ -80,9 +80,9 @@ public:
 private:
     const std::string mStr;
     TimerResultsIntf* mTimerResults;
-    std::clock_t mStart;
+    std::clock_t mStart{};
     const SHOWTIME_MODES mShowTimeMode;
-    bool mStopped;
+    bool mStopped{};
 };
 //---------------------------------------------------------------------------
 #endif // timerH

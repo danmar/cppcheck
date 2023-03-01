@@ -68,10 +68,6 @@
 
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
-CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
-{}
-
 CppCheckExecutor::~CppCheckExecutor()
 {
     delete mErrorOutput;

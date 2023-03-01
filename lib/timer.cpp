@@ -81,9 +81,7 @@ void TimerResults::addResults(const std::string& str, std::clock_t clocks)
 Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
     : mStr(std::move(str))
     , mTimerResults(timerResults)
-    , mStart(0)
     , mShowTimeMode(showtimeMode)
-    , mStopped(false)
 {
     if (showtimeMode != SHOWTIME_MODES::SHOWTIME_NONE)
         mStart = std::clock();

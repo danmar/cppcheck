@@ -47,10 +47,7 @@ static const int AST_MAX_DEPTH = 150;
 
 
 TokenList::TokenList(const Settings* settings) :
-    mTokensFrontBack(),
-    mSettings(settings),
-    mIsC(false),
-    mIsCpp(false)
+    mSettings(settings)
 {
     mTokensFrontBack.list = this;
 }
