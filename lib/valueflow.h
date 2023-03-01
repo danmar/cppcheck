@@ -67,7 +67,7 @@ namespace ValueFlow {
     bool isContainerSizeChanged(const Token* tok, int indirect, const Settings* settings = nullptr, int depth = 20);
 
     struct LifetimeToken {
-      const Token* token{};
+        const Token* token{};
         Value::ErrorPath errorPath;
         bool addressOf{};
         bool inconclusive{};
