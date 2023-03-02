@@ -536,20 +536,8 @@ static void replaceSpecialChars(std::string& source)
     }
 }
 
-static void replaceColors(std::string& source)
+static void replace(std::string& source, const std::unordered_map<std::string, std::string> &substitutionMap)
 {
-    static const std::unordered_map<std::string, std::string> substitutionMap =
-    {
-        {"{reset}", ::toString(Color::Reset)},
-        {"{bold}", ::toString(Color::Bold)},
-        {"{dim}", ::toString(Color::Dim)},
-        {"{red}", ::toString(Color::FgRed)},
-        {"{green}", ::toString(Color::FgGreen)},
-        {"{blue}", ::toString(Color::FgBlue)},
-        {"{magenta}", ::toString(Color::FgMagenta)},
-        {"{default}", ::toString(Color::FgDefault)},
-    };
-
     std::string::size_type index = 0;
     while ((index = source.find('{', index)) != std::string::npos) {
         const std::string::size_type end = source.find('}', index);
@@ -565,6 +553,21 @@ static void replaceColors(std::string& source)
         source.replace(index, searchFor.length(), replaceWith);
         index += replaceWith.length();
     }
+}
+
+static void replaceColors(std::string& source) {
+    static const std::unordered_map<std::string, std::string> substitutionMap =
+    {
+        {"{reset}",   ::toString(Color::Reset)},
+        {"{bold}",    ::toString(Color::Bold)},
+        {"{dim}",     ::toString(Color::Dim)},
+        {"{red}",     ::toString(Color::FgRed)},
+        {"{green}",   ::toString(Color::FgGreen)},
+        {"{blue}",    ::toString(Color::FgBlue)},
+        {"{magenta}", ::toString(Color::FgMagenta)},
+        {"{default}", ::toString(Color::FgDefault)},
+    };
+    replace(source, substitutionMap);
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
