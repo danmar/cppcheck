@@ -160,10 +160,9 @@ private:
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Run checks..
         runChecks<CheckCondition>(&tokenizer, settings, this);

@@ -20,6 +20,7 @@
 #include "checkclass.h"
 #include "errortypes.h"
 #include "library.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
@@ -260,8 +261,10 @@ private:
         Settings settings;
         settings.severity.enable(Severity::warning);
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -364,8 +367,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings0, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -516,8 +521,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -677,8 +684,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings0, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -1124,8 +1133,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings0, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -1598,8 +1609,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -2560,8 +2573,10 @@ private:
         settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings0.severity.enable(Severity::warning);
 
+        Preprocessor preprocessor(settings0, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -2877,12 +2892,14 @@ private:
         checkNoMemset_(file, line, code, settings);
     }
 
-    void checkNoMemset_(const char* file, int line, const char code[], const Settings &settings) {
+    void checkNoMemset_(const char* file, int line, const char code[], Settings &settings) {
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -3512,8 +3529,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -3550,8 +3569,10 @@ private:
             s = &settings0;
         s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
+        Preprocessor preprocessor(*s, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(s, this);
+        Tokenizer tokenizer(s, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7060,8 +7081,10 @@ private:
         // Check..
         settings0.certainty.setEnabled(Certainty::inconclusive, true);
 
+        Preprocessor preprocessor(settings0, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7096,8 +7119,10 @@ private:
         Settings settings;
         settings.severity.enable(Severity::performance);
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7308,8 +7333,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings0, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7415,24 +7442,23 @@ private:
 
 
 #define checkVirtualFunctionCall(...) checkVirtualFunctionCall_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkVirtualFunctionCall_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkVirtualFunctionCall_(const char* file, int line, const char code[], bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
         // Check..
-        if (!s) {
-            static Settings settings_;
-            s = &settings_;
-            s->severity.enable(Severity::warning);
-        }
-        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        Settings settings;
+        settings.severity.enable(Severity::warning);
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+
+        Preprocessor preprocessor(settings, nullptr);
 
         // Tokenize..
-        Tokenizer tokenizer(s, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, s, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkVirtualFunctionCallInConstructor();
     }
 
@@ -7774,8 +7800,10 @@ private:
         Settings settings;
         settings.severity.enable(Severity::style);
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7950,8 +7978,10 @@ private:
         settings.safeChecks.classes = true;
         settings.severity.enable(Severity::warning);
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7971,8 +8001,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -8168,8 +8200,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

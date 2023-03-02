@@ -155,35 +155,20 @@ static bool isClassStructUnionEnumStart(const Token * tok)
 
 //---------------------------------------------------------------------------
 
-Tokenizer::Tokenizer() :
-    list(nullptr),
-    mSettings(nullptr),
-    mErrorLogger(nullptr),
-    mSymbolDatabase(nullptr),
-    mTemplateSimplifier(nullptr),
-    mVarId(0),
-    mUnnamedCount(0),
-    mCodeWithTemplates(false), //is there any templates?
-    mTimerResults(nullptr),
-    mPreprocessor(nullptr)
-{}
-
-Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger) :
+Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger, const Preprocessor *preprocessor) :
     list(settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
     mSymbolDatabase(nullptr),
-    mTemplateSimplifier(nullptr),
+    mTemplateSimplifier(new TemplateSimplifier(this)),
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
     mTimerResults(nullptr),
-    mPreprocessor(nullptr)
+    mPreprocessor(preprocessor)
 {
     // make sure settings are specified
     assert(mSettings);
-
-    mTemplateSimplifier = new TemplateSimplifier(this);
 }
 
 Tokenizer::~Tokenizer()
@@ -2773,16 +2758,11 @@ bool Tokenizer::simplifyUsing()
 bool Tokenizer::createTokens(std::istream &code,
                              const std::string& FileName)
 {
-    // make sure settings specified
-    assert(mSettings);
-
     return list.createTokens(code, FileName);
 }
 
 void Tokenizer::createTokens(simplecpp::TokenList&& tokenList)
 {
-    // make sure settings specified
-    assert(mSettings);
     list.createTokens(std::move(tokenList));
 }
 
@@ -9811,8 +9791,8 @@ void Tokenizer::simplifyNamespaceAliases()
 
 bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
-    if (!mPreprocessor)
-        return false;
+    assert(mPreprocessor);
+
     return std::any_of(mPreprocessor->getDirectives().cbegin(), mPreprocessor->getDirectives().cend(), [&](const Directive& d) {
         return d.str.compare(0, 3, "#if") == 0 &&
         d.linenr >= start->linenr() &&

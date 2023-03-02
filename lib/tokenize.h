@@ -25,6 +25,7 @@
 #include "errortypes.h"
 #include "tokenlist.h"
 
+#include <cassert>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -59,8 +60,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TemplateSimplifier;
 
 public:
-    Tokenizer();
-    Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
+    explicit Tokenizer(const Settings * settings, ErrorLogger *errorLogger = nullptr, const Preprocessor *preprocessor = nullptr);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -377,10 +377,8 @@ public:
      */
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
 
-    void setPreprocessor(const Preprocessor *preprocessor) {
-        mPreprocessor = preprocessor;
-    }
     const Preprocessor *getPreprocessor() const {
+        assert(mPreprocessor);
         return mPreprocessor;
     }
 
@@ -621,12 +619,6 @@ public:
         return mCodeWithTemplates;
     }
 
-
-    void setSettings(const Settings *settings) {
-        mSettings = settings;
-        list.setSettings(settings);
-    }
-
     const SymbolDatabase *getSymbolDatabase() const {
         return mSymbolDatabase;
     }
@@ -703,7 +695,7 @@ private:
     void setPodTypes();
 
     /** settings */
-    const Settings * mSettings;
+    const Settings * const mSettings;
 
     /** errorlogger */
     ErrorLogger* const mErrorLogger;
@@ -711,7 +703,7 @@ private:
     /** Symbol database that all checks etc can use */
     SymbolDatabase *mSymbolDatabase;
 
-    TemplateSimplifier *mTemplateSimplifier;
+    TemplateSimplifier * const mTemplateSimplifier;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */
@@ -746,7 +738,7 @@ private:
      */
     TimerResults *mTimerResults;
 
-    const Preprocessor *mPreprocessor;
+    const Preprocessor * const mPreprocessor;
 };
 
 /// @}

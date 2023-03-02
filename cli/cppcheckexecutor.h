@@ -137,12 +137,6 @@ protected:
      */
     bool parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[]);
 
-    /**
-     * Helper function to supply settings. This can be used for testing.
-     * @param settings Reference to an Settings instance
-     */
-    void setSettings(const Settings &settings);
-
 private:
 
     /**
@@ -166,7 +160,7 @@ private:
     int check_internal(CppCheck& cppcheck);
 
     /**
-     * Pointer to current settings; set while check() is running.
+     * Pointer to current settings; set while check() is running for reportError().
      */
     const Settings* mSettings;
 
