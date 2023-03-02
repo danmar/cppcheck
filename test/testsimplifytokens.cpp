@@ -2593,7 +2593,7 @@ private:
             const char code[] = "enum E { E0 } e{};";
             const char exp[] = "enum E { E0 } ; enum E e ; e = { } ;";
             ASSERT_EQUALS(exp, tok(code));
-        } 
+        }
     }
 };
 
