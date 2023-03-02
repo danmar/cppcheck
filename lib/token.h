@@ -127,7 +127,7 @@ struct TokenImpl {
     CppcheckAttributes* mCppcheckAttributes{};
 
     // For memoization, to speed up parsing of huge arrays #8897
-    enum class Cpp11init { UNKNOWN, CPP11INIT, NOINIT } mCpp11init{};
+    enum class Cpp11init { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
 
     TokenDebug mDebug{};
 
