@@ -46,8 +46,8 @@ namespace ValueFlow
         explicit Value(long long val = 0, Bound b = Bound::Point) :
             bound(b),
             intvalue(val),
-            wideintvalue(val),
-            varvalue(val)
+            varvalue(val),
+            wideintvalue(val)
         {}
         Value(const Token* c, long long val, Bound b = Bound::Point);
 
@@ -258,10 +258,10 @@ namespace ValueFlow
         }
 
         /** The value bound  */
-        Bound bound;
+        Bound bound{};
 
         /** int value (or sometimes bool value?) */
-        long long intvalue;
+        long long intvalue{};
 
         /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
         const Token* tokvalue{};
@@ -270,7 +270,7 @@ namespace ValueFlow
         double floatValue{};
 
         /** For calculated values - variable value that calculated value depends on */
-        long long varvalue;
+        long long varvalue{};
 
         /** Condition that this value depends on */
         const Token* condition{};
@@ -303,7 +303,7 @@ namespace ValueFlow
         MathLib::bigint path{};
 
         /** int value before implicit truncation */
-        long long wideintvalue;
+        long long wideintvalue{};
 
         std::vector<std::string> subexpressions;
 
