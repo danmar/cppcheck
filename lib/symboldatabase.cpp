@@ -22,6 +22,7 @@
 #include "astutils.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "keywords.h"
 #include "library.h"
 #include "mathlib.h"
 #include "path.h"
@@ -1387,6 +1388,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
 
 void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 {
+    // TODO: replace with Keywords::getX()
     static const std::unordered_set<std::string> cpp20keywords = {
         "alignas",
         "alignof",
@@ -1476,6 +1478,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         // Skip goto labels
         if (Token::simpleMatch(tok->previous(), "goto"))
             continue;
+        // TODO: handle all C/C++ standards
         if (cppkeywords.count(tok->str()) > 0)
             continue;
         if (mSettings->standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
@@ -5999,37 +6002,16 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
 
 //---------------------------------------------------------------------------
 
-namespace {
-
-#define C_KEYWORDS \
-    "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary", "_Noreturn", \
-    "_Static_assert", "_Thread_local", "auto", "break", "case", "char", "const", "continue", "default", \
-    "do", "double", "else", "enum", "extern", "float", "for", "goto", "if", "inline", "int", "long", \
-    "register", "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", \
-    "union", "unsigned", "void", "volatile", "while"
-
-    const std::unordered_set<std::string> c_keywords = { C_KEYWORDS, "restrict" };
-    const std::unordered_set<std::string> cpp_keywords = {
-        C_KEYWORDS,
-        "alignas", "alignof", "and", "and_eq", "asm", "bitand", "bitor", "bool", "catch", "char8_t", "char16_t",
-        "char32_t", "class", "compl", "concept", "consteval", "constexpr", "constinit", "const_cast", "co_await",
-        "co_return", "co_yield", "decltype",
-        "delete", "dynamic_cast", "explicit", "export", "false", "friend",
-        "mutable", "namespace", "new", "noexcept", "not", "not_eq", "nullptr", "operator",
-        "or", "or_eq", "private", "protected", "public", "reinterpret_cast",
-        "requires", "static_assert",
-        "static_cast", "template", "this", "thread_local", "throw",
-        "true", "try", "typeid", "typename", "using",
-        "virtual", "wchar_t", "xor", "xor_eq"
-    };
-}
-
 bool SymbolDatabase::isReservedName(const std::string& iName) const
 {
-    if (isCPP())
+    if (isCPP()) {
+        static const auto& cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPPLatest);
         return cpp_keywords.find(iName) != cpp_keywords.cend();
-    else
+    }
+    else {
+        static const auto& c_keywords = Keywords::getAll(Standards::cstd_t::CLatest);
         return c_keywords.find(iName) != c_keywords.cend();
+    }
 }
 
 nonneg int SymbolDatabase::sizeOfType(const Token *type) const

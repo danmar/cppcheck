@@ -97,6 +97,7 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
     "return"
 };
 
+// TODO: replace with Keywords::getX()?
 // Another list of keywords
 static const std::unordered_set<std::string> baseKeywords = {
     "asm",
