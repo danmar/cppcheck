@@ -203,7 +203,7 @@ namespace ValueFlow
             ITERATOR_START,
             ITERATOR_END,
             SYMBOLIC
-        } valueType = INT;
+        } valueType = ValueType::INT;
         bool isIntValue() const {
             return valueType == ValueType::INT;
         }
