@@ -1257,7 +1257,7 @@ public:
         : sign(s),
         type(t),
         pointer(p)
-     {}
+    {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
         : sign(s),
         type(t),

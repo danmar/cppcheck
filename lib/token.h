@@ -122,7 +122,7 @@ struct TokenImpl {
     struct CppcheckAttributes {
         enum Type { LOW, HIGH } type{};
         MathLib::bigint value{};
-        struct CppcheckAttributes* next{};
+        CppcheckAttributes* next{};
     };
     CppcheckAttributes* mCppcheckAttributes{};
 
