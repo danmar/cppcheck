@@ -63,7 +63,7 @@ public:
         next->reportOut(outmsg);
     }
     void reportErr(const ErrorMessage &msg) override {
-        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
+        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg))
             next->reportErr(msg);
     }
 private:

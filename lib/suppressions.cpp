@@ -379,6 +379,13 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
     return false;
 }
 
+bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg)
+{
+    if (mSuppressions.empty())
+        return false;
+    return isSuppressed(errmsg.toSuppressionsErrorMessage());
+}
+
 bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");

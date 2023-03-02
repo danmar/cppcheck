@@ -1615,6 +1615,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (!mSettings.buildDir.empty())
         mAnalyzerInformation.reportErr(msg);
 
+    // TODO: only convert if necessary
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
     if (mUseGlobalSuppressions) {
@@ -1653,8 +1654,7 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
 
 void CppCheck::reportInfo(const ErrorMessage &msg)
 {
-    const Suppressions::ErrorMessage &errorMessage = msg.toSuppressionsErrorMessage();
-    if (!mSettings.nomsg.isSuppressed(errorMessage))
+    if (!mSettings.nomsg.isSuppressed(msg))
         mErrorLogger.reportInfo(msg);
 }
 
