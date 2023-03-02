@@ -17,6 +17,7 @@
  */
 
 #include "cmdlineparser.h"
+#include "color.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "platform.h"
@@ -1264,7 +1265,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template", "gcc", "file.cpp"};
         settings.templateFormat.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
-        ASSERT_EQUALS("{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}", settings.templateFormat);
+        ASSERT_EQUALS("{file}:{line}:{column}: warning: {message} [{id}]\n{code}", settings.templateFormat);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 

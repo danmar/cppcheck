@@ -591,9 +591,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
 
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
-    replaceSpecialChars(result);
 
-    replaceColors(result);
     findAndReplace(result, "{id}", id);
 
     std::string::size_type pos1 = result.find("{inconclusive:");
@@ -636,9 +634,6 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         for (const FileLocation &fileLocation : callStack) {
             std::string text = templateLocation;
 
-            replaceSpecialChars(text);
-
-            replaceColors(text);
             findAndReplace(text, "{file}", fileLocation.getfile());
             findAndReplace(text, "{line}", MathLib::toString(fileLocation.line));
             findAndReplace(text, "{column}", MathLib::toString(fileLocation.column));
@@ -904,4 +899,16 @@ std::string replaceStr(std::string s, const std::string &from, const std::string
         pos1 += to.size();
     }
     return s;
+}
+
+void substituteTemplateFormatStatic(std::string& templateFormat)
+{
+    replaceSpecialChars(templateFormat);
+    replaceColors(templateFormat);
+}
+
+void substituteTemplateLocationStatic(std::string& templateLocation)
+{
+    replaceSpecialChars(templateLocation);
+    replaceColors(templateLocation);
 }

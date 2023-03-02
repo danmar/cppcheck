@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -63,6 +64,8 @@ private:
         TEST_CASE(SerializeFileLocation);
 
         TEST_CASE(suppressUnmatchedSuppressions);
+        TEST_CASE(substituteTemplateFormatStatic);
+        TEST_CASE(substituteTemplateLocationStatic);
     }
 
     void TestPatternSearchReplace(const std::string& idPlaceholder, const std::string& id) const {
@@ -480,6 +483,69 @@ private:
         suppressions.emplace_back("unmatchedSuppression", "a.c", 1U);
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
+    }
+
+    void substituteTemplateFormatStatic()
+    {
+        {
+            std::string s;
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("", s);
+        }
+        {
+            std::string s = "template{black}\\z";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("template{black}\\z", s);
+        }
+        {
+            std::string s = "{reset}{bold}{dim}{red}{blue}{magenta}{default}\\b\\n\\r\\t";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("\b\n\r\t", s);
+        }
+        {
+            std::string s = "\\\\n";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("\\\n", s);
+        }
+        {
+            std::string s = "{{red}";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("{", s);
+        }
+    }
+
+    void substituteTemplateLocationStatic()
+    {
+        {
+            std::string s;
+            ::substituteTemplateLocationStatic(s);
+            ASSERT_EQUALS("", s);
+        }
+        {
+            std::string s = "template";
+            ::substituteTemplateLocationStatic(s);
+            ASSERT_EQUALS("template", s);
+        }
+        {
+            std::string s = "template{black}\\z";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("template{black}\\z", s);
+        }
+        {
+            std::string s = "{reset}{bold}{dim}{red}{blue}{magenta}{default}\\b\\n\\r\\t";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("\b\n\r\t", s);
+        }
+        {
+            std::string s = "\\\\n";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("\\\n", s);
+        }
+        {
+            std::string s = "{{red}";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("{", s);
+        }
     }
 };
 

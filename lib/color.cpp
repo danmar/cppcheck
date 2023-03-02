@@ -26,16 +26,19 @@
 
 bool gDisableColors = false;
 
-#ifdef _WIN32
-std::ostream& operator<<(std::ostream& os, const Color& /*c*/)
+#ifndef _WIN32
+static bool isStdOutATty()
 {
-#else
+    // TODO: handle piping into file as well as other pipes like stderr
+    static const bool stdout_tty = isatty(STDOUT_FILENO);
+    return stdout_tty;
+}
+#endif
+
 std::ostream& operator<<(std::ostream & os, const Color& c)
 {
 #ifndef _WIN32
-    // TODO: handle piping into file as well as other pipes like stderr
-    static const bool s_is_tty = isatty(STDOUT_FILENO);
-    if (!gDisableColors && s_is_tty)
+    if (!gDisableColors && isStdOutATty())
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
 #else
     (void)c;

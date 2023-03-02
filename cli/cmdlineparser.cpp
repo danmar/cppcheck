@@ -1015,6 +1015,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         if (mSettings.templateLocation.empty())
             mSettings.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
+    // replace static parts of the templates
+    substituteTemplateFormatStatic(mSettings.templateFormat);
+    substituteTemplateLocationStatic(mSettings.templateLocation);
 
     mSettings.project.ignorePaths(mIgnoredPaths);
 
