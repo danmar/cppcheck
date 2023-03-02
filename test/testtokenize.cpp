@@ -6270,6 +6270,9 @@ private:
 
         ASSERT_EQUALS("vary=", testAst("std::string var = y;"));
 
+        ASSERT_EQUALS("", testAst("void *(*var)(int);"));
+
+
         // create ast for decltype
         ASSERT_EQUALS("decltypex( var1=", testAst("decltype(x) var = 1;"));
         ASSERT_EQUALS("a1bdecltypet((>2,(", testAst("a(1 > b(decltype(t)), 2);")); // #10271

@@ -1400,6 +1400,24 @@ static Token * findAstTop(Token *tok1, Token *tok2)
 
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
+    // skip function pointer declaration
+    if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while")) {
+        const Token* type = tok;
+        while (Token::Match(type, "%type%|*|&|<")) {
+            if (type->str() == "<") {
+                if (type->link())
+                    type = type->link();
+                else
+                    break;
+            }
+            type = type->next();
+        }
+        if (Token::simpleMatch(type, "(") &&
+            Token::Match(type->link()->previous(), "%var% ) (") &&
+            Token::Match(type->link()->linkAt(1), ") [;,)]"))
+            return type->link()->linkAt(1)->next();
+    }
+
     if (Token::simpleMatch(tok, "for (")) {
         if (cpp && Token::Match(tok, "for ( const| auto &|&&| [")) {
             Token *decl = Token::findsimplematch(tok, "[");
