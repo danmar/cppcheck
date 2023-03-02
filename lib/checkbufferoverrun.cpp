@@ -183,37 +183,36 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
 
 //---------------------------------------------------------------------------
 
-static bool getDimensionsEtc(const Token * const arrayToken, const Settings *settings, std::vector<Dimension> * const dimensions, ErrorPath * const errorPath, bool * const mightBeLarger, MathLib::bigint* path)
+static bool getDimensionsEtc(const Token * const arrayToken, const Settings *settings, std::vector<Dimension> &dimensions, ErrorPath &errorPath, bool &mightBeLarger, MathLib::bigint &path)
 {
     const Token *array = arrayToken;
     while (Token::Match(array, ".|::"))
         array = array->astOperand2();
 
     if (array->variable() && array->variable()->isArray() && !array->variable()->dimensions().empty()) {
-        *dimensions = array->variable()->dimensions();
-        if (dimensions->size() >= 1 && ((*dimensions)[0].num <= 1 || !(*dimensions)[0].tok)) {
+        dimensions = array->variable()->dimensions();
+        if (dimensions[0].num <= 1 || !dimensions[0].tok) {
             visitAstNodes(arrayToken,
                           [&](const Token *child) {
                 if (child->originalName() == "->") {
-                    *mightBeLarger = true;
+                    mightBeLarger = true;
                     return ChildrenToVisit::none;
                 }
                 return ChildrenToVisit::op1_and_op2;
             });
         }
-    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings, path)) {
+    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings, &path)) {
         Dimension dim;
         dim.tok = nullptr;
         dim.num = Token::getStrArraySize(stringLiteral);
         dim.known = array->hasKnownValue();
-        dimensions->emplace_back(dim);
+        dimensions.emplace_back(dim);
     } else if (array->valueType() && array->valueType()->pointer >= 1 && (array->valueType()->isIntegral() || array->valueType()->isFloat())) {
         const ValueFlow::Value *value = getBufferSizeValue(array);
         if (!value)
             return false;
-        if (path)
-            *path = value->path;
-        *errorPath = value->errorPath;
+        path = value->path;
+        errorPath = value->errorPath;
         Dimension dim;
         dim.known = value->isKnown();
         dim.tok = nullptr;
@@ -221,9 +220,9 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
         if (typeSize == 0)
             return false;
         dim.num = value->intvalue / typeSize;
-        dimensions->emplace_back(dim);
+        dimensions.emplace_back(dim);
     }
-    return !dimensions->empty();
+    return !dimensions.empty();
 }
 
 static ValueFlow::Value makeSizeValue(MathLib::bigint size, MathLib::bigint path)
@@ -314,7 +313,7 @@ void CheckBufferOverrun::arrayIndex()
         ErrorPath errorPath;
         bool mightBeLarger = false;
         MathLib::bigint path = 0;
-        if (!getDimensionsEtc(tok->astOperand1(), mSettings, &dimensions, &errorPath, &mightBeLarger, &path))
+        if (!getDimensionsEtc(tok->astOperand1(), mSettings, dimensions, errorPath, mightBeLarger, path))
             continue;
 
         const Variable* const var = array->variable();
@@ -486,7 +485,7 @@ void CheckBufferOverrun::pointerArithmetic()
         ErrorPath errorPath;
         bool mightBeLarger = false;
         MathLib::bigint path = 0;
-        if (!getDimensionsEtc(arrayToken, mSettings, &dimensions, &errorPath, &mightBeLarger, &path))
+        if (!getDimensionsEtc(arrayToken, mSettings, dimensions, errorPath, mightBeLarger, path))
             continue;
 
         if (tok->str() == "+") {
@@ -881,6 +880,8 @@ std::string CheckBufferOverrun::MyFileInfo::toString() const
 
 bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type)
 {
+    if (!offset)
+        return false;
     const CheckBufferOverrun *c = dynamic_cast<const CheckBufferOverrun *>(check);
     if (!c)
         return false;
@@ -896,8 +897,6 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
     if (!indexTok)
         return false;
     if (!indexTok->hasKnownIntValue())
-        return false;
-    if (!offset)
         return false;
     *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(*c->mSettings);
     return true;

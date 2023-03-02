@@ -418,47 +418,47 @@ static bool isNumeric(const ValueFlow::Value& value) {
     return value.isIntValue() || value.isFloatValue();
 }
 
-void ValueFlow::combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value *result)
+void ValueFlow::combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value &result)
 {
     if (value1.isKnown() && value2.isKnown())
-        result->setKnown();
+        result.setKnown();
     else if (value1.isImpossible() || value2.isImpossible())
-        result->setImpossible();
+        result.setImpossible();
     else if (value1.isInconclusive() || value2.isInconclusive())
-        result->setInconclusive();
+        result.setInconclusive();
     else
-        result->setPossible();
+        result.setPossible();
     if (value1.tokvalue)
-        result->tokvalue = value1.tokvalue;
+        result.tokvalue = value1.tokvalue;
     else if (value2.tokvalue)
-        result->tokvalue = value2.tokvalue;
+        result.tokvalue = value2.tokvalue;
     if (value1.isSymbolicValue()) {
-        result->valueType = value1.valueType;
-        result->tokvalue = value1.tokvalue;
+        result.valueType = value1.valueType;
+        result.tokvalue = value1.tokvalue;
     }
     if (value2.isSymbolicValue()) {
-        result->valueType = value2.valueType;
-        result->tokvalue = value2.tokvalue;
+        result.valueType = value2.valueType;
+        result.tokvalue = value2.tokvalue;
     }
     if (value1.isIteratorValue())
-        result->valueType = value1.valueType;
+        result.valueType = value1.valueType;
     if (value2.isIteratorValue())
-        result->valueType = value2.valueType;
-    result->condition = value1.condition ? value1.condition : value2.condition;
-    result->varId = (value1.varId != 0) ? value1.varId : value2.varId;
-    result->varvalue = (result->varId == value1.varId) ? value1.varvalue : value2.varvalue;
-    result->errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
-    result->safe = value1.safe || value2.safe;
+        result.valueType = value2.valueType;
+    result.condition = value1.condition ? value1.condition : value2.condition;
+    result.varId = (value1.varId != 0) ? value1.varId : value2.varId;
+    result.varvalue = (result.varId == value1.varId) ? value1.varvalue : value2.varvalue;
+    result.errorPath = (value1.errorPath.empty() ? value2 : value1).errorPath;
+    result.safe = value1.safe || value2.safe;
     if (value1.bound == ValueFlow::Value::Bound::Point || value2.bound == ValueFlow::Value::Bound::Point) {
         if (value1.bound == ValueFlow::Value::Bound::Upper || value2.bound == ValueFlow::Value::Bound::Upper)
-            result->bound = ValueFlow::Value::Bound::Upper;
+            result.bound = ValueFlow::Value::Bound::Upper;
         if (value1.bound == ValueFlow::Value::Bound::Lower || value2.bound == ValueFlow::Value::Bound::Lower)
-            result->bound = ValueFlow::Value::Bound::Lower;
+            result.bound = ValueFlow::Value::Bound::Lower;
     }
     if (value1.path != value2.path)
-        result->path = -1;
+        result.path = -1;
     else
-        result->path = value1.path;
+        result.path = value1.path;
 }
 
 static const Token *getCastTypeStartToken(const Token *parent, const Settings* settings)
@@ -652,7 +652,7 @@ static void setTokenValue(Token* tok,
                     else
                         continue;
 
-                    combineValueProperties(value1, value2, &result);
+                    combineValueProperties(value1, value2, result);
 
                     if (Token::simpleMatch(parent, "==") && result.intvalue)
                         continue;
@@ -854,7 +854,7 @@ static void setTokenValue(Token* tok,
                 if (!isCompatibleValues(value1, value2))
                     continue;
                 ValueFlow::Value result(0);
-                combineValueProperties(value1, value2, &result);
+                combineValueProperties(value1, value2, result);
                 if (astIsFloat(parent, false)) {
                     if (!result.isIntValue() && !result.isFloatValue())
                         continue;
@@ -1097,7 +1097,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 }
 
 
-static bool getMinMaxValues(const ValueType* vt, const cppcheck::Platform& platform, MathLib::bigint* minValue, MathLib::bigint* maxValue);
+static bool getMinMaxValues(const ValueType* vt, const cppcheck::Platform& platform, MathLib::bigint& minValue, MathLib::bigint& maxValue);
 
 // Handle various constants..
 static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp)
@@ -1108,7 +1108,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             const ValueType* vt = tok->valueType();
             if (vt && vt->sign == ValueType::UNSIGNED && signedValue < 0 && ValueFlow::getSizeOf(*vt, settings) < sizeof(MathLib::bigint)) {
                 MathLib::bigint minValue{}, maxValue{};
-                if (getMinMaxValues(tok->valueType(), *settings, &minValue, &maxValue))
+                if (getMinMaxValues(tok->valueType(), *settings, minValue, maxValue))
                     signedValue += maxValue + 1;
             }
             ValueFlow::Value value(signedValue);
@@ -2817,7 +2817,7 @@ struct ValueFlowAnalyzer : Analyzer {
         } else {
             MathLib::bigint out = 0;
             bool error = false;
-            execute(tok, &pm, &out, &error, getSettings());
+            execute(tok, pm, &out, &error, getSettings());
             if (!error)
                 result.push_back(out);
         }
@@ -2844,7 +2844,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 return {value->intvalue == 0};
             ProgramMemory pm = pms.get(tok, ctx, getProgramState());
             MathLib::bigint out = 0;
-            if (pm.getContainerEmptyValue(tok->exprId(), &out))
+            if (pm.getContainerEmptyValue(tok->exprId(), out))
                 return {static_cast<int>(out)};
             return {};
         } else {
@@ -6344,9 +6344,9 @@ struct ConditionHandler {
                 ProgramMemory pm;
                 fillFromPath(pm, initTok, path);
                 fillFromPath(pm, condTok, path);
-                execute(initTok, &pm, nullptr, nullptr);
+                execute(initTok, pm, nullptr, nullptr);
                 MathLib::bigint result = 1;
-                execute(condTok, &pm, &result, nullptr);
+                execute(condTok, pm, &result, nullptr);
                 if (result == 0)
                     return;
                 // Remove condition since for condition is not redundant
@@ -6762,10 +6762,10 @@ static bool valueFlowForLoop2(const Token *tok,
     ProgramMemory programMemory;
     MathLib::bigint result(0);
     bool error = false;
-    execute(firstExpression, &programMemory, &result, &error);
+    execute(firstExpression, programMemory, &result, &error);
     if (error)
         return false;
-    execute(secondExpression, &programMemory, &result, &error);
+    execute(secondExpression, programMemory, &result, &error);
     if (result == 0) // 2nd expression is false => no looping
         return false;
     if (error) {
@@ -6788,9 +6788,9 @@ static bool valueFlowForLoop2(const Token *tok,
     int maxcount = 10000;
     while (result != 0 && !error && --maxcount > 0) {
         endMemory = programMemory;
-        execute(thirdExpression, &programMemory, &result, &error);
+        execute(thirdExpression, programMemory, &result, &error);
         if (!error)
-            execute(secondExpression, &programMemory, &result, &error);
+            execute(secondExpression, programMemory, &result, &error);
     }
 
     if (memory1)
@@ -6954,7 +6954,7 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
         bool knownInitValue, partialCond;
         MathLib::bigint initValue, stepValue, lastValue;
 
-        if (extractForLoopValues(tok, &varid, &knownInitValue, &initValue, &partialCond, &stepValue, &lastValue)) {
+        if (extractForLoopValues(tok, varid, knownInitValue, initValue, partialCond, stepValue, lastValue)) {
             const bool executeBody = !knownInitValue || initValue <= lastValue;
             const Token* vartok = Token::findmatch(tok, "%varid%", bodyStart, varid);
             if (executeBody && vartok) {
@@ -7556,7 +7556,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         MathLib::bigint result = 0;
         bool error = false;
         execute(functionScope->bodyStart->next()->astOperand1(),
-                &programMemory,
+                programMemory,
                 &result,
                 &error);
         if (!error) {
@@ -8631,7 +8631,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
     }
 }
 
-static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint *minValue, MathLib::bigint *maxValue)
+static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint &minValue, MathLib::bigint &maxValue)
 {
     if (!vt || !vt->isIntegral() || vt->pointer)
         return false;
@@ -8661,23 +8661,23 @@ static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platf
     }
 
     if (bits == 1) {
-        *minValue = 0;
-        *maxValue = 1;
+        minValue = 0;
+        maxValue = 1;
     } else if (bits < 62) {
         if (vt->sign == ValueType::Sign::UNSIGNED) {
-            *minValue = 0;
-            *maxValue = (1LL << bits) - 1;
+            minValue = 0;
+            maxValue = (1LL << bits) - 1;
         } else {
-            *minValue = -(1LL << (bits - 1));
-            *maxValue = (1LL << (bits - 1)) - 1;
+            minValue = -(1LL << (bits - 1));
+            maxValue = (1LL << (bits - 1)) - 1;
         }
     } else if (bits == 64) {
         if (vt->sign == ValueType::Sign::UNSIGNED) {
-            *minValue = 0;
-            *maxValue = LLONG_MAX; // todo max unsigned value
+            minValue = 0;
+            maxValue = LLONG_MAX; // todo max unsigned value
         } else {
-            *minValue = LLONG_MIN;
-            *maxValue = LLONG_MAX;
+            minValue = LLONG_MIN;
+            maxValue = LLONG_MAX;
         }
     } else {
         return false;
@@ -8686,7 +8686,7 @@ static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platf
     return true;
 }
 
-static bool getMinMaxValues(const std::string &typestr, const Settings *settings, MathLib::bigint *minvalue, MathLib::bigint *maxvalue)
+static bool getMinMaxValues(const std::string &typestr, const Settings *settings, MathLib::bigint &minvalue, MathLib::bigint &maxvalue)
 {
     TokenList typeTokens(settings);
     std::istringstream istr(typestr+";");
@@ -8732,8 +8732,8 @@ static void valueFlowSafeFunctions(TokenList* tokenlist, SymbolDatabase* symbold
             }
 
             MathLib::bigint low, high;
-            bool isLow = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low);
-            bool isHigh = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high);
+            bool isLow = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, low);
+            bool isHigh = arg.nameToken()->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, high);
 
             if (!isLow && !isHigh && !all)
                 continue;
@@ -8743,7 +8743,7 @@ static void valueFlowSafeFunctions(TokenList* tokenlist, SymbolDatabase* symbold
 
             if ((!isLow || !isHigh) && all) {
                 MathLib::bigint minValue, maxValue;
-                if (getMinMaxValues(arg.valueType(), *settings, &minValue, &maxValue)) {
+                if (getMinMaxValues(arg.valueType(), *settings, minValue, maxValue)) {
                     if (!isLow)
                         low = minValue;
                     if (!isHigh)
@@ -8808,7 +8808,7 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
         // Get min/max values for return type
         const std::string &typestr = settings->library.returnValueType(tok->previous());
         MathLib::bigint minvalue, maxvalue;
-        if (!getMinMaxValues(typestr, settings, &minvalue, &maxvalue))
+        if (!getMinMaxValues(typestr, settings, minvalue, maxvalue))
             continue;
 
         for (MathLib::bigint value : unknownValues) {

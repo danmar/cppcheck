@@ -81,7 +81,7 @@ static bool addFilesToList(const std::string& fileList, std::vector<std::string>
     return true;
 }
 
-static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
+static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>& pathNames)
 {
     std::ifstream files(fileList);
     if (files) {
@@ -96,7 +96,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
                 if (!endsWith(pathName, '/'))
                     pathName += '/';
 
-                pathNames->emplace_back(std::move(pathName));
+                pathNames.emplace_back(std::move(pathName));
             }
         }
         return true;
@@ -104,12 +104,12 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
     return false;
 }
 
-static bool addPathsToSet(const std::string& fileName, std::set<std::string>* set)
+static bool addPathsToSet(const std::string& fileName, std::set<std::string>& set)
 {
     std::list<std::string> templist;
-    if (!addIncludePathsToList(fileName, &templist))
+    if (!addIncludePathsToList(fileName, templist))
         return false;
-    set->insert(templist.cbegin(), templist.cend());
+    set.insert(templist.cbegin(), templist.cend());
     return true;
 }
 
@@ -279,7 +279,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
                 // open this file and read every input file (1 file name per line)
                 const std::string cfgExcludesFile(23 + argv[i]);
-                if (!addPathsToSet(cfgExcludesFile, &mSettings->configExcludePaths)) {
+                if (!addPathsToSet(cfgExcludesFile, mSettings->configExcludePaths)) {
                     printError("unable to open config excludes file at '" + cfgExcludesFile + "'");
                     return false;
                 }
@@ -468,7 +468,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
                 // open this file and read every input file (1 file name per line)
                 const std::string includesFile(16 + argv[i]);
-                if (!addIncludePathsToList(includesFile, &mSettings->includePaths)) {
+                if (!addIncludePathsToList(includesFile, mSettings->includePaths)) {
                     printError("unable to open includes file at '" + includesFile + "'");
                     return false;
                 }

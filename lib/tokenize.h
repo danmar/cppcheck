@@ -587,20 +587,20 @@ private:
     void unsupportedTypedef(const Token *tok) const;
 
     void setVarIdClassDeclaration(const Token * const startToken,
-                                  const VariableMap &variableMap,
+                                  VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
                                   std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
 
     void setVarIdStructMembers(Token **tok1,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int *varId) const;
+                               nonneg int &varId) const;
 
     void setVarIdClassFunction(const std::string &classname,
                                Token * const startToken,
                                const Token * const endToken,
                                const std::map<std::string, nonneg int> &varlist,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int *varId_);
+                               nonneg int &varId_);
 
     /**
      * Output list of unknown types.

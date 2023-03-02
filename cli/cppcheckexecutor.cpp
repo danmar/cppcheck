@@ -568,9 +568,9 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const std::string& b
  */
 // cppcheck-suppress passedByValue - used as callback so we need to preserve the signature
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output_)
+bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_)
 {
-    output_->clear();
+    output_.clear();
 
     std::string joinedArgs;
     for (const std::string &arg : args) {
@@ -596,7 +596,7 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
         return false;
     char buffer[1024];
     while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-        *output_ += buffer;
+        output_ += buffer;
     return true;
 }
 

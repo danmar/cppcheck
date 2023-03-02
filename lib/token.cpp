@@ -2496,13 +2496,13 @@ void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
     }
 }
 
-bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const
+bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const
 {
     struct CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)
-        *value = attr->value;
+        value = attr->value;
     return attr != nullptr;
 }
 

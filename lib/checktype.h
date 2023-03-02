@@ -75,7 +75,7 @@ public:
 
     /** @brief %Check for float to integer overflow */
     void checkFloatToIntegerOverflow();
-    void checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> *floatValues);
+    void checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> &floatValues);
 
 private:
 

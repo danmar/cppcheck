@@ -662,10 +662,10 @@ private:
         ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
         ASSERT(library.functions.empty());
 
-        ASSERT(Library::ismemory(library.getAllocFuncInfo("CreateX")));
-        ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));
         const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
         ASSERT(af && af->arg == -1);
+        ASSERT(Library::ismemory(af));
+        ASSERT_EQUALS(library.allocId("CreateX"), library.deallocId("DeleteX"));
         const Library::AllocFunc* df = library.getDeallocFuncInfo("DeleteX");
         ASSERT(df && df->arg == 1);
     }

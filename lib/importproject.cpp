@@ -626,7 +626,7 @@ static std::list<std::string> toStringList(const std::string &s)
     return ret;
 }
 
-static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string,std::string,cppcheck::stricmp> *variables, std::string *includePath, bool *useOfMfc)
+static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::string,std::string,cppcheck::stricmp> &variables, std::string &includePath, bool *useOfMfc)
 {
     if (useOfMfc) {
         for (const tinyxml2::XMLElement *e = node->FirstChildElement(); e; e = e->NextSiblingElement()) {
@@ -642,7 +642,7 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
         for (const tinyxml2::XMLElement *propertyGroup = node->FirstChildElement(); propertyGroup; propertyGroup = propertyGroup->NextSiblingElement()) {
             const std::string name(propertyGroup->Name());
             const char *text = propertyGroup->GetText();
-            (*variables)[name] = std::string(text ? text : "");
+            variables[name] = std::string(text ? text : "");
         }
 
     } else if (!labelAttribute) {
@@ -655,22 +655,22 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
             std::string path(text);
             const std::string::size_type pos = path.find("$(IncludePath)");
             if (pos != std::string::npos)
-                path.replace(pos, 14U, *includePath);
-            *includePath = path;
+                path.replace(pos, 14U, includePath);
+            includePath = path;
         }
     }
 }
 
-static void loadVisualStudioProperties(const std::string &props, std::map<std::string,std::string,cppcheck::stricmp> *variables, std::string *includePath, const std::string &additionalIncludeDirectories, std::list<ItemDefinitionGroup> &itemDefinitionGroupList)
+static void loadVisualStudioProperties(const std::string &props, std::map<std::string,std::string,cppcheck::stricmp> &variables, std::string &includePath, const std::string &additionalIncludeDirectories, std::list<ItemDefinitionGroup> &itemDefinitionGroupList)
 {
     std::string filename(props);
     // variables can't be resolved
-    if (!simplifyPathWithVariables(filename, *variables))
+    if (!simplifyPathWithVariables(filename, variables))
         return;
 
     // prepend project dir (if it exists) to transform relative paths into absolute ones
-    if (!Path::isAbsolute(filename) && variables->count("ProjectDir") > 0)
-        filename = Path::getAbsoluteFilePath(variables->at("ProjectDir") + filename);
+    if (!Path::isAbsolute(filename) && variables.count("ProjectDir") > 0)
+        filename = Path::getAbsoluteFilePath(variables.at("ProjectDir") + filename);
 
     tinyxml2::XMLDocument doc;
     if (doc.LoadFile(filename.c_str()) != tinyxml2::XML_SUCCESS)
@@ -750,7 +750,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         } else if (std::strcmp(node->Name(), "ItemDefinitionGroup") == 0) {
             itemDefinitionGroupList.emplace_back(node, additionalIncludeDirectories);
         } else if (std::strcmp(node->Name(), "PropertyGroup") == 0) {
-            importPropertyGroup(node, &variables, &includePath, &useOfMfc);
+            importPropertyGroup(node, variables, includePath, &useOfMfc);
         } else if (std::strcmp(node->Name(), "ImportGroup") == 0) {
             const char *labelAttribute = node->Attribute("Label");
             if (labelAttribute && std::strcmp(labelAttribute, "PropertySheets") == 0) {
@@ -758,7 +758,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                     if (std::strcmp(e->Name(), "Import") == 0) {
                         const char *projectAttribute = e->Attribute("Project");
                         if (projectAttribute)
-                            loadVisualStudioProperties(projectAttribute, &variables, &includePath, additionalIncludeDirectories, itemDefinitionGroupList);
+                            loadVisualStudioProperties(projectAttribute, variables, includePath, additionalIncludeDirectories, itemDefinitionGroupList);
                     }
                 }
             }

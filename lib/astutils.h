@@ -216,12 +216,12 @@ const Token *findNextTokenFromBreak(const Token *breakToken);
  * Extract for loop values: loopvar varid, init value, step value, last value (inclusive)
  */
 bool extractForLoopValues(const Token *forToken,
-                          nonneg int * const varid,
-                          bool * const knownInitValue,
-                          long long * const initValue,
-                          bool * const partialCond,
-                          long long * const stepValue,
-                          long long * const lastValue);
+                          nonneg int &varid,
+                          bool &knownInitValue,
+                          long long &initValue,
+                          bool &partialCond,
+                          long long &stepValue,
+                          long long &lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
 bool succeeds(const Token* tok1, const Token* tok2);

@@ -387,22 +387,19 @@ void CheckType::checkFloatToIntegerOverflow()
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         const ValueType *vtint, *vtfloat;
-        const std::list<ValueFlow::Value> *floatValues;
 
         // Explicit cast
         if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
             vtint = tok->valueType();
             vtfloat = tok->astOperand1()->valueType();
-            floatValues = &tok->astOperand1()->values();
-            checkFloatToIntegerOverflow(tok, vtint, vtfloat, floatValues);
+            checkFloatToIntegerOverflow(tok, vtint, vtfloat, tok->astOperand1()->values());
         }
 
         // Assignment
         else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
             vtint = tok->astOperand1()->valueType();
             vtfloat = tok->astOperand2()->valueType();
-            floatValues = &tok->astOperand2()->values();
-            checkFloatToIntegerOverflow(tok, vtint, vtfloat, floatValues);
+            checkFloatToIntegerOverflow(tok, vtint, vtfloat, tok->astOperand2()->values());
         }
 
         else if (tok->str() == "return" && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isFloat()) {
@@ -412,14 +409,13 @@ void CheckType::checkFloatToIntegerOverflow()
             if (scope && scope->type == Scope::ScopeType::eFunction && scope->function && scope->function->retDef) {
                 const ValueType &valueType = ValueType::parseDecl(scope->function->retDef, mSettings, mTokenizer->isCPP());
                 vtfloat = tok->astOperand1()->valueType();
-                floatValues = &tok->astOperand1()->values();
-                checkFloatToIntegerOverflow(tok, &valueType, vtfloat, floatValues);
+                checkFloatToIntegerOverflow(tok, &valueType, vtfloat, tok->astOperand1()->values());
             }
         }
     }
 }
 
-void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> *floatValues)
+void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> &floatValues)
 {
     // Conversion of float to integer?
     if (!vtint || !vtint->isIntegral())
@@ -427,7 +423,7 @@ void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *v
     if (!vtfloat || !vtfloat->isFloat())
         return;
 
-    for (const ValueFlow::Value &f : *floatValues) {
+    for (const ValueFlow::Value &f : floatValues) {
         if (f.valueType != ValueFlow::Value::ValueType::FLOAT)
             continue;
         if (!mSettings->isEnabled(&f, false))

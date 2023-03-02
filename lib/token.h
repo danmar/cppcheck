@@ -132,7 +132,7 @@ struct TokenImpl {
     TokenDebug mDebug;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
-    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
+    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint &value) const;
 
     TokenImpl()
         : mVarId(0),
@@ -559,7 +559,7 @@ public:
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
     }
-    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const {
+    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const {
         return mImpl->getCppcheckAttribute(type, value);
     }
     bool hasCppcheckAttributes() const {

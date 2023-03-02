@@ -317,7 +317,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &file,
                                 const std::string &premiumArgs,
-                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> &executeCommand)
+                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> &executeCommand)
 {
     const std::string redirect = "2>&1";
 
@@ -337,7 +337,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 #endif
         for (const char* py_exe : py_exes) {
             std::string out;
-            if (executeCommand(py_exe, split("--version"), redirect, &out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
+            if (executeCommand(py_exe, split("--version"), redirect, out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
                 pythonExe = py_exe;
                 break;
             }
@@ -357,7 +357,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     args += fileArg;
 
     std::string result;
-    if (!executeCommand(pythonExe, split(args), redirect, &result)) {
+    if (!executeCommand(pythonExe, split(args), redirect, result)) {
         std::string message("Failed to execute addon (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
         if (result.size() > 2) {
             message = message + "\n" + message + "\nOutput:\n" + result;
@@ -390,7 +390,7 @@ static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
 
 CppCheck::CppCheck(ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
-                   std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
+                   std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand)
     : mErrorLogger(errorLogger)
     , mExitCode(0)
     , mUseGlobalSuppressions(useGlobalSuppressions)
@@ -423,7 +423,7 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
-static bool reportClangErrors(std::istream &is, const std::function<void(const ErrorMessage&)>& reportErr, std::vector<ErrorMessage> *warnings)
+static bool reportClangErrors(std::istream &is, const std::function<void(const ErrorMessage&)>& reportErr, std::vector<ErrorMessage> &warnings)
 {
     std::string line;
     while (std::getline(is, line)) {
@@ -433,7 +433,7 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         std::string::size_type pos3 = line.find(": error: ");
         if (pos3 == std::string::npos)
             pos3 = line.find(": fatal error:");
-        if (warnings && pos3 == std::string::npos)
+        if (pos3 == std::string::npos)
             pos3 = line.find(": warning:");
         if (pos3 == std::string::npos)
             continue;
@@ -463,7 +463,7 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
                             Certainty::normal);
 
         if (line.compare(pos3, 10, ": warning:") == 0) {
-            warnings->push_back(std::move(errmsg));
+            warnings.push_back(std::move(errmsg));
             continue;
         }
 
@@ -512,7 +512,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         std::string output2;
-        if (!mExecuteCommand(exe,split(args2),redirect2,&output2) || output2.find("TranslationUnitDecl") == std::string::npos) {
+        if (!mExecuteCommand(exe,split(args2),redirect2,output2) || output2.find("TranslationUnitDecl") == std::string::npos) {
             std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
             return 0;
         }
@@ -524,14 +524,14 @@ unsigned int CppCheck::check(const std::string &path)
             auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
-            if (reportClangErrors(fin, reportError, &compilerWarnings))
+            if (reportClangErrors(fin, reportError, compilerWarnings))
                 return 0;
         } else {
             std::istringstream istr(output2);
             auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
-            if (reportClangErrors(istr, reportError, &compilerWarnings))
+            if (reportClangErrors(istr, reportError, compilerWarnings))
                 return 0;
         }
 
@@ -762,7 +762,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             // Calculate hash so it can be compared with old hash / future hashes
             const std::size_t hash = preprocessor.calculateHash(tokens1, toolinfo.str());
             std::list<ErrorMessage> errors;
-            if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, hash, &errors)) {
+            if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, hash, errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
                     errors.pop_front();
@@ -1699,7 +1699,7 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
     std::string output;
-    if (!mExecuteCommand(exe, split(args), emptyString, &output)) {
+    if (!mExecuteCommand(exe, split(args), emptyString, output)) {
         std::cerr << "Failed to execute '" << exe << "'" << std::endl;
         return;
     }

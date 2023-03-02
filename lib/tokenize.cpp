@@ -3483,8 +3483,11 @@ public:
     const std::map<std::string, nonneg int>& map(bool global) const {
         return global ? mVariableId_global : mVariableId;
     }
-    nonneg int* getVarId() const {
-        return &mVarId;
+    nonneg int getVarId() const {
+        return mVarId;
+    }
+    nonneg int& getVarId() {
+        return mVarId;
     }
 };
 
@@ -3661,7 +3664,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const VariableMap& varia
 
 void Tokenizer::setVarIdStructMembers(Token **tok1,
                                       std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                                      nonneg int *varId) const
+                                      nonneg int &varId) const
 {
     Token *tok = *tok1;
 
@@ -3680,8 +3683,8 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
                 tok = tok->next();
                 const std::map<std::string, nonneg int>::iterator it = members.find(tok->str());
                 if (it == members.end()) {
-                    members[tok->str()] = ++(*varId);
-                    tok->varId(*varId);
+                    members[tok->str()] = ++varId;
+                    tok->varId(varId);
                 } else {
                     tok->varId(it->second);
                 }
@@ -3714,8 +3717,8 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
         std::map<std::string, nonneg int>& members = structMembers[struct_varid];
         const std::map<std::string, nonneg int>::iterator it = members.find(tok->str());
         if (it == members.end()) {
-            members[tok->str()] = ++(*varId);
-            tok->varId(*varId);
+            members[tok->str()] = ++varId;
+            tok->varId(varId);
         } else {
             tok->varId(it->second);
         }
@@ -3726,7 +3729,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
 
 
 void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
-                                         const VariableMap &variableMap,
+                                         VariableMap &variableMap,
                                          const nonneg int scopeStartVarId,
                                          std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
 {
@@ -3808,7 +3811,7 @@ void Tokenizer::setVarIdClassFunction(const std::string &classname,
                                       const Token * const endToken,
                                       const std::map<std::string, nonneg int> &varlist,
                                       std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                                      nonneg int *varId_)
+                                      nonneg int &varId_)
 {
     for (Token *tok2 = startToken; tok2 && tok2 != endToken; tok2 = tok2->next()) {
         if (tok2->varId() != 0 || !tok2->isName())
@@ -3889,7 +3892,7 @@ void Tokenizer::setVarIdPass1()
                 if (!variableMap.leaveScope())
                     cppcheckError(tok);
             } else if (tok->str() == "{") {
-                scopeStack.emplace(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/ false, *variableMap.getVarId());
+                scopeStack.emplace(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/ false, variableMap.getVarId());
 
                 // check if this '{' is a start of an "if" body
                 const Token * ifToken = tok->previous();
@@ -3951,7 +3954,7 @@ void Tokenizer::setVarIdPass1()
                             variableMap.enterScope();
                     }
                     initlist = false;
-                    scopeStack.emplace(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), *variableMap.getVarId());
+                    scopeStack.emplace(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), variableMap.getVarId());
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {
@@ -4212,7 +4215,7 @@ void Tokenizer::setVarIdPass1()
         }
     }
 
-    mVarId = *variableMap.getVarId();
+    mVarId = variableMap.getVarId();
 }
 
 namespace {
@@ -4460,14 +4463,14 @@ void Tokenizer::setVarIdPass2()
                 if (tok2->str() == "(") {
                     Token *funcstart = const_cast<Token*>(isFunctionHead(tok2, "{"));
                     if (funcstart) {
-                        setVarIdClassFunction(scopeName2 + classname, funcstart, funcstart->link(), thisClassVars, structMembers, &mVarId);
+                        setVarIdClassFunction(scopeName2 + classname, funcstart, funcstart->link(), thisClassVars, structMembers, mVarId);
                         tok2 = funcstart->link();
                         continue;
                     }
                 }
                 if (tok2->str() == "{") {
                     if (tok2->strAt(-1) == ")")
-                        setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, &mVarId);
+                        setVarIdClassFunction(scopeName2 + classname, tok2, tok2->link(), thisClassVars, structMembers, mVarId);
                     tok2 = tok2->link();
                 } else if (Token::Match(tok2, "( %name%|)") && !Token::Match(tok2->link(), "(|[")) {
                     tok2 = tok2->link();
@@ -4513,7 +4516,7 @@ void Tokenizer::setVarIdPass2()
             // If this is a function implementation.. add it to funclist
             Token * start = const_cast<Token *>(isFunctionHead(tok2, "{"));
             if (start) {
-                setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, &mVarId);
+                setVarIdClassFunction(classname, start, start->link(), thisClassVars, structMembers, mVarId);
             }
 
             if (Token::Match(tok2, ") %name% ("))
@@ -4547,7 +4550,7 @@ void Tokenizer::setVarIdPass2()
                     tok3 = tok3->linkAt(1);
             }
             if (Token::Match(tok3, ")|} {")) {
-                setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, &mVarId);
+                setVarIdClassFunction(classname, tok2, tok3->next()->link(), thisClassVars, structMembers, mVarId);
             }
         }
     }
