@@ -485,7 +485,7 @@ private:
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
     }
 
-    void substituteTemplateFormatStatic()
+    void substituteTemplateFormatStatic() const
     {
         {
             std::string s;
@@ -514,7 +514,7 @@ private:
         }
     }
 
-    void substituteTemplateLocationStatic()
+    void substituteTemplateLocationStatic() const
     {
         {
             std::string s;
