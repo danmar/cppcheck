@@ -45,8 +45,7 @@ private:
 
     static bool readPlatform(cppcheck::Platform& platform, const char* xmldata) {
         tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata);
-        return platform.loadFromXmlDocument(&doc);
+        return (doc.Parse(xmldata) == tinyxml2::XML_SUCCESS) && platform.loadFromXmlDocument(&doc);
     }
 
     void empty() const {

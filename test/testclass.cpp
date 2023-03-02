@@ -60,10 +60,8 @@ private:
                                    "    </access>\n"
                                    "  </container>\n"
                                    "</def>";
-            tinyxml2::XMLDocument doc;
-            doc.Parse(xmldata, sizeof(xmldata));
-            settings0.library.load(doc);
-            settings1.library.load(doc);
+            ASSERT(settings0.library.loadxmldata(xmldata, sizeof(xmldata)));
+            ASSERT(settings1.library.loadxmldata(xmldata, sizeof(xmldata)));
         }
 
 
@@ -3390,9 +3388,7 @@ private:
                                "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
                                "  <podtype name=\"std::atomic_bool\"/>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         checkNoMemset("class A {\n"
                       "    std::array<int, 10> ints;\n"

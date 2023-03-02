@@ -49,6 +49,7 @@ private:
         PLATFORM(settings1, cppcheck::Platform::Native);
 
         LOAD_LIB_2(settings0.library, "qt.cfg");
+        settings0.libraries.emplace_back("qt");
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.severity.enable(Severity::style);
@@ -58,11 +59,9 @@ private:
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
                            "</def>";
-        tinyxml2::XMLDocument xmldoc;
-        xmldoc.Parse(cfg, sizeof(cfg));
+        ASSERT(settings1.library.loadxmldata(cfg, sizeof(cfg)));
         settings1.severity.enable(Severity::style);
         settings1.severity.enable(Severity::warning);
-        settings1.library.load(xmldoc);
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
