@@ -73,7 +73,7 @@ public:
     const Scope* enclosingScope;
     enum class NeedInitialization {
         Unknown, True, False
-    } needInitialization{};
+    } needInitialization = NeedInitialization::Unknown;
 
     struct BaseInfo {
         std::string name;
