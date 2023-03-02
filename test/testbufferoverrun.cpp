@@ -5236,6 +5236,13 @@ private:
             "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 5.\n",
                       errout.str());
+
+        ctu("void g(int *b) { b[0] = 0; }\n"
+            "void f() {\n"
+            "    GLint a[1];\n"
+            "    g(a);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu_variable() {

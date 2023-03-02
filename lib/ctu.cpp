@@ -365,7 +365,8 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
                     functionCall.callArgumentExpression = argtok->expressionString();
-                    functionCall.callArgValue = argtok->variable()->dimension(0) * argtok->valueType()->typeSize(*tokenizer->getSettings());
+                    const auto typeSize = argtok->valueType()->typeSize(*tokenizer->getSettings());
+                    functionCall.callArgValue = typeSize > 0 ? argtok->variable()->dimension(0) * typeSize : -1;
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(std::move(functionCall));
                 }
@@ -528,7 +529,7 @@ static bool findPath(const std::string &callId,
             case CTU::FileInfo::InvalidValueType::bufferOverflow:
                 if (functionCall->callValueType != ValueFlow::Value::ValueType::BUFFER_SIZE)
                     continue;
-                if (unsafeValue < 0 || unsafeValue >= functionCall->callArgValue)
+                if (unsafeValue < 0 || (unsafeValue >= functionCall->callArgValue && functionCall->callArgValue >= 0))
                     break;
                 continue;
             }
