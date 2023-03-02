@@ -49,7 +49,7 @@ class ThreadExecutor::SyncLogForwarder : public ErrorLogger
 {
 public:
     explicit SyncLogForwarder(ThreadExecutor &threadExecutor)
-        : mThreadExecutor(threadExecutor), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0) {
+        : mThreadExecutor(threadExecutor) {
 
         const std::map<std::string, std::size_t>& files = mThreadExecutor.mFiles;
         mItNextFile = files.begin();
@@ -81,10 +81,10 @@ public:
     std::map<std::string, std::size_t>::const_iterator mItNextFile;
     std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
 
-    std::size_t mProcessedFiles;
-    std::size_t mTotalFiles;
-    std::size_t mProcessedSize;
-    std::size_t mTotalFileSize;
+    std::size_t mProcessedFiles{};
+    std::size_t mTotalFiles{};
+    std::size_t mProcessedSize{};
+    std::size_t mTotalFileSize{};
 
     std::mutex mFileSync;
     std::mutex mErrorSync;
