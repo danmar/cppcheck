@@ -1220,54 +1220,52 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
             return refs_result;
         }
 
-    } else if (Token::Match(tok->previous(), "%name% (")) {
+    } else if (tok->previous() && tok->previous()->function() && Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
-        if (f) {
-            if (!Function::returnsReference(f)) {
-                refs_result.push_back({tok, std::move(errors)});
-                return refs_result;
-            }
-            std::set<ReferenceToken, ReferenceTokenLess> result;
-            std::vector<const Token*> returns = Function::findReturns(f);
-            for (const Token* returnTok : returns) {
-                if (returnTok == tok)
-                    continue;
-                for (const ReferenceToken& rt :
-                     followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
-                    const Variable* argvar = rt.token->variable();
-                    if (!argvar) {
+        if (!Function::returnsReference(f)) {
+            refs_result.push_back({tok, std::move(errors)});
+            return refs_result;
+        }
+        std::set<ReferenceToken, ReferenceTokenLess> result;
+        std::vector<const Token*> returns = Function::findReturns(f);
+        for (const Token* returnTok : returns) {
+            if (returnTok == tok)
+                continue;
+            for (const ReferenceToken& rt :
+                 followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
+                const Variable* argvar = rt.token->variable();
+                if (!argvar) {
+                    refs_result.push_back({tok, std::move(errors)});
+                    return refs_result;
+                }
+                if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                    const int n = getArgumentPos(argvar, f);
+                    if (n < 0) {
                         refs_result.push_back({tok, std::move(errors)});
                         return refs_result;
                     }
-                    if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-                        const int n = getArgumentPos(argvar, f);
-                        if (n < 0) {
-                            refs_result.push_back({tok, std::move(errors)});
-                            return refs_result;
-                        }
-                        std::vector<const Token*> args = getArguments(tok->previous());
-                        if (n >= args.size()) {
-                            refs_result.push_back({tok, std::move(errors)});
-                            return refs_result;
-                        }
-                        const Token* argTok = args[n];
-                        ErrorPath er = errors;
-                        er.emplace_back(returnTok, "Return reference.");
-                        er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                        auto refs =
-                            followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
-                        result.insert(refs.cbegin(), refs.cend());
-                        if (!inconclusive && result.size() > 1) {
-                            refs_result.push_back({tok, std::move(errors)});
-                            return refs_result;
-                        }
+                    std::vector<const Token*> args = getArguments(tok->previous());
+                    if (n >= args.size()) {
+                        refs_result.push_back({tok, std::move(errors)});
+                        return refs_result;
+                    }
+                    const Token* argTok = args[n];
+                    ErrorPath er = errors;
+                    er.emplace_back(returnTok, "Return reference.");
+                    er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
+                    auto refs =
+                        followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
+                    result.insert(refs.cbegin(), refs.cend());
+                    if (!inconclusive && result.size() > 1) {
+                        refs_result.push_back({tok, std::move(errors)});
+                        return refs_result;
                     }
                 }
             }
-            if (!result.empty()) {
-                refs_result.insert(refs_result.end(), result.cbegin(), result.cend());
-                return refs_result;
-            }
+        }
+        if (!result.empty()) {
+            refs_result.insert(refs_result.end(), result.cbegin(), result.cend());
+            return refs_result;
         }
     }
     refs_result.push_back({tok, std::move(errors)});
@@ -1583,8 +1581,8 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         }
     }
     // templates/casts
-    if ((Token::Match(tok1, "%name% <") && tok1->next()->link()) ||
-        (Token::Match(tok2, "%name% <") && tok2->next()->link())) {
+    if ((tok1->next() && tok1->next()->link() && Token::Match(tok1, "%name% <")) ||
+        (tok2->next() && tok2->next()->link() && Token::Match(tok2, "%name% <"))) {
 
         // non-const template function that is not a dynamic_cast => return false
         if (pure && Token::simpleMatch(tok1->next()->link(), "> (") &&

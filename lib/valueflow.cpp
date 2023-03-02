@@ -471,9 +471,17 @@ static const Token *getCastTypeStartToken(const Token *parent, const Settings* s
         return parent->astOperand1();
     if (parent->str() != "(")
         return nullptr;
-    if (!parent->astOperand2() && Token::Match(parent, "( %name%") &&
-        (parent->next()->isStandardType() || settings->library.isNotLibraryFunction(parent->next())))
-        return parent->next();
+    if (!parent->astOperand2() && Token::Match(parent, "( %name%|::")) {
+        const Token* ftok = parent->next();
+        if (ftok->isStandardType())
+            return ftok;
+        if (Token::simpleMatch(ftok, "::"))
+            ftok = ftok->next();
+        while (Token::Match(ftok, "%name% ::"))
+            ftok = ftok->tokAt(2);
+        if (settings->library.isNotLibraryFunction(ftok))
+            return parent->next();
+    }
     if (parent->astOperand2() && Token::Match(parent->astOperand1(), "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
         return parent->astOperand1()->tokAt(2);
     return nullptr;
@@ -7376,7 +7384,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
         if (!function)
             continue;
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%name% ("))
+            if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
                 continue;
 
             const Function * const calledFunction = tok->function();

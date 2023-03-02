@@ -4492,6 +4492,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
+
+        check("void f(int x) {\n" // #11449
+              "    int i = x;\n"
+              "    i = (std::min)(i, 1);\n"
+              "    if (i == 1) {}\n"
+              "    int j = x;\n"
+              "    j = (::std::min)(j, 1);\n"
+              "    if (j == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
