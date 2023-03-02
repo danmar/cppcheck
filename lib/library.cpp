@@ -678,9 +678,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
         const std::string functionnodename = functionnode->Name();
         if (functionnodename == "noreturn") {
-            if (strcmp(functionnode->GetText(), "false") == 0)
+            const char * const text = functionnode->GetText();
+            if (strcmp(text, "false") == 0)
                 mNoReturn[name] = FalseTrueMaybe::False;
-            else if (strcmp(functionnode->GetText(), "maybe") == 0)
+            else if (strcmp(text, "maybe") == 0)
                 mNoReturn[name] = FalseTrueMaybe::Maybe;
             else
                 mNoReturn[name] = FalseTrueMaybe::True; // Safe
@@ -757,9 +758,9 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     // Validate the validation expression
                     const char *p = argnode->GetText();
                     if (!isCompliantValidationExpression(p))
-                        return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, (!p ? "\"\"" : argnode->GetText()));
+                        return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, (!p ? "\"\"" : p));
                     // Set validation expression
-                    ac.valid = argnode->GetText();
+                    ac.valid = p;
                 }
                 else if (argnodename == "minsize") {
                     const char *typeattr = argnode->Attribute("type");
