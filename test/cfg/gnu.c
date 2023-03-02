@@ -19,14 +19,17 @@
 #include <sys/mman.h>
 #include <sys/sem.h>
 #include <wchar.h>
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !(defined(__APPLE__) && defined(__MACH__))
 #include <sys/epoll.h>
 #endif
 #include <strings.h>
+#ifdef __gnu_linux__
 #include <error.h>
+#endif
 #include <getopt.h>
 #include <netdb.h>
 
+#ifdef __gnu_linux__
 void unreachableCode_error(void) // #11197
 {
     error(1, 0, ""); // will call exit() if the first parameter is non-zero
@@ -34,6 +37,7 @@ void unreachableCode_error(void) // #11197
     // TODO cppcheck-suppress unreachableCode
     int i;
 }
+#endif
 
 int nullPointer_gethostbyname2_r(const char* name, int af, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
 {
@@ -431,7 +435,7 @@ void leakReturnValNotUsed()
         return;
 }
 
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !(defined(__APPLE__) && defined(__MACH__))
 int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 {
     // no warning is expected
