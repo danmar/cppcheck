@@ -626,11 +626,15 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
             findAndReplace(result, "{code}", readCode(callStack.back().getOrigFile(), callStack.back().line, callStack.back().column, endl));
         }
     } else {
-        findAndReplace(result, "{callstack}", emptyString);
-        findAndReplace(result, "{file}", "nofile");
-        findAndReplace(result, "{line}", "0");
-        findAndReplace(result, "{column}", "0");
-        findAndReplace(result, "{code}", emptyString);
+        static const std::unordered_map<std::string, std::string> callStackSubstitutionMap =
+        {
+            {"{callstack}",   ""},
+            {"{file}",    "nofile"},
+            {"{line}",     "0"},
+            {"{column}",     "0"},
+            {"{code}",     ""}
+        };
+        replace(result, callStackSubstitutionMap);
     }
 
     if (!templateLocation.empty() && callStack.size() >= 2U) {
