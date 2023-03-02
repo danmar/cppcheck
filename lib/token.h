@@ -120,7 +120,7 @@ struct TokenImpl {
 
     // __cppcheck_in_range__
     struct CppcheckAttributes {
-        enum Type { LOW, HIGH } type{};
+        enum Type { LOW, HIGH } type = LOW;
         MathLib::bigint value{};
         CppcheckAttributes* next{};
     };
