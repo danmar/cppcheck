@@ -297,7 +297,7 @@ namespace ValueFlow
         int indirect{};
 
         /** kind of moved  */
-        enum class MoveKind { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind{};
+        enum class MoveKind { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
 
         /** Path id */
         MathLib::bigint path{};
@@ -321,9 +321,9 @@ namespace ValueFlow
             Iterator,
             // A pointer that holds the address of the lifetime
             Address
-        } lifetimeKind{};
+        } lifetimeKind = LifetimeKind::Object;
 
-        enum class LifetimeScope { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope{};
+        enum class LifetimeScope { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
 
         static const char* toString(MoveKind moveKind);
         static const char* toString(LifetimeKind lifetimeKind);
@@ -340,7 +340,7 @@ namespace ValueFlow
             Inconclusive,
             /** Listed values are impossible */
             Impossible
-        } valueKind{};
+        } valueKind = ValueKind::Possible;
 
         void setKnown() {
             valueKind = ValueKind::Known;
