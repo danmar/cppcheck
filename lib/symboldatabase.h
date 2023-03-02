@@ -1213,7 +1213,7 @@ enum class Reference {
 /** Value type */
 class CPPCHECKLIB ValueType {
 public:
-    enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign{};
+    enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign = UNKNOWN_SIGN;
     enum Type {
         UNKNOWN_TYPE,
         POD,
