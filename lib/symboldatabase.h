@@ -1234,7 +1234,7 @@ public:
         FLOAT,
         DOUBLE,
         LONGDOUBLE
-    } type{};
+    } type = UNKNOWN_TYPE;
     nonneg int bits{};                         ///< bitfield bitcount
     nonneg int pointer{};                      ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
     nonneg int constness{};                    ///< bit 0=data, bit 1=*, bit 2=**
