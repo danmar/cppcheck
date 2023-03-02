@@ -354,10 +354,10 @@ public:
     std::string templateLocation;
 
     /** @brief The maximum time in seconds for the template instantiation */
-    std::size_t templateMaxTime;
+    std::size_t templateMaxTime{};
 
     /** @brief The maximum time in seconds for the typedef simplification */
-    std::size_t typedefMaxTime;
+    std::size_t typedefMaxTime{};
 
     /** @brief defines given by the user */
     std::string userDefines;
@@ -372,10 +372,10 @@ public:
     std::size_t valueFlowMaxIterations = 4;
 
     /** @brief Is --verbose given? */
-    bool verbose;
+    bool verbose{};
 
     /** @brief write XML results (--xml) */
-    bool xml;
+    bool xml{};
 
     /** @brief XML version (--xml-version=..) */
     int xml_version = 2;
