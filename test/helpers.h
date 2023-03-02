@@ -81,6 +81,12 @@ public:
     {
         return mFullPath;
     }
+
+    ScopedFile(const ScopedFile&) = delete;
+    ScopedFile(ScopedFile&&) = delete;
+    ScopedFile& operator=(const ScopedFile&) = delete;
+    ScopedFile& operator=(ScopedFile&&) = delete;
+
 private:
     const std::string mName;
     const std::string mPath;
