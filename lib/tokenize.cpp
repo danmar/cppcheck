@@ -8059,7 +8059,7 @@ void Tokenizer::simplifyStructDecl()
                     }
 
                     if (isEnum) {
-                        if (tok->next()->str() == "{") {
+                        if (tok->next()->str() == "{" && tok->next()->link() != tok->tokAt(2)) {
                             tok->next()->str("(");
                             tok->linkAt(1)->str(")");
                         }

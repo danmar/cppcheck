@@ -2584,9 +2584,16 @@ private:
 
     void simplifyVarDeclInitLists()
     {
-        const char code[] = "std::vector<int> v{a * b, 1};";
-        const char exp[] = "std :: vector < int > v { a * b , 1 } ;";
-        ASSERT_EQUALS(exp, tok(code));
+        {
+            const char code[] = "std::vector<int> v{a * b, 1};";
+            const char exp[] = "std :: vector < int > v { a * b , 1 } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "enum E { E0 } e{};";
+            const char exp[] = "enum E { E0 } ; enum E e ; e = { } ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
     }
 };
 
