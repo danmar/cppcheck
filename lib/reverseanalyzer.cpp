@@ -42,7 +42,7 @@ struct ReverseTraversal {
     ValuePtr<Analyzer> analyzer;
     const Settings* settings;
 
-    std::pair<bool, bool> evalCond(const Token* tok) {
+    std::pair<bool, bool> evalCond(const Token* tok) const {
         std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
         const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
@@ -142,7 +142,7 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr) const {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
             if (tok == end)

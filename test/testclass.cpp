@@ -6221,8 +6221,8 @@ private:
                       errout.str());
     }
 
-    void const81() { // #11330
-        checkConst("struct A {\n"
+    void const81() {
+        checkConst("struct A {\n" // #11330
                    "    bool f() const;\n"
                    "};\n"
                    "struct S {\n"
@@ -6233,6 +6233,94 @@ private:
                    "};\n");
         ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
                       errout.str());
+
+        checkConst("struct A {\n" // #11499
+                   "    void f() const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f(int) const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "  T* operator->();\n"
+                   "  const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "  P<A> p;\n"
+                   "  void g() { p->f(1); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'S::g' can be const.\n", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f(void*) const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "    P<T>& operator=(P) {\n"
+                   "        return *this;\n"
+                   "    }\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    std::vector<S> g() { p->f(nullptr); return {}; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:14]: (style, inconclusive) Technically the member function 'S::g' can be const.\n", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f();\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f() const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f(int&) const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    int i;\n"
+                   "    void g() { p->f(i); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {

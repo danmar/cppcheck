@@ -288,7 +288,7 @@ struct ForwardTraversal {
         return ft;
     }
 
-    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false) {
+    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false) const {
         if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = fork();
             return {std::move(ft)};
@@ -296,7 +296,7 @@ struct ForwardTraversal {
         return std::vector<ForwardTraversal> {};
     }
 
-    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) {
+    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) const {
         std::vector<ForwardTraversal> result = tryForkScope(endBlock, isModified);
         for (ForwardTraversal& ft : result)
             ft.updateScope(endBlock);
