@@ -32,7 +32,9 @@
 #include "token.h"
 #include "tokenize.h"
 
+#include <algorithm>
 #include <array>
+#include <cstddef>
 #include <iostream>
 #include <list>
 #include <memory>

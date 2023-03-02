@@ -40,7 +40,9 @@
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 #include <iostream>
+#include <iterator>
 #include <exception>
 #include <memory>
 #include <set>

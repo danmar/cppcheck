@@ -18,6 +18,8 @@
 
 #pragma once
 
+// IWYU pragma: begin_keep
 #include "config.h"
 #include "cppcheck.h"
 #include "settings.h"
+// IWYU pragma: end_keep

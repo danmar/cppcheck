@@ -26,11 +26,15 @@
 #include "errorlogger.h"
 
 #include <cstddef>
+#include <list>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 
 class options;
+class Settings;
+class Tokenizer;
 
 class TestFixture : public ErrorLogger {
 private:

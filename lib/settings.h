@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <list>
 #include <set>

@@ -39,6 +39,7 @@ jobs:
           make -C cmake.output autogen
           # make sure the auto-generated GUI dependencies exist
           make -C cmake.output gui-build-deps
+          make -C cmake.output triage-build-ui-deps
 
       - name: Build Qt mappings
         run: |
@@ -51,6 +52,11 @@ jobs:
         run: |
           # do not fail for now so the output is being saved
           iwyu_tool -p cmake.output -j $(nproc) -- -w > iwyu.log || true
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Compilation Database
+          path: ./cmake.output/compile_commands.json
 
       - uses: actions/upload-artifact@v3
         with:

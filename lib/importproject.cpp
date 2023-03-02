@@ -33,6 +33,7 @@
 #include <iostream>
 #include <iterator>
 #include <sstream> // IWYU pragma: keep
+#include <unordered_set>
 #include <utility>
 
 #include <tinyxml2.h>

@@ -28,6 +28,7 @@
 #include "sourcelocation.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iosfwd>
 #include <list>

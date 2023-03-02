@@ -41,11 +41,13 @@
 #include "processexecutor.h"
 #endif
 
+#include <algorithm>
 #include <atomic>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <sstream> // IWYU pragma: keep

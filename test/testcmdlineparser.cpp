@@ -27,6 +27,7 @@
 #include "fixture.h"
 #include "timer.h"
 
+#include <cstdint>
 #include <cstdio>
 #include <list>
 #include <set>
