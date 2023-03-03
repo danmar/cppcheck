@@ -316,7 +316,7 @@ void TestFixture::run(const std::string &str)
     try {
         if (quiet_tests) {
             std::cout << '\n' << classname << ':';
-            REDIRECT;
+            SUPPRESS;
             run();
         }
         else

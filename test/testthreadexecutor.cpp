@@ -105,7 +105,7 @@ private:
 
     // #11249 - reports TSAN errors - only applies to threads not processes though
     void many_threads_showtime() {
-        REDIRECT;
+        SUPPRESS;
         check(16, 100, 100,
               "int main()\n"
               "{\n"
@@ -118,7 +118,7 @@ private:
         const char plistOutput[] = "plist";
         ScopedFile plistFile("dummy", plistOutput);
 
-        REDIRECT;
+        SUPPRESS;
         check(16, 100, 100,
               "int main()\n"
               "{\n"
