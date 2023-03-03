@@ -19,6 +19,7 @@
 #include "threadexecutor.h"
 
 #include "color.h"
+#include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "errorlogger.h"
@@ -45,10 +46,11 @@ ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, 
 ThreadExecutor::~ThreadExecutor()
 {}
 
-class ThreadExecutor::Data
+class Data
 {
 public:
-    Data(const ThreadExecutor &threadExecutor) : mFiles(threadExecutor.mFiles), mFileSettings(threadExecutor.mSettings.project.fileSettings), mProcessedFiles(0), mProcessedSize(0)
+    Data(const std::map<std::string, std::size_t> &files, const std::list<ImportProject::FileSettings> &fileSettings)
+        : mFiles(files), mFileSettings(fileSettings), mProcessedFiles(0), mProcessedSize(0)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
@@ -97,7 +99,7 @@ public:
     std::mutex mFileSync;
 };
 
-class ThreadExecutor::SyncLogForwarder : public ErrorLogger
+class SyncLogForwarder : public ErrorLogger
 {
 public:
     explicit SyncLogForwarder(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger)
@@ -144,30 +146,7 @@ private:
     ErrorLogger &mErrorLogger;
 };
 
-unsigned int ThreadExecutor::check()
-{
-    std::vector<std::future<unsigned int>> threadFutures;
-    threadFutures.reserve(mSettings.jobs);
-
-    Data data(*this);
-    SyncLogForwarder logforwarder(*this, mErrorLogger);
-
-    for (unsigned int i = 0; i < mSettings.jobs; ++i) {
-        try {
-            threadFutures.emplace_back(std::async(std::launch::async, threadProc, &data, &logforwarder, mSettings));
-        }
-        catch (const std::system_error &e) {
-            std::cerr << "#### ThreadExecutor::check exception :" << e.what() << std::endl;
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    return std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
-        return v + f.get();
-    });
-}
-
-unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* logForwarder, const Settings &settings)
+static unsigned int STDCALL threadProc(Data *data, SyncLogForwarder* logForwarder, const Settings &settings)
 {
     unsigned int result = 0;
 
@@ -206,4 +185,27 @@ unsigned int STDCALL ThreadExecutor::threadProc(Data *data, SyncLogForwarder* lo
         }
     }
     return result;
+}
+
+unsigned int ThreadExecutor::check()
+{
+    std::vector<std::future<unsigned int>> threadFutures;
+    threadFutures.reserve(mSettings.jobs);
+
+    Data data(mFiles, mSettings.project.fileSettings);
+    SyncLogForwarder logforwarder(*this, mErrorLogger);
+
+    for (unsigned int i = 0; i < mSettings.jobs; ++i) {
+        try {
+            threadFutures.emplace_back(std::async(std::launch::async, &threadProc, &data, &logforwarder, mSettings));
+        }
+        catch (const std::system_error &e) {
+            std::cerr << "#### ThreadExecutor::check exception :" << e.what() << std::endl;
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    return std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
+        return v + f.get();
+    });
 }
