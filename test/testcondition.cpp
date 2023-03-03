@@ -46,8 +46,8 @@ private:
 
     void run() override {
         // known platform..
-        PLATFORM(settings0, cppcheck::Platform::Native);
-        PLATFORM(settings1, cppcheck::Platform::Native);
+        PLATFORM(settings0.platform, cppcheck::Platform::Type::Native);
+        PLATFORM(settings1.platform, cppcheck::Platform::Type::Native);
 
         LOAD_LIB_2(settings0.library, "qt.cfg");
         settings0.libraries.emplace_back("qt");
@@ -5615,7 +5615,7 @@ private:
     void compareOutOfTypeRange() {
         Settings settingsUnix64;
         settingsUnix64.severity.enable(Severity::style);
-        PLATFORM(settingsUnix64, cppcheck::Platform::PlatformType::Unix64);
+        PLATFORM(settingsUnix64.platform, cppcheck::Platform::Type::Unix64);
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

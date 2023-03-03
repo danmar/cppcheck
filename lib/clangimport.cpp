@@ -1536,7 +1536,7 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
                 return v * dim.num;
             });
             if (var.valueType())
-                typeSize += mul * var.valueType()->typeSize(*settings, true);
+                typeSize += mul * var.valueType()->typeSize(settings->platform, true);
         }
         scope.definedType->sizeOf = typeSize;
     }
@@ -1544,7 +1544,7 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
     for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
             ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings, tokenizer->isCPP());
-            const int sz = vt.typeSize(*settings, true);
+            const int sz = vt.typeSize(settings->platform, true);
             if (sz <= 0)
                 continue;
             long long mul = 1;

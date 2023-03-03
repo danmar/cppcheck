@@ -478,12 +478,12 @@ private:
         simplecpp::TokenList tokens(istr, files, "test.c");
 
         // preprocess code with unix32 platform..
-        PLATFORM(settings, Settings::PlatformType::Unix32);
+        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix32);
         preprocessor.setPlatformInfo(&tokens);
         ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
 
         // preprocess code with unix64 platform..
-        PLATFORM(settings, Settings::PlatformType::Unix64);
+        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
         preprocessor.setPlatformInfo(&tokens);
         ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
     }

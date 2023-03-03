@@ -1860,8 +1860,8 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    if (mSettings->platformType == cppcheck::Platform::PlatformType::Native ||
-        mSettings->platformType == cppcheck::Platform::PlatformType::Unspecified)
+    if (mSettings->platform.type == cppcheck::Platform::Type::Native ||
+        mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1885,19 +1885,19 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                     bits = 1;
                     break;
                 case ValueType::Type::CHAR:
-                    bits = mSettings->char_bit;
+                    bits = mSettings->platform.char_bit;
                     break;
                 case ValueType::Type::SHORT:
-                    bits = mSettings->short_bit;
+                    bits = mSettings->platform.short_bit;
                     break;
                 case ValueType::Type::INT:
-                    bits = mSettings->int_bit;
+                    bits = mSettings->platform.int_bit;
                     break;
                 case ValueType::Type::LONG:
-                    bits = mSettings->long_bit;
+                    bits = mSettings->platform.long_bit;
                     break;
                 case ValueType::Type::LONGLONG:
-                    bits = mSettings->long_long_bit;
+                    bits = mSettings->platform.long_long_bit;
                     break;
                 default:
                     break;
@@ -1910,7 +1910,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                 long long typeMaxValue;
                 if (typeTok->valueType()->sign != ValueType::Sign::SIGNED)
                     typeMaxValue = unsignedTypeMaxValue;
-                else if (bits >= mSettings->int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
+                else if (bits >= mSettings->platform.int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
                     typeMaxValue = unsignedTypeMaxValue;
                 else
                     typeMaxValue = unsignedTypeMaxValue / 2;

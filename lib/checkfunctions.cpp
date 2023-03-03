@@ -564,8 +564,8 @@ void CheckFunctions::memsetInvalid2ndParam()
 
             if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
                 const long long int value = MathLib::toLongNumber(secondParamTok->str());
-                const long long sCharMin = mSettings->signedCharMin();
-                const long long uCharMax = mSettings->unsignedCharMax();
+                const long long sCharMin = mSettings->platform.signedCharMin();
+                const long long uCharMax = mSettings->platform.unsignedCharMax();
                 if (value < sCharMin || value > uCharMax)
                     memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
             }

@@ -216,7 +216,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
         Dimension dim;
         dim.known = value->isKnown();
         dim.tok = nullptr;
-        const int typeSize = array->valueType()->typeSize(*settings, array->valueType()->pointer > 1);
+        const int typeSize = array->valueType()->typeSize(settings->platform, array->valueType()->pointer > 1);
         if (typeSize == 0)
             return false;
         dim.num = value->intvalue / typeSize;
@@ -564,11 +564,11 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     v.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
 
     if (var->isPointerArray())
-        v.intvalue = dim * mSettings->sizeof_pointer;
+        v.intvalue = dim * mSettings->platform.sizeof_pointer;
     else if (var->isPointer())
         return ValueFlow::Value(-1);
     else {
-        const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
+        const MathLib::bigint typeSize = bufTok->valueType()->typeSize(mSettings->platform);
         v.intvalue = dim * typeSize;
     }
 
@@ -885,7 +885,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
     const CheckBufferOverrun *c = dynamic_cast<const CheckBufferOverrun *>(check);
     if (!c)
         return false;
-    if (!argtok->valueType() || argtok->valueType()->typeSize(*c->mSettings) == 0)
+    if (!argtok->valueType() || argtok->valueType()->typeSize(c->mSettings->platform) == 0)
         return false;
     const Token *indexTok = nullptr;
     if (type == 1 && Token::Match(argtok, "%name% [") && argtok->astParent() == argtok->next() && !Token::simpleMatch(argtok->linkAt(1), "] ["))
@@ -898,7 +898,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
         return false;
     if (!indexTok->hasKnownIntValue())
         return false;
-    *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(*c->mSettings);
+    *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(c->mSettings->platform);
     return true;
 }
 
@@ -1051,7 +1051,7 @@ void CheckBufferOverrun::objectIndex()
                         continue;
                 }
                 if (obj->valueType() && var->valueType() && (obj->isCast() || (mTokenizer->isCPP() && isCPPCast(obj)) || obj->valueType()->pointer)) { // allow cast to a different type
-                    const auto varSize = var->valueType()->typeSize(*mSettings);
+                    const auto varSize = var->valueType()->typeSize(mSettings->platform);
                     if (varSize == 0)
                         continue;
                     if (obj->valueType()->type != var->valueType()->type) {

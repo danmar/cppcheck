@@ -120,7 +120,7 @@ private:
 
     void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
-        PLATFORM(settings2, cppcheck::Platform::Unspecified);
+        PLATFORM(settings2.platform, cppcheck::Platform::Type::Unspecified);
 
         // If there are unused templates, keep those
         settings1.checkUnusedTemplates = true;
@@ -5473,18 +5473,18 @@ private:
         ASSERT(db->variableList().size() == 13); // the first one is not used
         const Variable * v;
         unsigned int id = 1;
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
         TEST(1);
         TEST(1);
-        TEST(settings1.sizeof_short);
-        TEST(settings1.sizeof_short);
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_long);
-        TEST(settings1.sizeof_long);
-        TEST(settings1.sizeof_long_long);
-        TEST(settings1.sizeof_long_long);
+        TEST(settings1.platform.sizeof_short);
+        TEST(settings1.platform.sizeof_short);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_long);
+        TEST(settings1.platform.sizeof_long);
+        TEST(settings1.platform.sizeof_long_long);
+        TEST(settings1.platform.sizeof_long_long);
     }
 
     void enum8() {
@@ -7617,14 +7617,14 @@ private:
         ASSERT_EQUALS("", ValueType().str());
 
         Settings s;
-        s.int_bit = 16;
-        s.long_bit = 32;
-        s.long_long_bit = 64;
+        s.platform.int_bit = 16;
+        s.platform.long_bit = 32;
+        s.platform.long_long_bit = 64;
 
         Settings sSameSize;
-        sSameSize.int_bit = 32;
-        sSameSize.long_bit = 64;
-        sSameSize.long_long_bit = 64;
+        sSameSize.platform.int_bit = 32;
+        sSameSize.platform.long_bit = 64;
+        sSameSize.platform.long_long_bit = 64;
 
         // numbers
         ASSERT_EQUALS("signed int", typeOf("1;", "1", "test.c", &s));
@@ -7888,8 +7888,8 @@ private:
             settings.library.mPodTypes["char8_t"] = char8;
             settings.library.mPodTypes["char16_t"] = char16;
             settings.library.mPodTypes["char32_t"] = char32;
-            settings.sizeof_short = 2;
-            settings.sizeof_int = 4;
+            settings.platform.sizeof_short = 2;
+            settings.platform.sizeof_int = 4;
 
             ASSERT_EQUALS("unsigned char", typeOf("u8'a';", "u8'a'", "test.cpp", &settings));
             ASSERT_EQUALS("unsigned short", typeOf("u'a';", "u'a'", "test.cpp", &settings));
@@ -7901,7 +7901,7 @@ private:
         {
             // PodType
             Settings settingsWin64;
-            settingsWin64.platformType = Settings::Win64;
+            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
             const Library::PodType u32 = { 4, 'u' };
             const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
@@ -7923,10 +7923,10 @@ private:
         {
             // PlatformType
             Settings settingsUnix32;
-            settingsUnix32.platformType = Settings::Unix32;
+            settingsUnix32.platform.type = cppcheck::Platform::Type::Unix32;
             Library::PlatformType s32;
             s32.mType = "int";
-            settingsUnix32.library.mPlatforms[settingsUnix32.platformString()].mPlatformTypes["s32"] = s32;
+            settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
@@ -7934,10 +7934,10 @@ private:
         {
             // PlatformType - wchar_t
             Settings settingsWin64;
-            settingsWin64.platformType = Settings::Win64;
+            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
             Library::PlatformType lpctstr;
             lpctstr.mType = "wchar_t";
-            settingsWin64.library.mPlatforms[settingsWin64.platformString()].mPlatformTypes["LPCTSTR"] = lpctstr;
+            settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);

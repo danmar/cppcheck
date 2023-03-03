@@ -936,9 +936,9 @@ static void setTokenValue(Token* tok,
                 tok->valueType()->sign == ValueType::Sign::UNSIGNED &&
                 tok->valueType()->pointer == 0) {
                 if (tok->valueType()->type == ValueType::Type::INT)
-                    bits = settings->int_bit;
+                    bits = settings->platform.int_bit;
                 else if (tok->valueType()->type == ValueType::Type::LONG)
-                    bits = settings->long_bit;
+                    bits = settings->platform.long_bit;
             }
             if (bits > 0 && bits < MathLib::bigint_bits)
                 v.intvalue &= (((MathLib::biguint)1)<<bits) - 1;
@@ -1024,15 +1024,15 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
     if (valueType.pointer || value.isImpossible())
         setTokenValue(parent,value,settings);
     else if (valueType.type == ValueType::Type::CHAR)
-        setTokenValue(parent, castValue(value, valueType.sign, settings->char_bit), settings);
+        setTokenValue(parent, castValue(value, valueType.sign, settings->platform.char_bit), settings);
     else if (valueType.type == ValueType::Type::SHORT)
-        setTokenValue(parent, castValue(value, valueType.sign, settings->short_bit), settings);
+        setTokenValue(parent, castValue(value, valueType.sign, settings->platform.short_bit), settings);
     else if (valueType.type == ValueType::Type::INT)
-        setTokenValue(parent, castValue(value, valueType.sign, settings->int_bit), settings);
+        setTokenValue(parent, castValue(value, valueType.sign, settings->platform.int_bit), settings);
     else if (valueType.type == ValueType::Type::LONG)
-        setTokenValue(parent, castValue(value, valueType.sign, settings->long_bit), settings);
+        setTokenValue(parent, castValue(value, valueType.sign, settings->platform.long_bit), settings);
     else if (valueType.type == ValueType::Type::LONGLONG)
-        setTokenValue(parent, castValue(value, valueType.sign, settings->long_long_bit), settings);
+        setTokenValue(parent, castValue(value, valueType.sign, settings->platform.long_long_bit), settings);
     else if (valueType.isFloat() && isNumeric(value)) {
         ValueFlow::Value floatValue = value;
         floatValue.valueType = ValueFlow::Value::ValueType::FLOAT;
@@ -1040,8 +1040,8 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
             floatValue.floatValue = value.intvalue;
         setTokenValue(parent, std::move(floatValue), settings);
     } else if (value.isIntValue()) {
-        const long long charMax = settings->signedCharMax();
-        const long long charMin = settings->signedCharMin();
+        const long long charMax = settings->platform.signedCharMax();
+        const long long charMin = settings->platform.signedCharMin();
         if (charMin <= value.intvalue && value.intvalue <= charMax) {
             // unknown type, but value is small so there should be no truncation etc
             setTokenValue(parent,value,settings);
@@ -1053,19 +1053,19 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
     const ValueType &valueType = ValueType::parseDecl(typeTok, settings, true); // TODO: set isCpp
     if (valueType.pointer > 0)
-        return settings->sizeof_pointer;
+        return settings->platform.sizeof_pointer;
     if (valueType.type == ValueType::Type::BOOL || valueType.type == ValueType::Type::CHAR)
         return 1;
     if (valueType.type == ValueType::Type::SHORT)
-        return settings->sizeof_short;
+        return settings->platform.sizeof_short;
     if (valueType.type == ValueType::Type::INT)
-        return settings->sizeof_int;
+        return settings->platform.sizeof_int;
     if (valueType.type == ValueType::Type::LONG)
-        return settings->sizeof_long;
+        return settings->platform.sizeof_long;
     if (valueType.type == ValueType::Type::LONGLONG)
-        return settings->sizeof_long_long;
+        return settings->platform.sizeof_long_long;
     if (valueType.type == ValueType::Type::WCHAR_T)
-        return settings->sizeof_wchar_t;
+        return settings->platform.sizeof_wchar_t;
 
     return 0;
 }
@@ -1073,25 +1073,25 @@ static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 {
     if (vt.pointer)
-        return settings->sizeof_pointer;
+        return settings->platform.sizeof_pointer;
     if (vt.type == ValueType::Type::CHAR)
         return 1;
     if (vt.type == ValueType::Type::SHORT)
-        return settings->sizeof_short;
+        return settings->platform.sizeof_short;
     if (vt.type == ValueType::Type::WCHAR_T)
-        return settings->sizeof_wchar_t;
+        return settings->platform.sizeof_wchar_t;
     if (vt.type == ValueType::Type::INT)
-        return settings->sizeof_int;
+        return settings->platform.sizeof_int;
     if (vt.type == ValueType::Type::LONG)
-        return settings->sizeof_long;
+        return settings->platform.sizeof_long;
     if (vt.type == ValueType::Type::LONGLONG)
-        return settings->sizeof_long_long;
+        return settings->platform.sizeof_long_long;
     if (vt.type == ValueType::Type::FLOAT)
-        return settings->sizeof_float;
+        return settings->platform.sizeof_float;
     if (vt.type == ValueType::Type::DOUBLE)
-        return settings->sizeof_double;
+        return settings->platform.sizeof_double;
     if (vt.type == ValueType::Type::LONGDOUBLE)
-        return settings->sizeof_long_double;
+        return settings->platform.sizeof_long_double;
 
     return 0;
 }
@@ -1108,7 +1108,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             const ValueType* vt = tok->valueType();
             if (vt && vt->sign == ValueType::UNSIGNED && signedValue < 0 && ValueFlow::getSizeOf(*vt, settings) < sizeof(MathLib::bigint)) {
                 MathLib::bigint minValue{}, maxValue{};
-                if (getMinMaxValues(tok->valueType(), *settings, minValue, maxValue))
+                if (getMinMaxValues(tok->valueType(), settings->platform, minValue, maxValue))
                     signedValue += maxValue + 1;
             }
             ValueFlow::Value value(signedValue);
@@ -1162,12 +1162,12 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             const size_t sz = vt ? ValueFlow::getSizeOf(*vt, settings) : 0;
             if (sz > 0) {
                 ValueFlow::Value value(sz);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
                     value.setKnown();
                 setTokenValue(tok->next(), std::move(value), settings);
             }
         } else if (tok2->enumerator() && tok2->enumerator()->scope) {
-            long long size = settings->sizeof_int;
+            long long size = settings->platform.sizeof_int;
             const Token * type = tok2->enumerator()->scope->enumType;
             if (type) {
                 size = getSizeOfType(type, settings);
@@ -1175,12 +1175,12 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                     tok->linkAt(1);
             }
             ValueFlow::Value value(size);
-            if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
+            if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
                 value.setKnown();
             setTokenValue(tok, value, settings);
             setTokenValue(tok->next(), std::move(value), settings);
         } else if (tok2->type() && tok2->type()->isEnumType()) {
-            long long size = settings->sizeof_int;
+            long long size = settings->platform.sizeof_int;
             if (tok2->type()->classScope) {
                 const Token * type = tok2->type()->classScope->enumType;
                 if (type) {
@@ -1188,7 +1188,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 }
             }
             ValueFlow::Value value(size);
-            if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
+            if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
                 value.setKnown();
             setTokenValue(tok, value, settings);
             setTokenValue(tok->next(), std::move(value), settings);
@@ -1205,7 +1205,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 sz1->variable()->dimensionKnown(0) &&
                 Token::Match(sz2->astOperand2(), "*|[") && Token::Match(sz2->astOperand2()->astOperand1(), "%varid%", varid1)) {
                 ValueFlow::Value value(sz1->variable()->dimension(0));
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
                     value.setKnown();
                 setTokenValue(tok->tokAt(4), std::move(value), settings);
             }
@@ -1216,7 +1216,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 // find the size of the type
                 size_t size = 0;
                 if (var->isEnumType()) {
-                    size = settings->sizeof_int;
+                    size = settings->platform.sizeof_int;
                     if (var->type()->classScope && var->type()->classScope->enumType)
                         size = getSizeOfType(var->type()->classScope->enumType, settings);
                 } else if (var->valueType()) {
@@ -1234,7 +1234,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 }
                 if (size && count > 0) {
                     ValueFlow::Value value(count * size);
-                    if (settings->platformType != cppcheck::Platform::Unspecified)
+                    if (settings->platform.type != cppcheck::Platform::Type::Unspecified)
                         value.setKnown();
                     setTokenValue(tok, value, settings);
                     setTokenValue(tok->next(), std::move(value), settings);
@@ -1256,9 +1256,9 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             else if (tok2->isUtf32())
                 sz = 4;
             else if (tok2->isLong())
-                sz = settings->sizeof_wchar_t;
+                sz = settings->platform.sizeof_wchar_t;
             else if ((tok2->isCChar() && !cpp) || (tok2->isCMultiChar()))
-                sz = settings->sizeof_int;
+                sz = settings->platform.sizeof_int;
             else
                 sz = 1;
 
@@ -1289,7 +1289,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             }
             if (sz > 0) {
                 ValueFlow::Value value(sz);
-                if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
+                if (!tok2->isTemplateArg() && settings->platform.type != cppcheck::Platform::Type::Unspecified)
                     value.setKnown();
                 setTokenValue(tok->next(), std::move(value), settings);
             }
@@ -1708,11 +1708,11 @@ static void valueFlowRightShift(TokenList *tokenList, const Settings* settings)
             (tok->astOperand1()->valueType()->type == ValueType::Type::WCHAR_T) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::BOOL) ||
             (tok->astOperand1()->valueType()->type == ValueType::Type::INT))
-            lhsbits = settings->int_bit;
+            lhsbits = settings->platform.int_bit;
         else if (tok->astOperand1()->valueType()->type == ValueType::Type::LONG)
-            lhsbits = settings->long_bit;
+            lhsbits = settings->platform.long_bit;
         else if (tok->astOperand1()->valueType()->type == ValueType::Type::LONGLONG)
-            lhsbits = settings->long_long_bit;
+            lhsbits = settings->platform.long_long_bit;
         else
             continue;
         if (rhsvalue >= lhsbits || rhsvalue >= MathLib::bigint_bits || (1ULL << rhsvalue) <= lhsmax)
@@ -8602,7 +8602,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             if (!typeTok || !typeTok->varId())
                 typeTok = newTok->astParent()->previous(); // hack for "int** z = ..."
             if (typeTok && typeTok->valueType()) {
-                const MathLib::bigint typeSize = typeTok->valueType()->typeSize(*settings, typeTok->valueType()->pointer > 1);
+                const MathLib::bigint typeSize = typeTok->valueType()->typeSize(settings->platform, typeTok->valueType()->pointer > 1);
                 if (typeSize >= 0)
                     sizeValue = numElem * typeSize;
             }
@@ -8705,7 +8705,7 @@ static bool getMinMaxValues(const std::string &typestr, const Settings *settings
     typeTokens.simplifyPlatformTypes();
     typeTokens.simplifyStdType();
     const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings, true); // TODO: set isCpp
-    return getMinMaxValues(&vt, *settings, minvalue, maxvalue);
+    return getMinMaxValues(&vt, settings->platform, minvalue, maxvalue);
 }
 
 static void valueFlowSafeFunctions(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
@@ -8718,7 +8718,7 @@ static void valueFlowSafeFunctions(TokenList* tokenlist, SymbolDatabase* symbold
             continue;
 
         const bool safe = function->isSafe(settings);
-        const bool all = safe && settings->platformType != cppcheck::Platform::PlatformType::Unspecified;
+        const bool all = safe && settings->platform.type != cppcheck::Platform::Type::Unspecified;
 
         for (const Variable &arg : function->argumentList) {
             if (!arg.nameToken() || !arg.valueType())
@@ -8753,7 +8753,7 @@ static void valueFlowSafeFunctions(TokenList* tokenlist, SymbolDatabase* symbold
 
             if ((!isLow || !isHigh) && all) {
                 MathLib::bigint minValue, maxValue;
-                if (getMinMaxValues(arg.valueType(), *settings, minValue, maxValue)) {
+                if (getMinMaxValues(arg.valueType(), settings->platform, minValue, maxValue)) {
                     if (!isLow)
                         low = minValue;
                     if (!isHigh)

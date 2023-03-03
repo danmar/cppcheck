@@ -1053,7 +1053,7 @@ private:
     settings.clang = true; \
     { \
         std::string errstr; \
-        ASSERT_EQUALS_MSG(true, settings.platform("unix64", errstr, {exename.c_str()}), errstr); \
+        ASSERT_EQUALS_MSG(true, settings.platform.set("unix64", errstr, {exename.c_str()}), errstr); \
     } \
     Tokenizer tokenizer(&settings, this); \
     { \

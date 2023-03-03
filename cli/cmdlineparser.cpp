@@ -608,7 +608,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                 std::string errstr;
                 const std::vector<std::string> paths = {argv[0]};
-                if (!mSettings->platform(platform, errstr, paths)) {
+                if (!mSettings->platform.set(platform, errstr, paths)) {
                     printError(errstr);
                     return false;
                 }
@@ -621,9 +621,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // these are loaded via external files and thus have Settings::PlatformFile set instead.
                 // override the type so they behave like the regular platforms.
                 if (platform == "unix32-unsigned")
-                    mSettings->platformType = Settings::Unix32;
+                    mSettings->platform.type = cppcheck::Platform::Type::Unix32;
                 else if (platform == "unix64-unsigned")
-                    mSettings->platformType = Settings::Unix64;
+                    mSettings->platform.type = cppcheck::Platform::Type::Unix64;
             }
 
             // Write results in results.plist
@@ -679,7 +679,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                         std::string errstr;
                         const std::vector<std::string> paths = {projectFile, argv[0]};
-                        if (!mSettings->platform(platform, errstr, paths)) {
+                        if (!mSettings->platform.set(platform, errstr, paths)) {
                             printError(errstr);
                             return false;
                         }
@@ -692,7 +692,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
                     if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")
-                        mSettings->project.selectOneVsConfig(mSettings->platformType);
+                        mSettings->project.selectOneVsConfig(mSettings->platform.type);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printError("failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");

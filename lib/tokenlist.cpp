@@ -1793,11 +1793,11 @@ void TokenList::simplifyPlatformTypes()
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
 
-    if (mSettings->sizeof_size_t == mSettings->sizeof_long)
+    if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long)
         type = isLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_long_long)
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long_long)
         type = isLongLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_int)
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_int)
         type = isInt;
     else
         return;
@@ -1850,7 +1850,7 @@ void TokenList::simplifyPlatformTypes()
         }
     }
 
-    const std::string platform_type(mSettings->platformString());
+    const std::string platform_type(mSettings->platform.toString());
 
     for (Token *tok = front(); tok; tok = tok->next()) {
         if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)

@@ -59,9 +59,9 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
 
     mIsCpp = isCPP();
 
-    if (mSettings->defaultSign == 's' || mSettings->defaultSign == 'S')
+    if (mSettings->platform.defaultSign == 's' || mSettings->platform.defaultSign == 'S')
         mDefaultSignedness = ValueType::SIGNED;
-    else if (mSettings->defaultSign == 'u' || mSettings->defaultSign == 'U')
+    else if (mSettings->platform.defaultSign == 'u' || mSettings->platform.defaultSign == 'U')
         mDefaultSignedness = ValueType::UNSIGNED;
     else
         mDefaultSignedness = ValueType::UNKNOWN_SIGN;
@@ -1701,19 +1701,19 @@ void SymbolDatabase::setArrayDimensionsUsingValueFlow()
                 int bits = 0;
                 switch (dimension.tok->valueType()->type) {
                 case ValueType::Type::CHAR:
-                    bits = mSettings->char_bit;
+                    bits = mSettings->platform.char_bit;
                     break;
                 case ValueType::Type::SHORT:
-                    bits = mSettings->short_bit;
+                    bits = mSettings->platform.short_bit;
                     break;
                 case ValueType::Type::INT:
-                    bits = mSettings->int_bit;
+                    bits = mSettings->platform.int_bit;
                     break;
                 case ValueType::Type::LONG:
-                    bits = mSettings->long_bit;
+                    bits = mSettings->platform.long_bit;
                     break;
                 case ValueType::Type::LONGLONG:
-                    bits = mSettings->long_long_bit;
+                    bits = mSettings->platform.long_long_bit;
                     break;
                 default:
                     break;
@@ -6020,7 +6020,7 @@ nonneg int SymbolDatabase::sizeOfType(const Token *type) const
     int size = mTokenizer->sizeOfType(type);
 
     if (size == 0 && type->type() && type->type()->isEnumType() && type->type()->classScope) {
-        size = mSettings->sizeof_int;
+        size = mSettings->platform.sizeof_int;
         const Token * enum_type = type->type()->classScope->enumType;
         if (enum_type)
             size = mTokenizer->sizeOfType(enum_type);
@@ -6828,18 +6828,18 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         pos -= 2;
                     } else break;
                 }
-                if (mSettings->platformType != cppcheck::Platform::Unspecified) {
-                    if (type <= ValueType::Type::INT && mSettings->isIntValue(unsignedSuffix ? (value >> 1) : value))
+                if (mSettings->platform.type != cppcheck::Platform::Type::Unspecified) {
+                    if (type <= ValueType::Type::INT && mSettings->platform.isIntValue(unsignedSuffix ? (value >> 1) : value))
                         type = ValueType::Type::INT;
-                    else if (type <= ValueType::Type::INT && !MathLib::isDec(tokStr) && mSettings->isIntValue(value >> 2)) {
+                    else if (type <= ValueType::Type::INT && !MathLib::isDec(tokStr) && mSettings->platform.isIntValue(value >> 2)) {
                         type = ValueType::Type::INT;
                         sign = ValueType::Sign::UNSIGNED;
-                    } else if (type <= ValueType::Type::LONG && mSettings->isLongValue(unsignedSuffix ? (value >> 1) : value))
+                    } else if (type <= ValueType::Type::LONG && mSettings->platform.isLongValue(unsignedSuffix ? (value >> 1) : value))
                         type = ValueType::Type::LONG;
-                    else if (type <= ValueType::Type::LONG && !MathLib::isDec(tokStr) && mSettings->isLongValue(value >> 2)) {
+                    else if (type <= ValueType::Type::LONG && !MathLib::isDec(tokStr) && mSettings->platform.isLongValue(value >> 2)) {
                         type = ValueType::Type::LONG;
                         sign = ValueType::Sign::UNSIGNED;
-                    } else if (mSettings->isLongLongValue(unsignedSuffix ? (value >> 1) : value))
+                    } else if (mSettings->platform.isLongLongValue(unsignedSuffix ? (value >> 1) : value))
                         type = ValueType::Type::LONGLONG;
                     else {
                         type = ValueType::Type::LONGLONG;
@@ -6919,7 +6919,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
-                if (mSettings->platformType == cppcheck::Platform::Win64)
+                if (mSettings->platform.type == cppcheck::Platform::Type::Win64)
                     valuetype.type = ValueType::Type::LONGLONG;
 
                 valuetype.originalTypeName = "size_t";
@@ -7185,7 +7185,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 ValueType ValueType::parseDecl(const Token *type, const Settings *settings, bool isCpp)
 {
     ValueType vt;
-    parsedecl(type, &vt, settings->defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings, isCpp);
+    parsedecl(type, &vt, settings->platform.defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings, isCpp);
     return vt;
 }
 
@@ -7218,13 +7218,13 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
     if (podtype && (podtype->sign == 's' || podtype->sign == 'u')) {
         if (podtype->size == 1)
             type = ValueType::Type::CHAR;
-        else if (podtype->size == settings->sizeof_int)
+        else if (podtype->size == settings->platform.sizeof_int)
             type = ValueType::Type::INT;
-        else if (podtype->size == settings->sizeof_short)
+        else if (podtype->size == settings->platform.sizeof_short)
             type = ValueType::Type::SHORT;
-        else if (podtype->size == settings->sizeof_long)
+        else if (podtype->size == settings->platform.sizeof_long)
             type = ValueType::Type::LONG;
-        else if (podtype->size == settings->sizeof_long_long)
+        else if (podtype->size == settings->platform.sizeof_long_long)
             type = ValueType::Type::LONGLONG;
         else if (podtype->stdtype == Library::PodType::Type::BOOL)
             type = ValueType::Type::BOOL;
@@ -7248,7 +7248,7 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
         return true;
     }
 
-    const Library::PlatformType *platformType = settings->library.platform_type(typestr, settings->platformString());
+    const Library::PlatformType *platformType = settings->library.platform_type(typestr, settings->platform.toString());
     if (platformType) {
         if (platformType->mType == "char")
             type = ValueType::Type::CHAR;
@@ -7274,11 +7274,11 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
     } else if (!podtype && (typestr == "size_t" || typestr == "std::size_t")) {
         originalTypeName = "size_t";
         sign = ValueType::UNSIGNED;
-        if (settings->sizeof_size_t == settings->sizeof_long)
+        if (settings->platform.sizeof_size_t == settings->platform.sizeof_long)
             type = ValueType::Type::LONG;
-        else if (settings->sizeof_size_t == settings->sizeof_long_long)
+        else if (settings->platform.sizeof_size_t == settings->platform.sizeof_long_long)
             type = ValueType::Type::LONGLONG;
-        else if (settings->sizeof_size_t == settings->sizeof_int)
+        else if (settings->platform.sizeof_size_t == settings->platform.sizeof_int)
             type = ValueType::Type::INT;
         else
             type = ValueType::Type::UNKNOWN_INT;

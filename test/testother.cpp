@@ -362,7 +362,7 @@ private:
 
     void checkInterlockedDecrement(const char code[]) {
         Settings settings;
-        settings.platformType = Settings::Win32A;
+        settings.platform.type = cppcheck::Platform::Type::Win32A;
 
         check(code, nullptr, false, false, true, false, &settings);
     }
@@ -1753,7 +1753,7 @@ private:
         if (portability)
             settings.severity.enable(Severity::portability);
         settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        settings.defaultSign = 's';
+        settings.platform.defaultSign = 's';
 
         Preprocessor preprocessor(settings, nullptr);
 
@@ -1997,7 +1997,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         Settings settings1;
-        PLATFORM(settings1, cppcheck::Platform::Win64);
+        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*experimental*/ false, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2143,12 +2143,12 @@ private:
                                 "void f(X x) {}";
 
             Settings s32(_settings);
-            PLATFORM(s32, cppcheck::Platform::Unix32);
+            PLATFORM(s32.platform, cppcheck::Platform::Type::Unix32);
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
             Settings s64(_settings);
-            PLATFORM(s64, cppcheck::Platform::Unix64);
+            PLATFORM(s64.platform, cppcheck::Platform::Type::Unix64);
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -6483,16 +6483,16 @@ private:
                                 "  bar( (flag) ? ~0u : ~0ul);\n"
                                 "}";
             Settings settings = _settings;
-            settings.sizeof_int = 4;
-            settings.int_bit = 32;
+            settings.platform.sizeof_int = 4;
+            settings.platform.int_bit = 32;
 
-            settings.sizeof_long = 4;
-            settings.long_bit = 32;
+            settings.platform.sizeof_long = 4;
+            settings.platform.long_bit = 32;
             check(code, &settings);
             ASSERT_EQUALS("[test.cpp:2]: (style) Same value in both branches of ternary operator.\n", errout.str());
 
-            settings.sizeof_long = 8;
-            settings.long_bit = 64;
+            settings.platform.sizeof_long = 8;
+            settings.platform.long_bit = 64;
             check(code, &settings);
             ASSERT_EQUALS("", errout.str());
         }
@@ -7425,7 +7425,7 @@ private:
 
         // #9040
         Settings settings1;
-        PLATFORM(settings1, cppcheck::Platform::Win64);
+        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"
