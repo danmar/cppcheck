@@ -267,7 +267,7 @@ struct ForwardTraversal {
         return result;
     }
 
-    Analyzer::Action analyzeRange(const Token* start, const Token* end) {
+    Analyzer::Action analyzeRange(const Token* start, const Token* end) const {
         Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
@@ -338,22 +338,22 @@ struct ForwardTraversal {
         Inconclusive,
     };
 
-    Analyzer::Action analyzeScope(const Token* endBlock) {
+    Analyzer::Action analyzeScope(const Token* endBlock) const {
         return analyzeRange(endBlock->link(), endBlock);
     }
 
-    Analyzer::Action checkScope(Token* endBlock) {
+    Analyzer::Action checkScope(Token* endBlock) const {
         Analyzer::Action a = analyzeScope(endBlock);
         tryForkUpdateScope(endBlock, a.isModified());
         return a;
     }
 
-    Analyzer::Action checkScope(const Token* endBlock) {
+    Analyzer::Action checkScope(const Token* endBlock) const {
         Analyzer::Action a = analyzeScope(endBlock);
         return a;
     }
 
-    bool checkBranch(Branch& branch) {
+    bool checkBranch(Branch& branch) const {
         Analyzer::Action a = analyzeScope(branch.endBlock);
         branch.action = a;
         std::vector<ForwardTraversal> ft1 = tryForkUpdateScope(branch.endBlock, a.isModified());

@@ -131,7 +131,7 @@ struct ReverseTraversal {
         return result;
     }
 
-    Analyzer::Action analyzeRange(const Token* start, const Token* end) {
+    Analyzer::Action analyzeRange(const Token* start, const Token* end) const {
         Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
