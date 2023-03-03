@@ -388,8 +388,7 @@ public:
      */
     bool configurationExcluded(const std::string &file) const {
         return std::any_of(configExcludePaths.begin(), configExcludePaths.end(), [&file](const std::string& path) {
-            return file.length() >= path.length() &&
-            file.compare(0, path.length(), path) == 0;
+            return file.length() >= path.length() && file.compare(0, path.length(), path) == 0;
         });
     }
 
