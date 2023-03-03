@@ -37,6 +37,7 @@
 #include <utility>
 #include <set>
 #include <stack>
+#include <unordered_set>
 
 #include <simplecpp.h>
 

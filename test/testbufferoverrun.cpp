@@ -36,8 +36,6 @@
 
 #include <simplecpp.h>
 
-#include <tinyxml2.h>
-
 class TestBufferOverrun : public TestFixture {
 public:
     TestBufferOverrun() : TestFixture("TestBufferOverrun") {}

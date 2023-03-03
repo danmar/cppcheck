@@ -34,8 +34,6 @@
 
 #include <simplecpp.h>
 
-#include <tinyxml2.h>
-
 class TestCondition : public TestFixture {
 public:
     TestCondition() : TestFixture("TestCondition") {}

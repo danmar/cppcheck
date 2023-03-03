@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <map>
@@ -39,8 +40,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <tinyxml2.h>
 
 struct InternalError;
 class TestSymbolDatabase;

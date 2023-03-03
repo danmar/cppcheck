@@ -33,8 +33,6 @@
 
 #include <simplecpp.h>
 
-#include <tinyxml2.h>
-
 class TestLeakAutoVarStrcpy;
 class TestLeakAutoVarWindows;
 struct InternalError;
