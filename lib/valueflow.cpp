@@ -380,7 +380,7 @@ const Token *ValueFlow::parseCompareInt(const Token *tok, ValueFlow::Value &true
     });
 }
 
-static bool isEscapeScope(const Token* tok, TokenList * tokenlist, const Settings* settings, bool unknown = false)
+static bool isEscapeScope(const Token* tok, const TokenList * tokenlist, const Settings* settings, bool unknown = false)
 {
     if (!Token::simpleMatch(tok, "{"))
         return false;
@@ -2335,9 +2335,7 @@ struct ValueFlowAnalyzer : Analyzer {
     const Settings* settings;
     ProgramMemoryState pms;
 
-    ValueFlowAnalyzer() : tokenlist(nullptr), pms(nullptr) {}
-
-    explicit ValueFlowAnalyzer(const TokenList* t, const Settings* s) : tokenlist(t), settings(s), pms(settings) {}
+    explicit ValueFlowAnalyzer(const TokenList* t = nullptr, const Settings* s = nullptr) : tokenlist(t), settings(s), pms(settings) {}
 
     virtual const ValueFlow::Value* getValue(const Token* tok) const = 0;
     virtual ValueFlow::Value* getValue(const Token* tok) = 0;
