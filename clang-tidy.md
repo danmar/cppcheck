@@ -91,10 +91,6 @@ We intentionally use this.
 
 Leads to lots of "false positives". This seem to enforce a coding guidelines of certain codebases.
 
-`readability-use-anyofallof`<br>
-
-We currently don't even apply our own `useStlAlgorithm` findings.
-
 `bugprone-easily-swappable-parameters`<br>
 
 This produces a lot of noise and they are not fixable that easily.
