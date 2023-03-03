@@ -95,7 +95,7 @@ private:
 
     void report(const ErrorMessage &msg, MessageType msgType)
     {
-        if (mThreadExecutor.mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
+        if (mThreadExecutor.mSettings.nomsg.isSuppressed(msg))
             return;
 
         // Alert only about unique errors
