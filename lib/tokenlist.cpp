@@ -1660,7 +1660,7 @@ struct OnException {
 void TokenList::validateAst() const
 {
     OnException oe{[&] {
-            if (mSettings->debugnormal)
+            if (mSettings && mSettings->debugnormal)
                 mTokensFrontBack.front->printOut();
         }};
     // Check for some known issues in AST to avoid crash/hang later on
@@ -1784,6 +1784,9 @@ bool TokenList::validateToken(const Token* tok) const
 
 void TokenList::simplifyPlatformTypes()
 {
+    if (!mSettings)
+        return;
+
     const bool isCPP11  = mSettings->standards.cpp >= Standards::CPP11;
 
     enum { isLongLong, isLong, isInt } type;
