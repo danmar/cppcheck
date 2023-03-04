@@ -30,8 +30,6 @@
 #include <string>
 #include <vector>
 
-#include <tinyxml2.h>
-
 
 class TestClass : public TestFixture {
 public:

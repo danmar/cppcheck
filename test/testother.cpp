@@ -35,7 +35,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-#include <tinyxml2.h>
 
 
 class TestOther : public TestFixture {

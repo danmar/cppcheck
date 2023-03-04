@@ -28,8 +28,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
-#include <tinyxml2.h>
-
 class TestFunctions : public TestFixture {
 public:
     TestFunctions() : TestFixture("TestFunctions") {}
