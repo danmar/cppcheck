@@ -37,11 +37,12 @@ private:
         TEST_CASE(valid_config_win32w);
         TEST_CASE(valid_config_unix32);
         TEST_CASE(valid_config_win64);
+        // TODO: test native and unspecified
         TEST_CASE(valid_config_file_1);
         TEST_CASE(valid_config_file_2);
-        TEST_CASE(valid_config_file_3);
         TEST_CASE(valid_config_file_4);
         TEST_CASE(invalid_config_file_1);
+        TEST_CASE(invalid_config_file_2);
         TEST_CASE(empty_elements);
         TEST_CASE(default_platform);
         TEST_CASE(limitsDefines);
@@ -210,6 +211,7 @@ private:
         // Similar to the avr8 platform file.
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<platform>\n"
+                                   "  <windows>false</windows>\n"
                                    "  <char_bit>8</char_bit>\n"
                                    "  <default-sign>unsigned</default-sign>\n"
                                    "  <sizeof>\n"
@@ -254,6 +256,7 @@ private:
         // char_bit > 8.
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<platform>\n"
+                                   "  <windows>true</windows>\n"
                                    "  <char_bit>20</char_bit>\n"
                                    "  <default-sign>signed</default-sign>\n"
                                    "  <sizeof>\n"
@@ -273,7 +276,7 @@ private:
         PlatformTest platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(Platform::Type::File, platform.type);
-        ASSERT(!platform.isWindows());
+        ASSERT(platform.isWindows());
         ASSERT_EQUALS(20, platform.char_bit);
         ASSERT_EQUALS('s', platform.defaultSign);
         ASSERT_EQUALS(1, platform.sizeof_bool);
@@ -293,11 +296,12 @@ private:
         ASSERT_EQUALS(100, platform.long_long_bit);
     }
 
-    void valid_config_file_3() const {
-        // Valid platform configuration without any usable information.
+    void invalid_config_file_2() const {
+        // Invalid platform configuration without any usable information.
         // Similar like an empty file.
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<platform>\n"
+                                   "  <windows1>true</windows1>\n"
                                    "  <char_bit1>8</char_bit1>\n"
                                    "  <default-sign1>unsigned</default-sign1>\n"
                                    "  <sizeof1>\n"
@@ -324,6 +328,7 @@ private:
         // set to 0.
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<platform>\n"
+                                   "  <windows>true</windows>\n"
                                    "  <char_bit>0</char_bit>\n"
                                    "  <default-sign>z</default-sign>\n"
                                    "  <sizeof>\n"
@@ -343,7 +348,7 @@ private:
         PlatformTest platform;
         ASSERT(readPlatform(platform, xmldata));
         ASSERT_EQUALS(Platform::Type::File, platform.type);
-        ASSERT(!platform.isWindows());
+        ASSERT(platform.isWindows());
         ASSERT_EQUALS(0, platform.char_bit);
         ASSERT_EQUALS('z', platform.defaultSign);
         ASSERT_EQUALS(0, platform.sizeof_bool);
@@ -367,6 +372,7 @@ private:
         // Invalid XML file: mismatching elements "boolt" vs "bool".
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<platform>\n"
+                                   "  <windows>false</windows>\n"
                                    "  <char_bit>8</char_bit>\n"
                                    "  <default-sign>unsigned</default-sign>\n"
                                    "  <sizeof>\n"
@@ -392,6 +398,7 @@ private:
         // Similar like an empty file.
         constexpr char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<platform>\n"
+                                   "  <windows></windows>\n"
                                    "  <char_bit></char_bit>\n"
                                    "  <default-sign></default-sign>\n"
                                    "  <sizeof>\n"
