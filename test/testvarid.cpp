@@ -2998,14 +2998,23 @@ private:
     }
 
     void varid_function_pointer_args() {
-        const char code[] = "void foo() {\n"
-                            "    char *text;\n"
-                            "    void (*cb)(char* text);\n"
-                            "}\n";
+        const char code1[] = "void foo() {\n"
+                             "    char *text;\n"
+                             "    void (*cb)(char* text);\n"
+                             "}\n";
         ASSERT_EQUALS("1: void foo ( ) {\n"
                       "2: char * text@1 ;\n"
                       "3: void ( * cb@2 ) ( char * ) ;\n"
-                      "4: }\n", tokenize(code));
+                      "4: }\n", tokenize(code1));
+
+        const char code2[] = "void foo() {\n"
+                             "    char *text;\n"
+                             "    void (*f)(int (*arg)(char* text));\n"
+                             "}\n";
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: char * text@1 ;\n"
+                      "3: void ( * f@2 ) ( int ( * arg ) ( char * ) ) ;\n"
+                      "4: }\n", tokenize(code2));
     }
 
     void varidclass1() {

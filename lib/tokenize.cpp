@@ -6168,11 +6168,22 @@ void Tokenizer::simplifyFunctionPointers()
             Token::eraseTokens(tok->link()->linkAt(1), endTok->next());
 
             // remove variable names
-            for (Token* tok3 = tok->link()->tokAt(2); Token::Match(tok3, "%name%|*|&|[|(|::|,|<"); tok3 = tok3->next()) {
+            int indent = 0;
+            for (Token* tok3 = tok->link()->tokAt(2); Token::Match(tok3, "%name%|*|&|[|(|)|::|,|<"); tok3 = tok3->next()) {
+                if (tok3->str() == ")" && --indent < 0)
+                    break;
                 if (tok3->str() == "<" && tok3->link())
                     tok3 = tok3->link();
-                else if (Token::Match(tok3, "[|("))
+                else if (Token::Match(tok3, "["))
                     tok3 = tok3->link();
+                else if (tok3->str() == "(") {
+                    tok3 = tok3->link();
+                    if (Token::simpleMatch(tok3, ") (")) {
+                        tok3 = tok3->next();
+                        ++indent;
+                    } else
+                        break;
+                }
                 if (Token::Match(tok3, "%type%|*|&|> %name% [,)[]"))
                     tok3->deleteNext();
             }
