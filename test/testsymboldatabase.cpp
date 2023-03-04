@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <map>
@@ -39,8 +40,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <tinyxml2.h>
 
 struct InternalError;
 class TestSymbolDatabase;
@@ -120,7 +119,7 @@ private:
 
     void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
-        PLATFORM(settings2, cppcheck::Platform::Unspecified);
+        PLATFORM(settings2.platform, cppcheck::Platform::Type::Unspecified);
 
         // If there are unused templates, keep those
         settings1.checkUnusedTemplates = true;
@@ -254,6 +253,7 @@ private:
         TEST_CASE(functionArgs16); // #9591
         TEST_CASE(functionArgs17);
         TEST_CASE(functionArgs18); // #10376
+        TEST_CASE(functionArgs19); // #10376
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -407,7 +407,6 @@ private:
         TEST_CASE(findFunction8);
         TEST_CASE(findFunction9);
         TEST_CASE(findFunction10); // #7673
-        TEST_CASE(findFunction11);
         TEST_CASE(findFunction12);
         TEST_CASE(findFunction13);
         TEST_CASE(findFunction14);
@@ -481,6 +480,7 @@ private:
 
         TEST_CASE(valueType1);
         TEST_CASE(valueType2);
+        TEST_CASE(valueType3);
         TEST_CASE(valueTypeThis);
 
         TEST_CASE(variadic1); // #7453
@@ -2669,6 +2669,15 @@ private:
         const Scope *scope = db->functionScopes.front();
         const Function *func = scope->function;
         ASSERT_EQUALS(2, func->argCount());
+    }
+
+    void functionArgs19() {
+        const char code[] = "void f(int (*fp)(int), int x, int y) {}";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        const Scope *scope = db->functionScopes.front();
+        const Function *func = scope->function;
+        ASSERT_EQUALS(3, func->argCount());
     }
 
     void functionImplicitlyVirtual() {
@@ -5463,18 +5472,18 @@ private:
         ASSERT(db->variableList().size() == 13); // the first one is not used
         const Variable * v;
         unsigned int id = 1;
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
         TEST(1);
         TEST(1);
-        TEST(settings1.sizeof_short);
-        TEST(settings1.sizeof_short);
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_long);
-        TEST(settings1.sizeof_long);
-        TEST(settings1.sizeof_long_long);
-        TEST(settings1.sizeof_long_long);
+        TEST(settings1.platform.sizeof_short);
+        TEST(settings1.platform.sizeof_short);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_long);
+        TEST(settings1.platform.sizeof_long);
+        TEST(settings1.platform.sizeof_long_long);
+        TEST(settings1.platform.sizeof_long_long);
     }
 
     void enum8() {
@@ -6072,21 +6081,6 @@ private:
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( const int p [ ] ) {");
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
-    }
-
-    void findFunction11() {
-        settings1.libraries.emplace_back("qt");
-        GET_SYMBOL_DB("class Fred : public QObject {\n"
-                      "    Q_OBJECT\n"
-                      "private slots:\n"
-                      "    void foo();\n"
-                      "};\n"
-                      "void Fred::foo() { }");
-        settings1.libraries.pop_back();
-        ASSERT_EQUALS("", errout.str());
-
-        const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( ) {");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
     }
 
     void findFunction12() {
@@ -7622,14 +7616,14 @@ private:
         ASSERT_EQUALS("", ValueType().str());
 
         Settings s;
-        s.int_bit = 16;
-        s.long_bit = 32;
-        s.long_long_bit = 64;
+        s.platform.int_bit = 16;
+        s.platform.long_bit = 32;
+        s.platform.long_long_bit = 64;
 
         Settings sSameSize;
-        sSameSize.int_bit = 32;
-        sSameSize.long_bit = 64;
-        sSameSize.long_long_bit = 64;
+        sSameSize.platform.int_bit = 32;
+        sSameSize.platform.long_bit = 64;
+        sSameSize.platform.long_long_bit = 64;
 
         // numbers
         ASSERT_EQUALS("signed int", typeOf("1;", "1", "test.c", &s));
@@ -7861,10 +7855,8 @@ private:
                                "<function name=\"g\">\n" \
                                "<returnValue type=\"" #type "\"/>\n" \
                                "</function>\n" \
-                               "</def>"; \
-        tinyxml2::XMLDocument doc; \
-        doc.Parse(xmldata, sizeof(xmldata)); \
-        sF.library.load(doc); \
+                               "</def>";              \
+        ASSERT(sF.library.loadxmldata(xmldata, sizeof(xmldata))); \
         ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", "test.cpp", &sF)); \
 } while (false)
         // *INDENT-OFF*
@@ -7895,8 +7887,8 @@ private:
             settings.library.mPodTypes["char8_t"] = char8;
             settings.library.mPodTypes["char16_t"] = char16;
             settings.library.mPodTypes["char32_t"] = char32;
-            settings.sizeof_short = 2;
-            settings.sizeof_int = 4;
+            settings.platform.sizeof_short = 2;
+            settings.platform.sizeof_int = 4;
 
             ASSERT_EQUALS("unsigned char", typeOf("u8'a';", "u8'a'", "test.cpp", &settings));
             ASSERT_EQUALS("unsigned short", typeOf("u'a';", "u'a'", "test.cpp", &settings));
@@ -7908,7 +7900,7 @@ private:
         {
             // PodType
             Settings settingsWin64;
-            settingsWin64.platformType = Settings::Win64;
+            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
             const Library::PodType u32 = { 4, 'u' };
             const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
@@ -7930,10 +7922,10 @@ private:
         {
             // PlatformType
             Settings settingsUnix32;
-            settingsUnix32.platformType = Settings::Unix32;
+            settingsUnix32.platform.type = cppcheck::Platform::Type::Unix32;
             Library::PlatformType s32;
             s32.mType = "int";
-            settingsUnix32.library.mPlatforms[settingsUnix32.platformString()].mPlatformTypes["s32"] = s32;
+            settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
@@ -7941,10 +7933,10 @@ private:
         {
             // PlatformType - wchar_t
             Settings settingsWin64;
-            settingsWin64.platformType = Settings::Win64;
+            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
             Library::PlatformType lpctstr;
             lpctstr.mType = "wchar_t";
-            settingsWin64.library.mPlatforms[settingsWin64.platformString()].mPlatformTypes["LPCTSTR"] = lpctstr;
+            settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
@@ -8112,6 +8104,43 @@ private:
             tok = Token::findsimplematch(tok, "it");
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("iterator(std :: map|unordered_map <)", tok->valueType()->str());
+        }
+    }
+
+    void valueType3() {
+        {
+            GET_SYMBOL_DB("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
+                          "    auto& s = v[i][j];\n"
+                          "    s.insert(0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "s .");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("container(std :: set|unordered_set <)", tok->valueType()->str());
+        }
+        {
+            GET_SYMBOL_DB("void f(std::vector<int> v) {\n"
+                          "    auto it = std::find(v.begin(), v.end(), 0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("iterator(std :: vector <)", tok->valueType()->str());
+        }
+        {
+            GET_SYMBOL_DB("void f(std::vector<int>::iterator beg, std::vector<int>::iterator end) {\n"
+                          "    auto it = std::find(beg, end, 0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("iterator(std :: vector <)", tok->valueType()->str());
         }
     }
 

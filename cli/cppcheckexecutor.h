@@ -114,7 +114,7 @@ public:
     /**
      * Execute a shell command and read the output from it. Returns true if command terminated successfully.
      */
-    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output_);
+    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
 
     static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
 
@@ -136,12 +136,6 @@ protected:
      * @return false when errors are found in the input
      */
     bool parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[]);
-
-    /**
-     * Helper function to supply settings. This can be used for testing.
-     * @param settings Reference to an Settings instance
-     */
-    void setSettings(const Settings &settings);
 
 private:
 
@@ -166,7 +160,7 @@ private:
     int check_internal(CppCheck& cppcheck);
 
     /**
-     * Pointer to current settings; set while check() is running.
+     * Pointer to current settings; set while check() is running for reportError().
      */
     const Settings* mSettings;
 

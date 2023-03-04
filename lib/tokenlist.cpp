@@ -37,6 +37,7 @@
 #include <utility>
 #include <set>
 #include <stack>
+#include <unordered_set>
 
 #include <simplecpp.h>
 
@@ -1400,6 +1401,24 @@ static Token * findAstTop(Token *tok1, Token *tok2)
 
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
+    // skip function pointer declaration
+    if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
+        const Token* type = tok;
+        while (Token::Match(type, "%type%|*|&|<")) {
+            if (type->str() == "<") {
+                if (type->link())
+                    type = type->link();
+                else
+                    break;
+            }
+            type = type->next();
+        }
+        if (Token::Match(type, "( * *| %var%") &&
+            Token::Match(type->link()->previous(), "%var%|] ) (") &&
+            Token::Match(type->link()->linkAt(1), ") [;,)]"))
+            return type->link()->linkAt(1)->next();
+    }
+
     if (Token::simpleMatch(tok, "for (")) {
         if (cpp && Token::Match(tok, "for ( const| auto &|&&| [")) {
             Token *decl = Token::findsimplematch(tok, "[");
@@ -1642,7 +1661,7 @@ struct OnException {
 void TokenList::validateAst() const
 {
     OnException oe{[&] {
-            if (mSettings->debugnormal)
+            if (mSettings && mSettings->debugnormal)
                 mTokensFrontBack.front->printOut();
         }};
     // Check for some known issues in AST to avoid crash/hang later on
@@ -1766,17 +1785,20 @@ bool TokenList::validateToken(const Token* tok) const
 
 void TokenList::simplifyPlatformTypes()
 {
+    if (!mSettings)
+        return;
+
     const bool isCPP11  = mSettings->standards.cpp >= Standards::CPP11;
 
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
 
-    if (mSettings->sizeof_size_t == mSettings->sizeof_long)
+    if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long)
         type = isLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_long_long)
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long_long)
         type = isLongLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_int)
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_int)
         type = isInt;
     else
         return;
@@ -1829,7 +1851,7 @@ void TokenList::simplifyPlatformTypes()
         }
     }
 
-    const std::string platform_type(mSettings->platformString());
+    const std::string platform_type(mSettings->platform.toString());
 
     for (Token *tok = front(); tok; tok = tok->next()) {
         if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)

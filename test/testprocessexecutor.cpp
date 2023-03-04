@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -56,10 +57,10 @@ private:
         settings.jobs = jobs;
         settings.showtime = showtime;
         ProcessExecutor executor(filemap, settings, *this);
-        std::vector<ScopedFile> scopedfiles;
+        std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
-            scopedfiles.emplace_back(i->first, data);
+            scopedfiles.emplace_back(new ScopedFile(i->first, data));
 
         ASSERT_EQUALS(result, executor.check());
     }

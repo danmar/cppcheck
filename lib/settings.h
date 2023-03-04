@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <list>
 #include <set>
@@ -95,7 +96,7 @@ public:
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
-class CPPCHECKLIB Settings : public cppcheck::Platform {
+class CPPCHECKLIB Settings {
 private:
 
     /** @brief terminate checking */
@@ -247,6 +248,8 @@ public:
 
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
+
+    cppcheck::Platform platform;
 
     /** @brief Experimental: --performance-valueflow-max-time=T */
     int performanceValueFlowMaxTime;
@@ -417,9 +420,9 @@ public:
      */
     bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
 
-    /** Is posix library specified? */
-    bool posix() const {
-        return std::find(libraries.cbegin(), libraries.cend(), "posix") != libraries.cend();
+    /** Is library specified? */
+    bool hasLib(const std::string &lib) const {
+        return std::find(libraries.cbegin(), libraries.cend(), lib) != libraries.cend();
     }
 
     /** @brief Request termination of checking */

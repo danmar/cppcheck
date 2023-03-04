@@ -267,7 +267,7 @@ struct ForwardTraversal {
         return result;
     }
 
-    Analyzer::Action analyzeRange(const Token* start, const Token* end) {
+    Analyzer::Action analyzeRange(const Token* start, const Token* end) const {
         Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
@@ -288,7 +288,7 @@ struct ForwardTraversal {
         return ft;
     }
 
-    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false) {
+    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false) const {
         if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = fork();
             return {std::move(ft)};
@@ -296,7 +296,7 @@ struct ForwardTraversal {
         return std::vector<ForwardTraversal> {};
     }
 
-    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) {
+    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) const {
         std::vector<ForwardTraversal> result = tryForkScope(endBlock, isModified);
         for (ForwardTraversal& ft : result)
             ft.updateScope(endBlock);
@@ -338,22 +338,22 @@ struct ForwardTraversal {
         Inconclusive,
     };
 
-    Analyzer::Action analyzeScope(const Token* endBlock) {
+    Analyzer::Action analyzeScope(const Token* endBlock) const {
         return analyzeRange(endBlock->link(), endBlock);
     }
 
-    Analyzer::Action checkScope(Token* endBlock) {
+    Analyzer::Action checkScope(Token* endBlock) const {
         Analyzer::Action a = analyzeScope(endBlock);
         tryForkUpdateScope(endBlock, a.isModified());
         return a;
     }
 
-    Analyzer::Action checkScope(const Token* endBlock) {
+    Analyzer::Action checkScope(const Token* endBlock) const {
         Analyzer::Action a = analyzeScope(endBlock);
         return a;
     }
 
-    bool checkBranch(Branch& branch) {
+    bool checkBranch(Branch& branch) const {
         Analyzer::Action a = analyzeScope(branch.endBlock);
         branch.action = a;
         std::vector<ForwardTraversal> ft1 = tryForkUpdateScope(branch.endBlock, a.isModified());

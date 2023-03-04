@@ -44,6 +44,7 @@
 #include <cstring>
 #include <cctype>
 #include <cstdlib>
+#include <ctime>
 #include <exception>
 #include <fstream>
 #include <iostream> // <- TEMPORARY
@@ -53,6 +54,7 @@
 #include <sstream> // IWYU pragma: keep
 #include <stdexcept>
 #include <string>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -301,13 +303,13 @@ static void createDumpFile(const Settings& settings,
     fdump << "<?xml version=\"1.0\"?>" << std::endl;
     fdump << "<dumps" << language << ">" << std::endl;
     fdump << "  <platform"
-          << " name=\"" << settings.platformString() << '\"'
-          << " char_bit=\"" << settings.char_bit << '\"'
-          << " short_bit=\"" << settings.short_bit << '\"'
-          << " int_bit=\"" << settings.int_bit << '\"'
-          << " long_bit=\"" << settings.long_bit << '\"'
-          << " long_long_bit=\"" << settings.long_long_bit << '\"'
-          << " pointer_bit=\"" << (settings.sizeof_pointer * settings.char_bit) << '\"'
+          << " name=\"" << settings.platform.toString() << '\"'
+          << " char_bit=\"" << settings.platform.char_bit << '\"'
+          << " short_bit=\"" << settings.platform.short_bit << '\"'
+          << " int_bit=\"" << settings.platform.int_bit << '\"'
+          << " long_bit=\"" << settings.platform.long_bit << '\"'
+          << " long_long_bit=\"" << settings.platform.long_long_bit << '\"'
+          << " pointer_bit=\"" << (settings.platform.sizeof_pointer * settings.platform.char_bit) << '\"'
           << "/>\n";
 }
 
@@ -315,7 +317,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &file,
                                 const std::string &premiumArgs,
-                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> &executeCommand)
+                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> &executeCommand)
 {
     const std::string redirect = "2>&1";
 
@@ -335,7 +337,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 #endif
         for (const char* py_exe : py_exes) {
             std::string out;
-            if (executeCommand(py_exe, split("--version"), redirect, &out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
+            if (executeCommand(py_exe, split("--version"), redirect, out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
                 pythonExe = py_exe;
                 break;
             }
@@ -355,7 +357,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     args += fileArg;
 
     std::string result;
-    if (!executeCommand(pythonExe, split(args), redirect, &result)) {
+    if (!executeCommand(pythonExe, split(args), redirect, result)) {
         std::string message("Failed to execute addon (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
         if (result.size() > 2) {
             message = message + "\n" + message + "\nOutput:\n" + result;
@@ -388,7 +390,7 @@ static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
 
 CppCheck::CppCheck(ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
-                   std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
+                   std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand)
     : mErrorLogger(errorLogger)
     , mExitCode(0)
     , mUseGlobalSuppressions(useGlobalSuppressions)
@@ -421,7 +423,7 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
-static bool reportClangErrors(std::istream &is, const std::function<void(const ErrorMessage&)>& reportErr, std::vector<ErrorMessage> *warnings)
+static bool reportClangErrors(std::istream &is, const std::function<void(const ErrorMessage&)>& reportErr, std::vector<ErrorMessage> &warnings)
 {
     std::string line;
     while (std::getline(is, line)) {
@@ -431,7 +433,7 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         std::string::size_type pos3 = line.find(": error: ");
         if (pos3 == std::string::npos)
             pos3 = line.find(": fatal error:");
-        if (warnings && pos3 == std::string::npos)
+        if (pos3 == std::string::npos)
             pos3 = line.find(": warning:");
         if (pos3 == std::string::npos)
             continue;
@@ -461,7 +463,7 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
                             Certainty::normal);
 
         if (line.compare(pos3, 10, ": warning:") == 0) {
-            warnings->push_back(std::move(errmsg));
+            warnings.push_back(std::move(errmsg));
             continue;
         }
 
@@ -510,7 +512,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         std::string output2;
-        if (!mExecuteCommand(exe,split(args2),redirect2,&output2) || output2.find("TranslationUnitDecl") == std::string::npos) {
+        if (!mExecuteCommand(exe,split(args2),redirect2,output2) || output2.find("TranslationUnitDecl") == std::string::npos) {
             std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
             return 0;
         }
@@ -522,14 +524,14 @@ unsigned int CppCheck::check(const std::string &path)
             auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
-            if (reportClangErrors(fin, reportError, &compilerWarnings))
+            if (reportClangErrors(fin, reportError, compilerWarnings))
                 return 0;
         } else {
             std::istringstream istr(output2);
             auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
-            if (reportClangErrors(istr, reportError, &compilerWarnings))
+            if (reportClangErrors(istr, reportError, compilerWarnings))
                 return 0;
         }
 
@@ -608,8 +610,8 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.standards.setCPP(fs.standard);
     else if (!fs.standard.empty())
         temp.mSettings.standards.setC(fs.standard);
-    if (fs.platformType != cppcheck::Platform::Unspecified)
-        temp.mSettings.platform(fs.platformType);
+    if (fs.platformType != cppcheck::Platform::Type::Unspecified)
+        temp.mSettings.platform.set(fs.platformType);
     if (mSettings.clang) {
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         return temp.check(Path::simplifyPath(fs.filename));
@@ -649,7 +651,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             for (const std::string &I : mSettings.includePaths)
                 includePaths += " -I" + I;
             mErrorLogger.reportOut("Includes:" + includePaths);
-            mErrorLogger.reportOut(std::string("Platform:") + mSettings.platformString());
+            mErrorLogger.reportOut(std::string("Platform:") + mSettings.platform.toString());
         }
     }
 
@@ -760,7 +762,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             // Calculate hash so it can be compared with old hash / future hashes
             const std::size_t hash = preprocessor.calculateHash(tokens1, toolinfo.str());
             std::list<ErrorMessage> errors;
-            if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, hash, &errors)) {
+            if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, hash, errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
                     errors.pop_front();
@@ -800,10 +802,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // Run define rules on raw code
-        for (const Settings::Rule &rule : mSettings.rules) {
-            if (rule.tokenlist != "define")
-                continue;
-
+        const auto it = std::find_if(mSettings.rules.cbegin(), mSettings.rules.cend(), [](const Settings::Rule& rule) {
+            return rule.tokenlist == "define";
+        });
+        if (it != mSettings.rules.cend()) {
             std::string code;
             const std::list<Directive> &directives = preprocessor.getDirectives();
             for (const Directive &dir : directives) {
@@ -814,7 +816,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             std::istringstream istr2(code);
             tokenizer2.list.createTokens(istr2);
             executeRules("define", tokenizer2);
-            break;
         }
 
         if (!mSettings.force && configurations.size() > mSettings.maxConfigs) {
@@ -871,8 +872,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 continue;
             }
 
-            Tokenizer tokenizer(&mSettings, this);
-            tokenizer.setPreprocessor(&preprocessor);
+            Tokenizer tokenizer(&mSettings, this, &preprocessor);
             if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_NONE)
                 tokenizer.setTimerResults(&s_timerResults);
 
@@ -1615,6 +1615,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (!mSettings.buildDir.empty())
         mAnalyzerInformation.reportErr(msg);
 
+    // TODO: only convert if necessary
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
     if (mUseGlobalSuppressions) {
@@ -1653,8 +1654,7 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
 
 void CppCheck::reportInfo(const ErrorMessage &msg)
 {
-    const Suppressions::ErrorMessage &errorMessage = msg.toSuppressionsErrorMessage();
-    if (!mSettings.nomsg.isSuppressed(errorMessage))
+    if (!mSettings.nomsg.isSuppressed(msg))
         mErrorLogger.reportInfo(msg);
 }
 
@@ -1699,7 +1699,7 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
     std::string output;
-    if (!mExecuteCommand(exe, split(args), emptyString, &output)) {
+    if (!mExecuteCommand(exe, split(args), emptyString, output)) {
         std::cerr << "Failed to execute '" << exe << "'" << std::endl;
         return;
     }

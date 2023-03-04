@@ -28,6 +28,7 @@
 #include "valueflow.h"
 #include "vfvalue.h"
 
+#include <algorithm>
 #include <cctype>
 #include <climits>
 #include <cstdlib>
@@ -952,10 +953,10 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
     return false;
 }
 
-std::string Library::getFunctionName(const Token *ftok, bool *error) const
+std::string Library::getFunctionName(const Token *ftok, bool &error) const
 {
     if (!ftok) {
-        *error = true;
+        error = true;
         return "";
     }
     if (ftok->isName()) {
@@ -979,13 +980,13 @@ std::string Library::getFunctionName(const Token *ftok, bool *error) const
     if (ftok->str() == "." && ftok->astOperand1()) {
         const std::string type = astCanonicalType(ftok->astOperand1());
         if (type.empty()) {
-            *error = true;
+            error = true;
             return "";
         }
 
         return type + "::" + getFunctionName(ftok->astOperand2(),error);
     }
-    *error = true;
+    error = true;
     return "";
 }
 
@@ -998,7 +999,7 @@ std::string Library::getFunctionName(const Token *ftok) const
     if (ftok->astParent()) {
         bool error = false;
         const Token * tok = ftok->astParent()->isUnaryOp("&") ? ftok->astParent()->astOperand1() : ftok->next()->astOperand1();
-        const std::string ret = getFunctionName(tok, &error);
+        const std::string ret = getFunctionName(tok, error);
         return error ? std::string() : ret;
     }
 

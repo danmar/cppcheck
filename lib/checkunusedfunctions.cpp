@@ -35,8 +35,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <fstream> // IWYU pragma: keep
+#include <map>
 #include <memory>
 #include <sstream> // IWYU pragma: keep
+#include <tuple>
 #include <utility>
 #include <vector>
 

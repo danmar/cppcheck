@@ -20,11 +20,14 @@
 
 #include "path.h"
 
+#include <cstdio>
+#include <stdexcept>
+#include <utility>
+
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <unistd.h>
 #endif
 

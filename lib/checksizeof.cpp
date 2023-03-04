@@ -26,6 +26,8 @@
 #include "token.h"
 #include "tokenize.h"
 
+#include <algorithm>
+#include <iterator>
 #include <map>
 #include <vector>
 

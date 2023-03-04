@@ -121,7 +121,7 @@ namespace {
 
 void CheckIO::checkFileUsage()
 {
-    const bool windows = mSettings->isWindowsPlatform();
+    const bool windows = mSettings->platform.isWindows();
     const bool printPortability = mSettings->severity.isEnabled(Severity::portability);
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
@@ -517,7 +517,7 @@ static inline bool typesMatch(const std::string& iToTest, const std::string& iTy
 void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const bool isWindows = mSettings->isWindowsPlatform();
+    const bool isWindows = mSettings->platform.isWindows();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -590,7 +590,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 const bool scan,
                                 const bool scanf_s)
 {
-    const bool isWindows = mSettings->isWindowsPlatform();
+    const bool isWindows = mSettings->platform.isWindows();
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
     const std::string &formatString = formatStringTok->str();
 
@@ -1483,12 +1483,12 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                 tempToken->linenr(tok1->linenr());
                 if (tok1->next()->str() == "size") {
                     // size_t is platform dependent
-                    if (settings->sizeof_size_t == 8) {
+                    if (settings->platform.sizeof_size_t == 8) {
                         tempToken->str("long");
-                        if (settings->sizeof_long != 8)
+                        if (settings->platform.sizeof_long != 8)
                             tempToken->isLong(true);
-                    } else if (settings->sizeof_size_t == 4) {
-                        if (settings->sizeof_long == 4) {
+                    } else if (settings->platform.sizeof_size_t == 4) {
+                        if (settings->platform.sizeof_long == 4) {
                             tempToken->str("long");
                         } else {
                             tempToken->str("int");

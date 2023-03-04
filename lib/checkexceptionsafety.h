@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
 #include "tokenize.h"
 
 #include <string>

@@ -28,8 +28,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
-#include <tinyxml2.h>
-
 class TestFunctions : public TestFixture {
 public:
     TestFunctions() : TestFixture("TestFunctions") {}
@@ -43,11 +41,11 @@ private:
         settings.severity.enable(Severity::performance);
         settings.severity.enable(Severity::portability);
         settings.certainty.enable(Certainty::inconclusive);
-        settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         // Prohibited functions
         TEST_CASE(prohibitedFunctions_posix);
@@ -1313,9 +1311,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings2.library.load(doc);
+        ASSERT(settings2.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
@@ -1468,9 +1464,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings2.library.load(doc);
+        ASSERT(settings2.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
@@ -1966,12 +1960,35 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S {\n" // #11543
+              "    S() {}\n"
+              "    std::vector<std::shared_ptr<S>> v;\n"
+              "    void f(int i) const;\n"
+              "};\n"
+              "void S::f(int i) const {\n"
+              "    for (const std::shared_ptr<S>& c : v)\n"
+              "        c->f(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("namespace N {\n"
               "    struct S { static const std::set<std::string> s; };\n"
               "}\n"
               "void f() {\n"
               "    const auto& t = N::S::s;\n"
               "    if (t.find(\"abc\") != t.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
+              "    auto& s = v[i][j];\n"
+              "    s.insert(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<std::string>& v, int i, char c) {\n"
+              "    const auto& s = v[i];\n"
+              "    return s.find(c);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 

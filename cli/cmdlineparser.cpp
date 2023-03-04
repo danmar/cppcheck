@@ -37,11 +37,14 @@
 #include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <set>
 #include <sstream> // IWYU pragma: keep
+#include <stdexcept>
+#include <unordered_set>
 #include <utility>
 
 #ifdef HAVE_RULES
@@ -78,7 +81,7 @@ static bool addFilesToList(const std::string& fileList, std::vector<std::string>
     return true;
 }
 
-static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
+static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>& pathNames)
 {
     std::ifstream files(fileList);
     if (files) {
@@ -93,7 +96,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
                 if (!endsWith(pathName, '/'))
                     pathName += '/';
 
-                pathNames->emplace_back(std::move(pathName));
+                pathNames.emplace_back(std::move(pathName));
             }
         }
         return true;
@@ -101,12 +104,12 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
     return false;
 }
 
-static bool addPathsToSet(const std::string& fileName, std::set<std::string>* set)
+static bool addPathsToSet(const std::string& fileName, std::set<std::string>& set)
 {
     std::list<std::string> templist;
-    if (!addIncludePathsToList(fileName, &templist))
+    if (!addIncludePathsToList(fileName, templist))
         return false;
-    set->insert(templist.cbegin(), templist.cend());
+    set.insert(templist.cbegin(), templist.cend());
     return true;
 }
 
@@ -276,7 +279,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
                 // open this file and read every input file (1 file name per line)
                 const std::string cfgExcludesFile(23 + argv[i]);
-                if (!addPathsToSet(cfgExcludesFile, &mSettings->configExcludePaths)) {
+                if (!addPathsToSet(cfgExcludesFile, mSettings->configExcludePaths)) {
                     printError("unable to open config excludes file at '" + cfgExcludesFile + "'");
                     return false;
                 }
@@ -465,7 +468,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
                 // open this file and read every input file (1 file name per line)
                 const std::string includesFile(16 + argv[i]);
-                if (!addIncludePathsToList(includesFile, &mSettings->includePaths)) {
+                if (!addIncludePathsToList(includesFile, mSettings->includePaths)) {
                     printError("unable to open includes file at '" + includesFile + "'");
                     return false;
                 }
@@ -605,7 +608,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                 std::string errstr;
                 const std::vector<std::string> paths = {argv[0]};
-                if (!mSettings->platform(platform, errstr, paths)) {
+                if (!mSettings->platform.set(platform, errstr, paths)) {
                     printError(errstr);
                     return false;
                 }
@@ -618,9 +621,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // these are loaded via external files and thus have Settings::PlatformFile set instead.
                 // override the type so they behave like the regular platforms.
                 if (platform == "unix32-unsigned")
-                    mSettings->platformType = Settings::Unix32;
+                    mSettings->platform.type = cppcheck::Platform::Type::Unix32;
                 else if (platform == "unix64-unsigned")
-                    mSettings->platformType = Settings::Unix64;
+                    mSettings->platform.type = cppcheck::Platform::Type::Unix64;
             }
 
             // Write results in results.plist
@@ -676,7 +679,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                         std::string errstr;
                         const std::vector<std::string> paths = {projectFile, argv[0]};
-                        if (!mSettings->platform(platform, errstr, paths)) {
+                        if (!mSettings->platform.set(platform, errstr, paths)) {
                             printError(errstr);
                             return false;
                         }
@@ -689,7 +692,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
                     if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")
-                        mSettings->project.selectOneVsConfig(mSettings->platformType);
+                        mSettings->project.selectOneVsConfig(mSettings->platform.type);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printError("failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
@@ -1133,8 +1136,7 @@ void CmdLineParser::printHelp()
         "                                  to only enable this when the whole program is\n"
         "                                  scanned.\n"
         "                          * missingInclude\n"
-        "                                  Warn if there are missing includes. For\n"
-        "                                  detailed information, use '--check-config'.\n"
+        "                                  Warn if there are missing includes.\n"
         "                         Several ids can be given if you separate them with\n"
         "                         commas. See also --std\n"
         "    --error-exitcode=<n> If errors are found, integer [n] is returned instead of\n"

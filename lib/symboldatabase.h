@@ -28,6 +28,7 @@
 #include "sourcelocation.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iosfwd>
 #include <list>
@@ -225,7 +226,7 @@ class CPPCHECKLIB Variable {
      * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings, bool* isContainer);
+    bool arrayDimensions(const Settings* settings, bool& isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,

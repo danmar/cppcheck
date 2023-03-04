@@ -97,6 +97,7 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
     "return"
 };
 
+// TODO: replace with Keywords::getX()?
 // Another list of keywords
 static const std::unordered_set<std::string> baseKeywords = {
     "asm",
@@ -2153,7 +2154,8 @@ bool Token::addValue(const ValueFlow::Value &value)
         ValueFlow::Value v(value);
         if (v.varId == 0)
             v.varId = mImpl->mVarId;
-        mImpl->mValues = new std::list<ValueFlow::Value>(1, v);
+        mImpl->mValues = new std::list<ValueFlow::Value>;
+        mImpl->mValues->push_back(std::move(v));
     }
 
     removeContradictions(*mImpl->mValues);
@@ -2264,6 +2266,12 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                 tok2 = tok2->tokAt(2);
             if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=") && tok != tok2->astOperand2()) {
                 tok2 = tok2->astOperand2();
+
+                if (Token::simpleMatch(tok2, "[") && tok2->astOperand1()) {
+                    const ValueType* vt = tok2->astOperand1()->valueType();
+                    if (vt && vt->containerTypeToken)
+                        return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+                }
 
                 const Token* varTok = tok2; // try to find a variable
                 if (Token::Match(varTok, ":: %name%"))
@@ -2488,13 +2496,13 @@ void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
     }
 }
 
-bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const
+bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const
 {
     struct CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)
-        *value = attr->value;
+        value = attr->value;
     return attr != nullptr;
 }
 

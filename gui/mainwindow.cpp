@@ -257,11 +257,11 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const cppcheck::Platform::PlatformType defaultPlatform = cppcheck::Platform::Win32W;
+    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Win32W;
 #else
-    const cppcheck::Platform::PlatformType defaultPlatform = cppcheck::Platform::Unspecified;
+    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((cppcheck::Platform::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    Platform &platform = mPlatforms.get((cppcheck::Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
 
     mNetworkAccessManager = new QNetworkAccessManager(this);
@@ -477,7 +477,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            const cppcheck::Platform::PlatformType platform = (cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             p.selectOneVsConfig(platform);
         }
     } else {
@@ -941,12 +941,12 @@ Settings MainWindow::getCppcheckSettings()
         const QString platform = mProjectFile->getPlatform();
         if (platform.endsWith(".xml")) {
             const QString applicationFilePath = QCoreApplication::applicationFilePath();
-            result.loadPlatformFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
+            result.platform.loadFromFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
         } else {
-            for (int i = cppcheck::Platform::Native; i <= cppcheck::Platform::Unix64; i++) {
-                const cppcheck::Platform::PlatformType p = (cppcheck::Platform::PlatformType)i;
-                if (platform == cppcheck::Platform::platformString(p)) {
-                    result.platform(p);
+            for (int i = cppcheck::Platform::Type::Native; i <= cppcheck::Platform::Type::Unix64; i++) {
+                const cppcheck::Platform::Type p = (cppcheck::Platform::Type)i;
+                if (platform == cppcheck::Platform::toString(p)) {
+                    result.platform.set(p);
                     break;
                 }
             }
@@ -1029,8 +1029,8 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
-    if (!mProjectFile || result.platformType == cppcheck::Platform::Unspecified)
-        result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
+    if (!mProjectFile || result.platform.type == cppcheck::Platform::Type::Unspecified)
+        result.platform.set((cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
@@ -1908,7 +1908,7 @@ void MainWindow::selectPlatform()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
-        const cppcheck::Platform::PlatformType platform = (cppcheck::Platform::PlatformType) action->data().toInt();
+        const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
 }

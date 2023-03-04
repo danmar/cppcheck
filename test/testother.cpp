@@ -26,6 +26,7 @@
 #include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -34,7 +35,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-#include <tinyxml2.h>
 
 
 class TestOther : public TestFixture {
@@ -306,8 +306,10 @@ private:
         settings->certainty.setEnabled(Certainty::experimental, experimental);
         settings->verbose = verbose;
 
+        Preprocessor preprocessor(*settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
@@ -349,18 +351,17 @@ private:
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Check..
         runChecks<CheckOther>(&tokenizer, settings, this);
     }
 
     void checkInterlockedDecrement(const char code[]) {
-        static Settings settings;
-        settings.platformType = Settings::Win32A;
+        Settings settings;
+        settings.platform.type = cppcheck::Platform::Type::Win32A;
 
         check(code, nullptr, false, false, true, false, &settings);
     }
@@ -1543,12 +1544,14 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        static Settings settings;
+        Settings settings;
         settings.severity.enable(Severity::style);
         settings.standards.cpp = Standards::CPP03; // #5560
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizerCpp(&settings, this);
+        Tokenizer tokenizerCpp(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizerCpp.tokenize(istr, "test.cpp"), file, line);
 
@@ -1749,10 +1752,12 @@ private:
         if (portability)
             settings.severity.enable(Severity::portability);
         settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        settings.platform.defaultSign = 's';
 
-        settings.defaultSign = 's';
+        Preprocessor preprocessor(settings, nullptr);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -1991,7 +1996,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         Settings settings1;
-        PLATFORM(settings1, cppcheck::Platform::Win64);
+        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*experimental*/ false, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2137,12 +2142,12 @@ private:
                                 "void f(X x) {}";
 
             Settings s32(_settings);
-            PLATFORM(s32, cppcheck::Platform::Unix32);
+            PLATFORM(s32.platform, cppcheck::Platform::Type::Unix32);
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
             Settings s64(_settings);
-            PLATFORM(s64, cppcheck::Platform::Unix64);
+            PLATFORM(s64.platform, cppcheck::Platform::Type::Unix64);
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -5891,9 +5896,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"
@@ -6479,16 +6482,16 @@ private:
                                 "  bar( (flag) ? ~0u : ~0ul);\n"
                                 "}";
             Settings settings = _settings;
-            settings.sizeof_int = 4;
-            settings.int_bit = 32;
+            settings.platform.sizeof_int = 4;
+            settings.platform.int_bit = 32;
 
-            settings.sizeof_long = 4;
-            settings.long_bit = 32;
+            settings.platform.sizeof_long = 4;
+            settings.platform.long_bit = 32;
             check(code, &settings);
             ASSERT_EQUALS("[test.cpp:2]: (style) Same value in both branches of ternary operator.\n", errout.str());
 
-            settings.sizeof_long = 8;
-            settings.long_bit = 64;
+            settings.platform.sizeof_long = 8;
+            settings.platform.long_bit = 64;
             check(code, &settings);
             ASSERT_EQUALS("", errout.str());
         }
@@ -7421,7 +7424,7 @@ private:
 
         // #9040
         Settings settings1;
-        PLATFORM(settings1, cppcheck::Platform::Win64);
+        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"

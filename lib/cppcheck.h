@@ -32,7 +32,6 @@
 #include <cstddef>
 #include <fstream> // IWYU pragma: keep
 #include <functional>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
@@ -56,7 +55,7 @@ public:
      */
     CppCheck(ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
-             std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand);
+             std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand);
 
     /**
      * @brief Destructor.
@@ -241,7 +240,7 @@ private:
     AnalyzerInformation mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
-    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> mExecuteCommand;
+    std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> mExecuteCommand;
 
     std::ofstream mPlistFile;
 };

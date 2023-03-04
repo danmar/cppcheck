@@ -6272,6 +6272,16 @@ private:
                         "    h.e();\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11597
+        valueFlowUninit("void f(size_t f) {\n"
+                        "    struct {\n"
+                        "        int i;\n"
+                        "        enum { offset = 1062 };\n"
+                        "    } s;\n"
+                        "    if (f < s.offset + sizeof(s)) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {

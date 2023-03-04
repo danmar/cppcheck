@@ -34,7 +34,7 @@ private:
     Settings settings;
 
     void run() override {
-        PLATFORM(settings, Settings::Unspecified);
+        PLATFORM(settings.platform, cppcheck::Platform::Type::Unspecified);
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
 

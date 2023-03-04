@@ -43,6 +43,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <utility>
 #include <fcntl.h>
 
 
@@ -168,7 +169,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
             std::exit(EXIT_FAILURE);
         }
 
-        if (!mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage())) {
+        if (!mSettings.nomsg.isSuppressed(msg)) {
             // Alert only about unique errors
             std::string errmsg = msg.toString(mSettings.verbose);
             if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
@@ -375,7 +376,7 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
                               "cppcheckError",
                               Certainty::normal);
 
-    if (!mSettings.nomsg.isSuppressed(errmsg.toSuppressionsErrorMessage()))
+    if (!mSettings.nomsg.isSuppressed(errmsg))
         mErrorLogger.reportErr(errmsg);
 }
 

@@ -249,7 +249,7 @@ private:
                                "  <location file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
                                "</error>";
         tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
+        ASSERT(doc.Parse(xmldata, sizeof(xmldata)) == tinyxml2::XML_SUCCESS);
         ErrorMessage msg(doc.FirstChildElement());
         ASSERT_EQUALS("errorId", msg.id);
         ASSERT_EQUALS(Severity::error, msg.severity);

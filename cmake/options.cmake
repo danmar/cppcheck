@@ -38,7 +38,6 @@ endif()
 option(BUILD_TESTS          "Build tests"                                                   OFF)
 option(REGISTER_TESTS       "Register tests in CTest"                                       ON)
 option(ENABLE_CHECK_INTERNAL "Enable internal checks"                                       OFF)
-option(ENABLE_OSS_FUZZ      "Enable the OSS-Fuzz related targets"                           ON)
 
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(WITH_QCHART          "Enable QtCharts usage in the GUI"                              OFF)
