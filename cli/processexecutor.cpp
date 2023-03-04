@@ -169,16 +169,11 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
             std::exit(EXIT_FAILURE);
         }
 
-        if (!mSettings.nomsg.isSuppressed(msg)) {
-            // Alert only about unique errors
-            std::string errmsg = msg.toString(mSettings.verbose);
-            if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
-                mErrorList.emplace_back(std::move(errmsg));
-                if (type == PipeWriter::REPORT_ERROR)
-                    mErrorLogger.reportErr(msg);
-                else
-                    mErrorLogger.reportInfo(msg);
-            }
+        if (hasToLog(msg)) {
+            if (type == PipeWriter::REPORT_ERROR)
+                mErrorLogger.reportErr(msg);
+            else
+                mErrorLogger.reportInfo(msg);
         }
     } else if (type == PipeWriter::CHILD_END) {
         std::istringstream iss(buf);

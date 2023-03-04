@@ -22,10 +22,12 @@
 #include <cstddef>
 #include <list>
 #include <map>
+#include <mutex>
 #include <string>
 
 class Settings;
 class ErrorLogger;
+class ErrorMessage;
 
 /// @addtogroup CLI
 /// @{
@@ -45,9 +47,19 @@ public:
     virtual unsigned int check() = 0;
 
 protected:
+    /**
+     * @brief Check if message is being suppressed and unique.
+     * @param msg the message to check
+     * @return true if message is not suppressed and unique
+     */
+    bool hasToLog(const ErrorMessage &msg);
+
     const std::map<std::string, std::size_t> &mFiles;
     Settings &mSettings;
     ErrorLogger &mErrorLogger;
+
+private:
+    std::mutex mErrorListSync;
     std::list<std::string> mErrorList;
 };
 

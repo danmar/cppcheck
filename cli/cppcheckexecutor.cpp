@@ -345,6 +345,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
             }
         }
 
+        // TODO: not performed when multiple jobs are being used
         // second loop to parse all markup files which may not work until all
         // c/cpp files have been parsed and checked
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
@@ -462,6 +463,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
         oss << fileindex << '/' << filecount
             << " files checked " << percentDone
             << "% done";
+        // TODO: do not unconditionally print in color
         std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
     }
 }
