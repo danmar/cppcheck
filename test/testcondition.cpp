@@ -39,14 +39,10 @@ public:
     TestCondition() : TestFixture("TestCondition") {}
 
 private:
-    Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).build();
-    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
+    Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).platform(cppcheck::Platform::Type::Native).build();
+    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).platform(cppcheck::Platform::Type::Native).build();
 
     void run() override {
-        // known platform..
-        PLATFORM(settings0.platform, cppcheck::Platform::Type::Native);
-        PLATFORM(settings1.platform, cppcheck::Platform::Type::Native);
-
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
@@ -5635,8 +5631,7 @@ private:
     }
 
     void compareOutOfTypeRange() {
-        Settings settingsUnix64 = settingsBuilder().severity(Severity::style).build();
-        PLATFORM(settingsUnix64.platform, cppcheck::Platform::Type::Unix64);
+        Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

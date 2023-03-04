@@ -456,8 +456,7 @@ private:
     std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const char* filename = "test.cpp", Standards::cppstd_t std = Standards::CPP11) {
         errout.str("");
 
-        Settings settings = settingsBuilder(settings1).debugwarnings().cpp(std).build();
-        PLATFORM(settings.platform, platform);
+        Settings settings = settingsBuilder(settings1).debugwarnings().cpp(std).platform(platform).build();
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -484,8 +483,7 @@ private:
     std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char code[], bool expand = true, cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
-        Settings settings = settingsBuilder(settings_windows).debugwarnings().cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).build();
-        PLATFORM(settings.platform, platform);
+        Settings settings = settingsBuilder(settings_windows).debugwarnings().cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).platform(platform).build();
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);

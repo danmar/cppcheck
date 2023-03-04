@@ -64,8 +64,7 @@ private:
 
     void checkTooBigShift_Unix32() {
         Settings settings0;
-        Settings settings;
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix32);
+        Settings settings = settingsBuilder().platform(cppcheck::Platform::Type::Unix32).build();
 
         // unsigned types getting promoted to int sizeof(int) = 4 bytes
         // and unsigned types having already a size of 4 bytes
@@ -238,8 +237,7 @@ private:
     }
 
     void checkIntegerOverflow() {
-        Settings settings = settingsBuilder().severity(Severity::warning).build();
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix32);
+        Settings settings = settingsBuilder().severity(Severity::warning).platform(cppcheck::Platform::Type::Unix32).build();
 
         check("x = (int)0x10000 * (int)0x10000;", &settings);
         ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(int)0x10000*(int)0x10000'.\n", errout.str());
@@ -280,8 +278,7 @@ private:
 
     void signConversion() {
         Settings settings0;
-        Settings settings;
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
+        Settings settings = settingsBuilder().platform(cppcheck::Platform::Type::Unix64).build();
         check("x = -4 * (unsigned)y;", &settings0);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
@@ -330,8 +327,7 @@ private:
     }
 
     void longCastAssign() {
-        Settings settings = settingsBuilder().severity(Severity::style).build();
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
+        Settings settings = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
 
         check("long f(int x, int y) {\n"
               "  const long ret = x * y;\n"

@@ -167,8 +167,7 @@ private:
     std::string tok_(const char* file, int line, const char code[], bool simplify = true, cppcheck::Platform::Type type = cppcheck::Platform::Type::Native) {
         errout.str("");
 
-        Settings settings = settings0;
-        PLATFORM(settings.platform, type);
+        Settings settings = settingsBuilder(settings0).platform(type).build();
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
@@ -194,8 +193,7 @@ private:
     std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool simplify = false, bool expand = true, cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
-        Settings settings = settingsBuilder(settings1).debugwarnings().build();
-        PLATFORM(settings.platform, platform);
+        Settings settings = settingsBuilder(settings1).debugwarnings().platform(platform).build();
         settings.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
 
         // tokenize..

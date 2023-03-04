@@ -100,8 +100,8 @@ private:
     std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
         errout.str("");
 
-        Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).build();
-        PLATFORM(settings.platform, type);
+        Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
+
         Tokenizer tokenizer(&settings, this);
 
         if (preprocess) {

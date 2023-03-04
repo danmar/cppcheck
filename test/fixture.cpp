@@ -411,3 +411,13 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char l
     settings.libraries.emplace_back(lib_s);
     return *this;
 }
+
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(cppcheck::Platform::Type type)
+{
+    const std::string platformStr = cppcheck::Platform::toString(type);
+    std::string errstr;
+    // TODO: exename is not yet set
+    if (!settings.platform.set(platformStr, errstr, {fixture.exename}))
+        throw std::runtime_error("platform '" + platformStr + "' not found");
+    return *this;
+}

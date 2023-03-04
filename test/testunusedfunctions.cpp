@@ -81,18 +81,18 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        PLATFORM(settings.platform, platform);
+        Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused functions..
-        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
-        checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
+        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings1, this);
+        checkUnusedFunctions.parseTokens(tokenizer, "someFile.c", &settings1);
         // check() returns error if and only if errout is not empty.
-        if ((checkUnusedFunctions.check)(this, settings)) {
+        if ((checkUnusedFunctions.check)(this, settings1)) {
             ASSERT(!errout.str().empty());
         } else {
             ASSERT_EQUALS("", errout.str());

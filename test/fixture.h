@@ -176,6 +176,8 @@ protected:
 
         SettingsBuilder& library(const char lib[]);
 
+        SettingsBuilder& platform(cppcheck::Platform::Type type);
+
         Settings build() {
             return std::move(settings);
         }

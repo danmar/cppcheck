@@ -70,7 +70,7 @@ private:
     const Token* typetok{nullptr};
     // If there are unused templates, keep those
     Settings settings1 = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
-    Settings settings2 = settingsBuilder().checkUnusedTemplates().build();
+    Settings settings2 = settingsBuilder().checkUnusedTemplates().platform(cppcheck::Platform::Type::Unspecified).build();
 
     void reset() {
         vartok = nullptr;
@@ -115,8 +115,6 @@ private:
     }
 
     void run() override {
-        PLATFORM(settings2.platform, cppcheck::Platform::Type::Unspecified);
-
         TEST_CASE(array);
         TEST_CASE(array_ptr);
         TEST_CASE(stlarray1);
