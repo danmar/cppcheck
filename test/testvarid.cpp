@@ -2021,7 +2021,7 @@ private:
 
     void varid_in_class25() {
         const char *code{}, *expected{};
-        Settings oldSettings = settings;
+        const Settings oldSettings = settings;
         LOAD_LIB_2(settings.library, "std.cfg");
 
         code = "struct F {\n" // #11497

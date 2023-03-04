@@ -1568,9 +1568,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.severity.enable(Severity::style);
-        settings.standards.cpp = Standards::CPP03; // #5560
+        // #5560 - set c++03
+        const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
 
         Preprocessor preprocessor(settings);
 
@@ -1771,11 +1770,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        if (portability)
-            settings.severity.enable(Severity::portability);
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
         Preprocessor preprocessor(settings);
@@ -7570,11 +7565,10 @@ private:
         }
 
         {
-            Settings keepTemplates;
-            keepTemplates.checkUnusedTemplates = true;
+            Settings s = settingsBuilder().checkUnusedTemplates().build();
             check("template<int n> void foo(unsigned int x) {\n"
                   "if (x <= 0);\n"
-                  "}", &keepTemplates);
+                  "}", &s);
             ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
         }
 
@@ -10381,14 +10375,13 @@ private:
     }
 
     void forwardAndUsed() {
-        Settings keepTemplates;
-        keepTemplates.checkUnusedTemplates = true;
+        Settings s = settingsBuilder().checkUnusedTemplates().build();
 
         check("template<typename T>\n"
               "void f(T && t) {\n"
               "    g(std::forward<T>(t));\n"
               "    T s = t;\n"
-              "}", &keepTemplates);
+              "}", &s);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
     }
 

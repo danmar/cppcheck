@@ -70,7 +70,7 @@ private:
     const Token* typetok{nullptr};
     // If there are unused templates, keep those
     Settings settings1 = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
-    Settings settings2 = settingsBuilder().checkUnusedTemplates().platform(cppcheck::Platform::Type::Unspecified).build();
+    const Settings settings2 = settingsBuilder().checkUnusedTemplates().platform(cppcheck::Platform::Type::Unspecified).build();
 
     void reset() {
         vartok = nullptr;
@@ -2038,6 +2038,7 @@ private:
     }
 
     void functionDeclarations2() {
+        const Settings settingsOld = settings1;
         GET_SYMBOL_DB_STD("std::array<int,2> foo(int x);");
 
         // 1 scopes: Global
@@ -2056,9 +2057,12 @@ private:
         const Token*parenthesis = foo->tokenDef->next();
         ASSERT(parenthesis->str() == "(" && parenthesis->previous()->str() == "foo");
         ASSERT(parenthesis->valueType()->type == ValueType::Type::CONTAINER);
+
+        settings1 = settingsOld;
     }
 
     void constexprFunction() {
+        const Settings settingsOld = settings1;
         GET_SYMBOL_DB_STD("constexpr int foo();");
 
         // 1 scopes: Global
@@ -2074,6 +2078,8 @@ private:
         ASSERT(foo->tokenDef->str() == "foo");
         ASSERT(!foo->hasBody());
         ASSERT(foo->isConstexpr());
+
+        settings1 = settingsOld;
     }
 
     void constructorInitialization() {
@@ -4805,11 +4811,11 @@ private:
     }
 
     void symboldatabase83() { // #9431
-        const bool old = settings1.debugwarnings;
+        const Settings settingsOld = settings1;
         settings1.debugwarnings = true;
         GET_SYMBOL_DB("struct a { a() noexcept; };\n"
                       "a::a() noexcept = default;");
-        settings1.debugwarnings = old;
+        settings1 = settingsOld;
         const Scope *scope = db->findScopeByName("a");
         ASSERT(scope);
         ASSERT(scope->functionList.size() == 1);
@@ -8041,8 +8047,7 @@ private:
         }
         {
             // PodType
-            Settings settingsWin64;
-            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
+            Settings settingsWin64 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
             const Library::PodType u32 = { 4, 'u' };
             const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
@@ -8063,8 +8068,7 @@ private:
         }
         {
             // PlatformType
-            Settings settingsUnix32;
-            settingsUnix32.platform.type = cppcheck::Platform::Type::Unix32;
+            Settings settingsUnix32 = settingsBuilder().platform(cppcheck::Platform::Type::Unix32).build();
             Library::PlatformType s32;
             s32.mType = "int";
             settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
@@ -8074,8 +8078,7 @@ private:
         }
         {
             // PlatformType - wchar_t
-            Settings settingsWin64;
-            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
+            Settings settingsWin64 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
             Library::PlatformType lpctstr;
             lpctstr.mType = "wchar_t";
             settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;

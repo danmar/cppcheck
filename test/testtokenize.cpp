@@ -45,7 +45,7 @@ public:
 
 private:
     // If there are unused templates, keep those
-    Settings settings0 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
+    const Settings settings0 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
     const Settings settings1 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
     const Settings settings2 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
     const Settings settings_windows = settingsBuilder().library("windows.cfg").checkUnusedTemplates().build();
@@ -456,7 +456,7 @@ private:
     std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const char* filename = "test.cpp", Standards::cppstd_t std = Standards::CPP11) {
         errout.str("");
 
-        Settings settings = settingsBuilder(settings1).debugwarnings().cpp(std).platform(platform).build();
+        const Settings settings = settingsBuilder(settings1).debugwarnings().cpp(std).platform(platform).build();
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -483,7 +483,7 @@ private:
     std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char code[], bool expand = true, cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
-        Settings settings = settingsBuilder(settings_windows).debugwarnings().cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).platform(platform).build();
+        const Settings settings = settingsBuilder(settings_windows).debugwarnings().cpp(cpp11 ? Standards::CPP11 : Standards::CPP03).platform(platform).build();
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -867,17 +867,15 @@ private:
 
     void removePragma() {
         const char code[] = "_Pragma(\"abc\") int x;";
-        Settings s;
+        const Settings s_c89 = settingsBuilder().c(Standards::C89).build();
+        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s_c89, "test.c"));
+        const Settings s_clatest = settingsBuilder().c(Standards::CLatest).build();
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s_clatest, "test.c"));
 
-        s.standards.c = Standards::C89;
-        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s, "test.c"));
-        s.standards.c = Standards::CLatest;
-        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s, "test.c"));
-
-        s.standards.cpp = Standards::CPP03;
-        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s, "test.cpp"));
-        s.standards.cpp = Standards::CPPLatest;
-        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s, "test.cpp"));
+        const Settings s_cpp03 = settingsBuilder().cpp(Standards::CPP03).build();
+        ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s_cpp03, "test.cpp"));
+        const Settings s_cpplatest = settingsBuilder().cpp(Standards::CPPLatest).build();
+        ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s_cpplatest, "test.cpp"));
     }
 
     void foreach () {
@@ -919,8 +917,7 @@ private:
 
 
     void simplifyHeadersAndUnusedTemplates1() {
-        Settings s;
-        s.checkUnusedTemplates = false;
+        const Settings s = settingsBuilder().checkUnusedTemplates(false).build();
         ASSERT_EQUALS(";",
                       tokenizeAndStringify("; template <typename... a> uint8_t b(std::tuple<uint8_t> d) {\n"
                                            "  std::tuple<a...> c{std::move(d)};\n"
@@ -943,18 +940,21 @@ private:
                             "    }\n"
                             "};";
 
-        Settings s;
-        s.checkUnusedTemplates = false;
-        ASSERT_EQUALS(";", tokenizeAndStringify(code, s));
+        {
+            const Settings s = settingsBuilder().checkUnusedTemplates(false).build();
+            ASSERT_EQUALS(";", tokenizeAndStringify(code, s));
+        }
 
-        s.checkUnusedTemplates = true;
-        ASSERT_EQUALS("; template < typename T , u_int uBAR = 0 >\n"
-                      "class Foo {\n"
-                      "public:\n"
-                      "void FooBar ( ) {\n"
-                      "new ( uBAR ? uBAR : sizeof ( T ) ) T ;\n"
-                      "}\n"
-                      "} ;", tokenizeAndStringify(code, s));
+        {
+            const Settings s = settingsBuilder().checkUnusedTemplates().build();
+            ASSERT_EQUALS("; template < typename T , u_int uBAR = 0 >\n"
+                          "class Foo {\n"
+                          "public:\n"
+                          "void FooBar ( ) {\n"
+                          "new ( uBAR ? uBAR : sizeof ( T ) ) T ;\n"
+                          "}\n"
+                          "} ;", tokenizeAndStringify(code, s));
+        }
     }
 
     void simplifyAt() {
@@ -5192,8 +5192,7 @@ private:
     }
 
     void simplifyOperatorName29() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
+        const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
         ASSERT_EQUALS("auto operator<=> ( ) ;", tokenizeAndStringify("auto operator<=>();", settings));
     }
 
@@ -7313,8 +7312,7 @@ private:
     void checkConfig(const char code[]) {
         errout.str("");
 
-        Settings s;
-        s.checkConfiguration = true;
+        const Settings s = settingsBuilder().checkConfiguration().build();
 
         // tokenize..
         Tokenizer tokenizer(&s, this);
@@ -7330,8 +7328,7 @@ private:
     void unknownType() { // #8952
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.debugwarnings = true;
+        const Settings settings = settingsBuilder().debugwarnings().build();
 
         char code[] = "class A {\n"
                       "public:\n"
@@ -7360,7 +7357,7 @@ private:
                             "a = reinterpret_cast<int>(x);\n"
                             "a = static_cast<int>(x);\n";
 
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT(tokenizer.tokenize(istr, "test.cpp"));
@@ -7374,8 +7371,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.checkHeaders = checkHeadersFlag;
+        const Settings settings = settingsBuilder().checkHeaders(checkHeadersFlag).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -7447,8 +7443,7 @@ private:
     }
 
     void simplifyCoroutines() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
+        const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
 
         const char code1[] = "generator<int> f() { co_yield start++; }";
         const char expected1[] = "generator < int > f ( ) { co_yield ( start ++ ) ; }";
@@ -7464,60 +7459,53 @@ private:
     }
 
     void simplifySpaceshipOperator() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
+        const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
 
         ASSERT_EQUALS("; x <=> y ;", tokenizeAndStringify(";x<=>y;", settings));
     }
 
     void simplifyIfSwitchForInit1() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP17;
+        const Settings settings = settingsBuilder().cpp(Standards::CPP17).build();
         const char code[] = "void f() { if (a;b) {} }";
         ASSERT_EQUALS("void f ( ) { { a ; if ( b ) { } } }", tokenizeAndStringify(code, settings));
     }
 
     void simplifyIfSwitchForInit2() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
+        const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
         const char code[] = "void f() { if (a;b) {} else {} }";
         ASSERT_EQUALS("void f ( ) { { a ; if ( b ) { } else { } } }", tokenizeAndStringify(code, settings));
     }
 
     void simplifyIfSwitchForInit3() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
+        const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
         const char code[] = "void f() { switch (a;b) {} }";
         ASSERT_EQUALS("void f ( ) { { a ; switch ( b ) { } } }", tokenizeAndStringify(code, settings));
     }
 
     void simplifyIfSwitchForInit4() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
+        const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
         const char code[] = "void f() { for (a;b:c) {} }";
         ASSERT_EQUALS("void f ( ) { { a ; for ( b : c ) { } } }", tokenizeAndStringify(code, settings));
     }
 
     void simplifyIfSwitchForInit5() {
-        Settings settings;
-        settings.standards.cpp = Standards::CPP20;
+        const Settings settings = settingsBuilder().cpp(Standards::CPP20).build();
         const char code[] = "void f() { if ([] { ; }) {} }";
         ASSERT_EQUALS("void f ( ) { if ( [ ] { ; } ) { } }", tokenizeAndStringify(code, settings));
     }
 
     void cpp20_default_bitfield_initializer() {
-        Settings settings;
+        const Settings s1 = settingsBuilder().cpp(Standards::CPP20).build();
         const char code[] = "struct S { int a:2 = 0; };";
-        settings.standards.cpp = Standards::CPP20;
-        ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, settings));
-        settings.standards.cpp = Standards::CPP17;
-        ASSERT_THROW(tokenizeAndStringify(code, settings), InternalError);
+        ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, s1));
+        const Settings s2 = settingsBuilder().cpp(Standards::CPP17).build();
+        ASSERT_THROW(tokenizeAndStringify(code, s2), InternalError);
     }
 
     void cpp11init() {
         #define testIsCpp11init(...) testIsCpp11init_(__FILE__, __LINE__, __VA_ARGS__)
         auto testIsCpp11init_ = [this](const char* file, int line, const char* code, const char* find, TokenImpl::Cpp11init expected) {
-            Settings settings;
+            const Settings settings;
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
             ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);

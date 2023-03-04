@@ -81,7 +81,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings1 = settingsBuilder(settings).platform(platform).build();
+        const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
@@ -612,7 +612,7 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
+        const Settings settingsOld = settings;
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         check("int WinMain() { }");
@@ -631,7 +631,7 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
+        const Settings settingsOld = settings;
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         check("int wWinMain() { }");
@@ -649,7 +649,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_init' is never used.\n"
                       "[test.cpp:2]: (style) The function '_fini' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
+        const Settings settingsOld = settings;
         LOAD_LIB_2(settings.library, "gnu.cfg");
 
         check("int _init() { }\n"

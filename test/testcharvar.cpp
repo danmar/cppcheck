@@ -31,7 +31,7 @@ public:
     TestCharVar() : TestFixture("TestCharVar") {}
 
 private:
-    Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).platform(cppcheck::Platform::Type::Unspecified).build();
+    const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).platform(cppcheck::Platform::Type::Unspecified).build();
 
     void run() override {
         TEST_CASE(array_index_1);

@@ -36,7 +36,7 @@ public:
     TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {}
 
 private:
-    Settings settings = settingsBuilder().severity(Severity::style).build();
+    const Settings settings = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
         TEST_CASE(test1);
@@ -94,7 +94,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings1 = settingsBuilder(settings).platform(platform).build();
+        const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
