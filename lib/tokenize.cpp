@@ -864,6 +864,7 @@ namespace {
         static Token* insertTokens(Token* to, std::pair<Token*,Token*> range) {
             for (const Token* from = range.first; from != range.second; from = from->next()) {
                 to->insertToken(from->str());
+                to->next()->column(to->column());
                 to = to->next();
             }
             return to;
