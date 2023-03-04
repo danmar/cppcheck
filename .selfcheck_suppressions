@@ -1,3 +1,4 @@
+missingIncludeSystem
 shadowFunction
 bitwiseOnBoolean
 
@@ -11,7 +12,9 @@ simplifyUsing:gui/temp/moc_*.cpp
 funcArgNamesDifferent:gui/temp/moc_*.cpp
 symbolDatabaseWarning:tools/triage/temp/moc_*.cpp
 naming-varname:gui/temp/ui_*.h
+naming-varname:cmake.output/gui/ui_*.h
 functionStatic:gui/temp/ui_fileview.h
+functionStatic:cmake.output/gui/ui_fileview.h
 
 # --debug-warnings suppressions
 valueFlowBailout

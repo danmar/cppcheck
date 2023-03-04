@@ -198,9 +198,6 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
 int CppCheckExecutor::check(int argc, const char* const argv[])
 {
-    Preprocessor::missingIncludeFlag = false;
-    Preprocessor::missingSystemIncludeFlag = false;
-
     CheckUnusedFunctions::clear();
 
     CppCheck cppCheck(*this, true, executeCommand);
@@ -380,29 +377,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 
     if (!settings.checkConfiguration) {
         cppcheck.tooManyConfigsError(emptyString,0U);
-
-        if (settings.checks.isEnabled(Checks::missingInclude) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
-            const std::list<ErrorMessage::FileLocation> callStack;
-            ErrorMessage msg(callStack,
-                             emptyString,
-                             Severity::information,
-                             "Cppcheck cannot find all the include files (use --check-config for details)\n"
-                             "Cppcheck cannot find all the include files. Cppcheck can check the code without the "
-                             "include files found. But the results will probably be more accurate if all the include "
-                             "files are found. Please check your project's include directories and add all of them "
-                             "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
-                             "--check-config.",
-                             "",
-                             Certainty::normal);
-            if (Preprocessor::missingIncludeFlag) {
-                msg.id = "missingInclude";
-                reportInfo(msg);
-            }
-            if (Preprocessor::missingSystemIncludeFlag) {
-                msg.id = "missingIncludeSystem";
-                reportInfo(msg);
-            }
-        }
     }
 
     if (settings.xml) {
