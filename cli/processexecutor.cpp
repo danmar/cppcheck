@@ -77,7 +77,7 @@ public:
     }
 
     void reportErr(const ErrorMessage &msg) override {
-        report(msg, MessageType::REPORT_ERROR);
+        writeToPipe(REPORT_ERROR, msg.serialize());
     }
 
     void writeEnd(const std::string& str) const {
@@ -85,19 +85,6 @@ public:
     }
 
 private:
-    enum class MessageType {REPORT_ERROR};
-
-    void report(const ErrorMessage &msg, MessageType msgType) const {
-        PipeSignal pipeSignal;
-        switch (msgType) {
-        case MessageType::REPORT_ERROR:
-            pipeSignal = REPORT_ERROR;
-            break;
-        }
-
-        writeToPipe(pipeSignal, msg.serialize());
-    }
-
     void writeToPipe(PipeSignal type, const std::string &data) const
     {
         unsigned int len = static_cast<unsigned int>(data.length() + 1);
@@ -162,10 +149,8 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
             std::exit(EXIT_FAILURE);
         }
 
-        if (hasToLog(msg)) {
-            if (type == PipeWriter::REPORT_ERROR)
-                mErrorLogger.reportErr(msg);
-        }
+        if (hasToLog(msg))
+            mErrorLogger.reportErr(msg);
     } else if (type == PipeWriter::CHILD_END) {
         std::istringstream iss(buf);
         unsigned int fileResult = 0;
