@@ -2,7 +2,8 @@
 
 |GitHub Actions|OSS-Fuzz|Coverity Scan Build Status|License|
 |:-:|:--:|:--:|:--:|
-|[![Github Action Status](https://github.com/danmar/cppcheck/workflows/CI/badge.svg)](https://github.com/danmar/cppcheck/actions?query=workflow%3ACI)|[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0) 
+|![CI-cygwin](https://github.com/danmar/cppcheck/actions/workflows/CI-cygwin.yml/badge.svg)<br>![CI-mingw](https://github.com/danmar/cppcheck/actions/workflows/CI-mingw.yml/badge.svg)<br>![CI-unixish-docker](https://github.com/danmar/cppcheck/actions/workflows/CI-unixish-docker.yml/badge.svg)<br>![CI-unixish](https://github.com/danmar/cppcheck/actions/workflows/CI-unixish.yml/badge.svg)<br>![CI-windows](https://github.com/danmar/cppcheck/actions/workflows/CI-windows.yml/badge.svg)<br>|[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0)|
+
 
 ## About the name
 
