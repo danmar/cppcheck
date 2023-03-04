@@ -232,11 +232,9 @@ bool Token::isUpperCaseName() const
 {
     if (!isName())
         return false;
-    for (const char i : mStr) {
-        if (std::islower(i))
-            return false;
-    }
-    return true;
+    return std::none_of(mStr.begin(), mStr.end(), [](char c) {
+        return std::islower(c);
+    });
 }
 
 void Token::concatStr(std::string const& b)

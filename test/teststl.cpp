@@ -5284,6 +5284,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool f(const std::set<std::string>& set, const std::string& f) {\n" // #11595
+              "    for (const std::string& s : set) {\n"
+              "        if (f.length() >= s.length() && f.compare(0, s.length(), s) == 0) {\n"
+              "            return true;\n"
+              "        }\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
     }
 
     void loopAlgoMinMax() {

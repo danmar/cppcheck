@@ -2518,7 +2518,7 @@ static const Token *singleStatement(const Token *start)
     return endStatement;
 }
 
-static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input)
+static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, const Settings* settings)
 {
     const Token *endStatement = singleStatement(start);
     if (!endStatement)
@@ -2526,15 +2526,15 @@ static const Token *singleAssignInScope(const Token *start, nonneg int varid, bo
     if (!Token::Match(start->next(), "%var% %assign%"))
         return nullptr;
     const Token *assignTok = start->tokAt(2);
-    if (isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), false, nullptr, true))
+    if (isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
-    if (isVariableChanged(assignTok->next(), endStatement, varid, false, nullptr, true))
+    if (isVariableChanged(assignTok->next(), endStatement, varid, /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
     input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid) || !Token::Match(start->next(), "%var% =");
     return assignTok;
 }
 
-static const Token *singleMemberCallInScope(const Token *start, nonneg int varid, bool &input)
+static const Token *singleMemberCallInScope(const Token *start, nonneg int varid, bool &input, const Settings* settings)
 {
     if (start->str() != "{")
         return nullptr;
@@ -2551,7 +2551,7 @@ static const Token *singleMemberCallInScope(const Token *start, nonneg int varid
     if (!Token::findmatch(dotTok->tokAt(2), "%varid%", endStatement, varid))
         return nullptr;
     input = Token::Match(start->next(), "%var% . %name% ( %varid% )", varid);
-    if (isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), false, nullptr, true))
+    if (isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
     return dotTok;
 }
@@ -2571,7 +2571,7 @@ static const Token *singleIncrementInScope(const Token *start, nonneg int varid,
     return varTok;
 }
 
-static const Token *singleConditionalInScope(const Token *start, nonneg int varid)
+static const Token *singleConditionalInScope(const Token *start, nonneg int varid, const Settings* settings)
 {
     if (start->str() != "{")
         return nullptr;
@@ -2588,7 +2588,7 @@ static const Token *singleConditionalInScope(const Token *start, nonneg int vari
         return nullptr;
     if (!Token::findmatch(start, "%varid%", bodyTok, varid))
         return nullptr;
-    if (isVariableChanged(start, bodyTok, varid, false, nullptr, true))
+    if (isVariableChanged(start, bodyTok, varid, /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
     return bodyTok;
 }
@@ -2721,7 +2721,7 @@ void CheckStl::useStlAlgorithm()
 
             // Check for single assignment
             bool useLoopVarInAssign;
-            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
+            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, mSettings);
             if (assignTok) {
                 if (!checkAssignee(assignTok->astOperand1()))
                     continue;
@@ -2751,7 +2751,7 @@ void CheckStl::useStlAlgorithm()
             }
             // Check for container calls
             bool useLoopVarInMemCall;
-            const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall);
+            const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall, mSettings);
             if (memberAccessTok && !isIteratorLoop) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
@@ -2784,10 +2784,10 @@ void CheckStl::useStlAlgorithm()
             }
 
             // Check for conditionals
-            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId());
+            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), mSettings);
             if (condBodyTok) {
                 // Check for single assign
-                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign);
+                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, mSettings);
                 if (assignTok) {
                     if (!checkAssignee(assignTok->astOperand1()))
                         continue;
@@ -2815,7 +2815,7 @@ void CheckStl::useStlAlgorithm()
                 }
 
                 // Check for container call
-                memberAccessTok = singleMemberCallInScope(condBodyTok, loopVar->varId(), useLoopVarInMemCall);
+                memberAccessTok = singleMemberCallInScope(condBodyTok, loopVar->varId(), useLoopVarInMemCall, mSettings);
                 if (memberAccessTok) {
                     const Token *memberCallTok = memberAccessTok->astOperand2();
                     const int contVarId = memberAccessTok->astOperand1()->varId();
