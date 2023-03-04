@@ -855,8 +855,8 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
         }
         ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
                             (headerType==SystemHeader) ?
-                            "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
-                            "Include file: \"" + header + "\" not found.",
+                            "Include file: <" + header + "> not found. Please note: Normally include paths for system headers should not be provided, use --library instead." :
+                            "Include file: \"" + header + "\" not found. It's usually best to provide include paths to local headers in your project using -I.",
                             std::move(errorId),
                             Certainty::normal);
         mErrorLogger->reportErr(errmsg);
