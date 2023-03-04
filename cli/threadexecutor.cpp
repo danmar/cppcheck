@@ -113,35 +113,16 @@ public:
     }
 
     void reportErr(const ErrorMessage &msg) override {
-        report(msg, MessageType::REPORT_ERROR);
-    }
+        if (!mThreadExecutor.hasToLog(msg))
+            return;
 
-    void reportInfo(const ErrorMessage &msg) override {
-        report(msg, MessageType::REPORT_INFO);
+        std::lock_guard<std::mutex> lg(mReportSync);
+        mErrorLogger.reportErr(msg);
     }
 
     std::mutex mReportSync;
 
 private:
-    enum class MessageType {REPORT_ERROR, REPORT_INFO};
-
-    void report(const ErrorMessage &msg, MessageType msgType)
-    {
-        if (!mThreadExecutor.hasToLog(msg))
-            return;
-
-        std::lock_guard<std::mutex> lg(mReportSync);
-
-        switch (msgType) {
-        case MessageType::REPORT_ERROR:
-            mErrorLogger.reportErr(msg);
-            break;
-        case MessageType::REPORT_INFO:
-            mErrorLogger.reportInfo(msg);
-            break;
-        }
-    }
-
     ThreadExecutor &mThreadExecutor;
     ErrorLogger &mErrorLogger;
 };
