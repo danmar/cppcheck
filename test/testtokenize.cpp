@@ -6275,6 +6275,7 @@ private:
         ASSERT_EQUALS("vary=", testAst("std::string var = y;"));
 
         ASSERT_EQUALS("", testAst("void *(*var)(int);"));
+        ASSERT_EQUALS("", testAst("void *(*var[2])(int);"));
 
 
         // create ast for decltype
