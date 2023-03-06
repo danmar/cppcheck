@@ -1246,8 +1246,12 @@ private:
             "class X { } ; "
             "int main ( ) "
             "{ "
-            "X ( * * Foo ) ( const X & ) ; Foo = new X ( * ) ( const X & ) [ 2 ] ; "
+            "X ( * * Foo ) ( const X & ) ; Foo = new X ( * [ 2 ] ) ( const X & ) ; "
             "}";
+
+        // TODO: Ideally some parentheses should be added. This code is compilable:
+        //    int (**Foo)(int);
+        //    Foo = new (int(*[2])(int)) ;
 
         ASSERT_EQUALS(expected, tok(code, false));
     }
