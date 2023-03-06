@@ -1104,7 +1104,7 @@ void CmdLineParser::printHelp()
         "                         A file that contains a list of config-excludes\n"
         "    --disable=<id>       Disable individual checks.\n"
         "                         Please refer to the documentation of --enable=<id>\n"
-        "                         for futher details.\n"
+        "                         for further details.\n"
         "    --dump               Dump xml data for each translation unit. The dump\n"
         "                         files have the extension .dump and contain ast,\n"
         "                         tokenlist, symboldatabase, valueflow.\n"
