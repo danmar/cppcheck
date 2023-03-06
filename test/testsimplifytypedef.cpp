@@ -61,6 +61,7 @@ private:
         TEST_CASE(cfp2);
         TEST_CASE(cfp4);
         TEST_CASE(cfp5);
+        TEST_CASE(cfp6);
         TEST_CASE(carray1);
         TEST_CASE(carray2);
         TEST_CASE(cdonotreplace1);
@@ -354,6 +355,12 @@ private:
         ASSERT_EQUALS("void foo ( void ( * p ) ( void ) ) ;", simplifyTypedef(code));
     }
 
+    void cfp6() {
+        const char code[] = "typedef void (*fp)(void);\n"
+                            "fp a[10];";
+        ASSERT_EQUALS("void ( * a [ 10 ] ) ( void ) ;", simplifyTypedef(code));
+    }
+
     void carray1() {
         const char code[] = "typedef int t[20];\n"
                             "t x;";
@@ -377,7 +384,7 @@ private:
         const char code[] = "typedef void (*fp)(void);\n"
                             "typedef fp t;\n"
                             "void foo(t p);";
-        ASSERT_EQUALS("void foo ( void ( * p ) ( ) ) ;", tok(code));
+        ASSERT_EQUALS("void foo ( void ( * p ) ( void ) ) ;", tok(code));
     }
 
     void simplifyTypedef1() {

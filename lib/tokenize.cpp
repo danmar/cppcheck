@@ -777,6 +777,10 @@ namespace {
                     if (Token::simpleMatch(tok3->previous(), "( *"))
                         tok3->deletePrevious();
                 }
+                else if (after->str() == "[") {
+                    while (after && after->str() == "[")
+                        after = after->link()->next();
+                }
             }
             else {
                 while (Token::simpleMatch(after, "["))
