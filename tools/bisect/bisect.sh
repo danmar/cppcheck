@@ -11,6 +11,9 @@ expected=$4
 
 # TODO: verify "good" commit happened before "bad" commit
 
+# 0 - regular result based bisect
+# 1 - find commit which started hang
+# 2 - find commit which resolved hang
 hang=0
 
 script_dir="$(dirname "$(realpath "$0")")"
@@ -48,7 +51,7 @@ git bisect start -- Makefile 'addons/*.py' 'cfg/*.cfg' 'cli/*.cpp' 'cli/*.h' 'ex
 
 git checkout "$hash_good" || exit 1
 
-if [ $hang -eq 1 ]; then
+if [ $hang -ne 0 ]; then
   # TODO: exitcode overflow on 255
   # get expected time from good commit
   python3 "$script_dir/bisect_hang.py" "$bisect_dir" "$options"
@@ -69,8 +72,8 @@ git bisect good || exit 1
 git checkout "$hash_bad" || exit 1
 
 # verify the given commit is actually "bad"
-if [ $hang -eq 1 ]; then
-  python3 "$script_dir/bisect_hang.py" "$bisect_dir" "$options" $elapsed_time
+if [ $hang -ne 0 ]; then
+  python3 "$script_dir/bisect_hang.py" "$bisect_dir" "$options" $elapsed_time $hang
 else
   python3 "$script_dir/bisect_res.py" "$bisect_dir" "$options" "$expected"
 fi
@@ -84,8 +87,8 @@ fi
 git bisect bad || exit 1
 
 # perform the actual bisect
-if [ $hang -eq 1 ]; then
-  git bisect run python3 "$script_dir/bisect_hang.py" "$bisect_dir" "$options" $elapsed_time || exit 1
+if [ $hang -ne 0 ]; then
+  git bisect run python3 "$script_dir/bisect_hang.py" "$bisect_dir" "$options" $elapsed_time $hang || exit 1
 else
   git bisect run python3 "$script_dir/bisect_res.py" "$bisect_dir" "$options" "$expected" || exit 1
 fi
