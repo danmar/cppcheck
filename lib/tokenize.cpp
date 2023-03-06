@@ -900,89 +900,34 @@ namespace {
 
 void Tokenizer::simplifyTypedef()
 {
-
-    if (isCPP()) {
-        // Simplify global typedefs that are not redefined with the fast 1-pass simplification.
-        // Then use the slower old typedef simplification.
-        std::map<std::string, int> numberOfTypedefs;
-        for (Token* tok = list.front(); tok; tok = tok->next()) {
-            if (tok->str() == "typedef") {
-                int dummy = 0;
-                TypedefSimplifier ts(tok, dummy);
-                if (!ts.fail())
-                    numberOfTypedefs[ts.name()]++;
-                continue;
-            }
+    // Simplify global typedefs that are not redefined with the fast 1-pass simplification.
+    // Then use the slower old typedef simplification.
+    std::map<std::string, int> numberOfTypedefs;
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (tok->str() == "typedef") {
+            int dummy = 0;
+            TypedefSimplifier ts(tok, dummy);
+            if (!ts.fail())
+                numberOfTypedefs[ts.name()]++;
+            continue;
         }
-
-        int indentlevel = 0;
-        int typeNum = 1;
-        std::map<std::string, TypedefSimplifier> typedefs;
-        for (Token* tok = list.front(); tok; tok = tok->next()) {
-            if (!tok->isName()) {
-                if (tok->str()[0] == '{')
-                    ++indentlevel;
-                else if (tok->str()[0] == '}')
-                    --indentlevel;
-                continue;
-            }
-
-            if (indentlevel == 0 && tok->str() == "typedef") {
-                TypedefSimplifier ts(tok, typeNum);
-                if (!ts.fail() && numberOfTypedefs[ts.name()] == 1) {
-                    typedefs.emplace(ts.name(), ts);
-                    if (!ts.isStructEtc())
-                        tok = ts.endToken();
-                }
-                continue;
-            }
-
-            auto it = typedefs.find(tok->str());
-            if (it != typedefs.end() && TypedefSimplifier::canReplace(tok)) {
-                std::set<std::string> r;
-                while (it != typedefs.end() && r.insert(tok->str()).second) {
-                    it->second.replace(tok);
-                    it = typedefs.find(tok->str());
-                }
-            } else if (tok->str() == "enum") {
-                while (Token::Match(tok, "%name%|:|::"))
-                    tok = tok->next();
-                if (!tok)
-                    break;
-                if (tok->str() == "{")
-                    tok = tok->link();
-            }
-        }
-
-        if (!typedefs.empty())
-        {
-            // remove typedefs
-            for (auto &t: typedefs) {
-                if (!t.second.replaceFailed())
-                    t.second.removeDeclaration();
-            }
-
-            while (Token::Match(list.front(), "; %any%"))
-                list.front()->deleteThis();
-        }
-
-        simplifyTypedefCpp();
-
-        return;
     }
 
-    bool fail = false;
+    int indentlevel = 0;
     int typeNum = 1;
     std::map<std::string, TypedefSimplifier> typedefs;
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->isName())
+        if (!tok->isName()) {
+            if (tok->str()[0] == '{')
+                ++indentlevel;
+            else if (tok->str()[0] == '}')
+                --indentlevel;
             continue;
+        }
 
-        if (tok->str() == "typedef") {
+        if (indentlevel == 0 && tok->str() == "typedef") {
             TypedefSimplifier ts(tok, typeNum);
-            if (ts.fail())
-                fail = true;
-            else {
+            if (!ts.fail() && numberOfTypedefs[ts.name()] == 1) {
                 typedefs.emplace(ts.name(), ts);
                 if (!ts.isStructEtc())
                     tok = ts.endToken();
@@ -997,11 +942,19 @@ void Tokenizer::simplifyTypedef()
                 it->second.replace(tok);
                 it = typedefs.find(tok->str());
             }
+        } else if (tok->str() == "enum") {
+            while (Token::Match(tok, "%name%|:|::"))
+                tok = tok->next();
+            if (!tok)
+                break;
+            if (tok->str() == "{")
+                tok = tok->link();
         }
     }
 
     if (!typedefs.empty())
     {
+        // remove typedefs
         for (auto &t: typedefs) {
             if (!t.second.replaceFailed())
                 t.second.removeDeclaration();
@@ -1011,8 +964,7 @@ void Tokenizer::simplifyTypedef()
             list.front()->deleteThis();
     }
 
-    if (fail)
-        simplifyTypedefCpp();
+    simplifyTypedefCpp();
 }
 
 void Tokenizer::simplifyTypedefCpp()

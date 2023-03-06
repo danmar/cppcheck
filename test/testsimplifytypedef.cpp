@@ -54,6 +54,7 @@ private:
         settings2.checkUnusedTemplates = true;
 
         TEST_CASE(c1);
+        TEST_CASE(c2);
         TEST_CASE(cstruct1);
         TEST_CASE(cstruct2);
         TEST_CASE(cstruct3);
@@ -307,6 +308,12 @@ private:
         const char code[] = "typedef int t;\n"
                             "t x;";
         ASSERT_EQUALS("int x ;", simplifyTypedefC(code));
+    }
+
+    void c2() {
+        const char code[] = "void f1() { typedef int t; t x; }\n"
+                            "void f2() { typedef float t; t x; }\n";
+        ASSERT_EQUALS("void f1 ( ) { int x ; } void f2 ( ) { float x ; }", simplifyTypedefC(code));
     }
 
     void cstruct1() {
