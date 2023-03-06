@@ -94,9 +94,10 @@ private:
         std::memcpy(&(out[1]), &len, sizeof(len));
         std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
         if (write(mWpipe, out, len + 1 + sizeof(len)) <= 0) {
+            const int err = errno;
             delete[] out;
             out = nullptr;
-            std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
+            std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe: " << std::strerror(err) << std::endl;
             std::exit(EXIT_FAILURE);
         }
 
@@ -106,39 +107,63 @@ private:
     const int mWpipe;
 };
 
-bool ProcessExecutor::handleRead(int rpipe, unsigned int &result)
+bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::string& filename)
 {
+    std::size_t bytes_to_read;
+    ssize_t bytes_read;
+
     char type = 0;
-    if (read(rpipe, &type, 1) <= 0) {
+    bytes_to_read = sizeof(char);
+    bytes_read = read(rpipe, &type, bytes_to_read);
+    if (bytes_read <= 0) {
         // TODO: read until we have all the data
         if (errno == EAGAIN)
             return true;
+
+        // TODO: log details about failure
 
         // need to increment so a missing pipe (i.e. premature exit of forked process) results in an error exitcode
         ++result;
         return false;
     }
+    if (bytes_read != bytes_to_read) {
+        std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (type): insufficient data read (expected: " << bytes_to_read << " / got: " << bytes_read << ")" << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
 
     if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::CHILD_END) {
-        std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
+        std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") invalid type " << int(type) << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
     unsigned int len = 0;
-    if (read(rpipe, &len, sizeof(len)) <= 0) {
-        std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
+    bytes_to_read = sizeof(len);
+    bytes_read = read(rpipe, &len, bytes_to_read);
+    if (bytes_read <= 0) {
+        const int err = errno;
+        std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (len) for type " << int(type) << ": " << std::strerror(err) << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    if (bytes_read != bytes_to_read) {
+        std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (len) for type" << int(type) << ": insufficient data read (expected: " << bytes_to_read << " / got: " << bytes_read << ")"  << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
     // Don't rely on incoming data being null-terminated.
     // Allocate +1 element and null-terminate the buffer.
     char *buf = new char[len + 1];
-    const ssize_t readIntoBuf = read(rpipe, buf, len);
-    if (readIntoBuf <= 0) {
-        std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
+    bytes_to_read = len;
+    bytes_read = read(rpipe, buf, bytes_to_read);
+    if (bytes_read <= 0) {
+        const int err = errno;
+        std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": " << std::strerror(err) << std::endl;
         std::exit(EXIT_FAILURE);
     }
-    buf[readIntoBuf] = 0;
+    if (bytes_read != bytes_to_read) {
+        std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": insufficient data read (expected: " << bytes_to_read << " / got: " << bytes_read << ")"  << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+    buf[len] = 0;
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
@@ -148,7 +173,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result)
         try {
             msg.deserialize(buf);
         } catch (const InternalError& e) {
-            std::cerr << "#### ThreadExecutor::handleRead error, internal error:" << e.errorMessage << std::endl;
+            std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") internal error: " << e.errorMessage << std::endl;
             std::exit(EXIT_FAILURE);
         }
 
@@ -273,12 +298,15 @@ unsigned int ProcessExecutor::check()
                 std::list<int>::iterator rp = rpipes.begin();
                 while (rp != rpipes.end()) {
                     if (FD_ISSET(*rp, &rfds)) {
-                        const bool readRes = handleRead(*rp, result);
+                        std::string name;
+                        const std::map<int, std::string>::iterator p = pipeFile.find(*rp);
+                        if (p != pipeFile.end()) {
+                            name = p->second;
+                        }
+                        const bool readRes = handleRead(*rp, result, name);
                         if (!readRes) {
                             std::size_t size = 0;
-                            const std::map<int, std::string>::iterator p = pipeFile.find(*rp);
                             if (p != pipeFile.end()) {
-                                std::string name = p->second;
                                 pipeFile.erase(p);
                                 const std::map<std::string, std::size_t>::const_iterator fs = mFiles.find(name);
                                 if (fs != mFiles.end()) {
