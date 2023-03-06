@@ -424,6 +424,7 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
 
 void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
+    // TODO: do not unconditionally apply colors
     std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 

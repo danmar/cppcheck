@@ -73,6 +73,7 @@ public:
     explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 
     void reportOut(const std::string &outmsg, Color c) override {
+        // TODO: do not unconditionally apply colors
         writeToPipe(REPORT_OUT, ::toString(c) + outmsg + ::toString(Color::Reset));
     }
 
