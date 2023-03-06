@@ -738,8 +738,7 @@ private:
     }
 
     void garbageCode65() { // #6741
-        // TODO throw exception
-        checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref");
+        ASSERT_THROW(checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref"), InternalError);
     }
 
     void garbageCode66() { // #6742
