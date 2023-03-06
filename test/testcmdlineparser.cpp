@@ -93,6 +93,7 @@ private:
         TEST_CASE(enabledStyle);
         TEST_CASE(enabledPerformance);
         TEST_CASE(enabledPortability);
+        TEST_CASE(enabledInformation);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
 #ifdef CHECK_INTERNAL
@@ -105,6 +106,8 @@ private:
         TEST_CASE(disableAll);
         TEST_CASE(disableMultiple);
         TEST_CASE(disableStylePartial);
+        TEST_CASE(disableInformationPartial);
+        TEST_CASE(disableInformationPartial2);
         TEST_CASE(disableInvalid);
         TEST_CASE(disableError);
         TEST_CASE(disableEmpty);
@@ -637,6 +640,16 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void enabledInformation() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=information", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.severity.isEnabled(Severity::information));
+        ASSERT(settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("cppcheck: '--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.\n", GET_REDIRECT_OUTPUT);
+    }
+
     void enabledUnusedFunction() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=unusedFunction", "file.cpp"};
@@ -756,6 +769,26 @@ private:
         ASSERT_EQUALS(true, settings.checks.isEnabled(Checks::unusedFunction));
         ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableInformationPartial() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=information", "--disable=missingInclude", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT(settings.severity.isEnabled(Severity::information));
+        ASSERT(!settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("cppcheck: '--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableInformationPartial2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=missingInclude", "--disable=information", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT(!settings.severity.isEnabled(Severity::information));
+        ASSERT(settings.checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
