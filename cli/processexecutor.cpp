@@ -86,6 +86,7 @@ public:
     }
 
 private:
+    // TODO: how to log file name in error?
     void writeToPipe(PipeSignal type, const std::string &data) const
     {
         unsigned int len = static_cast<unsigned int>(data.length() + 1);
@@ -93,11 +94,21 @@ private:
         out[0] = static_cast<char>(type);
         std::memcpy(&(out[1]), &len, sizeof(len));
         std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
-        if (write(mWpipe, out, len + 1 + sizeof(len)) <= 0) {
+
+        std::size_t bytes_to_write = len + 1 + sizeof(len);
+        ssize_t bytes_written = write(mWpipe, out, len + 1 + sizeof(len));
+        if (bytes_written <= 0) {
             const int err = errno;
             delete[] out;
             out = nullptr;
-            std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe: " << std::strerror(err) << std::endl;
+            std::cerr << "#### ThreadExecutor::writeToPipe() error for type " << type << ": " << std::strerror(err) << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        // TODO: write until everything is written
+        if (bytes_written != bytes_to_write) {
+            delete[] out;
+            out = nullptr;
+            std::cerr << "#### ThreadExecutor::writeToPipe() error for type " << type << ": insufficient data written (expected: " << bytes_to_write << " / got: " << bytes_written << ")" << std::endl;
             std::exit(EXIT_FAILURE);
         }
 
