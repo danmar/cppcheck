@@ -116,7 +116,6 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
     bytes_to_read = sizeof(char);
     bytes_read = read(rpipe, &type, bytes_to_read);
     if (bytes_read <= 0) {
-        // TODO: read until we have all the data
         if (errno == EAGAIN)
             return true;
 
@@ -152,17 +151,18 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
     // Don't rely on incoming data being null-terminated.
     // Allocate +1 element and null-terminate the buffer.
     char *buf = new char[len + 1];
+    char *data_start = buf;
     bytes_to_read = len;
-    bytes_read = read(rpipe, buf, bytes_to_read);
-    if (bytes_read <= 0) {
-        const int err = errno;
-        std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": " << std::strerror(err) << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    if (bytes_read != bytes_to_read) {
-        std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": insufficient data read (expected: " << bytes_to_read << " / got: " << bytes_read << ")"  << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+    do {
+        bytes_read = read(rpipe, data_start, bytes_to_read);
+        if (bytes_read <= 0) {
+            const int err = errno;
+            std::cerr << "#### ThreadExecutor::handleRead(" << filename << ") error (buf) for type" << int(type) << ": " << std::strerror(err) << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        bytes_to_read -= bytes_read;
+        data_start += bytes_read;
+    } while (bytes_to_read != 0);
     buf[len] = 0;
 
     bool res = true;
