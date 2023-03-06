@@ -2336,7 +2336,7 @@ private:
     void simplifyTypedef101() { // ticket #3003 (segmentation fault)
         const char code[] = "typedef a x[];\n"
                             "y = x";
-        ASSERT_THROW(tok(code), InternalError);
+        ASSERT_EQUALS("y = x", tok(code));
     }
 
     void simplifyTypedef102() { // ticket #3004
@@ -2378,7 +2378,7 @@ private:
 
     void simplifyTypedef107() { // ticket #3963 (bad code => segmentation fault)
         const char code[] = "typedef int x[]; int main() { return x }";
-        ASSERT_THROW(tok(code), InternalError);
+        ASSERT_EQUALS("int main ( ) { return x }", tok(code));
     }
 
     void simplifyTypedef108() { // ticket #4777
