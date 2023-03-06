@@ -93,20 +93,17 @@ public:
         });
     }
 
-    bool finished() {
-        std::lock_guard<std::mutex> l(mFileSync);
-        return mItNextFile == mFiles.cend() && mItNextFileSettings == mFileSettings.cend();
-    }
-
     bool next(const std::string *&file, const ImportProject::FileSettings *&fs, std::size_t &fileSize) {
         std::lock_guard<std::mutex> l(mFileSync);
         if (mItNextFile != mFiles.end()) {
             file = &mItNextFile->first;
+            fs = nullptr;
             fileSize = mItNextFile->second;
             ++mItNextFile;
             return true;
         }
         if (mItNextFileSettings != mFileSettings.end()) {
+            file = nullptr;
             fs = &(*mItNextFileSettings);
             fileSize = 0;
             ++mItNextFileSettings;
@@ -161,13 +158,11 @@ static unsigned int STDCALL threadProc(ThreadData *data)
 {
     unsigned int result = 0;
 
-    while (!data->finished()) {
-        const std::string *file = nullptr;
-        const ImportProject::FileSettings *fs = nullptr;
-        std::size_t fileSize;
-        if (!data->next(file, fs, fileSize))
-            break;
+    const std::string *file;
+    const ImportProject::FileSettings *fs;
+    std::size_t fileSize;
 
+    while (data->next(file, fs, fileSize)) {
         result += data->check(file, fs);
 
         data->status(fileSize);
