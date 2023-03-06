@@ -106,16 +106,17 @@ private:
     const int mWpipe;
 };
 
-int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
+bool ProcessExecutor::handleRead(int rpipe, unsigned int &result)
 {
     char type = 0;
     if (read(rpipe, &type, 1) <= 0) {
+        // TODO: read until we have all the data
         if (errno == EAGAIN)
-            return 0;
+            return true;
 
         // need to increment so a missing pipe (i.e. premature exit of forked process) results in an error exitcode
         ++result;
-        return -1;
+        return false;
     }
 
     if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::CHILD_END) {
@@ -139,6 +140,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
     }
     buf[readIntoBuf] = 0;
 
+    bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
         mErrorLogger.reportOut(buf);
     } else if (type == PipeWriter::REPORT_ERROR) {
@@ -153,16 +155,12 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
         if (hasToLog(msg))
             mErrorLogger.reportErr(msg);
     } else if (type == PipeWriter::CHILD_END) {
-        std::istringstream iss(buf);
-        unsigned int fileResult = 0;
-        iss >> fileResult;
-        result += fileResult;
-        delete[] buf;
-        return -1;
+        result += std::stoi(buf);
+        res = false;
     }
 
     delete[] buf;
-    return 1;
+    return res;
 }
 
 bool ProcessExecutor::checkLoadAverage(size_t nchildren)
@@ -275,8 +273,8 @@ unsigned int ProcessExecutor::check()
                 std::list<int>::iterator rp = rpipes.begin();
                 while (rp != rpipes.end()) {
                     if (FD_ISSET(*rp, &rfds)) {
-                        const int readRes = handleRead(*rp, result);
-                        if (readRes == -1) {
+                        const bool readRes = handleRead(*rp, result);
+                        if (!readRes) {
                             std::size_t size = 0;
                             const std::map<int, std::string>::iterator p = pipeFile.find(*rp);
                             if (p != pipeFile.end()) {
