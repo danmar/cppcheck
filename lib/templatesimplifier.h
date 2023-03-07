@@ -148,7 +148,7 @@ public:
          */
         TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
-        TokenAndName(TokenAndName&& other);
+        TokenAndName(TokenAndName&& other) NOEXCEPT;
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
