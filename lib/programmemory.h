@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "valueflow.h" // needed for alias
+#include "vfvalue.h" // needed for alias
 
 #include <cstddef>
 #include <functional>
@@ -74,11 +74,11 @@ struct ProgramMemory {
     void setValue(const Token* expr, const ValueFlow::Value& value);
     const ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false) const;
 
-    bool getIntValue(nonneg int exprid, MathLib::bigint* result) const;
+    bool getIntValue(nonneg int exprid, MathLib::bigint& result) const;
     void setIntValue(const Token* expr, MathLib::bigint value, bool impossible = false);
 
-    bool getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const;
-    bool getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const;
+    bool getContainerSizeValue(nonneg int exprid, MathLib::bigint& result) const;
+    bool getContainerEmptyValue(nonneg int exprid, MathLib::bigint& result) const;
     void setContainerSizeValue(const Token* expr, MathLib::bigint value, bool isEqual = true);
 
     void setUnknown(const Token* expr);
@@ -143,7 +143,7 @@ struct ProgramMemoryState {
 };
 
 void execute(const Token* expr,
-             ProgramMemory* const programMemory,
+             ProgramMemory& programMemory,
              MathLib::bigint* result,
              bool* error,
              const Settings* settings = nullptr);

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -238,6 +238,10 @@ public:
         bool unique;
     };
 
+    struct Entrypoint {
+        QString name;
+    };
+
     void clear() {
         containers.clear();
         defines.clear();
@@ -250,6 +254,7 @@ public:
         platformTypes.clear();
         reflections.clear();
         markups.clear();
+        entrypoints.clear();
     }
 
     void swap(CppcheckLibraryData &other) {
@@ -264,6 +269,7 @@ public:
         platformTypes.swap(other.platformTypes);
         reflections.swap(other.reflections);
         markups.swap(other.markups);
+        entrypoints.swap(other.entrypoints);
     }
 
     QString open(QIODevice &file);
@@ -280,6 +286,7 @@ public:
     QList<struct SmartPointer> smartPointers;
     QList<struct Reflection> reflections;
     QList<struct Markup> markups;
+    QList<struct Entrypoint> entrypoints;
 };
 
 #endif // CPPCHECKLIBRARYDATA_H

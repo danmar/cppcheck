@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <map>
@@ -92,11 +92,11 @@ private:
     }
 
 
-    void check(const char code[], Settings::PlatformType platform = Settings::Native) {
+    void check(const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.platform(platform);
+        PLATFORM(settings.platform, platform);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -621,7 +621,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
-              "};", Settings::Win32A);
+              "};", cppcheck::Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -634,7 +634,7 @@ private:
               "    }\n"
               "public:\n"
               "    Foo() { }\n"
-              "};", Settings::Win32A);
+              "};", cppcheck::Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 

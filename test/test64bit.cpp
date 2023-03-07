@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "check64bit.h"
 #include "errortypes.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <sstream> // IWYU pragma: keep
@@ -66,6 +66,12 @@ private:
               "void f() {\n"
               "    CharArray foo = \"\";\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T { std::vector<int>*a[2][2]; };\n" // #11560
+              "void f(T& t, int i, int j) {\n"
+              "    t.a[i][j] = new std::vector<int>;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -150,6 +156,11 @@ private:
               "};\n"
               "void f() {\n"
               "    std::array<double, 1> a = S::g(S::E::E0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char* f(char* p) {\n"
+              "    return p ? p : 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

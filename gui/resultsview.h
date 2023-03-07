@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -189,7 +189,7 @@ public:
      * @brief Return checking statistics.
      * @return Pointer to checking statistics.
      */
-    CheckStatistics *getStatistics() const {
+    const CheckStatistics *getStatistics() const {
         return mStatistics;
     }
 
@@ -197,7 +197,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    ShowTypes * getShowTypes() const;
+    const ShowTypes & getShowTypes() const;
 
 signals:
 

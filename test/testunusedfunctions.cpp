@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <sstream>
@@ -79,11 +79,11 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], Settings::PlatformType platform = Settings::Native) {
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.platform(platform);
+        PLATFORM(settings.platform, platform);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

@@ -17,11 +17,16 @@
  */
 
 #pragma once
-#include "config.h"
-#include "check.h"
+
+// IWYU pragma: begin_keep
+#include "astutils.h"
+#include "errorlogger.h"
 #include "library.h"
+//#include "matchcompiler.h"
+#include "mathlib.h"
 #include "token.h"
-#include "tokenize.h"
-#include "valueflow.h"
-#include "symboldatabase.h"
 #include "settings.h"
+#include "suppressions.h"
+#include "utils.h"
+#include "valueflow.h"
+// IWYU pragma: end_keep

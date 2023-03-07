@@ -41,6 +41,8 @@ private slots:
     void markupValid();
     void containerValid();
 
+    void validateAllCfg();
+
 private:
     static void loadCfgFile(const QString &filename, CppcheckLibraryData &data, QString &res, bool removeFile = false);
     static void saveCfgFile(const QString &filename, CppcheckLibraryData &data);

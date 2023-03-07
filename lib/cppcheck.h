@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@
 #include <cstddef>
 #include <fstream> // IWYU pragma: keep
 #include <functional>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
@@ -56,7 +55,7 @@ public:
      */
     CppCheck(ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
-             std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand);
+             std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand);
 
     /**
      * @brief Destructor.
@@ -215,11 +214,6 @@ private:
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
-    /**
-     * Output information messages.
-     */
-    void reportInfo(const ErrorMessage &msg) override;
-
     ErrorLogger &mErrorLogger;
 
     /** @brief Current preprocessor configuration */
@@ -241,7 +235,7 @@ private:
     AnalyzerInformation mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
-    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> mExecuteCommand;
+    std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> mExecuteCommand;
 
     std::ofstream mPlistFile;
 };

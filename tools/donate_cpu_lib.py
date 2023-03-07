@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.42"
+CLIENT_VERSION = "1.3.44"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -37,7 +37,7 @@ def detect_make():
     for m in make_cmds:
         try:
             #print('{} --version'.format(m))
-            subprocess.call([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.check_call([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except OSError as e:
             #print("'{}' not found ({})".format(m, e))
             continue
@@ -65,7 +65,7 @@ def check_requirements():
     for app in apps:
         try:
             #print('{} --version'.format(app))
-            subprocess.call([app, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.check_call([app, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
@@ -191,7 +191,7 @@ def compile_version(cppcheck_path):
     else:
         exclude_bin = 'cppcheck'
     # TODO: how to support multiple compilers on the same machine? this will clean msbuild.exe files in a mingw32-make build and vice versa
-    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
+    subprocess.check_call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
     return ret
 
 
@@ -253,31 +253,37 @@ def get_cppcheck_versions():
 
 
 def get_packages_count():
-    print('Connecting to server to get count of packages..')
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect(__server_address)
-        sock.send(b'getPackagesCount\n')
-        packages = sock.recv(64)
-    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
-    if not packages:
-        raise Exception('received empty response')
-    return int(packages)
+    def __get_packages_count():
+        print('Connecting to server to get count of packages..')
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect(__server_address)
+            sock.send(b'getPackagesCount\n')
+            packages = sock.recv(64)
+        # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+        if not packages:
+            raise Exception('received empty response')
+        return int(packages)
+
+    return try_retry(__get_packages_count)
 
 
 def get_package(package_index=None):
-    print('Connecting to server to get assigned work..')
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect(__server_address)
-        if package_index is None:
-            sock.send(b'get\n')
-        else:
-            request = 'getPackageIdx:' + str(package_index) + '\n'
-            sock.send(request.encode())
-        package = sock.recv(256)
-    # TODO: sock.recv() sometimes hangs and returns b'' afterwards
-    if not package:
-        raise Exception('received empty response')
-    return package.decode('utf-8')
+    def __get_package(package_index):
+        print('Connecting to server to get assigned work..')
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect(__server_address)
+            if package_index is None:
+                sock.send(b'get\n')
+            else:
+                request = 'getPackageIdx:' + str(package_index) + '\n'
+                sock.send(request.encode())
+            package = sock.recv(256)
+        # TODO: sock.recv() sometimes hangs and returns b'' afterwards
+        if not package:
+            raise Exception('received empty response')
+        return package.decode('utf-8')
+
+    return try_retry(__get_package, fargs=(package_index,), max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
 
 
 def __handle_remove_readonly(func, path, exc):

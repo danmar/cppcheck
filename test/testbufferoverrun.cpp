@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,8 @@
 #include "errortypes.h"
 #include "standards.h"
 #include "library.h"
-#include "preprocessor.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <map>
@@ -36,8 +35,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-
-#include <tinyxml2.h>
 
 class TestBufferOverrun : public TestFixture {
 public:
@@ -59,8 +56,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun;
-        checkBufferOverrun.runChecks(&tokenizer, &settings0, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings0, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -72,8 +68,7 @@ private:
         errout.str("");
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
-        checkBufferOverrun.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
     }
 
     void checkP(const char code[], const char* filename = "test.cpp")
@@ -101,18 +96,13 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, nullptr);
-        preprocessor.setDirectives(tokens1);
-
         // Tokenizer..
         Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, settings, this);
-        checkBufferOverrun.runChecks(&tokenizer, settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, settings, this);
     }
 
     void run() override {
@@ -207,6 +197,7 @@ private:
         TEST_CASE(array_index_negative4);
         TEST_CASE(array_index_negative5);    // #10526
         TEST_CASE(array_index_negative6);    // #11349
+        TEST_CASE(array_index_negative7);    // #5685
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -953,7 +944,7 @@ private:
 
     void array_index_24() {
         // ticket #1492 and #1539
-        const std::string charMaxPlusOne(settings0.defaultSign == 'u' ? "256" : "128");
+        const std::string charMaxPlusOne(settings0.platform.defaultSign == 'u' ? "256" : "128");
         check(("void f(char n) {\n"
                "    int a[n];\n"     // n <= CHAR_MAX
                "    a[-1] = 0;\n"    // negative index
@@ -2271,6 +2262,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    // #5685
+    void array_index_negative7()
+    {
+        check("void f() {\n"
+              "    int i = -9;\n"
+              "    int a[5];\n"
+              "    for (; i < 5; i++)\n"
+              "        a[i] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[5]' accessed at index -9, which is out of bounds.\n", errout.str());
+    }
+
     void array_index_for_decr() {
         check("void f()\n"
               "{\n"
@@ -3518,9 +3521,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
         check("void f() {\n"
@@ -4073,11 +4074,9 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
         settings.severity.enable(Severity::warning);
-        settings.sizeof_wchar_t = 4;
+        settings.platform.sizeof_wchar_t = 4;
 
         check("void f() {\n"
               "    char c[10];\n"
@@ -4215,9 +4214,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void f() {\n"
               "    char c[7];\n"
@@ -4279,9 +4276,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // formatstr..
         check("void f() {\n"
@@ -4393,9 +4388,7 @@ private:
                                "    <arg nr=\"4\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void f() {\n"
               "    char c[5];\n"
@@ -4881,8 +4874,7 @@ private:
 
     void getErrorMessages() {
         // Ticket #2292: segmentation fault when using --errorlist
-        CheckBufferOverrun c;
-        c.getErrorMessages(this, nullptr);
+        getCheck<CheckBufferOverrun>().getErrorMessages(this, nullptr);
     }
 
     void arrayIndexThenCheck() {
@@ -5237,6 +5229,13 @@ private:
             "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 5.\n",
                       errout.str());
+
+        ctu("void g(int *b) { b[0] = 0; }\n"
+            "void f() {\n"
+            "    GLint a[1];\n"
+            "    g(a);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu_variable() {
@@ -5489,6 +5488,7 @@ private:
 
         Settings settings;
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         check("void f(){\n"
               "int pipefd[1];\n" // <--  array of two integers is needed

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,13 +61,13 @@ static QStringList getPaths(const QListWidget *list)
 }
 
 /** Platforms shown in the platform combobox */
-static const cppcheck::Platform::PlatformType builtinPlatforms[] = {
-    cppcheck::Platform::Native,
-    cppcheck::Platform::Win32A,
-    cppcheck::Platform::Win32W,
-    cppcheck::Platform::Win64,
-    cppcheck::Platform::Unix32,
-    cppcheck::Platform::Unix64
+static const cppcheck::Platform::Type builtinPlatforms[] = {
+    cppcheck::Platform::Type::Native,
+    cppcheck::Platform::Type::Win32A,
+    cppcheck::Platform::Type::Win32W,
+    cppcheck::Platform::Type::Win64,
+    cppcheck::Platform::Type::Unix32,
+    cppcheck::Platform::Type::Unix64
 };
 
 static const int numberOfBuiltinPlatforms = sizeof(builtinPlatforms) / sizeof(builtinPlatforms[0]);
@@ -174,7 +174,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
 
     // Platforms..
     Platforms platforms;
-    for (const cppcheck::Platform::PlatformType builtinPlatform : builtinPlatforms)
+    for (const cppcheck::Platform::Type builtinPlatform : builtinPlatforms)
         mUI->mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
     for (QString sp : searchPaths) {
@@ -188,7 +188,7 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, bool premium, QWi
             const QString platformFile = item.fileName();
 
             cppcheck::Platform plat2;
-            if (!plat2.loadPlatformFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
+            if (!plat2.loadFromFile(applicationFilePath.toStdString().c_str(), platformFile.toStdString()))
                 continue;
 
             if (platformFiles.indexOf(platformFile) == -1)
@@ -316,8 +316,8 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     } else {
         int i;
         for (i = 0; i < numberOfBuiltinPlatforms; ++i) {
-            const cppcheck::Platform::PlatformType p = builtinPlatforms[i];
-            if (platform == cppcheck::Platform::platformString(p))
+            const cppcheck::Platform::Type p = builtinPlatforms[i];
+            if (platform == cppcheck::Platform::toString(p))
                 break;
         }
         if (i < numberOfBuiltinPlatforms)
@@ -416,7 +416,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     else {
         const int i = mUI->mComboBoxPlatform->currentIndex();
         if (i < numberOfBuiltinPlatforms)
-            projectFile->setPlatform(cppcheck::Platform::platformString(builtinPlatforms[i]));
+            projectFile->setPlatform(cppcheck::Platform::toString(builtinPlatforms[i]));
         else
             projectFile->setPlatform(QString());
     }
@@ -587,7 +587,7 @@ QString ProjectFileDialog::getImportProject() const
 
 void ProjectFileDialog::addIncludeDir(const QString &dir)
 {
-    if (dir.isNull() || dir.isEmpty())
+    if (dir.isEmpty())
         return;
 
     const QString newdir = QDir::toNativeSeparators(dir);
@@ -598,7 +598,7 @@ void ProjectFileDialog::addIncludeDir(const QString &dir)
 
 void ProjectFileDialog::addCheckPath(const QString &path)
 {
-    if (path.isNull() || path.isEmpty())
+    if (path.isEmpty())
         return;
 
     const QString newpath = QDir::toNativeSeparators(path);
@@ -609,7 +609,7 @@ void ProjectFileDialog::addCheckPath(const QString &path)
 
 void ProjectFileDialog::addExcludePath(const QString &path)
 {
-    if (path.isNull() || path.isEmpty())
+    if (path.isEmpty())
         return;
 
     const QString newpath = QDir::toNativeSeparators(path);
@@ -739,7 +739,7 @@ void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &su
     bool found_relative = false;
 
     // Replace relative file path in the suppression with the absolute one
-    if ((suppression.fileName.find("*") == std::string::npos) &&
+    if ((suppression.fileName.find('*') == std::string::npos) &&
         (suppression.fileName.find(sep) == std::string::npos)) {
         QFileInfo inf(mProjectFile->getFilename());
         QString rootpath = inf.absolutePath();

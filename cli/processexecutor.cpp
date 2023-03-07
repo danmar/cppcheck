@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <utility>
 #include <fcntl.h>
 
 
@@ -67,7 +68,7 @@ ProcessExecutor::~ProcessExecutor()
 
 class PipeWriter : public ErrorLogger {
 public:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', REPORT_VERIFICATION='4', CHILD_END='5'};
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_VERIFICATION='4', CHILD_END='5'};
 
     explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 
@@ -76,11 +77,7 @@ public:
     }
 
     void reportErr(const ErrorMessage &msg) override {
-        report(msg, MessageType::REPORT_ERROR);
-    }
-
-    void reportInfo(const ErrorMessage &msg) override {
-        report(msg, MessageType::REPORT_INFO);
+        writeToPipe(REPORT_ERROR, msg.serialize());
     }
 
     void writeEnd(const std::string& str) const {
@@ -88,22 +85,6 @@ public:
     }
 
 private:
-    enum class MessageType {REPORT_ERROR, REPORT_INFO};
-
-    void report(const ErrorMessage &msg, MessageType msgType) const {
-        PipeSignal pipeSignal;
-        switch (msgType) {
-        case MessageType::REPORT_ERROR:
-            pipeSignal = REPORT_ERROR;
-            break;
-        case MessageType::REPORT_INFO:
-            pipeSignal = REPORT_INFO;
-            break;
-        }
-
-        writeToPipe(pipeSignal, msg.serialize());
-    }
-
     void writeToPipe(PipeSignal type, const std::string &data) const
     {
         unsigned int len = static_cast<unsigned int>(data.length() + 1);
@@ -136,7 +117,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
         return -1;
     }
 
-    if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::REPORT_INFO && type != PipeWriter::CHILD_END) {
+    if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::CHILD_END) {
         std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -159,7 +140,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
 
     if (type == PipeWriter::REPORT_OUT) {
         mErrorLogger.reportOut(buf);
-    } else if (type == PipeWriter::REPORT_ERROR || type == PipeWriter::REPORT_INFO) {
+    } else if (type == PipeWriter::REPORT_ERROR) {
         ErrorMessage msg;
         try {
             msg.deserialize(buf);
@@ -168,17 +149,8 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
             std::exit(EXIT_FAILURE);
         }
 
-        if (!mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage())) {
-            // Alert only about unique errors
-            std::string errmsg = msg.toString(mSettings.verbose);
-            if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
-                mErrorList.emplace_back(std::move(errmsg));
-                if (type == PipeWriter::REPORT_ERROR)
-                    mErrorLogger.reportErr(msg);
-                else
-                    mErrorLogger.reportInfo(msg);
-            }
-        }
+        if (hasToLog(msg))
+            mErrorLogger.reportErr(msg);
     } else if (type == PipeWriter::CHILD_END) {
         std::istringstream iss(buf);
         unsigned int fileResult = 0;
@@ -375,7 +347,7 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
                               "cppcheckError",
                               Certainty::normal);
 
-    if (!mSettings.nomsg.isSuppressed(errmsg.toSuppressionsErrorMessage()))
+    if (!mSettings.nomsg.isSuppressed(errmsg))
         mErrorLogger.reportErr(errmsg);
 }
 

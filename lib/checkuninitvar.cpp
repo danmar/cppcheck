@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
 
 #include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
 
@@ -1621,7 +1620,7 @@ void CheckUninitVar::valueFlowUninit()
                         continue;
                     uninitderef = deref && v->indirect == 0;
                     const bool isleaf = isLeafDot(tok) || uninitderef;
-                    if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
+                    if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
                         continue;
                 }
                 const ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);

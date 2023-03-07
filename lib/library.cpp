@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,9 @@
 #include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
+#include <algorithm>
 #include <cctype>
 #include <climits>
 #include <cstdlib>
@@ -670,6 +672,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     if (name.empty())
         return Error(ErrorCode::OK);
 
+    // TODO: write debug warning if we modify an existing entry
     Function& func = functions[name];
 
     for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
@@ -950,10 +953,10 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
     return false;
 }
 
-std::string Library::getFunctionName(const Token *ftok, bool *error) const
+std::string Library::getFunctionName(const Token *ftok, bool &error) const
 {
     if (!ftok) {
-        *error = true;
+        error = true;
         return "";
     }
     if (ftok->isName()) {
@@ -977,13 +980,13 @@ std::string Library::getFunctionName(const Token *ftok, bool *error) const
     if (ftok->str() == "." && ftok->astOperand1()) {
         const std::string type = astCanonicalType(ftok->astOperand1());
         if (type.empty()) {
-            *error = true;
+            error = true;
             return "";
         }
 
         return type + "::" + getFunctionName(ftok->astOperand2(),error);
     }
-    *error = true;
+    error = true;
     return "";
 }
 
@@ -996,7 +999,7 @@ std::string Library::getFunctionName(const Token *ftok) const
     if (ftok->astParent()) {
         bool error = false;
         const Token * tok = ftok->astParent()->isUnaryOp("&") ? ftok->astParent()->astOperand1() : ftok->next()->astOperand1();
-        const std::string ret = getFunctionName(tok, &error);
+        const std::string ret = getFunctionName(tok, error);
         return error ? std::string() : ret;
     }
 

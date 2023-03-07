@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "errortypes.h"
 #include "tokenlist.h"
 
+#include <cassert>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -59,8 +60,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TemplateSimplifier;
 
 public:
-    Tokenizer();
-    Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
+    explicit Tokenizer(const Settings * settings, ErrorLogger *errorLogger = nullptr, const Preprocessor *preprocessor = nullptr);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -377,10 +377,8 @@ public:
      */
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
 
-    void setPreprocessor(const Preprocessor *preprocessor) {
-        mPreprocessor = preprocessor;
-    }
     const Preprocessor *getPreprocessor() const {
+        assert(mPreprocessor);
         return mPreprocessor;
     }
 
@@ -537,11 +535,6 @@ private:
     void simplifyBorland();
 
     /**
-     * Remove Qt signals and slots
-     */
-    void simplifyQtSignalsSlots();
-
-    /**
      * Collapse operator name tokens into single token
      * operator = => operator=
      */
@@ -593,21 +586,21 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(const Token * const startToken, // cppcheck-suppress functionConst // has side effects
-                                  const VariableMap &variableMap,
+    void setVarIdClassDeclaration(const Token * const startToken,
+                                  VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
                                   std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
 
     void setVarIdStructMembers(Token **tok1,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int *varId) const;
+                               nonneg int &varId) const;
 
     void setVarIdClassFunction(const std::string &classname,
                                Token * const startToken,
                                const Token * const endToken,
                                const std::map<std::string, nonneg int> &varlist,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int *varId_) const;
+                               nonneg int &varId_);
 
     /**
      * Output list of unknown types.
@@ -624,12 +617,6 @@ public:
     /** Was there templates in the code? */
     bool codeWithTemplates() const {
         return mCodeWithTemplates;
-    }
-
-
-    void setSettings(const Settings *settings) {
-        mSettings = settings;
-        list.setSettings(settings);
     }
 
     const SymbolDatabase *getSymbolDatabase() const {
@@ -693,7 +680,8 @@ public:
     Tokenizer &operator=(const Tokenizer &) = delete;
 
 private:
-    Token *processFunc(Token *tok2, bool inOperator) const;
+    const Token *processFunc(const Token *tok2, bool inOperator) const;
+    Token *processFunc(Token *tok2, bool inOperator);
 
     /**
      * Get new variable id.
@@ -707,7 +695,7 @@ private:
     void setPodTypes();
 
     /** settings */
-    const Settings * mSettings;
+    const Settings * const mSettings;
 
     /** errorlogger */
     ErrorLogger* const mErrorLogger;
@@ -715,7 +703,7 @@ private:
     /** Symbol database that all checks etc can use */
     SymbolDatabase *mSymbolDatabase;
 
-    TemplateSimplifier *mTemplateSimplifier;
+    TemplateSimplifier * const mTemplateSimplifier;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */
@@ -750,7 +738,7 @@ private:
      */
     TimerResults *mTimerResults;
 
-    const Preprocessor *mPreprocessor;
+    const Preprocessor * const mPreprocessor;
 };
 
 /// @}

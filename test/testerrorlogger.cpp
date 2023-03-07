@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "suppressions.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <iosfwd>
 #include <list>
@@ -249,7 +249,7 @@ private:
                                "  <location file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
                                "</error>";
         tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
+        ASSERT(doc.Parse(xmldata, sizeof(xmldata)) == tinyxml2::XML_SUCCESS);
         ErrorMessage msg(doc.FirstChildElement());
         ASSERT_EQUALS("errorId", msg.id);
         ASSERT_EQUALS(Severity::error, msg.severity);

@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2021 Cppcheck team.
+// Copyright (C) 2007-2023 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ extern std::ostringstream output;
  * @brief Utility class for capturing cout and cerr to ostringstream buffers
  * for later use. Uses RAII to stop redirection when the object goes out of
  * scope.
+ * NOTE: This is *not* thread-safe.
  */
 class RedirectOutputError {
 public:
@@ -83,10 +84,38 @@ private:
     std::streambuf *_oldCerr;
 };
 
-#define REDIRECT RedirectOutputError redir; do {} while (false)
+class SuppressOutput {
+public:
+    /** Set up suppression, flushing anything in the pipes. */
+    SuppressOutput() {
+        // flush all old output
+        std::cout.flush();
+        std::cerr.flush();
+
+        _oldCout = std::cout.rdbuf(); // back up cout's streambuf
+        _oldCerr = std::cerr.rdbuf(); // back up cerr's streambuf
+
+        std::cout.rdbuf(nullptr); // disable cout
+        std::cerr.rdbuf(nullptr); // disable cerr
+    }
+
+    /** Revert cout and cerr behaviour */
+    ~SuppressOutput() {
+        std::cout.rdbuf(_oldCout); // restore cout's original streambuf
+        std::cerr.rdbuf(_oldCerr); // restore cerrs's original streambuf
+    }
+
+private:
+    std::streambuf *_oldCout;
+    std::streambuf *_oldCerr;
+};
+
+#define REDIRECT RedirectOutputError redir
 #define GET_REDIRECT_OUTPUT redir.getOutput()
 #define CLEAR_REDIRECT_OUTPUT redir.clearOutput()
 #define GET_REDIRECT_ERROUT redir.getErrout()
 #define CLEAR_REDIRECT_ERROUT redir.clearErrout()
+
+#define SUPPRESS SuppressOutput supprout
 
 #endif

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 /// @{
 
 class Tokenizer;
+class ErrorMessage;
 
 /** @brief class for handling suppressions */
 class CPPCHECKLIB Suppressions {
@@ -177,6 +178,13 @@ public:
      * @return true if this error is suppressed.
      */
     bool isSuppressed(const ErrorMessage &errmsg);
+
+    /**
+     * @brief Returns true if this message should not be shown to the user.
+     * @param errmsg error message
+     * @return true if this error is suppressed.
+     */
+    bool isSuppressed(const ::ErrorMessage &errmsg);
 
     /**
      * @brief Returns true if this message should not be shown to the user, only uses local suppressions.

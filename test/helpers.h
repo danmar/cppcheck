@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TestUtilsH
-#define TestUtilsH
+#ifndef helpersH
+#define helpersH
 
 #include "color.h"
 #include "errorlogger.h"
@@ -26,12 +26,11 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <cstdio>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
+
 
 class Token;
 
@@ -64,7 +63,7 @@ public:
         next->reportOut(outmsg);
     }
     void reportErr(const ErrorMessage &msg) override {
-        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
+        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg))
             next->reportErr(msg);
     }
 private:
@@ -74,16 +73,23 @@ private:
 
 class ScopedFile {
 public:
-    ScopedFile(std::string name, const std::string &content) : mName(std::move(name)) {
-        std::ofstream of(mName);
-        of << content;
+    ScopedFile(std::string name, const std::string &content, std::string path = "");
+    ~ScopedFile();
+
+    const std::string& path() const
+    {
+        return mFullPath;
     }
 
-    ~ScopedFile() {
-        remove(mName.c_str());
-    }
+    ScopedFile(const ScopedFile&) = delete;
+    ScopedFile(ScopedFile&&) = delete;
+    ScopedFile& operator=(const ScopedFile&) = delete;
+    ScopedFile& operator=(ScopedFile&&) = delete;
+
 private:
-    std::string mName;
+    const std::string mName;
+    const std::string mPath;
+    const std::string mFullPath;
 };
 
-#endif // TestUtilsH
+#endif // helpersH

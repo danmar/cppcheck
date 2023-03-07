@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
@@ -4601,7 +4601,6 @@ private:
 
     void uninitvar_configuration() {
         const auto oldSettings = settings;
-        settings.severity.enable(Severity::information);
         settings.checkLibrary = true;
 
         checkUninitVar("int f() {\n"
@@ -6271,6 +6270,16 @@ private:
                         "void f() {\n"
                         "    H h;\n"
                         "    h.e();\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11597
+        valueFlowUninit("void f(size_t f) {\n"
+                        "    struct {\n"
+                        "        int i;\n"
+                        "        enum { offset = 1062 };\n"
+                        "    } s;\n"
+                        "    if (f < s.offset + sizeof(s)) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }

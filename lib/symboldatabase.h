@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "sourcelocation.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iosfwd>
 #include <list>
@@ -225,7 +226,7 @@ class CPPCHECKLIB Variable {
      * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings, bool* isContainer);
+    bool arrayDimensions(const Settings* settings, bool& isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -1399,12 +1400,12 @@ public:
     const Scope *findScopeByName(const std::string& name) const;
 
     const Type* findType(const Token *startTok, const Scope *startScope, bool lookOutside = false) const;
-    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) const {
+    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) {
         return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope), lookOutside));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
-    Scope *findScope(const Token *tok, Scope *startScope) const {
+    Scope *findScope(const Token *tok, Scope *startScope) {
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 

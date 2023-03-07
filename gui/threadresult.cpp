@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -114,11 +114,9 @@ void ThreadResult::setProject(const ImportProject &prj)
 
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
-    quint64 sizeOfFiles = 0;
-    for (const ImportProject::FileSettings& fs : prj.fileSettings) {
-        sizeOfFiles += QFile(QString::fromStdString(fs.filename)).size();
-    }
-    mMaxProgress = sizeOfFiles;
+    mMaxProgress = std::accumulate(prj.fileSettings.begin(), prj.fileSettings.end(), quint64{ 0 }, [](quint64 v, const ImportProject::FileSettings& fs) {
+        return v + QFile(QString::fromStdString(fs.filename)).size();
+    });
 }
 
 void ThreadResult::clearFiles()

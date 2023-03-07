@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,10 @@
 #include "errortypes.h"
 #include "standards.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
-#include <string>
 
 
 class TestConstructors : public TestFixture {
@@ -1952,7 +1950,8 @@ private:
 
     void initvar_smartptr() { // #10237
         Settings s;
-        s.libraries.emplace_back("std");
+        // TODO: test shuld probably not pass without library
+        //LOAD_LIB_2(s.library, "std.cfg");
         check("struct S {\n"
               "    explicit S(const std::shared_ptr<S>& sp) {\n"
               "        set(*sp);\n"
@@ -3589,7 +3588,9 @@ private:
 
     void uninitVarInheritClassInit() {
         Settings s;
-        s.libraries.emplace_back("vcl");
+        // TODO: test should probably not pass without library
+        //LOAD_LIB_2(s.library, "vcl.cfg");
+        //s.libraries.emplace_back("vcl");
 
         check("class Fred: public TObject\n"
               "{\n"

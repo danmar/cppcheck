@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@
 #include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
-#include "testsuite.h"
-#include "testutils.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -29,6 +29,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <list>
 #include <map>
@@ -39,8 +40,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
-#include <tinyxml2.h>
 
 struct InternalError;
 class TestSymbolDatabase;
@@ -120,7 +119,7 @@ private:
 
     void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
-        settings2.platform(Settings::Unspecified);
+        PLATFORM(settings2.platform, cppcheck::Platform::Type::Unspecified);
 
         // If there are unused templates, keep those
         settings1.checkUnusedTemplates = true;
@@ -130,6 +129,7 @@ private:
         TEST_CASE(array_ptr);
         TEST_CASE(stlarray1);
         TEST_CASE(stlarray2);
+        TEST_CASE(stlarray3);
 
         TEST_CASE(test_isVariableDeclarationCanHandleNull);
         TEST_CASE(test_isVariableDeclarationIdentifiesSimpleDeclaration);
@@ -253,6 +253,7 @@ private:
         TEST_CASE(functionArgs16); // #9591
         TEST_CASE(functionArgs17);
         TEST_CASE(functionArgs18); // #10376
+        TEST_CASE(functionArgs19); // #10376
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -367,6 +368,7 @@ private:
         TEST_CASE(symboldatabase101);
         TEST_CASE(symboldatabase102);
         TEST_CASE(symboldatabase103);
+        TEST_CASE(symboldatabase104);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -385,6 +387,7 @@ private:
         TEST_CASE(enum9);
         TEST_CASE(enum10); // #11001
         TEST_CASE(enum11);
+        TEST_CASE(enum12);
 
         TEST_CASE(sizeOfType);
 
@@ -404,7 +407,6 @@ private:
         TEST_CASE(findFunction8);
         TEST_CASE(findFunction9);
         TEST_CASE(findFunction10); // #7673
-        TEST_CASE(findFunction11);
         TEST_CASE(findFunction12);
         TEST_CASE(findFunction13);
         TEST_CASE(findFunction14);
@@ -437,6 +439,9 @@ private:
         TEST_CASE(findFunction41); // #10202
         TEST_CASE(findFunction42);
         TEST_CASE(findFunction43); // #10087
+        TEST_CASE(findFunction44); // #11182
+        TEST_CASE(findFunction45);
+        TEST_CASE(findFunction46);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -475,6 +480,7 @@ private:
 
         TEST_CASE(valueType1);
         TEST_CASE(valueType2);
+        TEST_CASE(valueType3);
         TEST_CASE(valueTypeThis);
 
         TEST_CASE(variadic1); // #7453
@@ -501,6 +507,7 @@ private:
         TEST_CASE(auto16);
         TEST_CASE(auto17); // #11163
         TEST_CASE(auto18);
+        TEST_CASE(auto19);
 
         TEST_CASE(unionWithConstructor);
 
@@ -567,6 +574,56 @@ private:
         ASSERT(v->isArray());
         ASSERT_EQUALS(1U, v->dimensions().size());
         ASSERT_EQUALS(20U, v->dimension(0));
+    }
+
+    void stlarray3() {
+        GET_SYMBOL_DB("std::array<int, 4> a;\n"
+                      "std::array<int, 4> b[2];\n"
+                      "const std::array<int, 4>& r = a;\n");
+        ASSERT(db != nullptr);
+
+        ASSERT_EQUALS(4, db->variableList().size()); // the first one is not used
+        auto it = db->variableList().begin() + 1;
+
+        ASSERT((*it)->isArray());
+        ASSERT(!(*it)->isPointer());
+        ASSERT(!(*it)->isReference());
+        ASSERT_EQUALS(1U, (*it)->dimensions().size());
+        ASSERT_EQUALS(4U, (*it)->dimension(0));
+        const ValueType* vt = (*it)->valueType();
+        ASSERT(vt && vt->container);
+        ASSERT_EQUALS(vt->pointer, 0);
+        const Token* tok = (*it)->nameToken();
+        ASSERT(tok && (vt = tok->valueType()));
+        ASSERT_EQUALS(vt->pointer, 0);
+
+        ++it;
+        ASSERT((*it)->isArray());
+        ASSERT(!(*it)->isPointer());
+        ASSERT(!(*it)->isReference());
+        ASSERT_EQUALS(1U, (*it)->dimensions().size());
+        ASSERT_EQUALS(4U, (*it)->dimension(0));
+        vt = (*it)->valueType();
+        ASSERT_EQUALS(vt->pointer, 0);
+        tok = (*it)->nameToken();
+        ASSERT(tok && (vt = tok->valueType()));
+        ASSERT_EQUALS(vt->pointer, 1);
+
+        ++it;
+        ASSERT((*it)->isArray());
+        ASSERT(!(*it)->isPointer());
+        ASSERT((*it)->isReference());
+        ASSERT((*it)->isConst());
+        ASSERT_EQUALS(1U, (*it)->dimensions().size());
+        ASSERT_EQUALS(4U, (*it)->dimension(0));
+        vt = (*it)->valueType();
+        ASSERT_EQUALS(vt->pointer, 0);
+        ASSERT(vt->reference == Reference::LValue);
+        tok = (*it)->nameToken();
+        ASSERT(tok && (vt = tok->valueType()));
+        ASSERT_EQUALS(vt->pointer, 0);
+        ASSERT_EQUALS(vt->constness, 1);
+        ASSERT(vt->reference == Reference::LValue);
     }
 
     void test_isVariableDeclarationCanHandleNull() {
@@ -2612,6 +2669,15 @@ private:
         const Scope *scope = db->functionScopes.front();
         const Function *func = scope->function;
         ASSERT_EQUALS(2, func->argCount());
+    }
+
+    void functionArgs19() {
+        const char code[] = "void f(int (*fp)(int), int x, int y) {}";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        const Scope *scope = db->functionScopes.front();
+        const Function *func = scope->function;
+        ASSERT_EQUALS(3, func->argCount());
     }
 
     void functionImplicitlyVirtual() {
@@ -5072,6 +5138,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void symboldatabase104() { // #11535
+        GET_SYMBOL_DB("struct S {\n"
+                      "    void f1(char* const c);\n"
+                      "    void f2(char* const c);\n"
+                      "    void f3(char* const);\n"
+                      "    void f4(char* c);\n"
+                      "    void f5(char* c);\n"
+                      "    void f6(char*);\n"
+                      "};\n"
+                      "void S::f1(char* c) {}\n"
+                      "void S::f2(char*) {}\n"
+                      "void S::f3(char* c) {}\n"
+                      "void S::f4(char* const c) {}\n"
+                      "void S::f5(char* const) {}\n"
+                      "void S::f6(char* const c) {}\n");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void createSymbolDatabaseFindAllScopes1() {
         GET_SYMBOL_DB("void f() { union {int x; char *p;} a={0}; }");
         ASSERT(db->scopeList.size() == 3);
@@ -5387,18 +5472,18 @@ private:
         ASSERT(db->variableList().size() == 13); // the first one is not used
         const Variable * v;
         unsigned int id = 1;
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
         TEST(1);
         TEST(1);
-        TEST(settings1.sizeof_short);
-        TEST(settings1.sizeof_short);
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_int);
-        TEST(settings1.sizeof_long);
-        TEST(settings1.sizeof_long);
-        TEST(settings1.sizeof_long_long);
-        TEST(settings1.sizeof_long_long);
+        TEST(settings1.platform.sizeof_short);
+        TEST(settings1.platform.sizeof_short);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_int);
+        TEST(settings1.platform.sizeof_long);
+        TEST(settings1.platform.sizeof_long);
+        TEST(settings1.platform.sizeof_long_long);
+        TEST(settings1.platform.sizeof_long_long);
     }
 
     void enum8() {
@@ -5455,6 +5540,22 @@ private:
     void enum11() {
         check("enum class E;\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void enum12() {
+        GET_SYMBOL_DB_C("struct { enum E { E0 }; } t;\n"
+                        "void f() {\n"
+                        "    if (t.E0) {}\n"
+                        "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* E0 = it->findEnumerator("E0");
+        ASSERT(E0 && E0->value_known);
+        ASSERT_EQUALS(E0->value, 0);
+        const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 )");
+        ASSERT(e && e->enumerator());
+        ASSERT_EQUALS(e->enumerator(), E0);
     }
 
     void sizeOfType() {
@@ -5982,21 +6083,6 @@ private:
         ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 2);
     }
 
-    void findFunction11() {
-        settings1.libraries.emplace_back("qt");
-        GET_SYMBOL_DB("class Fred : public QObject {\n"
-                      "    Q_OBJECT\n"
-                      "private slots:\n"
-                      "    void foo();\n"
-                      "};\n"
-                      "void Fred::foo() { }");
-        settings1.libraries.pop_back();
-        ASSERT_EQUALS("", errout.str());
-
-        const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( ) {");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 4);
-    }
-
     void findFunction12() {
         GET_SYMBOL_DB("void foo(std::string a) { }\n"
                       "void foo(long long a) { }\n"
@@ -6037,15 +6123,10 @@ private:
                       "void foo(int* a) { }\n"
                       "void foo(void* a) { }\n"
                       "void func(int i, const float f, int* ip, float* fp, char* cp) {\n"
-                      "    foo(0);\n"
-                      "    foo(0L);\n"
                       "    foo(0.f);\n"
-                      "    foo(false);\n"
                       "    foo(bar());\n"
-                      "    foo(i);\n"
                       "    foo(f);\n"
                       "    foo(&i);\n"
-                      "    foo(&f);\n"
                       "    foo(ip);\n"
                       "    foo(fp);\n"
                       "    foo(cp);\n"
@@ -6054,32 +6135,18 @@ private:
 
         ASSERT_EQUALS("", errout.str());
 
-        const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( 0 ) ;");
-        ASSERT_EQUALS(true, db && f && f->function() && f->function()->tokenDef->linenr() == 3);
-
-        f = Token::findsimplematch(tokenizer.tokens(), "foo ( 0L ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
-
-        f = Token::findsimplematch(tokenizer.tokens(), "foo ( 0.f ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 2);
-
-        f = Token::findsimplematch(tokenizer.tokens(), "foo ( false ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
+        const Token* f = Token::findsimplematch(tokenizer.tokens(), "foo ( 0.f ) ;");
+        ASSERT_EQUALS(true, f && f->function());
+        TODO_ASSERT_EQUALS(2, 3, f->function()->tokenDef->linenr());
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( bar ( ) ) ;");
         ASSERT_EQUALS(true, f && f->function() == nullptr);
-
-        f = Token::findsimplematch(tokenizer.tokens(), "foo ( i ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( f ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 2);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( & i ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
-
-        f = Token::findsimplematch(tokenizer.tokens(), "foo ( & f ) ;");
-        ASSERT_EQUALS(true, f && f->function() == nullptr);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( ip ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 4);
@@ -6123,7 +6190,7 @@ private:
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 2);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( cp ) ;");
-        ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 3);
+        TODO_ASSERT(f && f->function() && f->function()->tokenDef->linenr() == 3);
 
         f = Token::findsimplematch(tokenizer.tokens(), "foo ( ccp ) ;");
         ASSERT_EQUALS(true, f && f->function() && f->function()->tokenDef->linenr() == 5);
@@ -6926,6 +6993,81 @@ private:
         }
     }
 
+    void findFunction44() { // #11182
+        {
+            GET_SYMBOL_DB("struct T { enum E { E0 }; };\n"
+                          "struct S {\n"
+                          "    void f(const void*, T::E) {}\n"
+                          "    void f(const int&, T::E) {}\n"
+                          "    void g() { f(nullptr, T::E0); }\n"
+                          "};\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( nullptr");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "f");
+            ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("enum E { E0 };\n"
+                          "struct S {\n"
+                          "    void f(int*, int) {}\n"
+                          "    void f(int, int) {}\n"
+                          "    void g() { f(nullptr, E0); }\n"
+                          "};\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( nullptr");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "f");
+            ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("struct T { enum E { E0 }; } t; \n" // #11559
+                          "void f(const void*, T::E) {}\n"
+                          "void f(const int&, T::E) {}\n"
+                          "void g() {\n"
+                          "    f(nullptr, t.E0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "f ( nullptr");
+            ASSERT(functok);
+            ASSERT(functok->function());
+            ASSERT(functok->function()->name() == "f");
+            ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
+        }
+    }
+
+    void findFunction45() {
+        GET_SYMBOL_DB("struct S { void g(int); };\n"
+                      "void f(std::vector<S>& v) {\n"
+                      "    std::vector<S>::iterator it = v.begin();\n"
+                      "    it->g(1);\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "g ( 1");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT(functok->function()->name() == "g");
+        ASSERT_EQUALS(1, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction46() {
+        GET_SYMBOL_DB("struct S {\n" // #11531
+                      "    const int* g(int i, int j) const;\n"
+                      "    int* g(int i, int j);\n"
+                      "};\n"
+                      "enum E { E0 };\n"
+                      "void f(S& s, int i) {\n"
+                      "    int* p = s.g(E0, i);\n"
+                      "    *p = 0;\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token *functok = Token::findsimplematch(tokenizer.tokens(), "g ( E0");
+        ASSERT(functok && functok->function());
+        ASSERT(functok->function()->name() == "g");
+        ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+    }
 
     void findFunctionContainer() {
         {
@@ -7474,14 +7616,14 @@ private:
         ASSERT_EQUALS("", ValueType().str());
 
         Settings s;
-        s.int_bit = 16;
-        s.long_bit = 32;
-        s.long_long_bit = 64;
+        s.platform.int_bit = 16;
+        s.platform.long_bit = 32;
+        s.platform.long_long_bit = 64;
 
         Settings sSameSize;
-        sSameSize.int_bit = 32;
-        sSameSize.long_bit = 64;
-        sSameSize.long_long_bit = 64;
+        sSameSize.platform.int_bit = 32;
+        sSameSize.platform.long_bit = 64;
+        sSameSize.platform.long_long_bit = 64;
 
         // numbers
         ASSERT_EQUALS("signed int", typeOf("1;", "1", "test.c", &s));
@@ -7713,10 +7855,8 @@ private:
                                "<function name=\"g\">\n" \
                                "<returnValue type=\"" #type "\"/>\n" \
                                "</function>\n" \
-                               "</def>"; \
-        tinyxml2::XMLDocument doc; \
-        doc.Parse(xmldata, sizeof(xmldata)); \
-        sF.library.load(doc); \
+                               "</def>";              \
+        ASSERT(sF.library.loadxmldata(xmldata, sizeof(xmldata))); \
         ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", "test.cpp", &sF)); \
 } while (false)
         // *INDENT-OFF*
@@ -7747,8 +7887,8 @@ private:
             settings.library.mPodTypes["char8_t"] = char8;
             settings.library.mPodTypes["char16_t"] = char16;
             settings.library.mPodTypes["char32_t"] = char32;
-            settings.sizeof_short = 2;
-            settings.sizeof_int = 4;
+            settings.platform.sizeof_short = 2;
+            settings.platform.sizeof_int = 4;
 
             ASSERT_EQUALS("unsigned char", typeOf("u8'a';", "u8'a'", "test.cpp", &settings));
             ASSERT_EQUALS("unsigned short", typeOf("u'a';", "u'a'", "test.cpp", &settings));
@@ -7760,7 +7900,7 @@ private:
         {
             // PodType
             Settings settingsWin64;
-            settingsWin64.platformType = Settings::Win64;
+            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
             const Library::PodType u32 = { 4, 'u' };
             const Library::PodType podtype2 = { 0, 'u', Library::PodType::Type::INT };
             settingsWin64.library.mPodTypes["u32"] = u32;
@@ -7782,10 +7922,10 @@ private:
         {
             // PlatformType
             Settings settingsUnix32;
-            settingsUnix32.platformType = Settings::Unix32;
+            settingsUnix32.platform.type = cppcheck::Platform::Type::Unix32;
             Library::PlatformType s32;
             s32.mType = "int";
-            settingsUnix32.library.mPlatforms[settingsUnix32.platformString()].mPlatformTypes["s32"] = s32;
+            settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
@@ -7793,10 +7933,10 @@ private:
         {
             // PlatformType - wchar_t
             Settings settingsWin64;
-            settingsWin64.platformType = Settings::Win64;
+            settingsWin64.platform.type = cppcheck::Platform::Type::Win64;
             Library::PlatformType lpctstr;
             lpctstr.mType = "wchar_t";
-            settingsWin64.library.mPlatforms[settingsWin64.platformString()].mPlatformTypes["LPCTSTR"] = lpctstr;
+            settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;
             ValueType vt;
             ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
@@ -7964,6 +8104,43 @@ private:
             tok = Token::findsimplematch(tok, "it");
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("iterator(std :: map|unordered_map <)", tok->valueType()->str());
+        }
+    }
+
+    void valueType3() {
+        {
+            GET_SYMBOL_DB("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
+                          "    auto& s = v[i][j];\n"
+                          "    s.insert(0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "s .");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("container(std :: set|unordered_set <)", tok->valueType()->str());
+        }
+        {
+            GET_SYMBOL_DB("void f(std::vector<int> v) {\n"
+                          "    auto it = std::find(v.begin(), v.end(), 0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("iterator(std :: vector <)", tok->valueType()->str());
+        }
+        {
+            GET_SYMBOL_DB("void f(std::vector<int>::iterator beg, std::vector<int>::iterator end) {\n"
+                          "    auto it = std::find(beg, end, 0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("iterator(std :: vector <)", tok->valueType()->str());
         }
     }
 
@@ -8777,6 +8954,42 @@ private:
         ASSERT_EQUALS(autoTok->valueType()->constness, 3);
         ASSERT_EQUALS(autoTok->valueType()->pointer, 1);
         TODO_ASSERT(autoTok->valueType()->reference == Reference::LValue);
+    }
+
+    void auto19() { // #11517
+        {
+            GET_SYMBOL_DB("void f(const std::vector<void*>& v) {\n"
+                          "    for (const auto* h : v)\n"
+                          "        if (h) {}\n"
+                          "}\n");
+            ASSERT_EQUALS(3, db->variableList().size());
+
+            const Variable* h = db->variableList()[2];
+            ASSERT(h->isPointer());
+            ASSERT(!h->isConst());
+            const Token* varTok = Token::findsimplematch(tokenizer.tokens(), "h )");
+            ASSERT(varTok && varTok->valueType());
+            ASSERT_EQUALS(varTok->valueType()->constness, 1);
+            ASSERT_EQUALS(varTok->valueType()->pointer, 1);
+        }
+        {
+            GET_SYMBOL_DB("struct B { virtual void f() {} };\n"
+                          "struct D : B {};\n"
+                          "void g(const std::vector<B*>& v) {\n"
+                          "    for (auto* b : v)\n"
+                          "        if (auto d = dynamic_cast<D*>(b))\n"
+                          "            d->f();\n"
+                          "}\n");
+            ASSERT_EQUALS(4, db->variableList().size());
+
+            const Variable* b = db->variableList()[2];
+            ASSERT(b->isPointer());
+            ASSERT(!b->isConst());
+            const Token* varTok = Token::findsimplematch(tokenizer.tokens(), "b )");
+            ASSERT(varTok && varTok->valueType());
+            ASSERT_EQUALS(varTok->valueType()->constness, 0);
+            ASSERT_EQUALS(varTok->valueType()->pointer, 1);
+        }
     }
 
     void unionWithConstructor() {

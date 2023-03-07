@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -113,9 +113,9 @@ void ResultsView::clearRecheckFile(const QString &filename)
     mUI->mTree->clearRecheckFile(filename);
 }
 
-ShowTypes * ResultsView::getShowTypes() const
+const ShowTypes & ResultsView::getShowTypes() const
 {
-    return &mUI->mTree->mShowSeverities;
+    return mUI->mTree->mShowSeverities;
 }
 
 void ResultsView::progress(int value, const QString& description)

@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2022 Cppcheck team.
+// Copyright (C) 2007-2023 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,12 +15,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "clangimport.h"
-#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <cstdint>
 #include <list>
@@ -1052,10 +1051,15 @@ private:
 #define GET_SYMBOL_DB(AST) \
     Settings settings; \
     settings.clang = true; \
-    settings.platform(cppcheck::Platform::PlatformType::Unix64); \
+    { \
+        std::string errstr; \
+        ASSERT_EQUALS_MSG(true, settings.platform.set("unix64", errstr, {exename.c_str()}), errstr); \
+    } \
     Tokenizer tokenizer(&settings, this); \
-    std::istringstream istr(AST); \
-    clangimport::parseClangAstDump(&tokenizer, istr); \
+    { \
+        std::istringstream istr(AST); \
+        clangimport::parseClangAstDump(&tokenizer, istr); \
+    } \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
     ASSERT(db)
 

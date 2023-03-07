@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 //---------------------------------------------------------------------------
 #include "checkexceptionsafety.h"
 
+#include "errortypes.h"
+#include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -35,6 +37,9 @@ namespace {
     CheckExceptionSafety instance;
 }
 
+static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
+static const struct CWE CWE703(703U);   // Improper Check or Handling of Exceptional Conditions
+static const struct CWE CWE480(480U);   // Use of Incorrect Operator
 
 //---------------------------------------------------------------------------
 

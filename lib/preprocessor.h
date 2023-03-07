@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include <atomic>
 #include <cstddef>
 #include <istream>
 #include <list>
@@ -86,9 +85,6 @@ public:
 
     explicit Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
-
-    static std::atomic<bool> missingIncludeFlag;
-    static std::atomic<bool> missingSystemIncludeFlag;
 
     void inlineSuppressions(const simplecpp::TokenList &tokens);
 
@@ -155,15 +151,6 @@ public:
      * @param filename name of source file
      */
     std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
-
-    /**
-     * make sure empty configuration macros are not used in code. the given code must be a single configuration
-     * @param cfg configuration
-     * @param macroUsageList macro usage list
-     * @return true => configuration is valid
-     */
-    bool validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList);
-    void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
 
     /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.

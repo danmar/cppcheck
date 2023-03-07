@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ struct ReverseTraversal {
     ValuePtr<Analyzer> analyzer;
     const Settings* settings;
 
-    std::pair<bool, bool> evalCond(const Token* tok) {
+    std::pair<bool, bool> evalCond(const Token* tok) const {
         std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
         const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
@@ -56,12 +56,12 @@ struct ReverseTraversal {
 
     bool update(Token* tok) {
         Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
-        if (!action.isNone())
-            analyzer->update(tok, action, Analyzer::Direction::Reverse);
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
             return false;
         if (action.isInvalid())
             return false;
+        if (!action.isNone())
+            analyzer->update(tok, action, Analyzer::Direction::Reverse);
         return true;
     }
 
@@ -131,7 +131,7 @@ struct ReverseTraversal {
         return result;
     }
 
-    Analyzer::Action analyzeRange(const Token* start, const Token* end) {
+    Analyzer::Action analyzeRange(const Token* start, const Token* end) const {
         Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
@@ -142,7 +142,7 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr) const {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
             if (tok == end)

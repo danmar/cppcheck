@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -183,47 +183,46 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
 
 //---------------------------------------------------------------------------
 
-static bool getDimensionsEtc(const Token * const arrayToken, const Settings *settings, std::vector<Dimension> * const dimensions, ErrorPath * const errorPath, bool * const mightBeLarger, MathLib::bigint* path)
+static bool getDimensionsEtc(const Token * const arrayToken, const Settings *settings, std::vector<Dimension> &dimensions, ErrorPath &errorPath, bool &mightBeLarger, MathLib::bigint &path)
 {
     const Token *array = arrayToken;
     while (Token::Match(array, ".|::"))
         array = array->astOperand2();
 
     if (array->variable() && array->variable()->isArray() && !array->variable()->dimensions().empty()) {
-        *dimensions = array->variable()->dimensions();
-        if (dimensions->size() >= 1 && ((*dimensions)[0].num <= 1 || !(*dimensions)[0].tok)) {
+        dimensions = array->variable()->dimensions();
+        if (dimensions[0].num <= 1 || !dimensions[0].tok) {
             visitAstNodes(arrayToken,
                           [&](const Token *child) {
                 if (child->originalName() == "->") {
-                    *mightBeLarger = true;
+                    mightBeLarger = true;
                     return ChildrenToVisit::none;
                 }
                 return ChildrenToVisit::op1_and_op2;
             });
         }
-    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings, path)) {
+    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings, &path)) {
         Dimension dim;
         dim.tok = nullptr;
         dim.num = Token::getStrArraySize(stringLiteral);
         dim.known = array->hasKnownValue();
-        dimensions->emplace_back(dim);
+        dimensions.emplace_back(dim);
     } else if (array->valueType() && array->valueType()->pointer >= 1 && (array->valueType()->isIntegral() || array->valueType()->isFloat())) {
         const ValueFlow::Value *value = getBufferSizeValue(array);
         if (!value)
             return false;
-        if (path)
-            *path = value->path;
-        *errorPath = value->errorPath;
+        path = value->path;
+        errorPath = value->errorPath;
         Dimension dim;
         dim.known = value->isKnown();
         dim.tok = nullptr;
-        const int typeSize = array->valueType()->typeSize(*settings, array->valueType()->pointer > 1);
+        const int typeSize = array->valueType()->typeSize(settings->platform, array->valueType()->pointer > 1);
         if (typeSize == 0)
             return false;
         dim.num = value->intvalue / typeSize;
-        dimensions->emplace_back(dim);
+        dimensions.emplace_back(dim);
     }
-    return !dimensions->empty();
+    return !dimensions.empty();
 }
 
 static ValueFlow::Value makeSizeValue(MathLib::bigint size, MathLib::bigint path)
@@ -314,7 +313,7 @@ void CheckBufferOverrun::arrayIndex()
         ErrorPath errorPath;
         bool mightBeLarger = false;
         MathLib::bigint path = 0;
-        if (!getDimensionsEtc(tok->astOperand1(), mSettings, &dimensions, &errorPath, &mightBeLarger, &path))
+        if (!getDimensionsEtc(tok->astOperand1(), mSettings, dimensions, errorPath, mightBeLarger, path))
             continue;
 
         const Variable* const var = array->variable();
@@ -486,7 +485,7 @@ void CheckBufferOverrun::pointerArithmetic()
         ErrorPath errorPath;
         bool mightBeLarger = false;
         MathLib::bigint path = 0;
-        if (!getDimensionsEtc(arrayToken, mSettings, &dimensions, &errorPath, &mightBeLarger, &path))
+        if (!getDimensionsEtc(arrayToken, mSettings, dimensions, errorPath, mightBeLarger, path))
             continue;
 
         if (tok->str() == "+") {
@@ -565,11 +564,11 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
     v.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
 
     if (var->isPointerArray())
-        v.intvalue = dim * mSettings->sizeof_pointer;
+        v.intvalue = dim * mSettings->platform.sizeof_pointer;
     else if (var->isPointer())
         return ValueFlow::Value(-1);
     else {
-        const MathLib::bigint typeSize = bufTok->valueType()->typeSize(*mSettings);
+        const MathLib::bigint typeSize = bufTok->valueType()->typeSize(mSettings->platform);
         v.intvalue = dim * typeSize;
     }
 
@@ -881,10 +880,12 @@ std::string CheckBufferOverrun::MyFileInfo::toString() const
 
 bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type)
 {
+    if (!offset)
+        return false;
     const CheckBufferOverrun *c = dynamic_cast<const CheckBufferOverrun *>(check);
     if (!c)
         return false;
-    if (!argtok->valueType() || argtok->valueType()->typeSize(*c->mSettings) == 0)
+    if (!argtok->valueType() || argtok->valueType()->typeSize(c->mSettings->platform) == 0)
         return false;
     const Token *indexTok = nullptr;
     if (type == 1 && Token::Match(argtok, "%name% [") && argtok->astParent() == argtok->next() && !Token::simpleMatch(argtok->linkAt(1), "] ["))
@@ -897,9 +898,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
         return false;
     if (!indexTok->hasKnownIntValue())
         return false;
-    if (!offset)
-        return false;
-    *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(*c->mSettings);
+    *offset = indexTok->getKnownIntValue() * argtok->valueType()->typeSize(c->mSettings->platform);
     return true;
 }
 
@@ -1030,7 +1029,7 @@ void CheckBufferOverrun::objectIndex()
             if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
                 continue;
 
-            std::vector<ValueFlow::Value> values = getLifetimeObjValues(obj, false, -1);
+            std::vector<ValueFlow::Value> values = ValueFlow::getLifetimeObjValues(obj, false, -1);
             for (const ValueFlow::Value& v:values) {
                 if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
                     continue;
@@ -1052,7 +1051,7 @@ void CheckBufferOverrun::objectIndex()
                         continue;
                 }
                 if (obj->valueType() && var->valueType() && (obj->isCast() || (mTokenizer->isCPP() && isCPPCast(obj)) || obj->valueType()->pointer)) { // allow cast to a different type
-                    const auto varSize = var->valueType()->typeSize(*mSettings);
+                    const auto varSize = var->valueType()->typeSize(mSettings->platform);
                     if (varSize == 0)
                         continue;
                     if (obj->valueType()->type != var->valueType()->type) {

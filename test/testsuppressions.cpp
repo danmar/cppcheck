@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@
 #include "processexecutor.h"
 #include "settings.h"
 #include "suppressions.h"
-#include "testsuite.h"
-#include "testutils.h"
+#include "fixture.h"
+#include "helpers.h"
 #include "threadexecutor.h"
 
 #include <algorithm>
@@ -226,10 +226,10 @@ private:
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
         ThreadExecutor executor(files, settings, *this);
-        std::vector<ScopedFile> scopedfiles;
+        std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
         for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
-            scopedfiles.emplace_back(i->first, code);
+            scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
         const unsigned int exitCode = executor.check();
 
@@ -254,10 +254,10 @@ private:
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
         ProcessExecutor executor(files, settings, *this);
-        std::vector<ScopedFile> scopedfiles;
+        std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(files.size());
         for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i)
-            scopedfiles.emplace_back(i->first, code);
+            scopedfiles.emplace_back(new ScopedFile(i->first, code));
 
         const unsigned int exitCode = executor.check();
 

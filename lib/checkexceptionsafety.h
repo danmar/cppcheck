@@ -23,7 +23,6 @@
 
 #include "check.h"
 #include "config.h"
-#include "errortypes.h"
 #include "tokenize.h"
 
 #include <string>
@@ -31,11 +30,6 @@
 class Settings;
 class ErrorLogger;
 class Token;
-
-// CWE ID used:
-static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
-static const struct CWE CWE703(703U);   // Improper Check or Handling of Exceptional Conditions
-static const struct CWE CWE480(480U);   // Use of Incorrect Operator
 
 
 /// @addtogroup Checks

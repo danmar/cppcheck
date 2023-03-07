@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,9 @@
 #include "check.h"
 #include "errortypes.h"
 #include "mathlib.h"
+#include "preprocessor.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 
@@ -286,8 +287,10 @@ private:
     std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
         errout.str("");
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 

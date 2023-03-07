@@ -203,7 +203,7 @@ while True:
         package = package_urls[packages_processed-1]
     else:
         try:
-            package = lib.try_retry(lib.get_package, max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
+            package = lib.get_package()
         except Exception as e:
             print('Error: Failed to get package ({}), retry later'.format(e))
             sys.exit(1)

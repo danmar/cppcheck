@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "cppcheck.h"
 #include "errortypes.h"
 #include "filelist.h"
+#include "compliancereportdialog.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"
 #include "importproject.h"
@@ -68,6 +69,7 @@
 #include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
+#include <QTemporaryFile>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -154,6 +156,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 
     connect(mUI->mActionStop, &QAction::triggered, this, &MainWindow::stopAnalysis);
     connect(mUI->mActionSave, &QAction::triggered, this, &MainWindow::save);
+    connect(mUI->mActionComplianceReport, &QAction::triggered, this, &MainWindow::complianceReport);
 
     // About menu
     connect(mUI->mActionAbout, &QAction::triggered, this, &MainWindow::about);
@@ -190,6 +193,8 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
         formatAndSetTitle(tr("Project:") + ' ' + mProjectFile->getFilename());
     else
         formatAndSetTitle();
+
+    mUI->mActionComplianceReport->setVisible(isCppcheckPremium());
 
     enableCheckButtons(true);
 
@@ -252,11 +257,11 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     // For other platforms default to unspecified/default which means the
     // platform Cppcheck GUI was compiled on.
 #if defined(_WIN32)
-    const Settings::PlatformType defaultPlatform = Settings::Win32W;
+    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Win32W;
 #else
-    const Settings::PlatformType defaultPlatform = Settings::Unspecified;
+    const cppcheck::Platform::Type defaultPlatform = cppcheck::Platform::Type::Unspecified;
 #endif
-    Platform &platform = mPlatforms.get((Settings::PlatformType)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
+    Platform &platform = mPlatforms.get((cppcheck::Platform::Type)mSettings->value(SETTINGS_CHECKED_PLATFORM, defaultPlatform).toInt());
     platform.mActMainWindow->setChecked(true);
 
     mNetworkAccessManager = new QNetworkAccessManager(this);
@@ -330,13 +335,13 @@ void MainWindow::loadSettings()
                mSettings->value(SETTINGS_WINDOW_HEIGHT, 600).toInt());
     }
 
-    ShowTypes *types = mUI->mResults->getShowTypes();
-    mUI->mActionShowStyle->setChecked(types->isShown(ShowTypes::ShowStyle));
-    mUI->mActionShowErrors->setChecked(types->isShown(ShowTypes::ShowErrors));
-    mUI->mActionShowWarnings->setChecked(types->isShown(ShowTypes::ShowWarnings));
-    mUI->mActionShowPortability->setChecked(types->isShown(ShowTypes::ShowPortability));
-    mUI->mActionShowPerformance->setChecked(types->isShown(ShowTypes::ShowPerformance));
-    mUI->mActionShowInformation->setChecked(types->isShown(ShowTypes::ShowInformation));
+    const ShowTypes &types = mUI->mResults->getShowTypes();
+    mUI->mActionShowStyle->setChecked(types.isShown(ShowTypes::ShowStyle));
+    mUI->mActionShowErrors->setChecked(types.isShown(ShowTypes::ShowErrors));
+    mUI->mActionShowWarnings->setChecked(types.isShown(ShowTypes::ShowWarnings));
+    mUI->mActionShowPortability->setChecked(types.isShown(ShowTypes::ShowPortability));
+    mUI->mActionShowPerformance->setChecked(types.isShown(ShowTypes::ShowPerformance));
+    mUI->mActionShowInformation->setChecked(types.isShown(ShowTypes::ShowInformation));
     mUI->mActionShowCppcheck->setChecked(true);
     mUI->mActionShowClang->setChecked(true);
 
@@ -472,7 +477,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
         p.ignorePaths(v);
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
-            const Settings::PlatformType platform = (Settings::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
+            const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
             p.selectOneVsConfig(platform);
         }
     } else {
@@ -936,12 +941,12 @@ Settings MainWindow::getCppcheckSettings()
         const QString platform = mProjectFile->getPlatform();
         if (platform.endsWith(".xml")) {
             const QString applicationFilePath = QCoreApplication::applicationFilePath();
-            result.loadPlatformFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
+            result.platform.loadFromFile(applicationFilePath.toStdString().c_str(), platform.toStdString());
         } else {
-            for (int i = cppcheck::Platform::Native; i <= cppcheck::Platform::Unix64; i++) {
-                const cppcheck::Platform::PlatformType p = (cppcheck::Platform::PlatformType)i;
-                if (platform == cppcheck::Platform::platformString(p)) {
-                    result.platform(p);
+            for (int i = cppcheck::Platform::Type::Native; i <= cppcheck::Platform::Type::Unix64; i++) {
+                const cppcheck::Platform::Type p = (cppcheck::Platform::Type)i;
+                if (platform == cppcheck::Platform::toString(p)) {
+                    result.platform.set(p);
                     break;
                 }
             }
@@ -1024,8 +1029,8 @@ Settings MainWindow::getCppcheckSettings()
     result.jobs = mSettings->value(SETTINGS_CHECK_THREADS, 1).toInt();
     result.inlineSuppressions = mSettings->value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool();
     result.certainty.setEnabled(Certainty::inconclusive, mSettings->value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool());
-    if (!mProjectFile || result.platformType == cppcheck::Platform::Unspecified)
-        result.platform((cppcheck::Platform::PlatformType) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
+    if (!mProjectFile || result.platform.type == cppcheck::Platform::Type::Unspecified)
+        result.platform.set((cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt());
     result.standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     result.standards.setC(mSettings->value(SETTINGS_STD_C, QString()).toString().toStdString());
     result.enforcedLang = (Settings::Language)mSettings->value(SETTINGS_ENFORCED_LANGUAGE, 0).toInt();
@@ -1290,6 +1295,10 @@ void MainWindow::enableCheckButtons(bool enable)
     }
 
     mUI->mActionAnalyzeDirectory->setEnabled(enable);
+
+    if (isCppcheckPremium()) {
+        mUI->mActionComplianceReport->setEnabled(enable && mProjectFile && mProjectFile->getAddons().contains("misra"));
+    }
 }
 
 void MainWindow::enableResultsButtons()
@@ -1456,6 +1465,20 @@ void MainWindow::save()
 
         mUI->mResults->save(selectedFile, type);
         setPath(SETTINGS_LAST_RESULT_PATH, selectedFile);
+    }
+}
+
+void MainWindow::complianceReport()
+{
+    if (isCppcheckPremium() && mProjectFile && mProjectFile->getAddons().contains("misra")) {
+        QTemporaryFile tempResults;
+        tempResults.open();
+        tempResults.close();
+
+        mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
+
+        ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
+        dlg.exec();
     }
 }
 
@@ -1885,7 +1908,7 @@ void MainWindow::selectPlatform()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     if (action) {
-        const Settings::PlatformType platform = (Settings::PlatformType) action->data().toInt();
+        const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) action->data().toInt();
         mSettings->setValue(SETTINGS_CHECKED_PLATFORM, platform);
     }
 }

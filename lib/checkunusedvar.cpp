@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1147,14 +1147,14 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
 void CheckUnusedVar::checkFunctionVariableUsage()
 {
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->checkLibrary)
         return;
 
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     auto reportLibraryCfgError = [this](const Token* tok, const std::string& typeName) {
-        if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
+        if (mSettings->checkLibrary) {
             reportError(tok,
                         Severity::information,
                         "checkLibraryCheckType",
@@ -1181,6 +1181,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 const Token * eq = tok->next();
                 while (Token::simpleMatch(eq, "["))
                     eq = eq->link()->next();
+                if (Token::simpleMatch(eq, ") (") && Token::simpleMatch(eq->linkAt(1), ") ="))
+                    eq = eq->linkAt(1)->next();
                 if (Token::simpleMatch(eq, "=")) {
                     varDecl = tok;
                     tok = eq;
@@ -1235,6 +1237,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             while (Token::Match(op1tok, ".|[|*"))
                 op1tok = op1tok->astOperand1();
 
+            // Assignment in macro => do not warn
+            if (isAssignment && tok->isExpandedMacro() && op1tok && op1tok->isExpandedMacro())
+                continue;
+
             const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
             if (!op1Var && Token::Match(tok, "(|{") && tok->previous() && tok->previous()->variable())
                 op1Var = tok->previous()->variable();
@@ -1287,7 +1293,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            const Token* scopeEnd = getEndOfExprScope(expr, scope, /*smallest*/ false);
+            const Token* scopeEnd = ValueFlow::getEndOfExprScope(expr, scope, /*smallest*/ false);
             if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
                 if (!bailoutTypeName.empty()) {
                     if (bailoutTypeName != "auto")
@@ -1351,6 +1357,13 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 bool error = false;
                 if (vnt->next()->isSplittedVarDeclEq()) {
                     const Token* nextStmt = vnt->tokAt(2);
+                    if (nextStmt->isExpandedMacro()) {
+                        const Token* parent = nextStmt;
+                        while (parent->astParent() && parent == parent->astParent()->astOperand1())
+                            parent = parent->astParent();
+                        if (parent->isAssignmentOp() && parent->isExpandedMacro())
+                            continue;
+                    }
                     while (nextStmt && nextStmt->str() != ";")
                         nextStmt = nextStmt->next();
                     error = precedes(usage._lastAccess, nextStmt);
@@ -1380,16 +1393,25 @@ void CheckUnusedVar::checkFunctionVariableUsage()
 
 void CheckUnusedVar::unusedVariableError(const Token *tok, const std::string &varname)
 {
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
     reportError(tok, Severity::style, "unusedVariable", "$symbol:" + varname + "\nUnused variable: $symbol", CWE563, Certainty::normal);
 }
 
 void CheckUnusedVar::allocatedButUnusedVariableError(const Token *tok, const std::string &varname)
 {
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
     reportError(tok, Severity::style, "unusedAllocatedMemory", "$symbol:" + varname + "\nVariable '$symbol' is allocated memory that is never used.", CWE563, Certainty::normal);
 }
 
 void CheckUnusedVar::unreadVariableError(const Token *tok, const std::string &varname, bool modified)
 {
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
     if (modified)
         reportError(tok, Severity::style, "unreadVariable", "$symbol:" + varname + "\nVariable '$symbol' is modified but its new value is never used.", CWE563, Certainty::normal);
     else
@@ -1398,6 +1420,9 @@ void CheckUnusedVar::unreadVariableError(const Token *tok, const std::string &va
 
 void CheckUnusedVar::unassignedVariableError(const Token *tok, const std::string &varname)
 {
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
     reportError(tok, Severity::style, "unassignedVariable", "$symbol:" + varname + "\nVariable '$symbol' is not assigned a value.", CWE665, Certainty::normal);
 }
 
@@ -1435,7 +1460,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // Bail out for template struct, members might be used in non-matching instantiations
-        if (scope.className.find("<") != std::string::npos)
+        if (scope.className.find('<') != std::string::npos)
             continue;
 
         // bail out if struct is inherited
@@ -1544,7 +1569,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
             continue; // ignore default/deleted constructors
         const bool emptyBody = (f.functionScope && Token::simpleMatch(f.functionScope->bodyStart, "{ }"));
 
-        Token* nextToken = f.argDef->link();
+        const Token* nextToken = f.argDef->link();
         if (Token::simpleMatch(nextToken, ") :")) {
             // validating initialization list
             nextToken = nextToken->next(); // goto ":"
@@ -1656,7 +1681,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
 
     bool sideEffectReturnFound = false;
     std::set<const Variable*> pointersToGlobals;
-    for (Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
+    for (const Token* bodyToken = func.functionScope->bodyStart->next(); bodyToken != func.functionScope->bodyEnd;
          bodyToken = bodyToken->next()) {
         // check variable inside function body
         const Variable* bodyVariable = bodyToken->variable();

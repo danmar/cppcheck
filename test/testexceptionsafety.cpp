@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,10 @@
 #include "checkexceptionsafety.h"
 #include "errortypes.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <sstream> // IWYU pragma: keep
 
 class TestExceptionSafety : public TestFixture {
@@ -71,8 +72,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check char variable usage..
-        CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
-        checkExceptionSafety.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckExceptionSafety>(&tokenizer, &settings, this);
     }
 
     void destructors() {

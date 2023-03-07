@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,10 @@
 #include "token.h"
 #include "tokenize.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include <iomanip>
+#include <list>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -253,7 +255,7 @@ void CheckFunctions::checkIgnoredReturnValue()
 
             const Token *parent = tok->next()->astParent();
             while (Token::Match(parent, "%cop%")) {
-                if (Token::Match(parent, "<<|>>") && !parent->astParent())
+                if (Token::Match(parent, "<<|>>|*") && !parent->astParent())
                     break;
                 parent = parent->astParent();
             }
@@ -562,8 +564,8 @@ void CheckFunctions::memsetInvalid2ndParam()
 
             if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
                 const long long int value = MathLib::toLongNumber(secondParamTok->str());
-                const long long sCharMin = mSettings->signedCharMin();
-                const long long uCharMax = mSettings->unsignedCharMax();
+                const long long sCharMin = mSettings->platform.signedCharMin();
+                const long long uCharMax = mSettings->platform.unsignedCharMax();
                 if (value < sCharMin || value > uCharMax)
                     memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
             }
@@ -593,7 +595,7 @@ void CheckFunctions::memsetValueOutOfRangeError(const Token *tok, const std::str
 
 void CheckFunctions::checkLibraryMatchFunctions()
 {
-    if (!mSettings->checkLibrary || !mSettings->severity.isEnabled(Severity::information))
+    if (!mSettings->checkLibrary)
         return;
 
     bool insideNew = false;
@@ -634,6 +636,9 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         if (mSettings->library.podtype(tok->expressionString()))
+            continue;
+
+        if (mSettings->library.getTypeCheck("unusedvar", functionName) != Library::TypeCheck::def)
             continue;
 
         const Token* start = tok;

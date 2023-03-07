@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,11 +37,14 @@
 #include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <set>
 #include <sstream> // IWYU pragma: keep
+#include <stdexcept>
+#include <unordered_set>
 #include <utility>
 
 #ifdef HAVE_RULES
@@ -78,7 +81,7 @@ static bool addFilesToList(const std::string& fileList, std::vector<std::string>
     return true;
 }
 
-static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
+static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>& pathNames)
 {
     std::ifstream files(fileList);
     if (files) {
@@ -93,7 +96,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
                 if (!endsWith(pathName, '/'))
                     pathName += '/';
 
-                pathNames->emplace_back(std::move(pathName));
+                pathNames.emplace_back(std::move(pathName));
             }
         }
         return true;
@@ -101,12 +104,12 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
     return false;
 }
 
-static bool addPathsToSet(const std::string& fileName, std::set<std::string>* set)
+static bool addPathsToSet(const std::string& fileName, std::set<std::string>& set)
 {
     std::list<std::string> templist;
-    if (!addIncludePathsToList(fileName, &templist))
+    if (!addIncludePathsToList(fileName, templist))
         return false;
-    set->insert(templist.cbegin(), templist.cend());
+    set.insert(templist.cbegin(), templist.cend());
     return true;
 }
 
@@ -128,10 +131,18 @@ void CmdLineParser::printError(const std::string &message)
     printMessage("error: " + message);
 }
 
+#if defined(_WIN64) || defined(_WIN32)
+bool CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+#endif
+
 // TODO: normalize/simplify/native all path parameters
 // TODO: error out on all missing given files/paths
 bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
+#if defined(_WIN64) || defined(_WIN32)
+    bool default_platform = true;
+#endif
+
     bool def = false;
     bool maxconfigs = false;
 
@@ -246,8 +257,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings->checkLibrary = true;
-                // need to add "information" or no messages will be shown at all
-                mSettings->addEnabled("information");
             }
 
             else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
@@ -270,7 +279,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
                 // open this file and read every input file (1 file name per line)
                 const std::string cfgExcludesFile(23 + argv[i]);
-                if (!addPathsToSet(cfgExcludesFile, &mSettings->configExcludePaths)) {
+                if (!addPathsToSet(cfgExcludesFile, mSettings->configExcludePaths)) {
                     printError("unable to open config excludes file at '" + cfgExcludesFile + "'");
                     return false;
                 }
@@ -299,6 +308,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--debug-warnings") == 0)
                 mSettings->debugwarnings = true;
 
+            else if (std::strncmp(argv[i], "--disable=", 10) == 0) {
+                const std::string errmsg = mSettings->removeEnabled(argv[i] + 10);
+                if (!errmsg.empty()) {
+                    printError(errmsg);
+                    return false;
+                }
+            }
+
             // documentation..
             else if (std::strcmp(argv[i], "--doc") == 0) {
                 std::ostringstream doc;
@@ -321,13 +338,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->dump = true;
 
             else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
-                const std::string errmsg = mSettings->addEnabled(argv[i] + 9);
+                const std::string enable_arg = argv[i] + 9;
+                const std::string errmsg = mSettings->addEnabled(enable_arg);
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
-                if (mSettings->severity.isEnabled(Severity::style)) {
+                if (enable_arg.find("style") != std::string::npos) {
                     mSettings->addEnabled("warning");
                     mSettings->addEnabled("performance");
                     mSettings->addEnabled("portability");
@@ -450,7 +468,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
                 // open this file and read every input file (1 file name per line)
                 const std::string includesFile(16 + argv[i]);
-                if (!addIncludePathsToList(includesFile, &mSettings->includePaths)) {
+                if (!addIncludePathsToList(includesFile, mSettings->includePaths)) {
                     printError("unable to open includes file at '" + includesFile + "'");
                     return false;
                 }
@@ -588,27 +606,24 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
                 const std::string platform(11+argv[i]);
 
-                if (platform == "win32A")
-                    mSettings->platform(Settings::Win32A);
-                else if (platform == "win32W")
-                    mSettings->platform(Settings::Win32W);
-                else if (platform == "win64")
-                    mSettings->platform(Settings::Win64);
-                else if (platform == "unix32")
-                    mSettings->platform(Settings::Unix32);
-                else if (platform == "unix64")
-                    mSettings->platform(Settings::Unix64);
-                else if (platform == "native")
-                    mSettings->platform(Settings::Native);
-                else if (platform == "unspecified")
-                    mSettings->platform(Settings::Unspecified);
-                else if (!mSettings->loadPlatformFile(argv[0], platform)) {
-                    std::string message("unrecognized platform: \"");
-                    message += platform;
-                    message += "\".";
-                    printError(message);
+                std::string errstr;
+                const std::vector<std::string> paths = {argv[0]};
+                if (!mSettings->platform.set(platform, errstr, paths)) {
+                    printError(errstr);
                     return false;
                 }
+
+#if defined(_WIN64) || defined(_WIN32)
+                default_platform = false;
+#endif
+
+                // TODO: remove
+                // these are loaded via external files and thus have Settings::PlatformFile set instead.
+                // override the type so they behave like the regular platforms.
+                if (platform == "unix32-unsigned")
+                    mSettings->platform.type = cppcheck::Platform::Type::Unix32;
+                else if (platform == "unix64-unsigned")
+                    mSettings->platform.type = cppcheck::Platform::Type::Unix64;
             }
 
             // Write results in results.plist
@@ -642,7 +657,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
-                const std::string projectFile = argv[i]+10;
+                std::string projectFile = argv[i]+10;
                 ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
                 mSettings->project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
@@ -653,36 +668,31 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     const auto& excludedPaths = mSettings->project.guiProject.excludedPaths;
                     std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
 
-                    const std::string platform(mSettings->project.guiProject.platform);
+                    std::string platform(mSettings->project.guiProject.platform);
 
-                    if (platform == "win32A")
-                        mSettings->platform(Settings::Win32A);
-                    else if (platform == "win32W")
-                        mSettings->platform(Settings::Win32W);
-                    else if (platform == "win64")
-                        mSettings->platform(Settings::Win64);
-                    else if (platform == "unix32")
-                        mSettings->platform(Settings::Unix32);
-                    else if (platform == "unix64")
-                        mSettings->platform(Settings::Unix64);
-                    else if (platform == "native")
-                        mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
-                        ;
-                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
-                        std::string message("unrecognized platform: \"");
-                        message += platform;
-                        message += "\".";
-                        printError(message);
-                        return false;
+                    // keep existing platform from command-line intact
+                    if (!platform.empty()) {
+                        if (platform == "Unspecified") {
+                            printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
+                            platform = "unspecified";
+                        }
+
+                        std::string errstr;
+                        const std::vector<std::string> paths = {projectFile, argv[0]};
+                        if (!mSettings->platform.set(platform, errstr, paths)) {
+                            printError(errstr);
+                            return false;
+                        }
                     }
 
-                    if (!mSettings->project.guiProject.projectFile.empty())
+                    if (!mSettings->project.guiProject.projectFile.empty()) {
+                        projectFile = mSettings->project.guiProject.projectFile;
                         projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
+                    }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
                     if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")
-                        mSettings->project.selectOneVsConfig(mSettings->platformType);
+                        mSettings->project.selectOneVsConfig(mSettings->platform.type);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printError("failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
@@ -1024,6 +1034,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         return true;
     }
 
+#if defined(_WIN64)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+        printMessage("Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.");
+#elif defined(_WIN32)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+        printMessage("Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.");
+#endif
+
     // Print error only if we have "real" command and expect files
     if (!mExitAfterPrint && mPathNames.empty() && mSettings->project.fileSettings.empty()) {
         printError("no C or C++ source files found.");
@@ -1084,6 +1102,9 @@ void CmdLineParser::printHelp()
         "                         be considered for evaluation.\n"
         "    --config-excludes-file=<file>\n"
         "                         A file that contains a list of config-excludes\n"
+        "    --disable=<id>       Disable individual checks.\n"
+        "                         Please refer to the documentation of --enable=<id>\n"
+        "                         for further details.\n"
         "    --dump               Dump xml data for each translation unit. The dump\n"
         "                         files have the extension .dump and contain ast,\n"
         "                         tokenlist, symboldatabase, valueflow.\n"
@@ -1115,8 +1136,7 @@ void CmdLineParser::printHelp()
         "                                  to only enable this when the whole program is\n"
         "                                  scanned.\n"
         "                          * missingInclude\n"
-        "                                  Warn if there are missing includes. For\n"
-        "                                  detailed information, use '--check-config'.\n"
+        "                                  Warn if there are missing includes.\n"
         "                         Several ids can be given if you separate them with\n"
         "                         commas. See also --std\n"
         "    --error-exitcode=<n> If errors are found, integer [n] is returned instead of\n"
