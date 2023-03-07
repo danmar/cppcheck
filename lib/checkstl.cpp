@@ -1310,7 +1310,7 @@ void CheckStl::negativeIndex()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%var% [") || WRONG_DATA(!tok->next()->astOperand2(), tok))
+            if (!Token::Match(tok, "%var% [") || !tok->next()->astOperand2())
                 continue;
             const Variable * const var = tok->variable();
             if (!var || tok == var->nameToken())
