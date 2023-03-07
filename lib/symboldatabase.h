@@ -1479,7 +1479,7 @@ private:
     // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
-    void createSymbolDatabaseEnums() // cppcheck-suppress functionConst // has side effects
+    void createSymbolDatabaseEnums(); // cppcheck-suppress functionConst // has side effects
     void createSymbolDatabaseEscapeFunctions();
     // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
