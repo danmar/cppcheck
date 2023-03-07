@@ -2683,6 +2683,18 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         (Token::simpleMatch(first, "( void )") && Token::simpleMatch(second, "( )")))
         return true;
 
+    auto skipTopLevelConst = [](const Token* start) -> const Token* {
+        const Token* tok = start->next();
+        if (Token::simpleMatch(tok, "const")) {
+            tok = tok->next();
+            while (Token::Match(tok, "%name%|::"))
+                tok = tok->next();
+            if (Token::Match(tok, ",|)"))
+                return start->next();
+        }
+        return start;
+    };
+
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
@@ -2704,15 +2716,12 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             second = second->next();
 
         // skip const on type passed by value
-        if (Token::Match(first->next(), "const %type% %name%|,|)") &&
-            !Token::Match(first->next(), "const %type% %name%| ["))
-            first = first->next();
-        if (Token::Match(second->next(), "const %type% %name%|,|)") &&
-            !Token::Match(second->next(), "const %type% %name%| ["))
-            second = second->next();
+        first = skipTopLevelConst(first);
+        const Token* old = second;
+        second = skipTopLevelConst(second);
 
         // skip default value assignment
-        else if (first->next()->str() == "=") {
+        if (old == second && first->next()->str() == "=") {
             first = first->nextArgument();
             if (first)
                 first = first->tokAt(-2);
