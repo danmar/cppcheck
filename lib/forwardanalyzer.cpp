@@ -47,12 +47,12 @@ namespace {
     struct ForwardTraversal {
         enum class Progress { Continue, Break, Skip };
         enum class Terminate { None, Bail, Inconclusive };
-        ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenList, ErrorLogger* const errorLogger, const Settings& settings)
+        ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings)
             : analyzer(analyzer), tokenList(tokenList), errorLogger(errorLogger), settings(settings)
         {}
         ValuePtr<Analyzer> analyzer;
         const TokenList& tokenList;
-        ErrorLogger* const errorLogger;
+        ErrorLogger& errorLogger;
         const Settings& settings;
         Analyzer::Action actions;
         bool analyzeOnly{};
@@ -839,11 +839,9 @@ namespace {
         }
 
         void reportError(Severity severity, const std::string& id, const std::string& msg) {
-            if (errorLogger) {
-                ErrorMessage::FileLocation loc(tokenList.getSourceFilePath(), 0, 0);
-                const ErrorMessage errmsg({std::move(loc)}, tokenList.getSourceFilePath(), severity, msg, id, Certainty::normal);
-                errorLogger->reportErr(errmsg);
-            }
+            ErrorMessage::FileLocation loc(tokenList.getSourceFilePath(), 0, 0);
+            const ErrorMessage errmsg({std::move(loc)}, tokenList.getSourceFilePath(), severity, msg, id, Certainty::normal);
+            errorLogger.reportErr(errmsg);
         }
 
         static bool isFunctionCall(const Token* tok)
@@ -904,7 +902,7 @@ namespace {
     };
 }
 
-Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger* const errorLogger, const Settings& settings)
+Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings)
 {
     if (a->invalid())
         return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
@@ -915,7 +913,7 @@ Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const V
     return Analyzer::Result{ ft.actions, ft.terminate };
 }
 
-Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger* const errorLogger, const Settings& settings)
+Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings)
 {
     if (Settings::terminated())
         throw TerminateException();

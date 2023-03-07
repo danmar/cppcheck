@@ -37,12 +37,12 @@
 
 namespace {
     struct ReverseTraversal {
-        ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenlist, ErrorLogger* const errorLogger, const Settings& settings)
+        ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
             : analyzer(analyzer), tokenlist(tokenlist), errorLogger(errorLogger), settings(settings)
         {}
         ValuePtr<Analyzer> analyzer;
         const TokenList& tokenlist;
-        ErrorLogger* const errorLogger;
+        ErrorLogger& errorLogger;
         const Settings& settings;
 
         std::pair<bool, bool> evalCond(const Token* tok) const {
@@ -395,7 +395,7 @@ namespace {
     };
 }
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenlist, ErrorLogger* const errorLogger, const Settings& settings)
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const TokenList& tokenlist, ErrorLogger& errorLogger, const Settings& settings)
 {
     if (a->invalid())
         return;

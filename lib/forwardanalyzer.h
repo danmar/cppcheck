@@ -31,9 +31,9 @@ Analyzer::Result valueFlowGenericForward(Token* start,
                                          const Token* end,
                                          const ValuePtr<Analyzer>& a,
                                          const TokenList& tokenList,
-                                         ErrorLogger* const errorLogger,
+                                         ErrorLogger& errorLogger,
                                          const Settings& settings);
 
-Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger* const errorLogger, const Settings& settings);
+Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const TokenList& tokenList, ErrorLogger& errorLogger, const Settings& settings);
 
 #endif
