@@ -6870,6 +6870,15 @@ private:
                "    g(x < y ? : 1);\n"
                "};\n";
         valueOfTok(code, "?");
+
+        code = "struct C {\n"
+               "    explicit C(bool);\n"
+               "    operator bool();\n"
+               "};\n"
+               "void f(bool b) {\n"
+               "    const C& c = C(b) ? : C(false);\n"
+               "};\n";
+        valueOfTok(code, "?");
     }
 
     void valueFlowHang() {
