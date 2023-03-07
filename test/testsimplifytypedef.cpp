@@ -59,6 +59,8 @@ private:
         TEST_CASE(cstruct1);
         TEST_CASE(cstruct2);
         TEST_CASE(cstruct3);
+        TEST_CASE(cstruct3);
+        TEST_CASE(cstruct4);
         TEST_CASE(cfp1);
         TEST_CASE(cfp2);
         TEST_CASE(cfp4);
@@ -345,6 +347,12 @@ private:
         const char code[] = "typedef struct s { int a; int b; } t;\n"
                             "t x;";
         ASSERT_EQUALS("struct s { int a ; int b ; } ; struct s x ;", simplifyTypedefC(code));
+    }
+
+    void cstruct4() {
+        const char code[] = "typedef struct s { int a; int b; } t;\n"
+                            "struct t x{};";
+        ASSERT_EQUALS("struct s { int a ; int b ; } ; struct s x { } ;", simplifyTypedefC(code));
     }
 
     void cfp1() {

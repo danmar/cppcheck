@@ -752,6 +752,24 @@ namespace {
                 }
             }
 
+            // Do not duplicate class/struct/enum/union
+            if (Token::Match(tok->previous(), "enum|union|struct|class")) {
+                bool found = false;
+                const std::string &kw = tok->previous()->str();
+                for (const Token* type = mRangeType.first; type != mRangeType.second; type = type->next()) {
+                    if (type->str() == kw) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (found)
+                    tok->deletePrevious();
+                else {
+                    mReplaceFailed = true;
+                    return;
+                }
+            }
+
             Token* const tok2 = insertTokens(tok, mRangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
@@ -839,7 +857,9 @@ namespace {
             }
         }
 
-        static bool canReplace(const Token* tok) {
+        bool canReplace(const Token* tok) {
+            if (mNameToken == tok)
+                return false;
             if (!Token::Match(tok, "%name% %name%|*|&|&&|;|(|)|,|::")) {
                 if (Token::Match(tok->previous(), "( %name% =") && Token::Match(tok->linkAt(-1), ") %name%|{"))
                     return true;
@@ -855,6 +875,10 @@ namespace {
             }
             if (Token::simpleMatch(tok->next(), "(") && Token::Match(tok->linkAt(1), ") %name%|{"))
                 return false;
+            if (Token::Match(tok->previous(), "struct|union|class|enum %name% %name%") &&
+                Token::simpleMatch(mRangeType.second, "{") &&
+                tok->str() != mRangeType.second->previous()->str())
+                return true;
             for (const Token* before = tok->previous(); before; before = before->previous()) {
                 if (Token::Match(before, "[+-*/&|~!]"))
                     return false;
@@ -953,7 +977,7 @@ void Tokenizer::simplifyTypedef()
         }
 
         auto it = typedefs.find(tok->str());
-        if (it != typedefs.end() && TypedefSimplifier::canReplace(tok)) {
+        if (it != typedefs.end() && it->second.canReplace(tok)) {
             std::set<std::string> r;
             while (it != typedefs.end() && r.insert(tok->str()).second) {
                 it->second.replace(tok);
