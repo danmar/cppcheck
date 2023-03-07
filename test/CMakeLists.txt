@@ -109,6 +109,7 @@ if (BUILD_TESTS)
             endif()
             if ("cfg-${TEST_NAME}" IN_LIST SKIP_TESTS)
             else()
+                # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
                 # TODO: add syntax check
                 add_test(NAME cfg-${TEST_NAME}
                         COMMAND $<TARGET_FILE:cppcheck>
@@ -119,7 +120,7 @@ if (BUILD_TESTS)
                         --inconclusive
                         --force
                         --error-exitcode=1
-                        --suppress=missingIncludeSystem
+                        --disable=missingInclude
                         --inline-suppr
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
