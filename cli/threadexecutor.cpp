@@ -113,7 +113,7 @@ public:
         return false;
     }
 
-    unsigned int check(ErrorLogger &errorLogger, const std::string *file, const ImportProject::FileSettings *fs) {
+    unsigned int check(ErrorLogger &errorLogger, const std::string *file, const ImportProject::FileSettings *fs) const {
         CppCheck fileChecker(errorLogger, false, CppCheckExecutor::executeCommand);
         fileChecker.settings() = mSettings; // this is a copy
 
