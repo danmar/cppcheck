@@ -5170,6 +5170,14 @@ private:
             ASSERT(db != nullptr);
             ASSERT_EQUALS("", errout.str());
         }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    void f(const bool b = false);\n"
+                          "};\n"
+                          "void S::f(const bool b) {}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
         settings1.debugwarnings = oldDebug;
     }
 

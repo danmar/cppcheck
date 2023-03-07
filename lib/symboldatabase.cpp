@@ -2689,7 +2689,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             tok = tok->next();
             while (Token::Match(tok, "%name%|%type%|::"))
                 tok = tok->next();
-            if (Token::Match(tok, ",|)"))
+            if (Token::Match(tok, ",|)|="))
                 return start->next();
         }
         return start;
@@ -2716,12 +2716,12 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             second = second->next();
 
         // skip const on type passed by value
+        const Token* const oldSecond = second;
         first = skipTopLevelConst(first);
-        const Token* old = second;
         second = skipTopLevelConst(second);
 
         // skip default value assignment
-        if (old == second && first->next()->str() == "=") {
+        if (oldSecond == second && first->next()->str() == "=") {
             first = first->nextArgument();
             if (first)
                 first = first->tokAt(-2);
@@ -2735,7 +2735,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             } else if (!first) { // End of argument list (first)
                 return !second->nextArgument(); // End of argument list (second)
             }
-        } else if (old == second && second->next()->str() == "=") {
+        } else if (oldSecond == second && second->next()->str() == "=") {
             second = second->nextArgument();
             if (second)
                 second = second->tokAt(-2);
