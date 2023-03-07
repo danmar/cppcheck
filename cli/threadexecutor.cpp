@@ -113,8 +113,8 @@ public:
         return false;
     }
 
-    unsigned int check(const std::string *file, const ImportProject::FileSettings *fs) {
-        CppCheck fileChecker(logForwarder, false, CppCheckExecutor::executeCommand);
+    unsigned int check(ErrorLogger &errorLogger, const std::string *file, const ImportProject::FileSettings *fs) {
+        CppCheck fileChecker(errorLogger, false, CppCheckExecutor::executeCommand);
         fileChecker.settings() = mSettings; // this is a copy
 
         unsigned int result;
@@ -151,6 +151,8 @@ private:
 
     std::mutex mFileSync;
     const Settings &mSettings;
+
+public:
     SyncLogForwarder logForwarder;
 };
 
@@ -163,7 +165,7 @@ static unsigned int STDCALL threadProc(ThreadData *data)
     std::size_t fileSize;
 
     while (data->next(file, fs, fileSize)) {
-        result += data->check(file, fs);
+        result += data->check(data->logForwarder, file, fs);
 
         data->status(fileSize);
     }
