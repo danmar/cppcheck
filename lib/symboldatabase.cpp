@@ -2735,7 +2735,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             } else if (!first) { // End of argument list (first)
                 return !second->nextArgument(); // End of argument list (second)
             }
-        } else if (second->next()->str() == "=") {
+        } else if (old == second && second->next()->str() == "=") {
             second = second->nextArgument();
             if (second)
                 second = second->tokAt(-2);
