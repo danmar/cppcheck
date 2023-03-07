@@ -2687,7 +2687,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         const Token* tok = start->next();
         if (Token::simpleMatch(tok, "const")) {
             tok = tok->next();
-            while (Token::Match(tok, "%name%|%type%::"))
+            while (Token::Match(tok, "%name%|%type%|::"))
                 tok = tok->next();
             if (Token::Match(tok, ",|)"))
                 return start->next();
