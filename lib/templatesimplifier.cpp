@@ -272,9 +272,9 @@ bool TemplateSimplifier::TokenAndName::isAliasToken(const Token *tok) const
     return false;
 }
 
-TemplateSimplifier::TemplateSimplifier(Tokenizer *tokenizer)
-    : mTokenizer(tokenizer), mTokenList(tokenizer->list), mSettings(tokenizer->mSettings),
-    mErrorLogger(tokenizer->mErrorLogger), mChanged(false)
+TemplateSimplifier::TemplateSimplifier(Tokenizer &tokenizer)
+    : mTokenizer(tokenizer), mTokenList(mTokenizer.list), mSettings(*mTokenizer.mSettings),
+    mErrorLogger(mTokenizer.mErrorLogger), mChanged(false)
 {}
 
 TemplateSimplifier::~TemplateSimplifier()
@@ -1137,14 +1137,14 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             while (it != eq.cend()) {
                 // check for end
                 if (!it->end) {
-                    if (mSettings->debugwarnings) {
+                    if (mSettings.debugwarnings) {
                         const std::list<const Token*> locationList(1, it->eq);
-                        const ErrorMessage errmsg(locationList, &mTokenizer->list,
+                        const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                                   Severity::debug,
                                                   "noparamend",
                                                   "TemplateSimplifier couldn't find end of template parameter.",
                                                   Certainty::normal);
-                        if (mErrorLogger && mSettings->severity.isEnabled(Severity::debug))
+                        if (mErrorLogger && mSettings.severity.isEnabled(Severity::debug))
                             mErrorLogger->reportErr(errmsg);
                     }
                     break;
@@ -1479,7 +1479,7 @@ int TemplateSimplifier::getTemplateNamePosition(const Token *tok)
     assert(tok && tok->str() == ">");
 
     auto it = mTemplateNamePos.find(tok);
-    if (!mSettings->debugtemplate && it != mTemplateNamePos.end()) {
+    if (!mSettings.debugtemplate && it != mTemplateNamePos.end()) {
         return it->second;
     }
     // get the position of the template name
@@ -2435,15 +2435,15 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
                 }
 
                 else if (Token::Match(tok->next(), "( %type% * )")) {
-                    tok->str(MathLib::toString(mTokenizer->sizeOfType(tok->tokAt(3))));
+                    tok->str(MathLib::toString(mTokenizer.sizeOfType(tok->tokAt(3))));
                     tok->deleteNext(4);
                     again = true;
                 } else if (Token::simpleMatch(tok->next(), "( * )")) {
-                    tok->str(MathLib::toString(mTokenizer->sizeOfType(tok->tokAt(2))));
+                    tok->str(MathLib::toString(mTokenizer.sizeOfType(tok->tokAt(2))));
                     tok->deleteNext(3);
                     again = true;
                 } else if (Token::Match(tok->next(), "( %type% )")) {
-                    const unsigned int size = mTokenizer->sizeOfType(tok->tokAt(2));
+                    const unsigned int size = mTokenizer.sizeOfType(tok->tokAt(2));
                     if (size > 0) {
                         tok->str(MathLib::toString(size));
                         tok->deleteNext(3);
@@ -3006,7 +3006,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     // Contains tokens such as "T"
     std::vector<const Token *> typeParametersInDeclaration;
     getTemplateParametersInDeclaration(templateDeclaration.token()->tokAt(2), typeParametersInDeclaration);
-    const bool printDebug = mSettings->debugwarnings;
+    const bool printDebug = mSettings.debugwarnings;
     const bool specialized = templateDeclaration.isSpecialization();
     const bool isfunc = templateDeclaration.isFunction();
     const bool isVar = templateDeclaration.isVariable();
@@ -3024,20 +3024,20 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (numberOfTemplateInstantiations != mTemplateInstantiations.size()) {
             numberOfTemplateInstantiations = mTemplateInstantiations.size();
             ++recursiveCount;
-            if (recursiveCount > mSettings->maxTemplateRecursion) {
+            if (recursiveCount > mSettings.maxTemplateRecursion) {
                 std::list<std::string> typeStringsUsedInTemplateInstantiation;
                 const std::string typeForNewName = templateDeclaration.name() + "<" + getNewName(instantiation.token(), typeStringsUsedInTemplateInstantiation) + ">";
 
                 const std::list<const Token *> callstack(1, instantiation.token());
                 const ErrorMessage errmsg(callstack,
-                                          &mTokenizer->list,
+                                          &mTokenizer.list,
                                           Severity::information,
                                           "templateRecursion",
                                           "TemplateSimplifier: max template recursion ("
-                                          + MathLib::toString(mSettings->maxTemplateRecursion)
+                                          + MathLib::toString(mSettings.maxTemplateRecursion)
                                           + ") reached for template '"+typeForNewName+"'. You might want to limit Cppcheck recursion.",
                                           Certainty::normal);
-                if (mErrorLogger && mSettings->severity.isEnabled(Severity::information))
+                if (mErrorLogger && mSettings.severity.isEnabled(Severity::information))
                     mErrorLogger->reportErr(errmsg);
 
                 // bail out..
@@ -3109,7 +3109,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
-            if (mSettings->debugwarnings) {
+            if (mSettings.debugwarnings) {
                 ErrorMessage::FileLocation loc;
                 loc.setfile(mTokenList.getFiles()[0]);
                 ErrorMessage errmsg({std::move(loc)},
@@ -3180,7 +3180,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
-            if (mSettings->debugwarnings) {
+            if (mSettings.debugwarnings) {
                 ErrorMessage::FileLocation loc;
                 loc.setfile(mTokenList.getFiles()[0]);
                 ErrorMessage errmsg({std::move(loc)},
@@ -3699,7 +3699,7 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    if (mSettings->standards.cpp >= Standards::CPP20) {
+    if (mSettings.standards.cpp >= Standards::CPP20) {
         // Remove concepts/requires
         // TODO concepts are not removed yet
         for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
@@ -3721,7 +3721,7 @@ void TemplateSimplifier::simplifyTemplates(
         }
     }
 
-    mTokenizer->calculateScopes();
+    mTokenizer.calculateScopes();
 
     unsigned int passCount = 0;
     const unsigned int passCountMax = 10;
@@ -3729,7 +3729,7 @@ void TemplateSimplifier::simplifyTemplates(
         if (passCount) {
             // it may take more than one pass to simplify type aliases
             bool usingChanged = false;
-            while (mTokenizer->simplifyUsing())
+            while (mTokenizer.simplifyUsing())
                 usingChanged = true;
 
             if (!usingChanged && !mChanged)
@@ -3756,7 +3756,7 @@ void TemplateSimplifier::simplifyTemplates(
         if (mTemplateDeclarations.empty() && mTemplateForwardDeclarations.empty())
             return;
 
-        if (mSettings->debugtemplate && mSettings->debugnormal) {
+        if (mSettings.debugtemplate && mSettings.debugnormal) {
             std::string title("Template Simplifier pass " + std::to_string(passCount + 1));
             mTokenList.front()->printOut(title.c_str(), mTokenList.getFiles());
         }
@@ -3778,7 +3778,7 @@ void TemplateSimplifier::simplifyTemplates(
 
         simplifyTemplateAliases();
 
-        if (mSettings->debugtemplate)
+        if (mSettings.debugtemplate)
             printOut("### Template Simplifier pass " + std::to_string(passCount + 1) + " ###");
 
         std::set<std::string> expandedtemplates;
@@ -3868,9 +3868,9 @@ void TemplateSimplifier::simplifyTemplates(
     }
 
     if (passCount == passCountMax) {
-        if (mSettings->debugwarnings) {
+        if (mSettings.debugwarnings) {
             const std::list<const Token*> locationList(1, mTokenList.front());
-            const ErrorMessage errmsg(locationList, &mTokenizer->list,
+            const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                       Severity::debug,
                                       "debug",
                                       "TemplateSimplifier: pass count limit hit before simplifications were finished.",
@@ -3881,7 +3881,7 @@ void TemplateSimplifier::simplifyTemplates(
     }
 
     // Tweak uninstantiated C++17 fold expressions (... && args)
-    if (mSettings->standards.cpp >= Standards::CPP17) {
+    if (mSettings.standards.cpp >= Standards::CPP17) {
         bool simplify = false;
         for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
             if (tok->str() == "template")

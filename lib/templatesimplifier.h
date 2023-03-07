@@ -46,7 +46,7 @@ class CPPCHECKLIB TemplateSimplifier {
     friend class TestSimplifyTemplate;
 
 public:
-    explicit TemplateSimplifier(Tokenizer *tokenizer);
+    explicit TemplateSimplifier(Tokenizer &tokenizer);
     ~TemplateSimplifier();
 
     /**
@@ -489,9 +489,9 @@ private:
         const std::string &indent = "    ") const;
     void printOut(const std::string &text = emptyString) const;
 
-    Tokenizer *mTokenizer;
+    Tokenizer &mTokenizer;
     TokenList &mTokenList;
-    const Settings *mSettings;
+    const Settings &mSettings;
     ErrorLogger *mErrorLogger;
     bool mChanged;
 
