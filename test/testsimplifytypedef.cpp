@@ -55,6 +55,7 @@ private:
 
         TEST_CASE(c1);
         TEST_CASE(c2);
+        TEST_CASE(cconst);
         TEST_CASE(cstruct1);
         TEST_CASE(cstruct2);
         TEST_CASE(cstruct3);
@@ -314,6 +315,16 @@ private:
         const char code[] = "void f1() { typedef int t; t x; }\n"
                             "void f2() { typedef float t; t x; }\n";
         ASSERT_EQUALS("void f1 ( ) { int x ; } void f2 ( ) { float x ; }", simplifyTypedefC(code));
+    }
+
+    void cconst() {
+        const char code1[] = "typedef void* HWND;\n"
+                             "const HWND x;";
+        ASSERT_EQUALS("void * const x ;", simplifyTypedef(code1));
+
+        const char code2[] = "typedef void (*fp)();\n"
+                             "const fp x;";
+        ASSERT_EQUALS("void ( * const x ) ( ) ;", simplifyTypedef(code2));
     }
 
     void cstruct1() {

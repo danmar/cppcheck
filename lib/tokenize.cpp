@@ -735,6 +735,23 @@ namespace {
                 return;
             }
 
+            // pointer => move "const"
+            if (Token::simpleMatch(tok->previous(), "const")) {
+                bool pointerType = false;
+                for (const Token* type = mRangeType.first; type != mRangeType.second; type = type->next()) {
+                    if (type->str() == "*") {
+                        pointerType = true;
+                        break;
+                    }
+                }
+                if (pointerType) {
+                    tok->insertToken("const");
+                    tok->next()->column(tok->column());
+                    tok->next()->isExpandedMacro(tok->previous()->isExpandedMacro());
+                    tok->deletePrevious();
+                }
+            }
+
             Token* const tok2 = insertTokens(tok, mRangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
