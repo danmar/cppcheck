@@ -39,6 +39,8 @@ public:
 
     unsigned int check() override;
 
+    unsigned int STDCALL threadProc(ThreadData */*data*/) override { return 0; }
+
 private:
     CppCheck &mCppcheck;
 };

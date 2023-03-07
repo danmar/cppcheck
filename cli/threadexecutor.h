@@ -27,6 +27,7 @@
 
 class Settings;
 class ErrorLogger;
+class ThreadData;
 
 /// @addtogroup CLI
 /// @{
@@ -42,9 +43,8 @@ public:
     ~ThreadExecutor() override;
     void operator=(const ThreadExecutor &) = delete;
 
-    unsigned int check() override;
-
-    friend class SyncLogForwarder;
+private:
+    unsigned int STDCALL threadProc(ThreadData *data) override;
 };
 
 /// @}
