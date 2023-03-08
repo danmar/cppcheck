@@ -7081,7 +7081,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                             continue;
                         }
 
-                        const auto yield = astFunctionYield(tok->previous(), mSettings);
+                        const auto yield = astFunctionYield(tok->previous(), &mSettings);
                         if (yield == Library::Container::Yield::START_ITERATOR ||
                             yield == Library::Container::Yield::END_ITERATOR ||
                             yield == Library::Container::Yield::ITERATOR) {
