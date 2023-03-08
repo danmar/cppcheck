@@ -24,13 +24,6 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-/*
-    TODO:
-    - rename "file" to "single"
-    - add unit tests
-        - for --showtime (needs input file)
-        - for Timer* classes
- */
 
 namespace {
     using dataElementType = std::pair<std::string, struct TimerResultsData>;
