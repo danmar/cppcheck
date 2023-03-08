@@ -49,6 +49,7 @@ private:
     struct CheckOptions
     {
         CheckOptions() = default;
+        bool quiet = false;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
@@ -80,6 +81,7 @@ private:
         Settings settings1 = settings;
         settings1.jobs = jobs;
         settings1.showtime = opt.showtime;
+        settings1.quiet = opt.quiet;
         if (opt.plistOutput)
             settings1.plistOutput = opt.plistOutput;
         // TODO: test with settings.project.fileSettings;
@@ -114,16 +116,19 @@ private:
 
         oss << "  return 0;\n"
             << "}\n";
-        check(2, 3, 3, oss.str());
+        check(2, 3, 3, oss.str(), dinit(CheckOptions,
+                                        $.quiet = true));
     }
 
+    // TODO: check the output
     void many_threads() {
         check(16, 100, 100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}");
+              "}", dinit(CheckOptions,
+                         $.quiet = true));
     }
 
     // #11249 - reports TSAN errors - only applies to threads not processes though
@@ -134,7 +139,9 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+              "}", dinit(CheckOptions,
+                         $.quiet = true,
+                         $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
     }
 
     void many_threads_plist() {
@@ -146,7 +153,9 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions, $.plistOutput = plistOutput));
+              "}", dinit(CheckOptions,
+                         $.quiet = true,
+                         $.plistOutput = plistOutput));
     }
 
     void no_errors_more_files() {
@@ -154,7 +163,8 @@ private:
               "int main()\n"
               "{\n"
               "  return 0;\n"
-              "}");
+              "}", dinit(CheckOptions,
+                         $.quiet = true));
     }
 
     void no_errors_less_files() {
@@ -162,7 +172,8 @@ private:
               "int main()\n"
               "{\n"
               "  return 0;\n"
-              "}");
+              "}", dinit(CheckOptions,
+                         $.quiet = true));
     }
 
     void no_errors_equal_amount_files() {
@@ -170,7 +181,8 @@ private:
               "int main()\n"
               "{\n"
               "  return 0;\n"
-              "}");
+              "}", dinit(CheckOptions,
+                         $.quiet = true));
     }
 
     void one_error_less_files() {
@@ -179,7 +191,8 @@ private:
               "{\n"
               "  {char *a = malloc(10);}\n"
               "  return 0;\n"
-              "}");
+              "}", dinit(CheckOptions,
+                         $.quiet = true));
     }
 
     void one_error_several_files() {
@@ -188,7 +201,8 @@ private:
               "{\n"
               "  {char *a = malloc(10);}\n"
               "  return 0;\n"
-              "}");
+              "}", dinit(CheckOptions,
+                         $.quiet = true));
     }
 
     void markup() {
