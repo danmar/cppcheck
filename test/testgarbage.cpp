@@ -19,6 +19,7 @@
 #include "check.h"
 #include "errortypes.h"
 #include "mathlib.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "token.h"
@@ -286,8 +287,10 @@ private:
     std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
         errout.str("");
 
+        Preprocessor preprocessor(settings, nullptr);
+
         // tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 

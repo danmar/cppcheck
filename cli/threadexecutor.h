@@ -19,8 +19,6 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
-#include "config.h"
-
 #include "executor.h"
 
 #include <cstddef>
@@ -46,9 +44,7 @@ public:
 
     unsigned int check() override;
 
-private:
-    class SyncLogForwarder;
-    static unsigned int STDCALL threadProc(SyncLogForwarder *logForwarder);
+    friend class SyncLogForwarder;
 };
 
 /// @}

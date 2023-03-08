@@ -79,11 +79,11 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], Settings::PlatformType platform = Settings::Native) {
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
-        PLATFORM(settings, platform);
+        PLATFORM(settings.platform, platform);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);

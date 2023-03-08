@@ -20,6 +20,11 @@ def build_cppcheck(bisect_path):
     if os.path.exists(os.path.join(bisect_repo_dir, 'cppcheck')):
         os.remove(os.path.join(bisect_repo_dir, 'cppcheck'))
 
+    # for versions 1.88 and 1.89
+    print('patching Makefile')
+    subprocess.check_call(['sed', '-i', 's/shell python /shell python3 /g', os.path.join(bisect_repo_dir, 'Makefile')])
+
+    # for versions between 2.0 and 2.2
     print('patching cli/cppcheckexecutor.cpp')
     subprocess.check_call(['sed', '-i', 's/SIGSTKSZ/32768/g', os.path.join(bisect_repo_dir, 'cli', 'cppcheckexecutor.cpp')])
 

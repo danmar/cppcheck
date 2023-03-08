@@ -33,6 +33,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <map>
 #include <memory>
@@ -629,7 +630,7 @@ void clangimport::AstNode::setValueType(Token *tok)
         if (!decl.front())
             break;
 
-        const ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings, true); // TODO: set isCpp
+        const ValueType valueType = ValueType::parseDecl(decl.front(), *mData->mSettings, true); // TODO: set isCpp
         if (valueType.type != ValueType::Type::UNKNOWN_TYPE) {
             tok->setValueType(new ValueType(valueType));
             break;
@@ -1535,15 +1536,15 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
                 return v * dim.num;
             });
             if (var.valueType())
-                typeSize += mul * var.valueType()->typeSize(*settings, true);
+                typeSize += mul * var.valueType()->typeSize(settings->platform, true);
         }
         scope.definedType->sizeOf = typeSize;
     }
 
     for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings, tokenizer->isCPP());
-            const int sz = vt.typeSize(*settings, true);
+            ValueType vt = ValueType::parseDecl(tok->tokAt(2), *settings, tokenizer->isCPP());
+            const int sz = vt.typeSize(settings->platform, true);
             if (sz <= 0)
                 continue;
             long long mul = 1;

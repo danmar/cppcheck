@@ -36,6 +36,7 @@ Highlighter::Highlighter(QTextDocument *parent,
     mKeywordFormat.setForeground(mWidgetStyle->keywordColor);
     mKeywordFormat.setFontWeight(mWidgetStyle->keywordWeight);
     QStringList keywordPatterns;
+    // TODO: use Keywords::getX()
     keywordPatterns << "alignas"
                     << "alignof"
                     << "asm"

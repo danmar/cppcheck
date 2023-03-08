@@ -29,11 +29,11 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 #include "vfvalue.h"
 
-#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
 #include "checkclass.h" // CheckClass::stl_containers_not_const
 
 #include <algorithm> // find_if()
@@ -303,7 +303,7 @@ void CheckOther::warningOldStylePointerCast()
             tok = scope->bodyStart;
         for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * *| *| const|&| ) (| %name%|%num%|%bool%|%char%|%str%"))
+            if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * *| *| const|&| ) (| %name%|%num%|%bool%|%char%|%str%|&"))
                 continue;
             if (Token::Match(tok->previous(), "%type%"))
                 continue;
@@ -1160,11 +1160,11 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
         if (var.isStatic())
             continue;
         if (var.isPointer() || var.isReference())
-            size = settings->sizeof_pointer;
+            size = settings->platform.sizeof_pointer;
         else if (var.type() && var.type()->classScope)
             size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth+1);
         else if (var.valueType() && var.valueType()->type == ValueType::Type::CONTAINER)
-            size = 3 * settings->sizeof_pointer; // Just guess
+            size = 3 * settings->platform.sizeof_pointer; // Just guess
         else
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
@@ -1303,7 +1303,7 @@ void CheckOther::checkPassByReference()
                 // Ensure that it is a large object.
                 if (!var->type()->classScope)
                     inconclusive = true;
-                else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->sizeof_pointer)
+                else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->platform.sizeof_pointer)
                     continue;
             }
             else
@@ -2951,7 +2951,7 @@ void CheckOther::checkIncompleteArrayFill()
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
                     int size = mTokenizer->sizeOfType(var->typeStartToken());
                     if (size == 0 && var->valueType()->pointer)
-                        size = mSettings->sizeof_pointer;
+                        size = mSettings->platform.sizeof_pointer;
                     else if (size == 0 && var->type())
                         size = estimateSize(var->type(), mSettings, symbolDatabase);
                     const Token* tok3 = tok->next()->astOperand2()->astOperand1()->astOperand1();
@@ -3115,7 +3115,7 @@ void CheckOther::redundantPointerOpError(const Token* tok, const std::string &va
 
 void CheckOther::checkInterlockedDecrement()
 {
-    if (!mSettings->isWindowsPlatform()) {
+    if (!mSettings->platform.isWindows()) {
         return;
     }
 
@@ -3685,6 +3685,12 @@ void CheckOther::checkComparePointers()
                 continue;
             if (var1->isRValueReference() || var2->isRValueReference())
                 continue;
+            if (const Token* parent2 = getParentLifetime(mTokenizer->isCPP(), v2.tokvalue, &mSettings->library))
+                if (var1 == parent2->variable())
+                    continue;
+            if (const Token* parent1 = getParentLifetime(mTokenizer->isCPP(), v1.tokvalue, &mSettings->library))
+                if (var2 == parent1->variable())
+                    continue;
             comparePointersError(tok, &v1, &v2);
         }
     }

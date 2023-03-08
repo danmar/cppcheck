@@ -26,12 +26,11 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <cstdio>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-#include <utility>
+
 
 class Token;
 
@@ -64,7 +63,7 @@ public:
         next->reportOut(outmsg);
     }
     void reportErr(const ErrorMessage &msg) override {
-        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
+        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg))
             next->reportErr(msg);
     }
 private:
@@ -81,6 +80,12 @@ public:
     {
         return mFullPath;
     }
+
+    ScopedFile(const ScopedFile&) = delete;
+    ScopedFile(ScopedFile&&) = delete;
+    ScopedFile& operator=(const ScopedFile&) = delete;
+    ScopedFile& operator=(ScopedFile&&) = delete;
+
 private:
     const std::string mName;
     const std::string mPath;

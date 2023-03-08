@@ -122,6 +122,7 @@ stage
 
 # clang tooling temporary files
 .clangd/
+.cache/
 compile_commands.json
 
 # qmake

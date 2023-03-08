@@ -33,7 +33,7 @@ struct InternalError;
 class TestVarID : public TestFixture {
 public:
     TestVarID() : TestFixture("TestVarID") {
-        PLATFORM(settings, cppcheck::Platform::Unix64);
+        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
         settings.standards.c = Standards::C89;
         settings.standards.cpp = Standards::CPPLatest;
         settings.checkUnusedTemplates = true;
@@ -190,6 +190,7 @@ private:
         TEST_CASE(varid_not); // #9689 'not x'
         TEST_CASE(varid_declInIfCondition);
         TEST_CASE(varid_globalScope);
+        TEST_CASE(varid_function_pointer_args);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -2994,6 +2995,26 @@ private:
                             "8: memset ( :: Z :: b@3 . a , 123 , 5 ) ;\n"
                             "9: }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_function_pointer_args() {
+        const char code1[] = "void foo() {\n"
+                             "    char *text;\n"
+                             "    void (*cb)(char* text);\n"
+                             "}\n";
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: char * text@1 ;\n"
+                      "3: void ( * cb@2 ) ( char * ) ;\n"
+                      "4: }\n", tokenize(code1));
+
+        const char code2[] = "void foo() {\n"
+                             "    char *text;\n"
+                             "    void (*f)(int (*arg)(char* text));\n"
+                             "}\n";
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: char * text@1 ;\n"
+                      "3: void ( * f@2 ) ( int ( * arg ) ( char * ) ) ;\n"
+                      "4: }\n", tokenize(code2));
     }
 
     void varidclass1() {

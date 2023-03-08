@@ -20,11 +20,17 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdlib>
 #include <fstream> // IWYU pragma: keep
 #include <functional>
 #include <iostream>
+#include <map>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include "config.h"
 
 #include "../cli/filelister.h"
 #include "../lib/pathmatch.h"

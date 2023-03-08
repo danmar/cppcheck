@@ -19,11 +19,13 @@
 #include "fixture.h"
 
 #include "color.h"
+#include "errortypes.h"
 #include "options.h"
 #include "redirect.h"
 
 #include <cstdio>
 #include <cctype>
+#include <exception>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -100,7 +102,7 @@ bool TestFixture::prepareTest(const char testname[])
             std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
             std::fflush(stdout);
         } else {
-            std::cout << classname << "::" << testname << std::endl;
+            std::cout << classname << "::" << mTestname << std::endl;
         }
         return true;
     }
@@ -311,12 +313,27 @@ void TestFixture::printHelp()
 void TestFixture::run(const std::string &str)
 {
     testToRun = str;
-    if (quiet_tests) {
-        std::cout << '\n' << classname << ':';
-        REDIRECT;
-        run();
-    } else
-        run();
+    try {
+        if (quiet_tests) {
+            std::cout << '\n' << classname << ':';
+            SUPPRESS;
+            run();
+        }
+        else
+            run();
+    }
+    catch (const InternalError& e) {
+        ++fails_counter;
+        errmsg << classname << "::" << mTestname << " - InternalError: " << e.errorMessage << std::endl;
+    }
+    catch (const std::exception& error) {
+        ++fails_counter;
+        errmsg << classname << "::" << mTestname << " - Exception: " << error.what() << std::endl;
+    }
+    catch (...) {
+        ++fails_counter;
+        errmsg << classname << "::" << mTestname << " - Unknown exception" << std::endl;
+    }
 }
 
 void TestFixture::processOptions(const options& args)
@@ -376,4 +393,20 @@ void TestFixture::reportErr(const ErrorMessage &msg)
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
     if (errout.str().find(errormessage) == std::string::npos)
         errout << errormessage << std::endl;
+}
+
+void TestFixture::setTemplateFormat(const std::string &templateFormat)
+{
+    if (templateFormat == "multiline") {
+        mTemplateFormat = "{file}:{line}:{severity}:{message}";
+        mTemplateLocation = "{file}:{line}:note:{info}";
+    }
+    else if (templateFormat == "simple") {
+        mTemplateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+        mTemplateLocation = "";
+    }
+    else {
+        mTemplateFormat = templateFormat;
+        mTemplateLocation = "";
+    }
 }

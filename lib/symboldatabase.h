@@ -28,6 +28,7 @@
 #include "sourcelocation.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iosfwd>
 #include <list>
@@ -225,7 +226,7 @@ class CPPCHECKLIB Variable {
      * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings, bool* isContainer);
+    bool arrayDimensions(const Settings* settings, bool& isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -1324,7 +1325,7 @@ public:
         debugPath()
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings *settings, bool isCpp);
+    static ValueType parseDecl(const Token *type, const Settings &settings, bool isCpp);
 
     static Type typeFromString(const std::string &typestr, bool longType);
 
@@ -1344,7 +1345,7 @@ public:
         return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
     }
 
-    bool fromLibraryType(const std::string &typestr, const Settings *settings);
+    bool fromLibraryType(const std::string &typestr, const Settings &settings);
 
     bool isEnum() const {
         return typeScope && typeScope->type == Scope::eEnum;
@@ -1365,7 +1366,7 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    SymbolDatabase(const Tokenizer &tokenizer, const Settings &settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
@@ -1399,12 +1400,12 @@ public:
     const Scope *findScopeByName(const std::string& name) const;
 
     const Type* findType(const Token *startTok, const Scope *startScope, bool lookOutside = false) const;
-    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) const {
+    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) {
         return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope), lookOutside));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
-    Scope *findScope(const Token *tok, Scope *startScope) const {
+    Scope *findScope(const Token *tok, Scope *startScope) {
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
@@ -1509,8 +1510,8 @@ private:
     void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
     void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
 
-    const Tokenizer *mTokenizer;
-    const Settings *mSettings;
+    const Tokenizer &mTokenizer;
+    const Settings &mSettings;
     ErrorLogger *mErrorLogger;
 
     /** variable symbol table */

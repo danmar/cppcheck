@@ -18,6 +18,7 @@
 
 #pragma once
 
+// IWYU pragma: begin_keep
 #include "check.h"
 #include "config.h"
 #include "importproject.h"
@@ -28,3 +29,4 @@
 #include "token.h"
 #include "tokenlist.h"
 #include "tokenize.h"
+// IWYU pragma: end_keep

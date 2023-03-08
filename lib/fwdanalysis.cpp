@@ -25,7 +25,11 @@
 #include "token.h"
 #include "vfvalue.h"
 
+#include <list>
+#include <map>
+#include <memory>
 #include <string>
+#include <utility>
 
 static bool isUnchanged(const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local)
 {

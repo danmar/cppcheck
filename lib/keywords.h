@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,20 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef forwardanalyzerH
-#define forwardanalyzerH
+#ifndef keywordsH
+#define keywordsH
 
-#include "analyzer.h"
+#include "standards.h"
 
-class Settings;
-class Token;
-template<class T> class ValuePtr;
+#include <string>
+#include <unordered_set>
 
-Analyzer::Result valueFlowGenericForward(Token* start,
-                                         const Token* end,
-                                         const ValuePtr<Analyzer>& a,
-                                         const Settings& settings);
+class Keywords
+{
+public:
+    static const std::unordered_set<std::string>& getAll(Standards::cstd_t cStd);
+    static const std::unordered_set<std::string>& getAll(Standards::cppstd_t cppStd);
 
-Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings& settings);
+    static const std::unordered_set<std::string>& getOnly(Standards::cstd_t cStd);
+    static const std::unordered_set<std::string>& getOnly(Standards::cppstd_t cppStd);
+};
 
 #endif

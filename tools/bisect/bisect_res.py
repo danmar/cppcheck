@@ -17,7 +17,7 @@ def run(cppcheck_path, options):
     # signals are report as negative exitcode (e.g. SIGSEGV -> -11)
     if p.returncode < 0:
         print('crash')
-        return None, None, None
+        return p.returncode, stderr, stdout
     print('done')
     return p.returncode, stderr, stdout
 
@@ -54,6 +54,8 @@ print(run_stderr)
 # if no ec is set we encountered an unexpected error
 if run_ec is None:
     sys.exit(EC_SKIP)  # error occured
+elif run_ec < 0:
+    sys.exit(EC_BAD) # crash occured
 
 # check output for expected string
 if expected is not None:

@@ -22,6 +22,7 @@
 #include "astutils.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "keywords.h"
 #include "library.h"
 #include "mathlib.h"
 #include "path.h"
@@ -36,6 +37,7 @@
 #include <utility>
 #include <set>
 #include <stack>
+#include <unordered_set>
 
 #include <simplecpp.h>
 
@@ -52,41 +54,6 @@ TokenList::TokenList(const Settings* settings) :
     mIsCpp(false)
 {
     mTokensFrontBack.list = this;
-    mKeywords.insert("asm");
-    mKeywords.insert("auto");
-    mKeywords.insert("break");
-    mKeywords.insert("case");
-    //mKeywords.insert("char"); // type
-    mKeywords.insert("const");
-    mKeywords.insert("continue");
-    mKeywords.insert("default");
-    mKeywords.insert("do");
-    //mKeywords.insert("double"); // type
-    mKeywords.insert("else");
-    mKeywords.insert("enum");
-    mKeywords.insert("extern");
-    //mKeywords.insert("float"); // type
-    mKeywords.insert("for");
-    mKeywords.insert("goto");
-    mKeywords.insert("if");
-    mKeywords.insert("inline");
-    //mKeywords.insert("int"); // type
-    //mKeywords.insert("long"); // type
-    mKeywords.insert("register");
-    mKeywords.insert("restrict");
-    mKeywords.insert("return");
-    //mKeywords.insert("short"); // type
-    mKeywords.insert("signed");
-    mKeywords.insert("sizeof");
-    mKeywords.insert("static");
-    mKeywords.insert("struct");
-    mKeywords.insert("switch");
-    mKeywords.insert("typedef");
-    mKeywords.insert("union");
-    mKeywords.insert("unsigned");
-    mKeywords.insert("void");
-    mKeywords.insert("volatile");
-    mKeywords.insert("while");
 }
 
 TokenList::~TokenList()
@@ -123,57 +90,6 @@ void TokenList::determineCppC()
     } else {
         mIsC = mSettings->enforcedLang == Settings::Language::C || (mSettings->enforcedLang == Settings::Language::None && Path::isC(getSourceFilePath()));
         mIsCpp = mSettings->enforcedLang == Settings::Language::CPP || (mSettings->enforcedLang == Settings::Language::None && Path::isCPP(getSourceFilePath()));
-    }
-
-    if (mIsCpp) {
-        //mKeywords.insert("bool"); // type
-        mKeywords.insert("catch");
-        mKeywords.insert("class");
-        mKeywords.insert("constexpr");
-        mKeywords.insert("const_cast");
-        mKeywords.insert("decltype");
-        mKeywords.insert("delete");
-        mKeywords.insert("dynamic_cast");
-        mKeywords.insert("explicit");
-        mKeywords.insert("export");
-        //mKeywords.insert("false"); // literal
-        mKeywords.insert("friend");
-        mKeywords.insert("mutable");
-        mKeywords.insert("namespace");
-        mKeywords.insert("new");
-        mKeywords.insert("noexcept");
-        mKeywords.insert("operator");
-        mKeywords.insert("private");
-        mKeywords.insert("protected");
-        mKeywords.insert("public");
-        mKeywords.insert("reinterpret_cast");
-        mKeywords.insert("static_assert");
-        mKeywords.insert("static_cast");
-        mKeywords.insert("template");
-        mKeywords.insert("this");
-        mKeywords.insert("thread_local");
-        mKeywords.insert("throw");
-        //mKeywords.insert("true"); // literal
-        mKeywords.insert("try");
-        mKeywords.insert("typeid");
-        mKeywords.insert("typename");
-        mKeywords.insert("typeof");
-        mKeywords.insert("using");
-        mKeywords.insert("virtual");
-        //mKeywords.insert("wchar_t"); // type
-        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
-            mKeywords.insert("alignas");
-            mKeywords.insert("alignof");
-            mKeywords.insert("axiom");
-            mKeywords.insert("co_await");
-            mKeywords.insert("co_return");
-            mKeywords.insert("co_yield");
-            mKeywords.insert("concept");
-            mKeywords.insert("synchronized");
-            mKeywords.insert("consteval");
-            mKeywords.insert("reflexpr");
-            mKeywords.insert("requires");
-        }
     }
 }
 
@@ -934,9 +850,14 @@ static void compileScope(Token *&tok, AST_state& state)
 static bool isPrefixUnary(const Token* tok, bool cpp)
 {
     if (!tok->previous()
-        || ((Token::Match(tok->previous(), "(|[|{|%op%|;|}|?|:|,|.|return|::") || (cpp && tok->strAt(-1) == "throw"))
+        || ((Token::Match(tok->previous(), "(|[|{|%op%|;|?|:|,|.|return|::") || (cpp && tok->strAt(-1) == "throw"))
             && (tok->previous()->tokType() != Token::eIncDecOp || tok->tokType() == Token::eIncDecOp)))
         return true;
+
+    if (tok->previous()->str() == "}") {
+        const Token* parent = tok->linkAt(-1)->tokAt(-1);
+        return !Token::Match(parent, "%type%") || parent->isKeyword();
+    }
 
     if (tok->str() == "*" && tok->previous()->tokType() == Token::eIncDecOp && isPrefixUnary(tok->previous(), cpp))
         return true;
@@ -1480,6 +1401,24 @@ static Token * findAstTop(Token *tok1, Token *tok2)
 
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
+    // skip function pointer declaration
+    if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
+        const Token* type = tok;
+        while (Token::Match(type, "%type%|*|&|<")) {
+            if (type->str() == "<") {
+                if (type->link())
+                    type = type->link();
+                else
+                    break;
+            }
+            type = type->next();
+        }
+        if (Token::Match(type, "( * *| %var%") &&
+            Token::Match(type->link()->previous(), "%var%|] ) (") &&
+            Token::Match(type->link()->linkAt(1), ") [;,)]"))
+            return type->link()->linkAt(1)->next();
+    }
+
     if (Token::simpleMatch(tok, "for (")) {
         if (cpp && Token::Match(tok, "for ( const| auto &|&&| [")) {
             Token *decl = Token::findsimplematch(tok, "[");
@@ -1722,7 +1661,7 @@ struct OnException {
 void TokenList::validateAst() const
 {
     OnException oe{[&] {
-            if (mSettings->debugnormal)
+            if (mSettings && mSettings->debugnormal)
                 mTokensFrontBack.front->printOut();
         }};
     // Check for some known issues in AST to avoid crash/hang later on
@@ -1846,17 +1785,20 @@ bool TokenList::validateToken(const Token* tok) const
 
 void TokenList::simplifyPlatformTypes()
 {
+    if (!mSettings)
+        return;
+
     const bool isCPP11  = mSettings->standards.cpp >= Standards::CPP11;
 
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
 
-    if (mSettings->sizeof_size_t == mSettings->sizeof_long)
+    if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long)
         type = isLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_long_long)
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long_long)
         type = isLongLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_int)
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_int)
         type = isInt;
     else
         return;
@@ -1909,7 +1851,7 @@ void TokenList::simplifyPlatformTypes()
         }
     }
 
-    const std::string platform_type(mSettings->platformString());
+    const std::string platform_type(mSettings->platform.toString());
 
     for (Token *tok = front(); tok; tok = tok->next()) {
         if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)
@@ -2045,5 +1987,30 @@ void TokenList::simplifyStdType()
 
 bool TokenList::isKeyword(const std::string &str) const
 {
-    return mKeywords.find(str) != mKeywords.end();
+    if (mIsCpp) {
+        // TODO: integrate into keywords?
+        // types and literals are not handled as keywords
+        static const std::unordered_set<std::string> cpp_types = {"bool", "false", "true"};
+        if (cpp_types.find(str) != cpp_types.end())
+            return false;
+
+        // TODO: properly apply configured standard
+        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
+            static const auto& cpp20_keywords = Keywords::getAll(Standards::cppstd_t::CPP20);
+            return cpp20_keywords.find(str) != cpp20_keywords.end();
+        }
+
+        static const auto& cpp_keywords = Keywords::getAll(Standards::cppstd_t::CPP11);
+        return cpp_keywords.find(str) != cpp_keywords.end();
+    }
+
+    // TODO: integrate into Keywords?
+    // types are not handled as keywords
+    static const std::unordered_set<std::string> c_types = {"char", "double", "float", "int", "long", "short"};
+    if (c_types.find(str) != c_types.end())
+        return false;
+
+    // TODO: use configured standard
+    static const auto& c_keywords = Keywords::getAll(Standards::cstd_t::C99);
+    return c_keywords.find(str) != c_keywords.end();
 }

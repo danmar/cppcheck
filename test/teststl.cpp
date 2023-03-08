@@ -25,6 +25,7 @@
 #include "utils.h"
 
 #include <cstddef>
+#include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
@@ -123,6 +124,7 @@ private:
         TEST_CASE(pushback13);
         TEST_CASE(insert1);
         TEST_CASE(insert2);
+        TEST_CASE(popback1);
 
         TEST_CASE(stlBoundaries1);
         TEST_CASE(stlBoundaries2);
@@ -3070,6 +3072,31 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void popback1() { // #11553
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    v.pop_back();\n"
+              "    std::list<int> l;\n"
+              "    l.pop_front();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Out of bounds access in expression 'v.pop_back()' because 'v' is empty.\n"
+                      "[test.cpp:5]: (error) Out of bounds access in expression 'l.pop_front()' because 'l' is empty.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    if (v.empty()) {}\n"
+              "    v.pop_back();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'v.empty()' is redundant or expression 'v.pop_back()' cause access out of bounds.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    v.pop_back();\n"
+              "    if (v.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void stlBoundaries1() {
         const std::string stlCont[] = {
             "list", "set", "multiset", "map", "multimap"
@@ -5279,6 +5306,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (style) Consider using std::find_if algorithm instead of a raw loop.\n", errout.str());
+
+        check("bool f(const std::set<std::string>& set, const std::string& f) {\n" // #11595
+              "    for (const std::string& s : set) {\n"
+              "        if (f.length() >= s.length() && f.compare(0, s.length(), s) == 0) {\n"
+              "            return true;\n"
+              "        }\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
     }
 
     void loopAlgoMinMax() {

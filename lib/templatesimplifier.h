@@ -46,7 +46,7 @@ class CPPCHECKLIB TemplateSimplifier {
     friend class TestSimplifyTemplate;
 
 public:
-    explicit TemplateSimplifier(Tokenizer *tokenizer);
+    explicit TemplateSimplifier(Tokenizer &tokenizer);
     ~TemplateSimplifier();
 
     /**
@@ -148,7 +148,7 @@ public:
          */
         TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
-        TokenAndName(TokenAndName&& other);
+        TokenAndName(TokenAndName&& other) NOEXCEPT;
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
@@ -156,6 +156,7 @@ public:
                    mNameToken == rhs.mNameToken && mParamEnd == rhs.mParamEnd && mFlags == rhs.mFlags;
         }
 
+        // TODO: do not return non-const pointer from const object
         Token * token() const {
             return mToken;
         }
@@ -488,9 +489,9 @@ private:
         const std::string &indent = "    ") const;
     void printOut(const std::string &text = emptyString) const;
 
-    Tokenizer *mTokenizer;
+    Tokenizer &mTokenizer;
     TokenList &mTokenList;
-    const Settings *mSettings;
+    const Settings &mSettings;
     ErrorLogger *mErrorLogger;
     bool mChanged;
 

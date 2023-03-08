@@ -25,6 +25,7 @@
 #include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -32,8 +33,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-
-#include <tinyxml2.h>
 
 class TestCondition : public TestFixture {
 public:
@@ -45,10 +44,11 @@ private:
 
     void run() override {
         // known platform..
-        PLATFORM(settings0, cppcheck::Platform::Native);
-        PLATFORM(settings1, cppcheck::Platform::Native);
+        PLATFORM(settings0.platform, cppcheck::Platform::Type::Native);
+        PLATFORM(settings1.platform, cppcheck::Platform::Type::Native);
 
         LOAD_LIB_2(settings0.library, "qt.cfg");
+        settings0.libraries.emplace_back("qt");
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.severity.enable(Severity::style);
@@ -58,11 +58,9 @@ private:
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
                            "</def>";
-        tinyxml2::XMLDocument xmldoc;
-        xmldoc.Parse(cfg, sizeof(cfg));
+        ASSERT(settings1.library.loadxmldata(cfg, sizeof(cfg)));
         settings1.severity.enable(Severity::style);
         settings1.severity.enable(Severity::warning);
-        settings1.library.load(xmldoc);
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
@@ -161,10 +159,9 @@ private:
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Run checks..
         runChecks<CheckCondition>(&tokenizer, settings, this);
@@ -2585,7 +2582,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} "); // <- CheckOther reports: checking if unsigned expression is less than zero
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.empty()' is always false\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
@@ -4493,6 +4490,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
+
+        check("void f(int x) {\n" // #11449
+              "    int i = x;\n"
+              "    i = (std::min)(i, 1);\n"
+              "    if (i == 1) {}\n"
+              "    int j = x;\n"
+              "    j = (::std::min)(j, 1);\n"
+              "    if (j == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4971,6 +4978,22 @@ private:
               "    return a.empty() || (b.empty() && a.empty());\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return value 'a.empty()' is always false\n", errout.str());
+
+        check("struct A {\n"
+              "    struct iterator;\n"
+              "    iterator begin() const;\n"
+              "    iterator end() const;\n"
+              "};\n"
+              "A g();\n"
+              "void f(bool b) {\n"
+              "    std::set<int> s;\n"
+              "    auto v = g();\n"
+              "    s.insert(v.begin(), v.end());\n"
+              "    if(!b && s.size() != 1)\n"
+              "        return;\n"
+              "    if(!s.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueLoop()
@@ -5590,7 +5613,7 @@ private:
     void compareOutOfTypeRange() {
         Settings settingsUnix64;
         settingsUnix64.severity.enable(Severity::style);
-        PLATFORM(settingsUnix64, cppcheck::Platform::PlatformType::Unix64);
+        PLATFORM(settingsUnix64.platform, cppcheck::Platform::Type::Unix64);
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

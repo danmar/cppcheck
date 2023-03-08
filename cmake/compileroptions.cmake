@@ -76,7 +76,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-documentation-unknown-command)
 
    # TODO: fix and enable these warnings - or move to suppression list below
-   add_compile_options_safe(-Wno-deprecated-copy-dtor)
    add_compile_options_safe(-Wno-inconsistent-missing-destructor-override) # caused by Qt moc code
    add_compile_options_safe(-Wno-unused-exception-parameter)
    add_compile_options_safe(-Wno-old-style-cast)
@@ -91,7 +90,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-double-promotion)
    add_compile_options_safe(-Wno-shadow-field)
    add_compile_options_safe(-Wno-shadow-uncaptured-local)
-   add_compile_options_safe(-Wno-unreachable-code)
    add_compile_options_safe(-Wno-implicit-float-conversion)
    add_compile_options_safe(-Wno-switch-enum)
    add_compile_options_safe(-Wno-float-conversion)

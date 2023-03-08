@@ -50,11 +50,11 @@ struct OnExit {
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
     enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
-    ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
+    ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
         : analyzer(analyzer), settings(settings), actions(Analyzer::Action::None), analyzeOnly(false), analyzeTerminate(false)
     {}
     ValuePtr<Analyzer> analyzer;
-    const Settings* settings;
+    const Settings& settings;
     Analyzer::Action actions;
     bool analyzeOnly;
     bool analyzeTerminate;
@@ -138,7 +138,7 @@ struct ForwardTraversal {
             traverseRecursive(tok->astOperand2(), f, traverseUnknown);
             traverseRecursive(tok->astOperand1(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
-        } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, &settings->library)) {
+        } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, &settings.library)) {
             // Traverse the parameters of the function before escaping
             traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
@@ -267,7 +267,7 @@ struct ForwardTraversal {
         return result;
     }
 
-    Analyzer::Action analyzeRange(const Token* start, const Token* end) {
+    Analyzer::Action analyzeRange(const Token* start, const Token* end) const {
         Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
@@ -288,7 +288,7 @@ struct ForwardTraversal {
         return ft;
     }
 
-    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false) {
+    std::vector<ForwardTraversal> tryForkScope(Token* endBlock, bool isModified = false) const {
         if (analyzer->updateScope(endBlock, isModified)) {
             ForwardTraversal ft = fork();
             return {std::move(ft)};
@@ -296,7 +296,7 @@ struct ForwardTraversal {
         return std::vector<ForwardTraversal> {};
     }
 
-    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) {
+    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) const {
         std::vector<ForwardTraversal> result = tryForkScope(endBlock, isModified);
         for (ForwardTraversal& ft : result)
             ft.updateScope(endBlock);
@@ -315,7 +315,7 @@ struct ForwardTraversal {
         for (const Token* tok=start; tok != end; tok = tok->previous()) {
             if (Token::simpleMatch(tok, "}")) {
                 const Token* ftok = nullptr;
-                const bool r = isReturnScope(tok, &settings->library, &ftok);
+                const bool r = isReturnScope(tok, &settings.library, &ftok);
                 if (r)
                     return true;
             }
@@ -325,7 +325,7 @@ struct ForwardTraversal {
 
     bool isEscapeScope(const Token* endBlock, bool& unknown) const {
         const Token* ftok = nullptr;
-        const bool r = isReturnScope(endBlock, &settings->library, &ftok);
+        const bool r = isReturnScope(endBlock, &settings.library, &ftok);
         if (!r && ftok)
             unknown = true;
         return r;
@@ -338,22 +338,22 @@ struct ForwardTraversal {
         Inconclusive,
     };
 
-    Analyzer::Action analyzeScope(const Token* endBlock) {
+    Analyzer::Action analyzeScope(const Token* endBlock) const {
         return analyzeRange(endBlock->link(), endBlock);
     }
 
-    Analyzer::Action checkScope(Token* endBlock) {
+    Analyzer::Action checkScope(Token* endBlock) const {
         Analyzer::Action a = analyzeScope(endBlock);
         tryForkUpdateScope(endBlock, a.isModified());
         return a;
     }
 
-    Analyzer::Action checkScope(const Token* endBlock) {
+    Analyzer::Action checkScope(const Token* endBlock) const {
         Analyzer::Action a = analyzeScope(endBlock);
         return a;
     }
 
-    bool checkBranch(Branch& branch) {
+    bool checkBranch(Branch& branch) const {
         Analyzer::Action a = analyzeScope(branch.endBlock);
         branch.action = a;
         std::vector<ForwardTraversal> ft1 = tryForkUpdateScope(branch.endBlock, a.isModified());
@@ -388,13 +388,13 @@ struct ForwardTraversal {
         if (stepTok) {
             std::pair<const Token*, const Token*> exprToks = stepTok->findExpressionStartEndTokens();
             if (exprToks.first != nullptr && exprToks.second != nullptr)
-                stepChangesCond |= isExpressionChanged(condTok, exprToks.first, exprToks.second->next(), settings, true);
+                stepChangesCond |= isExpressionChanged(condTok, exprToks.first, exprToks.second->next(), &settings, true);
         }
-        const bool bodyChangesCond = isExpressionChanged(condTok, endBlock->link(), endBlock, settings, true);
+        const bool bodyChangesCond = isExpressionChanged(condTok, endBlock->link(), endBlock, &settings, true);
         // Check for mutation in the condition
         const bool condChanged =
             nullptr != findAstNode(condTok, [&](const Token* tok) {
-            return isVariableChanged(tok, 0, settings, true);
+            return isVariableChanged(tok, 0, &settings, true);
         });
         const bool changed = stepChangesCond || bodyChangesCond || condChanged;
         if (!changed)
@@ -896,14 +896,14 @@ struct ForwardTraversal {
     }
 };
 
-Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)
+Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
     ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
     return Analyzer::Result{ ft.actions, ft.terminate };
 }
 
-Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
+Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
     if (Settings::terminated())
         throw TerminateException();

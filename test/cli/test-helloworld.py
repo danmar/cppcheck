@@ -198,16 +198,15 @@ def test_build_dir_dump_output():
             assert '</dump>' in dump, 'invalid dump data: ...' + dump[-100:]
 
 def __test_missing_include_system(use_j):
-    args = '--enable=missingInclude --suppress=zerodiv helloworld'
+    args = ['--enable=missingInclude', '--suppress=zerodiv', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', 'helloworld']
     if use_j:
-        args = '-j2 ' + args
+        args.insert(0, '-j2')
 
-    _, _, stderr = cppcheck(args.split())
-    assert stderr == 'nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]\n\n'
+    _, _, stderr = cppcheck(args)
+    assert stderr.replace('\\', '/') == 'helloworld/main.c:1:0: information: Include file: <stdio.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n'
 
 def test_missing_include_system():
     __test_missing_include_system(False)
 
-@pytest.mark.xfail
 def test_missing_include_system_j(): #11283
     __test_missing_include_system(True)

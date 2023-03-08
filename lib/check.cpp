@@ -26,8 +26,10 @@
 #include "tokenize.h"
 #include "vfvalue.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iostream>
+#include <stdexcept>
 #include <utility>
 
 //---------------------------------------------------------------------------

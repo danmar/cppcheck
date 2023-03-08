@@ -309,11 +309,11 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
+    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, cppcheck::Platform::Type type = cppcheck::Platform::Type::Native) {
         errout.str("");
 
         settings.debugwarnings = debugwarnings;
-        PLATFORM(settings, type);
+        PLATFORM(settings.platform, type);
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);

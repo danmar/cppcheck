@@ -2,7 +2,7 @@
 // Test library configuration for std.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=std --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/std.c
+// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/std.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -28,6 +28,8 @@
 #endif
 #include <inttypes.h>
 #include <float.h>
+#include <stdarg.h>
+#include <sys/types.h>
 
 size_t invalidFunctionArgStr_wcslen(void)
 {
