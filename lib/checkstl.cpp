@@ -3012,16 +3012,15 @@ static bool isKnownEmptyContainer(const Token* tok)
 {
     if (!tok)
         return false;
-    for (const ValueFlow::Value& v:tok->values()) {
+    return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
         if (!v.isKnown())
-            continue;
+            return false;
         if (!v.isContainerSizeValue())
-            continue;
+            return false;
         if (v.intvalue != 0)
-            continue;
+            return false;
         return true;
-    }
-    return false;
+    });
 }
 
 void CheckStl::knownEmptyContainer()
