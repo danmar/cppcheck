@@ -45,16 +45,17 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     if (mode == SHOWTIME_MODES::SHOWTIME_NONE || mode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
         return;
 
-    std::cout << std::endl;
     TimerResultsData overallData;
-
     std::vector<dataElementType> data;
-    {
-        std::lock_guard<std::mutex> l(mResultsSync);
-        data.reserve(mResults.size());
-        data.insert(data.begin(), mResults.cbegin(), mResults.cend());
-    }
+
+    // lock the whole logging operation to avoid multiple threads printing their results at the same time
+    std::lock_guard<std::mutex> l(mResultsSync);
+
+    data.reserve(mResults.size());
+    data.insert(data.begin(), mResults.cbegin(), mResults.cend());
     std::sort(data.begin(), data.end(), more_second_sec);
+
+    std::cout << std::endl;
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
     for (std::vector<dataElementType>::const_iterator iter=data.cbegin(); iter!=data.cend(); ++iter) {
