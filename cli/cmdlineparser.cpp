@@ -1268,6 +1268,7 @@ void CmdLineParser::printHelp()
     "    --rule-file=<file>   Use given rule file. For more information, see:\n"
     "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"
 #endif
+    // TODO: document --showtime
     "    --std=<id>           Set standard.\n"
     "                         The available options are:\n"
     "                          * c89\n"
