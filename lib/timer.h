@@ -59,6 +59,8 @@ public:
     void showResults(SHOWTIME_MODES mode) const;
     void addResults(const std::string& str, std::clock_t clocks) override;
 
+    void reset();
+
 private:
     std::map<std::string, struct TimerResultsData> mResults;
     mutable std::mutex mResultsSync;

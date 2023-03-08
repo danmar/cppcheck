@@ -93,6 +93,12 @@ void TimerResults::addResults(const std::string& str, std::clock_t clocks)
     mResults[str].mNumberOfResults++;
 }
 
+void TimerResults::reset()
+{
+    std::lock_guard<std::mutex> l(mResultsSync);
+    mResults.clear();
+}
+
 Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
     : mStr(std::move(str))
     , mTimerResults(timerResults)

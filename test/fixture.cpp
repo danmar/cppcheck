@@ -18,6 +18,7 @@
 
 #include "fixture.h"
 
+#include "cppcheck.h"
 #include "errortypes.h"
 #include "options.h"
 #include "redirect.h"
@@ -90,6 +91,7 @@ bool TestFixture::prepareTest(const char testname[])
     mVerbose = false;
     mTemplateFormat.clear();
     mTemplateLocation.clear();
+    CppCheck::resetTimerResults();
 
     prepareTestInternal();
 

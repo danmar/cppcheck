@@ -1903,3 +1903,8 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
         }
     }
 }
+
+void CppCheck::resetTimerResults()
+{
+    s_timerResults.reset();
+}
