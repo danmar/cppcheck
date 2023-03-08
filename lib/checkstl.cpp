@@ -2671,129 +2671,140 @@ static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonne
 }
 
 namespace {
-struct LoopAnalyzer {
-    const Token* bodyTok = nullptr;
-    const Token* loopVar = nullptr;
-    const Settings* settings = nullptr;
-    std::set<nonneg int> varsChanged = {};
+    struct LoopAnalyzer {
+        const Token* bodyTok = nullptr;
+        const Token* loopVar = nullptr;
+        const Settings* settings = nullptr;
+        std::set<nonneg int> varsChanged = {};
 
-    explicit LoopAnalyzer(const Token* tok, const Settings* psettings) : bodyTok(tok->next()->link()->next()), settings(psettings)
-    {
-        const Token *splitTok = tok->next()->astOperand2();
-        if (Token::simpleMatch(splitTok, ":") && splitTok->previous()->varId() != 0) {
-            loopVar = splitTok->previous();
-        }
-        if (valid()) {
-            findChangedVariables();
-        }
-    }
-    bool isLoopVarChanged() const {
-        return varsChanged.count(loopVar->varId()) > 0;
-    }
-
-    bool isModified(const Token* tok) const {
-        if (tok->variable() && tok->variable()->isConst())
-            return false;
-        int n = 1 + (astIsPointer(tok) ? 1 : 0);
-        for(int i=0;i<n;i++) {
-            bool inconclusive = false;
-            if (isVariableChangedByFunctionCall(tok, i, settings, &inconclusive))
-                return true;
-            if (inconclusive)
-                return true;
-            if (isVariableChanged(tok, i, settings, true))
-                return true;
-        }
-        return false;
-    }
-
-    template<class Predicate, class F>
-    void findTokens(Predicate pred, F f) const {
-        for(const Token* tok=bodyTok;precedes(tok, bodyTok->link());tok = tok->next()) {
-            if (pred(tok))
-                f(tok);
-        }
-    }
-
-    template<class Predicate>
-    const Token* findToken(Predicate pred) const {
-        for(const Token* tok=bodyTok;precedes(tok, bodyTok->link());tok = tok->next()) {
-            if (pred(tok))
-                return tok;
-        }
-        return nullptr;
-    }
-
-    bool hasGotoOrBreak() const {
-        return findToken([](const Token* tok) {
-            return Token::Match(tok, "goto|break");
-        });
-    }
-
-    bool valid() const {
-        return bodyTok && loopVar;
-    }
-
-    std::string findAlgo() const {
-        if(!valid())
-            return "";
-        bool loopVarChanged = isLoopVarChanged();
-        if (!loopVarChanged && varsChanged.empty()) {
-            if (hasGotoOrBreak())
-                return "";
-            bool alwaysTrue = true;
-            bool alwaysFalse = true;
-            auto hasReturn = [](const Token* tok) { return Token::simpleMatch(tok, "return"); };
-            findTokens(hasReturn, [&](const Token* tok) {
-                const Token* returnTok = tok->astOperand1();
-                if (!returnTok || !returnTok->hasKnownIntValue() || !astIsBool(returnTok)) {
-                    alwaysTrue = false;
-                    alwaysFalse = false;
-                    return;
-                }
-                (returnTok->values().front().intvalue ? alwaysTrue : alwaysFalse) &= true;
-                (returnTok->values().front().intvalue ? alwaysFalse : alwaysTrue) &= false;
-            });
-            if (alwaysTrue == alwaysFalse)
-                return "";
-            if (alwaysTrue)
-                return "std::any_of";
-            else
-                return "std::all_of or std::none_of";
-        }
-        return "";
-    }
-
-    bool isLocalVar(const Variable* var) const {
-        if (!var)
-            return false;
-        if (var->isPointer() || var->isReference())
-            return false;
-        if (var->declarationId() == loopVar->varId())
-            return false;
-        const Scope* scope = var->scope();
-        return scope->isNestedIn(bodyTok->scope());
-    }
-private:
-    void findChangedVariables() {
-        std::set<nonneg int> vars;
-        for(const Token* tok=bodyTok;precedes(tok, bodyTok->link());tok = tok->next()) {
-            if (tok->varId() == 0)
-                continue;
-            if (vars.count(tok->varId()) > 0)
-                continue;
-            if (isLocalVar(tok->variable())) {
-                vars.insert(tok->varId());
-                continue;
+        explicit LoopAnalyzer(const Token* tok, const Settings* psettings)
+            : bodyTok(tok->next()->link()->next()), settings(psettings)
+        {
+            const Token* splitTok = tok->next()->astOperand2();
+            if (Token::simpleMatch(splitTok, ":") && splitTok->previous()->varId() != 0) {
+                loopVar = splitTok->previous();
             }
-            if (!isModified(tok))
-                continue;
-            varsChanged.insert(tok->varId());
-            vars.insert(tok->varId());
+            if (valid()) {
+                findChangedVariables();
+            }
         }
-    }
-};
-}
+        bool isLoopVarChanged() const {
+            return varsChanged.count(loopVar->varId()) > 0;
+        }
+
+        bool isModified(const Token* tok) const
+        {
+            if (tok->variable() && tok->variable()->isConst())
+                return false;
+            int n = 1 + (astIsPointer(tok) ? 1 : 0);
+            for (int i = 0; i < n; i++) {
+                bool inconclusive = false;
+                if (isVariableChangedByFunctionCall(tok, i, settings, &inconclusive))
+                    return true;
+                if (inconclusive)
+                    return true;
+                if (isVariableChanged(tok, i, settings, true))
+                    return true;
+            }
+            return false;
+        }
+
+        template<class Predicate, class F>
+        void findTokens(Predicate pred, F f) const
+        {
+            for (const Token* tok = bodyTok; precedes(tok, bodyTok->link()); tok = tok->next()) {
+                if (pred(tok))
+                    f(tok);
+            }
+        }
+
+        template<class Predicate>
+        const Token* findToken(Predicate pred) const
+        {
+            for (const Token* tok = bodyTok; precedes(tok, bodyTok->link()); tok = tok->next()) {
+                if (pred(tok))
+                    return tok;
+            }
+            return nullptr;
+        }
+
+        bool hasGotoOrBreak() const
+        {
+            return findToken([](const Token* tok) {
+                return Token::Match(tok, "goto|break");
+            });
+        }
+
+        bool valid() const {
+            return bodyTok && loopVar;
+        }
+
+        std::string findAlgo() const
+        {
+            if (!valid())
+                return "";
+            bool loopVarChanged = isLoopVarChanged();
+            if (!loopVarChanged && varsChanged.empty()) {
+                if (hasGotoOrBreak())
+                    return "";
+                bool alwaysTrue = true;
+                bool alwaysFalse = true;
+                auto hasReturn = [](const Token* tok) {
+                    return Token::simpleMatch(tok, "return");
+                };
+                findTokens(hasReturn, [&](const Token* tok) {
+                    const Token* returnTok = tok->astOperand1();
+                    if (!returnTok || !returnTok->hasKnownIntValue() || !astIsBool(returnTok)) {
+                        alwaysTrue = false;
+                        alwaysFalse = false;
+                        return;
+                    }
+                    (returnTok->values().front().intvalue ? alwaysTrue : alwaysFalse) &= true;
+                    (returnTok->values().front().intvalue ? alwaysFalse : alwaysTrue) &= false;
+                });
+                if (alwaysTrue == alwaysFalse)
+                    return "";
+                if (alwaysTrue)
+                    return "std::any_of";
+                else
+                    return "std::all_of or std::none_of";
+            }
+            return "";
+        }
+
+        bool isLocalVar(const Variable* var) const
+        {
+            if (!var)
+                return false;
+            if (var->isPointer() || var->isReference())
+                return false;
+            if (var->declarationId() == loopVar->varId())
+                return false;
+            const Scope* scope = var->scope();
+            return scope->isNestedIn(bodyTok->scope());
+        }
+
+    private:
+        void findChangedVariables()
+        {
+            std::set<nonneg int> vars;
+            for (const Token* tok = bodyTok; precedes(tok, bodyTok->link()); tok = tok->next()) {
+                if (tok->varId() == 0)
+                    continue;
+                if (vars.count(tok->varId()) > 0)
+                    continue;
+                if (isLocalVar(tok->variable())) {
+                    vars.insert(tok->varId());
+                    continue;
+                }
+                if (!isModified(tok))
+                    continue;
+                varsChanged.insert(tok->varId());
+                vars.insert(tok->varId());
+            }
+        }
+    };
+} // namespace
 
 void CheckStl::useStlAlgorithm()
 {

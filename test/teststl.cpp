@@ -5121,7 +5121,8 @@ private:
               "    return true;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n",
+                      errout.str());
 
         check("bool pred(int x);\n"
               "bool foo() {\n"
@@ -5294,7 +5295,8 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
+                      errout.str());
     }
 
     void loopAlgoMinMax() {
@@ -5339,106 +5341,109 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
     }
 
-    void loopAlgoMultipleReturn() {
+    void loopAlgoMultipleReturn()
+    {
         check("bool f(const std::vector<int>& v) {\n"
-"    for (auto i : v) {\n"
-"        if (i < 0)\n"
-"            continue;\n"
-"        if (i)\n"
-"            return true;\n"
-"    }\n"
-"    return false;\n"
-"}\n",
+              "    for (auto i : v) {\n"
+              "        if (i < 0)\n"
+              "            continue;\n"
+              "        if (i)\n"
+              "            return true;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
+                      errout.str());
 
         check("bool g(const std::vector<int>& v) {\n"
-"    for (auto i : v) {\n"
-"        if (i % 5 == 0)\n"
-"            return true;\n"
-"        if (i % 7 == 0)\n"
-"            return true;\n"
-"    }\n"
-"    return false;\n"
-"}\n",
+              "    for (auto i : v) {\n"
+              "        if (i % 5 == 0)\n"
+              "            return true;\n"
+              "        if (i % 7 == 0)\n"
+              "            return true;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
+                      errout.str());
 
-
-check("bool g(const std::vector<int>& v) {\n"
-"    for (auto i : v) {\n"
-"        if (i % 5 == 0)\n"
-"            return false;\n"
-"        if (i % 7 == 0)\n"
-"            return true;\n"
-"    }\n"
-"    return false;\n"
-"}\n",
+        check("bool g(const std::vector<int>& v) {\n"
+              "    for (auto i : v) {\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            return true;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
 
         check("bool g(std::vector<int>& v) {\n"
-"    for (auto& i : v) {\n"
-"        if (i % 5 == 0)\n"
-"            return false;\n"
-"        if (i % 7 == 0)\n"
-"            i++;\n"
-"    }\n"
-"    return false;\n"
-"}\n",
+              "    for (auto& i : v) {\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            i++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
 
         check("bool g(const std::vector<int>& v, int& j) {\n"
-"    for (auto i : v) {\n"
-"        if (i % 5 == 0)\n"
-"            return false;\n"
-"        if (i % 7 == 0)\n"
-"            j++;\n"
-"    }\n"
-"    return false;\n"
-"}\n",
+              "    for (auto i : v) {\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            j++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
 
         check("bool g(const std::vector<int>& v, int& j) {\n"
-"    for (auto i : v) {\n"
-"        int& k = j;\n"
-"        if (i % 5 == 0)\n"
-"            return false;\n"
-"        if (i % 7 == 0)\n"
-"            k++;\n"
-"    }\n"
-"    return false;\n"
-"}\n",
+              "    for (auto i : v) {\n"
+              "        int& k = j;\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            k++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
 
         check("bool g(const std::vector<int>& v, int& j) {\n"
-"    for (auto i : v) {\n"
-"        int* k = &j;\n"
-"        if (i % 5 == 0)\n"
-"            return false;\n"
-"        if (i % 7 == 0)\n"
-"            (*k)++;\n"
-"    }\n"
-"    return false;\n"
-"}\n",
+              "    for (auto i : v) {\n"
+              "        int* k = &j;\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            (*k)++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
 
         check("bool g(const std::vector<int>& v, int j) {\n"
-"    for (auto i : v) {\n"
-"        int k = j;\n"
-"        if (i % 5 == 0)\n"
-"            return false;\n"
-"        if (i % 7 == 0)\n"
-"            k++;\n"
-"    }\n"
-"    return false;\n"
-"}\n",
+              "    for (auto i : v) {\n"
+              "        int k = j;\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            k++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n",
+                      errout.str());
     }
 
     void invalidContainer() {
