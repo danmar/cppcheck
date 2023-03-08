@@ -839,11 +839,6 @@ namespace {
                     brackets.pop();
                 }
             }
-            if (isFunctionPointer && after->str() == "=") {
-                after->insertToken("=");
-                after->insertToken(varname);
-                after->str(";");
-            }
         }
 
         void removeDeclaration() {
