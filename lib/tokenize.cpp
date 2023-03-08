@@ -601,6 +601,8 @@ namespace {
     public:
         TypedefSimplifier(Token* typedefToken, int &num) : mTypedefToken(typedefToken) {
             Token* start = typedefToken->next();
+            if (Token::simpleMatch(start, "typename"))
+                start = start->next();
 
             // TODO handle unnamed structs etc
             if (Token::Match(start, "const| enum|struct|union|class %name% {")) {
@@ -666,7 +668,7 @@ namespace {
         }
 
         bool fail() const {
-            return mFail || Token::simpleMatch(mTypedefToken, "typedef typename");
+            return mFail;
         }
 
         bool replaceFailed() const {

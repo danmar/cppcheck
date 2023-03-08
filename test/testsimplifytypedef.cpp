@@ -2506,7 +2506,7 @@ private:
         const char code3[] = "typedef typename A B;\n"
                              "typedef B C;\n"
                              "C c;\n";
-        const char expected3[] = "; A c ;";
+        const char expected3[] = "A c ;";
         ASSERT_EQUALS(expected3, tok(code3));
 
         const char code4[] = "typedef A B;\n"
