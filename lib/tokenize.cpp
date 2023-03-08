@@ -912,7 +912,7 @@ namespace {
             }
             return to;
         }
-
+/*
         static void printTypedef(const Token *tok) {
             int indent = 0;
             while (tok && (indent > 0 || tok->str() != ";")) {
@@ -934,6 +934,7 @@ namespace {
             }
             return ret;
         }
+*/
     };
 }
 
