@@ -911,6 +911,7 @@ namespace {
                 to->insertToken(from->str());
                 to->next()->column(to->column());
                 to = to->next();
+                to->isSimplifiedTypedef(true);
             }
             return to;
         }
