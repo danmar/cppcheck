@@ -7052,24 +7052,6 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                                 continue;
                             }
                         }
-                    }
-                    if (isReturnIter) {
-                        const std::vector<const Token*> args = getArguments(tok);
-                        if (!args.empty()) {
-                            const Library::ArgumentChecks::IteratorInfo* info = mSettings.library.getArgIteratorInfo(tok->previous(), 1);
-                            if (info && info->it) {
-                                const Token* contTok = args[0];
-                                if (Token::simpleMatch(args[0]->astOperand1(), ".") && args[0]->astOperand1()->astOperand1())
-                                    contTok = args[0]->astOperand1()->astOperand1();
-                                if (contTok && contTok->variable() && contTok->variable()->valueType() && contTok->variable()->valueType()->container) {
-                                    ValueType vt;
-                                    vt.type = ValueType::Type::ITERATOR;
-                                    vt.container = contTok->variable()->valueType()->container;
-                                    vt.containerTypeToken = contTok->variable()->valueType()->containerTypeToken;
-                                    setValueType(tok, vt);
-                                }
-                            }
-                        }
                         //Is iterator fetching function called?
                     } else if (Token::simpleMatch(tok->astOperand1(), "::") &&
                                tok->astOperand2() &&
@@ -7090,6 +7072,24 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                             vt.container = paramVariable->valueType()->container;
                             vt.containerTypeToken = paramVariable->valueType()->containerTypeToken;
                             setValueType(tok, vt);
+                        }
+                    }
+                    if (isReturnIter) {
+                        const std::vector<const Token*> args = getArguments(tok);
+                        if (!args.empty()) {
+                            const Library::ArgumentChecks::IteratorInfo* info = mSettings.library.getArgIteratorInfo(tok->previous(), 1);
+                            if (info && info->it) {
+                                const Token* contTok = args[0];
+                                if (Token::simpleMatch(args[0]->astOperand1(), ".") && args[0]->astOperand1()->astOperand1())
+                                    contTok = args[0]->astOperand1()->astOperand1();
+                                if (contTok && contTok->variable() && contTok->variable()->valueType() && contTok->variable()->valueType()->container) {
+                                    ValueType vt;
+                                    vt.type = ValueType::Type::ITERATOR;
+                                    vt.container = contTok->variable()->valueType()->container;
+                                    vt.containerTypeToken = contTok->variable()->valueType()->containerTypeToken;
+                                    setValueType(tok, vt);
+                                }
+                            }
                         }
                     }
                     continue;

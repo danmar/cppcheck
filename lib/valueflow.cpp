@@ -4859,7 +4859,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
                     if (Token::simpleMatch(parent, "("))
                         setTokenValue(parent, value, settings);
                     else
-                        setTokenValue(parent->tokAt(2), std::move(value), settings);
+                        setTokenValue(parent->tokAt(2), value, settings);
 
                     if (!rt.token->variable()) {
                         LifetimeStore ls = LifetimeStore{
