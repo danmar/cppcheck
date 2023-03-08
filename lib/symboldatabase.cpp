@@ -5128,7 +5128,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
 
 bool Scope::hasInlineOrLambdaFunction() const
 {
-    for (const Scope *s : nestedList) {
+    return std::any_of(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
         // Inline function
         if (s->type == Scope::eUnconditional && Token::simpleMatch(s->bodyStart->previous(), ") {"))
             return true;
@@ -5137,8 +5137,8 @@ bool Scope::hasInlineOrLambdaFunction() const
             return true;
         if (s->hasInlineOrLambdaFunction())
             return true;
-    }
-    return false;
+        return false;
+    });
 }
 
 void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const
