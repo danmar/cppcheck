@@ -5719,6 +5719,11 @@ private:
                       "[test.cpp:14]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false.\n"
                       "[test.cpp:17]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always true.\n",
                       errout.str());
+        
+        check("void f(char c) {\n" // #11592
+              "   if (c == 128) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 128. Condition is always false.\n", errout.str());
     }
 
     void knownConditionCast() { // #9976

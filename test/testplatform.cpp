@@ -73,7 +73,7 @@ private:
         ASSERT_EQUALS(2, platform.sizeof_wchar_t);
         ASSERT_EQUALS(4, platform.sizeof_size_t);
         ASSERT_EQUALS(4, platform.sizeof_pointer);
-        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS('s', platform.defaultSign);
         ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS(16, platform.short_bit);
         ASSERT_EQUALS(32, platform.int_bit);
@@ -98,7 +98,7 @@ private:
         ASSERT_EQUALS(4, platform.sizeof_wchar_t);
         ASSERT_EQUALS(8, platform.sizeof_size_t);
         ASSERT_EQUALS(8, platform.sizeof_pointer);
-        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS('s', platform.defaultSign);
         ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS(16, platform.short_bit);
         ASSERT_EQUALS(32, platform.int_bit);
@@ -123,7 +123,7 @@ private:
         ASSERT_EQUALS(2, platform.sizeof_wchar_t);
         ASSERT_EQUALS(4, platform.sizeof_size_t);
         ASSERT_EQUALS(4, platform.sizeof_pointer);
-        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS('s', platform.defaultSign);
         ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS(16, platform.short_bit);
         ASSERT_EQUALS(32, platform.int_bit);
@@ -148,7 +148,7 @@ private:
         ASSERT_EQUALS(4, platform.sizeof_wchar_t);
         ASSERT_EQUALS(4, platform.sizeof_size_t);
         ASSERT_EQUALS(4, platform.sizeof_pointer);
-        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS('s', platform.defaultSign);
         ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS(16, platform.short_bit);
         ASSERT_EQUALS(32, platform.int_bit);
@@ -173,7 +173,7 @@ private:
         ASSERT_EQUALS(2, platform.sizeof_wchar_t);
         ASSERT_EQUALS(8, platform.sizeof_size_t);
         ASSERT_EQUALS(8, platform.sizeof_pointer);
-        ASSERT_EQUALS('\0', platform.defaultSign);
+        ASSERT_EQUALS('s', platform.defaultSign);
         ASSERT_EQUALS(8, platform.char_bit);
         ASSERT_EQUALS(16, platform.short_bit);
         ASSERT_EQUALS(32, platform.int_bit);
