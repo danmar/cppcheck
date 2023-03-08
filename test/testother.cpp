@@ -3023,6 +3023,12 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::vector<std::map<int, int>>& v) {\n" // #11607
+              "    for (auto& m : v)\n"
+              "        std::cout << m[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S { int i; };\n" // #11473
               "void f(std::vector<std::vector<S>>&m, int*& p) {\n"
               "    auto& a = m[0];\n"
