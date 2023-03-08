@@ -260,6 +260,7 @@ private:
         return n;
     }
 
+    // TODO: should this be logged only once like summary?
     void showtime_top5() {
         REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
         check(2, 2, 0,
