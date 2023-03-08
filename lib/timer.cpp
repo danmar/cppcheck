@@ -33,6 +33,8 @@ namespace {
     }
 }
 
+// TODO: this does not include any file context when SHOWTIME_FILE thus rendering it useless - should we include the logging with the progress logging?
+// that could also get rid of the broader locking
 void TimerResults::showResults(SHOWTIME_MODES mode) const
 {
     if (mode == SHOWTIME_MODES::SHOWTIME_NONE || mode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
