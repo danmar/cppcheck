@@ -1267,7 +1267,6 @@ private:
 
         TEST_SCANF_WARN("%hd", "short", "bool");
         TEST_SCANF_WARN("%hd", "short", "signed char");
-        TEST_SCANF_WARN("%hd", "short", "signed char");
         TEST_SCANF_WARN("%hd", "short", "unsigned char");
         TEST_SCANF_NOWARN("%hd", "short", "signed short");
         TEST_SCANF_WARN("%hd", "short", "unsigned short");
@@ -1279,7 +1278,6 @@ private:
         TEST_SCANF_WARN_AKA("%hd", "short", "ssize_t", "signed long", "signed long long");
 
         TEST_SCANF_WARN("%hhu", "unsigned char", "bool");
-        TEST_SCANF_WARN("%hhu", "unsigned char", "signed char");
         TEST_SCANF_WARN("%hhu", "unsigned char", "signed char");
         TEST_SCANF_NOWARN("%hhu", "unsigned char", "unsigned char");
         TEST_SCANF_WARN("%hhu", "unsigned char", "signed short");
@@ -1307,7 +1305,6 @@ private:
         TEST_SCANF_WARN_AKA_CPP("%hhu", "unsigned char", "std::uintptr_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%hhx", "unsigned char", "bool");
-        TEST_SCANF_WARN("%hhx", "unsigned char", "signed char");
         TEST_SCANF_WARN("%hhx", "unsigned char", "signed char");
         TEST_SCANF_NOWARN("%hhx", "unsigned char", "unsigned char");
         TEST_SCANF_WARN("%hhx", "unsigned char", "signed short");
@@ -1343,7 +1340,6 @@ private:
         TEST_SCANF_WARN_AKA("%hhd", "char", "size_t", "unsigned long", "unsigned long long");
 
         TEST_SCANF_WARN("%Lu", "unsigned long long", "bool");
-        TEST_SCANF_WARN("%Lu", "unsigned long long", "signed char");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "signed char");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "unsigned char");
         TEST_SCANF_WARN("%Lu", "unsigned long long", "signed short");
