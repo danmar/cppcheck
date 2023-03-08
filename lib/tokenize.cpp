@@ -5347,6 +5347,7 @@ void Tokenizer::dump(std::ostream &out) const
         }
         out << "  </typedef-info>" << std::endl;
     }
+    out << mTemplateSimplifier->dump();
 }
 
 void Tokenizer::simplifyHeadersAndUnusedTemplates()

@@ -247,6 +247,13 @@ TemplateSimplifier::TokenAndName::~TokenAndName()
         mToken->templateSimplifierPointers()->erase(this);
 }
 
+std::string TemplateSimplifier::TokenAndName::dump(const std::vector<std::string>& fileNames) const {
+    std::string ret = "    <TokenAndName name=\"" + mName + "\" file=\"" + ErrorLogger::toxml(fileNames.at(mToken->fileIndex())) + "\" line=\"" + std::to_string(mToken->linenr()) + "\">\n";
+    for (const Token* tok = mToken; tok && !Token::Match(tok, "[;{}]"); tok = tok->next())
+        ret += "      " + ErrorLogger::toxml(tok->str()) + "\n";
+    return ret + "    </TokenAndName>\n";
+}
+
 const Token * TemplateSimplifier::TokenAndName::aliasStartToken() const
 {
     if (mParamEnd)
@@ -3749,8 +3756,16 @@ void TemplateSimplifier::simplifyTemplates(
 
         const bool hasTemplates = getTemplateDeclarations();
 
-        if (passCount == 0)
+        if (passCount == 0) {
             codeWithTemplates = hasTemplates;
+            mDump.clear();
+            for (const TokenAndName& t: mTemplateDeclarations)
+                mDump += t.dump(mTokenizer.list.getFiles());
+            for (const TokenAndName& t: mTemplateForwardDeclarations)
+                mDump += t.dump(mTokenizer.list.getFiles());
+            if (!mDump.empty())
+                mDump = "  <TemplateSimplifier>\n" + mDump + "  </TemplateSimplifier>\n";
+        }
 
         // Make sure there is something to simplify.
         if (mTemplateDeclarations.empty() && mTemplateForwardDeclarations.empty())

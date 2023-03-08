@@ -49,6 +49,10 @@ public:
     explicit TemplateSimplifier(Tokenizer &tokenizer);
     ~TemplateSimplifier();
 
+    std::string dump() const {
+        return mDump;
+    }
+
     /**
      */
     void checkComplicatedSyntaxErrorsInTemplates();
@@ -155,6 +159,8 @@ public:
             return mToken == rhs.mToken && mScope == rhs.mScope && mName == rhs.mName && mFullName == rhs.mFullName &&
                    mNameToken == rhs.mNameToken && mParamEnd == rhs.mParamEnd && mFlags == rhs.mFlags;
         }
+
+        std::string dump(const std::vector<std::string>& fileNames) const;
 
         // TODO: do not return non-const pointer from const object
         Token * token() const {
@@ -506,6 +512,7 @@ private:
     std::vector<TokenAndName> mExplicitInstantiationsToDelete;
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
     std::unordered_map<const Token*, int> mTemplateNamePos;
+    std::string mDump;
 };
 
 /// @}
