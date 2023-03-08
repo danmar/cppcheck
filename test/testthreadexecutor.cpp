@@ -249,17 +249,6 @@ private:
 
     // TODO: provide data which actually shows values above 0
 
-    template<typename T>
-    std::size_t find_all_of(const std::string& str, T sub) {
-        std::size_t n = 0;
-        std::string::size_type pos = 0;
-        while ((pos = str.find(sub, pos)) != std::string::npos) {
-            ++pos;
-            ++n;
-        }
-        return n;
-    }
-
     // TODO: should this be logged only once like summary?
     void showtime_top5() {
         REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
@@ -270,7 +259,7 @@ private:
                     $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5));
         // for each file: top5 results + overall + empty line
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        ASSERT_EQUALS((5 + 1 + 1) * 2, find_all_of(output_s, '\n'));
+        ASSERT_EQUALS((5 + 1 + 1) * 2, cppcheck::find_all_of(output_s, '\n'));
     }
 
     void showtime_file() {
@@ -281,7 +270,7 @@ private:
                     $.quiet = true,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        ASSERT_EQUALS(2, find_all_of(output_s, "Overall time:"));
+        ASSERT_EQUALS(2, cppcheck::find_all_of(output_s, "Overall time:"));
     }
 
     void showtime_summary() {
