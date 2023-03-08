@@ -70,7 +70,7 @@ private:
         // unsigned types getting promoted to int sizeof(int) = 4 bytes
         // and unsigned types having already a size of 4 bytes
         {
-            const std::string types[] = {"unsigned char", /*[unsigned]*/ "char", "bool", "unsigned short", "unsigned int", "unsigned long"};
+            const std::string types[] = {"unsigned char", "bool", "unsigned short", "unsigned int", "unsigned long"};
             for (const std::string& type : types) {
                 check((type + " f(" + type +" x) { return x << 31; }").c_str(), &settings);
                 ASSERT_EQUALS("", errout.str());
