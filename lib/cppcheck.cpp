@@ -1906,6 +1906,7 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
     }
 }
 
+// cppcheck-suppress unusedFunction - only used in tests
 void CppCheck::resetTimerResults()
 {
     s_timerResults.reset();
