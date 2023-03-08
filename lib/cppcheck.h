@@ -144,6 +144,7 @@ public:
     void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files); // cppcheck-suppress functionConst // has side effects
 
     static void resetTimerResults();
+    static void printTimerResultsSummary();
 
 private:
 #ifdef HAVE_RULES

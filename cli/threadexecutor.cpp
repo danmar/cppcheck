@@ -24,6 +24,7 @@
 #include "errorlogger.h"
 #include "importproject.h"
 #include "settings.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cassert>
@@ -191,7 +192,12 @@ unsigned int ThreadExecutor::check()
         }
     }
 
-    return std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
+    unsigned int result = std::accumulate(threadFutures.begin(), threadFutures.end(), 0U, [](unsigned int v, std::future<unsigned int>& f) {
         return v + f.get();
     });
+
+    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY)
+        CppCheck::printTimerResultsSummary();
+
+    return result;
 }

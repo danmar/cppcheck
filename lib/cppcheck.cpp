@@ -467,7 +467,9 @@ CppCheck::~CppCheck()
         delete mFileInfo.back();
         mFileInfo.pop_back();
     }
-    s_timerResults.showResults(mSettings.showtime);
+
+    if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_SUMMARY)
+        s_timerResults.showResults(mSettings.showtime);
 
     if (mPlistFile.is_open()) {
         mPlistFile << ErrorLogger::plistFooter();
@@ -1907,4 +1909,9 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
 void CppCheck::resetTimerResults()
 {
     s_timerResults.reset();
+}
+
+void CppCheck::printTimerResultsSummary()
+{
+    s_timerResults.showResults(SHOWTIME_MODES::SHOWTIME_SUMMARY);
 }

@@ -107,6 +107,7 @@ private:
         TEST_CASE(markup);
         TEST_CASE(showtime_top5);
         TEST_CASE(showtime_file);
+        TEST_CASE(showtime_summary);
     }
 
     void deadlock_with_many_errors() {
@@ -280,6 +281,19 @@ private:
                     $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         ASSERT_EQUALS(2, find_all_of(output_s, "Overall time:"));
+    }
+
+    void showtime_summary() {
+        REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.quiet = true,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        // should only report the actual summary once
+        ASSERT(output_s.find("1 result(s)") == std::string::npos);
+        ASSERT(output_s.find("2 result(s)") != std::string::npos);
     }
 
     // TODO: test clang-tidy
