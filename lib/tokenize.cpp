@@ -663,7 +663,9 @@ namespace {
                     return;
                 }
             }
-            // TODO: handle all typedefs printTypedef(typedefToken);
+            // TODO: handle all typedefs
+            if (false)
+                printTypedef(typedefToken);
             mFail = true;
         }
 
@@ -912,7 +914,7 @@ namespace {
             }
             return to;
         }
-/*
+
         static void printTypedef(const Token *tok) {
             int indent = 0;
             while (tok && (indent > 0 || tok->str() != ";")) {
@@ -925,16 +927,6 @@ namespace {
             }
             std::cout << "\n";
         }
-
-        static int countTokens(const Token* tok, const Token* end) {
-            int ret = 0;
-            while (tok != end) {
-                ++ret;
-                tok = tok->next();
-            }
-            return ret;
-        }
-*/
     };
 }
 
