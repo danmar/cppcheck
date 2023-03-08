@@ -105,6 +105,8 @@ private:
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
         TEST_CASE(markup);
+        TEST_CASE(showtime_top5);
+        TEST_CASE(showtime_file);
     }
 
     void deadlock_with_many_errors() {
@@ -241,6 +243,43 @@ private:
                            "4/4 files checked 100% done\n",
                            output.str());*/
         settings = settingsOld;
+    }
+
+
+    // TODO: provide data which actually shows values above 0
+
+    template<typename T>
+    std::size_t find_all_of(const std::string& str, T sub) {
+        std::size_t n = 0;
+        std::string::size_type pos = 0;
+        while ((pos = str.find(sub, pos)) != std::string::npos) {
+            ++pos;
+            ++n;
+        }
+        return n;
+    }
+
+    void showtime_top5() {
+        REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.quiet = true,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5));
+        // for each file: top5 results + overall + empty line
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        ASSERT_EQUALS((5 + 1 + 1) * 2, find_all_of(output_s, '\n'));
+    }
+
+    void showtime_file() {
+        REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.quiet = true,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        ASSERT_EQUALS(2, find_all_of(output_s, "Overall time:"));
     }
 
     // TODO: test clang-tidy
