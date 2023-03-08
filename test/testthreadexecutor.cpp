@@ -49,7 +49,7 @@ private:
     struct CheckOptions
     {
         CheckOptions() = default;
-        bool quiet = false;
+        bool quiet = true;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
@@ -119,8 +119,7 @@ private:
 
         oss << "  return 0;\n"
             << "}\n";
-        check(2, 3, 3, oss.str(), dinit(CheckOptions,
-                                        $.quiet = true));
+        check(2, 3, 3, oss.str());
     }
 
     // TODO: check the output
@@ -130,8 +129,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions,
-                         $.quiet = true));
+              "}");
     }
 
     // #11249 - reports TSAN errors - only applies to threads not processes though
@@ -143,7 +141,6 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions,
-                         $.quiet = true,
                          $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
     }
 
@@ -157,7 +154,6 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}", dinit(CheckOptions,
-                         $.quiet = true,
                          $.plistOutput = plistOutput));
     }
 
@@ -166,8 +162,7 @@ private:
               "int main()\n"
               "{\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions,
-                         $.quiet = true));
+              "}");
     }
 
     void no_errors_less_files() {
@@ -175,8 +170,7 @@ private:
               "int main()\n"
               "{\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions,
-                         $.quiet = true));
+              "}");
     }
 
     void no_errors_equal_amount_files() {
@@ -184,8 +178,7 @@ private:
               "int main()\n"
               "{\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions,
-                         $.quiet = true));
+              "}");
     }
 
     void one_error_less_files() {
@@ -194,8 +187,7 @@ private:
               "{\n"
               "  {char *a = malloc(10);}\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions,
-                         $.quiet = true));
+              "}");
     }
 
     void one_error_several_files() {
@@ -204,8 +196,7 @@ private:
               "{\n"
               "  {char *a = malloc(10);}\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions,
-                         $.quiet = true));
+              "}");
     }
 
     void markup() {
