@@ -195,6 +195,7 @@ private:
         TEST_CASE(const79); // ticket #9861
         TEST_CASE(const80); // ticket #11328
         TEST_CASE(const81); // ticket #11330
+        TEST_CASE(const82);
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6318,6 +6319,23 @@ private:
                    "    int i;\n"
                    "    void g() { p->f(i); }\n"
                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const82() {
+        checkConst("struct S {\n"
+                   "    int i1, i2;\n"
+                   "    void f(bool b);\n"
+                   "    void g(bool b, int j);\n"
+                   "};\n"
+                   "void S::f(bool b) {\n"
+                   "    int& r = b ? i1 : i2;\n"
+                   "    r = 5;\n"
+                   "}\n"
+                   "void S::g(bool b, int j) {\n"
+                   "    int& r = b ? j : i2;\n"
+                   "    r = 5;\n"
+                   "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
