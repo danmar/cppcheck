@@ -502,25 +502,6 @@ ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const 
     return local.state;
 }
 
-ProgramMemory getProgramMemory(const Token *tok, const Settings* settings, const ProgramMemory::Map& vars)
-{
-    ProgramMemory programMemory;
-    for (const auto& p:vars) {
-        const ValueFlow::Value &value = p.second;
-        programMemory.replace(getInitialProgramState(tok, value.tokvalue, settings));
-        programMemory.replace(getInitialProgramState(tok, value.condition, settings));
-    }
-    fillProgramMemoryFromConditions(programMemory, tok, nullptr);
-    ProgramMemory state;
-    for (const auto& p:vars) {
-        const ValueFlow::Value &value = p.second;
-        programMemory.setValue(p.first.tok, value);
-    }
-    state = programMemory;
-    fillProgramMemoryFromAssignments(programMemory, tok, settings, state, vars);
-    return programMemory;
-}
-
 ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings)
 {
     ProgramMemory programMemory;
