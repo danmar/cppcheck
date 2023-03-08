@@ -1981,7 +1981,7 @@ bool isUniqueExpression(const Token* tok)
         if (!scope)
             return true;
         const std::string returnType = fun->retType ? fun->retType->name() : fun->retDef->stringifyList(fun->tokenDef);
-        if (not std::all_of(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
+        if (!std::all_of(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
             if (f.type != Function::eFunction)
                 return true;
 
