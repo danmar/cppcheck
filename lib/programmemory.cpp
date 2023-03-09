@@ -334,7 +334,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok,
     fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
-static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, const ProgramMemory::Map& vars)
+static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const Settings* settings, const ProgramMemory& state, const ProgramMemory::Map& vars)
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
@@ -357,7 +357,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
-                   isVariableChanged(tok2, 0, nullptr, true)) {
+                   isVariableChanged(tok2, 0, settings, true)) {
             pm.setUnknown(tok2);
         }
 
@@ -403,13 +403,14 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
 
 static ProgramMemory getInitialProgramState(const Token* tok,
                                             const Token* origin,
+                                            const Settings* settings,
                                             const ProgramMemory::Map& vars = ProgramMemory::Map {})
 {
     ProgramMemory pm;
     if (origin) {
         fillProgramMemoryFromConditions(pm, origin, nullptr);
         const ProgramMemory state = pm;
-        fillProgramMemoryFromAssignments(pm, tok, state, vars);
+        fillProgramMemoryFromAssignments(pm, tok, settings, state, vars);
         removeModifiedVars(pm, tok, origin);
     }
     return pm;
@@ -447,7 +448,7 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     addVars(pm, vars);
     fillProgramMemoryFromConditions(pm, tok, settings);
     ProgramMemory local = pm;
-    fillProgramMemoryFromAssignments(pm, tok, local, vars);
+    fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
     addVars(pm, vars);
     replace(pm, tok);
 }
@@ -501,34 +502,15 @@ ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const 
     return local.state;
 }
 
-ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
-{
-    ProgramMemory programMemory;
-    for (const auto& p:vars) {
-        const ValueFlow::Value &value = p.second;
-        programMemory.replace(getInitialProgramState(tok, value.tokvalue));
-        programMemory.replace(getInitialProgramState(tok, value.condition));
-    }
-    fillProgramMemoryFromConditions(programMemory, tok, nullptr);
-    ProgramMemory state;
-    for (const auto& p:vars) {
-        const ValueFlow::Value &value = p.second;
-        programMemory.setValue(p.first.tok, value);
-    }
-    state = programMemory;
-    fillProgramMemoryFromAssignments(programMemory, tok, state, vars);
-    return programMemory;
-}
-
 ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings)
 {
     ProgramMemory programMemory;
-    programMemory.replace(getInitialProgramState(tok, value.tokvalue));
-    programMemory.replace(getInitialProgramState(tok, value.condition));
+    programMemory.replace(getInitialProgramState(tok, value.tokvalue, settings));
+    programMemory.replace(getInitialProgramState(tok, value.condition, settings));
     fillProgramMemoryFromConditions(programMemory, tok, settings);
     programMemory.setValue(expr, value);
     const ProgramMemory state = programMemory;
-    fillProgramMemoryFromAssignments(programMemory, tok, state, {{expr, value}});
+    fillProgramMemoryFromAssignments(programMemory, tok, settings, state, {{expr, value}});
     return programMemory;
 }
 
