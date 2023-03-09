@@ -259,7 +259,7 @@ private:
         Settings settings;
         settings.severity.enable(Severity::warning);
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -365,7 +365,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -519,7 +519,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, nullptr);
+        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -682,7 +682,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -1131,7 +1131,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -1607,7 +1607,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, nullptr);
+        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -2571,7 +2571,7 @@ private:
         settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings0.severity.enable(Severity::warning);
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -2894,7 +2894,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -3527,7 +3527,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, nullptr);
+        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -3567,7 +3567,7 @@ private:
             s = &settings0;
         s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
-        Preprocessor preprocessor(*s, nullptr);
+        Preprocessor preprocessor(*s, s->nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(s, this, &preprocessor);
@@ -7167,7 +7167,7 @@ private:
         // Check..
         settings0.certainty.setEnabled(Certainty::inconclusive, true);
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -7205,7 +7205,7 @@ private:
         Settings settings;
         settings.severity.enable(Severity::performance);
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -7419,7 +7419,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -7537,7 +7537,7 @@ private:
         settings.severity.enable(Severity::warning);
         settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -7886,7 +7886,7 @@ private:
         Settings settings;
         settings.severity.enable(Severity::style);
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -8064,7 +8064,7 @@ private:
         settings.safeChecks.classes = true;
         settings.severity.enable(Severity::warning);
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -8087,7 +8087,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, nullptr);
+        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -8286,7 +8286,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, nullptr);
+        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
