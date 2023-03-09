@@ -2683,6 +2683,18 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         (Token::simpleMatch(first, "( void )") && Token::simpleMatch(second, "( )")))
         return true;
 
+    auto skipTopLevelConst = [](const Token* start) -> const Token* {
+        const Token* tok = start->next();
+        if (Token::simpleMatch(tok, "const")) {
+            tok = tok->next();
+            while (Token::Match(tok, "%name%|%type%|::"))
+                tok = tok->next();
+            if (Token::Match(tok, ",|)|="))
+                return start->next();
+        }
+        return start;
+    };
+
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
@@ -2704,15 +2716,12 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             second = second->next();
 
         // skip const on type passed by value
-        if (Token::Match(first->next(), "const %type% %name%|,|)") &&
-            !Token::Match(first->next(), "const %type% %name%| ["))
-            first = first->next();
-        if (Token::Match(second->next(), "const %type% %name%|,|)") &&
-            !Token::Match(second->next(), "const %type% %name%| ["))
-            second = second->next();
+        const Token* const oldSecond = second;
+        first = skipTopLevelConst(first);
+        second = skipTopLevelConst(second);
 
         // skip default value assignment
-        else if (first->next()->str() == "=") {
+        if (oldSecond == second && first->next()->str() == "=") {
             first = first->nextArgument();
             if (first)
                 first = first->tokAt(-2);
@@ -2726,7 +2735,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             } else if (!first) { // End of argument list (first)
                 return !second->nextArgument(); // End of argument list (second)
             }
-        } else if (second->next()->str() == "=") {
+        } else if (oldSecond == second && second->next()->str() == "=") {
             second = second->nextArgument();
             if (second)
                 second = second->tokAt(-2);

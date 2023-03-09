@@ -5138,23 +5138,47 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase104() { // #11535
-        GET_SYMBOL_DB("struct S {\n"
-                      "    void f1(char* const c);\n"
-                      "    void f2(char* const c);\n"
-                      "    void f3(char* const);\n"
-                      "    void f4(char* c);\n"
-                      "    void f5(char* c);\n"
-                      "    void f6(char*);\n"
-                      "};\n"
-                      "void S::f1(char* c) {}\n"
-                      "void S::f2(char*) {}\n"
-                      "void S::f3(char* c) {}\n"
-                      "void S::f4(char* const c) {}\n"
-                      "void S::f5(char* const) {}\n"
-                      "void S::f6(char* const c) {}\n");
-        ASSERT(db != nullptr);
-        ASSERT_EQUALS("", errout.str());
+    void symboldatabase104() {
+        const bool oldDebug = settings1.debugwarnings;
+        settings1.debugwarnings = true;
+        {
+            GET_SYMBOL_DB("struct S {\n" // #11535
+                          "    void f1(char* const c);\n"
+                          "    void f2(char* const c);\n"
+                          "    void f3(char* const);\n"
+                          "    void f4(char* c);\n"
+                          "    void f5(char* c);\n"
+                          "    void f6(char*);\n"
+                          "};\n"
+                          "void S::f1(char* c) {}\n"
+                          "void S::f2(char*) {}\n"
+                          "void S::f3(char* c) {}\n"
+                          "void S::f4(char* const c) {}\n"
+                          "void S::f5(char* const) {}\n"
+                          "void S::f6(char* const c) {}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            GET_SYMBOL_DB("struct S2 {\n" // #11602
+                          "    enum E {};\n"
+                          "};\n"
+                          "struct S1 {\n"
+                          "    void f(S2::E) const;\n"
+                          "};\n"
+                          "void S1::f(const S2::E) const {}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    void f(const bool b = false);\n"
+                          "};\n"
+                          "void S::f(const bool b) {}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
+        settings1.debugwarnings = oldDebug;
     }
 
     void createSymbolDatabaseFindAllScopes1() {
