@@ -33,10 +33,14 @@ bisect_path = sys.argv[1]
 options = sys.argv[2]
 if '--error-exitcode=0' not in options:
     options += ' --error-exitcode=0'
-if len(sys.argv) == 4:
+if len(sys.argv) >= 4:
     elapsed_time = float(sys.argv[3])
 else:
     elapsed_time = None
+if len(sys.argv) == 5:
+    invert = sys.argv[4] == "2"
+else:
+    invert = False
 
 try:
     cppcheck_path = build_cppcheck(bisect_path)
@@ -68,8 +72,8 @@ if run_res is None:
     sys.exit(EC_SKIP)  # error occured
 
 if not run_res:
-    sys.exit(EC_BAD)  # timeout occured
+    sys.exit(EC_BAD if not invert else EC_GOOD)  # timeout occured
 
 print('run_time: {}'.format(run_time))
 
-sys.exit(EC_GOOD)  # no timeout
+sys.exit(EC_GOOD if not invert else EC_BAD)  # no timeout

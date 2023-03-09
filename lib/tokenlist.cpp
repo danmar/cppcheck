@@ -483,12 +483,13 @@ static bool iscast(const Token *tok, bool cpp)
                 const Token *tok3 = tok2->linkAt(1);
                 while (tok3 != tok2 && Token::Match(tok3, "[{}]"))
                     tok3 = tok3->previous();
-                return tok3 != tok2 && tok3->str() != ";";
+                return tok3->str() != ";";
             }
-            return type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
-                   (Token::Match(tok2, ") %any%") &&
-                    (!tok2->next()->isOp() || Token::Match(tok2->next(), "!|~|++|--")) &&
-                    !Token::Match(tok2->next(), "[[]);,?:.]"));
+            const bool res = type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
+                             (Token::Match(tok2, ") %any%") &&
+                              (!tok2->next()->isOp() || Token::Match(tok2->next(), "!|~|++|--")) &&
+                              !Token::Match(tok2->next(), "[[]);,?:.]"));
+            return res;
         }
 
         if (Token::Match(tok2, "&|&& )"))

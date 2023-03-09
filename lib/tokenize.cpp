@@ -162,7 +162,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger, const P
     mSettings(settings),
     mErrorLogger(errorLogger),
     mSymbolDatabase(nullptr),
-    mTemplateSimplifier(new TemplateSimplifier(this)),
+    mTemplateSimplifier(new TemplateSimplifier(*this)),
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
@@ -5347,6 +5347,7 @@ void Tokenizer::dump(std::ostream &out) const
         }
         out << "  </typedef-info>" << std::endl;
     }
+    out << mTemplateSimplifier->dump();
 }
 
 void Tokenizer::simplifyHeadersAndUnusedTemplates()
@@ -8897,7 +8898,9 @@ static const std::set<std::string> stdFunctions = {
     "set_symmetric_difference", "push_heap", "pop_heap", "make_heap", "sort_heap",
     "min", "max", "min_element", "max_element", "lexicographical_compare", "next_permutation", "prev_permutation",
     "advance", "back_inserter", "distance", "front_inserter", "inserter",
-    "make_pair", "make_shared", "make_tuple"
+    "make_pair", "make_shared", "make_tuple",
+    "begin", "cbegin", "rbegin", "crbegin",
+    "end", "cend", "rend", "crend"
 };
 
 
@@ -9141,7 +9144,7 @@ void Tokenizer::simplifyBorland()
 void Tokenizer::createSymbolDatabase()
 {
     if (!mSymbolDatabase)
-        mSymbolDatabase = new SymbolDatabase(this, mSettings, mErrorLogger);
+        mSymbolDatabase = new SymbolDatabase(*this, *mSettings, mErrorLogger);
     mSymbolDatabase->validate();
 }
 

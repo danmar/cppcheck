@@ -2,7 +2,7 @@
 // Test library configuration for qt.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=qt --enable=style,information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/qt.cpp
+// $ cppcheck --check-library --library=qt --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/qt.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -501,7 +501,7 @@ namespace {
     private slots:
         void foo();
     };
-    void Fred::foo() { }
+    void Fred::foo() {}
 
     // bitfields14
     class X {
@@ -512,8 +512,12 @@ namespace {
     class Counter1 : public QObject {
         Q_OBJECT
     public:
-        Counter1() { m_value = 0; }
-        int value() const { return m_value; }
+        Counter1() {
+            m_value = 0;
+        }
+        int value() const {
+            return m_value;
+        }
     public slots:
         void setValue(int value);
     signals:
@@ -531,8 +535,12 @@ namespace {
     class Counter2 : public QObject {
         Q_OBJECT
     public:
-        Counter2() { m_value = 0; }
-        int value() const { return m_value; }
+        Counter2() {
+            m_value = 0;
+        }
+        int value() const {
+            return m_value;
+        }
     public Q_SLOTS:
         void setValue(int value);
     Q_SIGNALS:

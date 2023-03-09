@@ -85,9 +85,26 @@ Provide the expected error ID (`unreadVariable`) as the `expected` parameter.
 
 ## Bisecting scan time regressions
 
-We use daca@home to track differences in scan time. An overview of regressions in scan time can be found at http://cppcheck1.osuosl.org:8000/time_gt.html.
+It is also possible to bisect for a regression in scan time.
 
-You need to download the archive as specified by the second line in the output and extract it.
+This is done by determinaing the time it took for the "good" commit to finish and setting a timeout twice that size for the calls to determine the "bad" commit.
+
+To bisect these kinds of regressions you currently need to adjust the `bisect.sh` script and set the `hang` variable to appropriate value:<br/>
+`1` - find the commit which started the hang<br/>
+`2` - find the commit which resolved the hang<br/>
+
+### General notes
+
+As we are currently using the process exitcode to pass the elapsed time to the script it will not work properly with vey long runtime (>= 255 seconds) as it will overflow.
+
+In case the run-time before the regression was very short (<= 1 second) you might need to adjust the `elapsed_time` variable in `bisect.sh` to a higher value to avoid potential false positives.
+This might also be necessary to determine one of multiple regressions in the commit range. 
+
+After the bisect finished you should take a look at the output and make sure the elpased time of the repective commit looks as expected.
+
+### daca@home notes
+
+We use daca@home to track differences in scan time. An overview of regressions in scan time can be found at http://cppcheck1.osuosl.org:8000/time_gt.html.
 
 If the overall scan time regressed you need to specify the whole folder.
 
@@ -96,6 +113,8 @@ If a timeout (potential hang) was introduced you can simply specify the file fro
 ## Notes
 
 ### Bisecting daca@home issues
+
+You need to download the archive as specified by the second line in the output and extract it.
 
 Use the following data as respective parameters:
 

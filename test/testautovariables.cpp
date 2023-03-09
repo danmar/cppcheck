@@ -2283,6 +2283,13 @@ private:
 
         check("auto f() {\n"
               "    std::vector<int> x;\n"
+              "    auto it = std::begin(x);\n"
+              "    return it;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    std::vector<int> x;\n"
               "    auto p = x.data();\n"
               "    return p;\n"
               "}");

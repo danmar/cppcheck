@@ -306,7 +306,7 @@ private:
         settings->certainty.setEnabled(Certainty::experimental, experimental);
         settings->verbose = verbose;
 
-        Preprocessor preprocessor(*settings, nullptr);
+        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(settings, this, &preprocessor);
@@ -347,7 +347,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, nullptr);
+        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
@@ -1548,7 +1548,7 @@ private:
         settings.severity.enable(Severity::style);
         settings.standards.cpp = Standards::CPP03; // #5560
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizerCpp(&settings, this, &preprocessor);
@@ -1754,7 +1754,7 @@ private:
         settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings.platform.defaultSign = 's';
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -3021,6 +3021,12 @@ private:
         check("void f(std::map<int, int>& m) {\n"
               "    std::cout << m[0] << std::endl;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<std::map<int, int>>& v) {\n" // #11607
+              "    for (auto& m : v)\n"
+              "        std::cout << m[0];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("struct S { int i; };\n" // #11473
