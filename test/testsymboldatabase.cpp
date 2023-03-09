@@ -267,6 +267,7 @@ private:
         TEST_CASE(namespaces2);
         TEST_CASE(namespaces3);  // #3854 - unknown macro
         TEST_CASE(namespaces4);
+        TEST_CASE(needInitialization);
 
         TEST_CASE(tryCatch1);
 
@@ -2788,6 +2789,20 @@ private:
         ASSERT_EQUALS("fredA", fredA->name());
         const Type *fredAType = fredA->type();
         ASSERT_EQUALS(2U, fredAType->classDef->linenr());
+    }
+
+    void needInitialization() { // #10259
+        const auto oldSettings = settings1;
+        settings1.debugwarnings = true;
+
+        GET_SYMBOL_DB("template <typename T>\n"
+                      "struct A {\n"
+                      "    using type = T;\n"
+                      "    type t_;\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        settings1 = oldSettings;
     }
 
     void tryCatch1() {
