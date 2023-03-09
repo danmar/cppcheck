@@ -2347,6 +2347,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             const Token* lhs = tok1->previous();
             if (lhs->str() == "(" && tok1->astParent() && tok1->astParent()->astParent())
                 lhs = tok1->astParent()->astParent();
+            else if (lhs->str() == "?" && lhs->astParent())
+                lhs = lhs->astParent();
+            else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->astParent() && lhs->astParent()->str() == "?")
+                lhs = lhs->astParent()->astParent();
             if (lhs->str() == "&") {
                 lhs = lhs->previous();
                 if (lhs->isAssignmentOp() && lhs->previous()->variable()) {
