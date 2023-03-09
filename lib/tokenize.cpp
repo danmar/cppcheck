@@ -665,7 +665,7 @@ namespace {
                 }
             }
             // TODO: handle all typedefs
-            if (false)
+            if ((false))
                 printTypedef(typedefToken);
             mFail = true;
         }
