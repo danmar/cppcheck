@@ -4662,3 +4662,46 @@ void stdspan()
     spn3.subspan<1, 1>();
     #endif
 }
+
+void beginEnd()
+{
+    std::vector<int> v;
+
+    //cppcheck-suppress ignoredReturnValue
+    std::begin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::rbegin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::cbegin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::crbegin(v);
+
+    //cppcheck-suppress ignoredReturnValue
+    std::end(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::rend(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::cend(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::crend(v);
+
+    int arr[4];
+
+    //cppcheck-suppress ignoredReturnValue
+    std::begin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::rbegin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::cbegin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::crbegin(arr);
+
+    //cppcheck-suppress ignoredReturnValue
+    std::end(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::rend(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::cend(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::crend(arr);
+}

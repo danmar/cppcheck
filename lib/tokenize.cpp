@@ -8898,7 +8898,9 @@ static const std::set<std::string> stdFunctions = {
     "set_symmetric_difference", "push_heap", "pop_heap", "make_heap", "sort_heap",
     "min", "max", "min_element", "max_element", "lexicographical_compare", "next_permutation", "prev_permutation",
     "advance", "back_inserter", "distance", "front_inserter", "inserter",
-    "make_pair", "make_shared", "make_tuple"
+    "make_pair", "make_shared", "make_tuple",
+    "begin", "cbegin", "rbegin", "crbegin",
+    "end", "cend", "rend", "crend"
 };
 
 
