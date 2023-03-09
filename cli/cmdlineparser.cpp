@@ -350,6 +350,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings.addEnabled("performance");
                     mSettings.addEnabled("portability");
                 }
+                if (enable_arg.find("information") != std::string::npos) {
+                    mSettings->addEnabled("missingInclude");
+                    printMessage("'--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.");
+                }
             }
 
             // print all possible error messages..
