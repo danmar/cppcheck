@@ -1981,17 +1981,18 @@ bool isUniqueExpression(const Token* tok)
         if (!scope)
             return true;
         const std::string returnType = fun->retType ? fun->retType->name() : fun->retDef->stringifyList(fun->tokenDef);
-        for (const Function& f:scope->functionList) {
+        if (!std::all_of(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
             if (f.type != Function::eFunction)
-                continue;
+                return true;
 
             const std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.returnDefEnd());
-            if (f.argumentList.size() == fun->argumentList.size() &&
-                returnType == freturnType &&
+            if (f.argumentList.size() == fun->argumentList.size() && returnType == freturnType &&
                 f.name() != fun->name()) {
                 return false;
             }
-        }
+            return true;
+        }))
+            return false;
     } else if (tok->variable()) {
         const Variable * var = tok->variable();
         const Scope * scope = var->scope();
