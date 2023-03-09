@@ -280,7 +280,7 @@ Example: '-UDEBUG'</para>
           <option>--disable=&lt;id&gt;</option>
         </term>
         <listitem>
-          <para>Disable individual checks. Please refer to the documentation of --enable=&lt;id&gt; for futher details.
+          <para>Disable individual checks. Please refer to the documentation of --enable=&lt;id&gt; for further details.
           </para>
         </listitem>
       </varlistentry>

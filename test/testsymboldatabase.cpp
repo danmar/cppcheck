@@ -7907,11 +7907,11 @@ private:
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
             settingsWin64.library.mPodTypes["podtype2"] = podtype2;
             ValueType vt;
-            ASSERT_EQUALS(true, vt.fromLibraryType("u32", &settingsWin64));
-            ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", &settingsWin64));
+            ASSERT_EQUALS(true, vt.fromLibraryType("u32", settingsWin64));
+            ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
             ValueType vt2;
-            ASSERT_EQUALS(true, vt2.fromLibraryType("podtype2", &settingsWin64));
+            ASSERT_EQUALS(true, vt2.fromLibraryType("podtype2", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt2.type);
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", "test.cpp", &settingsWin64));
@@ -7927,7 +7927,7 @@ private:
             s32.mType = "int";
             settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
             ValueType vt;
-            ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
+            ASSERT_EQUALS(true, vt.fromLibraryType("s32", settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
         {
@@ -7938,7 +7938,7 @@ private:
             lpctstr.mType = "wchar_t";
             settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;
             ValueType vt;
-            ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
+            ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
         }
         {

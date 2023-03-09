@@ -390,12 +390,9 @@ public:
      * @return true for the file to be excluded.
      */
     bool configurationExcluded(const std::string &file) const {
-        for (const std::string & configExcludePath : configExcludePaths) {
-            if (file.length()>=configExcludePath.length() && file.compare(0,configExcludePath.length(),configExcludePath)==0) {
-                return true;
-            }
-        }
-        return false;
+        return std::any_of(configExcludePaths.begin(), configExcludePaths.end(), [&file](const std::string& path) {
+            return file.length() >= path.length() && file.compare(0, path.length(), path) == 0;
+        });
     }
 
     /**

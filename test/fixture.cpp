@@ -102,7 +102,7 @@ bool TestFixture::prepareTest(const char testname[])
             std::putchar('.'); // Use putchar to write through redirection of std::cout/cerr
             std::fflush(stdout);
         } else {
-            std::cout << classname << "::" << testname << std::endl;
+            std::cout << classname << "::" << mTestname << std::endl;
         }
         return true;
     }
@@ -316,7 +316,7 @@ void TestFixture::run(const std::string &str)
     try {
         if (quiet_tests) {
             std::cout << '\n' << classname << ':';
-            REDIRECT;
+            SUPPRESS;
             run();
         }
         else
@@ -324,15 +324,15 @@ void TestFixture::run(const std::string &str)
     }
     catch (const InternalError& e) {
         ++fails_counter;
-        errmsg << "InternalError: " << e.errorMessage << std::endl;
+        errmsg << classname << "::" << mTestname << " - InternalError: " << e.errorMessage << std::endl;
     }
     catch (const std::exception& error) {
         ++fails_counter;
-        errmsg << "exception: " << error.what() << std::endl;
+        errmsg << classname << "::" << mTestname << " - Exception: " << error.what() << std::endl;
     }
     catch (...) {
         ++fails_counter;
-        errmsg << "Unknown exception" << std::endl;
+        errmsg << classname << "::" << mTestname << " - Unknown exception" << std::endl;
     }
 }
 

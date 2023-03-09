@@ -251,14 +251,6 @@ public:
     }
 
     /**
-     * Output information messages.
-     * @param msg Location and other information about the found error.
-     */
-    virtual void reportInfo(const ErrorMessage &msg) {
-        reportErr(msg);
-    }
-
-    /**
      * Report unmatched suppressions
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
      * @return true is returned if errors are reported

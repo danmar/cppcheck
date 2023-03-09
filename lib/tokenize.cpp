@@ -162,7 +162,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger, const P
     mSettings(settings),
     mErrorLogger(errorLogger),
     mSymbolDatabase(nullptr),
-    mTemplateSimplifier(new TemplateSimplifier(this)),
+    mTemplateSimplifier(new TemplateSimplifier(*this)),
     mVarId(0),
     mUnnamedCount(0),
     mCodeWithTemplates(false), //is there any templates?
@@ -5347,6 +5347,7 @@ void Tokenizer::dump(std::ostream &out) const
         }
         out << "  </typedef-info>" << std::endl;
     }
+    out << mTemplateSimplifier->dump();
 }
 
 void Tokenizer::simplifyHeadersAndUnusedTemplates()
@@ -6435,6 +6436,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 endDecl = endDecl->next();
                 endDecl->next()->isSplittedVarDeclEq(true);
                 endDecl->insertToken(varName->str());
+                endDecl->next()->isExpandedMacro(varName->isExpandedMacro());
                 continue;
             }
             //non-VLA case
@@ -9140,7 +9142,7 @@ void Tokenizer::simplifyBorland()
 void Tokenizer::createSymbolDatabase()
 {
     if (!mSymbolDatabase)
-        mSymbolDatabase = new SymbolDatabase(this, mSettings, mErrorLogger);
+        mSymbolDatabase = new SymbolDatabase(*this, *mSettings, mErrorLogger);
     mSymbolDatabase->validate();
 }
 

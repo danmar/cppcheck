@@ -82,7 +82,7 @@ CppCheckExecutor::~CppCheckExecutor()
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
 {
     Settings& settings = cppcheck->settings();
-    CmdLineParser parser(&settings);
+    CmdLineParser parser(settings);
     const bool success = parser.parseFromArgs(argc, argv);
 
     if (success) {
@@ -345,6 +345,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
             }
         }
 
+        // TODO: not performed when multiple jobs are being used
         // second loop to parse all markup files which may not work until all
         // c/cpp files have been parsed and checked
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
@@ -423,6 +424,7 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
 
 void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
+    // TODO: do not unconditionally apply colors
     std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
@@ -449,11 +451,6 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportInfo(const ErrorMessage &msg)
-{
-    reportErr(msg);
-}
-
 void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal)
 {
     if (filecount > 1) {
@@ -462,6 +459,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
         oss << fileindex << '/' << filecount
             << " files checked " << percentDone
             << "% done";
+        // TODO: do not unconditionally print in color
         std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
     }
 }

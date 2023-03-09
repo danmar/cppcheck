@@ -1652,12 +1652,6 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
     mErrorLogger.reportProgress(filename, stage, value);
 }
 
-void CppCheck::reportInfo(const ErrorMessage &msg)
-{
-    if (!mSettings.nomsg.isSuppressed(msg))
-        mErrorLogger.reportInfo(msg);
-}
-
 void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
 {}
 

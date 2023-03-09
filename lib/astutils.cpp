@@ -407,7 +407,7 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
         return false;
     if (Token::simpleMatch(tok, "?")) {
         const Token* branchTok = tok->astOperand2();
-        if (!branchTok->astOperand1()->valueType())
+        if (!branchTok->astOperand1() || !branchTok->astOperand1()->valueType())
             return false;
         if (!branchTok->astOperand2()->valueType())
             return false;
@@ -717,7 +717,7 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
         const ValueType* vtCont = contTok->valueType();
         if (!vtCont->containerTypeToken)
             return {};
-        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings, true); // TODO: set isCpp
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, *settings, true); // TODO: set isCpp
         return {std::move(vtParent)};
     }
     if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {

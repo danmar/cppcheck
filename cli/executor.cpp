@@ -18,10 +18,30 @@
 
 #include "executor.h"
 
+#include "errorlogger.h"
+#include "settings.h"
+
+#include <algorithm>
+
 Executor::Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : mFiles(files), mSettings(settings), mErrorLogger(errorLogger)
 {}
 
 Executor::~Executor()
 {}
+
+bool Executor::hasToLog(const ErrorMessage &msg)
+{
+    if (!mSettings.nomsg.isSuppressed(msg))
+    {
+        std::string errmsg = msg.toString(mSettings.verbose);
+
+        std::lock_guard<std::mutex> lg(mErrorListSync);
+        if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
+            mErrorList.emplace_back(std::move(errmsg));
+            return true;
+        }
+    }
+    return false;
+}
 

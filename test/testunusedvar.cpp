@@ -136,6 +136,7 @@ private:
         TEST_CASE(localvar65); // #9876, #10006
         TEST_CASE(localvar66); // #11143
         TEST_CASE(localvar67); // #9946
+        TEST_CASE(localvar68);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -264,6 +265,31 @@ private:
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
         (checkUnusedVar.checkStructMemberUsage)();
     }
+
+    void checkFunctionVariableUsageP(const char code[], const char* filename = "test.cpp") {
+        // Raw tokens..
+        std::vector<std::string> files(1, filename);
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        Preprocessor preprocessor(settings, nullptr);
+        preprocessor.setDirectives(tokens1);
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.simplifyTokens1("");
+
+        // Check for unused variables..
+        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
+        (checkUnusedVar.checkFunctionVariableUsage)();
+    }
+
 
     void isRecordTypeWithoutSideEffects() {
         functionVariableUsage(
@@ -3636,6 +3662,16 @@ private:
                               "    d2();\n"
                               "        B() {}\n"
                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar68() {
+        checkFunctionVariableUsageP("#define X0 int x = 0\n"
+                                    "void f() { X0; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkFunctionVariableUsageP("#define X0 int (*x)(int) = 0\n"
+                                    "void f() { X0; }\n");
         ASSERT_EQUALS("", errout.str());
     }
 
