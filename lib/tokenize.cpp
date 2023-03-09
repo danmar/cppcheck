@@ -597,6 +597,7 @@ namespace {
         Token* mNameToken{nullptr};
         bool mFail = false;
         bool mReplaceFailed = false;
+        bool mUsed = false;
 
     public:
         TypedefSimplifier(Token* typedefToken, int &num) : mTypedefToken(typedefToken) {
@@ -669,6 +670,14 @@ namespace {
             mFail = true;
         }
 
+        const Token* getTypedefToken() const {
+            return mTypedefToken;
+        }
+
+        bool isUsed() const {
+            return mUsed;
+        }
+
         bool fail() const {
             return mFail;
         }
@@ -688,6 +697,8 @@ namespace {
         void replace(Token* tok) {
             if (tok == mNameToken)
                 return;
+
+            mUsed = true;
 
             // Special handling for T() when T is a pointer
             if (Token::Match(tok, "%name% ( )")) {
@@ -988,8 +999,18 @@ void Tokenizer::simplifyTypedef()
     {
         // remove typedefs
         for (auto &t: typedefs) {
-            if (!t.second.replaceFailed())
+            if (!t.second.replaceFailed()) {
+                const Token* const typedefToken = t.second.getTypedefToken();
+                TypedefInfo typedefInfo;
+                typedefInfo.name = t.second.name();
+                typedefInfo.filename = list.file(typedefToken);
+                typedefInfo.lineNumber = typedefToken->linenr();
+                typedefInfo.column = typedefToken->column();
+                typedefInfo.used = t.second.isUsed();
+                mTypedefInfo.push_back(std::move(typedefInfo));
+
                 t.second.removeDeclaration();
+            }
         }
 
         while (Token::Match(list.front(), "; %any%"))
