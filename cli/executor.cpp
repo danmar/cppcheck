@@ -18,11 +18,14 @@
 
 #include "executor.h"
 
+#include "color.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include "suppressions.h"
 
 #include <algorithm>
+#include <iostream>
+#include <sstream>
 #include <utility>
 
 Executor::Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
@@ -45,5 +48,18 @@ bool Executor::hasToLog(const ErrorMessage &msg)
         }
     }
     return false;
+}
+
+void Executor::reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal)
+{
+    if (filecount > 1) {
+        std::ostringstream oss;
+        const long percentDone = (sizetotal > 0) ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal * 100) : 0;
+        oss << fileindex << '/' << filecount
+            << " files checked " << percentDone
+            << "% done";
+        // TODO: do not unconditionally print in color
+        std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
+    }
 }
 

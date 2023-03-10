@@ -407,19 +407,6 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     }
 }
 
-void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal)
-{
-    if (filecount > 1) {
-        std::ostringstream oss;
-        const long percentDone = (sizetotal > 0) ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal * 100) : 0;
-        oss << fileindex << '/' << filecount
-            << " files checked " << percentDone
-            << "% done";
-        // TODO: do not unconditionally print in color
-        std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
-    }
-}
-
 void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     if (mShowAllErrors) {

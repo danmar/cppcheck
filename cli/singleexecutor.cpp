@@ -50,7 +50,7 @@ unsigned int SingleExecutor::check()
                 result += mCppcheck.check(i->first);
                 processedsize += i->second;
                 if (!mSettings.quiet)
-                    CppCheckExecutor::reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
+                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
                 c++;
             }
         }
@@ -61,7 +61,7 @@ unsigned int SingleExecutor::check()
             result += mCppcheck.check(fs);
             ++c;
             if (!mSettings.quiet)
-                CppCheckExecutor::reportStatus(c, mSettings.project.fileSettings.size(), c, mSettings.project.fileSettings.size());
+                reportStatus(c, mSettings.project.fileSettings.size(), c, mSettings.project.fileSettings.size());
             if (mSettings.clangTidy)
                 mCppcheck.analyseClangTidy(fs);
         }
@@ -74,7 +74,7 @@ unsigned int SingleExecutor::check()
             result += mCppcheck.check(i->first);
             processedsize += i->second;
             if (!mSettings.quiet)
-                CppCheckExecutor::reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
+                reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
             c++;
         }
     }
