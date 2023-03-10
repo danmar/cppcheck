@@ -663,7 +663,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
     try {
-        Preprocessor preprocessor(mSettings, this);
+        Preprocessor preprocessor(mSettings, mSettings.nomsg, this);
         std::set<std::string> configurations;
 
         simplecpp::OutputList outputList;

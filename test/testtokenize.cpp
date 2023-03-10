@@ -6387,6 +6387,8 @@ private:
 
         ASSERT_EQUALS("xp(= 12>34:?", testAst("x = ( const char ( * ) [ 1 > 2 ? 3 : 4 ] ) p ;"));
 
+        ASSERT_EQUALS("f{(si.,(", testAst("f((struct S){ }, s->i);")); // #11606
+
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
         ASSERT_EQUALS("abc[1&=", testAst("a = (b[c]) & 1;"));
@@ -6584,7 +6586,7 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        Preprocessor preprocessor(settings0);
+        Preprocessor preprocessor(settings0, settings0.nomsg);
         std::list<std::string> configurations;
         std::string filedata;
         std::istringstream fin(raw_code);
@@ -7330,7 +7332,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings0, nullptr);
+        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..

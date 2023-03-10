@@ -170,6 +170,7 @@ private:
         TEST_CASE(loopAlgoIncrement);
         TEST_CASE(loopAlgoConditional);
         TEST_CASE(loopAlgoMinMax);
+        TEST_CASE(loopAlgoMultipleReturn);
 
         TEST_CASE(invalidContainer);
         TEST_CASE(invalidContainerLoop);
@@ -574,7 +575,7 @@ private:
                     "      return true;\n"
                     "  return false;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:6:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:5:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
 
         checkNormal("std::vector<int> range(int n);\n"
                     "bool f(bool b) {\n"
@@ -587,7 +588,7 @@ private:
                     "      return true;\n"
                     "  return false;\n"
                     "}\n");
-        ASSERT_EQUALS("test.cpp:8:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("test.cpp:7:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
 
         checkNormal("bool g();\n"
                     "int f(int x) {\n"
@@ -1884,7 +1885,6 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("std::vector<int>& f();\n"
-              "std::vector<int>& g();\n"
               "void foo() {\n"
               "    auto it = f().end() - 1;\n"
               "    f().begin() - it;\n"
@@ -1906,18 +1906,28 @@ private:
               "    (void)std::find(begin(f()), end(f()) - 1, 0);\n"
               "    (void)std::find(begin(f()) + 1, end(f()) - 1, 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Dereference of an invalid iterator: f().end()+1\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Dereference of an invalid iterator: f().end()+1\n", errout.str());
 
         check("std::vector<int>& f();\n"
-              "std::vector<int>& g();\n"
               "void foo() {\n"
               "    if(f().begin() == f().end()) {}\n"
               "    if(f().begin() == f().end()+1) {}\n"
               "    if(f().begin()+1 == f().end()) {}\n"
               "    if(f().begin()+1 == f().end()+1) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Dereference of an invalid iterator: f().end()+1\n"
-                      "[test.cpp:7]: (error) Dereference of an invalid iterator: f().end()+1\n",
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereference of an invalid iterator: f().end()+1\n"
+                      "[test.cpp:6]: (error) Dereference of an invalid iterator: f().end()+1\n",
+                      errout.str());
+
+        check("std::vector<int>& f();\n"
+              "void foo() {\n"
+              "    if(std::begin(f()) == std::end(f())) {}\n"
+              "    if(std::begin(f()) == std::end(f())+1) {}\n"
+              "    if(std::begin(f())+1 == std::end(f())) {}\n"
+              "    if(std::begin(f())+1 == std::end(f())+1) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereference of an invalid iterator: std::end(f())+1\n"
+                      "[test.cpp:6]: (error) Dereference of an invalid iterator: std::end(f())+1\n",
                       errout.str());
 
         check("template<int N>\n"
@@ -4495,6 +4505,13 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Dereference of an invalid iterator: i\n", errout.str());
 
+        check("void f() {\n"
+              "    std::vector <int> v;\n"
+              "    std::vector <int>::iterator i = std::end(v);\n"
+              "    *i=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Dereference of an invalid iterator: i\n", errout.str());
+
         check("void f(std::vector <int> v) {\n"
               "    std::vector <int>::iterator i = v.end();\n"
               "    *i=0;\n"
@@ -4515,6 +4532,12 @@ private:
 
         check("void f(std::vector <int> v) {\n"
               "    std::vector <int>::iterator i = v.begin();\n"
+              "    *(i-1)=0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dereference of an invalid iterator: i-1\n", errout.str());
+
+        check("void f(std::vector <int> v) {\n"
+              "    std::vector <int>::iterator i = std::begin(v);\n"
               "    *(i-1)=0;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Dereference of an invalid iterator: i-1\n", errout.str());
@@ -5120,7 +5143,8 @@ private:
               "    return true;\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n",
+                      errout.str());
 
         check("bool pred(int x);\n"
               "bool foo() {\n"
@@ -5293,7 +5317,8 @@ private:
               "    }\n"
               "    return false;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
+                      errout.str());
     }
 
     void loopAlgoMinMax() {
@@ -5336,6 +5361,111 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+    }
+
+    void loopAlgoMultipleReturn()
+    {
+        check("bool f(const std::vector<int>& v) {\n"
+              "    for (auto i : v) {\n"
+              "        if (i < 0)\n"
+              "            continue;\n"
+              "        if (i)\n"
+              "            return true;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
+                      errout.str());
+
+        check("bool g(const std::vector<int>& v) {\n"
+              "    for (auto i : v) {\n"
+              "        if (i % 5 == 0)\n"
+              "            return true;\n"
+              "        if (i % 7 == 0)\n"
+              "            return true;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::any_of algorithm instead of a raw loop.\n",
+                      errout.str());
+
+        check("bool g(const std::vector<int>& v) {\n"
+              "    for (auto i : v) {\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            return true;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool g(std::vector<int>& v) {\n"
+              "    for (auto& i : v) {\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            i++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool g(const std::vector<int>& v, int& j) {\n"
+              "    for (auto i : v) {\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            j++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool g(const std::vector<int>& v, int& j) {\n"
+              "    for (auto i : v) {\n"
+              "        int& k = j;\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            k++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool g(const std::vector<int>& v, int& j) {\n"
+              "    for (auto i : v) {\n"
+              "        int* k = &j;\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            (*k)++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool g(const std::vector<int>& v, int j) {\n"
+              "    for (auto i : v) {\n"
+              "        int k = j;\n"
+              "        if (i % 5 == 0)\n"
+              "            return false;\n"
+              "        if (i % 7 == 0)\n"
+              "            k++;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n",
+                      errout.str());
     }
 
     void invalidContainer() {

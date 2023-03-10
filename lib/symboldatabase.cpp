@@ -2683,6 +2683,18 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         (Token::simpleMatch(first, "( void )") && Token::simpleMatch(second, "( )")))
         return true;
 
+    auto skipTopLevelConst = [](const Token* start) -> const Token* {
+        const Token* tok = start->next();
+        if (Token::simpleMatch(tok, "const")) {
+            tok = tok->next();
+            while (Token::Match(tok, "%name%|%type%|::"))
+                tok = tok->next();
+            if (Token::Match(tok, ",|)|="))
+                return start->next();
+        }
+        return start;
+    };
+
     while (first->str() == second->str() &&
            first->isLong() == second->isLong() &&
            first->isUnsigned() == second->isUnsigned()) {
@@ -2704,15 +2716,12 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             second = second->next();
 
         // skip const on type passed by value
-        if (Token::Match(first->next(), "const %type% %name%|,|)") &&
-            !Token::Match(first->next(), "const %type% %name%| ["))
-            first = first->next();
-        if (Token::Match(second->next(), "const %type% %name%|,|)") &&
-            !Token::Match(second->next(), "const %type% %name%| ["))
-            second = second->next();
+        const Token* const oldSecond = second;
+        first = skipTopLevelConst(first);
+        second = skipTopLevelConst(second);
 
         // skip default value assignment
-        else if (first->next()->str() == "=") {
+        if (oldSecond == second && first->next()->str() == "=") {
             first = first->nextArgument();
             if (first)
                 first = first->tokAt(-2);
@@ -2726,7 +2735,7 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             } else if (!first) { // End of argument list (first)
                 return !second->nextArgument(); // End of argument list (second)
             }
-        } else if (second->next()->str() == "=") {
+        } else if (oldSecond == second && second->next()->str() == "=") {
             second = second->nextArgument();
             if (second)
                 second = second->tokAt(-2);
@@ -5128,7 +5137,7 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
 
 bool Scope::hasInlineOrLambdaFunction() const
 {
-    for (const Scope *s : nestedList) {
+    return std::any_of(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
         // Inline function
         if (s->type == Scope::eUnconditional && Token::simpleMatch(s->bodyStart->previous(), ") {"))
             return true;
@@ -5137,8 +5146,8 @@ bool Scope::hasInlineOrLambdaFunction() const
             return true;
         if (s->hasInlineOrLambdaFunction())
             return true;
-    }
-    return false;
+        return false;
+    });
 }
 
 void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::vector<const Function *> & matches) const
@@ -7029,6 +7038,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     }
                 }
 
+                //Is iterator fetching function invoked on container?
                 const bool isReturnIter = typestr == "iterator";
                 if (typestr.empty() || isReturnIter) {
                     if (Token::simpleMatch(tok->astOperand1(), ".") &&
@@ -7037,7 +7047,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         tok->astOperand1()->astOperand1()->valueType() &&
                         tok->astOperand1()->astOperand1()->valueType()->container) {
                         const Library::Container *cont = tok->astOperand1()->astOperand1()->valueType()->container;
-                        const std::map<std::string, Library::Container::Function>::const_iterator it = cont->functions.find(tok->astOperand1()->astOperand2()->str());
+                        const auto it = cont->functions.find(tok->astOperand1()->astOperand2()->str());
                         if (it != cont->functions.end()) {
                             if (it->second.yield == Library::Container::Yield::START_ITERATOR ||
                                 it->second.yield == Library::Container::Yield::END_ITERATOR ||
@@ -7050,6 +7060,27 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                                 setValueType(tok, vt);
                                 continue;
                             }
+                        }
+                        //Is iterator fetching function called?
+                    } else if (Token::simpleMatch(tok->astOperand1(), "::") &&
+                               tok->astOperand2() &&
+                               tok->astOperand2()->isVariable()) {
+                        const auto* const paramVariable = tok->astOperand2()->variable();
+                        if (!paramVariable ||
+                            !paramVariable->valueType() ||
+                            !paramVariable->valueType()->container) {
+                            continue;
+                        }
+
+                        const auto yield = astFunctionYield(tok->previous(), &mSettings);
+                        if (yield == Library::Container::Yield::START_ITERATOR ||
+                            yield == Library::Container::Yield::END_ITERATOR ||
+                            yield == Library::Container::Yield::ITERATOR) {
+                            ValueType vt;
+                            vt.type = ValueType::Type::ITERATOR;
+                            vt.container = paramVariable->valueType()->container;
+                            vt.containerTypeToken = paramVariable->valueType()->containerTypeToken;
+                            setValueType(tok, vt);
                         }
                     }
                     if (isReturnIter) {

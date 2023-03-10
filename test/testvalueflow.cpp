@@ -202,12 +202,14 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value& val:tok->values()) {
+                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& val) {
                     if (val.isSymbolicValue())
-                        continue;
+                        return false;
                     if (val.isKnown() && val.intvalue == value)
                         return true;
-                }
+                    return false;
+                }))
+                    return true;
             }
         }
 
@@ -222,12 +224,14 @@ private:
 
         for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value& val : tok->values()) {
+                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& val) {
                     if (!val.isSymbolicValue())
-                        continue;
+                        return false;
                     if (val.isKnown() && val.intvalue == value && val.tokvalue->expressionString() == expr)
                         return true;
-                }
+                    return false;
+                }))
+                    return true;
             }
         }
 
@@ -243,12 +247,14 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value& val:tok->values()) {
+                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& val) {
                     if (val.isSymbolicValue())
-                        continue;
+                        return false;
                     if (val.isImpossible() && val.intvalue == value)
                         return true;
-                }
+                    return false;
+                }))
+                    return true;
             }
         }
 
@@ -264,12 +270,14 @@ private:
 
         for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value& val : tok->values()) {
+                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& val) {
                     if (!val.isSymbolicValue())
-                        continue;
+                        return false;
                     if (val.isImpossible() && val.intvalue == value && val.tokvalue->expressionString() == expr)
                         return true;
-                }
+                    return false;
+                }))
+                    return true;
             }
         }
 
@@ -285,12 +293,14 @@ private:
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
-                for (const ValueFlow::Value& val:tok->values()) {
+                if (std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& val) {
                     if (val.isSymbolicValue())
-                        continue;
+                        return false;
                     if (val.isInconclusive() && val.intvalue == value)
                         return true;
-                }
+                    return false;
+                }))
+                    return true;
             }
         }
 

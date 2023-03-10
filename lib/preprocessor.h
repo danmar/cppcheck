@@ -35,6 +35,7 @@
 
 class ErrorLogger;
 class Settings;
+class Suppressions;
 
 /**
  * @brief A preprocessor directive
@@ -83,7 +84,7 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
+    explicit Preprocessor(const Settings& settings, Suppressions &suppressions, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
 
     void inlineSuppressions(const simplecpp::TokenList &tokens);
@@ -187,7 +188,8 @@ private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
-    Settings& mSettings;
+    const Settings& mSettings;
+    Suppressions &mSuppressions;
     ErrorLogger *mErrorLogger;
 
     /** list of all directives met while preprocessing file */

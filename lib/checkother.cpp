@@ -1526,10 +1526,9 @@ void CheckOther::checkConstVariable()
                             callNonConstMethod = true;
                         break;
                     }
-                    if (var->isStlType() && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
-                        const Token* typeTok = var->typeStartToken() ? var->typeStartToken()->tokAt(2) : nullptr;
+                    if (var->valueType() && var->valueType()->container && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
                         const auto& notConst = CheckClass::stl_containers_not_const;
-                        if (typeTok && notConst.find(typeTok->str()) != notConst.end()) {
+                        if (notConst.find(var->valueType()->container->startPattern) != notConst.end()) {
                             callNonConstMethod = true;
                             break;
                         }
@@ -2780,7 +2779,7 @@ void CheckOther::pointerPositiveError(const Token *tok, const ValueFlow::Value *
 /* check if a constructor in given class scope takes a reference */
 static bool constructorTakesReference(const Scope * const classScope)
 {
-    for (const Function &constructor : classScope->functionList) {
+    return std::any_of(classScope->functionList.begin(), classScope->functionList.end(), [&](const Function& constructor) {
         if (constructor.isConstructor()) {
             for (int argnr = 0U; argnr < constructor.argCount(); argnr++) {
                 const Variable * const argVar = constructor.getArgumentVar(argnr);
@@ -2789,8 +2788,8 @@ static bool constructorTakesReference(const Scope * const classScope)
                 }
             }
         }
-    }
-    return false;
+        return false;
+    });
 }
 
 //---------------------------------------------------------------------------
