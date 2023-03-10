@@ -380,8 +380,10 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
 
 void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    // TODO: do not unconditionally apply colors
-    std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
+    if (c == Color::Reset)
+        std::cout << ansiToOEM(outmsg, true) << std::endl;
+    else
+        std::cout << toString(c) << ansiToOEM(outmsg, true) << toString(Color::Reset) << std::endl;
 }
 
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)

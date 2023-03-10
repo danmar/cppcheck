@@ -131,7 +131,6 @@ private:
         const char plistOutput[] = "plist";
         ScopedFile plistFile("dummy", plistOutput);
 
-        SUPPRESS;
         check(16, 100, 100,
               "int main()\n"
               "{\n"
@@ -192,7 +191,6 @@ private:
             "file_1.cp1", "file_2.cpp", "file_3.cp1", "file_4.cpp"
         };
 
-        SUPPRESS;
         check(2, 4, 4,
               "int main()\n"
               "{\n"
@@ -200,15 +198,25 @@ private:
               "  return 0;\n"
               "}",
               SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
-        TODO_ASSERT_EQUALS("\x1b[32mChecking file_2.cpp ...\x1b[0m\n"
-                           "\x1b[32mChecking file_4.cpp ...\x1b[0m\n"
-                           "\x1b[32mChecking file_1.cp1 ...\x1b[0m\n"
-                           "\x1b[32mChecking file_3.cp1 ...\x1b[0m\n",
-                           "\x1b[32mChecking file_1.cp1 ...\x1b[0m\n"
-                           "\x1b[32mChecking file_2.cpp ...\x1b[0m\n"
-                           "\x1b[32mChecking file_3.cp1 ...\x1b[0m\n"
-                           "\x1b[32mChecking file_4.cpp ...\x1b[0m\n",
-                           output.str());
+        // TODO: order of "Checking" and "checked" is affected by thread
+        /*TODO_ASSERT_EQUALS("Checking file_2.cpp ...\n"
+                           "1/4 files checked 25% done\n"
+                           "Checking file_4.cpp ...\n"
+                           "2/4 files checked 50% done\n"
+                           "Checking file_1.cp1 ...\n"
+                           "3/4 files checked 75% done\n"
+                           "Checking file_3.cp1 ...\n"
+                           "4/4 files checked 100% done\n",
+                           "Checking file_1.cp1 ...\n"
+                           "1/4 files checked 25% done\n"
+                           "Checking file_2.cpp ...\n"
+                           "2/4 files checked 50% done\n"
+                           "Checking file_3.cp1 ...\n"
+                           "3/4 files checked 75% done\n"
+                           "Checking file_4.cpp ...\n"
+                           "4/4 files checked 100% done\n",
+                           output.str());*/
+        settings = settingsOld;
     }
 };
 

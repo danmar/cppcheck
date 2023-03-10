@@ -58,8 +58,7 @@ void Executor::reportStatus(std::size_t fileindex, std::size_t filecount, std::s
         oss << fileindex << '/' << filecount
             << " files checked " << percentDone
             << "% done";
-        // TODO: do not unconditionally print in color
-        std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
+        mErrorLogger.reportOut(oss.str(), Color::FgBlue);
     }
 }
 

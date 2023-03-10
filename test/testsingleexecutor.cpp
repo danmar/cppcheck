@@ -10,7 +10,7 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Public License for more details
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -43,6 +43,15 @@ public:
 private:
     Settings settings;
 
+    static std::string zpad3(int i)
+    {
+        if (i < 10)
+            return "00" + std::to_string(i);
+        if (i < 100)
+            return "0" + std::to_string(i);
+        return std::to_string(i);
+    }
+
     void check(int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr, const std::vector<std::string>& filesList = {}) {
         errout.str("");
         output.str("");
@@ -50,9 +59,8 @@ private:
         std::map<std::string, std::size_t> filemap;
         if (filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                std::ostringstream oss;
-                oss << "file_" << i << ".cpp";
-                filemap[oss.str()] = data.size();
+                const std::string s = "file_" + zpad3(i) + ".cpp";
+                filemap[s] = data.size();
             }
         }
         else {
@@ -95,7 +103,9 @@ private:
     }
 
     void many_files() {
-        REDIRECT;
+        const Settings settingsOld = settings;
+        settings.quiet = false;
+
         check(100, 100,
               "int main()\n"
               "{\n"
@@ -104,6 +114,7 @@ private:
               "}");
         std::string expected;
         for (int i = 1; i <= 100; ++i) {
+            expected += "Checking file_" + zpad3(i) + ".cpp ...\n";
             int p;
             if (i == 29)
                 p = 28;
@@ -113,26 +124,27 @@ private:
                 p = 57;
             else
                 p = i;
-            expected += "\x1b[34m" + std::to_string(i) + "/100 files checked " + std::to_string(p) + "% done\x1b[0m\n";
+            expected += std::to_string(i) + "/100 files checked " + std::to_string(p) + "% done\n";
         }
-        ASSERT_EQUALS(expected, GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(expected, output.str());
+
+        settings = settingsOld;
     }
 
     void many_files_showtime() {
         SUPPRESS;
-        check( 100, 100,
-               "int main()\n"
-               "{\n"
-               "  char *a = malloc(10);\n"
-               "  return 0;\n"
-               "}", SHOWTIME_MODES::SHOWTIME_SUMMARY);
+        check(100, 100,
+              "int main()\n"
+              "{\n"
+              "  char *a = malloc(10);\n"
+              "  return 0;\n"
+              "}", SHOWTIME_MODES::SHOWTIME_SUMMARY);
     }
 
     void many_files_plist() {
         const char plistOutput[] = "plist";
         ScopedFile plistFile("dummy", plistOutput);
 
-        SUPPRESS;
         check(100, 100,
               "int main()\n"
               "{\n"
@@ -192,7 +204,6 @@ private:
             "file_1.cp1", "file_2.cpp", "file_3.cp1", "file_4.cpp"
         };
 
-        SUPPRESS;
         check(4, 4,
               "int main()\n"
               "{\n"
@@ -200,10 +211,16 @@ private:
               "  return 0;\n"
               "}",
               SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
+        // TODO: filter out the "files checked" messages
         ASSERT_EQUALS("Checking file_2.cpp ...\n"
+                      "1/4 files checked 25% done\n"
                       "Checking file_4.cpp ...\n"
+                      "2/4 files checked 50% done\n"
                       "Checking file_1.cp1 ...\n"
-                      "Checking file_3.cp1 ...\n", output.str());
+                      "3/4 files checked 75% done\n"
+                      "Checking file_3.cp1 ...\n"
+                      "4/4 files checked 100% done\n", output.str());
+        settings = settingsOld;
     }
 
     // TODO: test clang-tidy
