@@ -24,7 +24,7 @@
 #include <cstddef>
 #include <sstream> // IWYU pragma: keep
 
-bool DISABLE_COLORS = false;
+bool gDisableColors = false;
 
 #ifdef _WIN32
 std::ostream& operator<<(std::ostream& os, const Color& /*c*/)
@@ -34,7 +34,7 @@ std::ostream& operator<<(std::ostream & os, const Color& c)
 {
     // TODO: handle piping into file as well as other pipes like stderr
     static const bool s_is_tty = isatty(STDOUT_FILENO);
-    if (!DISABLE_COLORS && s_is_tty)
+    if (!gDisableColors && s_is_tty)
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
 #endif
     return os;

@@ -42,6 +42,6 @@ CPPCHECKLIB std::ostream& operator<<(std::ostream& os, const Color& c);
 
 CPPCHECKLIB std::string toString(const Color& c);
 
-extern CPPCHECKLIB bool DISABLE_COLORS; // for testing
+extern CPPCHECKLIB bool gDisableColors; // for testing
 
 #endif

@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 #endif
 
     Preprocessor::macroChar = '$';     // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
-    DISABLE_COLORS = true;
+    gDisableColors = true;
 
     options args(argc, argv);
 
