@@ -359,7 +359,8 @@ private:
               "    else if (rHitObject.IsClosedObj() && !&rHitObject) { }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition '&rHitObject' is always true\n"
-                      "[test.cpp:3]: (style) Condition '!&rHitObject' is always false\n", errout.str());
+                      "[test.cpp:3]: (style) Condition '!&rHitObject' is always false\n",
+                      errout.str());
 
         // #5695: increment
         check("void f(int a0, int n) {\n"
