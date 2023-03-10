@@ -83,12 +83,27 @@ private:
     }
 
     void many_files() {
+        REDIRECT;
         check(100, 100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}");
+        std::string expected;
+        for (int i = 1; i <= 100; ++i) {
+            int p;
+            if (i == 29)
+                p = 28;
+            else if (i == 57)
+                p = 56;
+            else if (i == 58)
+                p = 57;
+            else
+                p = i;
+            expected += "\x1b[34m" + std::to_string(i) + "/100 files checked " + std::to_string(p) + "% done\x1b[0m\n";
+        }
+        ASSERT_EQUALS(expected, GET_REDIRECT_OUTPUT);
     }
 
     void many_files_showtime() {
