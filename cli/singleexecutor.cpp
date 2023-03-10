@@ -19,10 +19,15 @@
 #include "singleexecutor.h"
 
 #include "cppcheck.h"
-#include "cppcheckexecutor.h"
+#include "importproject.h"
+#include "library.h"
 #include "settings.h"
 
+#include <list>
 #include <numeric>
+#include <utility>
+
+class ErrorLogger;
 
 SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : Executor(files, settings, errorLogger)

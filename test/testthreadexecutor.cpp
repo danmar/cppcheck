@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "library.h"
 #include "threadexecutor.h"
 #include "timer.h"
 
@@ -27,6 +28,7 @@
 #include <cstddef>
 #include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>

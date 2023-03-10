@@ -25,7 +25,7 @@
 
 #include <algorithm>
 #include <iostream>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 
 Executor::Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)

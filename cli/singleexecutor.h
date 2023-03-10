@@ -21,6 +21,12 @@
 
 #include "executor.h"
 
+#include <cstddef>
+#include <map>
+#include <string>
+
+class ErrorLogger;
+class Settings;
 class CppCheck;
 
 class SingleExecutor : public Executor

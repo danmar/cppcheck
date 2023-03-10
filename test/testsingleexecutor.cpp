@@ -17,18 +17,20 @@
  */
 
 #include "cppcheck.h"
-#include "errorlogger.h"
 #include "fixture.h"
 #include "helpers.h"
 #include "redirect.h"
+#include "library.h"
 #include "settings.h"
 #include "singleexecutor.h"
 #include "timer.h"
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>

@@ -33,6 +33,7 @@
 #include "singleexecutor.h"
 #include "suppressions.h"
 #include "utils.h"
+
 #include "checkunusedfunctions.h"
 
 #if defined(THREADING_MODEL_THREAD)
@@ -52,7 +53,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 #include <vector>
-#include <numeric>
 
 #ifdef USE_UNIX_SIGNAL_HANDLING
 #include "cppcheckexecutorsig.h"
