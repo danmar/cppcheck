@@ -73,8 +73,7 @@ public:
     explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 
     void reportOut(const std::string &outmsg, Color c) override {
-        // TODO: do not unconditionally apply colors
-        writeToPipe(REPORT_OUT, ::toString(c) + outmsg + ::toString(Color::Reset));
+        writeToPipe(REPORT_OUT, static_cast<char>(c) + outmsg);
     }
 
     void reportErr(const ErrorMessage &msg) override {
@@ -178,7 +177,9 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
-        mErrorLogger.reportOut(buf);
+        // the first charcater is the color
+        const Color c = static_cast<Color>(buf[0]);
+        mErrorLogger.reportOut(buf + 1, c);
     } else if (type == PipeWriter::REPORT_ERROR) {
         ErrorMessage msg;
         try {
