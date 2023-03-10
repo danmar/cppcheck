@@ -55,6 +55,7 @@ private:
 
         TEST_CASE(c1);
         TEST_CASE(c2);
+        TEST_CASE(canreplace);
         TEST_CASE(cconst);
         TEST_CASE(cstruct1);
         TEST_CASE(cstruct2);
@@ -317,6 +318,12 @@ private:
         const char code[] = "void f1() { typedef int t; t x; }\n"
                             "void f2() { typedef float t; t x; }\n";
         ASSERT_EQUALS("void f1 ( ) { int x ; } void f2 ( ) { float x ; }", simplifyTypedefC(code));
+    }
+
+    void canreplace() {
+        const char code[] = "typedef unsigned char u8;\n"
+                            "void f(uint8_t u8) { }\n";
+        ASSERT_EQUALS("void f ( uint8_t u8 ) { }", simplifyTypedefC(code));
     }
 
     void cconst() {

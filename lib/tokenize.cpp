@@ -883,6 +883,8 @@ namespace {
                     return true;
                 return false;
             }
+            if (Token::Match(tok->previous(), "%name%") && !tok->previous()->isKeyword())
+                return false;
             if (Token::simpleMatch(tok->next(), "(") && Token::Match(tok->linkAt(1), ") %name%|{"))
                 return false;
             if (Token::Match(tok->previous(), "struct|union|class|enum %name% %name%") &&
