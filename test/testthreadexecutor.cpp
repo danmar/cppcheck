@@ -105,7 +105,8 @@ private:
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
         TEST_CASE(markup);
-        TEST_CASE(showtime_top5);
+        TEST_CASE(showtime_top5_file);
+        TEST_CASE(showtime_top5_summary);
         TEST_CASE(showtime_file);
         TEST_CASE(showtime_summary);
     }
@@ -241,16 +242,30 @@ private:
     // TODO: provide data which actually shows values above 0
 
     // TODO: should this be logged only once like summary?
-    void showtime_top5() {
+    void showtime_top5_file() {
         REDIRECT; // should not cause TSAN failures as the showtime logging is synchronized
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.quiet = true,
-                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5));
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE));
         // for each file: top5 results + overall + empty line
         const std::string output_s = GET_REDIRECT_OUTPUT;
+        // for each file: top5 results + overall + empty line
         ASSERT_EQUALS((5 + 1 + 1) * 2, cppcheck::find_all_of(output_s, '\n'));
+    }
+
+    void showtime_top5_summary() {
+        REDIRECT;
+        check(2, 2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        // once: top5 results + overall + empty line
+        ASSERT_EQUALS(5 + 1 + 1, cppcheck::find_all_of(output_s, '\n'));
+        // should only report the top5 once
+        ASSERT(output_s.find("1 result(s)") == std::string::npos);
+        ASSERT(output_s.find("2 result(s)") != std::string::npos);
     }
 
     void showtime_file() {
@@ -258,7 +273,6 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.quiet = true,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         ASSERT_EQUALS(2, cppcheck::find_all_of(output_s, "Overall time:"));
@@ -269,7 +283,6 @@ private:
         check(2, 2, 0,
               "int main() {}",
               dinit(CheckOptions,
-                    $.quiet = true,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // should only report the actual summary once

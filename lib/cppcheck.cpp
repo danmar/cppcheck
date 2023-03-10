@@ -468,8 +468,8 @@ CppCheck::~CppCheck()
         mFileInfo.pop_back();
     }
 
-    if (mSettings.showtime != SHOWTIME_MODES::SHOWTIME_SUMMARY)
-        s_timerResults.showResults(mSettings.showtime);
+    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE)
+        printTimerResults(mSettings.showtime);
 
     if (mPlistFile.is_open()) {
         mPlistFile << ErrorLogger::plistFooter();
@@ -1912,7 +1912,7 @@ void CppCheck::resetTimerResults()
     s_timerResults.reset();
 }
 
-void CppCheck::printTimerResultsSummary()
+void CppCheck::printTimerResults(SHOWTIME_MODES mode)
 {
-    s_timerResults.showResults(SHOWTIME_MODES::SHOWTIME_SUMMARY);
+    s_timerResults.showResults(mode);
 }

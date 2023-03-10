@@ -440,9 +440,10 @@ def scan_package(cppcheck_path, source_path, libraries, capture_callstack=True):
 
     dir_to_scan = source_path
 
+    # TODO: temporarily disabled timing information - use --showtime=top5_summary when next version is released
     # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-    options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
+    options = libs + ' --showtime=none --check-library --inconclusive --enable=style,information --inline-suppr --disable=missingInclude --suppress=unmatchedSuppression --template=daca2'
     options += ' --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning'
     options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)

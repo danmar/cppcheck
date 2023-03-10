@@ -234,7 +234,13 @@ private:
         TEST_CASE(xmlverunknown);
         TEST_CASE(xmlverinvalid);
         TEST_CASE(doc);
-        TEST_CASE(showtime);
+        TEST_CASE(showtimeFile);
+        TEST_CASE(showtimeTop5);
+        TEST_CASE(showtimeTop5File);
+        TEST_CASE(showtimeTop5Summary);
+        TEST_CASE(showtimeNone);
+        TEST_CASE(showtimeEmpty);
+        TEST_CASE(showtimeInvalid);
         TEST_CASE(errorlist1);
         TEST_CASE(errorlistverbose1);
         TEST_CASE(errorlistverbose2);
@@ -1569,13 +1575,72 @@ private:
         ASSERT_EQUALS("", logger->str());
     }
 
-    void showtime() {
+    void showtimeSummary() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--showtime=summary", "file.cpp"};
         settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         ASSERT(parser->parseFromArgs(3, argv));
         ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY);
         ASSERT_EQUALS("", logger->str());
+    }
+
+    void showtimeFile() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--showtime=file", "file.cpp"};
+        settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_FILE);
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void showtimeTop5() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--showtime=top5", "file.cpp"};
+        settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE);
+        ASSERT_EQUALS("cppcheck: --showtime=top5 is deprecated and will be removed in Cppcheck 2.14. Please use --showtime=top5_file or --showtime=top5_summary instead.\n", logger->str());
+    }
+
+    void showtimeTop5File() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--showtime=top5_file", "file.cpp"};
+        settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE);
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void showtimeTop5Summary() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--showtime=top5_summary", "file.cpp"};
+        settings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY);
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void showtimeNone() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--showtime=none", "file.cpp"};
+        settings->showtime = SHOWTIME_MODES::SHOWTIME_FILE;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT(settings->showtime == SHOWTIME_MODES::SHOWTIME_NONE);
+        ASSERT_EQUALS("", logger->str());
+    }
+
+    void showtimeEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--showtime=", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: no mode provided for --showtime\n", logger->str());
+    }
+
+    void showtimeInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--showtime=top10", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unrecognized --showtime mode: 'top10'. Supported modes: file, file-total, summary, top5, top5_file, top5_summary.\n", logger->str());
     }
 
     void errorlist1() {
