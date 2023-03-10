@@ -242,7 +242,7 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
         return false;
 
     bool err = false;
-    if (settings.jointSuppressionReport) {
+    if (settings.useSingleJob()) {
         for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
             err |= errorLogger.reportUnmatchedSuppressions(
                 settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled));
@@ -310,10 +310,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     }
 
     unsigned int returnValue = 0;
-    if (settings.jobs == 1) {
+    if (settings.useSingleJob()) {
         // Single process
-        settings.jointSuppressionReport = true;
-
         const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
             return v + f.second;
         });

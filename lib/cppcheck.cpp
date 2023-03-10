@@ -1026,7 +1026,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
-    if (!mSettings.jointSuppressionReport && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
+    if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
         reportUnmatchedSuppressions(mSettings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()));
     }
 
@@ -1111,12 +1111,12 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         return;
 
 
-    if (mSettings.jobs == 1 || !mSettings.buildDir.empty()) {
+    if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
 
         CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
         if (fi1) {
-            if (mSettings.jobs == 1)
+            if (mSettings.useSingleJob())
                 mFileInfo.push_back(fi1);
             if (!mSettings.buildDir.empty())
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
@@ -1128,7 +1128,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
             Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
             if (fi != nullptr) {
-                if (mSettings.jobs == 1)
+                if (mSettings.useSingleJob())
                     mFileInfo.push_back(fi);
                 if (!mSettings.buildDir.empty())
                     mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
@@ -1837,7 +1837,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const
 {
-    return (mSettings.jobs == 1 && mSettings.checks.isEnabled(Checks::unusedFunction));
+    return (mSettings.useSingleJob() && mSettings.checks.isEnabled(Checks::unusedFunction));
 }
 
 void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files)
