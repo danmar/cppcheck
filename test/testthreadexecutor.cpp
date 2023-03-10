@@ -43,15 +43,23 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr, const std::vector<std::string>& filesList = {}) {
         errout.str("");
         output.str("");
 
         std::map<std::string, std::size_t> filemap;
-        for (int i = 1; i <= files; ++i) {
-            std::ostringstream oss;
-            oss << "file_" << i << ".cpp";
-            filemap[oss.str()] = data.size();
+        if (filesList.empty()) {
+            for (int i = 1; i <= files; ++i) {
+                std::ostringstream oss;
+                oss << "file_" << i << ".cpp";
+                filemap[oss.str()] = data.size();
+            }
+        }
+        else {
+            for (const auto& f : filesList)
+            {
+                filemap[f] = data.size();
+            }
         }
 
         settings.jobs = jobs;
@@ -80,6 +88,7 @@ private:
         TEST_CASE(no_errors_equal_amount_files);
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
+        TEST_CASE(markup);
     }
 
     void deadlock_with_many_errors() {
@@ -167,6 +176,34 @@ private:
               "  {char *a = malloc(10);}\n"
               "  return 0;\n"
               "}");
+    }
+
+    void markup() {
+        const Settings settingsOld = settings;
+        settings.library.mMarkupExtensions.emplace(".cp1");
+        settings.library.mProcessAfterCode.emplace(".cp1", true);
+
+        const std::vector<std::string> files = {
+            "file_1.cp1", "file_2.cpp", "file_3.cp1", "file_4.cpp"
+        };
+
+        SUPPRESS;
+        check(2, 4, 4,
+              "int main()\n"
+              "{\n"
+              "  char *a = malloc(10);\n"
+              "  return 0;\n"
+              "}",
+              SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
+        TODO_ASSERT_EQUALS("Checking file_2.cpp ...\n"
+                           "Checking file_4.cpp ...\n"
+                           "Checking file_1.cp1 ...\n"
+                           "Checking file_3.cp1 ...\n",
+                           "Checking file_1.cp1 ...\n"
+                           "Checking file_2.cpp ...\n"
+                           "Checking file_3.cp1 ...\n"
+                           "Checking file_4.cpp ...\n",
+                           output.str());
     }
 };
 
