@@ -1866,16 +1866,12 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok->linkAt(1)->next(), std::move(value), settings);
-        } else if (tokenList->isCPP() && Token::simpleMatch(tok, "this")) {
+        } else if ((tokenList->isCPP() && Token::simpleMatch(tok, "this")) || tok->isUnaryOp("&")) {
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok, std::move(value), settings);
         } else if (tok->isIncompleteVar() && tok->astParent() && tok->astParent()->isUnaryOp("-") &&
                    isConvertedToIntegral(tok->astParent(), settings)) {
-            ValueFlow::Value value{0};
-            value.setImpossible();
-            setTokenValue(tok, std::move(value), settings);
-        } else if (tok->isUnaryOp("&")) {
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok, std::move(value), settings);
