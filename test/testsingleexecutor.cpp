@@ -65,6 +65,7 @@ private:
         settings.showtime = showtime;
         if (plistOutput)
             settings.plistOutput = plistOutput;
+        // NOLINTNEXTLINE(performance-unnecessary-value-param)
         CppCheck cppcheck(*this, true, [](std::string,std::vector<std::string>,std::string,std::string&){
             return false;
         });
