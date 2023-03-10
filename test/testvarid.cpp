@@ -3015,6 +3015,9 @@ private:
                       "2: char * text@1 ;\n"
                       "3: void ( * f@2 ) ( int ( * arg ) ( char * ) ) ;\n"
                       "4: }\n", tokenize(code2));
+
+        const char code3[] = "void f (void (*g) (int i, IN int n)) {}\n";
+        ASSERT_EQUALS("1: void f ( void ( * g@1 ) ( int , IN int ) ) { }\n", tokenize(code3));
     }
 
     void varidclass1() {
