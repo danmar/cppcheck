@@ -885,17 +885,13 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
         unsigned int unknowns = 0; // stop checking when there are no unknowns
         unsigned int retry = 0;    // bail if we don't resolve all the variable types for some reason
 
-        auto isTemplate = [](const Scope& scope) -> bool {
-            return scope.classDef && Token::simpleMatch(scope.classDef->previous(), ">");
-        };
-
         do {
             unknowns = 0;
 
             for (Scope& scope : scopeList) {
                 if (!scope.isClassOrStructOrUnion())
                     continue;
-                if (isTemplate(scope)) // not instantiated
+                if (scope.classDef && Token::simpleMatch(scope.classDef->previous(), ">")) // skip uninstantiated template
                     continue;
 
                 if (!scope.definedType) {
