@@ -30,6 +30,7 @@
 #include "path.h"
 #include "pathmatch.h"
 #include "settings.h"
+#include "singleexecutor.h"
 #include "suppressions.h"
 #include "utils.h"
 #include "checkunusedfunctions.h"
@@ -312,50 +313,8 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
         // Single process
-        const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
-            return v + f.second;
-        });
-
-        std::size_t processedsize = 0;
-        unsigned int c = 0;
-        if (settings.project.fileSettings.empty()) {
-            for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-                if (!settings.library.markupFile(i->first)
-                    || !settings.library.processMarkupAfterCode(i->first)) {
-                    returnValue += cppcheck.check(i->first);
-                    processedsize += i->second;
-                    if (!settings.quiet)
-                        reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                    c++;
-                }
-            }
-        } else {
-            // filesettings
-            // check all files of the project
-            for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
-                returnValue += cppcheck.check(fs);
-                ++c;
-                if (!settings.quiet)
-                    reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
-                if (settings.clangTidy)
-                    cppcheck.analyseClangTidy(fs);
-            }
-        }
-
-        // TODO: not performed when multiple jobs are being used
-        // second loop to parse all markup files which may not work until all
-        // c/cpp files have been parsed and checked
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-            if (settings.library.markupFile(i->first) && settings.library.processMarkupAfterCode(i->first)) {
-                returnValue += cppcheck.check(i->first);
-                processedsize += i->second;
-                if (!settings.quiet)
-                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                c++;
-            }
-        }
-        if (cppcheck.analyseWholeProgram())
-            returnValue++;
+        SingleExecutor executor(cppcheck, mFiles, settings, *this);
+        returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
         ThreadExecutor executor(mFiles, settings, *this);
