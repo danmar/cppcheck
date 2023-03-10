@@ -115,16 +115,7 @@ private:
         std::string expected;
         for (int i = 1; i <= 100; ++i) {
             expected += "Checking file_" + zpad3(i) + ".cpp ...\n";
-            int p;
-            if (i == 29)
-                p = 28;
-            else if (i == 57)
-                p = 56;
-            else if (i == 58)
-                p = 57;
-            else
-                p = i;
-            expected += std::to_string(i) + "/100 files checked " + std::to_string(p) + "% done\n";
+            expected += std::to_string(i) + "/100 files checked " + std::to_string(i) + "% done\n";
         }
         ASSERT_EQUALS(expected, output.str());
 
