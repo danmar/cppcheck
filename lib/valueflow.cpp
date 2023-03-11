@@ -924,7 +924,10 @@ static void setTokenValue(Token* tok,
             if (val.isImpossible() && val.intvalue != 0)
                 continue;
             ValueFlow::Value v(val);
-            v.intvalue = !v.intvalue;
+            if (val.isImpossible())
+                v.setKnown();
+            else
+                v.intvalue = !v.intvalue;
             setTokenValue(parent, std::move(v), settings);
         }
     }
