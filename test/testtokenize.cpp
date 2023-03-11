@@ -5256,6 +5256,15 @@ private:
                                           "\n"
                                           "BOOL CSetProgsAdvDlg::OnInitDialog() {}"),
                      InternalError);
+
+        ASSERT_EQUALS("struct S {\n"
+                      "S ( ) : p { new ( malloc ( 4 ) ) int { } } { }\n"
+                      "int * p ;\n"
+                      "} ;",
+                      tokenizeAndStringify("struct S {\n"
+                                           "    S() : p{new (malloc(4)) int{}} {}\n"
+                                           "    int* p;\n"
+                                           "};\n"));
     }
 
     void addSemicolonAfterUnknownMacro() {
