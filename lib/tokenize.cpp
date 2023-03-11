@@ -788,13 +788,8 @@ namespace {
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
             Token *after = tok3;
-            while (Token::Match(after, "%name%|*|&|&&|::")) {
-                if (after->isName() && !after->isKeyword()) {
-                    if (Token::Match(after, "%name% ("))
-                        break;
-                }
+            while (Token::Match(after, "%name%|*|&|&&|::"))
                 after = after->next();
-            }
 
             bool useAfterVarRange = true;
             if (Token::simpleMatch(mRangeAfterVar.first, "[")) {
