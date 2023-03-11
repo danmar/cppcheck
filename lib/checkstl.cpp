@@ -1965,7 +1965,7 @@ void CheckStl::string_c_str()
                         string_c_strError(tok);
                 } else if (printPerformance && tok->tokAt(1)->astOperand2() && Token::Match(tok->tokAt(1)->astOperand2()->tokAt(-3), "%var% . c_str|data ( ) ;")) {
                     const Token* vartok = tok->tokAt(1)->astOperand2()->tokAt(-3);
-                    if (tok->variable() && tok->variable()->isStlStringType() && vartok->variable() && vartok->variable()->isStlStringType())
+                    if (tok->variable()->isStlStringType() && vartok->variable() && vartok->variable()->isStlStringType())
                         string_c_strAssignment(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
