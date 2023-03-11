@@ -7469,7 +7469,7 @@ private:
             ASSERT_LOC(tok, file, line);
             ASSERT_LOC(tok->isCpp11init() == expected, file, line);
         };
-        /*
+
         testIsCpp11init("class X : public A<int>, C::D {};",
                         "D {",
                         TokenImpl::Cpp11init::NOINIT);
@@ -7559,7 +7559,7 @@ private:
                         "    void operator()(Args...) {}\n"
                         "};\n",
                         "{ void",
-                        TokenImpl::Cpp11init::NOINIT);*/
+                        TokenImpl::Cpp11init::NOINIT);
 
         testIsCpp11init("struct S {\n"
                         "    std::uint8_t * p;\n"
