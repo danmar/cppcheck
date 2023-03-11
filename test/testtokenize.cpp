@@ -7562,10 +7562,10 @@ private:
                         TokenImpl::Cpp11init::NOINIT);
 
         testIsCpp11init("struct S {\n"
-                        "    std::uint8_t * p;\n"
+                        "    std::uint8_t* p;\n"
                         "    S() : p{ new std::uint8_t[1]{} } {}\n"
                         "};\n",
-                        "{ new",
+                        "{ } } {",
                         TokenImpl::Cpp11init::CPP11INIT);
 
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename U> struct X {};\n" // don't crash
