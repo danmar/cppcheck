@@ -891,6 +891,8 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
             for (Scope& scope : scopeList) {
                 if (!scope.isClassOrStructOrUnion())
                     continue;
+                if (scope.classDef && Token::simpleMatch(scope.classDef->previous(), ">")) // skip uninstantiated template
+                    continue;
 
                 if (!scope.definedType) {
                     mBlankTypes.emplace_back();
