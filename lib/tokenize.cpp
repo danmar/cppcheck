@@ -624,7 +624,6 @@ namespace {
                         (void)num;
                         // TODO typeName->insertToken("T:" + std::to_string(num++));
                         typeName->insertToken(nameToken->str());
-                        typeName = typeName->next();
                     }
                     mNameToken = nameToken;
                     mEndToken = nameToken->next();
@@ -788,13 +787,11 @@ namespace {
             Token* const tok2 = insertTokens(tok, mRangeType);
             Token* const tok3 = insertTokens(tok2, mRangeTypeQualifiers);
 
-            std::string varname("noname__");
             Token *after = tok3;
             while (Token::Match(after, "%name%|*|&|&&|::")) {
                 if (after->isName() && !after->isKeyword()) {
-                    if (Token::Match(after, "%after% ("))
+                    if (Token::Match(after, "%name% ("))
                         break;
-                    varname = after->str();
                 }
                 after = after->next();
             }
