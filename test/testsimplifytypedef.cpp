@@ -322,8 +322,8 @@ private:
 
     void canreplace() {
         const char code[] = "typedef unsigned char u8;\n"
-                            "void f(uint8_t u8) { }\n";
-        ASSERT_EQUALS("void f ( uint8_t u8 ) { }", simplifyTypedefC(code));
+                            "void f(uint8_t u8) { x = u8 & y; }\n";
+        ASSERT_EQUALS("void f ( uint8_t u8 ) { x = u8 & y ; }", simplifyTypedefC(code));
     }
 
     void cconst() {
