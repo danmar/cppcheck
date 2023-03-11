@@ -1073,10 +1073,10 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
         code = "void f(int i) {\n"
-"    int * p = &i;\n"
-"    bool x = !p || i;\n"
-"    bool a = x;\n"
-"}\n";
+               "    int * p = &i;\n"
+               "    bool x = !p || i;\n"
+               "    bool a = x;\n"
+               "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 1));
 
         code = "bool f(const uint16_t * const p) {\n"
