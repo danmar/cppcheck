@@ -195,6 +195,7 @@ private:
         TEST_CASE(const79); // ticket #9861
         TEST_CASE(const80); // ticket #11328
         TEST_CASE(const81); // ticket #11330
+        TEST_CASE(const82); // ticket #11616
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6319,6 +6320,26 @@ private:
                    "    void g() { p->f(i); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const82() {
+        checkConst("class S {};\n"
+                   "struct T {\n"
+                   "    T(const S*);\n"
+                   "    T(const S&);\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    const S s;\n"
+                   "    void f1() {\n"
+                   "        T t(&s);\n"
+                   "    }\n"
+                   "    void f2() {\n"
+                   "        T t(s);\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'C::f1' can be const.\n"
+                      "[test.cpp:11]: (style, inconclusive) Technically the member function 'C::f2' can be const.\n",
+                      errout.str());
     }
 
     void const_handleDefaultParameters() {
