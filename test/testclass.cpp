@@ -197,8 +197,8 @@ private:
         TEST_CASE(const81); // ticket #11330
         TEST_CASE(const82); // ticket #11513
         TEST_CASE(const83);
+        TEST_CASE(const84);
 
-        TEST_CASE(const82); // ticket #11616
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6361,8 +6361,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const82() {
-        checkConst("class S {};\n"
+    void const84() {
+        checkConst("class S {};\n" // #11616
                    "struct T {\n"
                    "    T(const S*);\n"
                    "    T(const S&);\n"
