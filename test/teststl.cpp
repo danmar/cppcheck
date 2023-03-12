@@ -35,7 +35,7 @@ public:
     TestStl() : TestFixture("TestStl") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).severity(Severity::performance).library("std.cfg").build();
+    Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).severity(Severity::performance).library("std.cfg").build();
 
     void run() override {
         TEST_CASE(outOfBounds);
