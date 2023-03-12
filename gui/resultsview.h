@@ -23,8 +23,9 @@
 #include "report.h"
 #include "showtypes.h"
 
-#include <QSet>
+#include <QObject>
 #include <QString>
+#include <QStringList>
 #include <QWidget>
 
 class ErrorItem;
@@ -34,7 +35,6 @@ class QModelIndex;
 class QPrinter;
 class QSettings;
 class CheckStatistics;
-class QObject;
 class QPoint;
 namespace Ui {
     class ResultsView;

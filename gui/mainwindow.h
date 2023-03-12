@@ -25,6 +25,8 @@
 
 #include <QFileDialog>
 #include <QMainWindow>
+#include <QObject>
+#include <QString>
 #include <QStringList>
 
 class ThreadHandler;
@@ -39,7 +41,6 @@ class QTimer;
 class QLineEdit;
 class ImportProject;
 class QCloseEvent;
-class QObject;
 class QNetworkAccessManager;
 class QNetworkReply;
 namespace Ui {

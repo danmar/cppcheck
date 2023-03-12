@@ -28,7 +28,12 @@
 
 #include <QFile>
 #include <QDir>
+#include <QIODevice>
+#include <QLatin1String>
+#include <QStringRef>
+#include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 ProjectFile *ProjectFile::mActiveProject;
 

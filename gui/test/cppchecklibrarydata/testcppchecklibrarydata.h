@@ -19,6 +19,7 @@
 #include "cppchecklibrarydata.h"
 
 #include <QObject>
+#include <QString>
 
 class TestCppcheckLibraryData : public QObject {
     Q_OBJECT

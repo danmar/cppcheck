@@ -21,7 +21,9 @@
 
 #include "application.h"
 
+#include <QList>
 #include <QObject>
+#include <QString>
 
 /// @addtogroup GUI
 /// @{

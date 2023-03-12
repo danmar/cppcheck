@@ -22,6 +22,7 @@
 #include "erroritem.h"
 #include "xmlreport.h"
 
+#include <QList>
 #include <QString>
 
 class QXmlStreamReader;

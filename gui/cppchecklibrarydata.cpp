@@ -21,8 +21,13 @@
 #include <stdexcept>
 #include <string>
 
-#include <QXmlStreamReader>
+#include <QObject>
+#include <QStringRef>
 #include <QVariant>
+#include <QXmlStreamAttributes>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+#include <QtGlobal>
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;

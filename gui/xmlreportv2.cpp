@@ -25,6 +25,10 @@
 
 #include <QDebug>
 #include <QDir>
+#include <QFile>
+#include <QStringRef>
+#include <QXmlStreamAttributes>
+#include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
 static const QString ResultElementName = "results";

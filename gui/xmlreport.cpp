@@ -21,6 +21,9 @@
 #include "report.h"
 
 #include <QFile>
+#include <QIODevice>
+#include <QStringRef>
+#include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 
 static const char ResultElementName[] = "results";

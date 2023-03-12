@@ -27,6 +27,10 @@
 #include <functional>
 #include <string>
 
+#include <QComboBox>
+#include <QLineEdit>
+#include <QStringList>
+
 class QWidget;
 enum class Color;
 

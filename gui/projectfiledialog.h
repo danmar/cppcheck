@@ -22,11 +22,12 @@
 #include "suppressions.h"
 
 #include <QDialog>
+#include <QList>
+#include <QObject>
 #include <QString>
 #include <QStringList>
 
 class QModelIndex;
-class QObject;
 class QWidget;
 namespace Ui {
     class ProjectFile;

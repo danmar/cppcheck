@@ -22,11 +22,15 @@
 
 #include "ui_helpdialog.h"
 
+#include <QApplication>
 #include <QFileInfo>
 #include <QHelpEngine>
 #include <QHelpContentWidget>
 #include <QHelpIndexWidget>
 #include <QMessageBox>
+#include <QStringList>
+#include <QUrl>
+#include <QVBoxLayout>
 
 class QWidget;
 

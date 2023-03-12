@@ -18,8 +18,11 @@
 
 #include "codeeditorstyle.h"
 
-#include <QSettings>
 #include <utility>
+
+#include <QSettings>
+#include <QStringList>
+#include <QVariant>
 
 CodeEditorStyle::CodeEditorStyle(
     // cppcheck-suppress naming-varname - TODO: fix this

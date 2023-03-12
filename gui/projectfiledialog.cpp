@@ -33,20 +33,38 @@
 #include <list>
 #include <string>
 
+#include <QByteArray>
+#include <QChar>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QCoreApplication>
+#include <QDialogButtonBox>
 #include <QDir>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFileInfoList>
+#include <QFlags>
+#include <QLabel>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QMap>
+#include <QPushButton>
+#include <QRadioButton>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QSettings>
+#include <QSize>
+#include <QSpinBox>
+#include <QVariant>
+#include <QtCore>
 
 static const char ADDON_MISRA[]   = "misra";
 static const char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
 static const char CODING_STANDARD_CERT_C[] = "cert-c-2016";
 static const char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
 static const char CODING_STANDARD_AUTOSAR[] = "autosar";
-
-class QModelIndex;
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)

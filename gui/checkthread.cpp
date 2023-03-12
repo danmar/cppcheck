@@ -28,8 +28,10 @@
 #include "standards.h"
 #include "threadresult.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <list>
 #include <map>
 #include <ostream>
@@ -37,12 +39,18 @@
 #include <string>
 #include <vector>
 
+#include <QByteArray>
+#include <QChar>
+#include <QCharRef>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QIODevice>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSettings>
+#include <QTextStream>
+#include <QVariant>
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
 static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
