@@ -250,7 +250,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             else if (Token::Match(tok, "[(<]") && tok->link())
                 tok = tok->link();
 
-            if (tok->varId() || !Token::Match(tok, "%name% (") || tok->isKeyword())
+            if (tok->varId() || tok->isKeyword() || tok->isStandardType() || !Token::Match(tok, "%name% ("))
                 continue;
 
             const Token *parent = tok->next()->astParent();

@@ -2319,6 +2319,16 @@ private:
               "    return sum;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        const auto oldSettings = settings;
+        settings.daca = true;
+
+        check("void f() {\n"
+              "    const char a[][5] = { \"1\", \"true\", \"on\", \"yes\" };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        settings = oldSettings;
     }
 
 

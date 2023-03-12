@@ -1826,6 +1826,7 @@ private:
     void checkLibraryMatchFunctions() {
         const auto settings_old = settings;
         settings.checkLibrary = true;
+        settings.daca = true;
 
         check("void f() {\n"
               "    lib_func();"
@@ -1989,6 +1990,11 @@ private:
         check("int f(const std::vector<std::string>& v, int i, char c) {\n"
               "    const auto& s = v[i];\n"
               "    return s.find(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11604
+              "    int (*g)() = nullptr;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
