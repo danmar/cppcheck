@@ -269,6 +269,12 @@ static void addToErrorPath(ValueFlow::Value& value, const std::vector<const Valu
                      [&](const ErrorPathItem& e) {
             return locations.insert(e.first).second;
         });
+        std::copy_if(ref->debugPath.cbegin(),
+                     ref->debugPath.cend(),
+                     std::back_inserter(value.debugPath),
+                     [&](const ErrorPathItem& e) {
+            return locations.insert(e.first).second;
+        });
     }
 }
 

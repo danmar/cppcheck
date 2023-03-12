@@ -6138,7 +6138,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     if (!parent->astOperand1())
         return;
 
-    const ValueType *vt1 = parent->astOperand1() ? parent->astOperand1()->valueType() : nullptr;
+    const ValueType *vt1 = parent->astOperand1()->valueType();
     const ValueType *vt2 = parent->astOperand2() ? parent->astOperand2()->valueType() : nullptr;
 
     if (vt1 && Token::Match(parent, "<<|>>")) {

@@ -353,11 +353,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // no crash on unary operator& (#5643)
+        // #11610
         check("SdrObject* ApplyGraphicToObject() {\n"
               "    if (&rHitObject) {}\n"
               "    else if (rHitObject.IsClosedObj() && !&rHitObject) { }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition '&rHitObject' is always true\n"
+                      "[test.cpp:3]: (style) Condition '!&rHitObject' is always false\n",
+                      errout.str());
 
         // #5695: increment
         check("void f(int a0, int n) {\n"
@@ -3800,6 +3803,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // TODO: if (!v) is a known condition as well
         check("struct a {\n"
               "  int *b();\n"
               "};\n"
@@ -3813,7 +3817,7 @@ private:
               "  if (v == nullptr && e) {}\n"
               "  return d;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) Condition 'e' is always true\n", errout.str());
 
         // #10037
         check("struct a {\n"

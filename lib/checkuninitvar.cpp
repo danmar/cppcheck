@@ -1612,7 +1612,7 @@ void CheckUninitVar::valueFlowUninit()
                 bool uninitderef = false;
                 if (tok->variable()) {
                     bool unknown;
-                    const bool isarray = !tok->variable() || tok->variable()->isArray();
+                    const bool isarray = tok->variable()->isArray();
                     const bool ispointer = astIsPointer(tok) && !isarray;
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
                     if (ispointer && v->indirect == 1 && !deref)
