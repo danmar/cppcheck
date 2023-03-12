@@ -250,7 +250,7 @@ TemplateSimplifier::TokenAndName::~TokenAndName()
 std::string TemplateSimplifier::TokenAndName::dump(const std::vector<std::string>& fileNames) const {
     std::string ret = "    <TokenAndName name=\"" + mName + "\" file=\"" + ErrorLogger::toxml(fileNames.at(mToken->fileIndex())) + "\" line=\"" + std::to_string(mToken->linenr()) + "\">\n";
     for (const Token* tok = mToken; tok && !Token::Match(tok, "[;{}]"); tok = tok->next())
-        ret += "      " + ErrorLogger::toxml(tok->str()) + "\n";
+        ret += "      <template-token str=\"" + ErrorLogger::toxml(tok->str()) + "\"/>\n";
     return ret + "    </TokenAndName>\n";
 }
 

@@ -586,7 +586,7 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(const Token * const startToken,
+    void setVarIdClassDeclaration(const Token * const startToken, // cppcheck-suppress functionConst // has side effects
                                   VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
                                   std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
@@ -595,7 +595,7 @@ private:
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                nonneg int &varId) const;
 
-    void setVarIdClassFunction(const std::string &classname,
+    void setVarIdClassFunction(const std::string &classname, // cppcheck-suppress functionConst // has side effects
                                Token * const startToken,
                                const Token * const endToken,
                                const std::map<std::string, nonneg int> &varlist,

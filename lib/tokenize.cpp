@@ -3843,9 +3843,9 @@ void Tokenizer::setVarId()
             tok->varId(0);
     }
 
-    setPodTypes();
-
     setVarIdPass1();
+
+    setPodTypes();
 
     setVarIdPass2();
 }
@@ -4144,7 +4144,7 @@ void Tokenizer::setVarIdPass1()
             }
         }
 
-        if (tok->isName() && !tok->isKeyword()) {
+        if (tok->isName() && !tok->isKeyword() && !tok->isStandardType()) {
             // don't set variable id after a struct|enum|union
             if (Token::Match(tok->previous(), "struct|enum|union") || (isCPP() && tok->strAt(-1) == "class"))
                 continue;
@@ -5552,7 +5552,10 @@ void Tokenizer::removeMacrosInGlobalScope()
         if (tok->str() == "(") {
             tok = tok->link();
             if (Token::Match(tok, ") %type% {") &&
-                !Token::Match(tok->next(), "const|namespace|class|struct|union|noexcept|override|final|volatile|mutable"))
+                !tok->next()->isStandardType() &&
+                !tok->next()->isKeyword() &&
+                !Token::Match(tok->next(), "override|final") &&
+                tok->next()->isUpperCaseName())
                 tok->deleteNext();
         }
 
@@ -9588,7 +9591,7 @@ void Tokenizer::setPodTypes()
     if (!mSettings)
         return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->isName())
+        if (!tok->isName() || tok->varId())
             continue;
 
         // pod type

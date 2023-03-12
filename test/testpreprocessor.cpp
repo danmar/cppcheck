@@ -46,7 +46,7 @@ class TestPreprocessor : public TestFixture {
 public:
     TestPreprocessor()
         : TestFixture("TestPreprocessor")
-        , preprocessor0(settings0, this) {
+        , preprocessor0(settings0, settings0.nomsg, this) {
         settings0.severity.enable(Severity::information);
     }
 
@@ -64,7 +64,7 @@ public:
 
             if (errorLogger) {
                 Settings settings;
-                Preprocessor p(settings, errorLogger);
+                Preprocessor p(settings, settings.nomsg, errorLogger);
                 p.reportOutput(outputList, true);
             }
 
@@ -296,7 +296,7 @@ private:
             settings.userDefines = arg + 2;
         if (arg && std::strncmp(arg,"-U",2)==0)
             settings.userUndefs.insert(arg+2);
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
         simplecpp::TokenList tokens(istr,files);
@@ -362,7 +362,7 @@ private:
         errout.str("");
         Settings settings;
         settings.userDefines = "__cplusplus";
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
@@ -375,7 +375,7 @@ private:
             errout.str("");
             Settings settings;
             settings.userDefines = "TEST";
-            Preprocessor preprocessor(settings, this);
+            Preprocessor preprocessor(settings, settings.nomsg, this);
             const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
             preprocessor.getcode(code, "TEST", "test.c");
             ASSERT_EQUALS("[ab.h:1]: (error) #error hello world!\n", errout.str());
@@ -386,7 +386,7 @@ private:
             errout.str("");
             Settings settings;
             settings.userDefines = "TEST";
-            Preprocessor preprocessor(settings, this);
+            Preprocessor preprocessor(settings, settings.nomsg, this);
             const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
             preprocessor.getcode(code, "TEST", "test.c");
             ASSERT_EQUALS("[test.c:2]: (error) #error aaa\n", errout.str());
@@ -398,7 +398,7 @@ private:
         Settings settings;
         settings.userDefines = "FOO";
         settings.force = true; // No message if --force is given
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "test.c");
         ASSERT_EQUALS("", errout.str());
@@ -463,7 +463,7 @@ private:
 
     void setPlatformInfo() {
         Settings settings;
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         // read code with simplecpp..
         const char filedata[] = "#if sizeof(long) == 4\n"
@@ -1950,7 +1950,7 @@ private:
         settings.inlineSuppressions = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         const std::string code("// cppcheck-suppress missingInclude\n"
                                "#include \"missing.h\"\n"
@@ -2306,7 +2306,7 @@ private:
         errout.str("");
         Settings settings;
         settings.userDefines = "foo";
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "./././test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
@@ -2344,7 +2344,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
+        Preprocessor preprocessor(settings0, settings0.nomsg, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
@@ -2371,7 +2371,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
+        Preprocessor preprocessor(settings0, settings0.nomsg, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
@@ -2388,7 +2388,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
+        Preprocessor preprocessor(settings0, settings0.nomsg, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
@@ -2402,7 +2402,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "");
 
@@ -2421,7 +2421,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         std::string code("#include \"header.h\"");
         errout.str("");
@@ -2438,7 +2438,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", "inc");
 
@@ -2458,7 +2458,7 @@ private:
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", "inc");
 
@@ -2478,7 +2478,7 @@ private:
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
@@ -2497,7 +2497,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
@@ -2516,7 +2516,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "");
 
@@ -2535,7 +2535,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         std::string code("#include <header.h>");
         errout.str("");
@@ -2554,7 +2554,7 @@ private:
         setTemplateFormat("simple");
         settings.includePaths.emplace_back("system");
 
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", "system");
 
@@ -2574,7 +2574,7 @@ private:
         settings.includePaths.emplace_back("inc");
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
@@ -2593,7 +2593,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
@@ -2612,7 +2612,7 @@ private:
         settings.checks.enable(Checks::missingInclude);
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "");
         ScopedFile header2("header2.h", "");
@@ -2638,7 +2638,7 @@ private:
         settings.templateFormat = "simple"; // has no effect
         setTemplateFormat("simple");
 
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "");
         ScopedFile header2("header2.h", "");

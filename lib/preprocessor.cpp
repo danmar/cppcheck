@@ -64,7 +64,7 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
+Preprocessor::Preprocessor(const Settings& settings, Suppressions &suppressions, ErrorLogger *errorLogger) : mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
 {}
 
 Preprocessor::~Preprocessor()
@@ -129,7 +129,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     return true;
 }
 
-static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> &bad)
+static void addinlineSuppressions(const simplecpp::TokenList &tokens, const Settings &settings, Suppressions &suppressions, std::list<BadInlineSuppression> &bad)
 {
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
@@ -155,8 +155,8 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &
 
         // Relative filename
         std::string relativeFilename(tok->location.file());
-        if (mSettings.relativePaths) {
-            for (const std::string & basePath : mSettings.basePaths) {
+        if (settings.relativePaths) {
+            for (const std::string & basePath : settings.basePaths) {
                 const std::string bp = basePath + "/";
                 if (relativeFilename.compare(0,bp.size(),bp)==0) {
                     relativeFilename = relativeFilename.substr(bp.size());
@@ -179,7 +179,7 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
             suppr.thisAndNextLine = thisAndNextLine;
-            mSettings.nomsg.addSuppression(suppr);
+            suppressions.addSuppression(suppr);
         }
     }
 }
@@ -189,10 +189,10 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::addinlineSuppressions(tokens, mSettings, err);
+    ::addinlineSuppressions(tokens, mSettings, mSuppressions, err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (it->second)
-            ::addinlineSuppressions(*it->second, mSettings, err);
+            ::addinlineSuppressions(*it->second, mSettings, mSuppressions, err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
@@ -842,7 +842,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     errorMessage.errorId = errorId;
     errorMessage.setFileName(std::move(fname));
     errorMessage.lineNumber = linenr;
-    if (mSettings.nomsg.isSuppressed(errorMessage))
+    if (mSuppressions.isSuppressed(errorMessage))
         return;
 
     if (mErrorLogger) {
@@ -866,7 +866,8 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
 {
     Settings settings2(*settings);
-    Preprocessor preprocessor(settings2, errorLogger);
+    Suppressions supressions2;
+    Preprocessor preprocessor(settings2, supressions2, errorLogger);
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
     preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
     preprocessor.error(emptyString, 1, "#error message");   // #error ..
