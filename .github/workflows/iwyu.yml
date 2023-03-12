@@ -13,18 +13,34 @@ jobs:
     runs-on: ubuntu-22.04
 
     container:
-      image: "debian:unstable" # use latest debian image to get latest include-what-you-get
+      image: "archlinux:latest"
 
     steps:
       - uses: actions/checkout@v3
 
       # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
-      - name: Install missing software
+      - name: Install missing software on debian/ubuntu
+        if: false
         run: |
           apt-get update
           apt-get install -y cmake g++ make libpcre3-dev
           apt-get install -y qtbase5-dev qttools5-dev libqt5charts5-dev
           apt-get install -y wget iwyu
+
+      - name: Install missing software on archlinux
+        run: |
+          set -x
+          pacman -Sy
+          pacman -S cmake make gcc qt5-base qt5-tools qt5-charts pcre wget --noconfirm
+          pacman-key --init
+          pacman-key --recv-key FBA220DFC880C036 --keyserver keyserver.ubuntu.com
+          pacman-key --lsign-key FBA220DFC880C036
+          pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' --noconfirm
+          echo "[chaotic-aur]" >> /etc/pacman.conf
+          echo "Include = /etc/pacman.d/chaotic-mirrorlist" >> /etc/pacman.conf
+          pacman -Sy
+          pacman -S include-what-you-use --noconfirm
+          ln -s iwyu-tool /usr/sbin/iwyu_tool
 
       - name: Prepare CMake
         run: |
