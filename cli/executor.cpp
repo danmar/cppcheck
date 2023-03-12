@@ -20,8 +20,10 @@
 
 #include "errorlogger.h"
 #include "settings.h"
+#include "suppressions.h"
 
 #include <algorithm>
+#include <utility>
 
 Executor::Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : mFiles(files), mSettings(settings), mErrorLogger(errorLogger)

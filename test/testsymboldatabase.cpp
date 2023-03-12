@@ -20,6 +20,7 @@
 #include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
 #include "token.h"
@@ -33,7 +34,6 @@
 #include <limits>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <stdexcept>
@@ -41,7 +41,6 @@
 #include <unordered_map>
 #include <vector>
 
-struct InternalError;
 class TestSymbolDatabase;
 
 #define GET_SYMBOL_DB_STD(code) \

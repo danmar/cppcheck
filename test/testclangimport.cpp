@@ -15,6 +15,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "clangimport.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -23,7 +24,6 @@
 
 #include <cstdint>
 #include <list>
-#include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>

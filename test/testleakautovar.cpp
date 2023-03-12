@@ -18,6 +18,7 @@
 
 
 #include "checkleakautovar.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "fixture.h"
@@ -35,7 +36,6 @@
 
 class TestLeakAutoVarStrcpy;
 class TestLeakAutoVarWindows;
-struct InternalError;
 
 class TestLeakAutoVar : public TestFixture {
 public:

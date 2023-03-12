@@ -19,7 +19,6 @@
 #include "newsuppressiondialog.h"
 
 #include "cppcheck.h"
-#include "color.h"
 #include "errorlogger.h"
 #include "suppressions.h"
 
@@ -29,6 +28,7 @@
 #include <string>
 
 class QWidget;
+enum class Color;
 
 NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     QDialog(parent),

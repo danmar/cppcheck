@@ -28,7 +28,6 @@
 #include "platform.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "timer.h"
 
 #include <algorithm>
 #include <atomic>
@@ -41,6 +40,7 @@
 #include <vector>
 #include <unordered_set>
 
+enum class SHOWTIME_MODES;
 namespace ValueFlow {
     class Value;
 }

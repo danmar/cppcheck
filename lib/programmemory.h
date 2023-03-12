@@ -29,6 +29,7 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 class Scope;
 class Token;

@@ -24,6 +24,7 @@
 
 #include "astutils.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
