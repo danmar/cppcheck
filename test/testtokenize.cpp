@@ -5256,6 +5256,15 @@ private:
                                           "\n"
                                           "BOOL CSetProgsAdvDlg::OnInitDialog() {}"),
                      InternalError);
+
+        ASSERT_EQUALS("struct S {\n"
+                      "S ( ) : p { new ( malloc ( 4 ) ) int { } } { }\n"
+                      "int * p ;\n"
+                      "} ;",
+                      tokenizeAndStringify("struct S {\n"
+                                           "    S() : p{new (malloc(4)) int{}} {}\n"
+                                           "    int* p;\n"
+                                           "};\n"));
     }
 
     void addSemicolonAfterUnknownMacro() {
@@ -7562,6 +7571,20 @@ private:
                         "};\n",
                         "{ void",
                         TokenImpl::Cpp11init::NOINIT);
+
+        testIsCpp11init("struct S {\n"
+                        "    std::uint8_t* p;\n"
+                        "    S() : p{ new std::uint8_t[1]{} } {}\n"
+                        "};\n",
+                        "{ } } {",
+                        TokenImpl::Cpp11init::CPP11INIT);
+
+        testIsCpp11init("struct S {\n"
+                        "    S() : p{new (malloc(4)) int{}} {}\n"
+                        "    int* p;\n"
+                        "};\n",
+                        "{ } } {",
+                        TokenImpl::Cpp11init::CPP11INIT);
 
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename U> struct X {};\n" // don't crash
                                              "template<typename T> auto f(T t) -> X<decltype(t + 1)> {}\n"));

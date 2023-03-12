@@ -5552,7 +5552,10 @@ void Tokenizer::removeMacrosInGlobalScope()
         if (tok->str() == "(") {
             tok = tok->link();
             if (Token::Match(tok, ") %type% {") &&
-                !Token::Match(tok->next(), "const|namespace|class|struct|union|noexcept|override|final|volatile|mutable"))
+                !tok->next()->isStandardType() &&
+                !tok->next()->isKeyword() &&
+                !Token::Match(tok->next(), "override|final") &&
+                tok->next()->isUpperCaseName())
                 tok->deleteNext();
         }
 

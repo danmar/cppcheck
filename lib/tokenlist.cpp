@@ -561,7 +561,7 @@ static bool iscpp11init_impl(const Token * const tok)
         nameToken = nameToken->link()->previous();
     if (nameToken->str() == "]") {
         const Token* newTok = nameToken->link()->previous();
-        while (Token::Match(newTok, "%type%") && !newTok->isKeyword())
+        while (Token::Match(newTok, "%type%|::") && !newTok->isKeyword())
             newTok = newTok->previous();
         if (Token::simpleMatch(newTok, "new"))
             return true;
