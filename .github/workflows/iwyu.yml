@@ -68,20 +68,22 @@ jobs:
       - name: iwyu_tool
         run: |
           PWD=$(pwd)
-          # do not fail for now so the output is being saved
-          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --mapping_file=$PWD/qt5.imp > iwyu.log || true
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --mapping_file=$PWD/qt5.imp > iwyu.log
 
       - uses: actions/upload-artifact@v3
+        if: success() || failure()
         with:
           name: Compilation Database
           path: ./cmake.output/compile_commands.json
 
       - uses: actions/upload-artifact@v3
+        if: success() || failure()
         with:
           name: Qt Mappings
           path: ./qt5.imp
 
       - uses: actions/upload-artifact@v3
+        if: success() || failure()
         with:
           name: Logs (include-what-you-use)
           path: ./*.log
