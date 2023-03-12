@@ -47,7 +47,7 @@ private:
         ASSERT_EQUALS("0x89504e470d0a1a0a", tokenlist.front()->str());
     }
 
-    void testaddtoken2() {
+    void testaddtoken2() const {
         const std::string code = "0xF0000000";
         Settings settings1;
         settings1.platform.int_bit = 32;
