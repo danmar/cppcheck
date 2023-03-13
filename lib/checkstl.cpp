@@ -2781,7 +2781,7 @@ namespace {
             if (var->declarationId() == loopVar->varId())
                 return false;
             const Scope* scope = var->scope();
-            return scope->isNestedIn(bodyTok->scope());
+            return scope && scope->isNestedIn(bodyTok->scope());
         }
 
     private:
