@@ -6597,6 +6597,17 @@ private:
             "    return n;\n"
             "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Using argument i that points at uninitialized variable n\n", errout.str());
+
+        ctu("typedef struct { int type; int id; } Stem;\n"
+            "void lookupStem(recodeCtx h, Stem *stem) {\n"
+            "    i = stem->type & STEM_VERT;\n"
+            "}\n"
+            "void foo() {\n"
+            "    Stem stem;\n"
+            "    stem.type = 0;\n"
+            "    lookupStem(h, &stem);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
