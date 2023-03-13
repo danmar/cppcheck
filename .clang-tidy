@@ -20,6 +20,7 @@ Checks: >
         -zircon-*,
         cert-err34-c,
         google-explicit-constructor,
+        cppcoreguidelines-rvalue-reference-param-not-moved,
         -bugprone-assignment-in-if-condition,
         -bugprone-branch-clone,
         -bugprone-easily-swappable-parameters,
