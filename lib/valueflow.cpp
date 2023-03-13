@@ -5970,7 +5970,10 @@ struct ConditionHandler {
             return findPath(true_values) | findPath(false_values);
         }
 
-        Token* getContextAndValues(Token* condTok, std::list<ValueFlow::Value>& thenValues, std::list<ValueFlow::Value>& elseValues, bool known=false) const
+        Token* getContextAndValues(Token* condTok,
+                                   std::list<ValueFlow::Value>& thenValues,
+                                   std::list<ValueFlow::Value>& elseValues,
+                                   bool known = false) const
         {
             const MathLib::bigint path = getPath();
             const bool allowKnown = path == 0;
