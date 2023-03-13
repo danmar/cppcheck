@@ -281,6 +281,7 @@ TESTOBJ =     test/fixture.o \
               test/testclangimport.o \
               test/testclass.o \
               test/testcmdlineparser.o \
+              test/testcolor.o \
               test/testcondition.o \
               test/testconstructors.o \
               test/testcppcheck.o \
@@ -713,6 +714,9 @@ test/testclass.o: test/testclass.cpp externals/simplecpp/simplecpp.h lib/check.h
 
 test/testcmdlineparser.o: test/testcmdlineparser.cpp cli/cmdlineparser.h cli/cppcheckexecutor.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h test/fixture.h test/redirect.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testcmdlineparser.cpp
+
+test/testcolor.o: test/testcolor.cpp lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/suppressions.h test/fixture.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testcolor.cpp
 
 test/testcondition.o: test/testcondition.cpp externals/simplecpp/simplecpp.h lib/check.h lib/checkcondition.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testcondition.cpp
