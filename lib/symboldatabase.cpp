@@ -4128,17 +4128,6 @@ static const Type* findVariableTypeIncludingUsedNamespaces(const SymbolDatabase*
 
 //---------------------------------------------------------------------------
 
-static const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
-    if (!(Token::simpleMatch(tok, "[") && tok->link()))
-        return nullptr;
-    tok = tok->link()->next();
-    if (Token::simpleMatch(tok, "(") && tok->link())
-        tok = tok->link()->next();
-    if (!(Token::simpleMatch(tok, "{") && tok->link()))
-        return nullptr;
-    return tok->link()->next();
-}
-
 void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *scope)
 {
     // check for non-empty argument list "( ... )"
