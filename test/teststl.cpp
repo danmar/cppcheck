@@ -5476,6 +5476,23 @@ private:
               true);
         ASSERT_EQUALS("[test.cpp:2]: (style) Consider using std::all_of or std::none_of algorithm instead of a raw loop.\n",
                       errout.str());
+
+        check("class C {\n"
+              "private:\n"
+              "    QString s;\n"
+              "public:\n"
+              "    C(QString);\n"
+              "private slots:\n"
+              "    void f() {\n"
+              "        QVERIFY(QDir(s).exists());\n"
+              "    }\n"
+              "    void f(const QStringList& d) {\n"
+              "        for (QString f : d)\n"
+              "          QDir(s);\n"
+              "    }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainer() {
