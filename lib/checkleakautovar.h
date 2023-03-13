@@ -144,7 +144,7 @@ private:
     void changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
 
     /** update allocation status if reallocation function */
-    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
+    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok) const;
 
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope = false);
