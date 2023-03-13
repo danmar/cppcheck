@@ -29,17 +29,6 @@ namespace Ui {
     class StatsDialog;
 }
 
-#ifdef HAVE_QCHART
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-namespace QtCharts {
-#endif
-class QChartView;
-class QLineSeries;
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-}
-#endif
-#endif
-
 /// @addtogroup GUI
 /// @{
 
@@ -81,15 +70,6 @@ public:
 private slots:
     void copyToClipboard();
     void pdfExport();
-#ifdef HAVE_QCHART
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-    QChartView *createChart(const QString &statsFile, const QString &tool);
-    QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
-#else
-    QtCharts::QChartView *createChart(const QString &statsFile, const QString &tool);
-    QtCharts::QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
-#endif
-#endif
 private:
     Ui::StatsDialog *mUI;
     const CheckStatistics *mStatistics;
