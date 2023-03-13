@@ -230,12 +230,209 @@ void simplecpp::Token::printOut() const
     std::cout << std::endl;
 }
 
+class simplecpp::TokenList::Stream {
+public:
+    virtual ~Stream() {}
+
+    virtual int get() = 0;
+    virtual int peek() = 0;
+    virtual void unget() = 0;
+    virtual bool good() = 0;
+
+    unsigned char readChar()
+    {
+        unsigned char ch = static_cast<unsigned char>(get());
+
+        // For UTF-16 encoded files the BOM is 0xfeff/0xfffe. If the
+        // character is non-ASCII character then replace it with 0xff
+        if (isUtf16) {
+            const unsigned char ch2 = static_cast<unsigned char>(get());
+            const int ch16 = makeUtf16Char(ch, ch2);
+            ch = static_cast<unsigned char>(((ch16 >= 0x80) ? 0xff : ch16));
+        }
+
+        // Handling of newlines..
+        if (ch == '\r') {
+            ch = '\n';
+
+            int ch2 = get();
+            if (isUtf16) {
+                const int c2 = get();
+                ch2 = makeUtf16Char(ch2, c2);
+            }
+
+            if (ch2 != '\n')
+                ungetChar();
+        }
+
+        return ch;
+    }
+
+    unsigned char peekChar()
+    {
+        unsigned char ch = static_cast<unsigned char>(peek());
+
+        // For UTF-16 encoded files the BOM is 0xfeff/0xfffe. If the
+        // character is non-ASCII character then replace it with 0xff
+        if (isUtf16) {
+            (void)get();
+            const unsigned char ch2 = static_cast<unsigned char>(peek());
+            unget();
+            const int ch16 = makeUtf16Char(ch, ch2);
+            ch = static_cast<unsigned char>(((ch16 >= 0x80) ? 0xff : ch16));
+        }
+
+        // Handling of newlines..
+        if (ch == '\r')
+            ch = '\n';
+
+        return ch;
+    }
+
+    void ungetChar()
+    {
+        unget();
+        if (isUtf16)
+            unget();
+    }
+
+protected:
+    void init() {
+        // initialize since we use peek() in getAndSkipBOM()
+        isUtf16 = false;
+        bom = getAndSkipBOM();
+        isUtf16 = (bom == 0xfeff || bom == 0xfffe);
+    }
+
+private:
+    inline int makeUtf16Char(const unsigned char ch, const unsigned char ch2) const
+    {
+        return (bom == 0xfeff) ? (ch<<8 | ch2) : (ch2<<8 | ch);
+    }
+
+    unsigned short getAndSkipBOM()
+    {
+        const int ch1 = peek();
+
+        // The UTF-16 BOM is 0xfffe or 0xfeff.
+        if (ch1 >= 0xfe) {
+            (void)get();
+            const unsigned short byte = (static_cast<unsigned char>(ch1) << 8);
+            if (peek() >= 0xfe)
+                return byte | static_cast<unsigned char>(get());
+            unget();
+            return 0;
+        }
+
+        // Skip UTF-8 BOM 0xefbbbf
+        if (ch1 == 0xef) {
+            (void)get();
+            if (peek() == 0xbb) {
+                (void)get();
+                if (peek() == 0xbf) {
+                    (void)get();
+                    return 0;
+                }
+                unget();
+            }
+            unget();
+        }
+
+        return 0;
+    }
+
+    unsigned short bom;
+protected:
+    bool isUtf16;
+};
+
+class StdIStream : public simplecpp::TokenList::Stream {
+public:
+    StdIStream(std::istream &istr)
+        : istr(istr)
+    {
+        init();
+    }
+
+    virtual int get() {
+        return istr.get();
+    }
+    virtual int peek() {
+        return istr.peek();
+    }
+    virtual void unget() {
+        istr.unget();
+    }
+    virtual bool good() {
+        return istr.good();
+    }
+
+private:
+    std::istream &istr;
+};
+
+class FileStream : public simplecpp::TokenList::Stream {
+public:
+    FileStream(const std::string &filename)
+        : file(fopen(filename.c_str(), "rb"))
+        , lastCh(0)
+        , lastStatus(0)
+    {
+        init();
+    }
+
+    ~FileStream() {
+        fclose(file);
+        file = nullptr;
+    }
+
+    virtual int get() {
+        lastStatus = lastCh = fgetc(file);
+        return lastCh;
+    }
+    virtual int peek() {
+        // keep lastCh intact
+        const int ch = fgetc(file);
+        unget_internal(ch);
+        return ch;
+    }
+    virtual void unget() {
+        unget_internal(lastCh);
+    }
+    virtual bool good() {
+        return lastStatus != EOF;
+    }
+
+private:
+    void unget_internal(int ch) {
+        if (isUtf16) {
+            // TODO: use ungetc() as well
+            // UTF-16 has subsequent unget() calls
+            fseek(file, -1, SEEK_CUR);
+        }
+        else
+            ungetc(ch, file);
+    }
+
+    FILE *file;
+    int lastCh;
+    int lastStatus;
+};
+
 simplecpp::TokenList::TokenList(std::vector<std::string> &filenames) : frontToken(nullptr), backToken(nullptr), files(filenames) {}
 
 simplecpp::TokenList::TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename, OutputList *outputList)
     : frontToken(nullptr), backToken(nullptr), files(filenames)
 {
-    readfile(istr,filename,outputList);
+    StdIStream stream(istr);
+    readfile(stream,filename,outputList);
+}
+
+simplecpp::TokenList::TokenList(const std::string &filename, std::vector<std::string> &filenames, OutputList *outputList)
+        : frontToken(nullptr), backToken(nullptr), files(filenames)
+{
+    FileStream stream(filename);
+    readfile(stream,filename,outputList);
 }
 
 simplecpp::TokenList::TokenList(const TokenList &other) : frontToken(nullptr), backToken(nullptr), files(other.files)
@@ -335,92 +532,6 @@ std::string simplecpp::TokenList::stringify() const
     return ret.str();
 }
 
-static unsigned char readChar(std::istream &istr, unsigned int bom)
-{
-    unsigned char ch = static_cast<unsigned char>(istr.get());
-
-    // For UTF-16 encoded files the BOM is 0xfeff/0xfffe. If the
-    // character is non-ASCII character then replace it with 0xff
-    if (bom == 0xfeff || bom == 0xfffe) {
-        const unsigned char ch2 = static_cast<unsigned char>(istr.get());
-        const int ch16 = (bom == 0xfeff) ? (ch<<8 | ch2) : (ch2<<8 | ch);
-        ch = static_cast<unsigned char>(((ch16 >= 0x80) ? 0xff : ch16));
-    }
-
-    // Handling of newlines..
-    if (ch == '\r') {
-        ch = '\n';
-        if (bom == 0 && static_cast<char>(istr.peek()) == '\n')
-            (void)istr.get();
-        else if (bom == 0xfeff || bom == 0xfffe) {
-            const int c1 = istr.get();
-            const int c2 = istr.get();
-            const int ch16 = (bom == 0xfeff) ? (c1<<8 | c2) : (c2<<8 | c1);
-            if (ch16 != '\n') {
-                istr.unget();
-                istr.unget();
-            }
-        }
-    }
-
-    return ch;
-}
-
-static unsigned char peekChar(std::istream &istr, unsigned int bom)
-{
-    unsigned char ch = static_cast<unsigned char>(istr.peek());
-
-    // For UTF-16 encoded files the BOM is 0xfeff/0xfffe. If the
-    // character is non-ASCII character then replace it with 0xff
-    if (bom == 0xfeff || bom == 0xfffe) {
-        (void)istr.get();
-        const unsigned char ch2 = static_cast<unsigned char>(istr.peek());
-        istr.unget();
-        const int ch16 = (bom == 0xfeff) ? (ch<<8 | ch2) : (ch2<<8 | ch);
-        ch = static_cast<unsigned char>(((ch16 >= 0x80) ? 0xff : ch16));
-    }
-
-    // Handling of newlines..
-    if (ch == '\r')
-        ch = '\n';
-
-    return ch;
-}
-
-static void ungetChar(std::istream &istr, unsigned int bom)
-{
-    istr.unget();
-    if (bom == 0xfeff || bom == 0xfffe)
-        istr.unget();
-}
-
-static unsigned short getAndSkipBOM(std::istream &istr)
-{
-    const int ch1 = istr.peek();
-
-    // The UTF-16 BOM is 0xfffe or 0xfeff.
-    if (ch1 >= 0xfe) {
-        const unsigned short bom = (static_cast<unsigned char>(istr.get()) << 8);
-        if (istr.peek() >= 0xfe)
-            return bom | static_cast<unsigned char>(istr.get());
-        istr.unget();
-        return 0;
-    }
-
-    // Skip UTF-8 BOM 0xefbbbf
-    if (ch1 == 0xef) {
-        (void)istr.get();
-        if (istr.get() == 0xbb && istr.peek() == 0xbf) {
-            (void)istr.get();
-        } else {
-            istr.unget();
-            istr.unget();
-        }
-    }
-
-    return 0;
-}
-
 static bool isNameChar(unsigned char ch)
 {
     return std::isalnum(ch) || ch == '_' || ch == '$';
@@ -476,7 +587,7 @@ void simplecpp::TokenList::lineDirective(unsigned int fileIndex, unsigned int li
 
 static const std::string COMMENT_END("*/");
 
-void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filename, OutputList *outputList)
+void simplecpp::TokenList::readfile(Stream &stream, const std::string &filename, OutputList *outputList)
 {
     std::stack<simplecpp::Location> loc;
 
@@ -484,15 +595,13 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
     const Token *oldLastToken = nullptr;
 
-    const unsigned short bom = getAndSkipBOM(istr);
-
     Location location(files);
     location.fileIndex = fileIndex(filename);
     location.line = 1U;
     location.col  = 1U;
-    while (istr.good()) {
-        unsigned char ch = readChar(istr,bom);
-        if (!istr.good())
+    while (stream.good()) {
+        unsigned char ch = stream.readChar();
+        if (!stream.good())
             break;
         if (ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r')
             ch = ' ';
@@ -570,12 +679,12 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
 
         if (cback() && cback()->location.line == location.line && cback()->previous && cback()->previous->op == '#' && isLastLinePreprocessor() && (lastLine() == "# error" || lastLine() == "# warning")) {
             char prev = ' ';
-            while (istr.good() && (prev == '\\' || (ch != '\r' && ch != '\n'))) {
+            while (stream.good() && (prev == '\\' || (ch != '\r' && ch != '\n'))) {
                 currentToken += ch;
                 prev = ch;
-                ch = readChar(istr, bom);
+                ch = stream.readChar();
             }
-            ungetChar(istr, bom);
+            stream.ungetChar();
             push_back(new Token(currentToken, location));
             location.adjust(currentToken);
             continue;
@@ -584,21 +693,21 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         // number or name
         if (isNameChar(ch)) {
             const bool num = std::isdigit(ch);
-            while (istr.good() && isNameChar(ch)) {
+            while (stream.good() && isNameChar(ch)) {
                 currentToken += ch;
-                ch = readChar(istr,bom);
-                if (num && ch=='\'' && isNameChar(peekChar(istr,bom)))
-                    ch = readChar(istr,bom);
+                ch = stream.readChar();
+                if (num && ch=='\'' && isNameChar(stream.peekChar()))
+                    ch = stream.readChar();
             }
 
-            ungetChar(istr,bom);
+            stream.ungetChar();
         }
 
         // comment
-        else if (ch == '/' && peekChar(istr,bom) == '/') {
-            while (istr.good() && ch != '\r' && ch != '\n') {
+        else if (ch == '/' && stream.peekChar() == '/') {
+            while (stream.good() && ch != '\r' && ch != '\n') {
                 currentToken += ch;
-                ch = readChar(istr, bom);
+                ch = stream.readChar();
             }
             const std::string::size_type pos = currentToken.find_last_not_of(" \t");
             if (pos < currentToken.size() - 1U && currentToken[pos] == '\\')
@@ -607,20 +716,20 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 ++multiline;
                 currentToken.erase(currentToken.size() - 1U);
             } else {
-                ungetChar(istr, bom);
+                stream.ungetChar();
             }
         }
 
         // comment
-        else if (ch == '/' && peekChar(istr,bom) == '*') {
+        else if (ch == '/' && stream.peekChar() == '*') {
             currentToken = "/*";
-            (void)readChar(istr,bom);
-            ch = readChar(istr,bom);
-            while (istr.good()) {
+            (void)stream.readChar();
+            ch = stream.readChar();
+            while (stream.good()) {
                 currentToken += ch;
                 if (currentToken.size() >= 4U && endsWith(currentToken, COMMENT_END))
                     break;
-                ch = readChar(istr,bom);
+                ch = stream.readChar();
             }
             // multiline..
 
@@ -651,12 +760,12 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 std::string delim;
                 currentToken = ch;
                 prefix.resize(prefix.size() - 1);
-                ch = readChar(istr,bom);
-                while (istr.good() && ch != '(' && ch != '\n') {
+                ch = stream.readChar();
+                while (stream.good() && ch != '(' && ch != '\n') {
                     delim += ch;
-                    ch = readChar(istr,bom);
+                    ch = stream.readChar();
                 }
-                if (!istr.good() || ch == '\n') {
+                if (!stream.good() || ch == '\n') {
                     if (outputList) {
                         Output err(files);
                         err.type = Output::SYNTAX_ERROR;
@@ -667,8 +776,8 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                     return;
                 }
                 const std::string endOfRawString(')' + delim + currentToken);
-                while (istr.good() && !(endsWith(currentToken, endOfRawString) && currentToken.size() > 1))
-                    currentToken += readChar(istr,bom);
+                while (stream.good() && !(endsWith(currentToken, endOfRawString) && currentToken.size() > 1))
+                    currentToken += stream.readChar();
                 if (!endsWith(currentToken, endOfRawString)) {
                     if (outputList) {
                         Output err(files);
@@ -692,7 +801,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
                 continue;
             }
 
-            currentToken = readUntil(istr,location,ch,ch,outputList,bom);
+            currentToken = readUntil(stream,location,ch,ch,outputList);
             if (currentToken.size() < 2U)
                 // Error is reported by readUntil()
                 return;
@@ -724,7 +833,7 @@ void simplecpp::TokenList::readfile(std::istream &istr, const std::string &filen
         }
 
         if (*currentToken.begin() == '<' && isLastLinePreprocessor() && lastLine() == "# include") {
-            currentToken = readUntil(istr, location, '<', '>', outputList, bom);
+            currentToken = readUntil(stream, location, '<', '>', outputList);
             if (currentToken.size() < 2U)
                 return;
         }
@@ -1169,15 +1278,15 @@ void simplecpp::TokenList::removeComments()
     }
 }
 
-std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &location, const char start, const char end, OutputList *outputList, unsigned int bom)
+std::string simplecpp::TokenList::readUntil(Stream &stream, const Location &location, const char start, const char end, OutputList *outputList)
 {
     std::string ret;
     ret += start;
 
     bool backslash = false;
     char ch = 0;
-    while (ch != end && ch != '\r' && ch != '\n' && istr.good()) {
-        ch = readChar(istr, bom);
+    while (ch != end && ch != '\r' && ch != '\n' && stream.good()) {
+        ch = stream.readChar();
         if (backslash && ch == '\n') {
             ch = 0;
             backslash = false;
@@ -1189,7 +1298,7 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
             bool update_ch = false;
             char next = 0;
             do {
-                next = readChar(istr, bom);
+                next = stream.readChar();
                 if (next == '\r' || next == '\n') {
                     ret.erase(ret.size()-1U);
                     backslash = (next == '\r');
@@ -1203,7 +1312,7 @@ std::string simplecpp::TokenList::readUntil(std::istream &istr, const Location &
         }
     }
 
-    if (!istr.good() || ch != end) {
+    if (!stream.good() || ch != end) {
         clear();
         if (outputList) {
             Output err(files);
@@ -1300,7 +1409,8 @@ namespace simplecpp {
         Macro(const std::string &name, const std::string &value, std::vector<std::string> &f) : nameTokDef(nullptr), files(f), tokenListDefine(f), valueDefinedInCode_(false) {
             const std::string def(name + ' ' + value);
             std::istringstream istr(def);
-            tokenListDefine.readfile(istr);
+            StdIStream stream(istr);
+            tokenListDefine.readfile(stream);
             if (!parseDefine(tokenListDefine.cfront()))
                 throw std::runtime_error("bad macro syntax. macroname=" + name + " value=" + value);
         }
@@ -2022,7 +2132,7 @@ namespace simplecpp {
                     for (Token *b = tokensB.front(); b; b = b->next)
                         b->location = loc;
                     output->takeTokens(tokensB);
-                } else if (nextTok->op == '#' && nextTok->next->op == '#') {
+                } else if (sameline(B, nextTok) && sameline(B, nextTok->next) && nextTok->op == '#' && nextTok->next->op == '#') {
                     TokenList output2(files);
                     output2.push_back(new Token(strAB, tok->location));
                     nextTok = expandHashHash(&output2, loc, nextTok, macros, expandedmacros, parametertokens);
@@ -2355,7 +2465,7 @@ namespace simplecpp {
         if (unc)
             path = '/' + path;
 
-        return path.find_first_of("*?") == std::string::npos ? realFilename(path) : path;
+        return strpbrk(path.c_str(), "*?") == nullptr ? realFilename(path) : path;
     }
 }
 
@@ -2933,8 +3043,9 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
             }
             continue;
         }
+        fin.close();
 
-        TokenList *tokenlist = new TokenList(fin, filenames, filename, outputList);
+        TokenList *tokenlist = new TokenList(filename, filenames, outputList);
         if (!tokenlist->front()) {
             delete tokenlist;
             continue;
@@ -2972,8 +3083,9 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
         const std::string header2 = openHeader(f,dui,sourcefile,header,systemheader);
         if (!f.is_open())
             continue;
+        f.close();
 
-        TokenList *tokens = new TokenList(f, filenames, header2, outputList);
+        TokenList *tokens = new TokenList(header2, filenames, outputList);
         ret[header2] = tokens;
         if (tokens->front())
             filelist.push_back(tokens->front());
