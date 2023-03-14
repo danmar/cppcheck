@@ -2647,10 +2647,10 @@ static bool typesMatch(
     const Token **new_second)
 {
     // get first type
-    const Type * first_type = first_scope->check->findType(first_token, first_scope);
+    const Type* first_type = first_scope->check->findType(first_token, first_scope, /*lookOutside*/ true);
     if (first_type) {
         // get second type
-        const Type * second_type = second_scope->check->findType(second_token, second_scope);
+        const Type* second_type = second_scope->check->findType(second_token, second_scope, /*lookOutside*/ true);
         // check if types match
         if (first_type == second_type) {
             const Token* tok1 = first_token;
@@ -5840,14 +5840,15 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                 tok = startTok;
             }
         } else {
-            const Type * type = scope->findType(tok->str());
+            const Scope* scope1{};
+            const Type* type = scope->findType(tok->str());
             if (type)
                 return type;
-            else if (const Scope *scope1 = scope->findRecordInBase(tok->str())) {
+            if (lookOutside && (scope1 = scope->findRecordInBase(tok->str()))) {
                 type = scope1->definedType;
                 if (type)
                     return type;
-            } else if (scope->type == Scope::ScopeType::eNamespace && lookOutside) {
+            } else if (lookOutside && scope->type == Scope::ScopeType::eNamespace) {
                 scope = scope->nestedIn;
                 continue;
             } else
