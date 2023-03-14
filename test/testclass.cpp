@@ -197,6 +197,7 @@ private:
         TEST_CASE(const81); // ticket #11330
         TEST_CASE(const82); // ticket #11513
         TEST_CASE(const83);
+        TEST_CASE(const85);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6356,6 +6357,18 @@ private:
                    "void S::g(bool b, int j) {\n"
                    "    int& r = b ? j : i2;\n"
                    "    r = 5;\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const85() {
+        checkConst("struct S { int* p; };\n"
+                   "struct T { int m; int* p; };\n"
+                   "struct U {\n"
+                   "    int i;\n"
+                   "    void f() { S s = { &i }; }\n"
+                   "    void g() { int* a[] = { &i }; }\n"
+                   "    void h() { T t = { 1, &i }; }\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
     }
