@@ -38,7 +38,7 @@ class TestCmdlineParser : public TestFixture {
 public:
     TestCmdlineParser()
         : TestFixture("TestCmdlineParser")
-        , defParser(&settings) {
+        , defParser(settings) {
 #if defined(_WIN64) || defined(_WIN32)
         CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
 #endif
@@ -93,6 +93,7 @@ private:
         TEST_CASE(enabledStyle);
         TEST_CASE(enabledPerformance);
         TEST_CASE(enabledPortability);
+        TEST_CASE(enabledInformation);
         TEST_CASE(enabledUnusedFunction);
         TEST_CASE(enabledMissingInclude);
 #ifdef CHECK_INTERNAL
@@ -105,6 +106,8 @@ private:
         TEST_CASE(disableAll);
         TEST_CASE(disableMultiple);
         TEST_CASE(disableStylePartial);
+        TEST_CASE(disableInformationPartial);
+        TEST_CASE(disableInformationPartial2);
         TEST_CASE(disableInvalid);
         TEST_CASE(disableError);
         TEST_CASE(disableEmpty);
@@ -206,7 +209,7 @@ private:
     void nooptions() {
         REDIRECT;
         const char * const argv[] = {"cppcheck"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(1, argv));
         ASSERT_EQUALS(true, parser.getShowHelp());
         ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
@@ -215,7 +218,7 @@ private:
     void helpshort() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-h"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(2, argv));
         ASSERT_EQUALS(true, parser.getShowHelp());
         ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
@@ -224,7 +227,7 @@ private:
     void helplong() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--help"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(2, argv));
         ASSERT_EQUALS(true, parser.getShowHelp());
         ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
@@ -233,7 +236,7 @@ private:
     void showversion() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--version"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(2, argv));
         ASSERT_EQUALS(true, parser.getShowVersion());
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT); // version is not actually shown
@@ -242,7 +245,7 @@ private:
     void onefile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "file.cpp"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(2, argv));
         ASSERT_EQUALS(1, (int)parser.getPathNames().size());
         ASSERT_EQUALS("file.cpp", parser.getPathNames().at(0));
@@ -252,7 +255,7 @@ private:
     void onepath() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "src"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(2, argv));
         ASSERT_EQUALS(1, (int)parser.getPathNames().size());
         ASSERT_EQUALS("src", parser.getPathNames().at(0));
@@ -262,7 +265,7 @@ private:
     void optionwithoutfile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-v"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT_EQUALS(false, parser.parseFromArgs(2, argv));
         ASSERT_EQUALS(0, (int)parser.getPathNames().size());
         ASSERT_EQUALS("cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
@@ -637,6 +640,16 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void enabledInformation() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=information", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT(settings.severity.isEnabled(Severity::information));
+        ASSERT(settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("cppcheck: '--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.\n", GET_REDIRECT_OUTPUT);
+    }
+
     void enabledUnusedFunction() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--enable=unusedFunction", "file.cpp"};
@@ -756,6 +769,26 @@ private:
         ASSERT_EQUALS(true, settings.checks.isEnabled(Checks::unusedFunction));
         ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS(false, settings.checks.isEnabled(Checks::internalCheck));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableInformationPartial() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=information", "--disable=missingInclude", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT(settings.severity.isEnabled(Severity::information));
+        ASSERT(!settings.checks.isEnabled(Checks::missingInclude));
+        ASSERT_EQUALS("cppcheck: '--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void disableInformationPartial2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--enable=missingInclude", "--disable=information", "file.cpp"};
+        settings = Settings();
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT(!settings.severity.isEnabled(Severity::information));
+        ASSERT(settings.checks.isEnabled(Checks::missingInclude));
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -1359,7 +1392,7 @@ private:
     void ignorepathsnopath() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         // Fails since no ignored path given
         ASSERT_EQUALS(false, parser.parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-i' is missing.\n", GET_REDIRECT_OUTPUT);
@@ -1482,7 +1515,7 @@ private:
     void ignorepaths1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc", "file.cpp"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser.getIgnoredPaths()[0]);
@@ -1492,7 +1525,7 @@ private:
     void ignorepaths2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "src", "file.cpp"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(4, argv));
         ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser.getIgnoredPaths()[0]);
@@ -1502,7 +1535,7 @@ private:
     void ignorepaths3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc", "-imodule", "file.cpp"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(4, argv));
         ASSERT_EQUALS(2, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser.getIgnoredPaths()[0]);
@@ -1513,7 +1546,7 @@ private:
     void ignorepaths4() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(6, argv));
         ASSERT_EQUALS(2, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src", parser.getIgnoredPaths()[0]);
@@ -1524,7 +1557,7 @@ private:
     void ignorefilepaths1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("foo.cpp", parser.getIgnoredPaths()[0]);
@@ -1534,7 +1567,7 @@ private:
     void ignorefilepaths2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};
-        CmdLineParser parser(&settings);
+        CmdLineParser parser(settings);
         ASSERT(parser.parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser.getIgnoredPaths()[0]);

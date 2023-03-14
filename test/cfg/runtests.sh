@@ -22,8 +22,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/
 CPPCHECK="$DIR"../../cppcheck
 CFG="$DIR"../../cfg/
 
+# TODO: remove missingInclude disabling when it no longer is implied by --enable=information
 # Cppcheck options
-CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
+CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --error-exitcode=-1 --disable=missingInclude --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
 
 # Compiler settings
 CXX=g++

@@ -267,6 +267,7 @@ private:
         TEST_CASE(namespaces2);
         TEST_CASE(namespaces3);  // #3854 - unknown macro
         TEST_CASE(namespaces4);
+        TEST_CASE(needInitialization);
 
         TEST_CASE(tryCatch1);
 
@@ -2790,6 +2791,20 @@ private:
         ASSERT_EQUALS(2U, fredAType->classDef->linenr());
     }
 
+    void needInitialization() { // #10259
+        const auto oldSettings = settings1;
+        settings1.debugwarnings = true;
+
+        GET_SYMBOL_DB("template <typename T>\n"
+                      "struct A {\n"
+                      "    using type = T;\n"
+                      "    type t_;\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        settings1 = oldSettings;
+    }
+
     void tryCatch1() {
         const char str[] = "void foo() {\n"
                            "    try { }\n"
@@ -5138,23 +5153,47 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symboldatabase104() { // #11535
-        GET_SYMBOL_DB("struct S {\n"
-                      "    void f1(char* const c);\n"
-                      "    void f2(char* const c);\n"
-                      "    void f3(char* const);\n"
-                      "    void f4(char* c);\n"
-                      "    void f5(char* c);\n"
-                      "    void f6(char*);\n"
-                      "};\n"
-                      "void S::f1(char* c) {}\n"
-                      "void S::f2(char*) {}\n"
-                      "void S::f3(char* c) {}\n"
-                      "void S::f4(char* const c) {}\n"
-                      "void S::f5(char* const) {}\n"
-                      "void S::f6(char* const c) {}\n");
-        ASSERT(db != nullptr);
-        ASSERT_EQUALS("", errout.str());
+    void symboldatabase104() {
+        const bool oldDebug = settings1.debugwarnings;
+        settings1.debugwarnings = true;
+        {
+            GET_SYMBOL_DB("struct S {\n" // #11535
+                          "    void f1(char* const c);\n"
+                          "    void f2(char* const c);\n"
+                          "    void f3(char* const);\n"
+                          "    void f4(char* c);\n"
+                          "    void f5(char* c);\n"
+                          "    void f6(char*);\n"
+                          "};\n"
+                          "void S::f1(char* c) {}\n"
+                          "void S::f2(char*) {}\n"
+                          "void S::f3(char* c) {}\n"
+                          "void S::f4(char* const c) {}\n"
+                          "void S::f5(char* const) {}\n"
+                          "void S::f6(char* const c) {}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            GET_SYMBOL_DB("struct S2 {\n" // #11602
+                          "    enum E {};\n"
+                          "};\n"
+                          "struct S1 {\n"
+                          "    void f(S2::E) const;\n"
+                          "};\n"
+                          "void S1::f(const S2::E) const {}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    void f(const bool b = false);\n"
+                          "};\n"
+                          "void S::f(const bool b) {}\n");
+            ASSERT(db != nullptr);
+            ASSERT_EQUALS("", errout.str());
+        }
+        settings1.debugwarnings = oldDebug;
     }
 
     void createSymbolDatabaseFindAllScopes1() {
@@ -7132,7 +7171,7 @@ private:
         ASSERT(tok->tokAt(2)->function());
     }
 
-    void valueTypeMatchParameter() {
+    void valueTypeMatchParameter() const {
         ValueType vt_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0);
         ValueType vt_const_int(ValueType::Sign::SIGNED, ValueType::Type::INT, 0, 1);
         ASSERT_EQUALS((int)ValueType::MatchResult::SAME, (int)ValueType::matchParameter(&vt_int, &vt_int));
@@ -7907,11 +7946,11 @@ private:
             settingsWin64.library.mPodTypes["xyz::x"] = u32;
             settingsWin64.library.mPodTypes["podtype2"] = podtype2;
             ValueType vt;
-            ASSERT_EQUALS(true, vt.fromLibraryType("u32", &settingsWin64));
-            ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", &settingsWin64));
+            ASSERT_EQUALS(true, vt.fromLibraryType("u32", settingsWin64));
+            ASSERT_EQUALS(true, vt.fromLibraryType("xyz::x", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
             ValueType vt2;
-            ASSERT_EQUALS(true, vt2.fromLibraryType("podtype2", &settingsWin64));
+            ASSERT_EQUALS(true, vt2.fromLibraryType("podtype2", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::INT, vt2.type);
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new u32[10];", "new", "test.cpp", &settingsWin64));
             ASSERT_EQUALS("unsigned int *", typeOf(";void *data = new xyz::x[10];", "new", "test.cpp", &settingsWin64));
@@ -7927,7 +7966,7 @@ private:
             s32.mType = "int";
             settingsUnix32.library.mPlatforms[settingsUnix32.platform.toString()].mPlatformTypes["s32"] = s32;
             ValueType vt;
-            ASSERT_EQUALS(true, vt.fromLibraryType("s32", &settingsUnix32));
+            ASSERT_EQUALS(true, vt.fromLibraryType("s32", settingsUnix32));
             ASSERT_EQUALS(ValueType::Type::INT, vt.type);
         }
         {
@@ -7938,7 +7977,7 @@ private:
             lpctstr.mType = "wchar_t";
             settingsWin64.library.mPlatforms[settingsWin64.platform.toString()].mPlatformTypes["LPCTSTR"] = lpctstr;
             ValueType vt;
-            ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", &settingsWin64));
+            ASSERT_EQUALS(true, vt.fromLibraryType("LPCTSTR", settingsWin64));
             ASSERT_EQUALS(ValueType::Type::WCHAR_T, vt.type);
         }
         {

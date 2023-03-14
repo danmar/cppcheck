@@ -36,11 +36,11 @@
 #include <vector>
 
 struct ReverseTraversal {
-    ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
+    ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
         : analyzer(analyzer), settings(settings)
     {}
     ValuePtr<Analyzer> analyzer;
-    const Settings* settings;
+    const Settings& settings;
 
     std::pair<bool, bool> evalCond(const Token* tok) const {
         std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
@@ -244,7 +244,7 @@ struct ReverseTraversal {
                         // Assignment to
                     } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() &&
                                assignTok->astOperand2()->exprId() > 0 &&
-                               isConstExpression(assignTok->astOperand2(), settings->library, true)) {
+                               isConstExpression(assignTok->astOperand2(), settings.library, true)) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {
@@ -388,13 +388,13 @@ struct ReverseTraversal {
     }
 };
 
-void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
+void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start);
 }
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start, end);

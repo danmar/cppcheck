@@ -2281,7 +2281,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
-const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map" };
+const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map", "std :: map|unordered_map <" }; // start pattern
 
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
@@ -2306,6 +2306,19 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
             memberAccessed = true;
         }
+        bool mayModifyArgs = true;
+        if (const Function* f = funcTok->function()) { // TODO: improve (we bail out if there is any possible modification of any argument)
+            const std::vector<const Token*> args = getArguments(funcTok);
+            const auto argMax = std::min<nonneg int>(args.size(), f->argCount());
+            mayModifyArgs = false;
+            for (nonneg int argIndex = 0; argIndex < argMax; ++argIndex) {
+                const Variable* const argVar = f->getArgumentVar(argIndex);
+                if (!argVar || !argVar->valueType() || ((argVar->valueType()->pointer || argVar->valueType()->reference != Reference::None) && !argVar->isConst())) {
+                    mayModifyArgs = true;
+                    break;
+                }
+            }
+        }
         // Member variable given as parameter
         const Token *lpar = funcTok->next();
         if (Token::simpleMatch(lpar, "( ) ("))
@@ -2313,9 +2326,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
         for (const Token* tok = lpar->next(); tok && tok != funcTok->next()->link(); tok = tok->next()) {
             if (tok->str() == "(")
                 tok = tok->link();
-            else if ((tok->isName() && isMemberVar(scope, tok)) || (tok->isUnaryOp("&") && (tok = tok->astOperand1()))) {
+            else if ((tok->isName() && isMemberVar(scope, tok)) || (tok->isUnaryOp("&") && (tok = tok->astOperand1()) && isMemberVar(scope, tok))) {
                 const Variable* var = tok->variable();
-                if (!var || !var->isMutable())
+                if ((!var || !var->isMutable()) && mayModifyArgs)
                     return false; // TODO: Only bailout if function takes argument as non-const reference
             }
         }
@@ -2347,6 +2360,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             const Token* lhs = tok1->previous();
             if (lhs->str() == "(" && tok1->astParent() && tok1->astParent()->astParent())
                 lhs = tok1->astParent()->astParent();
+            else if (lhs->str() == "?" && lhs->astParent())
+                lhs = lhs->astParent();
+            else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->astParent() && lhs->astParent()->str() == "?")
+                lhs = lhs->astParent()->astParent();
             if (lhs->str() == "&") {
                 lhs = lhs->previous();
                 if (lhs->isAssignmentOp() && lhs->previous()->variable()) {
@@ -2980,7 +2997,7 @@ void CheckClass::checkThisUseAfterFree()
         for (const Variable &var : classScope->varlist) {
             // Find possible "self pointer".. pointer/smartpointer member variable of "self" type.
             if (var.valueType() && var.valueType()->smartPointerType != classScope->definedType && var.valueType()->typeScope != classScope) {
-                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), mSettings, true); // this is only called for C++
+                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), *mSettings, true); // this is only called for C++
                 if (valueType.smartPointerType != classScope->definedType)
                     continue;
             }

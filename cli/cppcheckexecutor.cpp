@@ -82,7 +82,7 @@ CppCheckExecutor::~CppCheckExecutor()
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
 {
     Settings& settings = cppcheck->settings();
-    CmdLineParser parser(&settings);
+    CmdLineParser parser(settings);
     const bool success = parser.parseFromArgs(argc, argv);
 
     if (success) {
@@ -424,6 +424,7 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
 
 void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
+    // TODO: do not unconditionally apply colors
     std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 

@@ -155,7 +155,6 @@ std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnab
         severity.enable(Severity::portability);
     } else if (str == "information") {
         severity.enable(Severity::information);
-        checks.enable(Checks::missingInclude);
     } else if (str == "unusedFunction") {
         checks.enable(Checks::unusedFunction);
     } else if (str == "missingInclude") {

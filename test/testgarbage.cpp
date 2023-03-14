@@ -287,7 +287,7 @@ private:
     std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
         errout.str("");
 
-        Preprocessor preprocessor(settings, nullptr);
+        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
 
         // tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);

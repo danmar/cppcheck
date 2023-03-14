@@ -402,6 +402,8 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                 argtok = addr ? addr : isReferenceArg(argtok);
                 if (!argtok || argtok->values().size() != 1U)
                     continue;
+                if (argtok->variable() && argtok->variable()->isClass())
+                    continue;
 
                 const ValueFlow::Value &v = argtok->values().front();
                 if (v.valueType == ValueFlow::Value::ValueType::UNINIT && !v.isInconclusive()) {
