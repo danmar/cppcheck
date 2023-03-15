@@ -4666,6 +4666,21 @@ private:
                 "    return x;\n"
                 "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, 0));
+
+        code = "struct A {\n"
+                "    unsigned i;\n"
+                "    bool f(unsigned x) const {\n"
+                "        return ((i & x) != 0);\n"
+                "    }\n"
+                "};\n"
+                "int g(A& a) {\n"
+                "    int x = a.f(2);\n"
+                "    return x;\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 9U, 1));
     }
 
     void valueFlowFunctionDefaultParameter() {
