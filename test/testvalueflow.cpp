@@ -4633,6 +4633,39 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+                "    if(b)\n"
+                "        return nullptr;\n"
+                "    return &i;\n"
+                "}   \n"
+                "int f(int i) {\n"
+                "    int* x = g(i, true);\n"
+                "    return x;\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+                "    if(b)\n"
+                "        return nullptr;\n"
+                "    return &i;\n"
+                "}   \n"
+                "int f(int i) {\n"
+                "    int* x = g(i, false);\n"
+                "    return x;\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 8U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+                "    if(b)\n"
+                "        return nullptr;\n"
+                "    return &i;\n"
+                "}   \n"
+                "int f(int i) {\n"
+                "    int* x = g(i, i == 3);\n"
+                "    return x;\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 0));
     }
 
     void valueFlowFunctionDefaultParameter() {

@@ -1349,6 +1349,26 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     return unknown;
 }
 
+static const ValueFlow::Value* getImpossibleValue(const Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    std::vector<const ValueFlow::Value*> values;
+    for(const ValueFlow::Value& v:tok->values()) {
+        if (!v.isImpossible())
+            continue;
+        if (v.isContainerSizeValue() || v.isIntValue()) {
+            values.push_back(std::addressof(v));
+        }
+    }
+    auto it = std::max_element(values.begin(), values.end(), [](const ValueFlow::Value* x, const ValueFlow::Value* y) {
+        return x->intvalue < y->intvalue;
+    });
+    if (it == values.end())
+        return nullptr;
+    return *it;
+}
+
 static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {
     ValueFlow::Value v = executeImpl(expr, pm, settings);
@@ -1358,7 +1378,58 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
         return v;
     if (pm.hasValue(expr->exprId()))
         return pm.at(expr->exprId());
+    if (const ValueFlow::Value* value = getImpossibleValue(expr))
+        return *value;
     return v;
+}
+
+std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings* settings)
+{
+    static const std::vector<ValueFlow::Value> unknown = {ValueFlow::Value::unknown()};
+    if(!scope)
+        return unknown;
+    if (!scope->bodyStart)
+        return unknown;
+    for(const Token* tok = scope->bodyStart->next();precedes(tok, scope->bodyEnd);tok = tok->next()) {
+        const Token* top = tok->astTop();
+        if (!top)
+            return unknown;
+
+        if (Token::simpleMatch(top, "return") && top->astOperand1()) {
+            return {execute(top->astOperand1(), pm, settings)};
+        } else if (Token::Match(top, "%op%")) {
+            if (execute(top, pm, settings).isUninitValue())
+                return unknown;
+            const Token* next = nextAfterAstRightmostLeaf(top);
+            if (!next)
+                return unknown;
+            tok = next;
+        } else if (Token::simpleMatch(top->previous(), "if (")) {
+            const Token* condTok = top->astOperand2();
+            ValueFlow::Value v = execute(condTok, pm, settings);
+            if (!v.isIntValue())
+                return unknown;
+            const Token* thenStart = top->link()->next();
+            const Token* next = thenStart->link();
+            const Token* elseStart = nullptr;
+            if (Token::simpleMatch(thenStart->link(), "} else {")) {
+                elseStart = thenStart->link()->tokAt(2);
+                next = elseStart->link();
+            }
+            std::vector<ValueFlow::Value> result;
+            if (v.intvalue) {
+                result = execute(thenStart->scope(), pm, settings);
+            } else if (elseStart) {
+                result = execute(elseStart->scope(), pm, settings);
+            }
+            if (!result.empty())
+                return result;
+            tok = next;
+        } else {
+            return unknown;
+        }
+    }
+    return {};
 }
 
 ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
