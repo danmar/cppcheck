@@ -5970,6 +5970,39 @@ struct ConditionHandler {
             return findPath(true_values) | findPath(false_values);
         }
 
+        Token* getContextAndValues(Token* condTok,
+                                   std::list<ValueFlow::Value>& thenValues,
+                                   std::list<ValueFlow::Value>& elseValues,
+                                   bool known = false) const
+        {
+            const MathLib::bigint path = getPath();
+            const bool allowKnown = path == 0;
+            const bool allowImpossible = impossible && allowKnown;
+
+            bool inverted2 = inverted;
+            Token* ctx = skipNotAndCasts(condTok, &inverted2);
+            bool then = !inverted || !inverted2;
+
+            if (!Token::Match(condTok, "!=|=|(|.") && condTok != vartok) {
+                thenValues.insert(thenValues.end(), true_values.cbegin(), true_values.cend());
+                if (allowImpossible && (known || isConditionKnown(ctx, !then)))
+                    insertImpossible(elseValues, false_values);
+            }
+            if (!Token::Match(condTok, "==|!")) {
+                elseValues.insert(elseValues.end(), false_values.cbegin(), false_values.cend());
+                if (allowImpossible && (known || isConditionKnown(ctx, then))) {
+                    insertImpossible(thenValues, true_values);
+                    if (isBool())
+                        insertNegateKnown(thenValues, true_values);
+                }
+            }
+
+            if (inverted2)
+                std::swap(thenValues, elseValues);
+
+            return ctx;
+        }
+
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
 
@@ -6198,31 +6231,11 @@ struct ConditionHandler {
 
             const MathLib::bigint path = cond.getPath();
             const bool allowKnown = path == 0;
-            const bool allowImpossible = cond.impossible && allowKnown;
 
             std::list<ValueFlow::Value> thenValues;
             std::list<ValueFlow::Value> elseValues;
 
-            bool inverted = cond.inverted;
-            Token* ctx = skipNotAndCasts(condTok, &inverted);
-            bool then = cond.inverted ? !inverted : true;
-
-            if (!Token::Match(condTok, "!=|=|(|.") && condTok != cond.vartok) {
-                thenValues.insert(thenValues.end(), cond.true_values.cbegin(), cond.true_values.cend());
-                if (allowImpossible && isConditionKnown(ctx, !then))
-                    insertImpossible(elseValues, cond.false_values);
-            }
-            if (!Token::Match(condTok, "==|!")) {
-                elseValues.insert(elseValues.end(), cond.false_values.cbegin(), cond.false_values.cend());
-                if (allowImpossible && isConditionKnown(ctx, then)) {
-                    insertImpossible(thenValues, cond.true_values);
-                    if (cond.isBool())
-                        insertNegateKnown(thenValues, cond.true_values);
-                }
-            }
-
-            if (inverted)
-                std::swap(thenValues, elseValues);
+            Token* ctx = cond.getContextAndValues(condTok, thenValues, elseValues);
 
             if (Token::Match(ctx->astParent(), "%oror%|&&")) {
                 Token* parent = ctx->astParent();
@@ -6237,12 +6250,16 @@ struct ConditionHandler {
                     if (astIsLHS(parent) && parent->astParent() && parent->astParent()->str() == parent->str()) {
                         nextExprs.push_back(parent->astParent()->astOperand2());
                     }
+                    std::list<ValueFlow::Value> andValues;
+                    std::list<ValueFlow::Value> orValues;
+                    cond.getContextAndValues(condTok, andValues, orValues, true);
+
                     const std::string& op(parent->str());
                     std::list<ValueFlow::Value> values;
                     if (op == "&&")
-                        values = thenValues;
+                        values = andValues;
                     else if (op == "||")
-                        values = elseValues;
+                        values = orValues;
                     if (allowKnown && (Token::Match(condTok, "==|!=") || cond.isBool()))
                         changePossibleToKnown(values);
                     if (astIsFloat(cond.vartok, false) ||
