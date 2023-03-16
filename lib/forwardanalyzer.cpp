@@ -825,9 +825,7 @@ struct ForwardTraversal {
     }
 
     static bool isUnevaluated(const Token* tok) {
-        if (Token::Match(tok->previous(), "sizeof|decltype ("))
-            return true;
-        return false;
+        return Token::Match(tok->previous(), "sizeof|decltype (");
     }
 
     static bool isFunctionCall(const Token* tok)

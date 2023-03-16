@@ -702,9 +702,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
                                               ValueFlow::Value::LifetimeKind kind = ValueFlow::Value::LifetimeKind::Iterator)
 {
     if (isSameExpression(true, false, tok1, tok2, library, false, false)) {
-        if (astIsContainerOwned(tok1) && isTemporary(true, tok1, &library))
-            return false;
-        return true;
+        return !astIsContainerOwned(tok1) || !isTemporary(true, tok1, &library);
     }
     if (kind == ValueFlow::Value::LifetimeKind::Address) {
         return isSameExpression(true, false, getAddressContainer(tok1), getAddressContainer(tok2), library, false, false);
