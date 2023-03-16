@@ -5981,7 +5981,7 @@ struct ConditionHandler {
 
             bool inverted2 = inverted;
             Token* ctx = skipNotAndCasts(condTok, &inverted2);
-            bool then = inverted ? !inverted2 : true;
+            bool then = !inverted || !inverted2;
 
             if (!Token::Match(condTok, "!=|=|(|.") && condTok != vartok) {
                 thenValues.insert(thenValues.end(), true_values.cbegin(), true_values.cend());
