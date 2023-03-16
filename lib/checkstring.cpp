@@ -294,7 +294,7 @@ void CheckString::checkIncorrectStringCompare()
                 tok = tok->linkAt(1);
 
             if (Token::simpleMatch(tok, ". substr (") && Token::Match(tok->tokAt(3)->nextArgument(), "%num% )")) {
-                const MathLib::biguint clen = MathLib::toBigUNumber(tok->linkAt(2)->strAt(-1));
+                const MathLib::biguint clen = MathLib::toBigUNumber(tok->linkAt(2)->tokAt(-1));
                 const Token* begin = tok->previous();
                 for (;;) { // Find start of statement
                     while (begin->link() && Token::Match(begin, "]|)|>"))

@@ -474,7 +474,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // Assigning non-zero value variable. It might be used to
             // track the execution for a later if condition.
-            if (Token::Match(varTok->tokAt(2), "%num% ;") && MathLib::toBigNumber(varTok->strAt(2)) != 0)
+            if (Token::Match(varTok->tokAt(2), "%num% ;") && MathLib::toBigNumber(varTok->tokAt(2)) != 0)
                 notzero.insert(varTok->varId());
             else if (Token::Match(varTok->tokAt(2), "- %type% ;") && varTok->tokAt(3)->isUpperCaseName())
                 notzero.insert(varTok->varId());

@@ -19,6 +19,7 @@
 
 #include "mathlib.h"
 #include "errortypes.h"
+#include "token.h"
 #include "utils.h"
 
 #include <cctype>
@@ -285,8 +286,13 @@ MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
     return ret;
 }
 
+MathLib::biguint MathLib::toBigUNumber(const Token * tok)
+{
+    return toBigUNumber(tok->str(), tok);
+}
+
 // TODO: remove handling of non-literal stuff
-MathLib::biguint MathLib::toBigUNumber(const std::string & str)
+MathLib::biguint MathLib::toBigUNumber(const std::string & str, const Token * const tok)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
@@ -294,9 +300,9 @@ MathLib::biguint MathLib::toBigUNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 16);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
         }
     }
 
@@ -306,9 +312,9 @@ MathLib::biguint MathLib::toBigUNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
         }
     }
 
@@ -331,7 +337,7 @@ MathLib::biguint MathLib::toBigUNumber(const std::string & str)
         // Things are going to be less precise now: the value can't be represented in the biguint type.
         // Use min/max values as an approximation. See #5843
         // TODO: bail out when we are out of range?
-        const double doubleval = toDoubleNumber(str);
+        const double doubleval = toDoubleNumber(str, tok);
         if (doubleval > (double)std::numeric_limits<biguint>::max())
             return std::numeric_limits<biguint>::max();
         // cast to bigint to avoid UBSAN warning about negative double being out-of-range
@@ -347,13 +353,13 @@ MathLib::biguint MathLib::toBigUNumber(const std::string & str)
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
             if (!isValidIntegerSuffix(s, true))
-                throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: " + str);
+                throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: input was not completely consumed: " + str);
         }
         return ret;
     } catch (const std::out_of_range& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: out_of_range: " + str);
     } catch (const std::invalid_argument& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toBigUNumber: invalid_argument: " + str);
     }
 }
 
@@ -364,8 +370,13 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
     });
 }
 
+MathLib::bigint MathLib::toBigNumber(const Token * tok)
+{
+    return toBigNumber(tok->str(), tok);
+}
+
 // TODO: remove handling of non-literal stuff
-MathLib::bigint MathLib::toBigNumber(const std::string & str)
+MathLib::bigint MathLib::toBigNumber(const std::string & str, const Token * const tok)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
@@ -373,9 +384,9 @@ MathLib::bigint MathLib::toBigNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 16);
             return (bigint)ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
         }
     }
 
@@ -385,9 +396,9 @@ MathLib::bigint MathLib::toBigNumber(const std::string & str)
             const biguint ret = std::stoull(str, nullptr, 8);
             return ret;
         } catch (const std::out_of_range& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
         } catch (const std::invalid_argument& /*e*/) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
         }
     }
 
@@ -410,7 +421,7 @@ MathLib::bigint MathLib::toBigNumber(const std::string & str)
         // Things are going to be less precise now: the value can't be represented in the bigint type.
         // Use min/max values as an approximation. See #5843
         // TODO: bail out when we are out of range?
-        const double doubleval = toDoubleNumber(str);
+        const double doubleval = toDoubleNumber(str, tok);
         if (doubleval > (double)std::numeric_limits<bigint>::max())
             return std::numeric_limits<bigint>::max();
         if (doubleval < (double)std::numeric_limits<bigint>::min())
@@ -427,13 +438,13 @@ MathLib::bigint MathLib::toBigNumber(const std::string & str)
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
             if (!isValidIntegerSuffix(s, true))
-                throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: input was not completely consumed: " + str);
+                throw InternalError(tok, "Internal Error. MathLib::toBigNumber: input was not completely consumed: " + str);
         }
         return ret;
     } catch (const std::out_of_range& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toBigNumber: out_of_range: " + str);
     } catch (const std::invalid_argument& /*e*/) {
-        throw InternalError(nullptr, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toBigNumber: invalid_argument: " + str);
     }
 }
 
@@ -484,17 +495,22 @@ static double floatHexToDoubleNumber(const std::string& str)
     return factor1 * factor2;
 }
 
-double MathLib::toDoubleNumber(const std::string &str)
+double MathLib::toDoubleNumber(const Token * tok)
+{
+    return toDoubleNumber(tok->str(), tok);
+}
+
+double MathLib::toDoubleNumber(const std::string &str, const Token * const tok)
 {
     if (isCharLiteral(str)) {
         try {
             return simplecpp::characterLiteralToLL(str);
         } catch (const std::exception& e) {
-            throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: characterLiteralToLL(" + str + ") => " + e.what());
+            throw InternalError(tok, "Internal Error. MathLib::toDoubleNumber: characterLiteralToLL(" + str + ") => " + e.what());
         }
     }
     if (isIntHex(str))
-        return static_cast<double>(toBigNumber(str));
+        return static_cast<double>(toBigNumber(str, tok));
 #ifdef _LIBCPP_VERSION
     if (isFloat(str)) // Workaround libc++ bug at https://github.com/llvm/llvm-project/issues/18156
         // TODO: handle locale
@@ -508,13 +524,13 @@ double MathLib::toDoubleNumber(const std::string &str)
     istr.imbue(std::locale::classic());
     double ret;
     if (!(istr >> ret))
-        throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: conversion failed: " + str);
+        throw InternalError(tok, "Internal Error. MathLib::toDoubleNumber: conversion failed: " + str);
     std::string s;
     if (istr >> s) {
         if (isDecimalFloat(str))
             return ret;
         if (!isValidIntegerSuffix(s, true))
-            throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: " + str);
+            throw InternalError(tok, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: " + str);
     }
     return ret;
 }
