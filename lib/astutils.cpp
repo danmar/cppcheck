@@ -2000,8 +2000,7 @@ bool isUniqueExpression(const Token* tok)
                 return true;
 
             const std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.returnDefEnd());
-            return f.argumentList.size() != fun->argumentList.size() || returnType != freturnType ||
-                   f.name() == fun->name();
+            return f.argumentList.size() != fun->argumentList.size() || returnType != freturnType || f.name() == fun->name();
         }))
             return false;
     } else if (tok->variable()) {
