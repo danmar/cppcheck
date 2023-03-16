@@ -561,7 +561,7 @@ static bool iscpp11init_impl(const Token * const tok)
         nameToken = nameToken->link()->previous();
     if (nameToken->str() == "]") {
         const Token* newTok = nameToken->link()->previous();
-        while (Token::Match(newTok, "%type%") && !newTok->isKeyword())
+        while (Token::Match(newTok, "%type%|::") && !newTok->isKeyword())
             newTok = newTok->previous();
         if (Token::simpleMatch(newTok, "new"))
             return true;
@@ -878,7 +878,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 tok = tok->previous();
             return !Token::Match(tok, "new ::| %type%");
         }
-        return true;
+        return !findLambdaEndTokenWithoutAST(tok);
     };
 
     if (doCompileScope(tok))
@@ -1325,6 +1325,17 @@ const Token* isLambdaCaptureList(const Token * tok)
     if (!Token::simpleMatch(params->astOperand1(), "{"))
         return nullptr;
     return params->astOperand1();
+}
+
+const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
+    if (!(Token::simpleMatch(tok, "[") && tok->link()))
+        return nullptr;
+    tok = tok->link()->next();
+    if (Token::simpleMatch(tok, "(") && tok->link())
+        tok = tok->link()->next();
+    if (!(Token::simpleMatch(tok, "{") && tok->link()))
+        return nullptr;
+    return tok->link()->next();
 }
 
 static Token * createAstAtToken(Token *tok, bool cpp);

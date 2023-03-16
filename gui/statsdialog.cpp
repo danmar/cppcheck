@@ -35,7 +35,7 @@
 #include <QTextDocument>
 #include <QWidget>
 
-#ifdef HAVE_QCHART
+#ifdef QT_CHARTS_LIB
 #include <QAbstractSeries>
 #include <QChartView>
 #include <QDateTimeAxis>
@@ -44,8 +44,11 @@
 #include <QValueAxis>
 
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-using namespace QtCharts;
+QT_CHARTS_USE_NAMESPACE
 #endif
+
+static QLineSeries *numberOfReports(const QString &fileName, const QString &severity);
+static QChartView *createChart(const QString &statsFile, const QString &tool);
 #endif
 
 static const QString CPPCHECK("cppcheck");
@@ -76,7 +79,7 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         mUI->mIncludePaths->setText(projectFile->getIncludeDirs().join(";"));
         mUI->mDefines->setText(projectFile->getDefines().join(";"));
         mUI->mUndefines->setText(projectFile->getUndefines().join(";"));
-#ifndef HAVE_QCHART
+#ifndef QT_CHARTS_LIB
         mUI->mTabHistory->setVisible(false);
 #else
         QString statsFile;
@@ -356,8 +359,8 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
     mUI->mLblInformation->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowInformation)));
 }
 
-#ifdef HAVE_QCHART
-QChartView *StatsDialog::createChart(const QString &statsFile, const QString &tool)
+#ifdef QT_CHARTS_LIB
+QChartView *createChart(const QString &statsFile, const QString &tool)
 {
     QChart *chart = new QChart;
     chart->addSeries(numberOfReports(statsFile, tool + "-error"));
@@ -399,7 +402,7 @@ QChartView *StatsDialog::createChart(const QString &statsFile, const QString &to
     return chartView;
 }
 
-QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString &severity) const
+QLineSeries *numberOfReports(const QString &fileName, const QString &severity)
 {
     QLineSeries *series = new QLineSeries();
     series->setName(severity);

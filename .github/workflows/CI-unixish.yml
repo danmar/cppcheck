@@ -459,9 +459,9 @@ jobs:
           ./cppcheck $selfcheck_options --cppcheck-build-dir=b1 --addon=naming.json -DCHECK_INTERNAL cli lib || ec=1
           # check gui with qt settings
           mkdir b2
-          ./cppcheck $selfcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
           # self check test and tools
           ./cppcheck $selfcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
           # triage
-          ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
           exit $ec

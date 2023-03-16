@@ -1310,7 +1310,7 @@ void CheckStl::negativeIndex()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%var% [") || WRONG_DATA(!tok->next()->astOperand2(), tok))
+            if (!Token::Match(tok, "%var% [") || !tok->next()->astOperand2())
                 continue;
             const Variable * const var = tok->variable();
             if (!var || tok == var->nameToken())
@@ -1965,7 +1965,7 @@ void CheckStl::string_c_str()
                         string_c_strError(tok);
                 } else if (printPerformance && tok->tokAt(1)->astOperand2() && Token::Match(tok->tokAt(1)->astOperand2()->tokAt(-3), "%var% . c_str|data ( ) ;")) {
                     const Token* vartok = tok->tokAt(1)->astOperand2()->tokAt(-3);
-                    if (tok->variable() && tok->variable()->isStlStringType() && vartok->variable() && vartok->variable()->isStlStringType())
+                    if (tok->variable()->isStlStringType() && vartok->variable() && vartok->variable()->isStlStringType())
                         string_c_strAssignment(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
@@ -2781,7 +2781,7 @@ namespace {
             if (var->declarationId() == loopVar->varId())
                 return false;
             const Scope* scope = var->scope();
-            return scope->isNestedIn(bodyTok->scope());
+            return scope && scope->isNestedIn(bodyTok->scope());
         }
 
     private:

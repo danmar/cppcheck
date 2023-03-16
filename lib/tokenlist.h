@@ -215,6 +215,7 @@ private:
 /// @}
 
 const Token* isLambdaCaptureList(const Token* tok);
+const Token* findLambdaEndTokenWithoutAST(const Token* tok);
 
 //---------------------------------------------------------------------------
 #endif // tokenlistH

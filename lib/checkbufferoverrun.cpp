@@ -1156,7 +1156,7 @@ void CheckBufferOverrun::negativeArraySizeError(const Token* tok)
     const std::string line1 = arrayName.empty() ? std::string() : ("$symbol:" + arrayName + '\n');
     reportError(tok, Severity::error, "negativeArraySize",
                 line1 +
-                "Declaration of array '" + arrayName + "' with negative size is undefined behaviour", CWE758, Certainty::safe);
+                "Declaration of array '" + arrayName + "' with negative size is undefined behaviour", CWE758, Certainty::normal);
 }
 
 void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok, const ValueFlow::Value* value)
@@ -1165,5 +1165,5 @@ void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok, con
     const ErrorPath errorPath = getErrorPath(tok, value, msg);
     const bool inconclusive = value != nullptr && !value->isKnown();
     reportError(errorPath, inconclusive ? Severity::warning : Severity::error, "negativeMemoryAllocationSize",
-                msg, CWE131, inconclusive ? Certainty::inconclusive : Certainty::safe);
+                msg, CWE131, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }

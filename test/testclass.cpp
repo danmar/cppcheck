@@ -195,7 +195,9 @@ private:
         TEST_CASE(const79); // ticket #9861
         TEST_CASE(const80); // ticket #11328
         TEST_CASE(const81); // ticket #11330
-        TEST_CASE(const82);
+        TEST_CASE(const82); // ticket #11513
+        TEST_CASE(const83);
+
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6322,7 +6324,26 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const82() {
+    void const82() { // #11513
+        checkConst("struct S {\n"
+                   "    int i;\n"
+                   "    void h(bool) const;\n"
+                   "    void g() { h(i == 1); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
+
+        checkConst("struct S {\n"
+                   "    int i;\n"
+                   "    void h(int, int*) const;\n"
+                   "    void g() { int a; h(i, &a); }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                           "",
+                           errout.str());
+    }
+
+    void const83() {
         checkConst("struct S {\n"
                    "    int i1, i2;\n"
                    "    void f(bool b);\n"
