@@ -392,9 +392,7 @@ bool isVariableDecl(const Token* tok)
     if (var->nameToken() == tok)
         return true;
     const Token * const varDeclEndToken = var->declEndToken();
-    if (Token::Match(varDeclEndToken, "; %var%") && varDeclEndToken->next() == tok)
-        return true;
-    return false;
+    return Token::Match(varDeclEndToken, "; %var%") && varDeclEndToken->next() == tok;
 }
 
 bool isStlStringType(const Token* tok)
@@ -2002,11 +2000,7 @@ bool isUniqueExpression(const Token* tok)
                 return true;
 
             const std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.returnDefEnd());
-            if (f.argumentList.size() == fun->argumentList.size() && returnType == freturnType &&
-                f.name() != fun->name()) {
-                return false;
-            }
-            return true;
+            return f.argumentList.size() != fun->argumentList.size() || returnType != freturnType || f.name() == fun->name();
         }))
             return false;
     } else if (tok->variable()) {

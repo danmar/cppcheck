@@ -554,10 +554,7 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token
 //---------------------------------------------------------------------------
 static inline bool isFunctionOrBreakPattern(const Token *tok)
 {
-    if (Token::Match(tok, "%name% (") || Token::Match(tok, "break|continue|return|exit|goto|throw"))
-        return true;
-
-    return false;
+    return Token::Match(tok, "%name% (") || Token::Match(tok, "break|continue|return|exit|goto|throw");
 }
 
 void CheckOther::checkRedundantAssignmentInSwitch()
@@ -1097,7 +1094,7 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 void CheckOther::checkCommaSeparatedReturn()
 {
     // This is experimental for now. See #5076
-    if ((true) || !mSettings->severity.isEnabled(Severity::style))
+    if ((true) || !mSettings->severity.isEnabled(Severity::style)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
