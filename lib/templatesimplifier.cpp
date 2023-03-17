@@ -1877,10 +1877,7 @@ void TemplateSimplifier::expandTemplate(
             if (tok3->next() && tok3->next()->str()=="<") {
                 std::vector<const Token *> localTypeParametersInDeclaration;
                 getTemplateParametersInDeclaration(tok3->tokAt(2), localTypeParametersInDeclaration);
-                if (localTypeParametersInDeclaration.size() != typeParametersInDeclaration.size())
-                    inTemplateDefinition = false; // Partial specialization
-                else
-                    inTemplateDefinition = true;
+                inTemplateDefinition = localTypeParametersInDeclaration.size() == typeParametersInDeclaration.size(); // Partial specialization
             } else {
                 inTemplateDefinition = false; // Only template instantiation
             }

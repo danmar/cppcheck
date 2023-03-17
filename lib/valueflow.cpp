@@ -8037,9 +8037,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
     case Library::Container::Action::CHANGE_INTERNAL:
         break;
     }
-    if (isContainerSizeChangedByFunction(tok, indirect, settings, depth))
-        return true;
-    return false;
+    return isContainerSizeChangedByFunction(tok, indirect, settings, depth);
 }
 
 static bool isContainerSizeChanged(nonneg int varId,
