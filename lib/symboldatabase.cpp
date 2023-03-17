@@ -6378,7 +6378,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                     while (Token::Match(smartPointerTypeTok, "%name%|::"))
                         smartPointerTypeTok = smartPointerTypeTok->next();
                     if (Token::simpleMatch(smartPointerTypeTok, "<")) {
-                        if (templateArgType = findTypeInNested(smartPointerTypeTok->next(), tok->scope())) {
+                        if ((templateArgType = findTypeInNested(smartPointerTypeTok->next(), tok->scope()))) {
                             setType = true;
                             autovt.smartPointerType = templateArgType;
                             autovt.type = ValueType::Type::NONSTD;
