@@ -92,7 +92,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mPlatformActions(new QActionGroup(this)),
     mCStandardActions(new QActionGroup(this)),
     mCppStandardActions(new QActionGroup(this)),
-    mSelectLanguageActions(new QActionGroup(this)),
+    mSelectLanguageActions(new QActionGroup(this))
 {
     {
         Settings tempSettings;

@@ -54,7 +54,7 @@ class CPPCHECKLIB Library {
     friend class TestSymbolDatabase; // For testing only
 
 public:
-    Library();
+    Library() = default;
 
     enum class ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED };
 
