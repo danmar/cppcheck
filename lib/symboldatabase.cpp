@@ -1277,7 +1277,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     const Scope *classScope = type->classScope;
                     const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
                     setMemberVar(membervar, membertok, tok);
-                } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER && tok->valueType()->containerTypeToken) {
+                } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                     if (const Token* ctt = tok->valueType()->containerTypeToken) {
                         while (ctt && ctt->isKeyword())
                             ctt = ctt->next();
