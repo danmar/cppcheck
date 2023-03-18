@@ -47,7 +47,6 @@ These do not reflect the style we are (currently) enforcing.
 We are not interested in the size/complexity of a function.
 
 `readability-magic-numbers`<br>
-`readability-redundant-member-init`<br>
 
 These do not (always) increase readability.
 

@@ -73,7 +73,7 @@ public:
         std::list<std::string> includePaths;
         std::list<std::string> systemIncludePaths;
         std::string standard;
-        cppcheck::Platform::PlatformType platformType{};
+        cppcheck::Platform::Type platformType = cppcheck::Platform::Type::Unspecified;
         bool msc{};
         bool useMfc{};
 
