@@ -131,7 +131,7 @@ private:
      * @brief Index of the default application.
      *
      */
-    int mDefaultApplicationIndex;
+    int mDefaultApplicationIndex = -1;
 };
 /// @}
 #endif // APPLICATIONLIST_H

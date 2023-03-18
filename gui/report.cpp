@@ -21,7 +21,6 @@
 #include <utility>
 
 Report::Report(QString filename) :
-    QObject(),
     mFilename(std::move(filename))
 {}
 

@@ -459,7 +459,7 @@ protected:
      * @brief Program settings
      *
      */
-    QSettings *mSettings;
+    QSettings* mSettings{};
 
     /**
      * @brief A string used to filter the results for display.
@@ -471,37 +471,37 @@ protected:
      * @brief List of applications to open errors with
      *
      */
-    ApplicationList *mApplications;
+    ApplicationList* mApplications{};
 
     /**
      * @brief Right clicked item (used by context menu slots)
      *
      */
-    QStandardItem *mContextItem;
+    QStandardItem* mContextItem{};
 
     /**
      * @brief Should full path of files be shown (true) or relative (false)
      *
      */
-    bool mShowFullPath;
+    bool mShowFullPath{};
 
     /**
      * @brief Should full path of files be saved
      *
      */
-    bool mSaveFullPath;
+    bool mSaveFullPath{};
 
     /**
      * @brief Save all errors (true) or only visible (false)
      *
      */
-    bool mSaveAllErrors;
+    bool mSaveAllErrors = true;
 
     /**
      * @brief true if optional column "Id" is shown
      *
      */
-    bool mShowErrorId;
+    bool mShowErrorId{};
 
     /**
      * @brief Path we are currently checking
@@ -513,7 +513,7 @@ protected:
      * @brief Are there any visible errors
      *
      */
-    bool mVisibleErrors;
+    bool mVisibleErrors{};
 
 private:
     /** tag selected items */
@@ -524,11 +524,11 @@ private:
 
     QStringList mHiddenMessageId;
 
-    QItemSelectionModel *mSelectionModel;
-    ThreadHandler *mThread;
+    QItemSelectionModel* mSelectionModel{};
+    ThreadHandler *mThread{};
 
-    bool mShowCppcheck;
-    bool mShowClang;
+    bool mShowCppcheck = true;
+    bool mShowClang = true;
 };
 /// @}
 #endif // RESULTSTREE_H

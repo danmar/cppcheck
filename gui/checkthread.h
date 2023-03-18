@@ -116,7 +116,7 @@ protected:
     /**
      * @brief Thread's current execution state.
      */
-    State mState;
+    State mState = Ready;
 
     ThreadResult &mResult;
     /**
@@ -132,7 +132,7 @@ private:
     bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
 
     QStringList mFiles;
-    bool mAnalyseWholeProgram;
+    bool mAnalyseWholeProgram{};
     QStringList mAddonsAndTools;
     QStringList mClangIncludePaths;
     QList<Suppressions::Suppression> mSuppressions;

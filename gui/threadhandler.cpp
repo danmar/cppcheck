@@ -31,11 +31,7 @@
 #include <QSettings>
 
 ThreadHandler::ThreadHandler(QObject *parent) :
-    QObject(parent),
-    mScanDuration(0),
-    mRunningThreadCount(0),
-    mAnalyseWholeProgram(false)
-
+    QObject(parent)
 {
     setThreadCount(1);
 }

@@ -26,8 +26,7 @@
 #include <QStringList>
 
 ApplicationList::ApplicationList(QObject *parent) :
-    QObject(parent),
-    mDefaultApplicationIndex(-1)
+    QObject(parent)
 {
     //ctor
 }

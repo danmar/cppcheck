@@ -80,7 +80,6 @@ ResultsTree::ResultsTree(QWidget * parent) :
     mContextItem(nullptr),
     mShowFullPath(false),
     mSaveFullPath(false),
-    mSaveAllErrors(true),
     mShowErrorId(false),
     mVisibleErrors(false),
     mSelectionModel(nullptr),
