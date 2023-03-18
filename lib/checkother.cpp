@@ -29,11 +29,11 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
 #include "valueflow.h"
 #include "vfvalue.h"
 
-#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
 #include "checkclass.h" // CheckClass::stl_containers_not_const
 
 #include <algorithm> // find_if()
@@ -554,10 +554,7 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token
 //---------------------------------------------------------------------------
 static inline bool isFunctionOrBreakPattern(const Token *tok)
 {
-    if (Token::Match(tok, "%name% (") || Token::Match(tok, "break|continue|return|exit|goto|throw"))
-        return true;
-
-    return false;
+    return Token::Match(tok, "%name% (") || Token::Match(tok, "break|continue|return|exit|goto|throw");
 }
 
 void CheckOther::checkRedundantAssignmentInSwitch()
@@ -1097,10 +1094,7 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 void CheckOther::checkCommaSeparatedReturn()
 {
     // This is experimental for now. See #5076
-    if (!mSettings->certainty.isEnabled(Certainty::experimental))
-        return;
-
-    if (!mSettings->severity.isEnabled(Severity::style))
+    if ((true) || !mSettings->severity.isEnabled(Severity::style)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -1160,11 +1154,11 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
         if (var.isStatic())
             continue;
         if (var.isPointer() || var.isReference())
-            size = settings->sizeof_pointer;
+            size = settings->platform.sizeof_pointer;
         else if (var.type() && var.type()->classScope)
             size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth+1);
         else if (var.valueType() && var.valueType()->type == ValueType::Type::CONTAINER)
-            size = 3 * settings->sizeof_pointer; // Just guess
+            size = 3 * settings->platform.sizeof_pointer; // Just guess
         else
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
@@ -1303,7 +1297,7 @@ void CheckOther::checkPassByReference()
                 // Ensure that it is a large object.
                 if (!var->type()->classScope)
                     inconclusive = true;
-                else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->sizeof_pointer)
+                else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->platform.sizeof_pointer)
                     continue;
             }
             else
@@ -1526,10 +1520,9 @@ void CheckOther::checkConstVariable()
                             callNonConstMethod = true;
                         break;
                     }
-                    if (var->isStlType() && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
-                        const Token* typeTok = var->typeStartToken() ? var->typeStartToken()->tokAt(2) : nullptr;
+                    if (var->valueType() && var->valueType()->container && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
                         const auto& notConst = CheckClass::stl_containers_not_const;
-                        if (typeTok && notConst.find(typeTok->str()) != notConst.end()) {
+                        if (notConst.find(var->valueType()->container->startPattern) != notConst.end()) {
                             callNonConstMethod = true;
                             break;
                         }
@@ -2780,7 +2773,7 @@ void CheckOther::pointerPositiveError(const Token *tok, const ValueFlow::Value *
 /* check if a constructor in given class scope takes a reference */
 static bool constructorTakesReference(const Scope * const classScope)
 {
-    for (const Function &constructor : classScope->functionList) {
+    return std::any_of(classScope->functionList.begin(), classScope->functionList.end(), [&](const Function& constructor) {
         if (constructor.isConstructor()) {
             for (int argnr = 0U; argnr < constructor.argCount(); argnr++) {
                 const Variable * const argVar = constructor.getArgumentVar(argnr);
@@ -2789,8 +2782,8 @@ static bool constructorTakesReference(const Scope * const classScope)
                 }
             }
         }
-    }
-    return false;
+        return false;
+    });
 }
 
 //---------------------------------------------------------------------------
@@ -2951,7 +2944,7 @@ void CheckOther::checkIncompleteArrayFill()
                 if (MathLib::toLongNumber(tok->linkAt(1)->strAt(-1)) == var->dimension(0)) {
                     int size = mTokenizer->sizeOfType(var->typeStartToken());
                     if (size == 0 && var->valueType()->pointer)
-                        size = mSettings->sizeof_pointer;
+                        size = mSettings->platform.sizeof_pointer;
                     else if (size == 0 && var->type())
                         size = estimateSize(var->type(), mSettings, symbolDatabase);
                     const Token* tok3 = tok->next()->astOperand2()->astOperand1()->astOperand1();
@@ -3115,7 +3108,7 @@ void CheckOther::redundantPointerOpError(const Token* tok, const std::string &va
 
 void CheckOther::checkInterlockedDecrement()
 {
-    if (!mSettings->isWindowsPlatform()) {
+    if (!mSettings->platform.isWindows()) {
         return;
     }
 

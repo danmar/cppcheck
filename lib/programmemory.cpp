@@ -58,7 +58,7 @@ void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
         if (tok->hasKnownIntValue())
             return {tok->values().front().intvalue};
         MathLib::bigint result = 0;
-        if (getIntValue(tok->exprId(), &result))
+        if (getIntValue(tok->exprId(), result))
             return {result};
         return {};
     },
@@ -77,11 +77,11 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
 }
 
 // cppcheck-suppress unusedFunction
-bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) const
+bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint& result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isIntValue()) {
-        *result = value->intvalue;
+        result = value->intvalue;
         return true;
     }
     return false;
@@ -106,25 +106,25 @@ bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
 }
 
 // cppcheck-suppress unusedFunction
-bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const
+bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint& result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
     if (value && value->isContainerSizeValue()) {
-        *result = value->intvalue;
+        result = value->intvalue;
         return true;
     }
     return false;
 }
-bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const
+bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint& result) const
 {
     const ValueFlow::Value* value = getValue(exprid, true);
     if (value && value->isContainerSizeValue()) {
         if (value->isImpossible() && value->intvalue == 0) {
-            *result = false;
+            result = false;
             return true;
         }
         if (!value->isImpossible()) {
-            *result = (value->intvalue == 0);
+            result = (value->intvalue == 0);
             return true;
         }
     }
@@ -210,7 +210,7 @@ static bool evaluateCondition(const std::string& op,
     }
     MathLib::bigint result = 0;
     bool error = false;
-    execute(condition, &pm, &result, &error, settings);
+    execute(condition, pm, &result, &error, settings);
     return !error && result == r;
 }
 
@@ -259,7 +259,7 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return {t->values().front().intvalue};
         MathLib::bigint result = 0;
         bool error = false;
-        execute(t, &pm, &result, &error);
+        execute(t, pm, &result, &error);
         if (!error)
             return {result};
         return std::vector<MathLib::bigint>{};
@@ -323,7 +323,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Scope* scop
             return;
         MathLib::bigint result = 0;
         bool error = false;
-        execute(condTok, &pm, &result, &error);
+        execute(condTok, pm, &result, &error);
         if (error)
             programMemoryParseCondition(pm, condTok, endTok, settings, scope->type != Scope::eElse);
     }
@@ -334,7 +334,7 @@ static void fillProgramMemoryFromConditions(ProgramMemory& pm, const Token* tok,
     fillProgramMemoryFromConditions(pm, tok->scope(), tok, settings);
 }
 
-static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const ProgramMemory& state, const ProgramMemory::Map& vars)
+static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok, const Settings* settings, const ProgramMemory& state, const ProgramMemory::Map& vars)
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
@@ -357,7 +357,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
-                   isVariableChanged(tok2, 0, nullptr, true)) {
+                   isVariableChanged(tok2, 0, settings, true)) {
             pm.setUnknown(tok2);
         }
 
@@ -403,13 +403,14 @@ static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token*
 
 static ProgramMemory getInitialProgramState(const Token* tok,
                                             const Token* origin,
+                                            const Settings* settings,
                                             const ProgramMemory::Map& vars = ProgramMemory::Map {})
 {
     ProgramMemory pm;
     if (origin) {
         fillProgramMemoryFromConditions(pm, origin, nullptr);
         const ProgramMemory state = pm;
-        fillProgramMemoryFromAssignments(pm, tok, state, vars);
+        fillProgramMemoryFromAssignments(pm, tok, settings, state, vars);
         removeModifiedVars(pm, tok, origin);
     }
     return pm;
@@ -447,7 +448,7 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
     addVars(pm, vars);
     fillProgramMemoryFromConditions(pm, tok, settings);
     ProgramMemory local = pm;
-    fillProgramMemoryFromAssignments(pm, tok, local, vars);
+    fillProgramMemoryFromAssignments(pm, tok, settings, local, vars);
     addVars(pm, vars);
     replace(pm, tok);
 }
@@ -501,34 +502,15 @@ ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const 
     return local.state;
 }
 
-ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
-{
-    ProgramMemory programMemory;
-    for (const auto& p:vars) {
-        const ValueFlow::Value &value = p.second;
-        programMemory.replace(getInitialProgramState(tok, value.tokvalue));
-        programMemory.replace(getInitialProgramState(tok, value.condition));
-    }
-    fillProgramMemoryFromConditions(programMemory, tok, nullptr);
-    ProgramMemory state;
-    for (const auto& p:vars) {
-        const ValueFlow::Value &value = p.second;
-        programMemory.setValue(p.first.tok, value);
-    }
-    state = programMemory;
-    fillProgramMemoryFromAssignments(programMemory, tok, state, vars);
-    return programMemory;
-}
-
 ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings)
 {
     ProgramMemory programMemory;
-    programMemory.replace(getInitialProgramState(tok, value.tokvalue));
-    programMemory.replace(getInitialProgramState(tok, value.condition));
+    programMemory.replace(getInitialProgramState(tok, value.tokvalue, settings));
+    programMemory.replace(getInitialProgramState(tok, value.condition, settings));
     fillProgramMemoryFromConditions(programMemory, tok, settings);
     programMemory.setValue(expr, value);
     const ProgramMemory state = programMemory;
-    fillProgramMemoryFromAssignments(programMemory, tok, state, {{expr, value}});
+    fillProgramMemoryFromAssignments(programMemory, tok, settings, state, {{expr, value}});
     return programMemory;
 }
 
@@ -719,7 +701,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::atan2(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -731,7 +713,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::remainder(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -743,7 +725,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::nextafter(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -755,7 +737,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::nexttoward(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -767,7 +749,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::hypot(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -779,7 +761,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::fdim(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -791,7 +773,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::fmax(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -803,7 +785,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::fmin(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -815,7 +797,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::fmod(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -827,7 +809,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::pow(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -839,7 +821,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::scalbln(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -851,7 +833,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         const double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
-        combineValueProperties(args[0], args[1], &v);
+        combineValueProperties(args[0], args[1], v);
         v.floatValue = std::ldexp(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -1408,12 +1390,12 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
 }
 
 void execute(const Token* expr,
-             ProgramMemory* const programMemory,
+             ProgramMemory& programMemory,
              MathLib::bigint* result,
              bool* error,
              const Settings* settings)
 {
-    ValueFlow::Value v = execute(expr, *programMemory, settings);
+    ValueFlow::Value v = execute(expr, programMemory, settings);
     if (!v.isIntValue() || v.isImpossible()) {
         if (error)
             *error = true;

@@ -48,7 +48,7 @@ public:
 };
 
 enum class Certainty {
-    normal, inconclusive, safe, experimental
+    normal, inconclusive
 };
 
 enum class Checks {

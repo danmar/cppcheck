@@ -1469,9 +1469,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
 
     if (Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar && !(tok->tokAt(-2)->variable() && tok->tokAt(-2)->variable()->isReference())) {
         const Token *parent = tok->next()->astParent();
-        if (parent && parent->isUnaryOp("&"))
-            return false;
-        return true;
+        return !parent || !parent->isUnaryOp("&");
     } else if (!isPointer && !Token::simpleMatch(tok->astParent(), ".") && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
         return true;
 
@@ -1486,7 +1484,8 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
              tok->astParent()->astParent()->astParent()->astOperand2() == tok->astParent()->astParent())
         return true;
 
-    else if (mSettings->certainty.isEnabled(Certainty::experimental) &&
+    // TODO: this used to be experimental - enable or remove see #5586
+    else if ((false) && // NOLINT(readability-simplify-boolean-expr)
              !isPointer &&
              Token::Match(tok->tokAt(-2), "[(,] & %name% [,)]") &&
              isVariableUsage(tok, isPointer, alloc))
@@ -1611,7 +1610,7 @@ void CheckUninitVar::valueFlowUninit()
                 bool uninitderef = false;
                 if (tok->variable()) {
                     bool unknown;
-                    const bool isarray = !tok->variable() || tok->variable()->isArray();
+                    const bool isarray = tok->variable()->isArray();
                     const bool ispointer = astIsPointer(tok) && !isarray;
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
                     if (ispointer && v->indirect == 1 && !deref)
@@ -1620,7 +1619,7 @@ void CheckUninitVar::valueFlowUninit()
                         continue;
                     uninitderef = deref && v->indirect == 0;
                     const bool isleaf = isLeafDot(tok) || uninitderef;
-                    if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
+                    if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
                         continue;
                 }
                 const ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);

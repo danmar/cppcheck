@@ -109,7 +109,7 @@ static int getArgumentPos(const Token* ftok, const Token* tokToFind){
 }
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-static void astFlattenRecursive(T* tok, std::vector<T*>* result, const char* op, nonneg int depth = 0)
+static void astFlattenRecursive(T* tok, std::vector<T*>& result, const char* op, nonneg int depth = 0)
 {
     ++depth;
     if (!tok || depth >= 100)
@@ -118,21 +118,21 @@ static void astFlattenRecursive(T* tok, std::vector<T*>* result, const char* op,
         astFlattenRecursive(tok->astOperand1(), result, op, depth);
         astFlattenRecursive(tok->astOperand2(), result, op, depth);
     } else {
-        result->push_back(tok);
+        result.push_back(tok);
     }
 }
 
 std::vector<const Token*> astFlatten(const Token* tok, const char* op)
 {
     std::vector<const Token*> result;
-    astFlattenRecursive(tok, &result, op);
+    astFlattenRecursive(tok, result, op);
     return result;
 }
 
 std::vector<Token*> astFlatten(Token* tok, const char* op)
 {
     std::vector<Token*> result;
-    astFlattenRecursive(tok, &result, op);
+    astFlattenRecursive(tok, result, op);
     return result;
 }
 
@@ -282,6 +282,7 @@ Library::Container::Action astContainerAction(const Token* tok, const Token** ft
         return Library::Container::Action::NO_ACTION;
     return tok->valueType()->container->getAction(ftok2->str());
 }
+
 Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok)
 {
     const Token* ftok2 = getContainerFunction(tok);
@@ -290,6 +291,20 @@ Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok
     if (!ftok2)
         return Library::Container::Yield::NO_YIELD;
     return tok->valueType()->container->getYield(ftok2->str());
+}
+
+Library::Container::Yield astFunctionYield(const Token* tok, const Settings* settings, const Token** ftok)
+{
+    if (!tok)
+        return Library::Container::Yield::NO_YIELD;
+
+    const auto* function = settings->library.getFunction(tok);
+    if (!function)
+        return Library::Container::Yield::NO_YIELD;
+
+    if (ftok)
+        *ftok = tok;
+    return function->containerYield;
 }
 
 bool astIsRangeBasedForDecl(const Token* tok)
@@ -377,9 +392,7 @@ bool isVariableDecl(const Token* tok)
     if (var->nameToken() == tok)
         return true;
     const Token * const varDeclEndToken = var->declEndToken();
-    if (Token::Match(varDeclEndToken, "; %var%") && varDeclEndToken->next() == tok)
-        return true;
-    return false;
+    return Token::Match(varDeclEndToken, "; %var%") && varDeclEndToken->next() == tok;
 }
 
 bool isStlStringType(const Token* tok)
@@ -407,7 +420,7 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
         return false;
     if (Token::simpleMatch(tok, "?")) {
         const Token* branchTok = tok->astOperand2();
-        if (!branchTok->astOperand1()->valueType())
+        if (!branchTok->astOperand1() || !branchTok->astOperand1()->valueType())
             return false;
         if (!branchTok->astOperand2()->valueType())
             return false;
@@ -717,7 +730,7 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
         const ValueType* vtCont = contTok->valueType();
         if (!vtCont->containerTypeToken)
             return {};
-        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings, true); // TODO: set isCpp
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, *settings, true); // TODO: set isCpp
         return {std::move(vtParent)};
     }
     if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
@@ -865,12 +878,12 @@ const Token *findNextTokenFromBreak(const Token *breakToken)
 }
 
 bool extractForLoopValues(const Token *forToken,
-                          nonneg int * const varid,
-                          bool * const knownInitValue,
-                          MathLib::bigint * const initValue,
-                          bool * const partialCond,
-                          MathLib::bigint * const stepValue,
-                          MathLib::bigint * const lastValue)
+                          nonneg int &varid,
+                          bool &knownInitValue,
+                          MathLib::bigint &initValue,
+                          bool &partialCond,
+                          MathLib::bigint &stepValue,
+                          MathLib::bigint &lastValue)
 {
     if (!Token::simpleMatch(forToken, "for (") || !Token::simpleMatch(forToken->next()->astOperand2(), ";"))
         return false;
@@ -880,28 +893,28 @@ bool extractForLoopValues(const Token *forToken,
     if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
     std::vector<MathLib::bigint> minInitValue = getMinValue(ValueFlow::makeIntegralInferModel(), initExpr->astOperand2()->values());
-    *varid = initExpr->astOperand1()->varId();
-    *knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
-    *initValue = minInitValue.empty() ? 0 : minInitValue.front();
-    *partialCond = Token::Match(condExpr, "%oror%|&&");
+    varid = initExpr->astOperand1()->varId();
+    knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
+    initValue = minInitValue.empty() ? 0 : minInitValue.front();
+    partialCond = Token::Match(condExpr, "%oror%|&&");
     visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) {
         if (Token::Match(tok, "%oror%|&&"))
             return ChildrenToVisit::op1_and_op2;
-        if (Token::Match(tok, "<|<=") && tok->isBinaryOp() && tok->astOperand1()->varId() == *varid && tok->astOperand2()->hasKnownIntValue()) {
+        if (Token::Match(tok, "<|<=") && tok->isBinaryOp() && tok->astOperand1()->varId() == varid && tok->astOperand2()->hasKnownIntValue()) {
             if (Token::Match(condExpr, "%oror%|&&") || tok->astOperand2()->getKnownIntValue() < condExpr->astOperand2()->getKnownIntValue())
                 condExpr = tok;
         }
         return ChildrenToVisit::none;
     });
-    if (!Token::Match(condExpr, "<|<=") || !condExpr->isBinaryOp() || condExpr->astOperand1()->varId() != *varid || !condExpr->astOperand2()->hasKnownIntValue())
+    if (!Token::Match(condExpr, "<|<=") || !condExpr->isBinaryOp() || condExpr->astOperand1()->varId() != varid || !condExpr->astOperand2()->hasKnownIntValue())
         return false;
-    if (!incExpr || !incExpr->isUnaryOp("++") || incExpr->astOperand1()->varId() != *varid)
+    if (!incExpr || !incExpr->isUnaryOp("++") || incExpr->astOperand1()->varId() != varid)
         return false;
-    *stepValue = 1;
+    stepValue = 1;
     if (condExpr->str() == "<")
-        *lastValue = condExpr->astOperand2()->getKnownIntValue() - 1;
+        lastValue = condExpr->astOperand2()->getKnownIntValue() - 1;
     else
-        *lastValue = condExpr->astOperand2()->getKnownIntValue();
+        lastValue = condExpr->astOperand2()->getKnownIntValue();
     return true;
 }
 
@@ -1220,54 +1233,52 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
             return refs_result;
         }
 
-    } else if (Token::Match(tok->previous(), "%name% (")) {
+    } else if (tok->previous() && tok->previous()->function() && Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
-        if (f) {
-            if (!Function::returnsReference(f)) {
-                refs_result.push_back({tok, std::move(errors)});
-                return refs_result;
-            }
-            std::set<ReferenceToken, ReferenceTokenLess> result;
-            std::vector<const Token*> returns = Function::findReturns(f);
-            for (const Token* returnTok : returns) {
-                if (returnTok == tok)
-                    continue;
-                for (const ReferenceToken& rt :
-                     followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
-                    const Variable* argvar = rt.token->variable();
-                    if (!argvar) {
+        if (!Function::returnsReference(f)) {
+            refs_result.push_back({tok, std::move(errors)});
+            return refs_result;
+        }
+        std::set<ReferenceToken, ReferenceTokenLess> result;
+        std::vector<const Token*> returns = Function::findReturns(f);
+        for (const Token* returnTok : returns) {
+            if (returnTok == tok)
+                continue;
+            for (const ReferenceToken& rt :
+                 followAllReferences(returnTok, temporary, inconclusive, errors, depth - returns.size())) {
+                const Variable* argvar = rt.token->variable();
+                if (!argvar) {
+                    refs_result.push_back({tok, std::move(errors)});
+                    return refs_result;
+                }
+                if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                    const int n = getArgumentPos(argvar, f);
+                    if (n < 0) {
                         refs_result.push_back({tok, std::move(errors)});
                         return refs_result;
                     }
-                    if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-                        const int n = getArgumentPos(argvar, f);
-                        if (n < 0) {
-                            refs_result.push_back({tok, std::move(errors)});
-                            return refs_result;
-                        }
-                        std::vector<const Token*> args = getArguments(tok->previous());
-                        if (n >= args.size()) {
-                            refs_result.push_back({tok, std::move(errors)});
-                            return refs_result;
-                        }
-                        const Token* argTok = args[n];
-                        ErrorPath er = errors;
-                        er.emplace_back(returnTok, "Return reference.");
-                        er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                        auto refs =
-                            followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
-                        result.insert(refs.cbegin(), refs.cend());
-                        if (!inconclusive && result.size() > 1) {
-                            refs_result.push_back({tok, std::move(errors)});
-                            return refs_result;
-                        }
+                    std::vector<const Token*> args = getArguments(tok->previous());
+                    if (n >= args.size()) {
+                        refs_result.push_back({tok, std::move(errors)});
+                        return refs_result;
+                    }
+                    const Token* argTok = args[n];
+                    ErrorPath er = errors;
+                    er.emplace_back(returnTok, "Return reference.");
+                    er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
+                    auto refs =
+                        followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
+                    result.insert(refs.cbegin(), refs.cend());
+                    if (!inconclusive && result.size() > 1) {
+                        refs_result.push_back({tok, std::move(errors)});
+                        return refs_result;
                     }
                 }
             }
-            if (!result.empty()) {
-                refs_result.insert(refs_result.end(), result.cbegin(), result.cend());
-                return refs_result;
-            }
+        }
+        if (!result.empty()) {
+            refs_result.insert(refs_result.end(), result.cbegin(), result.cend());
+            return refs_result;
         }
     }
     refs_result.push_back({tok, std::move(errors)});
@@ -1578,13 +1589,14 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                     return false;
             }
         } else {
-            if (tok1->function() && !tok1->function()->isConst() && !tok1->function()->isAttributeConst() && !tok1->function()->isAttributePure())
+            if (!tok1->function()->isConst() && !tok1->function()->isAttributeConst() &&
+                !tok1->function()->isAttributePure())
                 return false;
         }
     }
     // templates/casts
-    if ((Token::Match(tok1, "%name% <") && tok1->next()->link()) ||
-        (Token::Match(tok2, "%name% <") && tok2->next()->link())) {
+    if ((tok1->next() && tok1->next()->link() && Token::Match(tok1, "%name% <")) ||
+        (tok2->next() && tok2->next()->link() && Token::Match(tok2, "%name% <"))) {
 
         // non-const template function that is not a dynamic_cast => return false
         if (pure && Token::simpleMatch(tok1->next()->link(), "> (") &&
@@ -1983,17 +1995,14 @@ bool isUniqueExpression(const Token* tok)
         if (!scope)
             return true;
         const std::string returnType = fun->retType ? fun->retType->name() : fun->retDef->stringifyList(fun->tokenDef);
-        for (const Function& f:scope->functionList) {
+        if (!std::all_of(scope->functionList.begin(), scope->functionList.end(), [&](const Function& f) {
             if (f.type != Function::eFunction)
-                continue;
+                return true;
 
             const std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.returnDefEnd());
-            if (f.argumentList.size() == fun->argumentList.size() &&
-                returnType == freturnType &&
-                f.name() != fun->name()) {
-                return false;
-            }
-        }
+            return f.argumentList.size() != fun->argumentList.size() || returnType != freturnType || f.name() == fun->name();
+        }))
+            return false;
     } else if (tok->variable()) {
         const Variable * var = tok->variable();
         const Scope * scope = var->scope();

@@ -34,6 +34,9 @@ struct InferModel {
     virtual bool match(const ValueFlow::Value& value) const = 0;
     virtual ValueFlow::Value yield(MathLib::bigint value) const = 0;
     virtual ~InferModel() {}
+    InferModel(const InferModel&) = default;
+protected:
+    InferModel() = default;
 };
 
 std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,

@@ -28,6 +28,7 @@
 #include "sourcelocation.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iosfwd>
 #include <list>
@@ -211,7 +212,7 @@ class CPPCHECKLIB Variable {
      * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings, bool* isContainer);
+    bool arrayDimensions(const Settings* settings, bool& isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -1078,9 +1079,7 @@ public:
         const Scope * parent = nestedIn;
         while (outer != parent && parent)
             parent = parent->nestedIn;
-        if (parent && parent == outer)
-            return true;
-        return false;
+        return parent && parent == outer;
     }
 
     static Function* nestedInFunction(const Scope* scope) {
@@ -1271,7 +1270,7 @@ public:
         originalTypeName(std::move(otn))
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings *settings, bool isCpp);
+    static ValueType parseDecl(const Token *type, const Settings &settings, bool isCpp);
 
     static Type typeFromString(const std::string &typestr, bool longType);
 
@@ -1291,7 +1290,7 @@ public:
         return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
     }
 
-    bool fromLibraryType(const std::string &typestr, const Settings *settings);
+    bool fromLibraryType(const std::string &typestr, const Settings &settings);
 
     bool isEnum() const {
         return typeScope && typeScope->type == Scope::eEnum;
@@ -1312,7 +1311,7 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    SymbolDatabase(const Tokenizer &tokenizer, const Settings &settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
@@ -1420,12 +1419,12 @@ private:
     void createSymbolDatabaseNeedInitialization();
     void createSymbolDatabaseVariableSymbolTable();
     void createSymbolDatabaseSetScopePointers();
-    void createSymbolDatabaseSetFunctionPointers(bool firstPass);
+    void createSymbolDatabaseSetFunctionPointers(bool firstPass); // cppcheck-suppress functionConst // has side effects
     void createSymbolDatabaseSetVariablePointers();
     // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
-    void createSymbolDatabaseEnums();
+    void createSymbolDatabaseEnums(); // cppcheck-suppress functionConst // has side effects
     void createSymbolDatabaseEscapeFunctions();
     // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
@@ -1456,8 +1455,8 @@ private:
     void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
     void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
 
-    const Tokenizer *mTokenizer;
-    const Settings *mSettings;
+    const Tokenizer &mTokenizer;
+    const Settings &mSettings;
     ErrorLogger *mErrorLogger;
 
     /** variable symbol table */

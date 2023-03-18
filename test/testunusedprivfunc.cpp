@@ -92,11 +92,11 @@ private:
     }
 
 
-    void check(const char code[], Settings::PlatformType platform = Settings::Native) {
+    void check(const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
-        PLATFORM(settings, platform);
+        PLATFORM(settings.platform, platform);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -621,7 +621,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
-              "};", Settings::Win32A);
+              "};", cppcheck::Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -634,7 +634,7 @@ private:
               "    }\n"
               "public:\n"
               "    Foo() { }\n"
-              "};", Settings::Win32A);
+              "};", cppcheck::Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 

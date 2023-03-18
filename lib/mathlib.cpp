@@ -23,6 +23,7 @@
 
 #include <cctype>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <exception>
 #include <limits>

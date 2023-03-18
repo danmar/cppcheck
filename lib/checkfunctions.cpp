@@ -32,6 +32,7 @@
 #include "vfvalue.h"
 
 #include <iomanip>
+#include <list>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -249,7 +250,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             else if (Token::Match(tok, "[(<]") && tok->link())
                 tok = tok->link();
 
-            if (tok->varId() || !Token::Match(tok, "%name% (") || tok->isKeyword())
+            if (tok->varId() || tok->isKeyword() || tok->isStandardType() || !Token::Match(tok, "%name% ("))
                 continue;
 
             const Token *parent = tok->next()->astParent();
@@ -267,7 +268,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             }
 
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
-                !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
+                tok->next()->astOperand1()) {
                 const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
                 const bool warn = (tok->function() && tok->function()->isAttributeNodiscard()) || // avoid duplicate warnings for resource-allocating functions
                                   (retvalTy == Library::UseRetValType::DEFAULT && mSettings->library.getAllocFuncInfo(tok) == nullptr);
@@ -563,8 +564,8 @@ void CheckFunctions::memsetInvalid2ndParam()
 
             if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
                 const long long int value = MathLib::toLongNumber(secondParamTok->str());
-                const long long sCharMin = mSettings->signedCharMin();
-                const long long uCharMax = mSettings->unsignedCharMax();
+                const long long sCharMin = mSettings->platform.signedCharMin();
+                const long long uCharMax = mSettings->platform.unsignedCharMax();
                 if (value < sCharMin || value > uCharMax)
                     memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
             }

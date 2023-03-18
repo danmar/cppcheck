@@ -23,7 +23,9 @@
 #include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <sstream> // IWYU pragma: keep
+#include <string>
 
 class TestAutoVariables : public TestFixture {
 public:
@@ -52,6 +54,7 @@ private:
         settings.severity.enable(Severity::style);
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "qt.cfg");
+        settings.libraries.emplace_back("qt");
 
         TEST_CASE(testautovar1);
         TEST_CASE(testautovar2);
@@ -2274,6 +2277,13 @@ private:
         check("auto f() {\n"
               "    std::vector<int> x;\n"
               "    auto it = x.begin();\n"
+              "    return it;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());
+
+        check("auto f() {\n"
+              "    std::vector<int> x;\n"
+              "    auto it = std::begin(x);\n"
               "    return it;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());

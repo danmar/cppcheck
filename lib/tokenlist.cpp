@@ -37,6 +37,7 @@
 #include <utility>
 #include <set>
 #include <stack>
+#include <unordered_set>
 
 #include <simplecpp.h>
 
@@ -479,12 +480,13 @@ static bool iscast(const Token *tok, bool cpp)
                 const Token *tok3 = tok2->linkAt(1);
                 while (tok3 != tok2 && Token::Match(tok3, "[{}]"))
                     tok3 = tok3->previous();
-                return tok3 != tok2 && tok3->str() != ";";
+                return tok3->str() != ";";
             }
-            return type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
-                   (Token::Match(tok2, ") %any%") &&
-                    (!tok2->next()->isOp() || Token::Match(tok2->next(), "!|~|++|--")) &&
-                    !Token::Match(tok2->next(), "[[]);,?:.]"));
+            const bool res = type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
+                             (Token::Match(tok2, ") %any%") &&
+                              (!tok2->next()->isOp() || Token::Match(tok2->next(), "!|~|++|--")) &&
+                              !Token::Match(tok2->next(), "[[]);,?:.]"));
+            return res;
         }
 
         if (Token::Match(tok2, "&|&& )"))
@@ -556,7 +558,7 @@ static bool iscpp11init_impl(const Token * const tok)
         nameToken = nameToken->link()->previous();
     if (nameToken->str() == "]") {
         const Token* newTok = nameToken->link()->previous();
-        while (Token::Match(newTok, "%type%") && !newTok->isKeyword())
+        while (Token::Match(newTok, "%type%|::") && !newTok->isKeyword())
             newTok = newTok->previous();
         if (Token::simpleMatch(newTok, "new"))
             return true;
@@ -616,9 +618,7 @@ static bool isQualifier(const Token* tok)
 {
     while (Token::Match(tok, "&|&&|*"))
         tok = tok->next();
-    if (!Token::Match(tok, "{|;"))
-        return false;
-    return true;
+    return Token::Match(tok, "{|;");
 }
 
 static void compileUnaryOp(Token *&tok, AST_state& state, void (*f)(Token *&tok, AST_state& state))
@@ -873,7 +873,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 tok = tok->previous();
             return !Token::Match(tok, "new ::| %type%");
         }
-        return true;
+        return !findLambdaEndTokenWithoutAST(tok);
     };
 
     if (doCompileScope(tok))
@@ -1322,6 +1322,17 @@ const Token* isLambdaCaptureList(const Token * tok)
     return params->astOperand1();
 }
 
+const Token* findLambdaEndTokenWithoutAST(const Token* tok) {
+    if (!(Token::simpleMatch(tok, "[") && tok->link()))
+        return nullptr;
+    tok = tok->link()->next();
+    if (Token::simpleMatch(tok, "(") && tok->link())
+        tok = tok->link()->next();
+    if (!(Token::simpleMatch(tok, "{") && tok->link()))
+        return nullptr;
+    return tok->link()->next();
+}
+
 static Token * createAstAtToken(Token *tok, bool cpp);
 
 // Compile inner expressions inside inner ({..}) and lambda bodies
@@ -1397,6 +1408,24 @@ static Token * findAstTop(Token *tok1, Token *tok2)
 
 static Token * createAstAtToken(Token *tok, bool cpp)
 {
+    // skip function pointer declaration
+    if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
+        const Token* type = tok;
+        while (Token::Match(type, "%type%|*|&|<")) {
+            if (type->str() == "<") {
+                if (type->link())
+                    type = type->link();
+                else
+                    break;
+            }
+            type = type->next();
+        }
+        if (Token::Match(type, "( * *| %var%") &&
+            Token::Match(type->link()->previous(), "%var%|] ) (") &&
+            Token::Match(type->link()->linkAt(1), ") [;,)]"))
+            return type->link()->linkAt(1)->next();
+    }
+
     if (Token::simpleMatch(tok, "for (")) {
         if (cpp && Token::Match(tok, "for ( const| auto &|&&| [")) {
             Token *decl = Token::findsimplematch(tok, "[");
@@ -1639,7 +1668,7 @@ struct OnException {
 void TokenList::validateAst() const
 {
     OnException oe{[&] {
-            if (mSettings->debugnormal)
+            if (mSettings && mSettings->debugnormal)
                 mTokensFrontBack.front->printOut();
         }};
     // Check for some known issues in AST to avoid crash/hang later on
@@ -1763,17 +1792,20 @@ bool TokenList::validateToken(const Token* tok) const
 
 void TokenList::simplifyPlatformTypes()
 {
+    if (!mSettings)
+        return;
+
     const bool isCPP11  = mSettings->standards.cpp >= Standards::CPP11;
 
     enum { isLongLong, isLong, isInt } type;
 
     /** @todo This assumes a flat address space. Not true for segmented address space (FAR *). */
 
-    if (mSettings->sizeof_size_t == mSettings->sizeof_long)
+    if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long)
         type = isLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_long_long)
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_long_long)
         type = isLongLong;
-    else if (mSettings->sizeof_size_t == mSettings->sizeof_int)
+    else if (mSettings->platform.sizeof_size_t == mSettings->platform.sizeof_int)
         type = isInt;
     else
         return;
@@ -1826,7 +1858,7 @@ void TokenList::simplifyPlatformTypes()
         }
     }
 
-    const std::string platform_type(mSettings->platformString());
+    const std::string platform_type(mSettings->platform.toString());
 
     for (Token *tok = front(); tok; tok = tok->next()) {
         if (tok->tokType() != Token::eType && tok->tokType() != Token::eName)

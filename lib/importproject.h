@@ -86,8 +86,10 @@ public:
 
     ImportProject();
     virtual ~ImportProject() = default;
+    ImportProject(const ImportProject&) = default;
+    ImportProject& operator=(const ImportProject&) = default;
 
-    void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
+    void selectOneVsConfig(cppcheck::Platform::Type platform);
 
     std::list<std::string> getVSConfigs();
 

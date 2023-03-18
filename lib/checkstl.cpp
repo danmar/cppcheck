@@ -702,9 +702,7 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
                                               ValueFlow::Value::LifetimeKind kind = ValueFlow::Value::LifetimeKind::Iterator)
 {
     if (isSameExpression(true, false, tok1, tok2, library, false, false)) {
-        if (astIsContainerOwned(tok1) && isTemporary(true, tok1, &library))
-            return false;
-        return true;
+        return !astIsContainerOwned(tok1) || !isTemporary(true, tok1, &library);
     }
     if (kind == ValueFlow::Value::LifetimeKind::Address) {
         return isSameExpression(true, false, getAddressContainer(tok1), getAddressContainer(tok2), library, false, false);
@@ -1310,7 +1308,7 @@ void CheckStl::negativeIndex()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%var% [") || WRONG_DATA(!tok->next()->astOperand2(), tok))
+            if (!Token::Match(tok, "%var% [") || !tok->next()->astOperand2())
                 continue;
             const Variable * const var = tok->variable();
             if (!var || tok == var->nameToken())
@@ -1965,7 +1963,7 @@ void CheckStl::string_c_str()
                         string_c_strError(tok);
                 } else if (printPerformance && tok->tokAt(1)->astOperand2() && Token::Match(tok->tokAt(1)->astOperand2()->tokAt(-3), "%var% . c_str|data ( ) ;")) {
                     const Token* vartok = tok->tokAt(1)->astOperand2()->tokAt(-3);
-                    if (tok->variable() && tok->variable()->isStlStringType() && vartok->variable() && vartok->variable()->isStlStringType())
+                    if (tok->variable()->isStlStringType() && vartok->variable() && vartok->variable()->isStlStringType())
                         string_c_strAssignment(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
@@ -2518,7 +2516,7 @@ static const Token *singleStatement(const Token *start)
     return endStatement;
 }
 
-static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input)
+static const Token *singleAssignInScope(const Token *start, nonneg int varid, bool &input, const Settings* settings)
 {
     const Token *endStatement = singleStatement(start);
     if (!endStatement)
@@ -2526,15 +2524,15 @@ static const Token *singleAssignInScope(const Token *start, nonneg int varid, bo
     if (!Token::Match(start->next(), "%var% %assign%"))
         return nullptr;
     const Token *assignTok = start->tokAt(2);
-    if (isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), false, nullptr, true))
+    if (isVariableChanged(assignTok->next(), endStatement, assignTok->astOperand1()->varId(), /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
-    if (isVariableChanged(assignTok->next(), endStatement, varid, false, nullptr, true))
+    if (isVariableChanged(assignTok->next(), endStatement, varid, /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
     input = Token::findmatch(assignTok->next(), "%varid%", endStatement, varid) || !Token::Match(start->next(), "%var% =");
     return assignTok;
 }
 
-static const Token *singleMemberCallInScope(const Token *start, nonneg int varid, bool &input)
+static const Token *singleMemberCallInScope(const Token *start, nonneg int varid, bool &input, const Settings* settings)
 {
     if (start->str() != "{")
         return nullptr;
@@ -2551,7 +2549,7 @@ static const Token *singleMemberCallInScope(const Token *start, nonneg int varid
     if (!Token::findmatch(dotTok->tokAt(2), "%varid%", endStatement, varid))
         return nullptr;
     input = Token::Match(start->next(), "%var% . %name% ( %varid% )", varid);
-    if (isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), false, nullptr, true))
+    if (isVariableChanged(dotTok->next(), endStatement, dotTok->astOperand1()->varId(), /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
     return dotTok;
 }
@@ -2571,7 +2569,7 @@ static const Token *singleIncrementInScope(const Token *start, nonneg int varid,
     return varTok;
 }
 
-static const Token *singleConditionalInScope(const Token *start, nonneg int varid)
+static const Token *singleConditionalInScope(const Token *start, nonneg int varid, const Settings* settings)
 {
     if (start->str() != "{")
         return nullptr;
@@ -2588,7 +2586,7 @@ static const Token *singleConditionalInScope(const Token *start, nonneg int vari
         return nullptr;
     if (!Token::findmatch(start, "%varid%", bodyTok, varid))
         return nullptr;
-    if (isVariableChanged(start, bodyTok, varid, false, nullptr, true))
+    if (isVariableChanged(start, bodyTok, varid, /*globalvar*/ false, settings, /*cpp*/ true))
         return nullptr;
     return bodyTok;
 }
@@ -2670,6 +2668,142 @@ static std::string minmaxCompare(const Token *condTok, nonneg int loopVar, nonne
     return algo;
 }
 
+namespace {
+    struct LoopAnalyzer {
+        const Token* bodyTok = nullptr;
+        const Token* loopVar = nullptr;
+        const Settings* settings = nullptr;
+        std::set<nonneg int> varsChanged = {};
+
+        explicit LoopAnalyzer(const Token* tok, const Settings* psettings)
+            : bodyTok(tok->next()->link()->next()), settings(psettings)
+        {
+            const Token* splitTok = tok->next()->astOperand2();
+            if (Token::simpleMatch(splitTok, ":") && splitTok->previous()->varId() != 0) {
+                loopVar = splitTok->previous();
+            }
+            if (valid()) {
+                findChangedVariables();
+            }
+        }
+        bool isLoopVarChanged() const {
+            return varsChanged.count(loopVar->varId()) > 0;
+        }
+
+        bool isModified(const Token* tok) const
+        {
+            if (tok->variable() && tok->variable()->isConst())
+                return false;
+            int n = 1 + (astIsPointer(tok) ? 1 : 0);
+            for (int i = 0; i < n; i++) {
+                bool inconclusive = false;
+                if (isVariableChangedByFunctionCall(tok, i, settings, &inconclusive))
+                    return true;
+                if (inconclusive)
+                    return true;
+                if (isVariableChanged(tok, i, settings, true))
+                    return true;
+            }
+            return false;
+        }
+
+        template<class Predicate, class F>
+        void findTokens(Predicate pred, F f) const
+        {
+            for (const Token* tok = bodyTok; precedes(tok, bodyTok->link()); tok = tok->next()) {
+                if (pred(tok))
+                    f(tok);
+            }
+        }
+
+        template<class Predicate>
+        const Token* findToken(Predicate pred) const
+        {
+            for (const Token* tok = bodyTok; precedes(tok, bodyTok->link()); tok = tok->next()) {
+                if (pred(tok))
+                    return tok;
+            }
+            return nullptr;
+        }
+
+        bool hasGotoOrBreak() const
+        {
+            return findToken([](const Token* tok) {
+                return Token::Match(tok, "goto|break");
+            });
+        }
+
+        bool valid() const {
+            return bodyTok && loopVar;
+        }
+
+        std::string findAlgo() const
+        {
+            if (!valid())
+                return "";
+            bool loopVarChanged = isLoopVarChanged();
+            if (!loopVarChanged && varsChanged.empty()) {
+                if (hasGotoOrBreak())
+                    return "";
+                bool alwaysTrue = true;
+                bool alwaysFalse = true;
+                auto hasReturn = [](const Token* tok) {
+                    return Token::simpleMatch(tok, "return");
+                };
+                findTokens(hasReturn, [&](const Token* tok) {
+                    const Token* returnTok = tok->astOperand1();
+                    if (!returnTok || !returnTok->hasKnownIntValue() || !astIsBool(returnTok)) {
+                        alwaysTrue = false;
+                        alwaysFalse = false;
+                        return;
+                    }
+                    (returnTok->values().front().intvalue ? alwaysTrue : alwaysFalse) &= true;
+                    (returnTok->values().front().intvalue ? alwaysFalse : alwaysTrue) &= false;
+                });
+                if (alwaysTrue == alwaysFalse)
+                    return "";
+                if (alwaysTrue)
+                    return "std::any_of";
+                else
+                    return "std::all_of or std::none_of";
+            }
+            return "";
+        }
+
+        bool isLocalVar(const Variable* var) const
+        {
+            if (!var)
+                return false;
+            if (var->isPointer() || var->isReference())
+                return false;
+            if (var->declarationId() == loopVar->varId())
+                return false;
+            const Scope* scope = var->scope();
+            return scope && scope->isNestedIn(bodyTok->scope());
+        }
+
+    private:
+        void findChangedVariables()
+        {
+            std::set<nonneg int> vars;
+            for (const Token* tok = bodyTok; precedes(tok, bodyTok->link()); tok = tok->next()) {
+                if (tok->varId() == 0)
+                    continue;
+                if (vars.count(tok->varId()) > 0)
+                    continue;
+                if (isLocalVar(tok->variable())) {
+                    vars.insert(tok->varId());
+                    continue;
+                }
+                if (!isModified(tok))
+                    continue;
+                varsChanged.insert(tok->varId());
+                vars.insert(tok->varId());
+            }
+        }
+    };
+} // namespace
+
 void CheckStl::useStlAlgorithm()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -2694,6 +2828,13 @@ void CheckStl::useStlAlgorithm()
                 continue;
             if (!Token::simpleMatch(tok->next()->link(), ") {"))
                 continue;
+            LoopAnalyzer a{tok, mSettings};
+            std::string algoName = a.findAlgo();
+            if (!algoName.empty()) {
+                useStlAlgorithmError(tok, algoName);
+                continue;
+            }
+
             const Token *bodyTok = tok->next()->link()->next();
             const Token *splitTok = tok->next()->astOperand2();
             const Token* loopVar{};
@@ -2721,7 +2862,7 @@ void CheckStl::useStlAlgorithm()
 
             // Check for single assignment
             bool useLoopVarInAssign;
-            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
+            const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign, mSettings);
             if (assignTok) {
                 if (!checkAssignee(assignTok->astOperand1()))
                     continue;
@@ -2751,7 +2892,7 @@ void CheckStl::useStlAlgorithm()
             }
             // Check for container calls
             bool useLoopVarInMemCall;
-            const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall);
+            const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall, mSettings);
             if (memberAccessTok && !isIteratorLoop) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
@@ -2784,10 +2925,10 @@ void CheckStl::useStlAlgorithm()
             }
 
             // Check for conditionals
-            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId());
+            const Token *condBodyTok = singleConditionalInScope(bodyTok, loopVar->varId(), mSettings);
             if (condBodyTok) {
                 // Check for single assign
-                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign);
+                assignTok = singleAssignInScope(condBodyTok, loopVar->varId(), useLoopVarInAssign, mSettings);
                 if (assignTok) {
                     if (!checkAssignee(assignTok->astOperand1()))
                         continue;
@@ -2815,7 +2956,7 @@ void CheckStl::useStlAlgorithm()
                 }
 
                 // Check for container call
-                memberAccessTok = singleMemberCallInScope(condBodyTok, loopVar->varId(), useLoopVarInMemCall);
+                memberAccessTok = singleMemberCallInScope(condBodyTok, loopVar->varId(), useLoopVarInMemCall, mSettings);
                 if (memberAccessTok) {
                     const Token *memberCallTok = memberAccessTok->astOperand2();
                     const int contVarId = memberAccessTok->astOperand1()->varId();
@@ -2880,16 +3021,15 @@ static bool isKnownEmptyContainer(const Token* tok)
 {
     if (!tok)
         return false;
-    for (const ValueFlow::Value& v:tok->values()) {
+    return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
         if (!v.isKnown())
-            continue;
+            return false;
         if (!v.isContainerSizeValue())
-            continue;
+            return false;
         if (v.intvalue != 0)
-            continue;
+            return false;
         return true;
-    }
-    return false;
+    });
 }
 
 void CheckStl::knownEmptyContainer()

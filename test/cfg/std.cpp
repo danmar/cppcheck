@@ -2,7 +2,7 @@
 // Test library configuration for std.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/std.cpp
+// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/std.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -40,6 +40,7 @@
 #include <string_view>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 #include <version>
 #ifdef __cpp_lib_span
@@ -4561,6 +4562,13 @@ void stdbind()
     auto f2 = std::bind(stdbind_helper, 10);
 }
 
+int stdexchange() {
+    int i;
+    // cppcheck-suppress uninitvar
+    int j = std::exchange(i, 5);
+    return j;
+}
+
 class A
 {
     std::vector<std::string> m_str;
@@ -4653,4 +4661,47 @@ void stdspan()
     spn3.last<1>();
     spn3.subspan<1, 1>();
     #endif
+}
+
+void beginEnd()
+{
+    std::vector<int> v;
+
+    //cppcheck-suppress ignoredReturnValue
+    std::begin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::rbegin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::cbegin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::crbegin(v);
+
+    //cppcheck-suppress ignoredReturnValue
+    std::end(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::rend(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::cend(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::crend(v);
+
+    int arr[4];
+
+    //cppcheck-suppress ignoredReturnValue
+    std::begin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::rbegin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::cbegin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::crbegin(arr);
+
+    //cppcheck-suppress ignoredReturnValue
+    std::end(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::rend(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::cend(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::crend(arr);
 }

@@ -23,7 +23,6 @@
 #include "errortypes.h"
 #include "standards.h"
 #include "library.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
@@ -36,8 +35,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-
-#include <tinyxml2.h>
 
 class TestBufferOverrun : public TestFixture {
 public:
@@ -87,7 +84,6 @@ private:
         settings->standards.c = Standards::CLatest;
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.enable(Certainty::inconclusive);
-        settings->certainty.disable(Certainty::experimental);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -99,14 +95,10 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, nullptr);
-        preprocessor.setDirectives(tokens1);
-
         // Tokenizer..
         Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Check for buffer overruns..
         runChecks<CheckBufferOverrun>(&tokenizer, settings, this);
@@ -951,7 +943,7 @@ private:
 
     void array_index_24() {
         // ticket #1492 and #1539
-        const std::string charMaxPlusOne(settings0.defaultSign == 'u' ? "256" : "128");
+        const std::string charMaxPlusOne(settings0.platform.defaultSign == 'u' ? "256" : "128");
         check(("void f(char n) {\n"
                "    int a[n];\n"     // n <= CHAR_MAX
                "    a[-1] = 0;\n"    // negative index
@@ -3528,9 +3520,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
         check("void f() {\n"
@@ -4083,11 +4073,9 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
         settings.severity.enable(Severity::warning);
-        settings.sizeof_wchar_t = 4;
+        settings.platform.sizeof_wchar_t = 4;
 
         check("void f() {\n"
               "    char c[10];\n"
@@ -4225,9 +4213,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void f() {\n"
               "    char c[7];\n"
@@ -4289,9 +4275,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // formatstr..
         check("void f() {\n"
@@ -4403,9 +4387,7 @@ private:
                                "    <arg nr=\"4\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void f() {\n"
               "    char c[5];\n"
@@ -5246,6 +5228,13 @@ private:
             "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 5.\n",
                       errout.str());
+
+        ctu("void g(int *b) { b[0] = 0; }\n"
+            "void f() {\n"
+            "    GLint a[1];\n"
+            "    g(a);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu_variable() {
@@ -5498,6 +5487,7 @@ private:
 
         Settings settings;
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         check("void f(){\n"
               "int pipefd[1];\n" // <--  array of two integers is needed

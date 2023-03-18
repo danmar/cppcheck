@@ -47,7 +47,7 @@ These do not reflect the style we are (currently) enforcing.
 We are not interested in the size/complexity of a function.
 
 `readability-magic-numbers`<br>
-`readability-simplify-boolean-expr`<br>
+`readability-redundant-member-init`<br>
 
 These do not (always) increase readability.
 
@@ -129,7 +129,7 @@ Also reports a false positive about templates which deduce the array length: htt
 `misc-throw-by-value-catch-by-reference`<br>
 `readability-avoid-const-params-in-decls`<br>
 `bugprone-signed-char-misuse`<br>
-`performance-noexcept-move-constructor`<br>
+`readability-redundant-access-specifiers`<br>
 `concurrency-mt-unsafe`<br>
 `misc-use-anonymous-namespace`<br>
 

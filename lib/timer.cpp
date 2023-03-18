@@ -25,7 +25,6 @@
 /*
     TODO:
     - rename "file" to "single"
-    - synchronise map access in multithreaded mode or disable timing
     - add unit tests
         - for --showtime (needs input file)
         - for Timer* classes
@@ -48,9 +47,9 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     TimerResultsData overallData;
 
     std::vector<dataElementType> data;
-    data.reserve(mResults.size());
     {
         std::lock_guard<std::mutex> l(mResultsSync);
+        data.reserve(mResults.size());
         data.insert(data.begin(), mResults.cbegin(), mResults.cend());
     }
     std::sort(data.begin(), data.end(), more_second_sec);

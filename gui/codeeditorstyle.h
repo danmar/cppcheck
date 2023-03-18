@@ -67,7 +67,6 @@ public:
         // cppcheck-suppress naming-varname - TODO: fix this
         QColor SymbFGColor, QColor SymbBGColor,
         const QFont::Weight& SymbWeight);
-    ~CodeEditorStyle() {}
 
     bool operator==(const CodeEditorStyle& rhs) const;
     bool operator!=(const CodeEditorStyle& rhs) const;

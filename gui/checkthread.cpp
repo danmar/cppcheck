@@ -45,9 +45,9 @@
 #include <QSettings>
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output)
 {
-    output->clear();
+    output.clear();
 
     QStringList args2;
     for (const std::string &arg: args)
@@ -60,9 +60,9 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
     if (redirect == "2>&1") {
         QString s1 = process.readAllStandardOutput();
         QString s2 = process.readAllStandardError();
-        *output = (s1 + "\n" + s2).toStdString();
+        output = (s1 + "\n" + s2).toStdString();
     } else
-        *output = process.readAllStandardOutput().toStdString();
+        output = process.readAllStandardOutput().toStdString();
 
     if (redirect.compare(0,3,"2> ") == 0) {
         std::ofstream fout(redirect.substr(3));

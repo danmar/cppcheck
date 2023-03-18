@@ -31,21 +31,21 @@ cppcheck::Platform::Platform()
 {
     // This assumes the code you are checking is for the same architecture this is compiled on.
 #if defined(_WIN64)
-    platform(Win64);
+    set(Type::Win64);
 #elif defined(_WIN32)
-    platform(Win32A);
+    set(Type::Win32A);
 #else
-    platform(Native);
+    set(Type::Native);
 #endif
 }
 
 
-bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
+bool cppcheck::Platform::set(Type t)
 {
-    switch (type) {
-    case Unspecified: // unknown type sizes (sizes etc are set but are not known)
-    case Native: // same as system this code was compile on
-        platformType = type;
+    switch (t) {
+    case Type::Unspecified: // unknown type sizes (sizes etc are set but are not known)
+    case Type::Native: // same as system this code was compile on
+        type = t;
         sizeof_bool = sizeof(bool);
         sizeof_short = sizeof(short);
         sizeof_int = sizeof(int);
@@ -57,7 +57,7 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         sizeof_wchar_t = sizeof(wchar_t);
         sizeof_size_t = sizeof(std::size_t);
         sizeof_pointer = sizeof(void *);
-        if (type == Unspecified) {
+        if (type == Type::Unspecified) {
             defaultSign = '\0';
         } else {
             defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
@@ -68,9 +68,9 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         long_bit = char_bit * sizeof_long;
         long_long_bit = char_bit * sizeof_long_long;
         return true;
-    case Win32W:
-    case Win32A:
-        platformType = type;
+    case Type::Win32W:
+    case Type::Win32A:
+        type = t;
         sizeof_bool = 1; // 4 in Visual C++ 4.2
         sizeof_short = 2;
         sizeof_int = 4;
@@ -89,8 +89,8 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         long_bit = char_bit * sizeof_long;
         long_long_bit = char_bit * sizeof_long_long;
         return true;
-    case Win64:
-        platformType = type;
+    case Type::Win64:
+        type = t;
         sizeof_bool = 1;
         sizeof_short = 2;
         sizeof_int = 4;
@@ -109,8 +109,8 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         long_bit = char_bit * sizeof_long;
         long_long_bit = char_bit * sizeof_long_long;
         return true;
-    case Unix32:
-        platformType = type;
+    case Type::Unix32:
+        type = t;
         sizeof_bool = 1;
         sizeof_short = 2;
         sizeof_int = 4;
@@ -129,8 +129,8 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         long_bit = char_bit * sizeof_long;
         long_long_bit = char_bit * sizeof_long_long;
         return true;
-    case Unix64:
-        platformType = type;
+    case Type::Unix64:
+        type = t;
         sizeof_bool = 1;
         sizeof_short = 2;
         sizeof_int = 4;
@@ -149,7 +149,7 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         long_bit = char_bit * sizeof_long;
         long_long_bit = char_bit * sizeof_long_long;
         return true;
-    case PlatformFile:
+    case Type::File:
         // sizes are not set.
         return false;
     }
@@ -157,22 +157,22 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
     return false;
 }
 
-bool cppcheck::Platform::platform(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
+bool cppcheck::Platform::set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths, bool verbose)
 {
     if (platformstr == "win32A")
-        platform(Win32A);
+        set(Type::Win32A);
     else if (platformstr == "win32W")
-        platform(Win32W);
+        set(Type::Win32W);
     else if (platformstr == "win64")
-        platform(Win64);
+        set(Type::Win64);
     else if (platformstr == "unix32")
-        platform(Unix32);
+        set(Type::Unix32);
     else if (platformstr == "unix64")
-        platform(Unix64);
+        set(Type::Unix64);
     else if (platformstr == "native")
-        platform(Native);
+        set(Type::Native);
     else if (platformstr == "unspecified")
-        platform(Unspecified);
+        set(Type::Unspecified);
     else if (paths.empty()) {
         errstr = "unrecognized platform: '" + platformstr + "' (no lookup).";
         return false;
@@ -182,7 +182,7 @@ bool cppcheck::Platform::platform(const std::string& platformstr, std::string& e
         for (const std::string& path : paths) {
             if (verbose)
                 std::cout << "looking for platform '" + platformstr + "' in '" + path + "'" << std::endl;
-            if (loadPlatformFile(path.c_str(), platformstr, verbose)) {
+            if (loadFromFile(path.c_str(), platformstr, verbose)) {
                 found = true;
                 break;
             }
@@ -196,7 +196,7 @@ bool cppcheck::Platform::platform(const std::string& platformstr, std::string& e
     return true;
 }
 
-bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::string &filename, bool verbose)
+bool cppcheck::Platform::loadFromFile(const char exename[], const std::string &filename, bool verbose)
 {
     // TODO: only append .xml if missing
     // TODO: use native separators
@@ -297,6 +297,6 @@ bool cppcheck::Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
     long_bit = char_bit * sizeof_long;
     long_long_bit = char_bit * sizeof_long_long;
 
-    platformType = PlatformFile;
+    type = Type::File;
     return !error;
 }

@@ -33,7 +33,6 @@
 #include <cstring>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -47,7 +46,7 @@ class TestPreprocessor : public TestFixture {
 public:
     TestPreprocessor()
         : TestFixture("TestPreprocessor")
-        , preprocessor0(settings0, this) {
+        , preprocessor0(settings0, settings0.nomsg, this) {
         settings0.severity.enable(Severity::information);
     }
 
@@ -64,8 +63,8 @@ public:
             simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI(), &outputList);
 
             if (errorLogger) {
-                static Settings settings;
-                Preprocessor p(settings, errorLogger);
+                Settings settings;
+                Preprocessor p(settings, settings.nomsg, errorLogger);
                 p.reportOutput(outputList, true);
             }
 
@@ -205,7 +204,6 @@ private:
 
         // inline suppression, missingInclude/missingIncludeSystem
         TEST_CASE(inline_suppression_for_missing_include);
-        TEST_CASE(inline_suppression_for_missing_include_check_config);
 
         // Using -D to predefine symbols
         TEST_CASE(predefine1);
@@ -244,9 +242,6 @@ private:
         TEST_CASE(getConfigsU6);
         TEST_CASE(getConfigsU7);
 
-        TEST_CASE(validateCfg1);
-        TEST_CASE(validateCfg2);
-
         TEST_CASE(if_sizeof);
 
         TEST_CASE(invalid_ifs); // #5909
@@ -274,6 +269,7 @@ private:
         TEST_CASE(testMissingIncludeCheckConfig);
     }
 
+    // TODO: we should be calling the actual Preprocessor::preprocess() implementation
     void preprocess(const char* code, std::map<std::string, std::string>& actual, const char filename[] = "file.c") {
         errout.str("");
         std::istringstream istr(code);
@@ -300,7 +296,7 @@ private:
             settings.userDefines = arg + 2;
         if (arg && std::strncmp(arg,"-U",2)==0)
             settings.userUndefs.insert(arg+2);
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
         std::vector<std::string> files;
         std::istringstream istr(filedata);
         simplecpp::TokenList tokens(istr,files);
@@ -366,7 +362,7 @@ private:
         errout.str("");
         Settings settings;
         settings.userDefines = "__cplusplus";
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
@@ -379,7 +375,7 @@ private:
             errout.str("");
             Settings settings;
             settings.userDefines = "TEST";
-            Preprocessor preprocessor(settings, this);
+            Preprocessor preprocessor(settings, settings.nomsg, this);
             const std::string code("#file \"ab.h\"\n#error hello world!\n#endfile");
             preprocessor.getcode(code, "TEST", "test.c");
             ASSERT_EQUALS("[ab.h:1]: (error) #error hello world!\n", errout.str());
@@ -390,7 +386,7 @@ private:
             errout.str("");
             Settings settings;
             settings.userDefines = "TEST";
-            Preprocessor preprocessor(settings, this);
+            Preprocessor preprocessor(settings, settings.nomsg, this);
             const std::string code("#file \"ab.h\"\n\n#endfile\n#error aaa");
             preprocessor.getcode(code, "TEST", "test.c");
             ASSERT_EQUALS("[test.c:2]: (error) #error aaa\n", errout.str());
@@ -402,7 +398,7 @@ private:
         Settings settings;
         settings.userDefines = "FOO";
         settings.force = true; // No message if --force is given
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "test.c");
         ASSERT_EQUALS("", errout.str());
@@ -467,7 +463,7 @@ private:
 
     void setPlatformInfo() {
         Settings settings;
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         // read code with simplecpp..
         const char filedata[] = "#if sizeof(long) == 4\n"
@@ -480,12 +476,12 @@ private:
         simplecpp::TokenList tokens(istr, files, "test.c");
 
         // preprocess code with unix32 platform..
-        PLATFORM(settings, Settings::PlatformType::Unix32);
+        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix32);
         preprocessor.setPlatformInfo(&tokens);
         ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
 
         // preprocess code with unix64 platform..
-        PLATFORM(settings, Settings::PlatformType::Unix64);
+        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
         preprocessor.setPlatformInfo(&tokens);
         ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
     }
@@ -1949,17 +1945,12 @@ private:
         preprocess("#define () {(int f(x) }\n", actual); // don't hang
     }
 
-    void inline_suppression_for_missing_include_internal(bool checkConfig) {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+    void inline_suppression_for_missing_include() {
         Settings settings;
-        settings.checkConfiguration = checkConfig;
         settings.inlineSuppressions = true;
         settings.severity.clear();
-        // --check-config needs to report this regardless of the emanled checks
-        if (!checkConfig)
-            settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.checks.enable(Checks::missingInclude);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         const std::string code("// cppcheck-suppress missingInclude\n"
                                "#include \"missing.h\"\n"
@@ -1969,8 +1960,6 @@ private:
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
         ASSERT_EQUALS("", errout.str());
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
         auto suppressions = settings.nomsg.getSuppressions();
         ASSERT_EQUALS(2, suppressions.size());
@@ -1990,14 +1979,6 @@ private:
         ASSERT_EQUALS(4, suppr.lineNumber);
         ASSERT_EQUALS(true, suppr.checked);
         ASSERT_EQUALS(true, suppr.matched);
-    }
-
-    void inline_suppression_for_missing_include() {
-        inline_suppression_for_missing_include_internal(false);
-    }
-
-    void inline_suppression_for_missing_include_check_config() {
-        inline_suppression_for_missing_include_internal(true);
     }
 
     void predefine1() {
@@ -2281,37 +2262,6 @@ private:
         ASSERT_EQUALS("\nY\n", getConfigsStr(code, "-DX"));
     }
 
-
-    void validateCfg1() {
-        Preprocessor preprocessor(settings0, this);
-
-        std::vector<std::string> files(1, "test.c");
-        simplecpp::MacroUsage macroUsage(files, false);
-        macroUsage.useLocation.fileIndex = 0;
-        macroUsage.useLocation.line = 1;
-        macroUsage.macroName = "X";
-        std::list<simplecpp::MacroUsage> macroUsageList(1, macroUsage);
-
-        ASSERT_EQUALS(true, preprocessor.validateCfg("", macroUsageList));
-        ASSERT_EQUALS(false, preprocessor.validateCfg("X",macroUsageList));
-        ASSERT_EQUALS(false, preprocessor.validateCfg("A=42;X", macroUsageList));
-        ASSERT_EQUALS(true, preprocessor.validateCfg("X=1", macroUsageList));
-        ASSERT_EQUALS(true, preprocessor.validateCfg("Y", macroUsageList));
-
-        macroUsageList.front().macroValueKnown = true; // #8404
-        ASSERT_EQUALS(true, preprocessor.validateCfg("X", macroUsageList));
-    }
-
-    void validateCfg2() {
-        const char filedata[] = "#ifdef ABC\n"
-                                "#endif\n"
-                                "int i = ABC;";
-
-        std::map<std::string, std::string> actual;
-        preprocess(filedata, actual, "file.cpp");
-        ASSERT_EQUALS("[file.cpp:3]: (information) Skipping configuration 'ABC' since the value of 'ABC' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.\n", errout.str());
-    }
-
     void if_sizeof() { // #4071
         static const char* code = "#if sizeof(unsigned short) == 2\n"
                                   "Fred & Wilma\n"
@@ -2356,7 +2306,7 @@ private:
         errout.str("");
         Settings settings;
         settings.userDefines = "foo";
-        Preprocessor preprocessor(settings, this);
+        Preprocessor preprocessor(settings, settings.nomsg, this);
         const std::string code("#error hello world!\n");
         preprocessor.getcode(code, "X", "./././test.c");
         ASSERT_EQUALS("[test.c:1]: (error) #error hello world!\n", errout.str());
@@ -2394,7 +2344,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
+        Preprocessor preprocessor(settings0, settings0.nomsg, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
@@ -2421,7 +2371,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
+        Preprocessor preprocessor(settings0, settings0.nomsg, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
@@ -2438,7 +2388,7 @@ private:
                                 "  </directivelist>\n";
 
         std::ostringstream ostr;
-        Preprocessor preprocessor(settings0, this);
+        Preprocessor preprocessor(settings0, settings0.nomsg, this);
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
@@ -2446,300 +2396,223 @@ private:
 
     // test for existing local include
     void testMissingInclude() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "");
 
         std::string code("#include \"header.h\"");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
         ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
     }
 
     // test for missing local include
     void testMissingInclude2() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         std::string code("#include \"header.h\"");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
-        ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+        ASSERT_EQUALS("test.c:1:0: information: Include file: \"header.h\" not found. [missingInclude]\n", errout.str());
     }
 
     // test for missing local include - no include path given
     void testMissingInclude3() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", "inc");
 
         std::string code("#include \"header.h\"");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
-        ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+        ASSERT_EQUALS("test.c:1:0: information: Include file: \"header.h\" not found. [missingInclude]\n", errout.str());
     }
 
     // test for existing local include - include path provided
     void testMissingInclude4() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", "inc");
 
         std::string code("#include \"inc/header.h\"");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
         ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
     }
 
     // test for existing local include - absolute path
     void testMissingInclude5() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
         std::string code("#include \"" + header.path() + "\"");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
         ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
     }
 
     // test for missing local include - absolute path
     void testMissingInclude6() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
         std::string code("#include \"" + header + "\"");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
-        ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+        ASSERT_EQUALS("test.c:1:0: information: Include file: \"" + header + "\" not found. [missingInclude]\n", errout.str());
     }
 
     // test for missing system include - system includes are not searched for in relative path
     void testMissingSystemInclude() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "");
 
         std::string code("#include <header.h>");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
-        ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+        ASSERT_EQUALS("test.c:1:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout.str());
     }
 
     // test for missing system include
     void testMissingSystemInclude2() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         std::string code("#include <header.h>");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
-        ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+        ASSERT_EQUALS("test.c:1:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout.str());
     }
 
     // test for existing system include in system include path
     void testMissingSystemInclude3() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
         settings.includePaths.emplace_back("system");
-        Preprocessor preprocessor(settings, this);
+
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", "system");
 
         std::string code("#include <header.h>");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
         ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
     }
 
     // test for existing system include - absolute path
     void testMissingSystemInclude4() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("inc");
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "", Path::getCurrentPath());
 
         std::string code("#include <" + header.path() + ">");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
         ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
     }
 
     // test for missing system include - absolute path
     void testMissingSystemInclude5() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         const std::string header = Path::join(Path::getCurrentPath(), "header.h");
 
         std::string code("#include <" + header + ">");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
-        ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+        ASSERT_EQUALS("test.c:1:0: information: Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout.str());
     }
 
     // test for missing local and system include
     void testMissingIncludeMixed() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
         settings.severity.clear();
         settings.checks.enable(Checks::missingInclude);
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "");
         ScopedFile header2("header2.h", "");
@@ -2750,27 +2623,22 @@ private:
                          "#include \"header2.h\"");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
 
-        // the expected messages are emitted outside of the Preprocessor
-        ASSERT_EQUALS("", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+        ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
+                      "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
+                      "test.c:3:0: information: Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout.str());
     }
 
     void testMissingIncludeCheckConfig() {
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
-
         Settings settings;
         settings.clearIncludeCache = true;
-        settings.checkConfiguration = true;
         settings.severity.clear();
+        settings.checks.enable(Checks::missingInclude);
         settings.includePaths.emplace_back("system");
-        // needs to be reported regardless of enabled checks
-        Preprocessor preprocessor(settings, this);
+        settings.templateFormat = "simple"; // has no effect
+        setTemplateFormat("simple");
+
+        Preprocessor preprocessor(settings, settings.nomsg, this);
 
         ScopedFile header("header.h", "");
         ScopedFile header2("header2.h", "");
@@ -2795,18 +2663,13 @@ private:
                          "#include <" + missing4 + ">\n");
         errout.str("");
         preprocessor.getcode(code, "", "test.c");
-        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
-        ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
 
-        ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing.h\" not found.\n"
-                      "[test.c:2]: (information) Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n"
-                      "[test.c:3]: (information) Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n"
-                      "[test.c:6]: (information) Include file: \"header4.h\" not found.\n"
-                      "[test.c:9]: (information) Include file: \"" + missing3 + "\" not found.\n"
-                      "[test.c:11]: (information) Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n", errout.str());
-
-        Preprocessor::missingIncludeFlag = false;
-        Preprocessor::missingSystemIncludeFlag = false;
+        ASSERT_EQUALS("test.c:1:0: information: Include file: \"missing.h\" not found. [missingInclude]\n"
+                      "test.c:2:0: information: Include file: <header.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
+                      "test.c:3:0: information: Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n"
+                      "test.c:6:0: information: Include file: \"header4.h\" not found. [missingInclude]\n"
+                      "test.c:9:0: information: Include file: \"" + missing3 + "\" not found. [missingInclude]\n"
+                      "test.c:11:0: information: Include file: <" + missing4 + "> not found. Please note: Cppcheck does not need standard library headers to get proper results. [missingIncludeSystem]\n", errout.str());
     }
 };
 

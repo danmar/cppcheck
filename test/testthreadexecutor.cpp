@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -42,7 +43,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr) {
         errout.str("");
         output.str("");
 
@@ -55,11 +56,14 @@ private:
 
         settings.jobs = jobs;
         settings.showtime = showtime;
+        if (plistOutput)
+            settings.plistOutput = plistOutput;
+        // TODO: test with settings.project.fileSettings;
         ThreadExecutor executor(filemap, settings, *this);
-        std::vector<ScopedFile> scopedfiles;
+        std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
-            scopedfiles.emplace_back(i->first, data);
+            scopedfiles.emplace_back(new ScopedFile(i->first, data));
 
         ASSERT_EQUALS(result, executor.check());
     }
@@ -70,6 +74,7 @@ private:
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(many_threads_showtime);
+        TEST_CASE(many_threads_plist);
         TEST_CASE(no_errors_more_files);
         TEST_CASE(no_errors_less_files);
         TEST_CASE(no_errors_equal_amount_files);
@@ -100,13 +105,26 @@ private:
 
     // #11249 - reports TSAN errors - only applies to threads not processes though
     void many_threads_showtime() {
-        REDIRECT;
+        SUPPRESS;
         check(16, 100, 100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}", SHOWTIME_MODES::SHOWTIME_SUMMARY);
+    }
+
+    void many_threads_plist() {
+        const char plistOutput[] = "plist";
+        ScopedFile plistFile("dummy", plistOutput);
+
+        SUPPRESS;
+        check(16, 100, 100,
+              "int main()\n"
+              "{\n"
+              "  char *a = malloc(10);\n"
+              "  return 0;\n"
+              "}", SHOWTIME_MODES::SHOWTIME_NONE, plistOutput);
     }
 
     void no_errors_more_files() {

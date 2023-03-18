@@ -72,7 +72,7 @@ void AnalyzerInformation::close()
     }
 }
 
-static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, std::list<ErrorMessage> *errors)
+static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, std::list<ErrorMessage> &errors)
 {
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(analyzerInfoFile.c_str());
@@ -89,7 +89,7 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, 
 
     for (const tinyxml2::XMLElement *e = rootNode->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(), "error") == 0)
-            errors->emplace_back(e);
+            errors.emplace_back(e);
     }
 
     return true;
@@ -127,7 +127,7 @@ std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir
     return Path::join(buildDir, filename) + ".analyzerinfo";
 }
 
-bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t hash, std::list<ErrorMessage> *errors)
+bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t hash, std::list<ErrorMessage> &errors)
 {
     if (buildDir.empty() || sourcefile.empty())
         return true;

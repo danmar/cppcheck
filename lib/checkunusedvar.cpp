@@ -1237,6 +1237,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             while (Token::Match(op1tok, ".|[|*"))
                 op1tok = op1tok->astOperand1();
 
+            // Assignment in macro => do not warn
+            if (isAssignment && tok->isExpandedMacro() && op1tok && op1tok->isExpandedMacro())
+                continue;
+
             const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
             if (!op1Var && Token::Match(tok, "(|{") && tok->previous() && tok->previous()->variable())
                 op1Var = tok->previous()->variable();
@@ -1353,6 +1357,13 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 bool error = false;
                 if (vnt->next()->isSplittedVarDeclEq()) {
                     const Token* nextStmt = vnt->tokAt(2);
+                    if (nextStmt->isExpandedMacro()) {
+                        const Token* parent = nextStmt;
+                        while (parent->astParent() && parent == parent->astParent()->astOperand1())
+                            parent = parent->astParent();
+                        if (parent->isAssignmentOp() && parent->isExpandedMacro())
+                            continue;
+                    }
                     while (nextStmt && nextStmt->str() != ";")
                         nextStmt = nextStmt->next();
                     error = precedes(usage._lastAccess, nextStmt);

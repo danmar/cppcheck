@@ -25,6 +25,7 @@
 #include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -32,8 +33,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-
-#include <tinyxml2.h>
 
 class TestCondition : public TestFixture {
 public:
@@ -45,10 +44,11 @@ private:
 
     void run() override {
         // known platform..
-        PLATFORM(settings0, cppcheck::Platform::Native);
-        PLATFORM(settings1, cppcheck::Platform::Native);
+        PLATFORM(settings0.platform, cppcheck::Platform::Type::Native);
+        PLATFORM(settings1.platform, cppcheck::Platform::Type::Native);
 
         LOAD_LIB_2(settings0.library, "qt.cfg");
+        settings0.libraries.emplace_back("qt");
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.severity.enable(Severity::style);
@@ -58,11 +58,9 @@ private:
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
                            "</def>";
-        tinyxml2::XMLDocument xmldoc;
-        xmldoc.Parse(cfg, sizeof(cfg));
+        ASSERT(settings1.library.loadxmldata(cfg, sizeof(cfg)));
         settings1.severity.enable(Severity::style);
         settings1.severity.enable(Severity::warning);
-        settings1.library.load(xmldoc);
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
@@ -157,14 +155,13 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, nullptr);
+        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Run checks..
         runChecks<CheckCondition>(&tokenizer, settings, this);
@@ -356,11 +353,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // no crash on unary operator& (#5643)
+        // #11610
         check("SdrObject* ApplyGraphicToObject() {\n"
               "    if (&rHitObject) {}\n"
               "    else if (rHitObject.IsClosedObj() && !&rHitObject) { }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition '&rHitObject' is always true\n"
+                      "[test.cpp:3]: (style) Condition '!&rHitObject' is always false\n",
+                      errout.str());
 
         // #5695: increment
         check("void f(int a0, int n) {\n"
@@ -3803,6 +3803,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // TODO: if (!v) is a known condition as well
         check("struct a {\n"
               "  int *b();\n"
               "};\n"
@@ -3816,7 +3817,7 @@ private:
               "  if (v == nullptr && e) {}\n"
               "  return d;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) Condition 'e' is always true\n", errout.str());
 
         // #10037
         check("struct a {\n"
@@ -4493,6 +4494,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
+
+        check("void f(int x) {\n" // #11449
+              "    int i = x;\n"
+              "    i = (std::min)(i, 1);\n"
+              "    if (i == 1) {}\n"
+              "    int j = x;\n"
+              "    j = (::std::min)(j, 1);\n"
+              "    if (j == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -5034,6 +5045,21 @@ private:
               "   if (pool) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8499
+        check("void f(void)\n"
+              "{\n"
+              "    for (int i = 0; i < 2; ++i)\n"
+              "    {\n"
+              "        for (int j = 0; j < 8; ++j)\n"
+              "        {\n"
+              "            if ( (i==0|| i==1)\n" // << always true
+              "              && (j==0) )\n"
+              "            {;}\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7]: (style) Condition 'i==1' is always true\n", errout.str());
 
         // #10863
         check("void f(const int A[], int Len) {\n"
@@ -5606,7 +5632,7 @@ private:
     void compareOutOfTypeRange() {
         Settings settingsUnix64;
         settingsUnix64.severity.enable(Severity::style);
-        PLATFORM(settingsUnix64, cppcheck::Platform::PlatformType::Unix64);
+        PLATFORM(settingsUnix64.platform, cppcheck::Platform::Type::Unix64);
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

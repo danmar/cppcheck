@@ -126,7 +126,7 @@ namespace ValueFlow {
 
     const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr, bool smallest = true);
 
-    void combineValueProperties(const Value& value1, const Value& value2, Value* result);
+    void combineValueProperties(const Value& value1, const Value& value2, Value& result);
 }
 
 #endif // valueflowH
