@@ -1998,6 +1998,11 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    INT (*g)() = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings = settings_old;
     }
 
