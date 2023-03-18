@@ -1277,15 +1277,11 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     const Scope *classScope = type->classScope;
                     const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
                     setMemberVar(membervar, membertok, tok);
-                } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
+                } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER && tok->valueType()->containerTypeToken) {
                     if (const Token* ctt = tok->valueType()->containerTypeToken) {
                         while (ctt && ctt->isKeyword())
                             ctt = ctt->next();
-                        if (Token::simpleMatch(ctt, "::"))
-                            ctt = ctt->next();
-                        while (Token::Match(ctt, "%name% ::"))
-                            ctt = ctt->tokAt(2);
-                        const Type* ct = ctt->type();
+                        const Type* ct = findTypeInNested(ctt, tok->scope());
                         if (ct && ct->classScope && ct->classScope->definedType) {
                             const Variable *membervar = ct->classScope->getVariable(membertok->str());
                             setMemberVar(membervar, membertok, tok);
