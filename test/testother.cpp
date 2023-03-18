@@ -3378,7 +3378,7 @@ private:
               "    void f3(S* s) {\n"
               "        h(1, 2, *s);\n"
               "    }\n"
-              "    void f3(S* s) {\n"
+              "    void f4(S* s) {\n"
               "        i(*s);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (style) Parameter 's' can be declared as pointer to const\n"
