@@ -272,19 +272,12 @@ public:
     bool reportProgress{};
 
     /** Rule */
-    class CPPCHECKLIB Rule {
-    public:
-        Rule()
-            : tokenlist("normal")         // use normal tokenlist
-            , id("rule")                  // default id
-            , severity(Severity::style) { // default severity
-        }
-
-        std::string tokenlist;
+    struct CPPCHECKLIB Rule {
+        std::string tokenlist = "normal"; // use normal tokenlist
         std::string pattern;
-        std::string id;
+        std::string id = "rule"; // default id
         std::string summary;
-        Severity::SeverityType severity;
+        Severity::SeverityType severity = Severity::style; // default severity
     };
 
     /**

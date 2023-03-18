@@ -42,12 +42,8 @@ public:
 };
 
 struct TimerResultsData {
-    std::clock_t mClocks;
-    long mNumberOfResults;
-
-    TimerResultsData()
-        : mClocks(0)
-        , mNumberOfResults(0) {}
+    std::clock_t mClocks{};
+    long mNumberOfResults{};
 
     double seconds() const {
         const double ret = (double)((unsigned long)mClocks) / (double)CLOCKS_PER_SEC;

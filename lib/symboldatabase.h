@@ -224,8 +224,7 @@ public:
         mAccess(access_),
         mFlags(0),
         mType(type_),
-        mScope(scope_),
-        mValueType(nullptr) {
+        mScope(scope_) {
         evaluate(settings);
     }
 
@@ -1261,7 +1260,6 @@ public:
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
         : sign(s),
         type(t),
-        bits(0),
         pointer(p),
         constness(c)
     {}

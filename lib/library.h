@@ -544,7 +544,7 @@ private:
     };
     class CodeBlock {
     public:
-        CodeBlock() : mOffset(0) {}
+        CodeBlock() = default;
 
         void setStart(const char* s) {
             mStart = s;
@@ -574,7 +574,7 @@ private:
     private:
         std::string mStart;
         std::string mEnd;
-        int mOffset;
+        int mOffset{};
         std::set<std::string> mBlocks;
     };
     enum class FalseTrueMaybe { False, True, Maybe };
