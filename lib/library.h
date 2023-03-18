@@ -578,7 +578,7 @@ private:
         std::set<std::string> mBlocks;
     };
     enum class FalseTrueMaybe { False, True, Maybe };
-    int mAllocId;
+    int mAllocId{};
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions

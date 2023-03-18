@@ -37,7 +37,7 @@ class Library;
  */
 class FwdAnalysis {
 public:
-    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mWhat(What::Reassign), mValueFlowKnown(true) {}
+    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library) {}
 
     bool hasOperand(const Token *tok, const Token *lhs) const;
 
@@ -60,8 +60,8 @@ public:
     bool unusedValue(const Token *expr, const Token *startToken, const Token *endToken);
 
     struct KnownAndToken {
-        bool known;
-        const Token *token;
+        bool known{};
+        const Token* token{};
     };
 
     /** Is there some possible alias for given expression */
@@ -87,9 +87,9 @@ private:
 
     const bool mCpp;
     const Library &mLibrary;
-    enum class What { Reassign, UnusedValue, ValueFlow } mWhat;
+    enum class What { Reassign, UnusedValue, ValueFlow } mWhat = What::Reassign;
     std::vector<KnownAndToken> mValueFlow;
-    bool mValueFlowKnown;
+    bool mValueFlowKnown = true;
 };
 
 #endif // fwdanalysisH

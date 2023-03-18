@@ -52,8 +52,7 @@ public:
 
 LibraryDialog::LibraryDialog(QWidget *parent) :
     QDialog(parent),
-    mUi(new Ui::LibraryDialog),
-    mIgnoreChanges(false)
+    mUi(new Ui::LibraryDialog)
 {
     mUi->setupUi(this);
     mUi->buttonSave->setEnabled(false);

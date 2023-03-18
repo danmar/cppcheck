@@ -160,12 +160,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger, const P
     list(settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
-    mSymbolDatabase(nullptr),
     mTemplateSimplifier(new TemplateSimplifier(*this)),
-    mVarId(0),
-    mUnnamedCount(0),
-    mCodeWithTemplates(false), //is there any templates?
-    mTimerResults(nullptr),
     mPreprocessor(preprocessor)
 {
     // make sure settings are specified
@@ -3460,9 +3455,9 @@ private:
     std::map<std::string, nonneg int> mVariableId;
     std::map<std::string, nonneg int> mVariableId_global;
     std::stack<std::vector<std::pair<std::string, nonneg int>>> mScopeInfo;
-    mutable nonneg int mVarId;
+    mutable nonneg int mVarId{};
 public:
-    VariableMap() : mVarId(0) {}
+    VariableMap() = default;
     void enterScope();
     bool leaveScope();
     void addVariable(const std::string& varname, bool globalNamespace);

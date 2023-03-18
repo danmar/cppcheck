@@ -82,7 +82,7 @@ class ThreadData
 {
 public:
     ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::map<std::string, std::size_t> &files, const std::list<ImportProject::FileSettings> &fileSettings)
-        : mFiles(files), mFileSettings(fileSettings), mProcessedFiles(0), mProcessedSize(0), mSettings(settings), logForwarder(threadExecutor, errorLogger)
+        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();

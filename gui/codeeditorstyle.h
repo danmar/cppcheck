@@ -80,7 +80,7 @@ public:
     static void saveSettings(QSettings *settings, const CodeEditorStyle& theStyle);
 
 public:
-    bool mSystemTheme;
+    bool mSystemTheme{};
     QColor widgetFGColor;
     QColor widgetBGColor;
     QColor highlightBGColor;

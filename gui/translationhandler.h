@@ -134,7 +134,7 @@ private:
      * @brief Translator class instance.
      *
      */
-    QTranslator *mTranslator;
+    QTranslator* mTranslator{};
 };
 
 /// @}

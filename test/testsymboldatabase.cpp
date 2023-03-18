@@ -65,13 +65,11 @@ class TestSymbolDatabase;
 class TestSymbolDatabase : public TestFixture {
 public:
     TestSymbolDatabase()
-        : TestFixture("TestSymbolDatabase")
-        ,vartok(nullptr)
-        ,typetok(nullptr) {}
+        : TestFixture("TestSymbolDatabase") {}
 
 private:
-    const Token* vartok;
-    const Token* typetok;
+    const Token* vartok{};
+    const Token* typetok{};
     Settings settings1;
     Settings settings2;
 

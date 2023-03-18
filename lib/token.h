@@ -1285,7 +1285,7 @@ private:
         fIsFinalType            = (1ULL << 39), // Is this a type with final specifier
     };
 
-    Token::Type mTokType{};
+    Token::Type mTokType = eNone;
 
     uint64_t mFlags{};
 

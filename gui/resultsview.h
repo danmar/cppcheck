@@ -344,7 +344,7 @@ protected:
     /**
      * @brief Should we show a "No errors found dialog" every time no errors were found?
      */
-    bool mShowNoErrorsMessage;
+    bool mShowNoErrorsMessage = true;
 
     Ui::ResultsView *mUI;
 

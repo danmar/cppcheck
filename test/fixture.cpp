@@ -78,10 +78,7 @@ std::size_t TestFixture::succeeded_todos_counter = 0;
 std::set<std::string> TestFixture::missingLibs;
 
 TestFixture::TestFixture(const char * const _name)
-    : mVerbose(false),
-    exename(),
-    quiet_tests(false),
-    classname(_name)
+    : classname(_name)
 {
     TestRegistry::theInstance().addTest(this);
 }
