@@ -10486,10 +10486,10 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(char *c) {\n"
+        check("void foo(const char *c) {\n"
               "    if (*c == '+' && (operand || !isalnum(*c))) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'c' can be declared as pointer to const\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // #8986
         check("void f(int);\n"
