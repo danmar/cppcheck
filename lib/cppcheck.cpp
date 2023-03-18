@@ -788,8 +788,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         // Get configurations..
         if ((mSettings.checkAllConfigurations && mSettings.userDefines.empty()) || mSettings.force) {
-            Timer t("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults);
-            configurations = preprocessor.getConfigs(tokens1);
+            Timer::run("Preprocessor::getConfigs", mSettings.showtime, &s_timerResults, [&]() {
+                configurations = preprocessor.getConfigs(tokens1);
+            });
         } else {
             configurations.insert(mSettings.userDefines);
         }
@@ -853,9 +854,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
 
             if (mSettings.preprocessOnly) {
-                Timer t("Preprocessor::getcode", mSettings.showtime, &s_timerResults);
-                std::string codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
-                t.stop();
+                std::string codeWithoutCfg;
+                Timer::run("Preprocessor::getcode", mSettings.showtime, &s_timerResults, [&]() {
+                    codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
+                });
 
                 if (codeWithoutCfg.compare(0,5,"#file") == 0)
                     codeWithoutCfg.insert(0U, "//");
@@ -878,11 +880,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             try {
                 // Create tokens, skip rest of iteration if failed
-                {
-                    Timer timer("Tokenizer::createTokens", mSettings.showtime, &s_timerResults);
+                Timer::run("Tokenizer::createTokens", mSettings.showtime, &s_timerResults, [&]() {
                     simplecpp::TokenList tokensP = preprocessor.preprocess(tokens1, mCurrentConfig, files, true);
                     tokenizer.createTokens(std::move(tokensP));
-                }
+                });
                 hasValidConfig = true;
 
                 // If only errors are printed, print filename after the check
@@ -902,10 +903,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 // Check raw tokens
                 checkRawTokens(tokenizer);
 
+                bool result;
                 // Simplify tokens into normal form, skip rest of iteration if failed
-                Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults);
-                const bool result = tokenizer.simplifyTokens1(mCurrentConfig);
-                timer2.stop();
+                Timer::run("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults, [&]() {
+                    result = tokenizer.simplifyTokens1(mCurrentConfig);
+                });
+
                 if (!result)
                     continue;
 
@@ -1102,8 +1105,9 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         if (doUnusedFunctionOnly && dynamic_cast<CheckUnusedFunctions*>(check) == nullptr)
             continue;
 
-        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
-        check->runChecks(&tokenizer, &mSettings, this);
+        Timer::run(check->name() + "::runChecks", mSettings.showtime, &s_timerResults, [&]() {
+            check->runChecks(&tokenizer, &mSettings, this);
+        });
     }
 
     if (mSettings.clang)

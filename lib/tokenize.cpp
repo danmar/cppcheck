@@ -2770,28 +2770,20 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (!simplifyTokenList1(list.getFiles().front().c_str()))
         return false;
 
-    if (mTimerResults) {
-        Timer t("Tokenizer::simplifyTokens1::createAst", mSettings->showtime, mTimerResults);
+    const SHOWTIME_MODES showTime = mTimerResults ? mSettings->showtime : SHOWTIME_MODES::SHOWTIME_NONE;
+
+    Timer::run("Tokenizer::simplifyTokens1::createAst", showTime, mTimerResults, [&]() {
         list.createAst();
         list.validateAst();
-    } else {
-        list.createAst();
-        list.validateAst();
-    }
+    });
 
-    if (mTimerResults) {
-        Timer t("Tokenizer::simplifyTokens1::createSymbolDatabase", mSettings->showtime, mTimerResults);
+    Timer::run("Tokenizer::simplifyTokens1::createSymbolDatabase", showTime, mTimerResults, [&]() {
         createSymbolDatabase();
-    } else {
-        createSymbolDatabase();
-    }
+    });
 
-    if (mTimerResults) {
-        Timer t("Tokenizer::simplifyTokens1::setValueType", mSettings->showtime, mTimerResults);
+    Timer::run("Tokenizer::simplifyTokens1::setValueType", showTime, mTimerResults, [&]() {
         mSymbolDatabase->setValueTypeInTokenList(true);
-    } else {
-        mSymbolDatabase->setValueTypeInTokenList(true);
-    }
+    });
 
     if (!mSettings->buildDir.empty())
         Summaries::create(this, configuration);
@@ -2801,12 +2793,9 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
 
     if (doValueFlow) {
-        if (mTimerResults) {
-            Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
+        Timer::run("Tokenizer::simplifyTokens1::ValueFlow", showTime, mTimerResults, [&]() {
             ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
-        } else {
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
-        }
+        });
     }
 
     // Warn about unhandled character literals
@@ -4812,13 +4801,12 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     simplifySpaceshipOperator();
 
+    const SHOWTIME_MODES showTime = mTimerResults ? mSettings->showtime : SHOWTIME_MODES::SHOWTIME_NONE;
+
     // Bail out if code is garbage
-    if (mTimerResults) {
-        Timer t("Tokenizer::tokenize::findGarbageCode", mSettings->showtime, mTimerResults);
+    Timer::run("Tokenizer::tokenize::findGarbageCode", showTime, mTimerResults, [&]() {
         findGarbageCode();
-    } else {
-        findGarbageCode();
-    }
+    });
 
     checkConfiguration();
 
@@ -4982,12 +4970,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     reportUnknownMacros();
 
     // typedef..
-    if (mTimerResults) {
-        Timer t("Tokenizer::tokenize::simplifyTypedef", mSettings->showtime, mTimerResults);
+    Timer::run("Tokenizer::tokenize::simplifyTypedef", showTime, mTimerResults, [&]() {
         simplifyTypedef();
-    } else {
-        simplifyTypedef();
-    }
+    });
 
     // using A = B;
     while (simplifyUsing())
@@ -5090,12 +5075,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     if (!isC()) {
         // Handle templates..
-        if (mTimerResults) {
-            Timer t("Tokenizer::tokenize::simplifyTemplates", mSettings->showtime, mTimerResults);
+        Timer::run("Tokenizer::tokenize::simplifyTemplates", showTime, mTimerResults, [&]() {
             simplifyTemplates();
-        } else {
-            simplifyTemplates();
-        }
+        });
 
         // The simplifyTemplates have inner loops
         if (Settings::terminated())
@@ -5120,12 +5102,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     validate(); // #6772 "segmentation fault (invalid code) in Tokenizer::setVarId"
 
-    if (mTimerResults) {
-        Timer t("Tokenizer::tokenize::setVarId", mSettings->showtime, mTimerResults);
+    Timer::run("Tokenizer::tokenize::setVarId", showTime, mTimerResults, [&](){
         setVarId();
-    } else {
-        setVarId();
-    }
+    });
 
     // Link < with >
     createLinks2();
