@@ -1738,8 +1738,6 @@ void Tokenizer::simplifyTypedef()
                                 syntaxError(tok2);
 
                             if (tok2->str() == "=") {
-                                if (!tok2->next())
-                                    syntaxError(tok2);
                                 if (tok2->next()->str() == "{")
                                     tok2 = tok2->next()->link()->next();
                                 else if (tok2->next()->str().at(0) == '\"')

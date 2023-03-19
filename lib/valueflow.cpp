@@ -2268,21 +2268,12 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
     if (var && !var->isPointer())
         return false;
     // Search through non value aliases
-    for (const ValueFlow::Value &val : values) {
-        if (!val.isNonValue())
-            continue;
-        if (val.isInconclusive())
-            continue;
-        if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
-            continue;
-        if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
-            continue;
-        if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
-            continue;
-        if (astHasVar(val.tokvalue, tok->varId()))
-            return true;
-    }
-    return false;
+    return std::any_of(values.begin(), values.end(), [tok](const ValueFlow::Value& val) {
+        return val.isNonValue() && !val.isInconclusive() &&
+               (!val.isLifetimeValue() || (val.isLocalLifetimeValue() && val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)) &&
+               Token::Match(val.tokvalue, ".|&|*|%var%") &&
+               astHasVar(val.tokvalue, tok->varId());
+    });
 }
 
 static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20);

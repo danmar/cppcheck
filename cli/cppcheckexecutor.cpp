@@ -262,14 +262,15 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     Settings& settings = cppcheck.settings();
     const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
 
-    for (const std::string &lib : settings.libraries) {
-        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
-            const std::string msg("Failed to load the library " + lib);
-            const std::list<ErrorMessage::FileLocation> callstack;
-            ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
-            reportErr(errmsg);
-            return EXIT_FAILURE;
-        }
+    auto it = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&settings](const std::string& lib) {
+        return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
+    });
+    if (it != settings.libraries.end()) {
+        const std::string msg("Failed to load the library " + *it);
+        const std::list<ErrorMessage::FileLocation> callstack;
+        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
+        reportErr(errmsg);
+        return EXIT_FAILURE;
     }
 
     if (!std) {
