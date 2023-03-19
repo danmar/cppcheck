@@ -2270,9 +2270,9 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
     // Search through non value aliases
     return std::any_of(values.begin(), values.end(), [tok](const ValueFlow::Value& val) {
         return val.isNonValue() && !val.isInconclusive() &&
-               (!val.isLifetimeValue() || (val.isLocalLifetimeValue() && val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)) &&
-               Token::Match(val.tokvalue, ".|&|*|%var%") &&
-               astHasVar(val.tokvalue, tok->varId());
+        (!val.isLifetimeValue() || (val.isLocalLifetimeValue() && val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)) &&
+        Token::Match(val.tokvalue, ".|&|*|%var%") &&
+        astHasVar(val.tokvalue, tok->varId());
     });
 }
 
