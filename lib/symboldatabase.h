@@ -1094,9 +1094,7 @@ public:
         const Scope * parent = nestedIn;
         while (outer != parent && parent)
             parent = parent->nestedIn;
-        if (parent && parent == outer)
-            return true;
-        return false;
+        return parent && parent == outer;
     }
 
     static Function* nestedInFunction(const Scope* scope) {

@@ -4740,6 +4740,16 @@ private:
               "    return debug_valueflow(it)->second;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11557
+        check("bool f(const std::vector<int*>& v, std::vector<int*>::iterator it, bool b) {\n"
+              "    if (it == v.end())\n"
+              "        return false;\n"
+              "    if (b && ((it + 1) == v.end() || (*(it + 1)) != nullptr))\n"
+              "        return false;\n"
+              "    return true;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {

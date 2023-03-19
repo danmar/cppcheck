@@ -376,6 +376,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes3);
         TEST_CASE(createSymbolDatabaseFindAllScopes4);
         TEST_CASE(createSymbolDatabaseFindAllScopes5);
+        TEST_CASE(createSymbolDatabaseFindAllScopes6);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -5282,6 +5283,47 @@ private:
         ASSERT_EQUALS(6, db->scopeList.size());
         const Token* const var = Token::findsimplematch(tokenizer.tokens(), "IN (");
         TODO_ASSERT(var && var->variable());
+    }
+
+    void createSymbolDatabaseFindAllScopes6()
+    {
+        GET_SYMBOL_DB("class A {\n"
+                      "public:\n"
+                      "  class Nested {\n"
+                      "  public:\n"
+                      "    virtual ~Nested() = default;\n"
+                      "  };\n"
+                      "};\n"
+                      "class B {\n"
+                      "public:\n"
+                      "  class Nested {\n"
+                      "  public:\n"
+                      "    virtual ~Nested() = default;\n"
+                      "  };\n"
+                      "};\n"
+                      "class C : public A, public B {\n"
+                      "public:\n"
+                      "  class Nested : public A::Nested, public B::Nested {};\n"
+                      "};\n");
+        ASSERT(db);
+        ASSERT_EQUALS(6, db->typeList.size());
+        auto it = db->typeList.cbegin();
+        const Type& classA = *it++;
+        const Type& classNA = *it++;
+        const Type& classB = *it++;
+        const Type& classNB = *it++;
+        const Type& classC = *it++;
+        const Type& classNC = *it++;
+        ASSERT(classA.name() == "A" && classB.name() == "B" && classC.name() == "C");
+        ASSERT(classNA.name() == "Nested" && classNB.name() == "Nested" && classNC.name() == "Nested");
+        ASSERT(classA.derivedFrom.empty() && classB.derivedFrom.empty());
+        ASSERT_EQUALS(classC.derivedFrom.size(), 2U);
+        ASSERT_EQUALS(classC.derivedFrom[0].type, &classA);
+        ASSERT_EQUALS(classC.derivedFrom[1].type, &classB);
+        ASSERT(classNA.derivedFrom.empty() && classNB.derivedFrom.empty());
+        ASSERT_EQUALS(classNC.derivedFrom.size(), 2U);
+        ASSERT_EQUALS(classNC.derivedFrom[0].type, &classNA);
+        ASSERT_EQUALS(classNC.derivedFrom[1].type, &classNB);
     }
 
     void enum1() {

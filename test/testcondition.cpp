@@ -5046,6 +5046,21 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #8499
+        check("void f(void)\n"
+              "{\n"
+              "    for (int i = 0; i < 2; ++i)\n"
+              "    {\n"
+              "        for (int j = 0; j < 8; ++j)\n"
+              "        {\n"
+              "            if ( (i==0|| i==1)\n" // << always true
+              "              && (j==0) )\n"
+              "            {;}\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7]: (style) Condition 'i==1' is always true\n", errout.str());
+
         // #10863
         check("void f(const int A[], int Len) {\n"
               "  if (Len <= 0)\n"

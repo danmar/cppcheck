@@ -6896,6 +6896,11 @@ private:
                "    const C& c = C(b) ? : C(false);\n"
                "};\n";
         valueOfTok(code, "?");
+
+        code = "struct S {\n"
+               "    void g(std::vector<int> (*f) () = nullptr);\n"
+               "};\n";
+        valueOfTok(code, "=");
     }
 
     void valueFlowHang() {
