@@ -357,7 +357,7 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr)
 
 bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive = nullptr);
 
-bool isAliased(const Variable *var);
+const Token* isAliased(const Variable *var);
 
 const Token* getArgumentStart(const Token* ftok);
 

@@ -1379,6 +1379,14 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
     return false;
 }
 
+static const Token* isFuncArg(const Token* tok) {
+    while (Token::simpleMatch(tok, ","))
+        tok = tok->astParent();
+    if (Token::simpleMatch(tok, "(") && Token::Match(tok->astOperand1(), "%name% ("))
+        return tok->astOperand1();
+    return nullptr;
+}
+
 void CheckOther::checkConstVariable()
 {
     if (!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC())
@@ -1421,7 +1429,9 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isVolatile())
             continue;
-        if (isAliased(var))
+        const Token* alias = isAliased(var);
+        const Token* fTokAlias = alias ? isFuncArg(alias->astParent()) : nullptr;
+        if (alias && !(Token::simpleMatch(alias, "&") && fTokAlias))
             continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
             continue;
@@ -1448,7 +1458,7 @@ void CheckOther::checkConstVariable()
                 continue;
         }
         // Skip if address is taken
-        if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
+        if (!fTokAlias && Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
             continue;
         // Skip if another non-const variable is initialized with this variable
         {
@@ -1593,15 +1603,10 @@ void CheckOther::checkConstPointer()
                     continue;
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
-            else if (Token::Match(gparent, "(|,")) {
-                const Token* ftok = gparent;
-                while (Token::simpleMatch(ftok, ","))
-                    ftok = ftok->astParent();
-                if (ftok && Token::Match(ftok->astOperand1(), "%name% (")) {
-                    bool inconclusive{};
-                    if (!isVariableChangedByFunctionCall(ftok->astOperand1(), vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
-                        continue;
-                }
+            else if (const Token* ftok = isFuncArg(gparent)) {
+                bool inconclusive{};
+                if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                    continue;
             }
         } else {
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))

@@ -1011,28 +1011,28 @@ bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
     return r || value;
 }
 
-static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
+static const Token* isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
 {
     if (!precedes(startTok, endTok))
-        return false;
+        return nullptr;
     for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
         if (Token::Match(tok, "= & %varid% ;", varid))
-            return true;
+            return tok;
         if (isAliasOf(tok, varid))
-            return true;
+            return tok;
     }
-    return false;
+    return nullptr;
 }
 
-bool isAliased(const Variable *var)
+const Token* isAliased(const Variable *var)
 {
     if (!var)
-        return false;
+        return nullptr;
     if (!var->scope())
-        return false;
+        return nullptr;
     const Token *start = var->declEndToken();
     if (!start)
-        return false;
+        return nullptr;
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
@@ -2413,7 +2413,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
             continue;
         conclusive = true;
         if (indirect > 0) {
-            if (!arg->isConst() && arg->isPointer())
+            if (arg->isPointer() && !(arg->valueType() && arg->valueType()->pointer == 1 && arg->valueType()->constness == 1))
                 return true;
             // If const is applied to the pointer, then the value can still be modified
             if (Token::simpleMatch(arg->typeEndToken(), "* const"))

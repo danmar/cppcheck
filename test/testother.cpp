@@ -3369,6 +3369,8 @@ private:
               "void h(const S&);\n"
               "void h(int, int, const S&);\n"
               "void i(S&);\n"
+              "void j(const S*);\n"
+              "void j(int, int, const S*);\n"
               "void f1(S* s) {\n"
               "    g(*s);\n"
               "}\n"
@@ -3380,10 +3382,18 @@ private:
               "}\n"
               "void f4(S* s) {\n"
               "    i(*s);\n"
+              "}\n"
+              "void f5(S& s) {\n"
+              "    j(&s);\n"
+              "}\n"
+              "void f6(S& s) {\n"
+              "    j(1, 2, &s);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6]: (style) Parameter 's' can be declared as pointer to const\n"
-                      "[test.cpp:9]: (style) Parameter 's' can be declared as pointer to const\n"
-                      "[test.cpp:12]: (style) Parameter 's' can be declared as pointer to const\n",
+        ASSERT_EQUALS("[test.cpp:20]: (style) Parameter 's' can be declared as reference to const\n"
+                      "[test.cpp:23]: (style) Parameter 's' can be declared as reference to const\n"
+                      "[test.cpp:8]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:11]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:14]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
     }
 
