@@ -1590,6 +1590,16 @@ void CheckOther::checkConstPointer()
                     continue;
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
+            else if (Token::Match(gparent, "(|,")) {
+                const Token* ftok = gparent;
+                while (Token::simpleMatch(ftok, ","))
+                    ftok = ftok->astParent();
+                if (ftok && Token::Match(ftok->astOperand1(), "%name% (")) {
+                    bool inconclusive{};
+                    if (!isVariableChangedByFunctionCall(ftok->astOperand1(), vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                        continue;
+                }
+            }
         } else {
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
                 continue;
