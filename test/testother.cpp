@@ -3363,6 +3363,28 @@ private:
               "    if (r == b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {};\n" // #11599
+              "void g(S);\n"
+              "void h(const S&);\n"
+              "void h(int, int, const S&);\n"
+              "void i(S&);\n"
+              "void f1(S* s) {\n"
+              "    g(*s);\n"
+              "}\n"
+              "void f2(S* s) {\n"
+              "    h(*s);\n"
+              "}\n"
+              "void f3(S* s) {\n"
+              "    h(1, 2, *s);\n"
+              "}\n"
+              "void f4(S* s) {\n"
+              "    i(*s);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:9]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:12]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -10464,7 +10486,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(char *c) {\n"
+        check("void foo(const char *c) {\n"
               "    if (*c == '+' && (operand || !isalnum(*c))) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -10482,7 +10504,7 @@ private:
               "    int x[] = { 10, 10 };\n"
               "    f(x[0]);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' can be declared as const array\n", errout.str());
 
         check("struct A { int x; };"
               "void g(int);\n"
