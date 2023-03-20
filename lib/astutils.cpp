@@ -1009,28 +1009,28 @@ bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
     return r || value;
 }
 
-static const Token* isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
+static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
 {
     if (!precedes(startTok, endTok))
-        return nullptr;
+        return false;
     for (const Token *tok = startTok; tok != endTok; tok = tok->next()) {
         if (Token::Match(tok, "= & %varid% ;", varid))
-            return tok;
+            return true;
         if (isAliasOf(tok, varid))
-            return tok;
+            return true;
     }
-    return nullptr;
+    return false;
 }
 
-const Token* isAliased(const Variable *var)
+bool isAliased(const Variable *var)
 {
     if (!var)
-        return nullptr;
+        return false;
     if (!var->scope())
-        return nullptr;
+        return false;
     const Token *start = var->declEndToken();
     if (!start)
-        return nullptr;
+        return false;
     return isAliased(start, var->scope()->bodyEnd, var->declarationId());
 }
 
