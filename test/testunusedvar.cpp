@@ -69,6 +69,7 @@ private:
         TEST_CASE(structmember20); // #10737
         TEST_CASE(structmember21); // #4759
         TEST_CASE(structmember22); // #11016
+        TEST_CASE(structmember23);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1842,6 +1843,17 @@ private:
                                "void f(const std::vector<A>& v) {\n"
                                "    std::vector<A>::const_iterator it = b.begin();\n"
                                "    if (it->b) {}\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember23() {
+        checkStructMemberUsage("namespace N {\n"
+                               "    struct S { std::string s; };\n"
+                               "}\n"
+                               "std::string f() {\n"
+                               "    std::map<int, N::S> m = { { 0, { \"abc\" } } };\n"
+                               "    return m[0].s;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
     }
