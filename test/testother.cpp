@@ -1420,6 +1420,19 @@ private:
               "    return *iter;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'vec' can be declared as reference to const\n", errout.str());
+
+        check("auto& foo(std::vector<int>& vec, bool flag) {\n"
+              "    std::vector<int> dummy;\n"
+              "    std::vector<int>::iterator iter;\n"
+              "    if (flag)\n"
+              "        iter = vec.begin();\n"
+              "    else {\n"
+              "        dummy.push_back(42);\n"
+              "        iter = dummy.begin();\n"
+              "    }\n"
+              "    return *iter;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void varScope30() { // #8541
