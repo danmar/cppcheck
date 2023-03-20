@@ -1384,6 +1384,17 @@ static const Token* isFuncArg(const Token* tok) {
     return nullptr;
 }
 
+// returns true for e.g. "return &var;"
+static bool hasBadAddressOf(const Variable* var, const Scope* scope) {
+    const Token* tok = var->nameToken();
+    while ((tok = Token::findmatch(tok, "& %varid%", scope->bodyEnd, var->declarationId()))) {
+        if (!isFuncArg(tok->astParent())) // arguments to functions are checked elsewhere
+            return true;
+        tok = tok->next();
+    }
+    return false;
+}
+
 void CheckOther::checkConstVariable()
 {
     if (!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC())
@@ -1426,10 +1437,6 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isVolatile())
             continue;
-        const Token* alias = isAliased(var);
-        const Token* fTokAlias = alias ? isFuncArg(alias->astParent()) : nullptr;
-        if (alias && !(Token::simpleMatch(alias, "&") && fTokAlias))
-            continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
@@ -1455,7 +1462,7 @@ void CheckOther::checkConstVariable()
                 continue;
         }
         // Skip if address is taken
-        if (!fTokAlias && Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
+        if (hasBadAddressOf(var, scope))
             continue;
         // Skip if another non-const variable is initialized with this variable
         {

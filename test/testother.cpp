@@ -1419,7 +1419,7 @@ private:
               "    }\n"
               "    return *iter;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'vec' can be declared as reference to const\n", errout.str());
     }
 
     void varScope30() { // #8541
