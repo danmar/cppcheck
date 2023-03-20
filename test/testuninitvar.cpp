@@ -5416,6 +5416,19 @@ private:
                         "    }\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11624
+        valueFlowUninit("const int N = 2;\n"
+                        "void g(int a[N]) {\n"
+                        "    for (int i = 0; i < N; ++i)\n"
+                        "        a[i] = 1;\n"
+                        "}\n"
+                        "void f() {\n"
+                        "    int a[N];\n"
+                        "    g(a);\n"
+                        "    if (a[0]) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
