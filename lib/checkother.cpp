@@ -1630,9 +1630,9 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
         reportError(nullptr, Severity::style, "constParameter", "Parameter 'x' can be declared with const");
         reportError(nullptr, Severity::style, "constVariable",  "Variable 'x' can be declared with const");
         reportError(nullptr, Severity::style, "constParameterReference", "Parameter 'x' can be declared with const");
-        reportError(nullptr, Severity::style, "constVariableReference",  "Variable 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constVariableReference", "Variable 'x' can be declared with const");
         reportError(nullptr, Severity::style, "constParameterPointer", "Parameter 'x' can be declared with const");
-        reportError(nullptr, Severity::style, "constVariablePointer",  "Variable 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constVariablePointer", "Variable 'x' can be declared with const");
         reportError(nullptr, Severity::style, "constParameterCallback", "Parameter 'x' can be declared with const, however it seems that 'f' is a callback function.");
         return;
     }
