@@ -5998,11 +5998,7 @@ private:
                         "  foo(123, &abc);\n"
                         "  return abc.b;\n"
                         "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: abc.a\n"
-                           "[test.cpp:5]: (error) Uninitialized variable: abc.b\n"
-                           "[test.cpp:5]: (error) Uninitialized variable: abc.c\n",
-                           "[test.cpp:5]: (error) Uninitialized variable: &abc\n",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: &abc\n", errout.str());
 
         valueFlowUninit("struct ABC { int a; int b; int c; };\n"
                         "void foo() {\n"
