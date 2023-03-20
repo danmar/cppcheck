@@ -2313,7 +2313,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             mayModifyArgs = false;
             for (nonneg int argIndex = 0; argIndex < argMax; ++argIndex) {
                 const Variable* const argVar = f->getArgumentVar(argIndex);
-                if (!argVar || !argVar->valueType() || ((argVar->valueType()->pointer || argVar->valueType()->reference != Reference::None) && !argVar->isConst())) {
+                if (!argVar || ((argVar->isArrayOrPointer() || argVar->isReference()) && !argVar->isConst())) {
                     mayModifyArgs = true;
                     break;
                 }
