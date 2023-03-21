@@ -1292,13 +1292,13 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
                 std::vector<ValueFlow::Value> result =
                     infer(ValueFlow::makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
                 if (result.empty() || !result.front().isKnown())
-                    return r;
+                    return unknown;
                 return result.front();
             } else if (lhs.isIntValue()) {
                 std::vector<ValueFlow::Value> result =
                     infer(ValueFlow::makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
                 if (result.empty() || !result.front().isKnown())
-                    return r;
+                    return unknown;
                 return result.front();
             }
         }

@@ -4681,6 +4681,24 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 9U, 1));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 9U, 0));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 9U, 1));
+
+        code = "struct A {\n"
+                "    enum {\n"
+                "        b = 0,\n"
+                "        c = 1,\n"
+                "        d = 2\n"
+                "    };\n"
+                "    bool isb() const {\n"
+                "        return e == b;\n"
+                "    }\n"
+                "    unsigned int e;\n"
+                "};\n"
+                "int f(A g) {\n"
+                "  int x = !g.isb();\n"
+                "  return x;\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 14U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 14U, 1));
     }
 
     void valueFlowFunctionDefaultParameter() {
