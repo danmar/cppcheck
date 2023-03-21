@@ -233,6 +233,24 @@ static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
     return !i;
 }
 
+static bool isTrue(const ValueFlow::Value& v)
+{
+    if (v.isImpossible()) {
+        return v.intvalue == 0;
+    } else {
+        return v.intvalue != 0;
+    }
+}
+
+static bool isFalse(const ValueFlow::Value& v)
+{
+    if (v.isImpossible()) {
+        return false;
+    } else {
+        return v.intvalue == 0;
+    }
+}
+
 // If the scope is a non-range for loop
 static bool isBasicForLoop(const Token* tok)
 {
@@ -594,11 +612,16 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     result.intvalue = calculate(op, lhs.intvalue, rhs.intvalue, &error);
     if (error)
         return ValueFlow::Value::unknown();
-    if (result.isImpossible()) {
-        if ((result.intvalue == 0 && op == "!=") || (result.intvalue != 0 && op == "==")) {
-            result.setPossible();
-            result.intvalue = !result.intvalue;
+    if (result.isImpossible() && op == "!=") {
+        if (isTrue(result)) {
+            result.intvalue = 1;
+        } else if (isFalse(result)) {
+            result.intvalue = 0;
+        } else {
+            return ValueFlow::Value::unknown();
         }
+        result.setPossible();
+        result.bound = ValueFlow::Value::Bound::Point;
     }
     return result;
 }
@@ -1199,18 +1222,24 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         }
     } else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
-        if (!lhs.isIntValue() || lhs.isImpossible())
+        if (!lhs.isIntValue())
             return unknown;
-        if (lhs.intvalue == 0)
+        if (isFalse(lhs))
             return lhs;
-        return execute(expr->astOperand2(), pm);
+        else if (isTrue(lhs))
+            return execute(expr->astOperand2(), pm);
+        else
+            return unknown;
     } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         if (!lhs.isIntValue() || lhs.isImpossible())
             return unknown;
-        if (lhs.intvalue != 0)
+        if (isTrue(lhs))
             return lhs;
-        return execute(expr->astOperand2(), pm);
+        else if (isFalse(lhs))
+            return execute(expr->astOperand2(), pm);
+        else
+            return unknown;
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), pm);
         return execute(expr->astOperand2(), pm);
@@ -1287,13 +1316,15 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         return lhs;
     } else if (expr->str() == "?" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value cond = execute(expr->astOperand1(), pm);
-        if (!cond.isIntValue() || cond.isImpossible())
+        if (!cond.isIntValue())
             return unknown;
         const Token* child = expr->astOperand2();
-        if (cond.intvalue == 0)
+        if (isFalse(cond))
             return execute(child->astOperand2(), pm);
-        else
+        else if (isTrue(cond))
             return execute(child->astOperand1(), pm);
+        else
+            return unknown;
     } else if (expr->str() == "(" && expr->isCast()) {
         if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
             return execute(expr->astOperand2(), pm);
