@@ -2478,11 +2478,12 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     }
 
     // Check addressof
-    if (Token::simpleMatch(tok2->astParent(), "&") && isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1)) {
+    if (Token::simpleMatch(tok2->astParent(), "&") &&
+        isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1)) {
         return true;
     }
-    
-    const ValueType * vt = tok->variable() ? tok->variable()->valueType() : tok->valueType();
+
+    const ValueType* vt = tok->variable() ? tok->variable()->valueType() : tok->valueType();
     // If its already const then it cant be modified
     if (vt) {
         if (vt->constness & (1 << indirect))
@@ -2495,9 +2496,9 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (isLikelyStream(cpp, tok2))
         return true;
 
-
     // Member function call
-    if (Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) && tok2->astParent()->astOperand1() == tok2) {
+    if (Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) &&
+        tok2->astParent()->astOperand1() == tok2) {
         // Member function cannot change what `this` points to
         if (indirect == 0 && astIsPointer(tok))
             return false;
@@ -2544,7 +2545,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     }
 
     // Member pointer
-    if (Token::Match(tok2->astParent(), ". * ( & %name% ::") ) {
+    if (Token::Match(tok2->astParent(), ". * ( & %name% ::")) {
         const Token* ftok = tok2->astParent()->linkAt(2)->previous();
         // TODO: Check for pointer to member variable
         if (!ftok->function() || !ftok->function()->isConst())
