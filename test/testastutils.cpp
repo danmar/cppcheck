@@ -237,7 +237,14 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
         ASSERT_LOC(argtok, file, line);
-        const int indirect = argtok->variable() && argtok->variable()->valueType() ? argtok->variable()->valueType()->pointer : 0;
+        int indirect = 0;
+        if (argtok->variable()) {
+            if (argtok->variable()->isArray())
+                indirect = 1;
+            else if (argtok->variable()->valueType())
+                indirect = argtok->variable()->valueType()->pointer;
+
+        }
         return (isVariableChangedByFunctionCall)(argtok, indirect, &settings, inconclusive);
     }
 
@@ -285,6 +292,30 @@ private:
                "    return g(&p);\n"
                "}\n";
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "p ) ;", &inconclusive));
+        ASSERT_EQUALS(true, inconclusive);
+
+        code = "void g(int a[2]);\n"
+               "void f() {\n"
+               "    int b[2] = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(true, inconclusive);
+
+        code = "struct S {};\n"
+               "void g(S);\n"
+               "void f(S* s) {\n"
+               "    g(*s);\n"
+               "}\n";
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "s ) ;", &inconclusive));
+        ASSERT_EQUALS(true, inconclusive);
+
+        code = "struct S {};\n"
+               "void g(const S&);\n"
+               "void f(S* s) {\n"
+               "    g(*s);\n"
+               "}\n";
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "s ) ;", &inconclusive));
         ASSERT_EQUALS(true, inconclusive);
     }
 
