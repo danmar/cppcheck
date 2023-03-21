@@ -236,7 +236,9 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
-        return (isVariableChangedByFunctionCall)(argtok, 0, &settings, inconclusive);
+        ASSERT_LOC(argtok, file, line);
+        const int indirect = argtok->variable() && argtok->variable()->valueType() ? argtok->variable()->valueType()->pointer : 0;
+        return (isVariableChangedByFunctionCall)(argtok, indirect, &settings, inconclusive);
     }
 
     void isVariableChangedByFunctionCallTest() {
@@ -256,6 +258,34 @@ private:
                "}\n";
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
         TODO_ASSERT_EQUALS(false, true, inconclusive);
+
+        code = "void g(int* p);\n"
+               "void f(int x) {\n"
+               "    return g(&x);\n"
+               "}\n";
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        ASSERT_EQUALS(true, inconclusive);
+
+        code = "void g(const int* p);\n"
+               "void f(int x) {\n"
+               "    return g(&x);\n"
+               "}\n";
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        ASSERT_EQUALS(true, inconclusive);
+
+        code = "void g(int** pp);\n"
+               "void f(int* p) {\n"
+               "    return g(&p);\n"
+               "}\n";
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "p ) ;", &inconclusive));
+        ASSERT_EQUALS(true, inconclusive);
+
+        code = "void g(int* const* pp);\n"
+               "void f(int* p) {\n"
+               "    return g(&p);\n"
+               "}\n";
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "p ) ;", &inconclusive));
+        ASSERT_EQUALS(true, inconclusive);
     }
 
 #define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)
