@@ -325,17 +325,9 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
                                 return false;
                             }
                         } else if (tok->previous()->str() == "union") {
-                            if (tok->next()->str() != ";") {
-                                return true;
-                            } else {
-                                return false;
-                            }
+                            return tok->next()->str() != ";";
                         } else if (isCPP() && tok->previous()->str() == "class") {
-                            if (tok->next()->str() != ";") {
-                                return true;
-                            } else {
-                                return false;
-                            }
+                            return tok->next()->str() != ";";
                         }
                         if (tok)
                             tok = tok->previous();
@@ -7367,7 +7359,7 @@ void Tokenizer::validate() const
             if (tok->link() == nullptr)
                 cppcheckError(tok);
 
-            if (linkTokens.empty() == true)
+            if (linkTokens.empty())
                 cppcheckError(tok);
 
             if (tok->link() != linkTokens.top())
