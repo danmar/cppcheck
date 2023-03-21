@@ -501,11 +501,12 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
 {
     for (const std::string &ext: mExtTokens) {
         if (ext.compare(0, 5, "<col:") == 0)
-            col = strToInt<int>(ext.substr(5));
+            col = strToInt<int>(ext.substr(5, ext.find_first_of(",>", 5) - 5));
         else if (ext.compare(0, 6, "<line:") == 0) {
-            line = strToInt<int>(ext.substr(6));
-            if (ext.find(", col:") != std::string::npos)
-                col = strToInt<int>(ext.c_str() + ext.find(", col:") + 6);
+            line = strToInt<int>(ext.substr(6, ext.find_first_of(":,>", 6) - 6));
+            const auto pos = ext.find(", col:");
+            if (pos != std::string::npos)
+                col = strToInt<int>(ext.substr(pos+6, ext.find_first_of(":,>", pos+6) - (pos+6)));
         } else if (ext[0] == '<') {
             const std::string::size_type colon = ext.find(':');
             if (colon != std::string::npos) {
