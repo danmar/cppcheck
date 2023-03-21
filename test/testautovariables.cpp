@@ -3891,6 +3891,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11609
+        check("struct S {\n"
+              "    void f(const std::string& s) {\n"
+              "        auto it = m.find(s.substr(1,4));\n"
+              "        if (it == m.end()) {}\n"
+              "    }\n"
+              "    std::map<std::string, int> m;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()
