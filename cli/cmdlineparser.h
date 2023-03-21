@@ -122,7 +122,7 @@ private:
 
     // TODO: get rid of is_signed
     template<typename T>
-    bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool is_signed = false)
+    static bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool is_signed = false)
     {
         T tmp;
         std::string err;
