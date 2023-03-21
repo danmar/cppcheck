@@ -452,8 +452,8 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         const std::string locFile = Path::toNativeSeparators(filename);
         ErrorMessage::FileLocation loc;
         loc.setfile(locFile);
-        loc.line = std::atoi(linenr.c_str());
-        loc.column = std::atoi(colnr.c_str());
+        loc.line = strToInt<int>(linenr);
+        loc.column = strToInt<unsigned int>(colnr);
         ErrorMessage errmsg({std::move(loc)},
                             locFile,
                             Severity::error,
@@ -1730,8 +1730,8 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
         const std::string errorString = line.substr(endErrorPos, line.length());
 
         std::string fixedpath = Path::simplifyPath(line.substr(0, endNamePos));
-        const int64_t lineNumber = std::atol(lineNumString.c_str());
-        const int64_t column = std::atol(columnNumString.c_str());
+        const int64_t lineNumber = strToInt<int64_t>(lineNumString);
+        const int64_t column = strToInt<int64_t>(columnNumString);
         fixedpath = Path::toNativeSeparators(fixedpath);
 
         ErrorMessage errmsg;

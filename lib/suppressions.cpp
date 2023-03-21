@@ -101,11 +101,11 @@ std::string Suppressions::parseXmlFile(const char *filename)
             else if (std::strcmp(e2->Name(), "fileName") == 0)
                 s.fileName = text;
             else if (std::strcmp(e2->Name(), "lineNumber") == 0)
-                s.lineNumber = std::atoi(text);
+                s.lineNumber = strToInt<int>(text);
             else if (std::strcmp(e2->Name(), "symbolName") == 0)
                 s.symbolName = text;
             else if (*text && std::strcmp(e2->Name(), "hash") == 0)
-                std::istringstream(text) >> s.hash;
+                s.hash = strToInt<std::size_t>(text);
             else
                 return "Unknown suppression element \"" + std::string(e2->Name()) + "\", expected id/fileName/lineNumber/symbolName/hash";
         }

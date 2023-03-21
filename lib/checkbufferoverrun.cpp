@@ -143,13 +143,13 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
             outputStringSize++;
 
         if (handleNextParameter) {
-            int tempDigits = std::abs(std::atoi(digits_string.c_str()));
+            int tempDigits = std::abs(strToInt<int>(digits_string));
             if (i_d_x_f_found)
                 tempDigits = std::max(tempDigits, 1);
 
             if (digits_string.find('.') != std::string::npos) {
                 const std::string endStr = digits_string.substr(digits_string.find('.') + 1);
-                const int maxLen = std::max(std::abs(std::atoi(endStr.c_str())), 1);
+                const int maxLen = std::max(std::abs(strToInt<int>(endStr)), 1);
 
                 if (formatString[i] == 's') {
                     // For strings, the length after the dot "%.2s" will limit

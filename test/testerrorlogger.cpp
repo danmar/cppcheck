@@ -333,27 +333,27 @@ private:
             // invalid CWE ID
             const char str[] = "7 errorId"
                                "5 error"
-                               "7 invalid"
+                               "7 invalid" // cwe
                                "1 0"
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid CWE ID");
+            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid CWE ID - not an integer");
         }
         {
             // invalid hash
             const char str[] = "7 errorId"
                                "5 error"
                                "1 0"
-                               "7 invalid"
+                               "7 invalid" // hash
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid hash");
+            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid hash - not an integer");
         }
         {
             // out-of-range CWE ID
