@@ -143,7 +143,8 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
             outputStringSize++;
 
         if (handleNextParameter) {
-            int tempDigits = std::abs(strToInt<int>(digits_string));
+            // NOLINTNEXTLINE(cert-err34-c) - intentional use
+            int tempDigits = std::abs(std::atoi(digits_string.c_str()));
             if (i_d_x_f_found)
                 tempDigits = std::max(tempDigits, 1);
 
