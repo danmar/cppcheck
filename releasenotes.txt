@@ -13,3 +13,4 @@ release notes for cppcheck-2.11
     - `constVariableReference`
     - `constVariablePointer`
 - Limit valueflow analysis in function if the "if" count is high. By default max limit is 100. Limit can be tweaked with --performance-valueflow-max-if-count
+- More command-line parameters will now check if the given integer argument is actually valid. Several other internal string-to-integer conversions will not be error checked.
