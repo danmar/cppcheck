@@ -114,7 +114,7 @@ protected:
     static T& getCheck()
     {
         for (Check *check : Check::instances()) {
-            //cppcheck-suppress [constVariable, useStlAlgorithm] - TODO: fix constVariable FP
+            //cppcheck-suppress [constVariablePointer, useStlAlgorithm] - TODO: fix constVariable FP
             if (T* c = dynamic_cast<T*>(check))
                 return *c;
         }
