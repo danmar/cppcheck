@@ -2478,7 +2478,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     }
 
     // Check addressof
-    if (Token::simpleMatch(tok2->astParent(), "&") &&
+    if (tok2->astParent() && tok2->astParent()->isUnaryOp("&") &&
         isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1)) {
         return true;
     }
@@ -2552,9 +2552,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             return true;
     }
 
-    if (Token::simpleMatch(tok2, "[") && astIsContainer(tok) && vt && vt->container && vt->container->stdAssociativeLike) {
+    if (Token::simpleMatch(tok2, "[") && astIsContainer(tok) && vt && vt->container && vt->container->stdAssociativeLike)
         return true;
-    }
 
     const Token *ftok = tok2;
     while (ftok && (!Token::Match(ftok, "[({]") || ftok->isCast()))

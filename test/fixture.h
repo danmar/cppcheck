@@ -167,7 +167,7 @@ extern std::ostringstream output;
 #define LOAD_LIB_2( LIB, NAME ) do { \
         if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) { \
             complainMissingLib(NAME); \
-            return; \
+            abort(); \
         } \
 } while (false)
 

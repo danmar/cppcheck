@@ -96,10 +96,9 @@ void ThreadResult::setFiles(const QStringList &files)
 
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
-    quint64 sizeOfFiles = 0;
-    for (const QString& file : files) {
-        sizeOfFiles += QFile(file).size();
-    }
+    quint64 sizeOfFiles = std::accumulate(files.begin(), files.end(), 0, [](quint64 total, const QString& file) {
+        return total + QFile(file).size();
+    });
     mMaxProgress = sizeOfFiles;
 }
 
