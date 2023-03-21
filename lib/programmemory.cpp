@@ -1463,10 +1463,13 @@ std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, con
                 next = elseStart->link();
             }
             std::vector<ValueFlow::Value> result;
-            if (v.intvalue) {
+            if (isTrue(v)) {
                 result = execute(thenStart->scope(), pm, settings);
-            } else if (elseStart) {
-                result = execute(elseStart->scope(), pm, settings);
+            } else if (isFalse(v)) {
+                if (elseStart)
+                    result = execute(elseStart->scope(), pm, settings);
+            } else {
+                return unknown;
             }
             if (!result.empty())
                 return result;

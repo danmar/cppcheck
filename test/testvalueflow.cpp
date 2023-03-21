@@ -4699,6 +4699,19 @@ private:
                 "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 14U, 0));
         ASSERT_EQUALS(false, testValueOfX(code, 14U, 1));
+
+        code = "bool h(char q);\n"
+                "bool g(char q) {\n"
+                "    if (!h(q))\n"
+                "        return false;\n"
+                "    return true;\n"
+                "}\n"
+                "int f() {\n"
+                "    int x = g(0);\n"
+                "    return x;\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 1));
     }
 
     void valueFlowFunctionDefaultParameter() {
