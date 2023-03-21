@@ -1310,7 +1310,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         if (!lhs.isIntValue())
             return unknown;
         if (expr->str() == "!") {
-            if(isTrue(lhs)) {
+            if (isTrue(lhs)) {
                 lhs.intvalue = 0;
             } else if (isFalse(lhs)) {
                 lhs.intvalue = 1;
@@ -1400,7 +1400,7 @@ static const ValueFlow::Value* getImpossibleValue(const Token* tok)
     if (!tok)
         return nullptr;
     std::vector<const ValueFlow::Value*> values;
-    for(const ValueFlow::Value& v:tok->values()) {
+    for (const ValueFlow::Value& v : tok->values()) {
         if (!v.isImpossible())
             continue;
         if (v.isContainerSizeValue() || v.isIntValue()) {
@@ -1432,11 +1432,11 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
 std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings* settings)
 {
     static const std::vector<ValueFlow::Value> unknown = {ValueFlow::Value::unknown()};
-    if(!scope)
+    if (!scope)
         return unknown;
     if (!scope->bodyStart)
         return unknown;
-    for(const Token* tok = scope->bodyStart->next();precedes(tok, scope->bodyEnd);tok = tok->next()) {
+    for (const Token* tok = scope->bodyStart->next(); precedes(tok, scope->bodyEnd); tok = tok->next()) {
         const Token* top = tok->astTop();
         if (!top)
             return unknown;

@@ -7545,7 +7545,6 @@ static const ValueFlow::Value* getKnownValueFromToken(const Token* tok)
     if (it == tok->values().end())
         return nullptr;
     return std::addressof(*it);
-
 }
 
 static const ValueFlow::Value* getKnownValueFromTokens(const std::vector<const Token*>& toks)
@@ -7570,8 +7569,7 @@ static void setFunctionReturnValue(const Function* f, Token* tok, ValueFlow::Val
         if (v.isImpossible())
             return;
         v.setPossible();
-    }
-    else if (!v.isImpossible()) {
+    } else if (!v.isImpossible()) {
         v.setKnown();
     }
     v.errorPath.emplace_back(tok, "Calling function '" + f->name() + "' returns " + v.toString());
@@ -7627,7 +7625,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         if (programMemory.empty() && !arguments.empty())
             continue;
         std::vector<ValueFlow::Value> values = execute(function->functionScope, programMemory, settings);
-        for(const ValueFlow::Value& v:values) {
+        for (const ValueFlow::Value& v : values) {
             if (v.isUninitValue())
                 continue;
             setFunctionReturnValue(function, tok, v, settings);
