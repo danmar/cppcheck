@@ -69,12 +69,15 @@ public:
     using biguint = unsigned long long;
     static const int bigint_bits;
 
+    /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
     static bigint toLongNumber(const std::string & str);
+    /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
     static biguint toULongNumber(const std::string & str);
 
     template<class T> static std::string toString(T value) {
         return std::to_string(value);
     }
+    /** @brief for conversion of numeric literals */
     static double toDoubleNumber(const std::string & str);
 
     static bool isInt(const std::string & str);
