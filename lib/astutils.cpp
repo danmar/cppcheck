@@ -2412,7 +2412,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
             // If const is applied to the pointer, then the value can still be modified
             if (Token::simpleMatch(arg->typeEndToken(), "* const"))
                 return true;
-            if (!arg->isPointer() && (!arg->valueType() || arg->valueType()->type == ValueType::UNKNOWN_TYPE))
+            if (arg->isArray() || (!arg->isPointer() && (!arg->valueType() || arg->valueType()->type == ValueType::UNKNOWN_TYPE)))
                 return true;
         }
         if (!arg->isConst() && arg->isReference())
