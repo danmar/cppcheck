@@ -1309,8 +1309,17 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         if (!lhs.isIntValue())
             return unknown;
-        if (expr->str() == "!")
-            lhs.intvalue = !lhs.intvalue;
+        if (expr->str() == "!") {
+            if(isTrue(lhs)) {
+                lhs.intvalue = 0;
+            } else if (isFalse(lhs)) {
+                lhs.intvalue = 1;
+            } else {
+                return unknown;
+            }
+            lhs.setPossible();
+            lhs.bound = ValueFlow::Value::Bound::Point;
+        }
         if (expr->str() == "-")
             lhs.intvalue = -lhs.intvalue;
         return lhs;
