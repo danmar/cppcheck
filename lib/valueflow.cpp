@@ -7530,11 +7530,6 @@ static void valueFlowFunctionDefaultParameter(TokenList* tokenlist, SymbolDataba
     }
 }
 
-static bool isKnown(const Token * tok)
-{
-    return tok && tok->hasKnownIntValue();
-}
-
 static const ValueFlow::Value* getKnownValueFromToken(const Token* tok)
 {
     if (!tok)
