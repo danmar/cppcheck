@@ -235,14 +235,14 @@ static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
 
 static bool isTrue(const ValueFlow::Value& v)
 {
-    if (v.isImpossible()) {
+    if (v.isImpossible())
         return v.intvalue == 0;
     return v.intvalue != 0;
 }
 
 static bool isFalse(const ValueFlow::Value& v)
 {
-    if (v.isImpossible()) {
+    if (v.isImpossible())
         return false;
     return v.intvalue == 0;
 }
