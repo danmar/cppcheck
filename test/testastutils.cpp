@@ -42,6 +42,7 @@ private:
         TEST_CASE(isSameExpressionTest);
         TEST_CASE(isVariableChangedTest);
         TEST_CASE(isVariableChangedByFunctionCallTest);
+        TEST_CASE(isExpressionChangedTest);
         TEST_CASE(nextAfterAstRightmostLeafTest);
         TEST_CASE(isUsedAsBool);
     }
@@ -227,6 +228,13 @@ private:
         ASSERT_EQUALS(true, isVariableChanged("void f() {\n"
                                               "    int &a = a;\n"
                                               "}\n", "= a", "}"));
+
+        ASSERT_EQUALS(false, isVariableChanged("void f(const A& a) { a.f(); }", "{", "}"));
+        ASSERT_EQUALS(true,
+                      isVariableChanged("void g(int*);\n"
+                                        "void f(int x) { g(&x); }\n",
+                                        "{",
+                                        "}"));
     }
 
 #define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
@@ -256,6 +264,46 @@ private:
                "}\n";
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
         TODO_ASSERT_EQUALS(false, true, inconclusive);
+    }
+
+#define isExpressionChanged(code, var, startPattern, endPattern)                                                       \
+    isExpressionChanged_(code, var, startPattern, endPattern, __FILE__, __LINE__)
+    bool isExpressionChanged_(const char code[],
+                              const char var[],
+                              const char startPattern[],
+                              const char endPattern[],
+                              const char* file,
+                              int line)
+    {
+        Settings settings;
+        LOAD_LIB_2(settings.library, "std.cfg");
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
+        const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
+        const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
+        return (isExpressionChanged)(expr, start, end, &settings, true);
+    }
+
+    void isExpressionChangedTest()
+    {
+        ASSERT_EQUALS(true, isExpressionChanged("void f(std::map<int, int>& m) { m[0]; }", "m [", "{", "}"));
+        ASSERT_EQUALS(false, isExpressionChanged("void f(const A& a) { a.f(); }", "a .", "{", "}"));
+
+        ASSERT_EQUALS(true,
+                      isExpressionChanged("void g(int*);\n"
+                                          "void f(int x) { g(&x); }\n",
+                                          "x",
+                                          ") {",
+                                          "}"));
+
+        ASSERT_EQUALS(true,
+                      isExpressionChanged("struct S { void f(); int i; };\n"
+                                          "void call_f(S& s) { (s.*(&S::f))(); }\n",
+                                          "s .",
+                                          "{ (",
+                                          "}"));
     }
 
 #define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)
