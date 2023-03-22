@@ -43,7 +43,9 @@ if (BUILD_TESTS)
     add_dependencies(testrunner copy_cfg)
     add_dependencies(testrunner copy_addons)
     add_dependencies(testrunner copy_platforms)
-    add_dependencies(testrunner run-dmake)
+    if (NOT DISABLE_DMAKE)
+        add_dependencies(testrunner run-dmake)
+    endif()
 
     if (LIBXML2_XMLLINT_EXECUTABLE)
         # TODO: run the CMake implementation of the tests

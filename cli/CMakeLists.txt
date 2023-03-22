@@ -64,7 +64,9 @@ endif()
 add_dependencies(cppcheck copy_cfg)
 add_dependencies(cppcheck copy_addons)
 add_dependencies(cppcheck copy_platforms)
-add_dependencies(cppcheck run-dmake)
+if (NOT DISABLE_DMAKE)
+    add_dependencies(cppcheck run-dmake)
+endif()
 
 install(TARGETS cppcheck
     RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}
