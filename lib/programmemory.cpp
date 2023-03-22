@@ -237,18 +237,14 @@ static bool isTrue(const ValueFlow::Value& v)
 {
     if (v.isImpossible()) {
         return v.intvalue == 0;
-    } else {
-        return v.intvalue != 0;
-    }
+    return v.intvalue != 0;
 }
 
 static bool isFalse(const ValueFlow::Value& v)
 {
     if (v.isImpossible()) {
         return false;
-    } else {
-        return v.intvalue == 0;
-    }
+    return v.intvalue == 0;
 }
 
 // If the scope is a non-range for loop
@@ -1226,20 +1222,18 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             return unknown;
         if (isFalse(lhs))
             return lhs;
-        else if (isTrue(lhs))
+        if (isTrue(lhs))
             return execute(expr->astOperand2(), pm);
-        else
-            return unknown;
+        return unknown;
     } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         if (!lhs.isIntValue() || lhs.isImpossible())
             return unknown;
         if (isTrue(lhs))
             return lhs;
-        else if (isFalse(lhs))
+        if (isFalse(lhs))
             return execute(expr->astOperand2(), pm);
-        else
-            return unknown;
+        return unknown;
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), pm);
         return execute(expr->astOperand2(), pm);
