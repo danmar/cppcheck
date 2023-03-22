@@ -1,3 +1,4 @@
+# TODO: when using ccache and matchcompiler this will accessed before the file was generated and thus the build fails
 set(srcs_lib pathmatch.cpp path.cpp)
 foreach(file ${srcs_lib})
     if (NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
