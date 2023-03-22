@@ -63,7 +63,7 @@ jobs:
 
       - name: Build test
         run: |
-          cmake --build cmake.output --target testrunner -- -j $(nproc)          
+          cmake --build cmake.output --target testrunner -- -j $(nproc)
 
       - name: Run tests
         run: ./cmake.output/bin/testrunner
