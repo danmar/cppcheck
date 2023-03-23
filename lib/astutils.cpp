@@ -2466,6 +2466,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     };
     tok2 = skipRedundantPtrOp(tok2, tok2->astParent());
 
+
     if (tok2->astParent() && tok2->astParent()->isAssignmentOp()) {
         if (tok2 == tok2->astParent()->astOperand1())
             return true;
@@ -2477,17 +2478,17 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         }
     }
 
+    const ValueType* vt = tok->variable() ? tok->variable()->valueType() : tok->valueType();
+    // If its already const then it cant be modified
+    if (vt) {
+        if (vt->constness & (1 << (indirect - vt->pointer)))
+            return false;
+    }
+
     // Check addressof
     if (tok2->astParent() && tok2->astParent()->isUnaryOp("&") &&
         isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1)) {
         return true;
-    }
-
-    const ValueType* vt = tok->variable() ? tok->variable()->valueType() : tok->valueType();
-    // If its already const then it cant be modified
-    if (vt) {
-        if (vt->constness & (1 << indirect))
-            return false;
     }
 
     if (cpp && Token::Match(tok2->astParent(), ">>|&") && astIsRHS(tok2) && isLikelyStreamRead(cpp, tok2->astParent()))
