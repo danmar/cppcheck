@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.38"
+SERVER_VERSION = "1.3.39"
 
 OLD_VERSION = '2.10'
 
@@ -102,6 +102,7 @@ def overviewReport() -> str:
     html += '<a href="head-simplifyUsingUnmatchedBodyEnd">simplifyUsingUnmatchedBodyEnd</a><br>\n'
     html += '<a href="head-simplifyUsing">simplifyUsing</a><br>\n'
     html += '<a href="head-valueFlowMaxIterations">valueFlowMaxIterations</a><br>\n'
+    html += '<a href="head-templateInstantiation">templateInstantiation</a><br>\n'
     #html += '<a href="head-autoNoType">autoNoType</a><br>\n'
     #html += '<a href="head-valueFlowBailout">valueFlowBailout</a><br>\n'
     #html += '<a href="head-bailoutUninitVar">bailoutUninitVar</a><br>\n'
