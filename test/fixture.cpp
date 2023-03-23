@@ -380,7 +380,7 @@ std::size_t TestFixture::runTests(const options& args)
         std::cerr << std::endl << std::endl;
     }
     std::cerr.flush();
-    return fails_counter;
+    return fails_counter + succeeded_todos_counter;
 }
 
 void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
