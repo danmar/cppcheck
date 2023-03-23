@@ -55,7 +55,8 @@ private:
 
         TEST_CASE(c1);
         TEST_CASE(c2);
-        TEST_CASE(canreplace);
+        TEST_CASE(canreplace1);
+        TEST_CASE(canreplace2);
         TEST_CASE(cconst);
         TEST_CASE(cstruct1);
         TEST_CASE(cstruct2);
@@ -320,10 +321,24 @@ private:
         ASSERT_EQUALS("void f1 ( ) { int x ; } void f2 ( ) { float x ; }", simplifyTypedefC(code));
     }
 
-    void canreplace() {
+    void canreplace1() {
         const char code[] = "typedef unsigned char u8;\n"
                             "void f(uint8_t u8) { x = u8 & y; }\n";
         ASSERT_EQUALS("void f ( uint8_t u8 ) { x = u8 & y ; }", simplifyTypedefC(code));
+    }
+
+    void canreplace2() {
+        const char code1[] = "typedef char* entry;\n"
+                             "void f(Y* entry) { for (entry=x->y; entry; entry = entry->next) {} }\n";
+        ASSERT_EQUALS("void f ( Y * entry ) { for ( entry = x -> y ; entry ; entry = entry -> next ) { } }", simplifyTypedefC(code1));
+
+        const char code2[] = "typedef char* entry;\n"
+                             "void f() { dostuff(entry * 2); }\n";
+        ASSERT_EQUALS("void f ( ) { dostuff ( entry * 2 ) ; }", simplifyTypedefC(code2));
+
+        const char code3[] = "typedef char* entry;\n"
+                             "void f() { dostuff(entry * y < z); }\n";
+        ASSERT_EQUALS("void f ( ) { dostuff ( entry * y < z ) ; }", simplifyTypedefC(code3));
     }
 
     void cconst() {

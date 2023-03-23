@@ -857,7 +857,7 @@ namespace {
             if (!Token::Match(tok->previous(), "%name%|;|{|}|(|,|<") && !Token::Match(tok, "%name% ("))
                 return false;
             if (!Token::Match(tok, "%name% %name%|*|&|&&|;|(|)|,|::")) {
-                if (Token::Match(tok->previous(), "( %name% =") && Token::Match(tok->linkAt(-1), ") %name%|{"))
+                if (Token::Match(tok->previous(), "( %name% =") && Token::Match(tok->linkAt(-1), ") %name%|{") && !tok->tokAt(-2)->isKeyword())
                     return true;
                 if (Token::Match(tok->previous(), ", %name% ="))
                     return true;
@@ -877,6 +877,19 @@ namespace {
                 Token::simpleMatch(mRangeType.second, "{") &&
                 tok->str() != mRangeType.second->previous()->str())
                 return true;
+            if (Token::Match(tok->previous(), "; %name% ;"))
+                return false;
+            for (const Token* after = tok->next(); after; after = after->next()) {
+                if (Token::Match(after, "%name%|::|&|*|&&"))
+                    continue;
+                if (after->str() == "<" && after->link())
+                    break;
+                if (after->isNumber())
+                    return false;
+                if (after->isComparisonOp() || after->isArithmeticalOp())
+                    return false;
+                break;
+            }
             for (const Token* before = tok->previous(); before; before = before->previous()) {
                 if (Token::Match(before, "[+-*/&|~!]"))
                     return false;
@@ -886,7 +899,7 @@ namespace {
                     return false;
                 if (before->isName())
                     continue;
-                return true;
+                break;
             }
             return true;
         }
