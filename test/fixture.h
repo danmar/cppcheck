@@ -164,12 +164,13 @@ extern std::ostringstream output;
 #define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_ ## CLASSNAME; }
 
-#define LOAD_LIB_2( LIB, NAME ) do { \
-        if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) { \
-            complainMissingLib(NAME); \
-            return; \
-        } \
-} while (false)
+#define LOAD_LIB_2(LIB, NAME)                                                                                          \
+    do {                                                                                                               \
+        if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) {                                 \
+            complainMissingLib(NAME);                                                                                  \
+            abort();                                                                                                   \
+        }                                                                                                              \
+    } while (false)
 
 #define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(cppcheck::Platform::toString(T), errstr, {exename}), errstr); } while (false)
 

@@ -1111,12 +1111,10 @@ static bool isVLAIndex(const Token* tok)
         return true;
     if (tok->str() == "?") {
         // this is a VLA index if both expressions around the ":" is VLA index
-        if (tok->astOperand2() &&
-            tok->astOperand2()->str() == ":" &&
-            isVLAIndex(tok->astOperand2()->astOperand1()) &&
-            isVLAIndex(tok->astOperand2()->astOperand2()))
-            return true;
-        return false;
+        return tok->astOperand2() &&
+               tok->astOperand2()->str() == ":" &&
+               isVLAIndex(tok->astOperand2()->astOperand1()) &&
+               isVLAIndex(tok->astOperand2()->astOperand2());
     }
     return isVLAIndex(tok->astOperand1()) || isVLAIndex(tok->astOperand2());
 }

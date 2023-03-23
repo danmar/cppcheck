@@ -2313,7 +2313,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             mayModifyArgs = false;
             for (nonneg int argIndex = 0; argIndex < argMax; ++argIndex) {
                 const Variable* const argVar = f->getArgumentVar(argIndex);
-                if (!argVar || !argVar->valueType() || ((argVar->valueType()->pointer || argVar->valueType()->reference != Reference::None) && !argVar->isConst())) {
+                if (!argVar || ((argVar->isArrayOrPointer() || argVar->isReference()) && !argVar->isConst())) {
                     mayModifyArgs = true;
                     break;
                 }
@@ -2894,7 +2894,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
     // This is disabled because of #8388
     // The message must be clarified. How is the behaviour different?
     // cppcheck-suppress unreachableCode - remove when code is enabled again
-    if ((true) || !mSettings->severity.isEnabled(Severity::warning))
+    if ((true) || !mSettings->severity.isEnabled(Severity::warning)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
