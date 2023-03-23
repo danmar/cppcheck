@@ -6380,6 +6380,7 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'C::f1' can be const.\n"
                       "[test.cpp:11]: (style, inconclusive) Technically the member function 'C::f2' can be const.\n",
                       errout.str());
+    }
 
     void const85() { // #11618
         checkConst("struct S {\n"
