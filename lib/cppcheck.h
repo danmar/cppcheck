@@ -146,8 +146,10 @@ public:
     void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files); // cppcheck-suppress functionConst // has side effects
 
 private:
+#ifdef HAVE_RULES
     /** Are there "simple" rules */
     bool hasRule(const std::string &tokenlist) const;
+#endif
 
     /** @brief There has been an internal error => Report information message */
     void internalError(const std::string &filename, const std::string &msg);
@@ -184,12 +186,14 @@ private:
      */
     void executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files);
 
+#ifdef HAVE_RULES
     /**
      * @brief Execute rules, if any
      * @param tokenlist token list to use (normal / simple)
      * @param tokenizer tokenizer
      */
     void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
+#endif
 
     /**
      * @brief Errors and warnings are directed here.

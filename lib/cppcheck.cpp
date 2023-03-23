@@ -800,6 +800,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             return 0;
         }
 
+#ifdef HAVE_RULES
         // Run define rules on raw code
         const auto it = std::find_if(mSettings.rules.cbegin(), mSettings.rules.cend(), [](const Settings::Rule& rule) {
             return rule.tokenlist == "define";
@@ -816,6 +817,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             tokenizer2.list.createTokens(istr2);
             executeRules("define", tokenizer2);
         }
+#endif
 
         if (!mSettings.force && configurations.size() > mSettings.maxConfigs) {
             if (mSettings.severity.isEnabled(Severity::information)) {
@@ -938,10 +940,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (!mSettings.buildDir.empty())
                     checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), &mSettings);
 
+#ifdef HAVE_RULES
                 // handling of "simple" rules has been removed.
-                // cppcheck-suppress knownConditionTrueFalse
                 if (mSimplify && hasRule("simple"))
                     throw InternalError(nullptr, "Handling of \"simple\" rules has been removed in Cppcheck. Use --addon instead.");
+#endif
 
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
@@ -1060,8 +1063,12 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 //---------------------------------------------------------------------------
 void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 {
+#ifdef HAVE_RULES
     // Execute rules for "raw" code
     executeRules("raw", tokenizer);
+#else
+    (void)tokenizer;
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -1133,26 +1140,22 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         }
     }
 
+#ifdef HAVE_RULES
     executeRules("normal", tokenizer);
+#endif
 }
 
 //---------------------------------------------------------------------------
 
+#ifdef HAVE_RULES
 bool CppCheck::hasRule(const std::string &tokenlist) const
 {
-#ifdef HAVE_RULES
     for (const Settings::Rule &rule : mSettings.rules) {
         if (rule.tokenlist == tokenlist)
             return true;
     }
-#else
-    (void)tokenlist;
-#endif
     return false;
 }
-
-
-#ifdef HAVE_RULES
 
 static const char * pcreErrorCodeToString(const int pcreExecRet)
 {
@@ -1283,15 +1286,8 @@ static const char * pcreErrorCodeToString(const int pcreExecRet)
     return "";
 }
 
-#endif // HAVE_RULES
-
-
 void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
 {
-    (void)tokenlist;
-    (void)tokenizer;
-
-#ifdef HAVE_RULES
     // There is no rule to execute
     if (!hasRule(tokenlist))
         return;
@@ -1414,8 +1410,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         }
 #endif
     }
-#endif
 }
+#endif
 
 void CppCheck::executeAddons(const std::string& dumpFile)
 {
