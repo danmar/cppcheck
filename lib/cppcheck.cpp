@@ -943,6 +943,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), &mSettings);
 
                 // handling of "simple" rules has been removed.
+                // cppcheck-suppress knownConditionTrueFalse
                 if (mSimplify && hasRule("simple"))
                     throw InternalError(nullptr, "Handling of \"simple\" rules has been removed in Cppcheck. Use --addon instead.");
 
