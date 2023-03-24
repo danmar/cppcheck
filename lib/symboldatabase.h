@@ -1349,7 +1349,7 @@ public:
         return typeScope && typeScope->type == Scope::eEnum;
     }
 
-    bool isConst(nonneg int indirect=0) const;
+    bool isConst(nonneg int indirect = 0) const;
 
     MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 

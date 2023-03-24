@@ -2466,7 +2466,6 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     };
     tok2 = skipRedundantPtrOp(tok2, tok2->astParent());
 
-
     if (tok2->astParent() && tok2->astParent()->isAssignmentOp()) {
         if (tok2 == tok2->astParent()->astOperand1())
             return true;
