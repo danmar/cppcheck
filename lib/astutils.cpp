@@ -2481,7 +2481,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     const ValueType* vt = tok->variable() ? tok->variable()->valueType() : tok->valueType();
     // If its already const then it cant be modified
     if (vt) {
-        if (vt->constness & (1 << (indirect - vt->pointer)))
+        if (vt->isConst(indirect))
             return false;
     }
 

@@ -7414,6 +7414,13 @@ std::string ValueType::dump() const
     return ret.str();
 }
 
+bool ValueType::isConst(nonneg int indirect) const
+{
+    if (indirect > pointer)
+        return false;
+    return constness & (1 << (pointer - indirect));
+}
+
 MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const
 {
     if (p && pointer)
