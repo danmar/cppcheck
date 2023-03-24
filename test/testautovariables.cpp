@@ -3904,10 +3904,10 @@ private:
 
         // #11628
         check("std::vector<int>* g();\n"
-                  "void f() {\n"
-                  "	std::unique_ptr<std::vector<int>> p(g());\n"
-                  "	if (!p) {}\n"
-                  "}\n");
+              "void f() {\n"
+              "	std::unique_ptr<std::vector<int>> p(g());\n"
+              "	if (!p) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
