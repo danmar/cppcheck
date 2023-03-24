@@ -4813,9 +4813,17 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
         // container lifetimes
         else if (astIsContainer(tok)) {
             Token * parent = astParentSkipParens(tok);
-            if (!Token::Match(parent, ". %name% (") &&
-                !Token::simpleMatch(parent, "("))
+            if (!parent)
                 continue;
+            if (!Token::Match(parent, ". %name% (") &&
+                !Token::Match(parent->previous(), "%name% ("))
+                continue;
+
+            // Skip if its a free function that doesnt yield an iterator to the container
+            if (Token::Match(parent->previous(), "%name% (") &&
+                       !contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR},
+                                astFunctionYield(parent->previous(), settings)))
+                                continue;
 
             ValueFlow::Value master;
             master.valueType = ValueFlow::Value::ValueType::LIFETIME;
