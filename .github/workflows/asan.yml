@@ -77,7 +77,7 @@ jobs:
           make -C cmake.output gui-build-deps triage-build-ui-deps
 
       # TODO: this is currently way too slow (~60 minutes) to enable it
-      # TODO: only fail the step on sanitizer issues
+      # TODO: only fail the step on sanitizer issues - since we use processes it will only fail the underlying process which will result in an cppcheckError
       - name: Self check
         if: false
         run: |

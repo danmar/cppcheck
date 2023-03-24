@@ -74,7 +74,7 @@ jobs:
           make -C cmake.output autogen
           make -C cmake.output gui-build-deps triage-build-ui-deps
 
-      # TODO: only fail the step on sanitizer issues
+      # TODO: only fail the step on sanitizer issues - since we use processes it will only fail the underlying process which will result in an cppcheckError
       - name: Self check
         run: |
           selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings"
