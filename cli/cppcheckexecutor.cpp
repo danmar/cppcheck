@@ -262,7 +262,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     Settings& settings = cppcheck.settings();
     const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
 
-    auto failed_lib = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&](const std::string &lib) {
+    auto failed_lib = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&](const std::string& lib) {
         return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
     });
     if (failed_lib != settings.libraries.end()) {

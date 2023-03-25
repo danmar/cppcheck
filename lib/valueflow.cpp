@@ -2269,7 +2269,7 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
     if (var && !var->isPointer())
         return false;
     // Search through non value aliases
-    return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value &val) {
+    return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& val) {
         if (!val.isNonValue())
             return false;
         if (val.isInconclusive())
