@@ -3022,6 +3022,8 @@ std::vector<const Token*> Function::findReturns(const Function* f)
     const Scope* scope = f->functionScope;
     if (!scope)
         return result;
+    if (!scope->bodyStart)
+        return result;
     for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok->scope() &&
             (tok->scope()->type == Scope::eLambda || tok->scope()->type == Scope::eClass)) {

@@ -30,6 +30,7 @@
 #include <unordered_map>
 #include <utility>
 
+class Scope;
 class Token;
 class Settings;
 
@@ -141,6 +142,8 @@ struct ProgramMemoryState {
 
     ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
+
+std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings* settings);
 
 void execute(const Token* expr,
              ProgramMemory& programMemory,

@@ -5873,6 +5873,15 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n",
             errout.str());
+
+        // #11630
+        check("int main(int argc, const char* argv[]) {\n"
+              "    std::vector<std::string> args(argv + 1, argv + argc);\n"
+              "    args.push_back(\"-h\");\n"
+              "    args.front();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
