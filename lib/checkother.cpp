@@ -1384,17 +1384,6 @@ static const Token* isFuncArg(const Token* tok) {
     return nullptr;
 }
 
-// returns true for e.g. "return &var;"
-static bool hasBadAddressOf(const Variable* var, const Scope* scope) {
-    const Token* tok = var->nameToken();
-    while ((tok = Token::findmatch(tok, "& %varid%", scope->bodyEnd, var->declarationId()))) {
-        if (!isFuncArg(tok->astParent())) // arguments to functions are checked elsewhere
-            return true;
-        tok = tok->next();
-    }
-    return false;
-}
-
 void CheckOther::checkConstVariable()
 {
     if (!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC())
@@ -1448,7 +1437,7 @@ void CheckOther::checkConstVariable()
                 functionScope = functionScope->nestedIn;
             } while (functionScope && !(function = functionScope->function));
         }
-        if (function && Function::returnsReference(function) && !Function::returnsConst(function)) {
+        if (function && (Function::returnsReference(function) || Function::returnsPointer(function)) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.cbegin(), returns.cend(), [&](const Token* retTok) {
                 if (retTok->varId() == var->declarationId())
@@ -1457,13 +1446,12 @@ void CheckOther::checkConstVariable()
                     retTok = retTok->astOperand2();
                 while (Token::simpleMatch(retTok, "."))
                     retTok = retTok->astOperand2();
+                if (Token::simpleMatch(retTok, "&"))
+                    retTok = retTok->astOperand1();
                 return ValueFlow::hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
             }))
                 continue;
         }
-        // Skip if address is taken
-        if (hasBadAddressOf(var, scope))
-            continue;
         // Skip if another non-const variable is initialized with this variable
         {
             //Is it the right side of an initialization of a non-const reference
@@ -1472,6 +1460,13 @@ void CheckOther::checkConstVariable()
                 if (Token::Match(tok, "& %var% = %varid%", var->declarationId())) {
                     const Variable* refvar = tok->next()->variable();
                     if (refvar && !refvar->isConst() && refvar->nameToken() == tok->next()) {
+                        usedInAssignment = true;
+                        break;
+                    }
+                }
+                if (Token::Match(tok, "%var% = & %varid%", var->declarationId())) {
+                    const Variable* ptrvar = tok->variable();
+                    if (ptrvar && !ptrvar->isConst()) {
                         usedInAssignment = true;
                         break;
                     }
@@ -1496,7 +1491,7 @@ void CheckOther::checkConstVariable()
                         castToNonConst = true; // safe guess
                         break;
                     }
-                    const bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
+                    const bool isConst = tok->valueType()->isConst(tok->valueType()->pointer);
                     if (!isConst) {
                         castToNonConst = true;
                         break;

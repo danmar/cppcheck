@@ -3000,6 +3000,13 @@ bool Function::returnsReference(const Function* function, bool unknown)
     });
 }
 
+bool Function::returnsPointer(const Function* function, bool unknown)
+{
+    return checkReturns(function, unknown, false, [](UNUSED const Token* defStart, const Token* defEnd) {
+        return Token::simpleMatch(defEnd->previous(), "*");
+    });
+}
+
 bool Function::returnsStandardType(const Function* function, bool unknown)
 {
     return checkReturns(function, unknown, true, [](UNUSED const Token* defStart, const Token* defEnd) {
