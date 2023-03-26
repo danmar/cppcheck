@@ -1349,6 +1349,8 @@ public:
         return typeScope && typeScope->type == Scope::eEnum;
     }
 
+    bool isConst(nonneg int indirect = 0) const;
+
     MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 
     /// Check if type is the same ignoring const and references

@@ -1506,49 +1506,6 @@ void CheckOther::checkConstVariable()
             if (castToNonConst)
                 continue;
         }
-        // Do not warn if struct data is changed
-        {
-            bool changeStructData = false;
-            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->variable() == var && Token::Match(tok, "%var% .")) {
-                    const Token *parent = tok;
-                    while (Token::simpleMatch(parent->astParent(), ".") && parent == parent->astParent()->astOperand1())
-                        parent = parent->astParent();
-                    if (parent->valueType() &&
-                        parent->valueType()->pointer > 0 &&
-                        parent->valueType()->constness == 0 &&
-                        isVariableChanged(parent, 1, mSettings, mTokenizer->isCPP())) {
-                        changeStructData = true;
-                        break;
-                    }
-                }
-            }
-            if (changeStructData)
-                continue;
-        }
-        // Calling non-const method using non-const reference
-        if (var->isReference()) {
-            bool callNonConstMethod = false;
-            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->variable() == var) {
-                    if (Token::Match(tok, "%var% . * ( & %name% ::")) {
-                        const Token* ftok = tok->linkAt(3)->previous();
-                        if (!ftok->function() || !ftok->function()->isConst())
-                            callNonConstMethod = true;
-                        break;
-                    }
-                    if (var->valueType() && var->valueType()->container && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
-                        const auto& notConst = CheckClass::stl_containers_not_const;
-                        if (notConst.find(var->valueType()->container->startPattern) != notConst.end()) {
-                            callNonConstMethod = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (callNonConstMethod)
-                continue;
-        }
 
         constVariableError(var, hasFunction ? function : nullptr);
     }

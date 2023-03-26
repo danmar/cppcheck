@@ -1466,7 +1466,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (Token::Match(tok->next(), "::|.|(|:|%var%"))
             continue;
-        if (Token::Match(tok->next(), "&|&&|* )|%var%"))
+        if (Token::Match(tok->next(), "&|&&|* )|,|%var%"))
             continue;
         if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
             continue;
@@ -3021,6 +3021,8 @@ std::vector<const Token*> Function::findReturns(const Function* f)
         return result;
     const Scope* scope = f->functionScope;
     if (!scope)
+        return result;
+    if (!scope->bodyStart)
         return result;
     for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok->scope() &&
@@ -7412,6 +7414,13 @@ std::string ValueType::dump() const
         ret << " valueType-originalTypeName=\"" << ErrorLogger::toxml(originalTypeName) << '\"';
 
     return ret.str();
+}
+
+bool ValueType::isConst(nonneg int indirect) const
+{
+    if (indirect > pointer)
+        return false;
+    return constness & (1 << (pointer - indirect));
 }
 
 MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const

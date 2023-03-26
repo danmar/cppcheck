@@ -2208,9 +2208,9 @@ class SelectValueFromVarIdMapRange {
     struct Iterator {
         using iterator_category = std::forward_iterator_tag;
         using value_type = const ValueFlow::Value;
-        using difference_type = std::ptrdiff_t;
         using pointer = value_type *;
         using reference = value_type &;
+        using difference_type = std::ptrdiff_t;
 
         explicit Iterator(const M::const_iterator & it)
             : mIt(it) {}
@@ -2269,11 +2269,18 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
     if (var && !var->isPointer())
         return false;
     // Search through non value aliases
-    return std::any_of(values.begin(), values.end(), [tok](const ValueFlow::Value& val) {
-        return val.isNonValue() && !val.isInconclusive() &&
-        (!val.isLifetimeValue() || (val.isLocalLifetimeValue() && val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)) &&
-        Token::Match(val.tokvalue, ".|&|*|%var%") &&
-        astHasVar(val.tokvalue, tok->varId());
+    return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& val) {
+        if (!val.isNonValue())
+            return false;
+        if (val.isInconclusive())
+            return false;
+        if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
+            return false;
+        if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
+            return false;
+        if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
+            return false;
+        return astHasVar(val.tokvalue, tok->varId());
     });
 }
 
@@ -4805,8 +4812,15 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
         // container lifetimes
         else if (astIsContainer(tok)) {
             Token * parent = astParentSkipParens(tok);
-            if (!Token::Match(parent, ". %name% (") &&
-                !Token::simpleMatch(parent, "("))
+            if (!parent)
+                continue;
+            if (!Token::Match(parent, ". %name% (") && !Token::Match(parent->previous(), "%name% ("))
+                continue;
+
+            // Skip if its a free function that doesnt yield an iterator to the container
+            if (Token::Match(parent->previous(), "%name% (") &&
+                !contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR},
+                          astFunctionYield(parent->previous(), settings)))
                 continue;
 
             ValueFlow::Value master;
@@ -4816,12 +4830,14 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             if (astIsIterator(parent->tokAt(2))) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
-            } else if (astIsIterator(parent)) {
+            } else if (astIsIterator(parent) && Token::Match(parent->previous(), "%name% (") &&
+                       contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR},
+                                astFunctionYield(parent->previous(), settings))) {
                 master.errorPath.emplace_back(parent, "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
-            }
-            else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers(tok->valueType()->containerTypeToken, settings)) ||
-                     Token::Match(parent->next(), "data|c_str")) {
+            } else if ((astIsPointer(parent->tokAt(2)) &&
+                        !isContainerOfPointers(tok->valueType()->containerTypeToken, settings)) ||
+                       Token::Match(parent->next(), "data|c_str")) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
             } else {
@@ -7522,9 +7538,45 @@ static void valueFlowFunctionDefaultParameter(TokenList* tokenlist, SymbolDataba
     }
 }
 
-static bool isKnown(const Token * tok)
+static const ValueFlow::Value* getKnownValueFromToken(const Token* tok)
 {
-    return tok && tok->hasKnownIntValue();
+    if (!tok)
+        return nullptr;
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+        return (v.isIntValue() || v.isContainerSizeValue() || v.isFloatValue()) && v.isKnown();
+    });
+    if (it == tok->values().end())
+        return nullptr;
+    return std::addressof(*it);
+}
+
+static const ValueFlow::Value* getKnownValueFromTokens(const std::vector<const Token*>& toks)
+{
+    if (toks.empty())
+        return nullptr;
+    const ValueFlow::Value* result = getKnownValueFromToken(toks.front());
+    if (!result)
+        return nullptr;
+    if (!std::all_of(std::next(toks.begin()), toks.end(), [&](const Token* tok) {
+        return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+            return v.equalValue(*result) && v.valueKind == result->valueKind;
+        });
+    }))
+        return nullptr;
+    return result;
+}
+
+static void setFunctionReturnValue(const Function* f, Token* tok, ValueFlow::Value v, const Settings* settings)
+{
+    if (f->hasVirtualSpecifier()) {
+        if (v.isImpossible())
+            return;
+        v.setPossible();
+    } else if (!v.isImpossible()) {
+        v.setKnown();
+    }
+    v.errorPath.emplace_back(tok, "Calling function '" + f->name() + "' returns " + v.toString());
+    setTokenValue(tok, std::move(v), settings);
 }
 
 static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings* settings)
@@ -7547,34 +7599,20 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         if (tok->hasKnownValue())
             continue;
 
-        // Arguments..
-        std::vector<MathLib::bigint> parvalues;
-        if (tok->astOperand2()) {
-            const Token *partok = tok->astOperand2();
-            while (partok && partok->str() == "," && isKnown(partok->astOperand2()))
-                partok = partok->astOperand1();
-            if (!isKnown(partok))
-                continue;
-            parvalues.push_back(partok->values().front().intvalue);
-            partok = partok->astParent();
-            while (partok && partok->str() == ",") {
-                parvalues.push_back(partok->astOperand2()->values().front().intvalue);
-                partok = partok->astParent();
-            }
-            if (partok != tok)
-                continue;
-        }
+        std::vector<const Token*> returns = Function::findReturns(function);
+        if (returns.empty())
+            continue;
 
-        // Get scope and args of function
-        const Scope * const functionScope = function->functionScope;
-        if (!functionScope || !Token::simpleMatch(functionScope->bodyStart, "{ return")) {
-            if (functionScope && settings->debugwarnings && Token::findsimplematch(functionScope->bodyStart, "return", functionScope->bodyEnd))
-                bailout(tokenlist, errorLogger, tok, "function return; nontrivial function body");
+        if (const ValueFlow::Value* v = getKnownValueFromTokens(returns)) {
+            setFunctionReturnValue(function, tok, *v, settings);
             continue;
         }
 
+        // Arguments..
+        std::vector<const Token*> arguments = getArguments(tok);
+
         ProgramMemory programMemory;
-        for (std::size_t i = 0; i < parvalues.size(); ++i) {
+        for (std::size_t i = 0; i < arguments.size(); ++i) {
             const Variable * const arg = function->getArgumentVar(i);
             if (!arg) {
                 if (settings->debugwarnings)
@@ -7582,25 +7620,18 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 programMemory.clear();
                 break;
             }
-            programMemory.setIntValue(arg->nameToken(), parvalues[i]);
+            const ValueFlow::Value* v = getKnownValueFromToken(arguments[i]);
+            if (!v)
+                continue;
+            programMemory.setValue(arg->nameToken(), *v);
         }
-        if (programMemory.empty() && !parvalues.empty())
+        if (programMemory.empty() && !arguments.empty())
             continue;
-
-        // Determine return value of subfunction..
-        MathLib::bigint result = 0;
-        bool error = false;
-        execute(functionScope->bodyStart->next()->astOperand1(),
-                programMemory,
-                &result,
-                &error);
-        if (!error) {
-            ValueFlow::Value v(result);
-            if (function->hasVirtualSpecifier())
-                v.setPossible();
-            else
-                v.setKnown();
-            setTokenValue(tok, std::move(v), settings);
+        std::vector<ValueFlow::Value> values = execute(function->functionScope, programMemory, settings);
+        for (const ValueFlow::Value& v : values) {
+            if (v.isUninitValue())
+                continue;
+            setFunctionReturnValue(function, tok, v, settings);
         }
     }
 }

@@ -107,8 +107,12 @@ static bool isVclTypeInit(const Type *type)
 {
     if (!type)
         return false;
-    return std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [](const Type::BaseInfo& baseInfo) {
-        return !baseInfo.type || isVclTypeInit(baseInfo.type);
+    return std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [&](const Type::BaseInfo& baseInfo) {
+        if (!baseInfo.type)
+            return true;
+        if (isVclTypeInit(baseInfo.type))
+            return true;
+        return false;
     });
 }
 //---------------------------------------------------------------------------
