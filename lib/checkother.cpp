@@ -554,10 +554,7 @@ void CheckOther::redundantAssignmentInSwitchError(const Token *tok1, const Token
 //---------------------------------------------------------------------------
 static inline bool isFunctionOrBreakPattern(const Token *tok)
 {
-    if (Token::Match(tok, "%name% (") || Token::Match(tok, "break|continue|return|exit|goto|throw"))
-        return true;
-
-    return false;
+    return Token::Match(tok, "%name% (") || Token::Match(tok, "break|continue|return|exit|goto|throw");
 }
 
 void CheckOther::checkRedundantAssignmentInSwitch()
@@ -1097,7 +1094,7 @@ void CheckOther::variableScopeError(const Token *tok, const std::string &varname
 void CheckOther::checkCommaSeparatedReturn()
 {
     // This is experimental for now. See #5076
-    if ((true) || !mSettings->severity.isEnabled(Severity::style))
+    if ((true) || !mSettings->severity.isEnabled(Severity::style)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -1492,49 +1489,6 @@ void CheckOther::checkConstVariable()
             if (castToNonConst)
                 continue;
         }
-        // Do not warn if struct data is changed
-        {
-            bool changeStructData = false;
-            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->variable() == var && Token::Match(tok, "%var% .")) {
-                    const Token *parent = tok;
-                    while (Token::simpleMatch(parent->astParent(), ".") && parent == parent->astParent()->astOperand1())
-                        parent = parent->astParent();
-                    if (parent->valueType() &&
-                        parent->valueType()->pointer > 0 &&
-                        parent->valueType()->constness == 0 &&
-                        isVariableChanged(parent, 1, mSettings, mTokenizer->isCPP())) {
-                        changeStructData = true;
-                        break;
-                    }
-                }
-            }
-            if (changeStructData)
-                continue;
-        }
-        // Calling non-const method using non-const reference
-        if (var->isReference()) {
-            bool callNonConstMethod = false;
-            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->variable() == var) {
-                    if (Token::Match(tok, "%var% . * ( & %name% ::")) {
-                        const Token* ftok = tok->linkAt(3)->previous();
-                        if (!ftok->function() || !ftok->function()->isConst())
-                            callNonConstMethod = true;
-                        break;
-                    }
-                    if (var->valueType() && var->valueType()->container && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
-                        const auto& notConst = CheckClass::stl_containers_not_const;
-                        if (notConst.find(var->valueType()->container->startPattern) != notConst.end()) {
-                            callNonConstMethod = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (callNonConstMethod)
-                continue;
-        }
 
         constVariableError(var, hasFunction ? function : nullptr);
     }
@@ -1593,6 +1547,16 @@ void CheckOther::checkConstPointer()
                     continue;
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
+            else if (Token::Match(gparent, "(|,")) {
+                const Token* ftok = gparent;
+                while (Token::simpleMatch(ftok, ","))
+                    ftok = ftok->astParent();
+                if (ftok && Token::Match(ftok->astOperand1(), "%name% (")) {
+                    bool inconclusive{};
+                    if (!isVariableChangedByFunctionCall(ftok->astOperand1(), vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                        continue;
+                }
+            }
         } else {
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
                 continue;
@@ -1868,7 +1832,7 @@ static bool isConstTop(const Token *tok)
         if (!bracTok->astParent())
             return true;
     }
-    if (tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp())
+    if (tok->str() == "," && tok->astParent()->isAssignmentOp())
         return true;
     return false;
 }

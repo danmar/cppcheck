@@ -4633,6 +4633,85 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+               "    if(b)\n"
+               "        return nullptr;\n"
+               "    return &i;\n"
+               "}   \n"
+               "int f(int i) {\n"
+               "    int* x = g(i, true);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+               "    if(b)\n"
+               "        return nullptr;\n"
+               "    return &i;\n"
+               "}   \n"
+               "int f(int i) {\n"
+               "    int* x = g(i, false);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 8U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+               "    if(b)\n"
+               "        return nullptr;\n"
+               "    return &i;\n"
+               "}   \n"
+               "int f(int i) {\n"
+               "    int* x = g(i, i == 3);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 0));
+
+        code = "struct A {\n"
+               "    unsigned i;\n"
+               "    bool f(unsigned x) const {\n"
+               "        return ((i & x) != 0);\n"
+               "    }\n"
+               "};\n"
+               "int g(A& a) {\n"
+               "    int x = a.f(2);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 9U, 1));
+
+        code = "struct A {\n"
+               "    enum {\n"
+               "        b = 0,\n"
+               "        c = 1,\n"
+               "        d = 2\n"
+               "    };\n"
+               "    bool isb() const {\n"
+               "        return e == b;\n"
+               "    }\n"
+               "    unsigned int e;\n"
+               "};\n"
+               "int f(A g) {\n"
+               "  int x = !g.isb();\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 14U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 14U, 1));
+
+        code = "bool h(char q);\n"
+               "bool g(char q) {\n"
+               "    if (!h(q))\n"
+               "        return false;\n"
+               "    return true;\n"
+               "}\n"
+               "int f() {\n"
+               "    int x = g(0);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 1));
     }
 
     void valueFlowFunctionDefaultParameter() {
@@ -6896,6 +6975,11 @@ private:
                "    const C& c = C(b) ? : C(false);\n"
                "};\n";
         valueOfTok(code, "?");
+
+        code = "struct S {\n"
+               "    void g(std::vector<int> (*f) () = nullptr);\n"
+               "};\n";
+        valueOfTok(code, "=");
     }
 
     void valueFlowHang() {

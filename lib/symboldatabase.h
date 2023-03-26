@@ -1094,9 +1094,7 @@ public:
         const Scope * parent = nestedIn;
         while (outer != parent && parent)
             parent = parent->nestedIn;
-        if (parent && parent == outer)
-            return true;
-        return false;
+        return parent && parent == outer;
     }
 
     static Function* nestedInFunction(const Scope* scope) {
@@ -1350,6 +1348,8 @@ public:
     bool isEnum() const {
         return typeScope && typeScope->type == Scope::eEnum;
     }
+
+    bool isConst(nonneg int indirect = 0) const;
 
     MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 

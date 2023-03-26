@@ -6361,6 +6361,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void const84() { // #11618
+        checkConst("struct S {\n"
+                   "    int a[2], b[2];\n"
+                   "    void f() { f(a, b); }\n"
+                   "    static void f(const int p[2], int q[2]);\n"
+                   "};\n"
+                   "void S::f(const int p[2], int q[2]) {\n"
+                   "    q[0] = p[0];\n"
+                   "    q[1] = p[1];\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void const84() { // #11621
         checkConst("struct S { int* p; };\n"
                    "struct T { int m; int* p; };\n"

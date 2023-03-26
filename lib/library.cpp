@@ -1226,6 +1226,9 @@ bool Library::isContainerYield(const Token * const cond, Library::Container::Yie
 // returns true if ftok is not a library function
 bool Library::isNotLibraryFunction(const Token *ftok) const
 {
+    if (ftok->isKeyword() || ftok->isStandardType())
+        return true;
+
     if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
         return true;
 

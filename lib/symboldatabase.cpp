@@ -1278,13 +1278,12 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
                     setMemberVar(membervar, membertok, tok);
                 } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
-                    if (Token::Match(var->typeStartToken(), "std :: %type% < %name%")) {
-                        const Token* type2tok = var->typeStartToken()->tokAt(4);
-                        while (type2tok && type2tok->isKeyword())
-                            type2tok = type2tok->next();
-                        const Type* type2 = type2tok ? type2tok->type() : nullptr;
-                        if (type2 && type2->classScope && type2->classScope->definedType) {
-                            const Variable *membervar = type2->classScope->getVariable(membertok->str());
+                    if (const Token* ctt = tok->valueType()->containerTypeToken) {
+                        while (ctt && ctt->isKeyword())
+                            ctt = ctt->next();
+                        const Type* ct = findTypeInNested(ctt, tok->scope());
+                        if (ct && ct->classScope && ct->classScope->definedType) {
+                            const Variable *membervar = ct->classScope->getVariable(membertok->str());
                             setMemberVar(membervar, membertok, tok);
                         }
                     }
@@ -1467,7 +1466,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (Token::Match(tok->next(), "::|.|(|:|%var%"))
             continue;
-        if (Token::Match(tok->next(), "&|&&|* )|%var%"))
+        if (Token::Match(tok->next(), "&|&&|* )|,|%var%"))
             continue;
         if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
             continue;
@@ -1754,7 +1753,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
     // function returning function pointer? '... ( ... %name% ( ... ))( ... ) {'
     // function returning reference to array '... ( & %name% ( ... ))[ ... ] {'
     // TODO: Activate this again
-    if ((false) && tok->str() == "(" && tok->strAt(1) != "*" &&
+    if ((false) && tok->str() == "(" && tok->strAt(1) != "*" && // NOLINT(readability-simplify-boolean-expr)
         (tok->link()->previous()->str() == ")" || Token::simpleMatch(tok->link()->tokAt(-2), ") const"))) {
         const Token* tok2 = tok->link()->next();
         if (tok2 && tok2->str() == "(" && Token::Match(tok2->link()->next(), "{|;|const|=")) {
@@ -2647,10 +2646,10 @@ static bool typesMatch(
     const Token **new_second)
 {
     // get first type
-    const Type * first_type = first_scope->check->findType(first_token, first_scope);
+    const Type* first_type = first_scope->check->findType(first_token, first_scope, /*lookOutside*/ true);
     if (first_type) {
         // get second type
-        const Type * second_type = second_scope->check->findType(second_token, second_scope);
+        const Type* second_type = second_scope->check->findType(second_token, second_scope, /*lookOutside*/ true);
         // check if types match
         if (first_type == second_type) {
             const Token* tok1 = first_token;
@@ -3022,6 +3021,8 @@ std::vector<const Token*> Function::findReturns(const Function* f)
         return result;
     const Scope* scope = f->functionScope;
     if (!scope)
+        return result;
+    if (!scope->bodyStart)
         return result;
     for (const Token* tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
         if (tok->str() == "{" && tok->scope() &&
@@ -5840,14 +5841,15 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                 tok = startTok;
             }
         } else {
-            const Type * type = scope->findType(tok->str());
+            const Scope* scope1{};
+            const Type* type = scope->findType(tok->str());
             if (type)
                 return type;
-            else if (const Scope *scope1 = scope->findRecordInBase(tok->str())) {
+            if (lookOutside && (scope1 = scope->findRecordInBase(tok->str()))) {
                 type = scope1->definedType;
                 if (type)
                     return type;
-            } else if (scope->type == Scope::ScopeType::eNamespace && lookOutside) {
+            } else if (lookOutside && scope->type == Scope::ScopeType::eNamespace) {
                 scope = scope->nestedIn;
                 continue;
             } else
@@ -7412,6 +7414,13 @@ std::string ValueType::dump() const
         ret << " valueType-originalTypeName=\"" << ErrorLogger::toxml(originalTypeName) << '\"';
 
     return ret.str();
+}
+
+bool ValueType::isConst(nonneg int indirect) const
+{
+    if (indirect > pointer)
+        return false;
+    return constness & (1 << (pointer - indirect));
 }
 
 MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) const

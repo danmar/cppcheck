@@ -142,6 +142,7 @@ private:
         TEST_CASE(nullpointer96); // #11416
         TEST_CASE(nullpointer97); // #11229
         TEST_CASE(nullpointer98); // #11458
+        TEST_CASE(nullpointer99); // #10602
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2806,6 +2807,27 @@ private:
               "    void g(S* b, S* d) const { g(b->d(), d->d()); }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer99() // #10602
+    {
+        check("class A\n"
+              "{\n"
+              "    int *foo(const bool b)\n"
+              "    {\n"
+              "        if(b)\n"
+              "            return nullptr;\n"
+              "        else\n"
+              "            return new int [10];\n"
+              "    }\n"
+              "public:\n"
+              "    void bar(void)\n"
+              "    {\n"
+              "        int * buf = foo(true);\n"
+              "        buf[2] = 0;" // <<
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:14]: (error) Null pointer dereference: buf\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

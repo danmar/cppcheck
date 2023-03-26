@@ -147,10 +147,7 @@ Qt::CheckState SettingsDialog::boolToCheckState(bool yes)
 
 bool SettingsDialog::checkStateToBool(Qt::CheckState state)
 {
-    if (state == Qt::Checked) {
-        return true;
-    }
-    return false;
+    return state == Qt::Checked;
 }
 
 
