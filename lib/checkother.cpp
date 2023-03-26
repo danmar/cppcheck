@@ -1832,7 +1832,7 @@ static bool isConstTop(const Token *tok)
         if (!bracTok->astParent())
             return true;
     }
-    if (tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp())
+    if (tok->str() == "," && tok->astParent()->isAssignmentOp())
         return true;
     return false;
 }
