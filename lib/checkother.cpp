@@ -1464,9 +1464,8 @@ void CheckOther::checkConstVariable()
                         break;
                     }
                 }
-                if (Token::Match(tok, "%var% = & %varid%", var->declarationId())) {
-                    const Variable* ptrvar = tok->variable();
-                    if (ptrvar && !ptrvar->isConst()) {
+                if (Token::Match(tok, "%op% & %varid%", var->declarationId())) {
+                    if (!tok->valueType() || !var->valueType() || !tok->valueType()->isConst(var->valueType()->pointer)) {
                         usedInAssignment = true;
                         break;
                     }
