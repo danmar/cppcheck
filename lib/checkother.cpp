@@ -1474,7 +1474,7 @@ void CheckOther::checkConstVariable()
                                 opTok = opTok->astOperand2();
                         }
                         if (opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
-                           continue;
+                            continue;
                     } else if (const Token* ftok = isFuncArg(opTok)) {
                         bool inconclusive{};
                         if (var->valueType() && !isVariableChangedByFunctionCall(ftok, var->valueType()->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
