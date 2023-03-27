@@ -3049,6 +3049,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T> void f(std::vector<T*>& d, const std::vector<T*>& s) {\n" // #11632
+              "    for (const auto& e : s) {\n"
+              "        T* newE = new T(*e);\n"
+              "        d.push_back(newE);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
