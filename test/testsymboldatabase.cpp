@@ -8223,6 +8223,24 @@ private:
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("iterator(std :: vector <)", tok->valueType()->str());
         }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    S() {}\n"
+                          "    std::vector<std::shared_ptr<S>> v;\n"
+                          "    void f(int i) const;\n"
+                          "};\n"
+                          "void S::f(int i) const {\n"
+                          "    for (const auto& c : v)\n"
+                          "        c->f(i);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType() && tok->scope() && tok->scope()->functionOf);
+            const Type* smpType = tok->valueType()->smartPointerType;
+            ASSERT(smpType && smpType == tok->scope()->functionOf->definedType);
+        }
     }
 
     void valueTypeThis() {
