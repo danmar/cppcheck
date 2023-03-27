@@ -309,6 +309,51 @@ private:
         ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
         ASSERT_EQUALS(false, inconclusive);
 
+        code = "void g(const int a[2]);\n"
+          "void f() {\n"
+          "    int b[2] = {};\n"
+          "    return g(b);\n"
+          "}\n";
+        inconclusive = false;
+        TODO_ASSERT_EQUALS(false, true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2> a);\n"
+          "void f() {\n"
+          "    std::array<int, 2> b = {};\n"
+          "    return g(b);\n"
+          "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2>& a);\n"
+          "void f() {\n"
+          "    std::array<int, 2> b = {};\n"
+          "    return g(b);\n"
+          "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(const std::array<int, 2>& a);\n"
+          "void f() {\n"
+          "    std::array<int, 2> b = {};\n"
+          "    return g(b);\n"
+          "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2>* p);\n"
+          "void f() {\n"
+          "    std::array<int, 2> b = {};\n"
+          "    return g(&b);\n"
+          "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
         code = "struct S {};\n"
                "void g(S);\n"
                "void f(S* s) {\n"

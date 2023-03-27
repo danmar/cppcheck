@@ -2593,14 +2593,14 @@ private:
               "    const U * y = dynamic_cast<const U *>(&x)\n"
               "    y->mutate();\n" //to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        TODO_ASSERT_EQUALS("can be const", errout.str(), ""); //Currently taking the address is treated as a non-const operation when it should depend on what we do with it
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    U const * y = dynamic_cast<U const *>(&x)\n"
               "    y->mutate();\n" //to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        TODO_ASSERT_EQUALS("can be const", errout.str(), ""); //Currently taking the address is treated as a non-const operation when it should depend on what we do with it
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2614,7 +2614,7 @@ private:
               "    const U const * const * const * const y = dynamic_cast<const U const * const * const * const>(&x)\n"
               "    y->mutate();\n" //to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
+        TODO_ASSERT_EQUALS("can be const", errout.str(), ""); //Currently taking the address is treated as a non-const operation when it should depend on what we do with it
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
