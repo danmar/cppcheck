@@ -7082,8 +7082,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                             const Library::ArgumentChecks::IteratorInfo* info = mSettings.library.getArgIteratorInfo(tok->previous(), 1);
                             if (info && info->it) {
                                 const Token* contTok = args[0];
-                                if (Token::simpleMatch(args[0]->astOperand1(), ".") && args[0]->astOperand1()->astOperand1())
+                                if (Token::simpleMatch(args[0]->astOperand1(), ".") && args[0]->astOperand1()->astOperand1()) // .begin()
                                     contTok = args[0]->astOperand1()->astOperand1();
+                                else if (Token::simpleMatch(args[0], "(") && args[0]->astOperand2()) // std::begin()
+                                    contTok = args[0]->astOperand2();
                                 if (contTok && contTok->variable() && contTok->variable()->valueType() && contTok->variable()->valueType()->container) {
                                     ValueType vt;
                                     vt.type = ValueType::Type::ITERATOR;
