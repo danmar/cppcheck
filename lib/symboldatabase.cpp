@@ -7201,7 +7201,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             if (tok->str() == "auto" && !tok->valueType()) {
                 if (Token::Match(tok->next(), "%name% ; %name% = [") && isLambdaCaptureList(tok->tokAt(5)))
                     continue;
-                if (Token::Match(tok->next(), "%name% { [") && isLambdaCaptureList(tok->tokAt(3)))
+                if (Token::Match(tok->next(), "%name% {|= [") && isLambdaCaptureList(tok->tokAt(3)))
                     continue;
                 debugMessage(tok, "autoNoType", "auto token with no type.");
             }
