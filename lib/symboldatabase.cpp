@@ -1303,17 +1303,26 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                  (Token::Match(tok->next()->link(), ") . %name% !!(") ||
                   (Token::Match(tok->next()->link(), ") [") && Token::Match(tok->next()->link()->next()->link(), "] . %name% !!(")))) {
             const Type *type = tok->function()->retType;
+            Token* membertok;
+            if (tok->next()->link()->next()->str() == ".")
+                membertok = tok->next()->link()->next()->next();
+            else
+                membertok = tok->next()->link()->next()->link()->next()->next();
             if (type) {
-                Token *membertok;
-                if (tok->next()->link()->next()->str() == ".")
-                    membertok = tok->next()->link()->next()->next();
-                else
-                    membertok = tok->next()->link()->next()->link()->next()->next();
                 const Variable *membervar = membertok->variable();
                 if (!membervar) {
                     if (type->classScope) {
                         membervar = type->classScope->getVariable(membertok->str());
                         setMemberVar(membervar, membertok, tok->function()->retDef);
+                    }
+                }
+            } else if (mSettings.library.detectSmartPointer(tok->function()->retDef)) {
+                if (const Token* templateArg = Token::findsimplematch(tok->function()->retDef, "<")) {
+                    if (const Type* spType = findTypeInNested(templateArg->next(), tok->scope())) {
+                        if (spType->classScope) {
+                            const Variable* membervar = spType->classScope->getVariable(membertok->str());
+                            setMemberVar(membervar, membertok, tok->function()->retDef);
+                        }
                     }
                 }
             }
