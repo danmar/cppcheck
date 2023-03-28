@@ -253,6 +253,7 @@ private:
         TEST_CASE(garbageCode220); // #6832
         TEST_CASE(garbageCode221);
         TEST_CASE(garbageCode222); // #10763
+        TEST_CASE(garbageCode223); // #11639
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1715,6 +1716,9 @@ private:
     }
     void garbageCode222() { // #10763
         ASSERT_THROW(checkCode("template<template<class>\n"), InternalError);  // don't crash
+    }
+    void garbageCode223() { // #11639
+        ASSERT_THROW(checkCode("struct{}*"), InternalError);  // don't crash
     }
 
     void syntaxErrorFirstToken() {
