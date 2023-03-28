@@ -198,6 +198,7 @@ private:
         TEST_CASE(const82); // ticket #11513
         TEST_CASE(const83);
         TEST_CASE(const84);
+        TEST_CASE(const85);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6361,7 +6362,27 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const84() { // #11618
+    void const84() {
+        checkConst("class S {};\n" // #11616
+                   "struct T {\n"
+                   "    T(const S*);\n"
+                   "    T(const S&);\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    const S s;\n"
+                   "    void f1() {\n"
+                   "        T t(&s);\n"
+                   "    }\n"
+                   "    void f2() {\n"
+                   "        T t(s);\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'C::f1' can be const.\n"
+                      "[test.cpp:11]: (style, inconclusive) Technically the member function 'C::f2' can be const.\n",
+                      errout.str());
+    }
+
+    void const85() { // #11618
         checkConst("struct S {\n"
                    "    int a[2], b[2];\n"
                    "    void f() { f(a, b); }\n"

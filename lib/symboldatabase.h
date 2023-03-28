@@ -1454,7 +1454,7 @@ public:
     nonneg int sizeOfType(const Token *type) const;
 
     /** Set array dimensions when valueflow analysis is completed */
-    void setArrayDimensionsUsingValueFlow();
+    void setArrayDimensionsUsingValueFlow(); // cppcheck-suppress functionConst // has side effects
 
     void clangSetVariables(const std::vector<const Variable *> &variableList);
     void createSymbolDatabaseExprIds();

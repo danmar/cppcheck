@@ -8224,6 +8224,24 @@ private:
             ASSERT_EQUALS("iterator(std :: vector <)", tok->valueType()->str());
         }
         {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    S() {}\n"
+                          "    std::vector<std::shared_ptr<S>> v;\n"
+                          "    void f(int i) const;\n"
+                          "};\n"
+                          "void S::f(int i) const {\n"
+                          "    for (const auto& c : v)\n"
+                          "        c->f(i);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType() && tok->scope() && tok->scope()->functionOf);
+            const Type* smpType = tok->valueType()->smartPointerType;
+            ASSERT(smpType && smpType == tok->scope()->functionOf->definedType);
+        }
+        {
             GET_SYMBOL_DB("struct S { int i; };\n"
                           "void f(const std::vector<S>& v) {\n"
                           "    auto it = std::find_if(std::begin(v), std::end(v), [](const S& s) { return s.i != 0; });\n"
