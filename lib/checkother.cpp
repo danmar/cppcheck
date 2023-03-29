@@ -1533,8 +1533,11 @@ void CheckOther::checkConstPointer()
             const Token* const gparent = parent->astParent();
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
-            if (Token::simpleMatch(gparent, "return"))
-                continue;
+            if (Token::simpleMatch(gparent, "return")) {
+                const Function* function = gparent->scope()->function;
+                if (function && (!Function::returnsReference(function) || Function::returnsConst(function)))
+                    continue;
+            }
             else if (Token::Match(gparent, "%assign%") && parent == gparent->astOperand2()) {
                 bool takingRef = false, nonConstPtrAssignment = false;
                 const Token *lhs = gparent->astOperand1();
