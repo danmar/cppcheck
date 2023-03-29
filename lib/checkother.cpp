@@ -1177,11 +1177,11 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
 }
 
 static bool isConstRangeBasedFor(const Token* tok) {
-  if (astIsRangeBasedForDecl(tok)) {
-      const Variable* loopVar = tok->astParent()->astOperand1()->variable();
-      return loopVar && (!loopVar->isReference() || loopVar->isConst());
-  }
-  return false;
+    if (astIsRangeBasedForDecl(tok)) {
+        const Variable* loopVar = tok->astParent()->astOperand1()->variable();
+        return loopVar && (!loopVar->isReference() || loopVar->isConst());
+    }
+    return false;
 }
 
 static bool canBeConst(const Variable *var, const Settings* settings)
