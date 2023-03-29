@@ -251,7 +251,7 @@ private:
      * @brief Reanalyze selected files
      * @param files list of selected files
      */
-    void reAnalyzeSelected(QStringList files);
+    void reAnalyzeSelected(const QStringList& files);
 
     /**
      * @brief Analyze the project.

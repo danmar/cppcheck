@@ -1158,7 +1158,7 @@ void MainWindow::checkConfiguration()
         analyzeProject(mProjectFile, false, true);
 }
 
-void MainWindow::reAnalyzeSelected(QStringList files)
+void MainWindow::reAnalyzeSelected(const QStringList& files)
 {
     if (files.empty())
         return;
