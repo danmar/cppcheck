@@ -274,7 +274,7 @@ static std::string unescape(const std::string &in)
     return out;
 }
 
-void ImportProject::FileSettings::parseCommand(std::string command)
+void ImportProject::FileSettings::parseCommand(const std::string& command)
 {
     std::string defs;
 

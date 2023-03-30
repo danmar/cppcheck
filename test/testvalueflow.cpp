@@ -6980,6 +6980,11 @@ private:
                "    void g(std::vector<int> (*f) () = nullptr);\n"
                "};\n";
         valueOfTok(code, "=");
+
+        code = "void f(bool b) {\n" // #11627
+               "    (*printf)(\"%s %i\", strerror(errno), b ? 0 : 1);\n"
+               "};\n";
+        valueOfTok(code, "?");
     }
 
     void valueFlowHang() {
