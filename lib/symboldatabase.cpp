@@ -7096,6 +7096,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                                     contTok = args[0]->astOperand1()->astOperand1();
                                 else if (Token::simpleMatch(args[0], "(") && args[0]->astOperand2()) // std::begin()
                                     contTok = args[0]->astOperand2();
+                                while (Token::simpleMatch(contTok, "[")) // move to container token
+                                    contTok = contTok->astOperand1();
+                                if (Token::simpleMatch(contTok, "."))
+                                    contTok = contTok->astOperand2();
                                 if (contTok && contTok->variable() && contTok->variable()->valueType() && contTok->variable()->valueType()->container) {
                                     ValueType vt;
                                     vt.type = ValueType::Type::ITERATOR;
