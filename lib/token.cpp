@@ -2259,6 +2259,16 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
             return {};
         std::pair<const Token*, const Token*> result;
         if (Token::simpleMatch(var->typeStartToken(), "auto")) {
+            if (pointedToType && astIsSmartPointer(var->nameToken())) {
+                const ValueType* vt = var->valueType();
+                if (vt && vt->smartPointerTypeToken)
+                    return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
+            }
+            if (pointedToType && astIsIterator(var->nameToken())) {
+                const ValueType* vt = var->valueType();
+                if (vt && vt->containerTypeToken)
+                    return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+            }
             const Token * tok2 = var->declEndToken();
             if (Token::Match(tok2, "; %varid% =", var->declarationId()))
                 tok2 = tok2->tokAt(2);
@@ -2305,16 +2315,6 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                 if (vt && vt->containerTypeToken)
                     return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
-        }
-        if (pointedToType && astIsSmartPointer(var->nameToken())) {
-            const ValueType* vt = var->valueType();
-            if (vt && vt->smartPointerTypeToken)
-                return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
-        }
-        if (pointedToType && astIsIterator(var->nameToken())) {
-            const ValueType* vt = var->valueType();
-            if (vt && vt->containerTypeToken)
-                return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
         }
         if (result.first)
             return result;

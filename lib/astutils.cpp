@@ -312,11 +312,11 @@ bool astIsRangeBasedForDecl(const Token* tok)
     return Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "(");
 }
 
-std::string astCanonicalType(const Token *expr)
+std::string astCanonicalType(const Token *expr, bool pointedToType)
 {
     if (!expr)
         return "";
-    std::pair<const Token*, const Token*> decl = Token::typeDecl(expr, /*pointedToType*/ true);
+    std::pair<const Token*, const Token*> decl = Token::typeDecl(expr, pointedToType);
     if (decl.first && decl.second) {
         std::string ret;
         for (const Token *type = decl.first; Token::Match(type,"%name%|::") && type != decl.second; type = type->next()) {
