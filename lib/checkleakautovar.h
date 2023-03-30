@@ -144,7 +144,7 @@ private:
     void changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
 
     /** update allocation status if reallocation function */
-    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
+    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok) const;
 
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope = false);
@@ -152,9 +152,9 @@ private:
     /** if variable is allocated then there is a leak */
     void leakIfAllocated(const Token *vartok, const VarInfo &varInfo);
 
-    void leakError(const Token* tok, const std::string &varname, int type);
-    void mismatchError(const Token* deallocTok, const Token* allocTok, const std::string &varname);
-    void deallocUseError(const Token *tok, const std::string &varname);
+    void leakError(const Token* tok, const std::string &varname, int type) const;
+    void mismatchError(const Token* deallocTok, const Token* allocTok, const std::string &varname) const;
+    void deallocUseError(const Token *tok, const std::string &varname) const;
     void deallocReturnError(const Token *tok, const Token *deallocTok, const std::string &varname);
     void doubleFreeError(const Token *tok, const Token *prevFreeTok, const std::string &varname, int type);
 

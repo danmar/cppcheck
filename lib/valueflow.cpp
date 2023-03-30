@@ -2210,6 +2210,7 @@ class SelectValueFromVarIdMapRange {
         using value_type = const ValueFlow::Value;
         using pointer = value_type *;
         using reference = value_type &;
+        using difference_type = std::ptrdiff_t;
 
         explicit Iterator(const M::const_iterator & it)
             : mIt(it) {}
@@ -2268,21 +2269,19 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
     if (var && !var->isPointer())
         return false;
     // Search through non value aliases
-    for (const ValueFlow::Value &val : values) {
+    return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& val) {
         if (!val.isNonValue())
-            continue;
+            return false;
         if (val.isInconclusive())
-            continue;
+            return false;
         if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
-            continue;
+            return false;
         if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
-            continue;
+            return false;
         if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
-            continue;
-        if (astHasVar(val.tokvalue, tok->varId()))
-            return true;
-    }
-    return false;
+            return false;
+        return astHasVar(val.tokvalue, tok->varId());
+    });
 }
 
 static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20);
