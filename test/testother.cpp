@@ -1993,6 +1993,36 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int x(int);\n"
+              "void f(std::vector<int> v, int& j) {\n"
+              "    for (int i : v)\n"
+              "        j = i;\n"
+              "}\n"
+              "void fn(std::vector<int> v) {\n"
+              "    for (int& i : v)\n"
+              "        i = x(i);\n"
+              "}\n"
+              "void g(std::vector<int> v, int& j) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        j = v[i];\n"
+              "}\n"
+              "void gn(std::vector<int> v) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        v[i] = x(i);\n"
+              "}\n"
+              "void h(std::vector<std::vector<int>> v, int& j) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        j = v[i][0];\n"
+              "}\n"
+              "void hn(std::vector<std::vector<int>> v) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        v[i][0] = x(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference.\n"
+                      "[test.cpp:10]: (performance) Function parameter 'v' should be passed by const reference.\n"
+                      "[test.cpp:18]: (performance) Function parameter 'v' should be passed by const reference.\n",
+                      errout.str());
+
         Settings settings1;
         PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
         check("using ui64 = unsigned __int64;\n"
@@ -2194,7 +2224,7 @@ private:
               "    const int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
         check("int f(std::vector<int> x) {\n"
               "    static int& i = x[0];\n"
