@@ -3066,6 +3066,13 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int& g(int* p, int& r) {\n" // #11625
+              "    if (p)\n"
+              "        return *p;\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
