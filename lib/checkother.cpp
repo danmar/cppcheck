@@ -1176,6 +1176,14 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
     });
 }
 
+static bool isConstRangeBasedFor(const Token* tok) {
+    if (astIsRangeBasedForDecl(tok)) {
+        const Variable* loopVar = tok->astParent()->astOperand1()->variable();
+        return loopVar && (!loopVar->isReference() || loopVar->isConst());
+    }
+    return false;
+}
+
 static bool canBeConst(const Variable *var, const Settings* settings)
 {
     if (!var->scope())
@@ -1201,6 +1209,8 @@ static bool canBeConst(const Variable *var, const Settings* settings)
             continue;
 
         const Token* parent = tok2->astParent();
+        while (Token::simpleMatch(parent, "["))
+            parent = parent->astParent();
         if (!parent)
             continue;
         if (Token::simpleMatch(tok2->next(), ";") && tok2->next()->isSplittedVarDeclEq()) {
@@ -1249,9 +1259,12 @@ static bool canBeConst(const Variable *var, const Settings* settings)
                    (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
             continue;
         else if (parent->isAssignmentOp()) {
-            if (parent->astOperand1() == tok2)
+            const Token* assignee = parent->astOperand1();
+            while (Token::simpleMatch(assignee, "["))
+                assignee = assignee->astOperand1();
+            if (assignee == tok2)
                 return false;
-            const Variable* assignedVar = parent->astOperand1() ? parent->astOperand1()->variable() : nullptr;
+            const Variable* assignedVar = assignee ? assignee->variable() : nullptr;
             if (assignedVar &&
                 !assignedVar->isConst() &&
                 assignedVar->isReference() &&
@@ -1263,7 +1276,9 @@ static bool canBeConst(const Variable *var, const Settings* settings)
                 continue;
             else
                 return false;
-        } else
+        } else if (isConstRangeBasedFor(tok2))
+            continue;
+        else
             return false;
     }
 
@@ -1533,8 +1548,11 @@ void CheckOther::checkConstPointer()
             const Token* const gparent = parent->astParent();
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
-            if (Token::simpleMatch(gparent, "return"))
-                continue;
+            if (Token::simpleMatch(gparent, "return")) {
+                const Function* function = gparent->scope()->function;
+                if (function && (!Function::returnsReference(function) || Function::returnsConst(function)))
+                    continue;
+            }
             else if (Token::Match(gparent, "%assign%") && parent == gparent->astOperand2()) {
                 bool takingRef = false, nonConstPtrAssignment = false;
                 const Token *lhs = gparent->astOperand1();
