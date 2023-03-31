@@ -154,7 +154,7 @@ if (MSVC)
 
     # C/C++ - Language
     add_compile_options(/Zc:rvalueCast) # Enforce type conversion rules
-    add_compile_options(/std:c++14) # C++ Language Standard - ISO C++14 Standard
+    #add_compile_options(/std:c++14) # C++ Language Standard - ISO C++14 Standard
 
     # C/C++ - Browse Information
     # Enable Browse Information - No
