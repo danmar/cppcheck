@@ -234,10 +234,14 @@ mv cppcheck cppcheck.exe
 
 ## Packages
 
-You can install Cppcheck with yum/apt/brew/etc.
+Besides building yourself on the platform of your choice there are also several ways to obtain pre-built packages.<br/>
+*Note:* The non-Windows packages are not maintained by the Cppcheck team but by the respective packagers instead.
 
-The official rpms are built with these files:
-https://src.fedoraproject.org/rpms/cppcheck/tree/master
+- (Windows) An official Windows installer is available via the official Cppcheck SourceForge page: https://cppcheck.sourceforge.io/.
+- (Linux/Unix) Many major distros offer Cppcheck packages via their integrated package managers (`yum`, `apt`, `pacman`, etc.). See https://pkgs.org/search/?q=cppcheck for an overview.
+- (Linux/Unix) Unless you are using a "rolling" distro, it is likely that they are not carrying the latest version. There are several external (mainly unsupported) repositories like AUR (ArchLinux), PPA (ubuntu), EPEL (CentOS/Fedora) etc. which provide up-to-date packages. 
+- (Linux/Unix) The Canonical Snapcraft package is unmaintained and contains a very old version. Please refrain from using it! See https://trac.cppcheck.net/ticket/11641 for more details.
+- (MacOS) A package is available via Homebrew (`brew`). See https://formulae.brew.sh/formula/cppcheck#default.
 
 ## Webpage
 
