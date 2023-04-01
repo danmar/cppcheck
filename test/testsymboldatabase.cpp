@@ -8280,6 +8280,18 @@ private:
             ASSERT_EQUALS("iterator(std :: vector <)", tok->valueType()->str());
         }
         {
+            GET_SYMBOL_DB("std::vector<int>& g();\n"
+                          "void f() {\n"
+                          "    auto it = std::find(g().begin(), g().end(), 0);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("iterator(std :: vector <)", tok->valueType()->str());
+        }
+        {
             GET_SYMBOL_DB("struct T { std::set<std::string> s; };\n"
                           "struct U { std::shared_ptr<T> get(); };\n"
                           "void f(U* u) {\n"

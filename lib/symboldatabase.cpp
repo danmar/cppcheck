@@ -7106,6 +7106,15 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                                     vt.container = contTok->variable()->valueType()->container;
                                     vt.containerTypeToken = contTok->variable()->valueType()->containerTypeToken;
                                     setValueType(tok, vt);
+                                } else if (Token::simpleMatch(contTok, "(") && contTok->astOperand1() && contTok->astOperand1()->function()) {
+                                    const Function* func = contTok->astOperand1()->function();
+                                    if (const ValueType* funcVt = func->tokenDef->next()->valueType()) {
+                                        ValueType vt;
+                                        vt.type = ValueType::Type::ITERATOR;
+                                        vt.container = funcVt->container;
+                                        vt.containerTypeToken = funcVt->containerTypeToken;
+                                        setValueType(tok, vt);
+                                    }
                                 }
                             }
                         }
