@@ -167,7 +167,7 @@ bool astIsRangeBasedForDecl(const Token* tok);
  * static const int     int
  * std::vector<T>       std::vector
  */
-std::string astCanonicalType(const Token *expr);
+std::string astCanonicalType(const Token *expr, bool pointedToType);
 
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);

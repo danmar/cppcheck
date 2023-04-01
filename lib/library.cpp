@@ -978,7 +978,7 @@ std::string Library::getFunctionName(const Token *ftok, bool &error) const
         return getFunctionName(ftok->astOperand1(),error) + "::" + getFunctionName(ftok->astOperand2(),error);
     }
     if (ftok->str() == "." && ftok->astOperand1()) {
-        const std::string type = astCanonicalType(ftok->astOperand1());
+        const std::string type = astCanonicalType(ftok->astOperand1(), ftok->originalName() == "->");
         if (type.empty()) {
             error = true;
             return "";
