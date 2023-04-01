@@ -2003,6 +2003,18 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct T;\n"
+              "std::shared_ptr<T> get();\n"
+              "void f(int i) {\n"
+              "    auto p = get();\n"
+              "    p->h(i);\n"
+              "    p.reset(nullptr);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n",
+                           "[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n"
+                           "[test.cpp:6]: (information) --check-library: There is no matching configuration for function std::shared_ptr::reset()\n",
+                           errout.str());
+
         settings = settings_old;
     }
 
