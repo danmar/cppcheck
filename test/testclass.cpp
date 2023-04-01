@@ -6395,6 +6395,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void const85() { // #11621
+        checkConst("struct S { int* p; };\n"
+                   "struct T { int m; int* p; };\n"
+                   "struct U {\n"
+                   "    int i;\n"
+                   "    void f() { S s = { &i }; }\n"
+                   "    void g() { int* a[] = { &i }; }\n"
+                   "    void h() { T t = { 1, &i }; }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
