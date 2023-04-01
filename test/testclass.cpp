@@ -199,6 +199,7 @@ private:
         TEST_CASE(const83);
         TEST_CASE(const84);
         TEST_CASE(const85);
+        TEST_CASE(const86);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6395,7 +6396,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void const85() { // #11621
+    void const86() { // #11621
         checkConst("struct S { int* p; };\n"
                    "struct T { int m; int* p; };\n"
                    "struct U {\n"
