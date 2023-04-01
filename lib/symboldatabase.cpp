@@ -6333,7 +6333,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     // range for loop, auto
     if (vt2 &&
         parent->str() == ":" &&
-        Token::Match(parent->astParent(), "( const| auto *|&|&&| %var% :") && // TODO: east-const, multiple const, ref to ptr, rvalue ref
+        Token::Match(parent->astParent(), "( const| auto *|&|&&| %var% :") && // TODO: east-const, multiple const, ref to ptr
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");

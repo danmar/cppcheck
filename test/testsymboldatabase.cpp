@@ -8330,6 +8330,24 @@ private:
             ASSERT(tok && tok->valueType());
             ASSERT(tok->valueType()->reference == Reference::RValue);
         }
+        {
+            GET_SYMBOL_DB("void f(std::vector<int*>& v) {\n"
+                          "    for (const auto& p : v)\n"
+                          "        if (p == nullptr) {}\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("signed int * &", tok->valueType()->str());
+            tok = Token::findsimplematch(tok, "p :");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("signed int * const &", tok->valueType()->str());
+            tok = Token::findsimplematch(tok, "p ==");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("signed int * &", tok->valueType()->str());
+        }
     }
 
     void valueTypeThis() {
