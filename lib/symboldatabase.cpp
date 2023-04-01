@@ -6402,11 +6402,12 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                         autovt.reference = Reference::LValue;
                     else if (Token::simpleMatch(autoToken->next(), "&&"))
                         autovt.reference = Reference::RValue;
-                    if (autoToken->previous()->str() == "const")
+                    if (autoToken->previous()->str() == "const") {
                         if (autovt.pointer && autovt.reference != Reference::None)
                             autovt.constness |= 2;
                         else
                             autovt.constness |= 1;
+                    }
                 }
             }
 
