@@ -6333,7 +6333,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     // range for loop, auto
     if (vt2 &&
         parent->str() == ":" &&
-        Token::Match(parent->astParent(), "( const| auto *|&| %var% :") && // TODO: east-const, multiple const, ref to ptr, rvalue ref
+        Token::Match(parent->astParent(), "( const| auto *|&|&&| %var% :") && // TODO: east-const, multiple const, ref to ptr, rvalue ref
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
@@ -6398,6 +6398,10 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 } else if (parsedecl(vt2->containerTypeToken, &autovt, mDefaultSignedness, mSettings, mIsCpp)) {
                     setType = true;
                     templateArgType = vt2->containerTypeToken->type();
+                    if (Token::simpleMatch(autoToken->next(), "&"))
+                        autovt.reference = Reference::LValue;
+                    else if (Token::simpleMatch(autoToken->next(), "&&"))
+                        autovt.reference = Reference::RValue;
                 }
             }
 
@@ -6723,6 +6727,7 @@ static const Token* parsedecl(const Token* type,
                 return nullptr;
             valuetype->type = vt->type;
             valuetype->pointer = vt->pointer;
+            valuetype->reference = vt->reference;
             if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
                 valuetype->sign = vt->sign;
             valuetype->constness = vt->constness;

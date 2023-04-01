@@ -8302,7 +8302,33 @@ private:
             const Token* tok = tokenizer.tokens();
             tok = Token::findsimplematch(tok, "auto");
             ASSERT(tok && tok->valueType());
-            ASSERT_EQUALS("container(std :: string|wstring|u16string|u32string)", tok->valueType()->str());
+            ASSERT_EQUALS("container(std :: string|wstring|u16string|u32string) &", tok->valueType()->str());
+        }
+        {
+            GET_SYMBOL_DB("void f(std::vector<int>& v) {\n"
+                          "    for (auto& i : v)\n"
+                          "        i = 0;\n"
+                          "    for (auto&& j : v)\n"
+                          "        j = 1;\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto &");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("signed int &", tok->valueType()->str());
+            tok = Token::findsimplematch(tok, "i :");
+            ASSERT(tok&& tok->valueType());
+            ASSERT(tok->valueType()->reference == Reference::LValue);
+            tok = Token::findsimplematch(tok, "i =");
+            ASSERT(tok&& tok->valueType());
+            ASSERT(tok->valueType()->reference == Reference::LValue);
+            tok = Token::findsimplematch(tok, "auto &&");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("signed int &&", tok->valueType()->str());
+            tok = Token::findsimplematch(tok, "j =");
+            ASSERT(tok&& tok->valueType());
+            ASSERT(tok->valueType()->reference == Reference::RValue);
         }
     }
 
