@@ -8318,16 +8318,16 @@ private:
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("signed int &", tok->valueType()->str());
             tok = Token::findsimplematch(tok, "i :");
-            ASSERT(tok&& tok->valueType());
+            ASSERT(tok && tok->valueType());
             ASSERT(tok->valueType()->reference == Reference::LValue);
             tok = Token::findsimplematch(tok, "i =");
-            ASSERT(tok&& tok->valueType());
+            ASSERT(tok && tok->valueType());
             ASSERT(tok->valueType()->reference == Reference::LValue);
             tok = Token::findsimplematch(tok, "auto &&");
             ASSERT(tok && tok->valueType());
             ASSERT_EQUALS("signed int &&", tok->valueType()->str());
             tok = Token::findsimplematch(tok, "j =");
-            ASSERT(tok&& tok->valueType());
+            ASSERT(tok && tok->valueType());
             ASSERT(tok->valueType()->reference == Reference::RValue);
         }
     }
