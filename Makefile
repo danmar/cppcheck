@@ -192,6 +192,7 @@ MAN_SOURCE=man/cppcheck.1.xml
 LIBOBJ =      $(libcppdir)/valueflow.o \
               $(libcppdir)/tokenize.o \
               $(libcppdir)/symboldatabase.o \
+              $(libcppdir)/addoninfo.o \
               $(libcppdir)/analyzerinfo.o \
               $(libcppdir)/astutils.o \
               $(libcppdir)/check.o \
@@ -466,6 +467,9 @@ $(libcppdir)/tokenize.o: lib/tokenize.cpp externals/simplecpp/simplecpp.h lib/ch
 $(libcppdir)/symboldatabase.o: lib/symboldatabase.cpp lib/astutils.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/keywords.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/symboldatabase.cpp
 
+$(libcppdir)/addoninfo.o: lib/addoninfo.cpp externals/picojson/picojson.h lib/addoninfo.h lib/config.h lib/json.h lib/path.h lib/utils.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/addoninfo.cpp
+
 $(libcppdir)/analyzerinfo.o: lib/analyzerinfo.cpp externals/tinyxml2/tinyxml2.h lib/analyzerinfo.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/path.h lib/platform.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/analyzerinfo.cpp
 
@@ -562,7 +566,7 @@ $(libcppdir)/clangimport.o: lib/clangimport.cpp lib/clangimport.h lib/config.h l
 $(libcppdir)/color.o: lib/color.cpp lib/color.h lib/config.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/color.cpp
 
-$(libcppdir)/cppcheck.o: lib/cppcheck.cpp externals/picojson/picojson.h externals/simplecpp/simplecpp.h externals/tinyxml2/tinyxml2.h lib/analyzerinfo.h lib/check.h lib/checkunusedfunctions.h lib/clangimport.h lib/color.h lib/config.h lib/cppcheck.h lib/ctu.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/json.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/version.h lib/vfvalue.h
+$(libcppdir)/cppcheck.o: lib/cppcheck.cpp externals/picojson/picojson.h externals/simplecpp/simplecpp.h externals/tinyxml2/tinyxml2.h lib/addoninfo.h lib/analyzerinfo.h lib/check.h lib/checkunusedfunctions.h lib/clangimport.h lib/color.h lib/config.h lib/cppcheck.h lib/ctu.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/json.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/preprocessor.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h lib/version.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/cppcheck.cpp
 
 $(libcppdir)/ctu.o: lib/ctu.cpp externals/tinyxml2/tinyxml2.h lib/astutils.h lib/check.h lib/color.h lib/config.h lib/ctu.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h

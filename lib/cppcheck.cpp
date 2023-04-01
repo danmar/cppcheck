@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "cppcheck.h"
 
+#include "addoninfo.h"
 #include "check.h"
 #include "checkunusedfunctions.h"
 #include "clangimport.h"
@@ -102,122 +104,6 @@ namespace {
         }
     private:
         std::vector<std::string> mFilenames;
-    };
-}
-
-namespace {
-    struct AddonInfo {
-        std::string name;
-        std::string scriptFile; // addon script
-        std::string executable; // addon executable
-        std::string args;       // special extra arguments
-        std::string python;     // script interpreter
-        bool ctu = false;
-        std::string runScript;
-
-        static std::string getFullPath(const std::string &fileName, const std::string &exename) {
-            if (Path::isFile(fileName))
-                return fileName;
-
-            const std::string exepath = Path::getPathFromFilename(exename);
-            if (Path::isFile(exepath + fileName))
-                return exepath + fileName;
-            if (Path::isFile(exepath + "addons/" + fileName))
-                return exepath + "addons/" + fileName;
-
-#ifdef FILESDIR
-            if (Path::isFile(FILESDIR + ("/" + fileName)))
-                return FILESDIR + ("/" + fileName);
-            if (Path::isFile(FILESDIR + ("/addons/" + fileName)))
-                return FILESDIR + ("/addons/" + fileName);
-#endif
-            return "";
-        }
-
-        std::string parseAddonInfo(const picojson::value &json, const std::string &fileName, const std::string &exename) {
-            const std::string& json_error = picojson::get_last_error();
-            if (!json_error.empty()) {
-                return "Loading " + fileName + " failed. " + json_error;
-            }
-            if (!json.is<picojson::object>())
-                return "Loading " + fileName + " failed. Bad json.";
-            picojson::object obj = json.get<picojson::object>();
-            if (obj.count("args")) {
-                if (!obj["args"].is<picojson::array>())
-                    return "Loading " + fileName + " failed. args must be array.";
-                for (const picojson::value &v : obj["args"].get<picojson::array>())
-                    args += " " + v.get<std::string>();
-            }
-
-            if (obj.count("ctu")) {
-                // ctu is specified in the config file
-                if (!obj["ctu"].is<bool>())
-                    return "Loading " + fileName + " failed. ctu must be boolean.";
-                ctu = obj["ctu"].get<bool>();
-            } else {
-                ctu = false;
-            }
-
-            if (obj.count("python")) {
-                // Python was defined in the config file
-                if (obj["python"].is<picojson::array>()) {
-                    return "Loading " + fileName +" failed. python must not be an array.";
-                }
-                python = obj["python"].get<std::string>();
-            } else {
-                python = "";
-            }
-
-            if (obj.count("executable")) {
-                if (!obj["executable"].is<std::string>())
-                    return "Loading " + fileName + " failed. executable must be a string.";
-                executable = getFullPath(obj["executable"].get<std::string>(), fileName);
-                return "";
-            }
-
-            return getAddonInfo(obj["script"].get<std::string>(), exename);
-        }
-
-        std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
-            if (fileName[0] == '{') {
-                picojson::value json;
-                const std::string err = picojson::parse(json, fileName);
-                (void)err; // TODO: report
-                return parseAddonInfo(json, fileName, exename);
-            }
-            if (fileName.find('.') == std::string::npos)
-                return getAddonInfo(fileName + ".py", exename);
-
-            if (endsWith(fileName, ".py")) {
-                scriptFile = Path::fromNativeSeparators(getFullPath(fileName, exename));
-                if (scriptFile.empty())
-                    return "Did not find addon " + fileName;
-
-                std::string::size_type pos1 = scriptFile.rfind('/');
-                if (pos1 == std::string::npos)
-                    pos1 = 0;
-                else
-                    pos1++;
-                std::string::size_type pos2 = scriptFile.rfind('.');
-                if (pos2 < pos1)
-                    pos2 = std::string::npos;
-                name = scriptFile.substr(pos1, pos2 - pos1);
-
-                runScript = getFullPath("runaddon.py", exename);
-
-                return "";
-            }
-
-            if (!endsWith(fileName, ".json"))
-                return "Failed to open addon " + fileName;
-
-            std::ifstream fin(fileName);
-            if (!fin.is_open())
-                return "Failed to open " + fileName;
-            picojson::value json;
-            fin >> json;
-            return parseAddonInfo(json, fileName, exename);
-        }
     };
 }
 
