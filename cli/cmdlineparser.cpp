@@ -606,6 +606,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0)
                 mSettings.performanceValueFlowMaxTime = std::atoi(argv[i] + 33);
 
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-if-count=", 37) == 0)
+                mSettings.performanceValueFlowMaxIfCount = std::atoi(argv[i] + 37);
+
             // Specify platform
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
                 const std::string platform(11+argv[i]);
@@ -1212,6 +1215,13 @@ void CmdLineParser::printHelp()
     "                         is 2. A larger value will mean more errors can be found\n"
     "                         but also means the analysis will be slower.\n"
     "    --output-file=<file> Write results to file, rather than standard error.\n"
+    "    --performance-valueflow-max-if-count=<limit>\n"
+    "                         If you have many conditional scopes in a function then\n"
+    "                         the number of possible control flow paths through that\n"
+    "                         function explodes and that can lead to very long analysis\n"
+    "                         time. Valueflow is limited in functions that have more\n"
+    "                         than <limit> conditional scopes. The default limit is\n"
+    "                         100, which few functions will reach.\n"
     "    --platform=<type>, --platform=<file>\n"
     "                         Specifies platform specific types and sizes. The\n"
     "                         available builtin platforms are:\n"
