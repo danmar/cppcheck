@@ -2409,7 +2409,7 @@ static Token *skipTernaryOp(Token *tok, const Token *backToken)
     return tok;
 }
 
-void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
+void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end)
 {
     // start could be erased so use the token before start if available
     Token * first = (start && start->previous()) ? start->previous() : mTokenList.front();

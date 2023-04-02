@@ -2074,7 +2074,7 @@ static void valueFlowReverse(Token* tok,
 }
 
 // Deprecated
-static void valueFlowReverse(TokenList* tokenlist,
+static void valueFlowReverse(const TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,

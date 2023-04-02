@@ -333,7 +333,7 @@ public:
      * @param start first token of arguments
      * @param end token following last argument token
      */
-    void simplifyTemplateArgs(Token *start, Token *end);
+    void simplifyTemplateArgs(Token *start, const Token *end);
 
 private:
     /**
