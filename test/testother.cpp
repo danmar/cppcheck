@@ -3453,6 +3453,15 @@ private:
                       "[test.cpp:11]: (style) Parameter 's' can be declared as pointer to const\n"
                       "[test.cpp:14]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
+
+        check("void g(int, const int*);\n"
+              "void h(const int*);\n"
+              "void f(int* p) {\n"
+              "    g(1, p);\n"
+              "    h(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'p' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {

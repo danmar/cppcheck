@@ -1595,10 +1595,21 @@ void CheckOther::checkConstPointer()
                     continue;
             }
         } else {
+            int argn = -1;
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
+            else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
+                if (ftok && ftok->function()) {
+                    const Variable* argVar = ftok->function()->getArgumentVar(argn);
+                    if (argVar && argVar->valueType() && argVar->valueType()->isConst(vt->pointer)) {
+                        bool inconclusive{};
+                        if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                            continue;
+                    }
+                }
+            }
         }
         nonConstPointers.emplace_back(var);
     }
