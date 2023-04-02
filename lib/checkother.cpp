@@ -1601,7 +1601,7 @@ void CheckOther::checkConstPointer()
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
             else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
-                if (ftok && ftok->function()) {
+                if (ftok->function() && !parent->isCast()) {
                     const Variable* argVar = ftok->function()->getArgumentVar(argn);
                     if (argVar && argVar->valueType() && argVar->valueType()->isConst(vt->pointer)) {
                         bool inconclusive{};
