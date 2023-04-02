@@ -244,7 +244,9 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
-        return (isVariableChangedByFunctionCall)(argtok, 0, &settings, inconclusive);
+        ASSERT_LOC(argtok, file, line);
+        int indirect = (argtok->variable() && argtok->variable()->isArray());
+        return (isVariableChangedByFunctionCall)(argtok, indirect, &settings, inconclusive);
     }
 
     void isVariableChangedByFunctionCallTest() {
@@ -262,8 +264,113 @@ private:
         code = "int f(int x) {\n"
                "return int(x);\n"
                "}\n";
+        inconclusive = false;
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
-        TODO_ASSERT_EQUALS(false, true, inconclusive);
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(int* p);\n"
+               "void f(int x) {\n"
+               "    return g(&x);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(const int* p);\n"
+               "void f(int x) {\n"
+               "    return g(&x);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(int** pp);\n"
+               "void f(int* p) {\n"
+               "    return g(&p);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "p ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(int* const* pp);\n"
+               "void f(int* p) {\n"
+               "    return g(&p);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "p ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(int a[2]);\n"
+               "void f() {\n"
+               "    int b[2] = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(const int a[2]);\n"
+               "void f() {\n"
+               "    int b[2] = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        TODO_ASSERT_EQUALS(false, true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2> a);\n"
+               "void f() {\n"
+               "    std::array<int, 2> b = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2>& a);\n"
+               "void f() {\n"
+               "    std::array<int, 2> b = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(const std::array<int, 2>& a);\n"
+               "void f() {\n"
+               "    std::array<int, 2> b = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2>* p);\n"
+               "void f() {\n"
+               "    std::array<int, 2> b = {};\n"
+               "    return g(&b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "struct S {};\n"
+               "void g(S);\n"
+               "void f(S* s) {\n"
+               "    g(*s);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "s ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "struct S {};\n"
+               "void g(const S&);\n"
+               "void f(S* s) {\n"
+               "    g(*s);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "s ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
     }
 
 #define isExpressionChanged(code, var, startPattern, endPattern)                                                       \
