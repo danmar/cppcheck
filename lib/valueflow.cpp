@@ -8507,6 +8507,21 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                     value.setKnown();
                     valueFlowForward(containerTok->next(), containerTok, value, tokenlist, settings);
                 }
+            } else if (Token::Match(tok->previous(), ">|return (|{") && astIsContainer(tok)) {
+                std::vector<ValueFlow::Value> values;
+                if (Token::simpleMatch(tok, "{")) {
+                    values = getInitListSize(tok, tok->valueType(), settings, true);
+                    ValueFlow::Value value;
+                    value.valueType = ValueFlow::Value::ValueType::TOK;
+                    value.tokvalue = tok;
+                    value.setKnown();
+                    values.push_back(value);
+                } else if (Token::simpleMatch(tok, "(")) {
+                    const Token* constructorArgs = tok;
+                    values = getContainerSizeFromConstructor(constructorArgs, tok->valueType(), settings, true);
+                }
+                for (const ValueFlow::Value& value : values)
+                    setTokenValue(tok, value, settings);
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
                 Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)
