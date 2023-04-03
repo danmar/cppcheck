@@ -3422,6 +3422,17 @@ private:
                       "[test.cpp:9]: (style) Parameter 's' can be declared as pointer to const\n"
                       "[test.cpp:12]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
+
+        check("struct S { int a; };\n"
+              "void f(std::vector<S>&v, int b) {\n"
+              "    size_t n = v.size();\n"
+              "    for (size_t i = 0; i < n; i++) {\n"
+              "        S& s = v[i];\n"
+              "        if (!(b & s.a))\n"
+              "            continue;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's' can be declared as reference to const\n", errout.str()); // don't crash
     }
 
     void switchRedundantAssignmentTest() {
