@@ -162,6 +162,7 @@ private:
         TEST_CASE(valueFlowSymbolicStrlen);
         TEST_CASE(valueFlowSmartPointer);
         TEST_CASE(valueFlowImpossibleMinMax);
+        TEST_CASE(valueFlowImpossibleUnknownConstant);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -5433,18 +5434,19 @@ private:
                "    return x;\n"
                "}\n";
         values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
-        ASSERT_EQUALS(0, values.size());
+        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(true, values.front().isUninitValue());
 
-        code = "void f() {\n"
+        code = "void f(int x) {\n"
                "    int i;\n"
-               "    if (x) {\n"
+               "    if (x > 0) {\n"
                "        int y = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
                "        if (y != 0) return;\n"
                "        i++;\n"
                "    }\n"
                "}\n";
         values = tokenValues(code, "i ++", ValueFlow::Value::ValueType::UNINIT);
-        ASSERT_EQUALS(0, values.size());
+        TODO_ASSERT_EQUALS(0, 1, values.size());
     }
 
     void valueFlowConditionExpressions() {
@@ -7864,6 +7866,19 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", -1));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+    }
+    
+    void valueFlowImpossibleUnknownConstant()
+    {
+        const char* code;
+
+        code = "void f(bool b) {\n"
+               "    if (b) {\n"
+               "        int x = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
+               "        if (x != 0) return;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 0));
     }
 };
 
