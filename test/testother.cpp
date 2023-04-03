@@ -3455,7 +3455,7 @@ private:
                       errout.str());
 
         check("struct S { int a; };\n"
-              "void f(std::vector<S>&v, int b) {\n"
+              "void f(std::vector<S>& v, int b) {\n"
               "    size_t n = v.size();\n"
               "    for (size_t i = 0; i < n; i++) {\n"
               "        S& s = v[i];\n"
