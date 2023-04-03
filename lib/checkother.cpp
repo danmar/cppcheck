@@ -1479,7 +1479,7 @@ void CheckOther::checkConstVariable()
                         break;
                     }
                 }
-                if (Token::Match(tok, "& %varid%", var->declarationId())) {
+                if (tok->isUnaryOp("&") && Token::Match(tok, "& %varid%", var->declarationId())) {
                     const Token* opTok = tok->astParent();
                     if (opTok->isComparisonOp() || opTok->isAssignmentOp() || opTok->isCalculation()) {
                         if (opTok->isComparisonOp() || opTok->isCalculation()) {
