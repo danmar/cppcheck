@@ -2365,10 +2365,14 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->astParent() && lhs->astParent()->str() == "?")
                 lhs = lhs->astParent()->astParent();
             if (lhs->str() == "&") {
-                lhs = lhs->previous();
-                if (lhs->isAssignmentOp() && lhs->previous()->variable()) {
-                    if (lhs->previous()->variable()->typeStartToken()->strAt(-1) != "const" && lhs->previous()->variable()->isPointer())
+                const Token* const top = lhs->astTop();
+                if (top->isAssignmentOp()) {
+                    if (Token::simpleMatch(top->astOperand2(), "{")) // TODO: check usage in init list
                         return false;
+                    else if (top->previous()->variable()) {
+                        if (top->previous()->variable()->typeStartToken()->strAt(-1) != "const" && top->previous()->variable()->isPointer())
+                            return false;
+                    }
                 }
             } else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->str() == "(") { // range-based for-loop (C++11)
                 // TODO: We could additionally check what is done with the elements to avoid false negatives. Here we just rely on "const" keyword being used.
