@@ -266,6 +266,7 @@ private:
         TEST_CASE(moveClassVariable);
         TEST_CASE(forwardAndUsed);
         TEST_CASE(moveAndReference);
+        TEST_CASE(moveForRange);
 
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
@@ -10298,6 +10299,18 @@ private:
               "    h(r);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable 'r'.\n", errout.str());
+    }
+
+    void moveForRange()
+    {
+        check("struct C {\n"
+                "    void f() {\n"
+                "        for (auto r : mCategory.find(std::move(mWhere))) {}\n"
+                "    }\n"
+                "    cif::category mCategory;\n"
+                "    cif::condition mWhere;\n"
+                "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void funcArgNamesDifferent() {
