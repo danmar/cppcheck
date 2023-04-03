@@ -7712,9 +7712,9 @@ static Token* findStartToken(const Variable* var, Token* start)
     if (uses.empty())
         return start;
     Token* first = uses.front();
-    const Scope* scope = first->scope();
     if(Token::findmatch(start, "goto|asm|setjmp|longjmp", first))
         return start;
+    const Scope* scope = first->scope();
     // If there is only one usage or the first usage is in the same scope
     if (uses.size() == 1 || scope == var->scope())
         return first->previous();
