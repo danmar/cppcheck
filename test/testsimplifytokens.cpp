@@ -1455,6 +1455,9 @@ private:
                           "}"
                           "namespace AB = A::B;" //duplicate declaration
                           "}"));
+        ASSERT_EQUALS(";",
+                      tok("namespace p = boost::python;\n"
+                          "namespace np = boost::numpy;\n"));
 
         // redeclared nested namespace aliases
         TODO_ASSERT_EQUALS("namespace A { namespace B { void foo ( ) { bar ( A :: B :: ab ( ) ) ; { baz ( A :: a ( ) ) ; } bar ( A :: B :: ab ( ) ) ; } } }",
