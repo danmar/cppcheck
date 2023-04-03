@@ -10304,12 +10304,12 @@ private:
     void moveForRange()
     {
         check("struct C {\n"
-                "    void f() {\n"
-                "        for (auto r : mCategory.find(std::move(mWhere))) {}\n"
-                "    }\n"
-                "    cif::category mCategory;\n"
-                "    cif::condition mWhere;\n"
-                "};\n");
+              "    void f() {\n"
+              "        for (auto r : mCategory.find(std::move(mWhere))) {}\n"
+              "    }\n"
+              "    cif::category mCategory;\n"
+              "    cif::condition mWhere;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
