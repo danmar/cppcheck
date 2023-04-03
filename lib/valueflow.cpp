@@ -7699,7 +7699,7 @@ static std::vector<Token*> findAllUsages(const Variable* var, Token* start)
     if (!scope)
         return result;
     Token* tok2 = Token::findmatch(start, "%varid%", scope->bodyEnd, var->declarationId());
-    while(tok2) {
+    while (tok2) {
         result.push_back(tok2);
         tok2 = Token::findmatch(tok2->next(), "%varid%", scope->bodyEnd, var->declarationId());
     }
@@ -7712,19 +7712,19 @@ static Token* findStartToken(const Variable* var, Token* start)
     if (uses.empty())
         return start;
     Token* first = uses.front();
-    if(Token::findmatch(start, "goto|asm|setjmp|longjmp", first))
+    if (Token::findmatch(start, "goto|asm|setjmp|longjmp", first))
         return start;
     const Scope* scope = first->scope();
     // If there is only one usage or the first usage is in the same scope
     if (uses.size() == 1 || scope == var->scope())
         return first->previous();
     // If all uses are in the same scope
-    if (std::all_of(uses.begin()+1, uses.end(), [&](const Token* tok) {
+    if (std::all_of(uses.begin() + 1, uses.end(), [&](const Token* tok) {
         return tok->scope() == scope;
     }))
         return first->previous();
     // Compute the outer scope
-    while(scope && scope->nestedIn != var->scope())
+    while (scope && scope->nestedIn != var->scope())
         scope = scope->nestedIn;
     if (!scope)
         return start;

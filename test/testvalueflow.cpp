@@ -7867,7 +7867,7 @@ private:
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", -1));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
     }
-    
+
     void valueFlowImpossibleUnknownConstant()
     {
         const char* code;
