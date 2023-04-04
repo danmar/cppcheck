@@ -252,8 +252,17 @@ void CheckClass::constructors()
                 // Check if this is a class constructor
                 if (!var.isPointer() && !var.isPointerArray() && var.isClass() && func.type == Function::eConstructor) {
                     // Unknown type so assume it is initialized
-                    if (!var.type())
-                        continue;
+                    if (!var.type()) {
+                        if (var.isStlType() && var.valueType() && var.valueType()->containerTypeToken && var.getTypeName() == "std::array") {
+                            const Token* ctt = var.valueType()->containerTypeToken;
+                            if (!ctt->isStandardType() &&
+                                (!ctt->type() || ctt->type()->needInitialization != Type::NeedInitialization::True) &&
+                                !mSettings->library.podtype(ctt->str())) // TODO: handle complex type expression
+                                continue;
+                        }
+                        else
+                            continue;
+                    }
 
                     // Known type that doesn't need initialization or
                     // known type that has member variables of an unknown type
