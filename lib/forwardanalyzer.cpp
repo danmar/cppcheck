@@ -55,7 +55,7 @@ struct ForwardTraversal {
     {}
     ValuePtr<Analyzer> analyzer;
     const Settings& settings;
-    Analyzer::Action actions{ Analyzer::Action::None };
+    Analyzer::Action actions;
     bool analyzeOnly{};
     bool analyzeTerminate{};
     Analyzer::Terminate terminate = Analyzer::Terminate::None;

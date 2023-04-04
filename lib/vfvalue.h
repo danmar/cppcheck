@@ -258,7 +258,7 @@ namespace ValueFlow
         }
 
         /** The value bound  */
-        Bound bound{};
+        Bound bound = Bound::Point;
 
         /** int value (or sometimes bool value?) */
         long long intvalue{};
