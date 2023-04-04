@@ -2278,12 +2278,12 @@ private:
     void array_index_negative8()
     {
         check("unsigned g(char*);\n"
-                "void f() {\n"
-                "    char buf[10];\n"
-                "    unsigned u = g(buf);\n"
-                "    for (int i = u, j = sizeof(i); --i >= 0;)\n"
-                "        char c = buf[i];\n"
-                "}\n");
+              "void f() {\n"
+              "    char buf[10];\n"
+              "    unsigned u = g(buf);\n"
+              "    for (int i = u, j = sizeof(i); --i >= 0;)\n"
+              "        char c = buf[i];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
