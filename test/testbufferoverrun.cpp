@@ -197,6 +197,7 @@ private:
         TEST_CASE(array_index_negative5);    // #10526
         TEST_CASE(array_index_negative6);    // #11349
         TEST_CASE(array_index_negative7);    // #5685
+        TEST_CASE(array_index_negative8);    // #11651
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -2271,6 +2272,19 @@ private:
               "        a[i] = 1;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[5]' accessed at index -9, which is out of bounds.\n", errout.str());
+    }
+
+    // #11651
+    void array_index_negative8()
+    {
+        check("unsigned g(char*);\n"
+                "void f() {\n"
+                "    char buf[10];\n"
+                "    unsigned u = g(buf);\n"
+                "    for (int i = u, j = sizeof(i); --i >= 0;)\n"
+                "        char c = buf[i];\n"
+                "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_for_decr() {
