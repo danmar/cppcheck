@@ -26,10 +26,13 @@
 #include <QDebug>
 #include <QDir>
 #include <QFile>
-#include <QStringRef>
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QStringRef>
+#endif
 
 static const QString ResultElementName = "results";
 static const QString CppcheckElementName = "cppcheck";

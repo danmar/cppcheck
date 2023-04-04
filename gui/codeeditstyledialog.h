@@ -31,8 +31,11 @@ class CodeEditor;
 class SelectColorButton;
 class SelectFontWeightCombo;
 class QPushButton;
-class QStringList;
 class QWidget;
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+class QStringList;
+#endif
 
 class StyleEditDialog : public QDialog {
     Q_OBJECT

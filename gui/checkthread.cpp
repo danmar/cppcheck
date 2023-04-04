@@ -41,7 +41,6 @@
 
 #include <QByteArray>
 #include <QChar>
-#include <QCharRef>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -51,6 +50,10 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QVariant>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QCharRef>
+#endif
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
 static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue

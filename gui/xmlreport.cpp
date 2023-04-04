@@ -22,9 +22,12 @@
 
 #include <QFile>
 #include <QIODevice>
-#include <QStringRef>
 #include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QStringRef>
+#endif
 
 static const char ResultElementName[] = "results";
 static const char VersionAttribute[] = "version";
