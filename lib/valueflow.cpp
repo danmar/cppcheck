@@ -886,7 +886,8 @@ static void setTokenValue(Token* tok,
                         result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
                         if (error)
                             continue;
-                    } else if (value1.isTokValue() && value2.isTokValue() && (astIsContainer(parent->astOperand1()) || astIsContainer(parent->astOperand2()))) {
+                    } else if (value1.isTokValue() && value2.isTokValue() &&
+                               (astIsContainer(parent->astOperand1()) || astIsContainer(parent->astOperand2()))) {
                         const Token* tok1 = value1.tokvalue;
                         const Token* tok2 = value2.tokvalue;
                         bool equal = false;
@@ -900,8 +901,13 @@ static void setTokenValue(Token* tok,
                                     continue;
                                 if (!std::all_of(args2.begin(), args2.end(), std::mem_fn(&Token::hasKnownIntValue)))
                                     continue;
-                                equal = std::equal(args1.begin(), args1.end(), args2.begin(), args2.end(), [&](const Token* atok, const Token* btok) {
-                                    return atok->values().front().intvalue == btok->values().front().intvalue;
+                                equal = std::equal(args1.begin(),
+                                                   args1.end(),
+                                                   args2.begin(),
+                                                   args2.end(),
+                                                   [&](const Token* atok, const Token* btok) {
+                                    return atok->values().front().intvalue ==
+                                    btok->values().front().intvalue;
                                 });
                             } else {
                                 equal = false;

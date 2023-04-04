@@ -7896,49 +7896,49 @@ private:
         const char* code;
 
         code = "bool f() {\n"
-                "  std::string s = \"abc\";\n"
-                "  bool x = (s == \"def\");\n"
-                "  return x;\n"
-                "}\n";
+               "  std::string s = \"abc\";\n"
+               "  bool x = (s == \"def\");\n"
+               "  return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
         code = "bool f() {\n"
-                "  std::string s = \"abc\";\n"
-                "  bool x = (s != \"def\");\n"
-                "  return x;\n"
-                "}\n";
+               "  std::string s = \"abc\";\n"
+               "  bool x = (s != \"def\");\n"
+               "  return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
 
         code = "bool f() {\n"
-                "  std::vector<int> v1 = {1, 2};\n"
-                "  std::vector<int> v2 = {1, 2};\n"
-                "  bool x = (v1 == v2);\n"
-                "  return x;\n"
-                "}\n";
+               "  std::vector<int> v1 = {1, 2};\n"
+               "  std::vector<int> v2 = {1, 2};\n"
+               "  bool x = (v1 == v2);\n"
+               "  return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
 
         code = "bool f() {\n"
-                "  std::vector<int> v1 = {1, 2};\n"
-                "  std::vector<int> v2 = {1, 2};\n"
-                "  bool x = (v1 != v2);\n"
-                "  return x;\n"
-                "}\n";
+               "  std::vector<int> v1 = {1, 2};\n"
+               "  std::vector<int> v2 = {1, 2};\n"
+               "  bool x = (v1 != v2);\n"
+               "  return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
 
         code = "bool f(int i) {\n"
-                "  std::vector<int> v1 = {i, i+1};\n"
-                "  std::vector<int> v2 = {i};\n"
-                "  bool x = (v1 == v2);\n"
-                "  return x;\n"
-                "}\n";
+               "  std::vector<int> v1 = {i, i+1};\n"
+               "  std::vector<int> v2 = {i};\n"
+               "  bool x = (v1 == v2);\n"
+               "  return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
 
         code = "bool f(int i, int j) {\n"
-                "  std::vector<int> v1 = {i, i};\n"
-                "  std::vector<int> v2 = {i, j};\n"
-                "  bool x = (v1 == v2);\n"
-                "  return x;\n"
-                "}\n";
+               "  std::vector<int> v1 = {i, i};\n"
+               "  std::vector<int> v2 = {i, j};\n"
+               "  bool x = (v1 == v2);\n"
+               "  return x;\n"
+               "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 1));
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
