@@ -1474,7 +1474,7 @@ void CheckOther::checkConstVariable()
                 if (tok->isUnaryOp("&") && Token::Match(tok, "& %varid%", var->declarationId())) {
                     const Token* opTok = tok->astParent();
                     int argn = -1;
-                    if (opTok->isComparisonOp() || opTok->isAssignmentOp() || opTok->isCalculation()) {
+                    if (opTok && (opTok->isComparisonOp() || opTok->isAssignmentOp() || opTok->isCalculation())) {
                         if (opTok->isComparisonOp() || opTok->isCalculation()) {
                             if (opTok->astOperand1() != tok)
                                 opTok = opTok->astOperand1();
