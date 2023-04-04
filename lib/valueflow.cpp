@@ -7692,6 +7692,52 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
     });
 }
 
+static std::vector<Token*> findAllUsages(const Variable* var, Token* start)
+{
+    std::vector<Token*> result;
+    const Scope* scope = var->scope();
+    if (!scope)
+        return result;
+    Token* tok2 = Token::findmatch(start, "%varid%", scope->bodyEnd, var->declarationId());
+    while (tok2) {
+        result.push_back(tok2);
+        tok2 = Token::findmatch(tok2->next(), "%varid%", scope->bodyEnd, var->declarationId());
+    }
+    return result;
+}
+
+static Token* findStartToken(const Variable* var, Token* start)
+{
+    std::vector<Token*> uses = findAllUsages(var, start);
+    if (uses.empty())
+        return start;
+    Token* first = uses.front();
+    if (Token::findmatch(start, "goto|asm|setjmp|longjmp", first))
+        return start;
+    const Scope* scope = first->scope();
+    // If there is only one usage or the first usage is in the same scope
+    if (uses.size() == 1 || scope == var->scope())
+        return first->previous();
+    // If all uses are in the same scope
+    if (std::all_of(uses.begin() + 1, uses.end(), [&](const Token* tok) {
+        return tok->scope() == scope;
+    }))
+        return first->previous();
+    // Compute the outer scope
+    while (scope && scope->nestedIn != var->scope())
+        scope = scope->nestedIn;
+    if (!scope)
+        return start;
+    Token* tok = const_cast<Token*>(scope->bodyStart);
+    if (!tok)
+        return start;
+    if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
+        tok = tok->linkAt(-2);
+    if (Token::simpleMatch(tok->previous(), ") {"))
+        return tok->linkAt(-1)->previous();
+    return tok;
+}
+
 static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDatabase*/, const Settings* settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -7718,6 +7764,8 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
 
         bool partial = false;
 
+        Token* start = findStartToken(var, tok->next());
+
         std::map<Token*, ValueFlow::Value> partialReads;
         if (const Scope* scope = var->typeScope()) {
             if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
@@ -7733,7 +7781,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
                     continue;
                 }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), tok, uninitValue, tokenlist, settings);
-                valueFlowGenericForward(tok->next(), tok->scope()->bodyEnd, analyzer, *settings);
+                valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, *settings);
 
                 for (auto&& p : *analyzer.partialReads) {
                     Token* tok2 = p.first;
@@ -7763,7 +7811,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         if (partial)
             continue;
 
-        valueFlowForward(tok->next(), tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
+        valueFlowForward(start, tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
     }
 }
 
