@@ -94,7 +94,7 @@ public:
 
 namespace cppcheck {
     template<typename T>
-    std::size_t find_all_of(const std::string& str, T sub) {
+    std::size_t count_all_of(const std::string& str, T sub) {
         std::size_t n = 0;
         std::string::size_type pos = 0;
         while ((pos = str.find(sub, pos)) != std::string::npos) {
