@@ -7698,7 +7698,7 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
     });
 }
 
-static std::vector<Token*> findAllUsages(const Variable* var, Token* start)
+static std::vector<Token*> findAllUsages(const Variable* var, Token* start) // cppcheck-suppress constPointer // FP
 {
     std::vector<Token*> result;
     const Scope* scope = var->scope();
