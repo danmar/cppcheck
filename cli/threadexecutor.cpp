@@ -26,6 +26,7 @@
 #include "settings.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <functional>
 #include <future>
@@ -41,7 +42,9 @@ enum class Color;
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : Executor(files, settings, errorLogger)
-{}
+{
+    assert(mSettings.jobs > 1);
+}
 
 ThreadExecutor::~ThreadExecutor()
 {}
