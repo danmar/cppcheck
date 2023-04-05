@@ -2015,7 +2015,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
                                          std::list<ValueFlow::Value> values,
-                                         TokenList* const tokenlist,
+                                         const TokenList* const tokenlist,
                                          const Settings* settings,
                                          SourceLocation loc = SourceLocation::current())
 {
@@ -6970,7 +6970,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
     }
 }
 
-static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, TokenList* tokenlist, const Settings* settings)
+static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, const TokenList* tokenlist, const Settings* settings)
 {
     const Token *vartok = nullptr;
     for (const Token *tok = fortok; tok; tok = tok->next()) {
@@ -8630,7 +8630,7 @@ struct ContainerConditionHandler : ConditionHandler {
     }
 };
 
-static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowDynamicBufferSize(const TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
 {
     auto getBufferSizeFromAllocFunc = [&](const Token* funcTok) -> MathLib::bigint {
         MathLib::bigint sizeValue = -1;
