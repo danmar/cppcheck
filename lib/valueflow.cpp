@@ -7287,7 +7287,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist,
     }
 }
 
-static void valueFlowInjectParameter(TokenList* tokenlist,
+static void valueFlowInjectParameter(const TokenList* tokenlist,
                                      const Settings* settings,
                                      const Variable* arg,
                                      const Scope* functionScope,
@@ -7698,7 +7698,7 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
     });
 }
 
-static std::vector<Token*> findAllUsages(const Variable* var, Token* start) // cppcheck-suppress constPointer // FP
+static std::vector<Token*> findAllUsages(const Variable* var, Token* start) // cppcheck-suppress constParameter // FP
 {
     std::vector<Token*> result;
     const Scope* scope = var->scope();
