@@ -3491,7 +3491,7 @@ private:
               "void f(C* c) {\n"
               "    g(c);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'c' can be declared as pointer to const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
