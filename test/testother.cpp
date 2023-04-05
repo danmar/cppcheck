@@ -3485,6 +3485,13 @@ private:
               "    new (&i) int();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str()); // don't crash
+
+        check("class C;\n" // #11646
+              "void g(const C* const p);\n"
+              "void f(C* c) {\n"
+              "    g(c);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's' can be declared as reference to const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
