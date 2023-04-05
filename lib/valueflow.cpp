@@ -904,7 +904,6 @@ static void setTokenValue(Token* tok,
                                 equal = std::equal(args1.begin(),
                                                    args1.end(),
                                                    args2.begin(),
-                                                   args2.end(),
                                                    [&](const Token* atok, const Token* btok) {
                                     return atok->values().front().intvalue ==
                                     btok->values().front().intvalue;
