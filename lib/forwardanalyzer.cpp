@@ -413,7 +413,7 @@ struct ForwardTraversal {
             return Break();
         if (stepTok && updateRecursive(stepTok) == Progress::Break)
             return Break();
-        if (condTok && updateRecursive(condTok) == Progress::Break)
+        if (condTok && !Token::simpleMatch(condTok, ":") && updateRecursive(condTok) == Progress::Break)
             return Break();
         return Progress::Continue;
     }

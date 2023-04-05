@@ -199,6 +199,7 @@ private:
         TEST_CASE(const83);
         TEST_CASE(const84);
         TEST_CASE(const85);
+        TEST_CASE(const86);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6391,6 +6392,18 @@ private:
                    "void S::f(const int p[2], int q[2]) {\n"
                    "    q[0] = p[0];\n"
                    "    q[1] = p[1];\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const86() { // #11621
+        checkConst("struct S { int* p; };\n"
+                   "struct T { int m; int* p; };\n"
+                   "struct U {\n"
+                   "    int i;\n"
+                   "    void f() { S s = { &i }; }\n"
+                   "    void g() { int* a[] = { &i }; }\n"
+                   "    void h() { T t = { 1, &i }; }\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
     }

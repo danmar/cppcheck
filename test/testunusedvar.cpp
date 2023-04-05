@@ -1677,7 +1677,7 @@ private:
                                "    uint8_t* p = (uint8_t*)&s;\n"
                                "    return p[10];\n"
                                "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::padding' is never used.\n", errout.str());
 
         checkStructMemberUsage("struct S { uint8_t padding[500]; };\n"
                                "uint8_t f(const S& s) {\n"
@@ -1685,7 +1685,14 @@ private:
                                "    auto p = reinterpret_cast<const uint8_t*>(&s);\n"
                                "    return p[10];\n"
                                "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::padding' is never used.\n", errout.str());
+
+        checkStructMemberUsage("struct S { int i, j; };\n" // #11577
+                               "void f(S s) {\n"
+                               "  void* p = (void*)&s;\n"
+                               "  if (s.i) {}\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::j' is never used.\n", errout.str());
     }
 
     void structmember19() {

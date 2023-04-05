@@ -23,3 +23,5 @@ autoNoType
 bailoutUninitVar
 
 *:externals/*/*
+
+performanceValueflowMaxIfCountExceeded

@@ -2182,8 +2182,6 @@ void Tokenizer::simplifyTypedefCpp()
                                 syntaxError(tok2);
 
                             if (tok2->str() == "=") {
-                                if (!tok2->next())
-                                    syntaxError(tok2);
                                 if (tok2->next()->str() == "{")
                                     tok2 = tok2->next()->link()->next();
                                 else if (tok2->next()->str().at(0) == '\"')
@@ -10171,11 +10169,14 @@ void Tokenizer::simplifyNamespaceAliases()
     int scope = 0;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
+        bool isPrev{};
         if (tok->str() == "{")
             scope++;
         else if (tok->str() == "}")
             scope--;
-        else if (Token::Match(tok, "namespace %name% =")) {
+        else if (Token::Match(tok, "namespace %name% =") || (isPrev = Token::Match(tok->previous(), "namespace %name% ="))) {
+            if (isPrev)
+                tok = tok->previous();
             const std::string name(tok->next()->str());
             Token * tokNameStart = tok->tokAt(3);
             Token * tokNameEnd = tokNameStart;
