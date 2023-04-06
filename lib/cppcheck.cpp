@@ -1849,5 +1849,10 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }
+        for (const auto& fs: mSettings.project.fileSettings) {
+            const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename);
+            const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
+            std::remove(ctuInfoFileName.c_str());
+        }
     }
 }
