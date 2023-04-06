@@ -663,16 +663,21 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // Handle scopes that might be noreturn
             if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
-                if (ftok->isKeyword() || ftok->function())
+                if (ftok->isKeyword())
                     continue;
                 const std::string functionName(mSettings->library.getFunctionName(ftok));
                 bool unknown = false;
                 if (mTokenizer->isScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)
                         varInfo.clear();
-                    else if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName)) {
+                    else {
+                      if (ftok->function() && !ftok->function()->isAttributeNoreturn() &&
+                          !(ftok->function()->functionScope && mTokenizer->isScopeNoReturn(ftok->function()->functionScope->bodyEnd))) // check function scope
+                          continue;
+                      if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName)) {
                         const VarInfo::Usage usage = Token::simpleMatch(openingPar, "( )") ? VarInfo::NORET : VarInfo::USED; // TODO: check parameters passed to function
                         varInfo.possibleUsageAll({ functionName, usage });
+                      }
                     }
                 }
             }

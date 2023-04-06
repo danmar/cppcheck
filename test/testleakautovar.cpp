@@ -523,21 +523,45 @@ private:
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
 
-        check("void g() {\n" // #9279
+        check("void f() {\n" // #9279
               "    int* p = new int;\n"
               "    *p = 42;\n"
-              "    f();\n"
+              "    g();\n"
               "}\n", /*cpp*/ true);
-        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function f() should have <noreturn> configuration\n",
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function g() should have <noreturn> configuration\n",
                       errout.str());
 
-        check("void f();\n"
-              "void g() {\n"
+        check("void g();\n"
+              "void f() {\n"
               "    int* p = new int;\n"
               "    *p = 42;\n"
-              "    f();\n"
+              "    g();\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
+
+        check("void g() {}\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
+
+        check("[[noreturn]] void g();\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g() { exit(1); }\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isAutoDealloc() {
