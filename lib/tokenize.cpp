@@ -5464,40 +5464,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     reportUnknownMacros();
 
-    if (list.front()) {
-      for (Token* tok = list.front()->next(); tok; tok = tok->next()) {
-        if (tok->str() == "typedef") {//if for while
-          bool doSimplify = !Token::Match(tok->previous(), ";|{|}|:|public:|private:|protected:");
-          bool haveStart = false;
-          Token* start{};
-          if (!doSimplify && Token::simpleMatch(tok->previous(), "}")) {
-             start = tok->linkAt(-1)->previous();
-            while (Token::Match(start, "%name%")) {
-              if (Token::Match(start, "class|struct|union|enum")) {
-                start = start->previous();
-                doSimplify = true;
-                haveStart = true;
-                break;
-              }
-              start = start->previous();
-            }
-          }
-          if (doSimplify) {
-            if (!haveStart) {
-              start = tok;
-              while (start && !Token::Match(start, "[;{}]"))
-                start = start->previous();
-            }
-            if (start)
-              start = start->next();
-            else
-              start = list.front();
-            start->insertTokenBefore(tok->str());
-            tok->deleteThis();
-          }
-        }
-      }
-    }
+    simplifyTypedefLHS();
 
     // typedef..
     if (mTimerResults) {
