@@ -1391,14 +1391,6 @@ static bool isVariableMutableInInitializer(const Token* start, const Token * end
     return false;
 }
 
-static const Token* isFuncArg(const Token* tok) {
-    while (Token::simpleMatch(tok, ","))
-        tok = tok->astParent();
-    if (Token::simpleMatch(tok, "(") && Token::Match(tok->astOperand1(), "%name% ("))
-        return tok->astOperand1();
-    return nullptr;
-}
-
 void CheckOther::checkConstVariable()
 {
     if (!mSettings->severity.isEnabled(Severity::style) || mTokenizer->isC())
@@ -1481,7 +1473,8 @@ void CheckOther::checkConstVariable()
                 }
                 if (tok->isUnaryOp("&") && Token::Match(tok, "& %varid%", var->declarationId())) {
                     const Token* opTok = tok->astParent();
-                    if (opTok->isComparisonOp() || opTok->isAssignmentOp() || opTok->isCalculation()) {
+                    int argn = -1;
+                    if (opTok && (opTok->isComparisonOp() || opTok->isAssignmentOp() || opTok->isCalculation())) {
                         if (opTok->isComparisonOp() || opTok->isCalculation()) {
                             if (opTok->astOperand1() != tok)
                                 opTok = opTok->astOperand1();
@@ -1490,7 +1483,7 @@ void CheckOther::checkConstVariable()
                         }
                         if (opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
                             continue;
-                    } else if (const Token* ftok = isFuncArg(opTok)) {
+                    } else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                         bool inconclusive{};
                         if (var->valueType() && !isVariableChangedByFunctionCall(ftok, var->valueType()->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
                             continue;
@@ -1572,6 +1565,7 @@ void CheckOther::checkConstPointer()
             const Token* const gparent = parent->astParent();
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
+            int argn = -1;
             if (Token::simpleMatch(gparent, "return")) {
                 const Function* function = gparent->scope()->function;
                 if (function && (!Function::returnsReference(function) || Function::returnsConst(function)))
@@ -1589,16 +1583,27 @@ void CheckOther::checkConstPointer()
                     continue;
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
-            else if (const Token* ftok = isFuncArg(gparent)) {
+            else if (const Token* ftok = getTokenArgumentFunction(parent, argn)) {
                 bool inconclusive{};
                 if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
                     continue;
             }
         } else {
+            int argn = -1;
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
+            else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
+                if (ftok->function() && !parent->isCast()) {
+                    const Variable* argVar = ftok->function()->getArgumentVar(argn);
+                    if (argVar && argVar->valueType() && argVar->valueType()->isConst(vt->pointer)) {
+                        bool inconclusive{};
+                        if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                            continue;
+                    }
+                }
+            }
         }
         nonConstPointers.emplace_back(var);
     }

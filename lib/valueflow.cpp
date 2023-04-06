@@ -2028,7 +2028,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
                                          ValueFlow::Value value,
-                                         TokenList* const tokenlist,
+                                         const TokenList* const tokenlist,
                                          const Settings* settings,
                                          SourceLocation loc = SourceLocation::current())
 {
@@ -2044,7 +2044,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
                                          std::list<ValueFlow::Value> values,
-                                         TokenList* const tokenlist,
+                                         const TokenList* const tokenlist,
                                          const Settings* settings,
                                          SourceLocation loc = SourceLocation::current())
 {
@@ -2073,7 +2073,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
 static Analyzer::Result valueFlowForwardRecursive(Token* top,
                                                   const Token* exprTok,
                                                   std::list<ValueFlow::Value> values,
-                                                  TokenList* const tokenlist,
+                                                  const TokenList* const tokenlist,
                                                   const Settings* settings,
                                                   SourceLocation loc = SourceLocation::current())
 {
@@ -2091,7 +2091,7 @@ static void valueFlowReverse(Token* tok,
                              const Token* const endToken,
                              const Token* const varToken,
                              std::list<ValueFlow::Value> values,
-                             TokenList* tokenlist,
+                             const TokenList* tokenlist,
                              const Settings* settings,
                              SourceLocation loc = SourceLocation::current())
 {
@@ -2103,7 +2103,7 @@ static void valueFlowReverse(Token* tok,
 }
 
 // Deprecated
-static void valueFlowReverse(TokenList* tokenlist,
+static void valueFlowReverse(const TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
@@ -6999,7 +6999,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
     }
 }
 
-static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, TokenList* tokenlist, const Settings* settings)
+static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, const TokenList* tokenlist, const Settings* settings)
 {
     const Token *vartok = nullptr;
     for (const Token *tok = fortok; tok; tok = tok->next()) {
@@ -7316,7 +7316,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist,
     }
 }
 
-static void valueFlowInjectParameter(TokenList* tokenlist,
+static void valueFlowInjectParameter(const TokenList* tokenlist,
                                      const Settings* settings,
                                      const Variable* arg,
                                      const Scope* functionScope,
@@ -7727,7 +7727,7 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
     });
 }
 
-static std::vector<Token*> findAllUsages(const Variable* var, Token* start)
+static std::vector<Token*> findAllUsages(const Variable* var, Token* start) // cppcheck-suppress constParameter // FP
 {
     std::vector<Token*> result;
     const Scope* scope = var->scope();
@@ -8713,7 +8713,7 @@ struct ContainerConditionHandler : ConditionHandler {
     }
 };
 
-static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowDynamicBufferSize(const TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
 {
     auto getBufferSizeFromAllocFunc = [&](const Token* funcTok) -> MathLib::bigint {
         MathLib::bigint sizeValue = -1;

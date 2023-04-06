@@ -3455,6 +3455,21 @@ private:
                       "[test.cpp:14]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
 
+        check("void g(int, const int*);\n"
+              "void h(const int*);\n"
+              "void f(int* p) {\n"
+              "    g(1, p);\n"
+              "    h(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'p' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void f(int, const int*);\n"
+              "void f(int i, int* p) {\n"
+              "    f(i, const_cast<const int*>(p));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S { int a; };\n"
               "void f(std::vector<S>& v, int b) {\n"
               "    size_t n = v.size();\n"
@@ -3465,6 +3480,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's' can be declared as reference to const\n", errout.str()); // don't crash
+
+        check("void f(int& i) {\n"
+              "    new (&i) int();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str()); // don't crash
+
+        check("class C;\n" // #11646
+              "void g(const C* const p);\n"
+              "void f(C* c) {\n"
+              "    g(c);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'c' can be declared as pointer to const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
