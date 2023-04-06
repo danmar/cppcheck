@@ -580,7 +580,7 @@ void Tokenizer::simplifyUsingToTypedef()
 void Tokenizer::simplifyTypedefLHS()
 {
     if (!list.front())
-      return;
+        return;
 
     for (Token* tok = list.front()->next(); tok; tok = tok->next()) {
         if (tok->str() == "typedef") {
