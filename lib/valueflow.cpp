@@ -503,7 +503,7 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
         return false;
     if (value.isIteratorValue() && !Token::Match(parent, "+|-"))
         return false;
-    if (value.isTokValue() && (!parent->isComparisonOp() || value.tokvalue->tokType() != Token::eString))
+    if (value.isTokValue() && (!parent->isComparisonOp() || !Token::Match(value.tokvalue, "{|%str%")))
         return false;
     return true;
 }
@@ -886,6 +886,35 @@ static void setTokenValue(Token* tok,
                         result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
                         if (error)
                             continue;
+                    } else if (value1.isTokValue() && value2.isTokValue() &&
+                               (astIsContainer(parent->astOperand1()) || astIsContainer(parent->astOperand2()))) {
+                        const Token* tok1 = value1.tokvalue;
+                        const Token* tok2 = value2.tokvalue;
+                        bool equal = false;
+                        if (Token::Match(tok1, "%str%") && Token::Match(tok2, "%str%")) {
+                            equal = tok1->str() == tok2->str();
+                        } else if (Token::simpleMatch(tok1, "{") && Token::simpleMatch(tok2, "{")) {
+                            std::vector<const Token*> args1 = getArguments(tok1);
+                            std::vector<const Token*> args2 = getArguments(tok2);
+                            if (args1.size() == args2.size()) {
+                                if (!std::all_of(args1.begin(), args1.end(), std::mem_fn(&Token::hasKnownIntValue)))
+                                    continue;
+                                if (!std::all_of(args2.begin(), args2.end(), std::mem_fn(&Token::hasKnownIntValue)))
+                                    continue;
+                                equal = std::equal(args1.begin(),
+                                                   args1.end(),
+                                                   args2.begin(),
+                                                   [&](const Token* atok, const Token* btok) {
+                                    return atok->values().front().intvalue ==
+                                    btok->values().front().intvalue;
+                                });
+                            } else {
+                                equal = false;
+                            }
+                        } else {
+                            continue;
+                        }
+                        result.intvalue = parent->str() == "==" ? equal : !equal;
                     } else {
                         continue;
                     }
