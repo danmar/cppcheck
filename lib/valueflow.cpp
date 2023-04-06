@@ -893,7 +893,7 @@ static void setTokenValue(Token* tok,
                         bool equal = false;
                         if (Token::Match(tok1, "%str%") && Token::Match(tok2, "%str%")) {
                             equal = tok1->str() == tok2->str();
-                        } else if (Token::Match(tok1, "{") && Token::Match(tok2, "{")) {
+                        } else if (Token::simpleMatch(tok1, "{") && Token::simpleMatch(tok2, "{")) {
                             std::vector<const Token*> args1 = getArguments(tok1);
                             std::vector<const Token*> args2 = getArguments(tok2);
                             if (args1.size() == args2.size()) {
