@@ -671,13 +671,13 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     if (!unknown)
                         varInfo.clear();
                     else {
-                      if (ftok->function() && !ftok->function()->isAttributeNoreturn() &&
-                          !(ftok->function()->functionScope && mTokenizer->isScopeNoReturn(ftok->function()->functionScope->bodyEnd))) // check function scope
-                          continue;
-                      if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName)) {
-                        const VarInfo::Usage usage = Token::simpleMatch(openingPar, "( )") ? VarInfo::NORET : VarInfo::USED; // TODO: check parameters passed to function
-                        varInfo.possibleUsageAll({ functionName, usage });
-                      }
+                        if (ftok->function() && !ftok->function()->isAttributeNoreturn() &&
+                            !(ftok->function()->functionScope && mTokenizer->isScopeNoReturn(ftok->function()->functionScope->bodyEnd))) // check function scope
+                            continue;
+                        if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName)) {
+                            const VarInfo::Usage usage = Token::simpleMatch(openingPar, "( )") ? VarInfo::NORET : VarInfo::USED; // TODO: check parameters passed to function
+                            varInfo.possibleUsageAll({ functionName, usage });
+                        }
                     }
                 }
             }
