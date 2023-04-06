@@ -55,8 +55,9 @@ public:
             return status < 0;
         }
     };
+    enum Usage { USED, NORET };
     std::map<int, AllocInfo> alloctype;
-    std::map<int, std::string> possibleUsage;
+    std::map<int, std::pair<std::string, Usage>> possibleUsage;
     std::set<int> conditionalAlloc;
     std::set<int> referenced;
 
@@ -92,7 +93,7 @@ public:
     }
 
     /** set possible usage for all variables */
-    void possibleUsageAll(const std::string &functionName);
+    void possibleUsageAll(const std::pair<std::string, Usage>& functionUsage);
 
     void print();
 };
@@ -159,12 +160,12 @@ private:
     void doubleFreeError(const Token *tok, const Token *prevFreeTok, const std::string &varname, int type);
 
     /** message: user configuration is needed to complete analysis */
-    void configurationInfo(const Token* tok, const std::string &functionName);
+    void configurationInfo(const Token* tok, const std::pair<std::string, VarInfo::Usage>& functionUsage);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckLeakAutoVar c(nullptr, settings, errorLogger);
         c.deallocReturnError(nullptr, nullptr, "p");
-        c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis
+        c.configurationInfo(nullptr, { "f", VarInfo::USED });  // user configuration is needed to complete analysis
         c.doubleFreeError(nullptr, nullptr, "varname", 0);
     }
 
