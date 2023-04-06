@@ -104,7 +104,6 @@ private:
         TEST_CASE(freopen2);
 
         TEST_CASE(deallocuse1);
-        TEST_CASE(deallocuse2);
         TEST_CASE(deallocuse3);
         TEST_CASE(deallocuse4);
         TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
@@ -508,8 +507,8 @@ private:
         settings = s;
     }
 
-    void assign24() { // #7440
-        check("void f() {\n"
+    void assign24() {
+        check("void f() {\n" // #7440
               "    char* data = new char[100];\n"
               "    char** dataPtr = &data;\n"
               "    delete[] *dataPtr;\n"
@@ -522,6 +521,46 @@ private:
               "    printf(\"test\");\n"
               "    delete[] *dataPtr;\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #9279
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function g() should have <noreturn> configuration\n",
+                      errout.str());
+
+        check("void g();\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
+
+        check("void g() {}\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
+
+        check("[[noreturn]] void g();\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g() { exit(1); }\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -645,20 +684,6 @@ private:
               "    char c = *p;\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
-    }
-
-    void deallocuse2() {
-        check("void f(char *p) {\n"
-              "    free(p);\n"
-              "    strcpy(a, p);\n"
-              "}");
-        TODO_ASSERT_EQUALS("error (free,use)", "[test.c:3]: (information) --check-library: Function strcpy() should have <noreturn> configuration\n", errout.str());
-
-        check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
-              "    free(p);\n"
-              "    strcpy(a, p=b());\n"
-              "}");
-        TODO_ASSERT_EQUALS("", "[test.c:3]: (information) --check-library: Function strcpy() should have <noreturn> configuration\n", errout.str());
     }
 
     void deallocuse3() {
@@ -1437,8 +1462,7 @@ private:
               "    char *p = malloc(10);\n"
               "    fatal_error();\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n"
-                      "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<leak-ignore> configuration\n",
+        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n",
                       errout.str());
     }
 
@@ -2711,6 +2735,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(returnedValue); // #9298
+        TEST_CASE(deallocuse2);
         TEST_CASE(fclose_false_positive); // #9575
     }
 
@@ -2720,6 +2745,20 @@ private:
               "{\n"
               "    char* ptr = new char[strlen(str)+1];\n"
               "    m = strcpy(ptr, str);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse2() {
+        check("void f(char *p) {\n"
+              "    free(p);\n"
+              "    strcpy(a, p);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error (free,use)", "", errout.str());
+
+        check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
+              "    free(p);\n"
+              "    strcpy(a, p=b());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

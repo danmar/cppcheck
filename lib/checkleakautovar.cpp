@@ -96,10 +96,9 @@ void VarInfo::print()
     std::cout << "size=" << alloctype.size() << std::endl;
     for (std::map<int, AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it) {
         std::string strusage;
-        const std::map<int, std::string>::const_iterator use =
-            possibleUsage.find(it->first);
+        const auto use = possibleUsage.find(it->first);
         if (use != possibleUsage.end())
-            strusage = use->second;
+            strusage = use->second.first;
 
         std::string status;
         switch (it->second.status) {
@@ -133,11 +132,11 @@ void VarInfo::print()
     }
 }
 
-void VarInfo::possibleUsageAll(const std::string &functionName)
+void VarInfo::possibleUsageAll(const std::pair<std::string, Usage>& functionUsage)
 {
     possibleUsage.clear();
     for (std::map<int, AllocInfo>::const_iterator it = alloctype.cbegin(); it != alloctype.cend(); ++it)
-        possibleUsage[it->first] = functionName;
+        possibleUsage[it->first] = functionUsage;
 }
 
 
@@ -169,13 +168,13 @@ void CheckLeakAutoVar::deallocReturnError(const Token *tok, const Token *dealloc
     reportError(locations, Severity::error, "deallocret", "$symbol:" + varname + "\nReturning/dereferencing '$symbol' after it is deallocated / released", CWE672, Certainty::normal);
 }
 
-void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
+void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::pair<std::string, VarInfo::Usage>& functionUsage)
 {
-    if (mSettings->checkLibrary) {
+    if (mSettings->checkLibrary && functionUsage.second == VarInfo::USED) {
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",
-                    "--check-library: Function " + functionName + "() should have <use>/<leak-ignore> configuration");
+                    "--check-library: Function " + functionUsage.first + "() should have <use>/<leak-ignore> configuration");
     }
 }
 
@@ -300,7 +299,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         throw InternalError(startToken, "Internal limit: CheckLeakAutoVar::checkScope() Maximum recursive count of 1000 reached.", InternalError::LIMIT);
 
     std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
-    std::map<int, std::string> &possibleUsage = varInfo.possibleUsage;
+    auto& possibleUsage = varInfo.possibleUsage;
     const std::set<int> conditionalAlloc(varInfo.conditionalAlloc);
 
     // Parse all tokens
@@ -671,8 +670,15 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 if (mTokenizer->isScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)
                         varInfo.clear();
-                    else if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName))
-                        varInfo.possibleUsageAll(functionName);
+                    else {
+                        if (ftok->function() && !ftok->function()->isAttributeNoreturn() &&
+                            !(ftok->function()->functionScope && mTokenizer->isScopeNoReturn(ftok->function()->functionScope->bodyEnd))) // check function scope
+                            continue;
+                        if (!mSettings->library.isLeakIgnore(functionName) && !mSettings->library.isUse(functionName)) {
+                            const VarInfo::Usage usage = Token::simpleMatch(openingPar, "( )") ? VarInfo::NORET : VarInfo::USED; // TODO: check parameters passed to function
+                            varInfo.possibleUsageAll({ functionName, usage });
+                        }
+                    }
                 }
             }
 
@@ -870,7 +876,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocI
     if (var != alloctype.end()) {
         if (allocation.status == VarInfo::NOALLOC) {
             // possible usage
-            varInfo.possibleUsage[arg->varId()] = tok->str();
+            varInfo.possibleUsage[arg->varId()] = { tok->str(), VarInfo::USED };
             if (var->second.status == VarInfo::DEALLOC && arg->previous()->str() == "&")
                 varInfo.erase(arg->varId());
         } else if (var->second.managed()) {
@@ -1006,11 +1012,11 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
                                        const VarInfo &varInfo)
 {
     const std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
-    const std::map<int, std::string> &possibleUsage = varInfo.possibleUsage;
+    const auto& possibleUsage = varInfo.possibleUsage;
 
     const std::map<int, VarInfo::AllocInfo>::const_iterator var = alloctype.find(vartok->varId());
     if (var != alloctype.cend() && var->second.status == VarInfo::ALLOC) {
-        const std::map<int, std::string>::const_iterator use = possibleUsage.find(vartok->varId());
+        const auto use = possibleUsage.find(vartok->varId());
         if (use == possibleUsage.end()) {
             leakError(vartok, vartok->str(), var->second.type);
         } else {
@@ -1022,7 +1028,7 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
 void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope)
 {
     const std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
-    const std::map<int, std::string> &possibleUsage = varInfo.possibleUsage;
+    const auto& possibleUsage = varInfo.possibleUsage;
     std::vector<int> toRemove;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1071,7 +1077,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                 deallocReturnError(tok, it->second.allocTok, var->name());
 
             else if (!used && !it->second.managed()) {
-                const std::map<int, std::string>::const_iterator use = possibleUsage.find(varid);
+                const auto use = possibleUsage.find(varid);
                 if (use == possibleUsage.end()) {
                     leakError(tok, var->name(), it->second.type);
                 } else {
