@@ -522,7 +522,7 @@ private:
               "    delete[] *dataPtr;\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
-        
+
         check("void g() {\n" // #9279
               "    int* p = new int;\n"
               "    *p = 42;\n"
@@ -530,7 +530,7 @@ private:
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function f() should have <noreturn> configuration\n",
                       errout.str());
-        
+
         check("void f();\n"
               "void g() {\n"
               "    int* p = new int;\n"
