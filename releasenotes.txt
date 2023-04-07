@@ -5,3 +5,11 @@ release notes for cppcheck-2.11
 - "missingInclude" and "missingIncludeSystem" are reported with "-j" is > 1 and processes are used in the backend (default in non-Windows binaries)
 - "missingInclude" and "missingIncludeSystem" will now cause the "--error-exitcode" to be applied
 - "--enable=information" will no longer implicitly enable "missingInclude" starting with 2.16. Please enable it explicitly if you require it.
+- The `constParameter` and `constVariable` checks have been split into 3 different IDs based on if the variable is a pointer, a reference, or local. The different IDs will allow users to suppress different const warning based on variable type.
+    - `constParameter`
+    - `constParameterReference`
+    - `constParameterPointer`
+    - `constVariable`
+    - `constVariableReference`
+    - `constVariablePointer`
+
