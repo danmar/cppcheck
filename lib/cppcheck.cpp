@@ -1426,7 +1426,7 @@ void CppCheck::executeAddons(const std::string& dumpFile)
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
         executeAddons(f);
-        if (!mSettings.dump && mSettings.buildDir.empty())
+        if (!mSettings.dump)
             std::remove(dumpFile.c_str());
     }
 }
