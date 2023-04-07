@@ -1545,7 +1545,8 @@ class MisraChecker:
             starts_with_double_slash = token.str.startswith('//')
             if token.str.startswith('/*') or starts_with_double_slash:
                 s = token.str.lstrip('/')
-                if ((not starts_with_double_slash) and '//' in s) or '/*' in s:
+                double_backslash_not_uri = not all(regex.match("\w+://$", part) for part in s.split("//"))
+                if ((not starts_with_double_slash) and double_backslash_not_uri) or '/*' in s:
                     self.reportError(token, 3, 1)
 
     def misra_3_2(self, rawTokens):
