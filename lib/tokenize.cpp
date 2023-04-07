@@ -577,6 +577,47 @@ void Tokenizer::simplifyUsingToTypedef()
     }
 }
 
+void Tokenizer::simplifyTypedefLHS()
+{
+    if (!list.front())
+        return;
+
+    for (Token* tok = list.front()->next(); tok; tok = tok->next()) {
+        if (tok->str() == "typedef") {
+            bool doSimplify = !Token::Match(tok->previous(), ";|{|}|:|public:|private:|protected:");
+            if (doSimplify && Token::simpleMatch(tok->previous(), ")") && Token::Match(tok->linkAt(-1)->previous(), "if|for|while"))
+                doSimplify = false;
+            bool haveStart = false;
+            Token* start{};
+            if (!doSimplify && Token::simpleMatch(tok->previous(), "}")) {
+                start = tok->linkAt(-1)->previous();
+                while (Token::Match(start, "%name%")) {
+                    if (Token::Match(start, "class|struct|union|enum")) {
+                        start = start->previous();
+                        doSimplify = true;
+                        haveStart = true;
+                        break;
+                    }
+                    start = start->previous();
+                }
+            }
+            if (doSimplify) {
+                if (!haveStart) {
+                    start = tok;
+                    while (start && !Token::Match(start, "[;{}]"))
+                        start = start->previous();
+                }
+                if (start)
+                    start = start->next();
+                else
+                    start = list.front();
+                start->insertTokenBefore(tok->str());
+                tok->deleteThis();
+            }
+        }
+    }
+}
+
 namespace {
     class TypedefSimplifier {
     private:
@@ -5422,6 +5463,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     simplifyVarDecl(false);
 
     reportUnknownMacros();
+
+    simplifyTypedefLHS();
 
     // typedef..
     if (mTimerResults) {

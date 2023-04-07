@@ -211,6 +211,7 @@ private:
         TEST_CASE(simplifyTypedef142); // T() when T is a pointer type
         TEST_CASE(simplifyTypedef143); // #11506
         TEST_CASE(simplifyTypedef144); // #9353
+        TEST_CASE(simplifyTypedef145); // #9353
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -2022,10 +2023,7 @@ private:
     }
 
     void simplifyTypedef76() { // ticket #2453 segmentation fault
-        const char code[] = "void f1(typedef int x) {}";
-        const char expected[] = "void f1 ( typedef int x ) { }";
-        ASSERT_EQUALS(expected, tok(code, true, cppcheck::Platform::Type::Native, false));
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_THROW(checkSimplifyTypedef("void f1(typedef int x) {}"), InternalError);
     }
 
     void simplifyTypedef77() { // ticket #2554
@@ -3252,6 +3250,23 @@ private:
         const char code[] = "typedef struct {} X;\n"
                             "std::vector<X> v;\n";
         ASSERT_EQUALS("struct X { } ; std :: vector < X > v ;", tok(code));
+    }
+
+    void simplifyTypedef145() { // #11634
+        const char* code{};
+        code = "int typedef i;\n"
+               "i main() {}\n";
+        ASSERT_EQUALS("int main ( ) { }", tok(code));
+
+        code = "struct {} typedef S;\n"
+               "void f() {\n"
+               "    S();\n"
+               "}\n";
+        ASSERT_EQUALS("struct S { } ; void f ( ) { struct S ( ) ; }", tok(code));
+
+        code = "struct {} typedef S;\n" // don't crash
+               "S();\n";
+        ASSERT_EQUALS("struct S { } ; struct S ( ) ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {
