@@ -3154,7 +3154,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             (!typeParametersInDeclaration.empty() && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), nullptr))) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
+                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "templateInstantiation",
                                                      "Failed to instantiate template \"" + instantiation.name() + "\". The checking continues anyway.", Certainty::normal));
             }
             if (typeForNewName.empty())
@@ -3232,7 +3232,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (typeForNewName.empty()) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
+                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "templateInstantiation",
                                                      "Failed to instantiate template \"" + templateDeclaration.name() + "\". The checking continues anyway.", Certainty::normal));
             }
             return false;
