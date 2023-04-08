@@ -556,6 +556,7 @@ static void replace(std::string& source, const std::unordered_map<std::string, s
 }
 
 static void replaceColors(std::string& source) {
+    // TODO: colors are not applied when either stdout or stderr is not a TTY because we resolve them before the stream usage
     static const std::unordered_map<std::string, std::string> substitutionMap =
     {
         {"{reset}",   ::toString(Color::Reset)},
