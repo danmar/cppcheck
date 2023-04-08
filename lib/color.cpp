@@ -22,23 +22,28 @@
 #include <unistd.h>
 #include <cstddef>
 #include <sstream> // IWYU pragma: keep
+#include <iostream>
 #endif
 
 bool gDisableColors = false;
 
 #ifndef _WIN32
-static bool isStdOutATty()
+static bool isStreamATty(const std::ostream & os)
 {
-    // TODO: handle piping into file as well as other pipes like stderr
     static const bool stdout_tty = isatty(STDOUT_FILENO);
-    return stdout_tty;
+    static const bool stderr_tty = isatty(STDERR_FILENO);
+    if (&os == &std::cout)
+        return stdout_tty;
+    if (&os == &std::cerr)
+        return stderr_tty;
+    return (stdout_tty && stderr_tty);
 }
 #endif
 
 std::ostream& operator<<(std::ostream & os, const Color& c)
 {
 #ifndef _WIN32
-    if (!gDisableColors && isStdOutATty())
+    if (!gDisableColors && isStreamATty(os))
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
 #else
     (void)c;
