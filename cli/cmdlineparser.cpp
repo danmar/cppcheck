@@ -888,6 +888,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // TODO: deprecate "--template <template>"
             // Output formatter
             else if (std::strcmp(argv[i], "--template") == 0 ||
                      std::strncmp(argv[i], "--template=", 11) == 0) {
@@ -901,6 +902,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("argument to '--template' is missing.");
                     return false;
                 }
+                // TODO: bail out when no placeholders are found?
 
                 if (mSettings.templateFormat == "gcc") {
                     mSettings.templateFormat = "{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}";
@@ -922,6 +924,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // TODO: deprecate "--template-location <template>"
             else if (std::strcmp(argv[i], "--template-location") == 0 ||
                      std::strncmp(argv[i], "--template-location=", 20) == 0) {
                 // "--template-location format"
@@ -931,9 +934,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     ++i;
                     mSettings.templateLocation = argv[i];
                 } else {
-                    printError("argument to '--template' is missing.");
+                    printError("argument to '--template-location' is missing.");
                     return false;
                 }
+                // TODO: bail out when no placeholders are found?
             }
 
             else if (std::strncmp(argv[i], "--template-max-time=", 20) == 0) {
@@ -1015,6 +1019,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         if (mSettings.templateLocation.empty())
             mSettings.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
+    // replace static parts of the templates
+    substituteTemplateFormatStatic(mSettings.templateFormat);
+    substituteTemplateLocationStatic(mSettings.templateLocation);
 
     mSettings.project.ignorePaths(mIgnoredPaths);
 

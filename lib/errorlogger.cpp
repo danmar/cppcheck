@@ -511,24 +511,64 @@ static std::string readCode(const std::string &file, int linenr, int column, con
     return line + endl + std::string((column>0 ? column-1 : 0), ' ') + '^';
 }
 
-static void replaceColors(std::string& source)
+static void replaceSpecialChars(std::string& source)
 {
-    static const std::string reset_str = ::toString(Color::Reset);
-    findAndReplace(source, "{reset}", reset_str);
-    static const std::string bold_str = ::toString(Color::Bold);
-    findAndReplace(source, "{bold}", bold_str);
-    static const std::string dim_str = ::toString(Color::Dim);
-    findAndReplace(source, "{dim}", dim_str);
-    static const std::string red_str = ::toString(Color::FgRed);
-    findAndReplace(source, "{red}", red_str);
-    static const std::string green_str = ::toString(Color::FgGreen);
-    findAndReplace(source, "{green}", green_str);
-    static const std::string blue_str = ::toString(Color::FgBlue);
-    findAndReplace(source, "{blue}", blue_str);
-    static const std::string magenta_str = ::toString(Color::FgMagenta);
-    findAndReplace(source, "{magenta}", magenta_str);
-    static const std::string default_str = ::toString(Color::FgDefault);
-    findAndReplace(source, "{default}", default_str);
+    // Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
+    // Substitution should be done first so messages from cppcheck never get translated.
+    static const std::unordered_map<char, std::string> substitutionMap = {
+        {'b', "\b"},
+        {'n', "\n"},
+        {'r', "\r"},
+        {'t', "\t"}
+    };
+
+    std::string::size_type index = 0;
+    while ((index = source.find('\\', index)) != std::string::npos) {
+        const char searchFor = source[index+1];
+        const auto it = substitutionMap.find(searchFor);
+        if (it == substitutionMap.end()) {
+            index += 1;
+            continue;
+        }
+        const std::string& replaceWith = it->second;
+        source.replace(index, 2, replaceWith);
+        index += replaceWith.length();
+    }
+}
+
+static void replace(std::string& source, const std::unordered_map<std::string, std::string> &substitutionMap)
+{
+    std::string::size_type index = 0;
+    while ((index = source.find('{', index)) != std::string::npos) {
+        const std::string::size_type end = source.find('}', index);
+        if (end == std::string::npos)
+            break;
+        const std::string searchFor = source.substr(index, end-index+1);
+        const auto it = substitutionMap.find(searchFor);
+        if (it == substitutionMap.end()) {
+            index += 1;
+            continue;
+        }
+        const std::string& replaceWith = it->second;
+        source.replace(index, searchFor.length(), replaceWith);
+        index += replaceWith.length();
+    }
+}
+
+static void replaceColors(std::string& source) {
+    // TODO: colors are not applied when either stdout or stderr is not a TTY because we resolve them before the stream usage
+    static const std::unordered_map<std::string, std::string> substitutionMap =
+    {
+        {"{reset}",   ::toString(Color::Reset)},
+        {"{bold}",    ::toString(Color::Bold)},
+        {"{dim}",     ::toString(Color::Dim)},
+        {"{red}",     ::toString(Color::FgRed)},
+        {"{green}",   ::toString(Color::FgGreen)},
+        {"{blue}",    ::toString(Color::FgBlue)},
+        {"{magenta}", ::toString(Color::FgMagenta)},
+        {"{default}", ::toString(Color::FgDefault)},
+    };
+    replace(source, substitutionMap);
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
@@ -555,14 +595,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
 
     // template is given. Reformat the output according to it
     std::string result = templateFormat;
-    // Support a few special characters to allow to specific formatting, see http://sourceforge.net/apps/phpbb/cppcheck/viewtopic.php?f=4&t=494&sid=21715d362c0dbafd3791da4d9522f814
-    // Substitution should be done first so messages from cppcheck never get translated.
-    findAndReplace(result, "\\b", "\b");
-    findAndReplace(result, "\\n", "\n");
-    findAndReplace(result, "\\r", "\r");
-    findAndReplace(result, "\\t", "\t");
 
-    replaceColors(result);
     findAndReplace(result, "{id}", id);
 
     std::string::size_type pos1 = result.find("{inconclusive:");
@@ -594,23 +627,21 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
             findAndReplace(result, "{code}", readCode(callStack.back().getOrigFile(), callStack.back().line, callStack.back().column, endl));
         }
     } else {
-        findAndReplace(result, "{callstack}", emptyString);
-        findAndReplace(result, "{file}", "nofile");
-        findAndReplace(result, "{line}", "0");
-        findAndReplace(result, "{column}", "0");
-        findAndReplace(result, "{code}", emptyString);
+        static const std::unordered_map<std::string, std::string> callStackSubstitutionMap =
+        {
+            {"{callstack}",   ""},
+            {"{file}",    "nofile"},
+            {"{line}",     "0"},
+            {"{column}",     "0"},
+            {"{code}",     ""}
+        };
+        replace(result, callStackSubstitutionMap);
     }
 
     if (!templateLocation.empty() && callStack.size() >= 2U) {
         for (const FileLocation &fileLocation : callStack) {
             std::string text = templateLocation;
 
-            findAndReplace(text, "\\b", "\b");
-            findAndReplace(text, "\\n", "\n");
-            findAndReplace(text, "\\r", "\r");
-            findAndReplace(text, "\\t", "\t");
-
-            replaceColors(text);
             findAndReplace(text, "{file}", fileLocation.getfile());
             findAndReplace(text, "{line}", MathLib::toString(fileLocation.line));
             findAndReplace(text, "{column}", MathLib::toString(fileLocation.column));
@@ -876,4 +907,16 @@ std::string replaceStr(std::string s, const std::string &from, const std::string
         pos1 += to.size();
     }
     return s;
+}
+
+void substituteTemplateFormatStatic(std::string& templateFormat)
+{
+    replaceSpecialChars(templateFormat);
+    replaceColors(templateFormat);
+}
+
+void substituteTemplateLocationStatic(std::string& templateLocation)
+{
+    replaceSpecialChars(templateLocation);
+    replaceColors(templateLocation);
 }

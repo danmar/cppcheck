@@ -17,6 +17,7 @@
  */
 
 #include "cmdlineparser.h"
+#include "color.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "platform.h"
@@ -162,6 +163,16 @@ private:
         TEST_CASE(templatesGcc);
         TEST_CASE(templatesVs);
         TEST_CASE(templatesEdit);
+        TEST_CASE(templatesCppcheck1);
+        TEST_CASE(templatesDaca2);
+        TEST_CASE(templatesSelfcheck);
+        TEST_CASE(templatesNoPlaceholder);
+        TEST_CASE(templateFormatInvalid);
+        TEST_CASE(templateFormatInvalid2);
+        TEST_CASE(templateFormatEmpty);
+        TEST_CASE(templateLocationInvalid);
+        TEST_CASE(templateLocationInvalid2);
+        TEST_CASE(templateLocationEmpty);
         TEST_CASE(xml);
         TEST_CASE(xmlver2);
         TEST_CASE(xmlver2both);
@@ -1252,10 +1263,12 @@ private:
 
     void templates() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--template", "{file}:{line},{severity},{id},{message}", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--template", "{file}:{line},{severity},{id},{message}", "--template-location={file}:{line}:{column} {info}", "file.cpp"};
         settings.templateFormat.clear();
+        settings.templateLocation.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("{file}:{line},{severity},{id},{message}", settings.templateFormat);
+        ASSERT_EQUALS("{file}:{line}:{column} {info}", settings.templateLocation);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -1263,8 +1276,10 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--template", "gcc", "file.cpp"};
         settings.templateFormat.clear();
+        settings.templateLocation.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
-        ASSERT_EQUALS("{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}", settings.templateFormat);
+        ASSERT_EQUALS("{file}:{line}:{column}: warning: {message} [{id}]\n{code}", settings.templateFormat);
+        ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings.templateLocation);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -1272,8 +1287,10 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--template", "vs", "file.cpp"};
         settings.templateFormat.clear();
+        settings.templateLocation.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings.templateFormat);
+        ASSERT_EQUALS("", settings.templateLocation);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
@@ -1281,8 +1298,120 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--template", "edit", "file.cpp"};
         settings.templateFormat.clear();
+        settings.templateLocation.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("{file} +{line}: {severity}: {message}", settings.templateFormat);
+        ASSERT_EQUALS("", settings.templateLocation);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void templatesCppcheck1() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--template=cppcheck1", "file.cpp"};
+        settings.templateFormat.clear();
+        settings.templateLocation.clear();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("{callstack}: ({severity}{inconclusive:, inconclusive}) {message}", settings.templateFormat);
+        ASSERT_EQUALS("", settings.templateLocation);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void templatesDaca2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--template=daca2", "file.cpp"};
+        settings.templateFormat.clear();
+        settings.templateLocation.clear();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]", settings.templateFormat);
+        ASSERT_EQUALS("{file}:{line}:{column}: note: {info}", settings.templateLocation);
+        ASSERT_EQUALS(true, settings.daca);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void templatesSelfcheck() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--template=selfcheck", "file.cpp"};
+        settings.templateFormat.clear();
+        settings.templateLocation.clear();
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\n{code}", settings.templateFormat);
+        ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings.templateLocation);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    // TODO: we should bail out on this
+    void templatesNoPlaceholder() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--template=selfchek", "file.cpp"};
+        settings.templateFormat.clear();
+        settings.templateLocation.clear();
+        TODO_ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("selfchek", settings.templateFormat);
+        ASSERT_EQUALS("", settings.templateLocation);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void templateFormatInvalid() {
+        REDIRECT;
+        const char* const argv[] = { "cppcheck", "--template", "--template-location={file}", "file.cpp" };
+        ASSERT(!defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--template' is missing.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    // TODO: will not error out as he next option does not start with a "-"
+    void templateFormatInvalid2() {
+        REDIRECT;
+        settings.templateFormat.clear();
+        settings.templateLocation.clear();
+        const char* const argv[] = { "cppcheck", "--template", "file.cpp" };
+        TODO_ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("file.cpp", settings.templateFormat);
+        ASSERT_EQUALS("", settings.templateLocation);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    // will use the default
+    // TODO: bail out on empty?
+    void templateFormatEmpty() {
+        REDIRECT;
+        settings.templateFormat.clear();
+        settings.templateLocation.clear();
+        const char* const argv[] = { "cppcheck", "--template=", "file.cpp" };
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings.templateFormat);
+        ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings.templateLocation);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void templateLocationInvalid() {
+        REDIRECT;
+        const char* const argv[] = { "cppcheck", "--template-location", "--template={file}", "file.cpp" };
+        ASSERT(!defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--template-location' is missing.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    // TODO: will not error out as he next option does not start with a "-"
+    void templateLocationInvalid2() {
+        REDIRECT;
+        settings.templateFormat.clear();
+        settings.templateLocation.clear();
+        const char* const argv[] = { "cppcheck", "--template-location", "file.cpp" };
+        TODO_ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings.templateFormat);
+        ASSERT_EQUALS("file.cpp", settings.templateLocation);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    // will use the default
+    // TODO: bail out on empty?
+    void templateLocationEmpty() {
+        REDIRECT;
+        settings.templateFormat.clear();
+        settings.templateLocation.clear();
+        const char* const argv[] = { "cppcheck", "--template-location=", "file.cpp" };
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings.templateFormat);
+        ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings.templateLocation);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
