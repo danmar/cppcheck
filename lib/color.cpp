@@ -23,6 +23,7 @@
 #endif
 #include <cstddef>
 #include <sstream> // IWYU pragma: keep
+#include <iostream>
 
 bool gDisableColors = false;
 
@@ -32,9 +33,16 @@ std::ostream& operator<<(std::ostream& os, const Color& /*c*/)
 #else
 std::ostream& operator<<(std::ostream & os, const Color& c)
 {
-    // TODO: handle piping into file as well as other pipes like stderr
-    static const bool s_is_tty = isatty(STDOUT_FILENO);
-    if (!gDisableColors && s_is_tty)
+    static const bool isatty_stdout = isatty(STDOUT_FILENO);
+    static const bool isatty_stderr = isatty(STDERR_FILENO);
+    bool stream_is_tty;
+    if (&os == &std::cout)
+        stream_is_tty = isatty_stdout;
+    else if (&os == &std::cerr)
+        stream_is_tty = isatty_stderr;
+    else
+        stream_is_tty = (isatty_stdout && isatty_stderr);
+    if (!gDisableColors && stream_is_tty)
         return os << "\033[" << static_cast<std::size_t>(c) << "m";
 #endif
     return os;
