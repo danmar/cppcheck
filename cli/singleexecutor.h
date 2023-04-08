@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,34 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "color.h"
+#ifndef SINGLEEXECUTOR_H
+#define SINGLEEXECUTOR_H
 
-#ifndef _WIN32
-#include <unistd.h>
-#endif
+#include "executor.h"
+
 #include <cstddef>
-#include <sstream> // IWYU pragma: keep
+#include <map>
+#include <string>
 
-bool gDisableColors = false;
+class ErrorLogger;
+class Settings;
+class CppCheck;
 
-#ifdef _WIN32
-std::ostream& operator<<(std::ostream& os, const Color& /*c*/)
+class SingleExecutor : public Executor
 {
-#else
-std::ostream& operator<<(std::ostream & os, const Color& c)
-{
-    // TODO: handle piping into file as well as other pipes like stderr
-    static const bool s_is_tty = isatty(STDOUT_FILENO);
-    if (!gDisableColors && s_is_tty)
-        return os << "\033[" << static_cast<std::size_t>(c) << "m";
-#endif
-    return os;
-}
+public:
+    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    SingleExecutor(const SingleExecutor &) = delete;
+    ~SingleExecutor() override;
+    void operator=(const SingleExecutor &) = delete;
 
-std::string toString(const Color& c)
-{
-    std::stringstream ss;
-    ss << c;
-    return ss.str();
-}
+    unsigned int check() override;
 
+private:
+    CppCheck &mCppcheck;
+};
+
+#endif // SINGLEEXECUTOR_H
