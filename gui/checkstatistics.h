@@ -24,6 +24,7 @@
 #include <QMap>
 #include <QObject>
 #include <QString>
+#include <QStringList>
 
 /// @addtogroup GUI
 /// @{

@@ -19,6 +19,8 @@
 #include "codeeditstylecontrols.h"
 
 #include <QColorDialog>
+#include <QDialog>
+#include <QVariant>
 
 class QWidget;
 

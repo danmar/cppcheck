@@ -27,12 +27,12 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <functional>
 #include <list>
-#include <memory>
 #include <string>
 #include <tuple>
 #include <type_traits>

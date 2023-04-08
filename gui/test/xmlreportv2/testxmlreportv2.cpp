@@ -21,6 +21,7 @@
 #include "erroritem.h"
 #include "xmlreportv2.h"
 
+#include <QList>
 #include <QtTest>
 
 void TestXmlReportV2::readXml() const

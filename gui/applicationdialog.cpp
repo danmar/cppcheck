@@ -24,7 +24,9 @@
 #include "ui_applicationdialog.h"
 
 #include <QDialogButtonBox>
+#include <QDir>
 #include <QFileDialog>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QPushButton>
 

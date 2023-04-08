@@ -26,18 +26,19 @@
 #include "checkmemoryleak.h"  // <- CheckMemoryLeak::memoryLeak
 #include "checknullpointer.h" // <- CheckNullPointer::isPointerDeRef
 #include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "errortypes.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <array>
 #include <cstddef>
 #include <iostream>
 #include <list>
-#include <memory>
 #include <utility>
 #include <vector>
 

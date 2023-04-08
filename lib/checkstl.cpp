@@ -19,7 +19,6 @@
 #include "checkstl.h"
 
 #include "astutils.h"
-#include "check.h"
 #include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
@@ -39,7 +38,6 @@
 #include <iterator>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <tuple>

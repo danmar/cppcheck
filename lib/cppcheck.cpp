@@ -48,7 +48,6 @@
 #include <exception>
 #include <fstream>
 #include <iostream> // <- TEMPORARY
-#include <memory>
 #include <new>
 #include <set>
 #include <sstream> // IWYU pragma: keep

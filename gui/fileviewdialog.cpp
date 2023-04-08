@@ -19,7 +19,9 @@
 #include "fileviewdialog.h"
 
 #include <QByteArray>
+#include <QDialogButtonBox>
 #include <QFile>
+#include <QIODevice>
 #include <QMessageBox>
 #include <QTextEdit>
 

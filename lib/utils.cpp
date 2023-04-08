@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <cctype>
 #include <iterator>
-#include <memory>
 #include <stack>
 #include <utility>
 

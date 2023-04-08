@@ -29,7 +29,6 @@
 #include "library.h"
 #include "path.h"
 #include "pathmatch.h"
-#include "preprocessor.h"
 #include "settings.h"
 #include "suppressions.h"
 #include "utils.h"
@@ -42,7 +41,6 @@
 #endif
 
 #include <algorithm>
-#include <atomic>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <functional>

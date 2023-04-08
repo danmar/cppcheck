@@ -41,7 +41,6 @@
 #include <initializer_list>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <set>
 #include <type_traits>
 #include <unordered_map>

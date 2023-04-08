@@ -21,6 +21,7 @@
 #include "library.h"
 #include "settings.h"
 #include "fixture.h"
+#include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"

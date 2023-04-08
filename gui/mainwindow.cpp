@@ -49,27 +49,48 @@
 
 #include <algorithm>
 #include <functional>
+#include <iterator>
 #include <list>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <QApplication>
 #include <QAction>
 #include <QActionGroup>
+#include <QByteArray>
+#include <QChar>
 #include <QCloseEvent>
+#include <QCoreApplication>
+#include <QDateTime>
 #include <QDebug>
+#include <QDialog>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QHBoxLayout>
 #include <QInputDialog>
+#include <QKeySequence>
+#include <QLabel>
+#include <QLineEdit>
+#include <QList>
+#include <QMap>
+#include <QMenu>
 #include <QMessageBox>
-#include <QRegularExpression>
-#include <QSettings>
-#include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+#include <QPushButton>
+#include <QRegularExpression>
+#include <QSettings>
+#include <QSize>
+#include <QTimer>
 #include <QTemporaryFile>
+#include <QToolBar>
+#include <QUrl>
+#include <QVariant>
+#include <Qt>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");

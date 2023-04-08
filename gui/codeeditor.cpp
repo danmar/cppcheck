@@ -20,8 +20,24 @@
 
 #include "codeeditorstyle.h"
 
+#include <QChar>
+#include <QColor>
+#include <QFont>
+#include <QFontMetrics>
+#include <QKeySequence>
+#include <QLatin1Char>
+#include <QList>
 #include <QPainter>
+#include <QPaintEvent>
+#include <QRect>
+#include <QRectF>
+#include <QRegularExpressionMatchIterator>
 #include <QShortcut>
+#include <QTextBlock>
+#include <QTextCursor>
+#include <QTextEdit>
+#include <QTextFormat>
+#include <QtCore>
 
 class QTextDocument;
 

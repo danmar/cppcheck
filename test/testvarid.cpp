@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "errortypes.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
@@ -26,8 +27,6 @@
 
 #include <sstream> // IWYU pragma: keep
 #include <string>
-
-struct InternalError;
 
 
 class TestVarID : public TestFixture {

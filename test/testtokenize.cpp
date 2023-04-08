@@ -17,6 +17,7 @@
  */
 
 #include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include "settings.h"
@@ -36,8 +37,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-
-struct InternalError;
 
 class TestTokenizer : public TestFixture {
 public:

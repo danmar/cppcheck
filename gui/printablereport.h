@@ -21,6 +21,8 @@
 
 #include "report.h"
 
+#include <QString>
+
 class ErrorItem;
 
 /// @addtogroup GUI

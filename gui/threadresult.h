@@ -29,7 +29,9 @@
 
 #include <QMutex>
 #include <QObject>
+#include <QString>
 #include <QStringList>
+#include <QtGlobal>
 
 class ErrorItem;
 

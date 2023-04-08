@@ -33,7 +33,6 @@
 #include <cstring>
 #include <iomanip>
 #include <limits>
-#include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 #include <utility>

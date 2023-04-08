@@ -24,6 +24,7 @@
 #include "fwdanalysis.h"
 #include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
@@ -34,14 +35,10 @@
 #include "valueflow.h"
 #include "vfvalue.h"
 
-#include "checkclass.h" // CheckClass::stl_containers_not_const
-
 #include <algorithm> // find_if()
 #include <cctype>
 #include <list>
 #include <map>
-#include <memory>
-#include <set>
 #include <sstream>
 #include <utility>
 #include <numeric>

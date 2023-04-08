@@ -20,6 +20,8 @@
 
 #include <utility>
 
+#include <QIODevice>
+
 Report::Report(QString filename) :
     QObject(),
     mFilename(std::move(filename))
