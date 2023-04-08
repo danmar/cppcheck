@@ -151,7 +151,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     severity = attr ? Severity::fromString(attr) : Severity::none;
 
     attr = errmsg->Attribute("cwe");
-    std::istringstream(attr ? attr : "0") >> cwe.id;
+    cwe.id = attr ? strToInt<unsigned short>(attr) : 0;
 
     attr = errmsg->Attribute("inconclusive");
     certainty = (attr && (std::strcmp(attr, "true") == 0)) ? Certainty::inconclusive : Certainty::normal;
@@ -163,7 +163,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     mVerboseMessage = attr ? attr : "";
 
     attr = errmsg->Attribute("hash");
-    std::istringstream(attr ? attr : "0") >> hash;
+    hash = attr ? strToInt<std::size_t>(attr) : 0;
 
     for (const tinyxml2::XMLElement *e = errmsg->FirstChildElement(); e; e = e->NextSiblingElement()) {
         if (std::strcmp(e->Name(),"location")==0) {
@@ -174,8 +174,8 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
 
             const char *file = strfile ? strfile : unknown;
             const char *info = strinfo ? strinfo : "";
-            const int line = strline ? std::atoi(strline) : 0;
-            const int column = strcolumn ? std::atoi(strcolumn) : 0;
+            const int line = strline ? strToInt<int>(strline) : 0;
+            const int column = strcolumn ? strToInt<int>(strcolumn) : 0;
             callStack.emplace_front(file, info, line, column);
         } else if (std::strcmp(e->Name(),"symbol")==0) {
             mSymbolNames += e->GetText();
@@ -301,26 +301,17 @@ void ErrorMessage::deserialize(const std::string &data)
 
     id = std::move(results[0]);
     severity = Severity::fromString(results[1]);
-    unsigned long long tmp = 0;
+    cwe.id = 0;
     if (!results[2].empty()) {
-        try {
-            tmp = MathLib::toULongNumber(results[2]);
-        }
-        catch (const InternalError&) {
-            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID");
-        }
-        if (tmp > std::numeric_limits<unsigned short>::max())
-            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - CWE ID is out of range");
+        std::string err;
+        if (!strToInt(results[2], cwe.id, &err))
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid CWE ID - " + err);
     }
-    cwe.id = static_cast<unsigned short>(tmp);
     hash = 0;
     if (!results[3].empty()) {
-        try {
-            hash = MathLib::toULongNumber(results[3]);
-        }
-        catch (const InternalError&) {
-            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash");
-        }
+        std::string err;
+        if (!strToInt(results[3], hash, &err))
+            throw InternalError(nullptr, "Internal Error: Deserialization of error message failed - invalid hash - " + err);
     }
     file0 = std::move(results[4]);
     mShortMessage = std::move(results[5]);
@@ -373,7 +364,7 @@ void ErrorMessage::deserialize(const std::string &data)
 
         // (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
 
-        ErrorMessage::FileLocation loc(substrings[3], MathLib::toLongNumber(substrings[0]), MathLib::toLongNumber(substrings[1]));
+        ErrorMessage::FileLocation loc(substrings[3], strToInt<int>(substrings[0]), strToInt<unsigned int>(substrings[1]));
         loc.setfile(std::move(substrings[2]));
         if (substrings.size() == 5)
             loc.setinfo(substrings[4]);

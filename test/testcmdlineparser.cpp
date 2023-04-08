@@ -125,8 +125,10 @@ private:
         TEST_CASE(fileListInvalid);
         TEST_CASE(inlineSuppr);
         TEST_CASE(jobs);
+        TEST_CASE(jobs2);
         TEST_CASE(jobsMissingCount);
         TEST_CASE(jobsInvalid);
+        TEST_CASE(jobsTooBig);
         TEST_CASE(maxConfigs);
         TEST_CASE(maxConfigsMissingCount);
         TEST_CASE(maxConfigsInvalid);
@@ -198,6 +200,28 @@ private:
         TEST_CASE(valueFlowMaxIterationsInvalid);
         TEST_CASE(valueFlowMaxIterationsInvalid2);
         TEST_CASE(valueFlowMaxIterationsInvalid3);
+        TEST_CASE(checksMaxTime);
+        TEST_CASE(checksMaxTime2);
+        TEST_CASE(checksMaxTimeInvalid);
+#ifdef THREADING_MODEL_FORK
+        TEST_CASE(loadAverage);
+        TEST_CASE(loadAverage2);
+        TEST_CASE(loadAverageInvalid);
+#endif
+        TEST_CASE(maxCtuDepth);
+        TEST_CASE(maxCtuDepthInvalid);
+        TEST_CASE(performanceValueflowMaxTime);
+        TEST_CASE(performanceValueflowMaxTimeInvalid);
+        TEST_CASE(performanceValueFlowMaxIfCount);
+        TEST_CASE(performanceValueFlowMaxIfCountInvalid);
+        TEST_CASE(templateMaxTime);
+        TEST_CASE(templateMaxTimeInvalid);
+        TEST_CASE(templateMaxTimeInvalid2);
+        TEST_CASE(typedefMaxTime);
+        TEST_CASE(typedefMaxTimeInvalid);
+        TEST_CASE(typedefMaxTimeInvalid2);
+        TEST_CASE(templateMaxTime);
+        TEST_CASE(templateMaxTime);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -850,7 +874,7 @@ private:
         const char * const argv[] = {"cppcheck", "--error-exitcode=", "file.cpp"};
         // Fails since exit code not given
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument must be an integer. Try something like '--error-exitcode=1'.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '--error-exitcode=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
     }
 
     void errorExitcodeStr() {
@@ -858,7 +882,7 @@ private:
         const char * const argv[] = {"cppcheck", "--error-exitcode=foo", "file.cpp"};
         // Fails since invalid exit code
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument must be an integer. Try something like '--error-exitcode=1'.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '--error-exitcode=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
     }
 
     void exitcodeSuppressionsOld() {
@@ -934,12 +958,21 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
+    void jobs2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-j3", "file.cpp"};
+        settings.jobs = 0;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(3, settings.jobs);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void jobsMissingCount() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-j", "file.cpp"};
         // Fails since -j is missing thread count
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '-j' is not a number.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
     }
 
     void jobsInvalid() {
@@ -947,7 +980,14 @@ private:
         const char * const argv[] = {"cppcheck", "-j", "e", "file.cpp"};
         // Fails since invalid count given for -j
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '-j' is not a number.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void jobsTooBig() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-j10001", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument for '-j' is allowed to be 10000 at max.\n", GET_REDIRECT_OUTPUT);
     }
 
     void maxConfigs() {
@@ -966,7 +1006,7 @@ private:
         const char * const argv[] = {"cppcheck", "--max-configs=", "file.cpp"};
         // Fails since --max-configs= is missing limit
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not a number.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
     }
 
     void maxConfigsInvalid() {
@@ -974,7 +1014,7 @@ private:
         const char * const argv[] = {"cppcheck", "--max-configs=e", "file.cpp"};
         // Fails since invalid count given for --max-configs=
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not a number.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
     }
 
     void maxConfigsTooSmall() {
@@ -1472,7 +1512,7 @@ private:
         const char * const argv[] = {"cppcheck", "--xml", "--xml-version=a", "file.cpp"};
         // FAils since unknown XML format version
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--xml-version' is not a number.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '--xml-version=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
     }
 
     void doc() {
@@ -1632,15 +1672,160 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=seven"};
         ASSERT(!defParser.parseFromArgs(2, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--valueflow-max-iteration' is invalid.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '--valueflow-max-iterations=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
     }
 
     void valueFlowMaxIterationsInvalid3() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--valueflow-max-iterations=-1"};
         ASSERT(!defParser.parseFromArgs(2, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--valueflow-max-iteration' needs to be at least 0.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '--valueflow-max-iterations=' is not valid - needs to be positive.\n", GET_REDIRECT_OUTPUT);
     }
+
+    void checksMaxTime() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--checks-max-time=12", "file.cpp"};
+        settings.checksMaxTime = SIZE_MAX;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(12, settings.checksMaxTime);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void checksMaxTime2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--checks-max-time=-1", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--checks-max-time=' is not valid - needs to be positive.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void checksMaxTimeInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--checks-max-time=one", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--checks-max-time=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+#ifdef THREADING_MODEL_FORK
+    void loadAverage() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-l", "12", "file.cpp"};
+        settings.loadAverage = 0;
+        ASSERT(defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS(12, settings.loadAverage);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void loadAverage2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-l12", "file.cpp"};
+        settings.loadAverage = 0;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(12, settings.loadAverage);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void loadAverageInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-l", "one", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '-l' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+#endif
+
+    void maxCtuDepth() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--max-ctu-depth=12", "file.cpp"};
+        settings.maxCtuDepth = 0;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(12, settings.maxCtuDepth);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void maxCtuDepthInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--max-ctu-depth=one", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--max-ctu-depth=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void performanceValueflowMaxTime() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--performance-valueflow-max-time=12", "file.cpp"};
+        settings.performanceValueFlowMaxTime = 0;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(12, settings.performanceValueFlowMaxTime);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void performanceValueflowMaxTimeInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--performance-valueflow-max-time=one", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--performance-valueflow-max-time=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void performanceValueFlowMaxIfCount() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--performance-valueflow-max-if-count=12", "file.cpp"};
+        settings.performanceValueFlowMaxIfCount = 0;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(12, settings.performanceValueFlowMaxIfCount);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void performanceValueFlowMaxIfCountInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--performance-valueflow-max-if-count=one", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--performance-valueflow-max-if-count=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void templateMaxTime() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--template-max-time=12", "file.cpp"};
+        settings.templateMaxTime = 0;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(12, settings.templateMaxTime);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void templateMaxTimeInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--template-max-time=one", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--template-max-time=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void templateMaxTimeInvalid2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--template-max-time=-1", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--template-max-time=' is not valid - needs to be positive.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void typedefMaxTime() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--typedef-max-time=12", "file.cpp"};
+        settings.typedefMaxTime = 0;
+        ASSERT(defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS(12, settings.typedefMaxTime);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void typedefMaxTimeInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--typedef-max-time=one", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--typedef-max-time=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void typedefMaxTimeInvalid2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--typedef-max-time=-1", "file.cpp"};
+        ASSERT(!defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--typedef-max-time=' is not valid - needs to be positive.\n", GET_REDIRECT_OUTPUT);
+    }
+
     void ignorepaths1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc", "file.cpp"};

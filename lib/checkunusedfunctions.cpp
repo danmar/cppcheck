@@ -442,7 +442,7 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
                 } else if (std::strcmp(e2->Name(),"functiondecl") == 0) {
                     const char* lineNumber = e2->Attribute("lineNumber");
                     if (lineNumber)
-                        decls[functionName] = Location(sourcefile, std::atoi(lineNumber));
+                        decls[functionName] = Location(sourcefile, strToInt<int>(lineNumber));
                 }
             }
         }

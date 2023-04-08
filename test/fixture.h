@@ -157,6 +157,7 @@ extern std::ostringstream output;
 #define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) {} catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_THROW_EQUALS_2( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.what()); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_NO_THROW( CMD ) do { try { CMD; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; } catch (const EXCEPTION&) {} catch (...) { assertThrow(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while (false)
