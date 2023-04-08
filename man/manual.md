@@ -957,6 +957,34 @@ Example usage:
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
 
+# Performance - Limit analysis
+
+## Limit preprocessor configurations
+
+For performance reasons it might be a good idea to limit preprocessor configurations to check.
+
+## Limit ValueFlow: max if count
+
+The command line option `--performance-valueflow-max-if-count` adjusts the max count for number of if in a function.
+
+When that limit is exceeded there is a limitation of data flow in that function. It is not drastic:
+ * Analysis of other functions are not affected.
+ * It's only for some specific data flow analysis, we have data flow analysis that is always executed.
+ * All checks are always executed. There can still be plenty of warnings in the limited function.
+
+There is data flow analysis that slows down exponentially when number of if increase. And the limit is intended to avoid that
+analysis time explodes.
+
+## GUI options
+
+In the GUI there are various options to limit analysis.
+
+In the GUI:
+ * Open the project dialog.
+ * In the "Analysis" tab there are several options.
+
+If you want to use these limitations on the command line also you can import the GUI project file with --project.
+
 # Cppcheck Premium
 
 ## Bug hunting

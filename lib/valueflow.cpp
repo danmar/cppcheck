@@ -8501,10 +8501,17 @@ static void valueFlowContainerSetTokValue(TokenList* tokenlist, const Settings* 
     }
 }
 
+static const Scope* getFunctionScope(const Scope* scope) {
+    while (scope && scope->type != Scope::ScopeType::eFunction)
+        scope = scope->nestedIn;
+    return scope;
+}
+
 static void valueFlowContainerSize(TokenList* tokenlist,
                                    SymbolDatabase* symboldatabase,
                                    ErrorLogger* /*errorLogger*/,
-                                   const Settings* settings)
+                                   const Settings* settings,
+                                   const std::set<const Scope*>& skippedFunctions)
 {
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
@@ -8515,6 +8522,8 @@ static void valueFlowContainerSize(TokenList* tokenlist,
         if (!var->valueType() || !var->valueType()->container)
             continue;
         if (!astIsContainer(var->nameToken()))
+            continue;
+        if (skippedFunctions.count(getFunctionScope(var->scope())))
             continue;
 
         bool known = true;
@@ -9077,7 +9086,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     const std::uint64_t stopTime = getValueFlowStopTime(settings);
 
     std::set<const Scope*> skippedFunctions;
-    if (settings->performanceValueFlowMaxIfCount < 1000) {
+    if (settings->performanceValueFlowMaxIfCount > 0) {
         for (const Scope* functionScope: symboldatabase->functionScopes) {
             int countIfScopes = 0;
             std::vector<const Scope*> scopes{functionScope};
@@ -9093,15 +9102,17 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
             if (countIfScopes > settings->performanceValueFlowMaxIfCount) {
                 skippedFunctions.emplace(functionScope);
 
-                const std::string& functionName = functionScope->className;
-                const std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(functionScope->bodyStart, tokenlist));
-                const ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::information,
-                                          "ValueFlow analysis is limited in " + functionName + " because if-count in function " +
-                                          std::to_string(countIfScopes) + " exceeds limit " +
-                                          std::to_string(settings->performanceValueFlowMaxIfCount) + ". The limit can be adjusted with "
-                                          "--performance-valueflow-max-if-count. Increasing the if-count limit will likely increase the "
-                                          "analysis time.", "performanceValueflowMaxIfCountExceeded", Certainty::normal);
-                errorLogger->reportErr(errmsg);
+                if (settings->severity.isEnabled(Severity::information)) {
+                    const std::string& functionName = functionScope->className;
+                    const std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(functionScope->bodyStart, tokenlist));
+                    const ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::information,
+                                              "ValueFlow analysis is limited in " + functionName + " because if-count in function " +
+                                              std::to_string(countIfScopes) + " exceeds limit " +
+                                              std::to_string(settings->performanceValueFlowMaxIfCount) + ". The limit can be adjusted with "
+                                              "--performance-valueflow-max-if-count. Increasing the if-count limit will likely increase the "
+                                              "analysis time.", "performanceValueflowMaxIfCountExceeded", Certainty::normal);
+                    errorLogger->reportErr(errmsg);
+                }
             }
         }
     }
@@ -9159,8 +9170,8 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
                 valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
             if (std::time(nullptr) < stopTime)
                 valueFlowIteratorInfer(tokenlist, settings);
-            if (std::time(nullptr) < stopTime && skippedFunctions.empty())
-                valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
+            if (std::time(nullptr) < stopTime)
+                valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
             if (std::time(nullptr) < stopTime)
                 valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
         }

@@ -164,6 +164,8 @@ private:
         TEST_CASE(valueFlowImpossibleMinMax);
         TEST_CASE(valueFlowImpossibleUnknownConstant);
         TEST_CASE(valueFlowContainerEqual);
+
+        TEST_CASE(performanceIfCount);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -7941,6 +7943,33 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 1));
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+    }
+
+    void performanceIfCount() {
+        Settings s(settings);
+        s.performanceValueFlowMaxIfCount = 1;
+
+        const char *code;
+
+        code = "int f() {\n"
+               "  if (x>0){}\n"
+               "  if (y>0){}\n"
+               "  int a = 14;\n"
+               "  return a+1;\n"
+               "}\n";
+        ASSERT_EQUALS(0U, tokenValues(code, "+", &s).size());
+        ASSERT_EQUALS(1U, tokenValues(code, "+").size());
+
+        // Do not skip all functions
+        code = "void g(int i) {\n"
+               "  if (i == 1) {}\n"
+               "  if (i == 2) {}\n"
+               "}\n"
+               "int f() {\n"
+               "  std::vector<int> v;\n"
+               "  return v.front();\n"
+               "}\n";
+        ASSERT_EQUALS(1U, tokenValues(code, "v .", &s).size());
     }
 };
 

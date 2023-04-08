@@ -12,4 +12,4 @@ release notes for cppcheck-2.11
     - `constVariable`
     - `constVariableReference`
     - `constVariablePointer`
-
+- Limit valueflow analysis in function if the "if" count is high. By default max limit is 100. Limit can be tweaked with --performance-valueflow-max-if-count
