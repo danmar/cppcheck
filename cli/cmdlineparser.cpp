@@ -254,6 +254,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings.checkConfiguration = true;
 
+            // Check code exhaustively
+            else if (std::strcmp(argv[i], "--check-level=exhaustive") == 0)
+                mSettings.setCheckLevelExhaustive();
+
+            // Check code with normal analysis
+            else if (std::strcmp(argv[i], "--check-level=normal") == 0)
+                mSettings.setCheckLevelNormal();
+
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings.checkLibrary = true;
@@ -1093,6 +1101,13 @@ void CmdLineParser::printHelp()
         "                            execute clang/clang-tidy/addons.\n"
         "    --check-config       Check cppcheck configuration. The normal code\n"
         "                         analysis is disabled by this flag.\n"
+        "    --check-level=<level>\n"
+        "                         Configure how much checking you want:\n"
+        "                          * normal: Cppcheck uses some compromises in the checking so\n"
+        "                            the checking will finish in reasonable time.\n"
+        "                          * exhaustive: deeper analysis that you choose when you can\n"
+        "                            wait.\n"
+        "                         The default choice is 'normal'.\n"
         "    --check-library      Show information messages when library files have\n"
         "                         incomplete info.\n"
         "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
@@ -1215,12 +1230,6 @@ void CmdLineParser::printHelp()
     "                         is 2. A larger value will mean more errors can be found\n"
     "                         but also means the analysis will be slower.\n"
     "    --output-file=<file> Write results to file, rather than standard error.\n"
-    "    --performance-valueflow-max-if-count=<limit>\n"
-    "                         If you have many conditional scopes in a function then\n"
-    "                         the number of possible control flow paths through that\n"
-    "                         function explodes and that can lead to very long analysis\n"
-    "                         time. Valueflow is limited in functions that have more\n"
-    "                         than <limit> conditional scopes.\n"
     "    --platform=<type>, --platform=<file>\n"
     "                         Specifies platform specific types and sizes. The\n"
     "                         available builtin platforms are:\n"
