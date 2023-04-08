@@ -17,13 +17,13 @@
  */
 
 
+#include "errortypes.h"
 #include "mathlib.h"
 #include "fixture.h"
 
 #include <limits>
 #include <string>
 
-struct InternalError;
 
 
 class TestMathLib : public TestFixture {

@@ -21,6 +21,7 @@
 
 #include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -33,7 +34,6 @@
 #include <functional>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream> // IWYU pragma: keep
 #include <unordered_set>

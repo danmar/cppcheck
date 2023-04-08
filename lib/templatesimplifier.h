@@ -327,13 +327,13 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr, bool isTemplate = true);
+    bool simplifyCalculations(Token* frontToken = nullptr, const Token *backToken = nullptr, bool isTemplate = true);
 
     /** Simplify template instantiation arguments.
      * @param start first token of arguments
      * @param end token following last argument token
      */
-    void simplifyTemplateArgs(Token *start, Token *end);
+    void simplifyTemplateArgs(Token *start, const Token *end);
 
 private:
     /**

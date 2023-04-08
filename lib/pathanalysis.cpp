@@ -24,7 +24,6 @@
 #include "vfvalue.h"
 
 #include <algorithm>
-#include <memory>
 #include <string>
 #include <tuple>
 #include <type_traits>

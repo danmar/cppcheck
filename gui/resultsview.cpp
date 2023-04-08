@@ -33,17 +33,37 @@
 
 #include "ui_resultsview.h"
 
+#include <QAbstractItemModel>
+#include <QApplication>
+#include <QByteArray>
 #include <QClipboard>
 #include <QDate>
+#include <QDateTime>
+#include <QDialog>
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QIODevice>
+#include <QList>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPoint>
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
 #include <QPrinter>
+#include <QProgressBar>
 #include <QSettings>
+#include <QSplitter>
+#include <QStandardItem>
 #include <QStandardItemModel>
+#include <QTextDocument>
+#include <QTextEdit>
+#include <QTextStream>
 #include <QVariant>
+#include <QVariantMap>
+#include <Qt>
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),

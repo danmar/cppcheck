@@ -13,22 +13,39 @@ jobs:
     runs-on: ubuntu-22.04
 
     container:
-      image: "debian:unstable" # use latest debian image to get latest include-what-you-get
+      image: "archlinux:latest"
 
     steps:
       - uses: actions/checkout@v3
 
       # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
-      - name: Install missing software
+      - name: Install missing software on debian/ubuntu
+        if: false
         run: |
           apt-get update
           apt-get install -y cmake g++ make libpcre3-dev
           apt-get install -y qtbase5-dev qttools5-dev libqt5charts5-dev
           apt-get install -y wget iwyu
+          ln -s ../x86_64-linux-gnu/qt5 /usr/include/qt
+
+      - name: Install missing software on archlinux
+        run: |
+          set -x
+          pacman -Sy
+          pacman -S cmake make gcc qt5-base qt5-tools qt5-charts pcre wget --noconfirm
+          pacman-key --init
+          pacman-key --recv-key FBA220DFC880C036 --keyserver keyserver.ubuntu.com
+          pacman-key --lsign-key FBA220DFC880C036
+          pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' --noconfirm
+          echo "[chaotic-aur]" >> /etc/pacman.conf
+          echo "Include = /etc/pacman.d/chaotic-mirrorlist" >> /etc/pacman.conf
+          pacman -Sy
+          pacman -S include-what-you-use --noconfirm
+          ln -s iwyu-tool /usr/sbin/iwyu_tool
 
       - name: Prepare CMake
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off
 
       - name: Prepare CMake dependencies
         run: |
@@ -46,26 +63,27 @@ jobs:
       - name: Build Qt mappings
         run: |
           wget https://raw.githubusercontent.com/include-what-you-use/include-what-you-use/master/mapgen/iwyu-mapgen-qt.py
-          python3 iwyu-mapgen-qt.py /usr/include/x86_64-linux-gnu/qt5/ > qt5.imp
+          python3 iwyu-mapgen-qt.py /usr/include/qt/ > qt5.imp
 
-      # TODO: the mapping file causes a massive slowdown so we cannot use it at the moment.
-      #       add "-Xiwyu --mapping_file=qt5.imp" at the end of the whole command if we can use them.
       - name: iwyu_tool
         run: |
-          # do not fail for now so the output is being saved
-          iwyu_tool -p cmake.output -j $(nproc) -- -w > iwyu.log || true
+          PWD=$(pwd)
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --mapping_file=$PWD/qt5.imp > iwyu.log
 
       - uses: actions/upload-artifact@v3
+        if: success() || failure()
         with:
           name: Compilation Database
           path: ./cmake.output/compile_commands.json
 
       - uses: actions/upload-artifact@v3
+        if: success() || failure()
         with:
           name: Qt Mappings
           path: ./qt5.imp
 
       - uses: actions/upload-artifact@v3
+        if: success() || failure()
         with:
           name: Logs (include-what-you-use)
           path: ./*.log

@@ -18,14 +18,12 @@
 
 #include "threadexecutor.h"
 
-#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "importproject.h"
 #include "settings.h"
-#include "suppressions.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -38,6 +36,8 @@
 #include <system_error>
 #include <utility>
 #include <vector>
+
+enum class Color;
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : Executor(files, settings, errorLogger)

@@ -20,6 +20,12 @@
 
 #include "ui_libraryeditargdialog.h"
 
+#include <QCheckBox>
+#include <QComboBox>
+#include <QLineEdit>
+#include <QSpinBox>
+#include <QStringList>
+
 class QWidget;
 
 LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &arg) :

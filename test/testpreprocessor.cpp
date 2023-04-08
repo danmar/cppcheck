@@ -29,7 +29,6 @@
 #include "fixture.h"
 #include "helpers.h"
 
-#include <atomic>
 #include <cstring>
 #include <list>
 #include <map>

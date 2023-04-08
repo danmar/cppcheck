@@ -41,7 +41,6 @@
 #include <initializer_list>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <set>
 #include <type_traits>
 #include <unordered_map>
@@ -2408,9 +2407,6 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         conclusive = true;
         if (indirect > 0) {
             if (arg->isPointer() && !(arg->valueType() && arg->valueType()->isConst(indirect)))
-                return true;
-            // If const is applied to the pointer, then the value can still be modified
-            if (Token::simpleMatch(arg->typeEndToken(), "* const"))
                 return true;
             if (arg->isArray() || (!arg->isPointer() && (!arg->valueType() || arg->valueType()->type == ValueType::UNKNOWN_TYPE)))
                 return true;

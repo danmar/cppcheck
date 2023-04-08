@@ -23,7 +23,10 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 
+#include <numeric>
+
 #include <QFile>
+#include <QMutexLocker>
 
 ThreadResult::ThreadResult() : QObject(), ErrorLogger(), mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
 {

@@ -18,7 +18,6 @@
 
 #include "fixture.h"
 
-#include "color.h"
 #include "errortypes.h"
 #include "options.h"
 #include "redirect.h"

@@ -2409,7 +2409,7 @@ static Token *skipTernaryOp(Token *tok, const Token *backToken)
     return tok;
 }
 
-void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
+void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end)
 {
     // start could be erased so use the token before start if available
     Token * first = (start && start->previous()) ? start->previous() : mTokenList.front();
@@ -2599,7 +2599,7 @@ static bool validTokenEnd(bool bounded, const Token *tok, const Token *backToken
 
 // TODO: This is not the correct class for simplifyCalculations(), so it
 // should be moved away.
-bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToken, bool isTemplate)
+bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *backToken, bool isTemplate)
 {
     bool ret = false;
     const bool bounded = frontToken || backToken;

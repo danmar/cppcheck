@@ -21,14 +21,21 @@
 
 #include "codeeditorstyle.h"
 
+#include <QColor>
 #include <QDialog>
+#include <QFont>
+#include <QObject>
+#include <QString>
 
 class CodeEditor;
 class SelectColorButton;
 class SelectFontWeightCombo;
-class QObject;
 class QPushButton;
 class QWidget;
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+class QStringList;
+#endif
 
 class StyleEditDialog : public QDialog {
     Q_OBJECT

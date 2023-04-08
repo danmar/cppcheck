@@ -503,7 +503,7 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
         return false;
     if (value.isIteratorValue() && !Token::Match(parent, "+|-"))
         return false;
-    if (value.isTokValue() && (!parent->isComparisonOp() || value.tokvalue->tokType() != Token::eString))
+    if (value.isTokValue() && (!parent->isComparisonOp() || !Token::Match(value.tokvalue, "{|%str%")))
         return false;
     return true;
 }
@@ -886,6 +886,35 @@ static void setTokenValue(Token* tok,
                         result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
                         if (error)
                             continue;
+                    } else if (value1.isTokValue() && value2.isTokValue() &&
+                               (astIsContainer(parent->astOperand1()) || astIsContainer(parent->astOperand2()))) {
+                        const Token* tok1 = value1.tokvalue;
+                        const Token* tok2 = value2.tokvalue;
+                        bool equal = false;
+                        if (Token::Match(tok1, "%str%") && Token::Match(tok2, "%str%")) {
+                            equal = tok1->str() == tok2->str();
+                        } else if (Token::simpleMatch(tok1, "{") && Token::simpleMatch(tok2, "{")) {
+                            std::vector<const Token*> args1 = getArguments(tok1);
+                            std::vector<const Token*> args2 = getArguments(tok2);
+                            if (args1.size() == args2.size()) {
+                                if (!std::all_of(args1.begin(), args1.end(), std::mem_fn(&Token::hasKnownIntValue)))
+                                    continue;
+                                if (!std::all_of(args2.begin(), args2.end(), std::mem_fn(&Token::hasKnownIntValue)))
+                                    continue;
+                                equal = std::equal(args1.begin(),
+                                                   args1.end(),
+                                                   args2.begin(),
+                                                   [&](const Token* atok, const Token* btok) {
+                                    return atok->values().front().intvalue ==
+                                    btok->values().front().intvalue;
+                                });
+                            } else {
+                                equal = false;
+                            }
+                        } else {
+                            continue;
+                        }
+                        result.intvalue = parent->str() == "==" ? equal : !equal;
                     } else {
                         continue;
                     }
@@ -1999,7 +2028,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
                                          ValueFlow::Value value,
-                                         TokenList* const tokenlist,
+                                         const TokenList* const tokenlist,
                                          const Settings* settings,
                                          SourceLocation loc = SourceLocation::current())
 {
@@ -2015,7 +2044,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
                                          std::list<ValueFlow::Value> values,
-                                         TokenList* const tokenlist,
+                                         const TokenList* const tokenlist,
                                          const Settings* settings,
                                          SourceLocation loc = SourceLocation::current())
 {
@@ -2044,7 +2073,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
 static Analyzer::Result valueFlowForwardRecursive(Token* top,
                                                   const Token* exprTok,
                                                   std::list<ValueFlow::Value> values,
-                                                  TokenList* const tokenlist,
+                                                  const TokenList* const tokenlist,
                                                   const Settings* settings,
                                                   SourceLocation loc = SourceLocation::current())
 {
@@ -2062,7 +2091,7 @@ static void valueFlowReverse(Token* tok,
                              const Token* const endToken,
                              const Token* const varToken,
                              std::list<ValueFlow::Value> values,
-                             TokenList* tokenlist,
+                             const TokenList* tokenlist,
                              const Settings* settings,
                              SourceLocation loc = SourceLocation::current())
 {
@@ -2074,7 +2103,7 @@ static void valueFlowReverse(Token* tok,
 }
 
 // Deprecated
-static void valueFlowReverse(TokenList* tokenlist,
+static void valueFlowReverse(const TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
@@ -6970,7 +6999,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
     }
 }
 
-static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, TokenList* tokenlist, const Settings* settings)
+static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, const TokenList* tokenlist, const Settings* settings)
 {
     const Token *vartok = nullptr;
     for (const Token *tok = fortok; tok; tok = tok->next()) {
@@ -7287,7 +7316,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist,
     }
 }
 
-static void valueFlowInjectParameter(TokenList* tokenlist,
+static void valueFlowInjectParameter(const TokenList* tokenlist,
                                      const Settings* settings,
                                      const Variable* arg,
                                      const Scope* functionScope,
@@ -7698,7 +7727,7 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
     });
 }
 
-static std::vector<Token*> findAllUsages(const Variable* var, Token* start)
+static std::vector<Token*> findAllUsages(const Variable* var, Token* start) // cppcheck-suppress constParameterPointer // FP
 {
     std::vector<Token*> result;
     const Scope* scope = var->scope();
@@ -8472,10 +8501,17 @@ static void valueFlowContainerSetTokValue(TokenList* tokenlist, const Settings* 
     }
 }
 
+static const Scope* getFunctionScope(const Scope* scope) {
+    while (scope && scope->type != Scope::ScopeType::eFunction)
+        scope = scope->nestedIn;
+    return scope;
+}
+
 static void valueFlowContainerSize(TokenList* tokenlist,
                                    SymbolDatabase* symboldatabase,
                                    ErrorLogger* /*errorLogger*/,
-                                   const Settings* settings)
+                                   const Settings* settings,
+                                   const std::set<const Scope*>& skippedFunctions)
 {
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
@@ -8486,6 +8522,8 @@ static void valueFlowContainerSize(TokenList* tokenlist,
         if (!var->valueType() || !var->valueType()->container)
             continue;
         if (!astIsContainer(var->nameToken()))
+            continue;
+        if (skippedFunctions.count(getFunctionScope(var->scope())))
             continue;
 
         bool known = true;
@@ -8684,7 +8722,7 @@ struct ContainerConditionHandler : ConditionHandler {
     }
 };
 
-static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowDynamicBufferSize(const TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
 {
     auto getBufferSizeFromAllocFunc = [&](const Token* funcTok) -> MathLib::bigint {
         MathLib::bigint sizeValue = -1;
@@ -9048,7 +9086,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     const std::uint64_t stopTime = getValueFlowStopTime(settings);
 
     std::set<const Scope*> skippedFunctions;
-    if (settings->performanceValueFlowMaxIfCount < 1000) {
+    if (settings->performanceValueFlowMaxIfCount > 0) {
         for (const Scope* functionScope: symboldatabase->functionScopes) {
             int countIfScopes = 0;
             std::vector<const Scope*> scopes{functionScope};
@@ -9064,15 +9102,17 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
             if (countIfScopes > settings->performanceValueFlowMaxIfCount) {
                 skippedFunctions.emplace(functionScope);
 
-                const std::string& functionName = functionScope->className;
-                const std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(functionScope->bodyStart, tokenlist));
-                const ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::information,
-                                          "ValueFlow analysis is limited in " + functionName + " because if-count in function " +
-                                          std::to_string(countIfScopes) + " exceeds limit " +
-                                          std::to_string(settings->performanceValueFlowMaxIfCount) + ". The limit can be adjusted with "
-                                          "--performance-valueflow-max-if-count. Increasing the if-count limit will likely increase the "
-                                          "analysis time.", "performanceValueflowMaxIfCountExceeded", Certainty::normal);
-                errorLogger->reportErr(errmsg);
+                if (settings->severity.isEnabled(Severity::information)) {
+                    const std::string& functionName = functionScope->className;
+                    const std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(functionScope->bodyStart, tokenlist));
+                    const ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::information,
+                                              "ValueFlow analysis is limited in " + functionName + " because if-count in function " +
+                                              std::to_string(countIfScopes) + " exceeds limit " +
+                                              std::to_string(settings->performanceValueFlowMaxIfCount) + ". The limit can be adjusted with "
+                                              "--performance-valueflow-max-if-count. Increasing the if-count limit will likely increase the "
+                                              "analysis time.", "performanceValueflowMaxIfCountExceeded", Certainty::normal);
+                    errorLogger->reportErr(errmsg);
+                }
             }
         }
     }
@@ -9130,8 +9170,8 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
                 valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
             if (std::time(nullptr) < stopTime)
                 valueFlowIteratorInfer(tokenlist, settings);
-            if (std::time(nullptr) < stopTime && skippedFunctions.empty())
-                valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
+            if (std::time(nullptr) < stopTime)
+                valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
             if (std::time(nullptr) < stopTime)
                 valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
         }

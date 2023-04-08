@@ -21,7 +21,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errortypes.h"
 
 #include <cstddef>
 #include <istream>
@@ -35,6 +34,7 @@
 
 class Tokenizer;
 class ErrorMessage;
+enum class Certainty;
 
 /** @brief class for handling suppressions */
 class CPPCHECKLIB Suppressions {

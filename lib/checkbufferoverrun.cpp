@@ -26,6 +26,7 @@
 #include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -37,7 +38,6 @@
 #include <cstdlib>
 #include <functional>
 #include <iterator>
-#include <memory>
 #include <numeric> // std::accumulate
 #include <sstream>
 #include <tinyxml2.h>

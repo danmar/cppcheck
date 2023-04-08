@@ -20,10 +20,11 @@
 #define STATSDIALOG_H
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
 
 class ProjectFile;
 class CheckStatistics;
-class QObject;
 class QWidget;
 namespace Ui {
     class StatsDialog;

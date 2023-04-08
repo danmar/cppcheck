@@ -19,7 +19,9 @@
 #ifndef FILELIST_H
 #define FILELIST_H
 
+#include <QFileInfo>
 #include <QFileInfoList>
+#include <QString>
 #include <QStringList>
 
 /**

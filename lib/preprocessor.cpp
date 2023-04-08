@@ -23,6 +23,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "path.h"
+#include "platform.h"
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
@@ -31,7 +32,6 @@
 #include <array>
 #include <cstddef>
 #include <iterator> // back_inserter
-#include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 

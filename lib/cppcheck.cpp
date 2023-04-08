@@ -48,7 +48,6 @@
 #include <exception>
 #include <fstream>
 #include <iostream> // <- TEMPORARY
-#include <memory>
 #include <new>
 #include <set>
 #include <sstream> // IWYU pragma: keep
@@ -1426,7 +1425,7 @@ void CppCheck::executeAddons(const std::string& dumpFile)
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
         executeAddons(f);
-        if (!mSettings.dump && mSettings.buildDir.empty())
+        if (!mSettings.dump)
             std::remove(dumpFile.c_str());
     }
 }
@@ -1846,6 +1845,11 @@ void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &file
     if (mSettings.buildDir.empty()) {
         for (const auto& f: files) {
             const std::string &dumpFileName = getDumpFileName(mSettings, f.first);
+            const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
+            std::remove(ctuInfoFileName.c_str());
+        }
+        for (const auto& fs: mSettings.project.fileSettings) {
+            const std::string &dumpFileName = getDumpFileName(mSettings, fs.filename);
             const std::string &ctuInfoFileName = getCtuInfoFileName(dumpFileName);
             std::remove(ctuInfoFileName.c_str());
         }

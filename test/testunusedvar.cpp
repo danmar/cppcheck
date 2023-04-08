@@ -24,8 +24,13 @@
 #include "tokenize.h"
 
 #include <list>
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
+#include <vector>
+
+#include <simplecpp.h>
 
 class TestUnusedVar : public TestFixture {
 public:

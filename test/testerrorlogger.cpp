@@ -25,7 +25,6 @@
 
 #include <iosfwd>
 #include <list>
-#include <memory>
 #include <string>
 
 #include <tinyxml2.h>

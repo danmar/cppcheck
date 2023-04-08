@@ -2,6 +2,8 @@
 #define COMPLIANCEREPORTDIALOG_H
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
 
 namespace Ui {
     class ComplianceReportDialog;
