@@ -964,6 +964,7 @@ namespace {
                 to->next()->column(to->column());
                 to = to->next();
                 to->isSimplifiedTypedef(true);
+                to->isExternC(from->isExternC());
             }
             return to;
         }
