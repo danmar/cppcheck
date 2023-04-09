@@ -1478,7 +1478,7 @@ void CheckOther::checkConstVariable()
                             else
                                 opTok = opTok->astOperand2();
                         }
-                        if (opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
+                        if (opTok && opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
                             continue;
                     } else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                         bool inconclusive{};

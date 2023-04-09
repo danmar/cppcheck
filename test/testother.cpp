@@ -3486,6 +3486,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str()); // don't crash
 
+        check("void f(int& i) {\n"
+              "    int& r = i;\n"
+              "    if (!&r) {}\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'r' can be declared as reference to const\n", "", errout.str()); // don't crash
+
         check("class C;\n" // #11646
               "void g(const C* const p);\n"
               "void f(C* c) {\n"
