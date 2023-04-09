@@ -957,7 +957,26 @@ Example usage:
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
 
-# Performance - Limit analysis
+# Check Level
+
+## Normal
+
+The "normal" check level is chosen by default. Our aim is that this checking level will provide an effective checking in "reasonable" time.
+
+The "normal" check level should be useful during active development:
+ * checking files while you edit them.
+ * block changes to the repo
+ * etc
+
+## Exhaustive
+
+When you can wait longer for the results you can enable the "exhaustive" checking, by using the option `--check-level=exhaustive`.
+
+Exhaustive checking level should be useful for scenarios where you can wait for results. For instance:
+ * nightly builds
+ * etc
+
+# Speeding up analysis
 
 ## Limit preprocessor configurations
 
