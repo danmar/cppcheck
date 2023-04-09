@@ -6350,7 +6350,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 varvt.reference = Reference::LValue;
             if (isconst) {
                 if (varvt.pointer && varvt.reference != Reference::None)
-                    varvt.constness |= 2;
+                    varvt.constness |= (1 << varvt.pointer);
                 else
                     varvt.constness |= 1;
             }
