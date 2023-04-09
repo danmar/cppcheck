@@ -250,7 +250,7 @@ public:
     int performanceValueFlowMaxTime;
 
     /** @brief --performance-valueflow-max-if-count=C */
-    int performanceValueFlowMaxIfCount = 100;
+    int performanceValueFlowMaxIfCount;
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
@@ -437,6 +437,9 @@ public:
     bool useSingleJob() const {
         return jobs == 1;
     }
+
+    void setCheckLevelExhaustive();
+    void setCheckLevelNormal();
 
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups);
