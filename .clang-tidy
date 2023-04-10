@@ -63,7 +63,8 @@ Checks: >
         -modernize-replace-auto-ptr,
         -readability-identifier-naming,
         -portability-simd-intrinsics,
-        -misc-use-anonymous-namespace
+        -misc-use-anonymous-namespace,
+        cert-err34-c
 WarningsAsErrors: '*'
 HeaderFilterRegex: '(cli|gui|lib|oss-fuzz|test|triage)\/[a-z]+\.h'
 CheckOptions:
