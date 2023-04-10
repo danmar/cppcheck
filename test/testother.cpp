@@ -653,12 +653,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void zeroDiv18() {
+    void zeroDiv18()
+    {
         check("int f(int x, int y) {\n"
-                "    if (x == y) {}\n"
-                "    return 1 / (x-y);\n"
-                "}\n");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==y' is redundant or there is division by zero at line 3.\n", errout.str());
+              "    if (x == y) {}\n"
+              "    return 1 / (x-y);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==y' is redundant or there is division by zero at line 3.\n",
+            errout.str());
     }
 
     void zeroDivCond() {

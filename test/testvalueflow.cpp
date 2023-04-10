@@ -5565,7 +5565,6 @@ private:
         ASSERT_EQUALS(true, values.front().isIntValue());
         ASSERT_EQUALS(true, values.front().isPossible());
 
-
         code = "void f(bool b, int i, int j) {\n"
                "    if (b || i == j) {} else {\n"
                "        if (i != j) {}\n"
