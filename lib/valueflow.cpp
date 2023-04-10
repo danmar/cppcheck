@@ -76,6 +76,7 @@
  */
 
 #include "valueflow.h"
+#include "valueflownormal.h"
 
 #include "analyzer.h"
 #include "astutils.h"
@@ -3280,37 +3281,13 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
 
 enum class LifetimeCapture { Undefined, ByValue, ByReference };
 
-static std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
-{
-    std::string result;
-    if (!val)
-        return "object";
-    switch (val->lifetimeKind) {
-    case ValueFlow::Value::LifetimeKind::Lambda:
-        result = "lambda";
-        break;
-    case ValueFlow::Value::LifetimeKind::Iterator:
-        result = "iterator";
-        break;
-    case ValueFlow::Value::LifetimeKind::Object:
-    case ValueFlow::Value::LifetimeKind::SubObject:
-    case ValueFlow::Value::LifetimeKind::Address:
-        if (astIsPointer(tok))
-            result = "pointer";
-        else
-            result = "object";
-        break;
-    }
-    return result;
-}
-
 std::string ValueFlow::lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ErrorPath &errorPath)
 {
     const Token *tokvalue = val ? val->tokvalue : nullptr;
     const Variable *tokvar = tokvalue ? tokvalue->variable() : nullptr;
     const Token *vartok = tokvar ? tokvar->nameToken() : nullptr;
     const bool classVar = tokvar ? (!tokvar->isLocal() && !tokvar->isArgument() && !tokvar->isGlobal()) : false;
-    std::string type = lifetimeType(tok, val);
+    std::string type = ValueFlowNormal::lifetimeType(tok, val);
     std::string msg = type;
     if (vartok) {
         if (!classVar)
@@ -4404,7 +4381,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                     ls.inconclusive = inconclusive;
                     ls.forward = false;
                     ls.errorPath = v.errorPath;
-                    ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
+                    ls.errorPath.emplace_front(returnTok, "Return " + ValueFlowNormal::lifetimeType(returnTok, &v) + ".");
                     int thisIndirect = v.lifetimeScope == ValueFlow::Value::LifetimeScope::ThisValue ? 0 : 1;
                     if (derefShared(memtok->astParent()))
                         thisIndirect--;
@@ -4423,7 +4400,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                 ls.forward = false;
                 ls.inconclusive = inconclusive;
                 ls.errorPath = v.errorPath;
-                ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
+                ls.errorPath.emplace_front(returnTok, "Return " + ValueFlowNormal::lifetimeType(returnTok, &v) + ".");
                 if (!v.isArgumentLifetimeValue() && (var->isReference() || var->isRValueReference())) {
                     update |= ls.byRef(tok->next(), tokenlist, errorLogger, settings);
                 } else if (v.isArgumentLifetimeValue()) {
@@ -9066,6 +9043,9 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->clearValueFlow();
+
+    ValueFlowNormal::setValues(tokenlist, symboldatabase, errorLogger, settings);
+    return;
 
     valueFlowEnumValue(symboldatabase, settings);
     valueFlowNumber(tokenlist, settings);

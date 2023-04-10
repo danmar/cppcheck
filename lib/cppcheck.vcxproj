@@ -104,6 +104,7 @@
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="valueflow.cpp" />
+    <ClCompile Include="valueflownormal.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
@@ -175,6 +176,7 @@
     <ClInclude Include="tokenrange.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="valueflow.h" />
+    <ClInclude Include="valueflownormal.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
     <ClInclude Include="vfvalue.h" />
