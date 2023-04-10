@@ -5452,6 +5452,7 @@ private:
 
     void valueFlowConditionExpressions() {
         const char* code;
+        std::list<ValueFlow::Value> values;
 
         // opposite condition
         code = "void f(int i, int j) {\n"
@@ -5558,7 +5559,12 @@ private:
                "        if (i != j) {}\n"
                "    }\n"
                "}\n";
-        ASSERT_EQUALS(true, removeImpossible(tokenValues(code, "!=")).empty());
+        values = removeImpossible(tokenValues(code, "!="));
+        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(0, values.front().intvalue);
+        ASSERT_EQUALS(true, values.front().isIntValue());
+        ASSERT_EQUALS(true, values.front().isPossible());
+
 
         code = "void f(bool b, int i, int j) {\n"
                "    if (b || i == j) {} else {\n"

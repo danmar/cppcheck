@@ -148,7 +148,7 @@ struct Interval {
                 result.setMinValue(minValue->intvalue + 1, minValue);
             if (minValue->isPossible() && minValue->bound == ValueFlow::Value::Bound::Lower)
                 result.setMinValue(minValue->intvalue, minValue);
-            if (minValue->isKnown())
+            if (!minValue->isImpossible() && minValue->bound == ValueFlow::Value::Bound::Point && std::count_if(values.begin(), values.end(), predicate) == 1)
                 return Interval::fromInt(minValue->intvalue, minValue);
         }
         const ValueFlow::Value* maxValue = getCompareValue(values, predicate, std::greater<MathLib::bigint>{});

@@ -6767,8 +6767,6 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             if (result.size() != 1)
                 continue;
             ValueFlow::Value value = result.front();
-            value.intvalue = 1;
-            value.bound = ValueFlow::Value::Bound::Point;
             setTokenValue(tok, std::move(value), settings);
         }
     }
