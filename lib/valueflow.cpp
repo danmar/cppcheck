@@ -6754,8 +6754,6 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             if (result.size() != 1)
                 continue;
             ValueFlow::Value value = result.front();
-            value.intvalue = 1;
-            value.bound = ValueFlow::Value::Bound::Point;
             setTokenValue(tok, std::move(value), settings);
         }
     }
@@ -9093,11 +9091,8 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
                     const std::string& functionName = functionScope->className;
                     const std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(functionScope->bodyStart, tokenlist));
                     const ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::information,
-                                              "ValueFlow analysis is limited in " + functionName + " because if-count in function " +
-                                              std::to_string(countIfScopes) + " exceeds limit " +
-                                              std::to_string(settings->performanceValueFlowMaxIfCount) + ". The limit can be adjusted with "
-                                              "--performance-valueflow-max-if-count. Increasing the if-count limit will likely increase the "
-                                              "analysis time.", "performanceValueflowMaxIfCountExceeded", Certainty::normal);
+                                              "ValueFlow analysis is limited in " + functionName + ". Use --check-level=exhaustive if full analysis is wanted.",
+                                              "checkLevelNormal", Certainty::normal);
                     errorLogger->reportErr(errmsg);
                 }
             }
