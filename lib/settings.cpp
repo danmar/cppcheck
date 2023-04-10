@@ -186,6 +186,7 @@ void Settings::loadSummaries()
     Summaries::loadReturn(buildDir, summaryReturn);
 }
 
+
 void Settings::setCheckLevelExhaustive()
 {
     // Checking can take a little while. ~ 10 times slower than normal analysis is OK.

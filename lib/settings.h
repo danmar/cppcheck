@@ -28,7 +28,6 @@
 #include "platform.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "timer.h"
 
 #include <algorithm>
 #include <atomic>
@@ -41,6 +40,7 @@
 #include <vector>
 #include <unordered_set>
 
+enum class SHOWTIME_MODES;
 namespace ValueFlow {
     class Value;
 }
@@ -215,11 +215,6 @@ public:
     /** @brief How many processes/threads should do checking at the same
         time. Default is 1. (-j N) */
     unsigned int jobs = 1;
-
-    /** @brief Collect unmatched suppressions in one run.
-     * This delays the reporting until all files are checked.
-     * It is needed by checks that analyse the whole code base. */
-    bool jointSuppressionReport{};
 
     /** @brief --library= */
     std::list<std::string> libraries;
