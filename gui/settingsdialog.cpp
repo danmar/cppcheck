@@ -28,11 +28,23 @@
 
 #include "ui_settings.h"
 
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
 #include <QList>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QPushButton>
+#include <QRadioButton>
 #include <QSettings>
+#include <QSize>
 #include <QThread>
+#include <QVariant>
 #include <QWidget>
 
 SettingsDialog::SettingsDialog(ApplicationList *list,

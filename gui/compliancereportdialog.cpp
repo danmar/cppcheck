@@ -1,19 +1,37 @@
 #include "compliancereportdialog.h"
+
 #include "ui_compliancereportdialog.h"
 
+#include "errortypes.h"
 #include "filelist.h"
+#include "importproject.h"
 #include "projectfile.h"
 
-#include <QCryptographicHash>
+#include <algorithm>
+#include <iterator>
+#include <list>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include <QByteArray>
+#include <QCheckBox>
+#include <QCoreApplication>
+#include <QDialogButtonBox>
+#include <QDir>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QIODevice>
+#include <QLineEdit>
 #include <QMessageBox>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSet>
+#include <QStringList>
 #include <QTemporaryFile>
 #include <QTextStream>
+#include <QtCore>
 
 static void addHeaders(const QString& file1, QSet<QString> &allFiles) {
     if (allFiles.contains(file1))

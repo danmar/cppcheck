@@ -18,14 +18,12 @@
 
 #include "threadexecutor.h"
 
-#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "errorlogger.h"
 #include "importproject.h"
 #include "settings.h"
-#include "suppressions.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -38,6 +36,8 @@
 #include <system_error>
 #include <utility>
 #include <vector>
+
+enum class Color;
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : Executor(files, settings, errorLogger)
@@ -69,7 +69,7 @@ public:
 
     void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal) {
         std::lock_guard<std::mutex> lg(mReportSync);
-        CppCheckExecutor::reportStatus(fileindex, filecount, sizedone, sizetotal);
+        mThreadExecutor.reportStatus(fileindex, filecount, sizedone, sizetotal);
     }
 
 private:

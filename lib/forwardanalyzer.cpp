@@ -27,12 +27,12 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <functional>
 #include <list>
-#include <memory>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -413,7 +413,7 @@ struct ForwardTraversal {
             return Break();
         if (stepTok && updateRecursive(stepTok) == Progress::Break)
             return Break();
-        if (condTok && updateRecursive(condTok) == Progress::Break)
+        if (condTok && !Token::simpleMatch(condTok, ":") && updateRecursive(condTok) == Progress::Break)
             return Break();
         return Progress::Continue;
     }

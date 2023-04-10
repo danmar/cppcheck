@@ -22,7 +22,8 @@
 
 #include <QDir>
 #include <QString>
-#include <QTest>
+#include <QStringList>
+#include <QtTest>
 
 void TestFileList::addFile() const
 {

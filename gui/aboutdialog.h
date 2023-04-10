@@ -20,9 +20,9 @@
 #define ABOUT_DIALOG_H
 
 #include <QDialog>
+#include <QObject>
 #include <QString>
 
-class QObject;
 class QWidget;
 namespace Ui {
     class About;

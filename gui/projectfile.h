@@ -26,6 +26,7 @@
 #include <map>
 #include <utility>
 
+#include <QList>
 #include <QObject>
 #include <QString>
 #include <QStringList>

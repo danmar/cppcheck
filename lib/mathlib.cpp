@@ -285,7 +285,7 @@ MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
     return ret;
 }
 
-
+// TODO: remove handling of non-literal stuff
 MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
@@ -364,6 +364,7 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
     });
 }
 
+// TODO: remove handling of non-literal stuff
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:

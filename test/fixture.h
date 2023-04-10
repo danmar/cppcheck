@@ -114,7 +114,7 @@ protected:
     static T& getCheck()
     {
         for (Check *check : Check::instances()) {
-            //cppcheck-suppress [constVariable, useStlAlgorithm] - TODO: fix constVariable FP
+            //cppcheck-suppress [constVariablePointer, useStlAlgorithm] - TODO: fix constVariable FP
             if (T* c = dynamic_cast<T*>(check))
                 return *c;
         }
@@ -157,6 +157,7 @@ extern std::ostringstream output;
 #define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) {} catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_THROW_EQUALS_2( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.what()); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_NO_THROW( CMD ) do { try { CMD; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; } catch (const EXCEPTION&) {} catch (...) { assertThrow(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while (false)
@@ -164,12 +165,13 @@ extern std::ostringstream output;
 #define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_ ## CLASSNAME; }
 
-#define LOAD_LIB_2( LIB, NAME ) do { \
-        if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) { \
-            complainMissingLib(NAME); \
-            return; \
-        } \
-} while (false)
+#define LOAD_LIB_2(LIB, NAME)                                                                                          \
+    do {                                                                                                               \
+        if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) {                                 \
+            complainMissingLib(NAME);                                                                                  \
+            abort();                                                                                                   \
+        }                                                                                                              \
+    } while (false)
 
 #define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(cppcheck::Platform::toString(T), errstr, {exename}), errstr); } while (false)
 

@@ -266,6 +266,7 @@ private:
         TEST_CASE(moveClassVariable);
         TEST_CASE(forwardAndUsed);
         TEST_CASE(moveAndReference);
+        TEST_CASE(moveForRange);
 
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
@@ -1419,6 +1420,19 @@ private:
               "    }\n"
               "    return *iter;\n"
               "}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'vec' can be declared as reference to const\n", errout.str());
+
+        check("auto& foo(std::vector<int>& vec, bool flag) {\n"
+              "    std::vector<int> dummy;\n"
+              "    std::vector<int>::iterator iter;\n"
+              "    if (flag)\n"
+              "        iter = vec.begin();\n"
+              "    else {\n"
+              "        dummy.push_back(42);\n"
+              "        iter = dummy.begin();\n"
+              "    }\n"
+              "    return *iter;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1993,6 +2007,36 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("int x(int);\n"
+              "void f(std::vector<int> v, int& j) {\n"
+              "    for (int i : v)\n"
+              "        j = i;\n"
+              "}\n"
+              "void fn(std::vector<int> v) {\n"
+              "    for (int& i : v)\n"
+              "        i = x(i);\n"
+              "}\n"
+              "void g(std::vector<int> v, int& j) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        j = v[i];\n"
+              "}\n"
+              "void gn(std::vector<int> v) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        v[i] = x(i);\n"
+              "}\n"
+              "void h(std::vector<std::vector<int>> v, int& j) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        j = v[i][0];\n"
+              "}\n"
+              "void hn(std::vector<std::vector<int>> v) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        v[i][0] = x(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference.\n"
+                      "[test.cpp:10]: (performance) Function parameter 'v' should be passed by const reference.\n"
+                      "[test.cpp:18]: (performance) Function parameter 'v' should be passed by const reference.\n",
+                      errout.str());
+
         Settings settings1;
         PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
         check("using ui64 = unsigned __int64;\n"
@@ -2194,7 +2238,7 @@ private:
               "    const int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
         check("int f(std::vector<int> x) {\n"
               "    static int& i = x[0];\n"
@@ -3036,6 +3080,21 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int& g(int* p, int& r) {\n" // #11625
+              "    if (p)\n"
+              "        return *p;\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T> void f(std::vector<T*>& d, const std::vector<T*>& s) {\n" // #11632
+              "    for (const auto& e : s) {\n"
+              "        T* newE = new T(*e);\n"
+              "        d.push_back(newE);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
@@ -3363,6 +3422,76 @@ private:
               "    if (r == b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {};\n" // #11599
+              "void g(S);\n"
+              "void h(const S&);\n"
+              "void h(int, int, const S&);\n"
+              "void i(S&);\n"
+              "void j(const S*);\n"
+              "void j(int, int, const S*);\n"
+              "void f1(S* s) {\n"
+              "    g(*s);\n"
+              "}\n"
+              "void f2(S* s) {\n"
+              "    h(*s);\n"
+              "}\n"
+              "void f3(S* s) {\n"
+              "    h(1, 2, *s);\n"
+              "}\n"
+              "void f4(S* s) {\n"
+              "    i(*s);\n"
+              "}\n"
+              "void f5(S& s) {\n"
+              "    j(&s);\n"
+              "}\n"
+              "void f6(S& s) {\n"
+              "    j(1, 2, &s);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:20]: (style) Parameter 's' can be declared as reference to const\n"
+                      "[test.cpp:23]: (style) Parameter 's' can be declared as reference to const\n"
+                      "[test.cpp:8]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:11]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:14]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void g(int, const int*);\n"
+              "void h(const int*);\n"
+              "void f(int* p) {\n"
+              "    g(1, p);\n"
+              "    h(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'p' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void f(int, const int*);\n"
+              "void f(int i, int* p) {\n"
+              "    f(i, const_cast<const int*>(p));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int a; };\n"
+              "void f(std::vector<S>& v, int b) {\n"
+              "    size_t n = v.size();\n"
+              "    for (size_t i = 0; i < n; i++) {\n"
+              "        S& s = v[i];\n"
+              "        if (!(b & s.a))\n"
+              "            continue;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's' can be declared as reference to const\n", errout.str()); // don't crash
+
+        check("void f(int& i) {\n"
+              "    new (&i) int();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str()); // don't crash
+
+        check("class C;\n" // #11646
+              "void g(const C* const p);\n"
+              "void f(C* c) {\n"
+              "    g(c);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'c' can be declared as pointer to const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -10241,6 +10370,18 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable 'r'.\n", errout.str());
     }
 
+    void moveForRange()
+    {
+        check("struct C {\n"
+              "    void f() {\n"
+              "        for (auto r : mCategory.find(std::move(mWhere))) {}\n"
+              "    }\n"
+              "    cif::category mCategory;\n"
+              "    cif::condition mWhere;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void funcArgNamesDifferent() {
         check("void func1(int a, int b, int c);\n"
               "void func1(int a, int b, int c) { }\n"
@@ -10464,7 +10605,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(char *c) {\n"
+        check("void foo(const char *c) {\n"
               "    if (*c == '+' && (operand || !isalnum(*c))) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -10482,7 +10623,7 @@ private:
               "    int x[] = { 10, 10 };\n"
               "    f(x[0]);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' can be declared as const array\n", errout.str());
 
         check("struct A { int x; };"
               "void g(int);\n"

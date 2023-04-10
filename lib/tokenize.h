@@ -267,6 +267,11 @@ public:
      * A c;
      */
     void simplifyTypedef();
+    void simplifyTypedefCpp();
+    /**
+     * Move typedef token to the left og the expression
+     */
+    void simplifyTypedefLHS();
 
     /**
      */

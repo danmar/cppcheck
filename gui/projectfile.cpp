@@ -28,7 +28,15 @@
 
 #include <QFile>
 #include <QDir>
+#include <QIODevice>
+#include <QLatin1String>
+#include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QStringRef>
+#endif
 
 ProjectFile *ProjectFile::mActiveProject;
 

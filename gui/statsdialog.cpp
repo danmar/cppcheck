@@ -19,27 +19,43 @@
 #include "statsdialog.h"
 
 #include "checkstatistics.h"
-#include "common.h"
 #include "projectfile.h"
 #include "showtypes.h"
 
 #include "ui_statsdialog.h"
 
+#include <QApplication>
 #include <QClipboard>
 #include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QLabel>
+#include <QLineEdit>
 #include <QMimeData>
+#include <QPageSize>
 #include <QPrinter>
-#include <QRegularExpression>
+#include <QPushButton>
+#include <QStringList>
 #include <QTextDocument>
 #include <QWidget>
+#include <Qt>
 
 #ifdef QT_CHARTS_LIB
+#include "common.h"
+
 #include <QAbstractSeries>
 #include <QChartView>
+#include <QDateTime>
 #include <QDateTimeAxis>
+#include <QDir>
+#include <QFile>
+#include <QIODevice>
+#include <QLayout>
 #include <QLineSeries>
+#include <QList>
+#include <QPainter>
+#include <QPointF>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QValueAxis>
 

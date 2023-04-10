@@ -197,6 +197,9 @@ private:
         TEST_CASE(const81); // ticket #11330
         TEST_CASE(const82); // ticket #11513
         TEST_CASE(const83);
+        TEST_CASE(const84);
+        TEST_CASE(const85);
+        TEST_CASE(const86);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6356,6 +6359,51 @@ private:
                    "void S::g(bool b, int j) {\n"
                    "    int& r = b ? j : i2;\n"
                    "    r = 5;\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const84() {
+        checkConst("class S {};\n" // #11616
+                   "struct T {\n"
+                   "    T(const S*);\n"
+                   "    T(const S&);\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    const S s;\n"
+                   "    void f1() {\n"
+                   "        T t(&s);\n"
+                   "    }\n"
+                   "    void f2() {\n"
+                   "        T t(s);\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'C::f1' can be const.\n"
+                      "[test.cpp:11]: (style, inconclusive) Technically the member function 'C::f2' can be const.\n",
+                      errout.str());
+    }
+
+    void const85() { // #11618
+        checkConst("struct S {\n"
+                   "    int a[2], b[2];\n"
+                   "    void f() { f(a, b); }\n"
+                   "    static void f(const int p[2], int q[2]);\n"
+                   "};\n"
+                   "void S::f(const int p[2], int q[2]) {\n"
+                   "    q[0] = p[0];\n"
+                   "    q[1] = p[1];\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const86() { // #11621
+        checkConst("struct S { int* p; };\n"
+                   "struct T { int m; int* p; };\n"
+                   "struct U {\n"
+                   "    int i;\n"
+                   "    void f() { S s = { &i }; }\n"
+                   "    void g() { int* a[] = { &i }; }\n"
+                   "    void h() { T t = { 1, &i }; }\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
     }

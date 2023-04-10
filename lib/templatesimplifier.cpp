@@ -2409,7 +2409,7 @@ static Token *skipTernaryOp(Token *tok, const Token *backToken)
     return tok;
 }
 
-void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
+void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end)
 {
     // start could be erased so use the token before start if available
     Token * first = (start && start->previous()) ? start->previous() : mTokenList.front();
@@ -2599,7 +2599,7 @@ static bool validTokenEnd(bool bounded, const Token *tok, const Token *backToken
 
 // TODO: This is not the correct class for simplifyCalculations(), so it
 // should be moved away.
-bool TemplateSimplifier::simplifyCalculations(Token* frontToken, Token *backToken, bool isTemplate)
+bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *backToken, bool isTemplate)
 {
     bool ret = false;
     const bool bounded = frontToken || backToken;
@@ -3154,7 +3154,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             (!typeParametersInDeclaration.empty() && !instantiateMatch(tok2, typeParametersInDeclaration.size(), templateDeclaration.isVariadic(), nullptr))) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
+                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "templateInstantiation",
                                                      "Failed to instantiate template \"" + instantiation.name() + "\". The checking continues anyway.", Certainty::normal));
             }
             if (typeForNewName.empty())
@@ -3232,7 +3232,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
         if (typeForNewName.empty()) {
             if (printDebug && mErrorLogger) {
                 std::list<const Token *> callstack(1, tok2);
-                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "debug",
+                mErrorLogger->reportErr(ErrorMessage(callstack, &mTokenList, Severity::debug, "templateInstantiation",
                                                      "Failed to instantiate template \"" + templateDeclaration.name() + "\". The checking continues anyway.", Certainty::normal));
             }
             return false;

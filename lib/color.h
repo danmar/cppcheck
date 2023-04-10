@@ -40,6 +40,8 @@ enum class Color {
 };
 CPPCHECKLIB std::ostream& operator<<(std::ostream& os, const Color& c);
 
-std::string toString(const Color& c);
+CPPCHECKLIB std::string toString(const Color& c);
+
+extern CPPCHECKLIB bool gDisableColors; // for testing
 
 #endif

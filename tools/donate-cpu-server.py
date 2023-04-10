@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.37"
+SERVER_VERSION = "1.3.39"
 
 OLD_VERSION = '2.10'
 
@@ -49,7 +49,8 @@ logger.addHandler(handler_file)
 
 
 def print_ts(msg) -> None:
-    print('[{}] {}'.format(strDateTime(), msg))
+    dt = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    print('[{}] {}'.format(dt, msg))
 
 
 # Set up an exception hook for all uncaught exceptions so they can be logged
@@ -65,7 +66,7 @@ sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime() -> str:
-    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
 def dateTimeFromStr(datestr: str) -> datetime.datetime:
@@ -101,6 +102,7 @@ def overviewReport() -> str:
     html += '<a href="head-simplifyUsingUnmatchedBodyEnd">simplifyUsingUnmatchedBodyEnd</a><br>\n'
     html += '<a href="head-simplifyUsing">simplifyUsing</a><br>\n'
     html += '<a href="head-valueFlowMaxIterations">valueFlowMaxIterations</a><br>\n'
+    html += '<a href="head-templateInstantiation">templateInstantiation</a><br>\n'
     #html += '<a href="head-autoNoType">autoNoType</a><br>\n'
     #html += '<a href="head-valueFlowBailout">valueFlowBailout</a><br>\n'
     #html += '<a href="head-bailoutUninitVar">bailoutUninitVar</a><br>\n'

@@ -23,7 +23,10 @@
 #include "errortypes.h"
 #include "showtypes.h"
 
+#include <QObject>
 #include <QStandardItemModel>
+#include <QString>
+#include <QStringList>
 #include <QTreeView>
 
 class ApplicationList;
@@ -36,7 +39,6 @@ class QItemSelectionModel;
 class ThreadHandler;
 class QContextMenuEvent;
 class QKeyEvent;
-class QObject;
 class QSettings;
 
 /// @addtogroup GUI

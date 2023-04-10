@@ -33,7 +33,6 @@
 #include <functional>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -162,6 +161,10 @@ private:
         TEST_CASE(valueFlowSymbolicStrlen);
         TEST_CASE(valueFlowSmartPointer);
         TEST_CASE(valueFlowImpossibleMinMax);
+        TEST_CASE(valueFlowImpossibleUnknownConstant);
+        TEST_CASE(valueFlowContainerEqual);
+
+        TEST_CASE(performanceIfCount);
     }
 
     static bool isNotTokValue(const ValueFlow::Value &val) {
@@ -4633,6 +4636,85 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+               "    if(b)\n"
+               "        return nullptr;\n"
+               "    return &i;\n"
+               "}   \n"
+               "int f(int i) {\n"
+               "    int* x = g(i, true);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 8U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+               "    if(b)\n"
+               "        return nullptr;\n"
+               "    return &i;\n"
+               "}   \n"
+               "int f(int i) {\n"
+               "    int* x = g(i, false);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 8U, 0));
+
+        code = "int* g(int& i, bool b) {\n"
+               "    if(b)\n"
+               "        return nullptr;\n"
+               "    return &i;\n"
+               "}   \n"
+               "int f(int i) {\n"
+               "    int* x = g(i, i == 3);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, 0));
+
+        code = "struct A {\n"
+               "    unsigned i;\n"
+               "    bool f(unsigned x) const {\n"
+               "        return ((i & x) != 0);\n"
+               "    }\n"
+               "};\n"
+               "int g(A& a) {\n"
+               "    int x = a.f(2);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 1));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfXImpossible(code, 9U, 1));
+
+        code = "struct A {\n"
+               "    enum {\n"
+               "        b = 0,\n"
+               "        c = 1,\n"
+               "        d = 2\n"
+               "    };\n"
+               "    bool isb() const {\n"
+               "        return e == b;\n"
+               "    }\n"
+               "    unsigned int e;\n"
+               "};\n"
+               "int f(A g) {\n"
+               "  int x = !g.isb();\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 14U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 14U, 1));
+
+        code = "bool h(char q);\n"
+               "bool g(char q) {\n"
+               "    if (!h(q))\n"
+               "        return false;\n"
+               "    return true;\n"
+               "}\n"
+               "int f() {\n"
+               "    int x = g(0);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 9U, 1));
     }
 
     void valueFlowFunctionDefaultParameter() {
@@ -5354,18 +5436,19 @@ private:
                "    return x;\n"
                "}\n";
         values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
-        ASSERT_EQUALS(0, values.size());
+        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(true, values.front().isUninitValue());
 
-        code = "void f() {\n"
+        code = "void f(int x) {\n"
                "    int i;\n"
-               "    if (x) {\n"
+               "    if (x > 0) {\n"
                "        int y = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
                "        if (y != 0) return;\n"
                "        i++;\n"
                "    }\n"
                "}\n";
         values = tokenValues(code, "i ++", ValueFlow::Value::ValueType::UNINIT);
-        ASSERT_EQUALS(0, values.size());
+        TODO_ASSERT_EQUALS(0, 1, values.size());
     }
 
     void valueFlowConditionExpressions() {
@@ -6402,6 +6485,15 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "std::vector<int> f() { return std::vector<int>(); }";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "( ) ;"), 0));
+
+        code = "std::vector<int> f() { return std::vector<int>{}; }";
+        TODO_ASSERT_EQUALS("", "values.size():0", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+
+        code = "std::vector<int> f() { return {}; }";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
     }
 
     void valueFlowContainerElement()
@@ -6901,6 +6993,11 @@ private:
                "    void g(std::vector<int> (*f) () = nullptr);\n"
                "};\n";
         valueOfTok(code, "=");
+
+        code = "void f(bool b) {\n" // #11627
+               "    (*printf)(\"%s %i\", strerror(errno), b ? 0 : 1);\n"
+               "};\n";
+        valueOfTok(code, "?");
     }
 
     void valueFlowHang() {
@@ -7780,6 +7877,98 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "a", -1));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, -1));
+    }
+
+    void valueFlowImpossibleUnknownConstant()
+    {
+        const char* code;
+
+        code = "void f(bool b) {\n"
+               "    if (b) {\n"
+               "        int x = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
+               "        if (x != 0) return;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 0));
+    }
+
+    void valueFlowContainerEqual()
+    {
+        const char* code;
+
+        code = "bool f() {\n"
+               "  std::string s = \"abc\";\n"
+               "  bool x = (s == \"def\");\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "bool f() {\n"
+               "  std::string s = \"abc\";\n"
+               "  bool x = (s != \"def\");\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
+        code = "bool f() {\n"
+               "  std::vector<int> v1 = {1, 2};\n"
+               "  std::vector<int> v2 = {1, 2};\n"
+               "  bool x = (v1 == v2);\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        code = "bool f() {\n"
+               "  std::vector<int> v1 = {1, 2};\n"
+               "  std::vector<int> v2 = {1, 2};\n"
+               "  bool x = (v1 != v2);\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+
+        code = "bool f(int i) {\n"
+               "  std::vector<int> v1 = {i, i+1};\n"
+               "  std::vector<int> v2 = {i};\n"
+               "  bool x = (v1 == v2);\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 0));
+
+        code = "bool f(int i, int j) {\n"
+               "  std::vector<int> v1 = {i, i};\n"
+               "  std::vector<int> v2 = {i, j};\n"
+               "  bool x = (v1 == v2);\n"
+               "  return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 1));
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+    }
+
+    void performanceIfCount() {
+        Settings s(settings);
+        s.performanceValueFlowMaxIfCount = 1;
+
+        const char *code;
+
+        code = "int f() {\n"
+               "  if (x>0){}\n"
+               "  if (y>0){}\n"
+               "  int a = 14;\n"
+               "  return a+1;\n"
+               "}\n";
+        ASSERT_EQUALS(0U, tokenValues(code, "+", &s).size());
+        ASSERT_EQUALS(1U, tokenValues(code, "+").size());
+
+        // Do not skip all functions
+        code = "void g(int i) {\n"
+               "  if (i == 1) {}\n"
+               "  if (i == 2) {}\n"
+               "}\n"
+               "int f() {\n"
+               "  std::vector<int> v;\n"
+               "  return v.front();\n"
+               "}\n";
+        ASSERT_EQUALS(1U, tokenValues(code, "v .", &s).size());
     }
 };
 

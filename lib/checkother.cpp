@@ -24,6 +24,7 @@
 #include "fwdanalysis.h"
 #include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "standards.h"
 #include "symboldatabase.h"
@@ -34,14 +35,10 @@
 #include "valueflow.h"
 #include "vfvalue.h"
 
-#include "checkclass.h" // CheckClass::stl_containers_not_const
-
 #include <algorithm> // find_if()
 #include <cctype>
 #include <list>
 #include <map>
-#include <memory>
-#include <set>
 #include <sstream>
 #include <utility>
 #include <numeric>
@@ -1176,6 +1173,14 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
     });
 }
 
+static bool isConstRangeBasedFor(const Token* tok) {
+    if (astIsRangeBasedForDecl(tok)) {
+        const Variable* loopVar = tok->astParent()->astOperand1()->variable();
+        return loopVar && (!loopVar->isReference() || loopVar->isConst());
+    }
+    return false;
+}
+
 static bool canBeConst(const Variable *var, const Settings* settings)
 {
     if (!var->scope())
@@ -1201,6 +1206,8 @@ static bool canBeConst(const Variable *var, const Settings* settings)
             continue;
 
         const Token* parent = tok2->astParent();
+        while (Token::simpleMatch(parent, "["))
+            parent = parent->astParent();
         if (!parent)
             continue;
         if (Token::simpleMatch(tok2->next(), ";") && tok2->next()->isSplittedVarDeclEq()) {
@@ -1249,9 +1256,12 @@ static bool canBeConst(const Variable *var, const Settings* settings)
                    (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
             continue;
         else if (parent->isAssignmentOp()) {
-            if (parent->astOperand1() == tok2)
+            const Token* assignee = parent->astOperand1();
+            while (Token::simpleMatch(assignee, "["))
+                assignee = assignee->astOperand1();
+            if (assignee == tok2)
                 return false;
-            const Variable* assignedVar = parent->astOperand1() ? parent->astOperand1()->variable() : nullptr;
+            const Variable* assignedVar = assignee ? assignee->variable() : nullptr;
             if (assignedVar &&
                 !assignedVar->isConst() &&
                 assignedVar->isReference() &&
@@ -1263,7 +1273,9 @@ static bool canBeConst(const Variable *var, const Settings* settings)
                 continue;
             else
                 return false;
-        } else
+        } else if (isConstRangeBasedFor(tok2))
+            continue;
+        else
             return false;
     }
 
@@ -1418,8 +1430,6 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isVolatile())
             continue;
-        if (isAliased(var))
-            continue;
         if (isStructuredBindingVariable(var)) // TODO: check all bound variables
             continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
@@ -1431,7 +1441,7 @@ void CheckOther::checkConstVariable()
                 functionScope = functionScope->nestedIn;
             } while (functionScope && !(function = functionScope->function));
         }
-        if (function && Function::returnsReference(function) && !Function::returnsConst(function)) {
+        if (function && (Function::returnsReference(function) || Function::returnsPointer(function)) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.cbegin(), returns.cend(), [&](const Token* retTok) {
                 if (retTok->varId() == var->declarationId())
@@ -1440,13 +1450,12 @@ void CheckOther::checkConstVariable()
                     retTok = retTok->astOperand2();
                 while (Token::simpleMatch(retTok, "."))
                     retTok = retTok->astOperand2();
+                if (Token::simpleMatch(retTok, "&"))
+                    retTok = retTok->astOperand1();
                 return ValueFlow::hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
             }))
                 continue;
         }
-        // Skip if address is taken
-        if (Token::findmatch(var->nameToken(), "& %varid%", scope->bodyEnd, var->declarationId()))
-            continue;
         // Skip if another non-const variable is initialized with this variable
         {
             //Is it the right side of an initialization of a non-const reference
@@ -1458,6 +1467,26 @@ void CheckOther::checkConstVariable()
                         usedInAssignment = true;
                         break;
                     }
+                }
+                if (tok->isUnaryOp("&") && Token::Match(tok, "& %varid%", var->declarationId())) {
+                    const Token* opTok = tok->astParent();
+                    int argn = -1;
+                    if (opTok && (opTok->isComparisonOp() || opTok->isAssignmentOp() || opTok->isCalculation())) {
+                        if (opTok->isComparisonOp() || opTok->isCalculation()) {
+                            if (opTok->astOperand1() != tok)
+                                opTok = opTok->astOperand1();
+                            else
+                                opTok = opTok->astOperand2();
+                        }
+                        if (opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
+                            continue;
+                    } else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
+                        bool inconclusive{};
+                        if (var->valueType() && !isVariableChangedByFunctionCall(ftok, var->valueType()->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                            continue;
+                    }
+                    usedInAssignment = true;
+                    break;
                 }
                 if (astIsRangeBasedForDecl(tok) && Token::Match(tok->astParent()->astOperand2(), "%varid%", var->declarationId())) {
                     const Variable* refvar = tok->astParent()->astOperand1()->variable();
@@ -1479,7 +1508,7 @@ void CheckOther::checkConstVariable()
                         castToNonConst = true; // safe guess
                         break;
                     }
-                    const bool isConst = 0 != (tok->valueType()->constness & (1 << tok->valueType()->pointer));
+                    const bool isConst = tok->valueType()->isConst(tok->valueType()->pointer);
                     if (!isConst) {
                         castToNonConst = true;
                         break;
@@ -1487,49 +1516,6 @@ void CheckOther::checkConstVariable()
                 }
             }
             if (castToNonConst)
-                continue;
-        }
-        // Do not warn if struct data is changed
-        {
-            bool changeStructData = false;
-            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->variable() == var && Token::Match(tok, "%var% .")) {
-                    const Token *parent = tok;
-                    while (Token::simpleMatch(parent->astParent(), ".") && parent == parent->astParent()->astOperand1())
-                        parent = parent->astParent();
-                    if (parent->valueType() &&
-                        parent->valueType()->pointer > 0 &&
-                        parent->valueType()->constness == 0 &&
-                        isVariableChanged(parent, 1, mSettings, mTokenizer->isCPP())) {
-                        changeStructData = true;
-                        break;
-                    }
-                }
-            }
-            if (changeStructData)
-                continue;
-        }
-        // Calling non-const method using non-const reference
-        if (var->isReference()) {
-            bool callNonConstMethod = false;
-            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->variable() == var) {
-                    if (Token::Match(tok, "%var% . * ( & %name% ::")) {
-                        const Token* ftok = tok->linkAt(3)->previous();
-                        if (!ftok->function() || !ftok->function()->isConst())
-                            callNonConstMethod = true;
-                        break;
-                    }
-                    if (var->valueType() && var->valueType()->container && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
-                        const auto& notConst = CheckClass::stl_containers_not_const;
-                        if (notConst.find(var->valueType()->container->startPattern) != notConst.end()) {
-                            callNonConstMethod = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (callNonConstMethod)
                 continue;
         }
 
@@ -1576,8 +1562,12 @@ void CheckOther::checkConstPointer()
             const Token* const gparent = parent->astParent();
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
-            if (Token::simpleMatch(gparent, "return"))
-                continue;
+            int argn = -1;
+            if (Token::simpleMatch(gparent, "return")) {
+                const Function* function = gparent->scope()->function;
+                if (function && (!Function::returnsReference(function) || Function::returnsConst(function)))
+                    continue;
+            }
             else if (Token::Match(gparent, "%assign%") && parent == gparent->astOperand2()) {
                 bool takingRef = false, nonConstPtrAssignment = false;
                 const Token *lhs = gparent->astOperand1();
@@ -1590,11 +1580,27 @@ void CheckOther::checkConstPointer()
                     continue;
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
+            else if (const Token* ftok = getTokenArgumentFunction(parent, argn)) {
+                bool inconclusive{};
+                if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                    continue;
+            }
         } else {
+            int argn = -1;
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
+            else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
+                if (ftok->function() && !parent->isCast()) {
+                    const Variable* argVar = ftok->function()->getArgumentVar(argn);
+                    if (argVar && argVar->valueType() && argVar->valueType()->isConst(vt->pointer)) {
+                        bool inconclusive{};
+                        if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                            continue;
+                    }
+                }
+            }
         }
         nonConstPointers.emplace_back(var);
     }
@@ -1619,6 +1625,10 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
     if (!var) {
         reportError(nullptr, Severity::style, "constParameter", "Parameter 'x' can be declared with const");
         reportError(nullptr, Severity::style, "constVariable",  "Variable 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constParameterReference", "Parameter 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constVariableReference", "Variable 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constParameterPointer", "Parameter 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constVariablePointer", "Variable 'x' can be declared with const");
         reportError(nullptr, Severity::style, "constParameterCallback", "Parameter 'x' can be declared with const, however it seems that 'f' is a callback function.");
         return;
     }
@@ -1635,6 +1645,10 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
         errorPath.emplace_front(function->functionPointerUsage, "You might need to cast the function pointer here");
         id += "Callback";
         message += ". However it seems that '" + function->name() + "' is a callback function, if '$symbol' is declared with const you might also need to cast function pointer(s).";
+    } else if (var->isReference()) {
+        id += "Reference";
+    } else if (var->isPointer() && !var->isArray()) {
+        id += "Pointer";
     }
 
     reportError(errorPath, Severity::style, id.c_str(), message, CWE398, Certainty::normal);
@@ -1865,7 +1879,7 @@ static bool isConstTop(const Token *tok)
         if (!bracTok->astParent())
             return true;
     }
-    if (tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp())
+    if (tok->str() == "," && tok->astParent()->isAssignmentOp())
         return true;
     return false;
 }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
+#include "color.h"
+#include "fixture.h"
 
-class TestFileList : public QObject {
-    Q_OBJECT
+class TestColor : public TestFixture {
+public:
+    TestColor() : TestFixture("TestColor") {}
 
-private slots:
-    void addFile() const;
-    void addPathList() const;
-    void addFile_notexist() const;
-    void addFile_unknown() const;
-    void addDirectory() const;
-    void addDirectory_recursive() const;
-    void filterFiles() const;
-    void filterFiles2() const;
-    void filterFiles3() const;
-    void filterFiles4() const;
-    void filterFiles5() const;
+private:
+
+    void run() override {
+        TEST_CASE(toString);
+    }
+
+    void toString() const {
+        // TODO: color conversion is dependent on stdout/stderr being a TTY
+        ASSERT_EQUALS("", ::toString(Color::FgRed));
+    }
 };
+
+REGISTER_TEST(TestColor)

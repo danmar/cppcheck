@@ -167,7 +167,7 @@ bool astIsRangeBasedForDecl(const Token* tok);
  * static const int     int
  * std::vector<T>       std::vector
  */
-std::string astCanonicalType(const Token *expr);
+std::string astCanonicalType(const Token *expr, bool pointedToType);
 
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
@@ -337,12 +337,12 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
-bool isExpressionChanged(const Token* expr,
-                         const Token* start,
-                         const Token* end,
-                         const Settings* settings,
-                         bool cpp,
-                         int depth = 20);
+CPPCHECKLIB bool isExpressionChanged(const Token* expr,
+                                     const Token* start,
+                                     const Token* end,
+                                     const Settings* settings,
+                                     bool cpp,
+                                     int depth = 20);
 
 bool isExpressionChangedAt(const Token* expr,
                            const Token* tok,

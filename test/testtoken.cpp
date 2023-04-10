@@ -17,6 +17,7 @@
  */
 
 #include "settings.h"
+#include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
 #include "token.h"
@@ -28,8 +29,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
-
-struct InternalError;
 
 
 class TestToken : public TestFixture {

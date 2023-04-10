@@ -21,7 +21,6 @@
 #include "fixture.h"
 
 #include <list>
-#include <memory>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>

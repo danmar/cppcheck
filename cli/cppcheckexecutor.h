@@ -82,16 +82,6 @@ public:
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
     /**
-     * Information about how many files have been checked
-     *
-     * @param fileindex This many files have been checked.
-     * @param filecount This many files there are in total.
-     * @param sizedone The sum of sizes of the files checked.
-     * @param sizetotal The total sizes of the files.
-     */
-    static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
-
-    /**
      * @param exceptionOutput Output file
      */
     static void setExceptionOutput(FILE* exceptionOutput);

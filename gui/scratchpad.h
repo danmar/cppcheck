@@ -20,9 +20,10 @@
 #define SCRATCHPAD_H
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
 
 class MainWindow;
-class QObject;
 namespace Ui {
     class ScratchPad;
 }

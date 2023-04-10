@@ -17,6 +17,7 @@
  */
 
 #include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include "settings.h"
@@ -36,8 +37,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-
-struct InternalError;
 
 class TestTokenizer : public TestFixture {
 public:
@@ -6782,6 +6781,8 @@ private:
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : { };"), InternalError, "syntax error: Unexpected token '{'");
         ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : 3 { };"), InternalError, "syntax error: Unexpected token '3'");
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("int a() { b((c)return 0) }"), InternalError, "syntax error");
     }
 
 

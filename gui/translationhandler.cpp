@@ -22,11 +22,13 @@
 #include "common.h"
 
 #include <QApplication>
+#include <QCoreApplication>
 #include <QFile>
 #include <QFileInfo>
 #include <QLocale>
 #include <QMessageBox>
 #include <QTranslator>
+#include <QtGlobal>
 
 
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
