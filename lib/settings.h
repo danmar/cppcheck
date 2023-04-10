@@ -255,7 +255,7 @@ public:
     int performanceValueFlowMaxTime = -1;
 
     /** @brief --performance-valueflow-max-if-count=C */
-    int performanceValueFlowMaxIfCount = 100;F
+    int performanceValueFlowMaxIfCount = 100;
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
