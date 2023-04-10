@@ -2207,7 +2207,7 @@ class MisraChecker:
             if not token.astOperand1.valueType or not token.astOperand2.valueType:
                 continue
             if ((token.astOperand1.str in op or token.astOperand1.isComparisonOp) and
-                    (token.astOperand2.str in op or token.astOperand1.isComparisonOp)):
+                (token.astOperand2.str in op or token.astOperand2.isComparisonOp)):
                 e1, e2 = getEssentialCategorylist(token.astOperand1.astOperand2, token.astOperand2.astOperand1)
             elif token.astOperand1.str in op or token.astOperand1.isComparisonOp:
                 e1, e2 = getEssentialCategorylist(token.astOperand1.astOperand2, token.astOperand2)
