@@ -1543,11 +1543,19 @@ class MisraChecker:
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
             starts_with_double_slash = token.str.startswith('//')
-            if token.str.startswith('/*') or starts_with_double_slash:
-                s = token.str.lstrip('/')
-                double_backslash_not_uri = not all(regex.match("\w+://$", part) for part in s.split("//"))
-                if ((not starts_with_double_slash) and double_backslash_not_uri) or '/*' in s:
-                    self.reportError(token, 3, 1)
+            starts_with_block_comment = token.str.startswith("/*")
+            s = token.str.lstrip('/')
+            if (starts_with_double_slash or starts_with_block_comment) and "/*" in s:
+                # Block comment inside of regular comment, violation
+                self.reportError(token, 3, 1)
+            elif starts_with_block_comment and "//" in s:
+                # "//" in block comment, check if it's a uri
+                while "//" in s:
+                    possible_uri, s = s.split("//", 1)
+                    if not re.search(r"\w+:$", possible_uri):
+                        # Violation if no uri was found
+                        self.reportError(token, 3, 1)
+                        break
 
     def misra_3_2(self, rawTokens):
         for token in rawTokens:
