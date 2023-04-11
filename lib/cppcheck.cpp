@@ -902,10 +902,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 checkRawTokens(tokenizer);
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
-                Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults);
-                const bool result = tokenizer.simplifyTokens1(mCurrentConfig);
-                timer2.stop();
-                if (!result)
+                if (!tokenizer.simplifyTokens1(mCurrentConfig))
                     continue;
 
                 // dump xml if --dump
