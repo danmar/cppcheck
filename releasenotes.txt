@@ -1,5 +1,6 @@
 release notes for cppcheck-2.11
 
+- The new option --check-level=<level> has been added that controls how much checking is made by Cppcheck. The default checking level is "normal". If you feel that you can wait longer on results you can use --check-level=exhaustive.
 - The platform type 'Unspecified' within .cppcheck projects has been deprecated and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.
 - It is no longer necessary to run "--check-config" to get detailed "missingInclude" and "missingIncludeSystem" messages. They will always be issued in the regular analysis if "missingInclude" is enabled.
 - "missingInclude" and "missingIncludeSystem" are reported with "-j" is > 1 and processes are used in the backend (default in non-Windows binaries)
@@ -12,4 +13,4 @@ release notes for cppcheck-2.11
     - `constVariable`
     - `constVariableReference`
     - `constVariablePointer`
-- Limit valueflow analysis in function if the "if" count is high. By default max limit is 100. Limit can be tweaked with --performance-valueflow-max-if-count
+- More command-line parameters will now check if the given integer argument is actually valid. Several other internal string-to-integer conversions will not be error checked.

@@ -360,7 +360,7 @@ Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, c
 {
     if (!settings->checks.isEnabled(Checks::unusedFunction))
         return nullptr;
-    if (settings->jobs == 1 && settings->buildDir.empty())
+    if (settings->useSingleJob() && settings->buildDir.empty())
         instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
     return nullptr;
 }
@@ -442,7 +442,7 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
                 } else if (std::strcmp(e2->Name(),"functiondecl") == 0) {
                     const char* lineNumber = e2->Attribute("lineNumber");
                     if (lineNumber)
-                        decls[functionName] = Location(sourcefile, std::atoi(lineNumber));
+                        decls[functionName] = Location(sourcefile, strToInt<int>(lineNumber));
                 }
             }
         }

@@ -31,6 +31,7 @@
     <ClCompile Include="..\cli\executor.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\processexecutor.cpp" />
+    <ClCompile Include="..\cli\singleexecutor.cpp" />
     <ClCompile Include="..\cli\stacktrace.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
     <ClCompile Include="fixture.cpp">
@@ -54,6 +55,7 @@
     <ClCompile Include="testclangimport.cpp" />
     <ClCompile Include="testclass.cpp" />
     <ClCompile Include="testcmdlineparser.cpp" />
+    <ClCompile Include="testcolor.cpp" />
     <ClCompile Include="testcondition.cpp" />
     <ClCompile Include="testconstructors.cpp" />
     <ClCompile Include="testcppcheck.cpp" />
@@ -84,6 +86,7 @@
     <ClCompile Include="testsimplifytokens.cpp" />
     <ClCompile Include="testsimplifytypedef.cpp" />
     <ClCompile Include="testsimplifyusing.cpp" />
+    <ClCompile Include="testsingleexecutor.cpp" />
     <ClCompile Include="testsizeof.cpp" />
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="teststring.cpp" />
@@ -114,6 +117,7 @@
     <ClInclude Include="..\cli\executor.h" />
     <ClInclude Include="..\cli\filelister.h" />
     <ClInclude Include="..\cli\processexecutor.h" />
+    <ClInclude Include="..\cli\singleexecutor.h" />
     <ClInclude Include="..\cli\stacktrace.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
     <ClInclude Include="fixture.h" />

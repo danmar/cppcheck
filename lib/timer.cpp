@@ -58,7 +58,17 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     for (std::vector<dataElementType>::const_iterator iter=data.cbegin(); iter!=data.cend(); ++iter) {
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
-        overallData.mClocks += iter->second.mClocks;
+        bool hasParent = false;
+        {
+            // Do not use inner timers in "Overall time"
+            const std::string::size_type pos = iter->first.rfind("::");
+            if (pos != std::string::npos)
+                hasParent = std::any_of(data.cbegin(), data.cend(), [iter,pos](const dataElementType& d) {
+                    return d.first.size() == pos && iter->first.compare(0, d.first.size(), d.first) == 0;
+                });
+        }
+        if (!hasParent)
+            overallData.mClocks += iter->second.mClocks;
         if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5) || (ordinal<=5)) {
             std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
         }

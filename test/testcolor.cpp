@@ -17,28 +17,22 @@
  */
 
 #include "color.h"
-#include "options.h"
-#include "preprocessor.h"
 #include "fixture.h"
 
-#include <cstdlib>
+class TestColor : public TestFixture {
+public:
+    TestColor() : TestFixture("TestColor") {}
 
-int main(int argc, char *argv[])
-{
-    // MS Visual C++ memory leak debug tracing
-#if defined(_MSC_VER) && defined(_DEBUG)
-    _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
-#endif
+private:
 
-    Preprocessor::macroChar = '$';     // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
-    gDisableColors = true;
-
-    options args(argc, argv);
-
-    if (args.help()) {
-        TestFixture::printHelp();
-        return EXIT_SUCCESS;
+    void run() override {
+        TEST_CASE(toString);
     }
-    const std::size_t failedTestsCount = TestFixture::runTests(args);
-    return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
-}
+
+    void toString() const {
+        // TODO: color conversion is dependent on stdout/stderr being a TTY
+        ASSERT_EQUALS("", ::toString(Color::FgRed));
+    }
+};
+
+REGISTER_TEST(TestColor)

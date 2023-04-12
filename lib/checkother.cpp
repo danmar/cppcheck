@@ -1471,6 +1471,8 @@ void CheckOther::checkConstVariable()
                 if (tok->isUnaryOp("&") && Token::Match(tok, "& %varid%", var->declarationId())) {
                     const Token* opTok = tok->astParent();
                     int argn = -1;
+                    if (opTok && opTok->isUnaryOp("!"))
+                        continue;
                     if (opTok && (opTok->isComparisonOp() || opTok->isAssignmentOp() || opTok->isCalculation())) {
                         if (opTok->isComparisonOp() || opTok->isCalculation()) {
                             if (opTok->astOperand1() != tok)
@@ -1478,7 +1480,7 @@ void CheckOther::checkConstVariable()
                             else
                                 opTok = opTok->astOperand2();
                         }
-                        if (opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
+                        if (opTok && opTok->valueType() && var->valueType() && opTok->valueType()->isConst(var->valueType()->pointer))
                             continue;
                     } else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                         bool inconclusive{};

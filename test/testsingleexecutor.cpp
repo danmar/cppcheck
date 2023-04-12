@@ -10,22 +10,24 @@
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Public License for more details
  *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "processexecutor.h"
-#include "redirect.h"
-#include "settings.h"
+#include "cppcheck.h"
 #include "fixture.h"
 #include "helpers.h"
-#include "timer.h"
+#include "redirect.h"
 #include "library.h"
+#include "settings.h"
+#include "singleexecutor.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <map>
 #include <memory>
 #include <set>
@@ -34,27 +36,31 @@
 #include <utility>
 #include <vector>
 
-class TestProcessExecutor : public TestFixture {
+class TestSingleExecutor : public TestFixture {
 public:
-    TestProcessExecutor() : TestFixture("TestProcessExecutor") {}
+    TestSingleExecutor() : TestFixture("TestSingleExecutor") {}
 
 private:
     Settings settings;
 
-    /**
-     * Execute check using n jobs for y files which are have
-     * identical data, given within data.
-     */
-    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr, const std::vector<std::string>& filesList = {}) {
+    static std::string zpad3(int i)
+    {
+        if (i < 10)
+            return "00" + std::to_string(i);
+        if (i < 100)
+            return "0" + std::to_string(i);
+        return std::to_string(i);
+    }
+
+    void check(int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr, const std::vector<std::string>& filesList = {}) {
         errout.str("");
         output.str("");
 
         std::map<std::string, std::size_t> filemap;
         if (filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
-                std::ostringstream oss;
-                oss << "file_" << i << ".cpp";
-                filemap[oss.str()] = data.size();
+                const std::string s = "file_" + zpad3(i) + ".cpp";
+                filemap[s] = data.size();
             }
         }
         else {
@@ -64,12 +70,16 @@ private:
             }
         }
 
-        settings.jobs = jobs;
         settings.showtime = showtime;
         if (plistOutput)
             settings.plistOutput = plistOutput;
+        // NOLINTNEXTLINE(performance-unnecessary-value-param)
+        CppCheck cppcheck(*this, true, [](std::string,std::vector<std::string>,std::string,std::string&){
+            return false;
+        });
+        cppcheck.settings() = settings;
         // TODO: test with settings.project.fileSettings;
-        ProcessExecutor executor(filemap, settings, *this);
+        SingleExecutor executor(cppcheck, filemap, settings, *this);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
@@ -79,47 +89,42 @@ private:
     }
 
     void run() override {
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
         LOAD_LIB_2(settings.library, "std.cfg");
 
-        TEST_CASE(deadlock_with_many_errors);
-        TEST_CASE(many_threads);
-        TEST_CASE(many_threads_showtime);
-        TEST_CASE(many_threads_plist);
+        TEST_CASE(many_files);
+        TEST_CASE(many_files_showtime);
+        TEST_CASE(many_files_plist);
         TEST_CASE(no_errors_more_files);
         TEST_CASE(no_errors_less_files);
         TEST_CASE(no_errors_equal_amount_files);
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
         TEST_CASE(markup);
-#endif // !WIN32
     }
 
-    void deadlock_with_many_errors() {
-        std::ostringstream oss;
-        oss << "int main()\n"
-            << "{\n";
-        for (int i = 0; i < 500; i++)
-            oss << "  {char *a = malloc(10);}\n";
+    void many_files() {
+        const Settings settingsOld = settings;
+        settings.quiet = false;
 
-        oss << "  return 0;\n"
-            << "}\n";
-        check(2, 3, 3, oss.str());
-    }
-
-    void many_threads() {
-        check(16, 100, 100,
+        check(100, 100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}");
+        std::string expected;
+        for (int i = 1; i <= 100; ++i) {
+            expected += "Checking file_" + zpad3(i) + ".cpp ...\n";
+            expected += std::to_string(i) + "/100 files checked " + std::to_string(i) + "% done\n";
+        }
+        ASSERT_EQUALS(expected, output.str());
+
+        settings = settingsOld;
     }
 
-    // #11249 - reports TSAN errors
-    void many_threads_showtime() {
+    void many_files_showtime() {
         SUPPRESS;
-        check(16, 100, 100,
+        check(100, 100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
@@ -127,11 +132,11 @@ private:
               "}", SHOWTIME_MODES::SHOWTIME_SUMMARY);
     }
 
-    void many_threads_plist() {
+    void many_files_plist() {
         const char plistOutput[] = "plist";
         ScopedFile plistFile("dummy", plistOutput);
 
-        check(16, 100, 100,
+        check(100, 100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
@@ -140,7 +145,7 @@ private:
     }
 
     void no_errors_more_files() {
-        check(2, 3, 0,
+        check(3, 0,
               "int main()\n"
               "{\n"
               "  return 0;\n"
@@ -148,7 +153,7 @@ private:
     }
 
     void no_errors_less_files() {
-        check(2, 1, 0,
+        check(1, 0,
               "int main()\n"
               "{\n"
               "  return 0;\n"
@@ -156,7 +161,7 @@ private:
     }
 
     void no_errors_equal_amount_files() {
-        check(2, 2, 0,
+        check(2, 0,
               "int main()\n"
               "{\n"
               "  return 0;\n"
@@ -164,7 +169,7 @@ private:
     }
 
     void one_error_less_files() {
-        check(2, 1, 1,
+        check(1, 1,
               "int main()\n"
               "{\n"
               "  {char *a = malloc(10);}\n"
@@ -173,14 +178,13 @@ private:
     }
 
     void one_error_several_files() {
-        check(2, 20, 20,
+        check(20, 20,
               "int main()\n"
               "{\n"
               "  {char *a = malloc(10);}\n"
               "  return 0;\n"
               "}");
     }
-
 
     void markup() {
         const Settings settingsOld = settings;
@@ -191,33 +195,27 @@ private:
             "file_1.cp1", "file_2.cpp", "file_3.cp1", "file_4.cpp"
         };
 
-        check(2, 4, 4,
+        check(4, 4,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}",
               SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
-        // TODO: order of "Checking" and "checked" is affected by thread
-        /*TODO_ASSERT_EQUALS("Checking file_2.cpp ...\n"
-                           "1/4 files checked 25% done\n"
-                           "Checking file_4.cpp ...\n"
-                           "2/4 files checked 50% done\n"
-                           "Checking file_1.cp1 ...\n"
-                           "3/4 files checked 75% done\n"
-                           "Checking file_3.cp1 ...\n"
-                           "4/4 files checked 100% done\n",
-                           "Checking file_1.cp1 ...\n"
-                           "1/4 files checked 25% done\n"
-                           "Checking file_2.cpp ...\n"
-                           "2/4 files checked 50% done\n"
-                           "Checking file_3.cp1 ...\n"
-                           "3/4 files checked 75% done\n"
-                           "Checking file_4.cpp ...\n"
-                           "4/4 files checked 100% done\n",
-                           output.str());*/
+        // TODO: filter out the "files checked" messages
+        ASSERT_EQUALS("Checking file_2.cpp ...\n"
+                      "1/4 files checked 25% done\n"
+                      "Checking file_4.cpp ...\n"
+                      "2/4 files checked 50% done\n"
+                      "Checking file_1.cp1 ...\n"
+                      "3/4 files checked 75% done\n"
+                      "Checking file_3.cp1 ...\n"
+                      "4/4 files checked 100% done\n", output.str());
         settings = settingsOld;
     }
+
+    // TODO: test clang-tidy
+    // TODO: test whole program analysis
 };
 
-REGISTER_TEST(TestProcessExecutor)
+REGISTER_TEST(TestSingleExecutor)

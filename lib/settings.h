@@ -216,11 +216,6 @@ public:
         time. Default is 1. (-j N) */
     unsigned int jobs;
 
-    /** @brief Collect unmatched suppressions in one run.
-     * This delays the reporting until all files are checked.
-     * It is needed by checks that analyse the whole code base. */
-    bool jointSuppressionReport;
-
     /** @brief --library= */
     std::list<std::string> libraries;
 
@@ -255,7 +250,7 @@ public:
     int performanceValueFlowMaxTime;
 
     /** @brief --performance-valueflow-max-if-count=C */
-    int performanceValueFlowMaxIfCount = 100;
+    int performanceValueFlowMaxIfCount;
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
@@ -438,6 +433,13 @@ public:
     std::set<std::string> summaryReturn;
 
     void loadSummaries();
+
+    bool useSingleJob() const {
+        return jobs == 1;
+    }
+
+    void setCheckLevelExhaustive();
+    void setCheckLevelNormal();
 
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups);

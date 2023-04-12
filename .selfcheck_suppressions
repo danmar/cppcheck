@@ -5,6 +5,7 @@ bitwiseOnBoolean
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
 varid0:gui/projectfile.cpp
+templateInstantiation
 
 # warnings in Qt generated code we cannot fix
 symbolDatabaseWarning:gui/temp/moc_*.cpp
@@ -23,5 +24,3 @@ autoNoType
 bailoutUninitVar
 
 *:externals/*/*
-
-performanceValueflowMaxIfCountExceeded

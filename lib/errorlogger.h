@@ -278,6 +278,12 @@ public:
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */
 std::string replaceStr(std::string s, const std::string &from, const std::string &to);
 
+/** replaces the static parts of the location template **/
+CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat);
+
+/** replaces the static parts of the location template **/
+CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation);
+
 /// @}
 //---------------------------------------------------------------------------
 #endif // errorloggerH

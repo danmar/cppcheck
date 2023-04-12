@@ -452,8 +452,8 @@ static bool reportClangErrors(std::istream &is, const std::function<void(const E
         const std::string locFile = Path::toNativeSeparators(filename);
         ErrorMessage::FileLocation loc;
         loc.setfile(locFile);
-        loc.line = std::atoi(linenr.c_str());
-        loc.column = std::atoi(colnr.c_str());
+        loc.line = strToInt<int>(linenr);
+        loc.column = strToInt<unsigned int>(colnr);
         ErrorMessage errmsg({std::move(loc)},
                             locFile,
                             Severity::error,
@@ -902,10 +902,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 checkRawTokens(tokenizer);
 
                 // Simplify tokens into normal form, skip rest of iteration if failed
-                Timer timer2("Tokenizer::simplifyTokens1", mSettings.showtime, &s_timerResults);
-                const bool result = tokenizer.simplifyTokens1(mCurrentConfig);
-                timer2.stop();
-                if (!result)
+                if (!tokenizer.simplifyTokens1(mCurrentConfig))
                     continue;
 
                 // dump xml if --dump
@@ -1026,7 +1023,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
-    if (!mSettings.jointSuppressionReport && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
+    if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
         reportUnmatchedSuppressions(mSettings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()));
     }
 
@@ -1111,12 +1108,12 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         return;
 
 
-    if (mSettings.jobs == 1 || !mSettings.buildDir.empty()) {
+    if (mSettings.useSingleJob() || !mSettings.buildDir.empty()) {
         // Analyse the tokens..
 
         CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
         if (fi1) {
-            if (mSettings.jobs == 1)
+            if (mSettings.useSingleJob())
                 mFileInfo.push_back(fi1);
             if (!mSettings.buildDir.empty())
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
@@ -1128,7 +1125,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
             Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
             if (fi != nullptr) {
-                if (mSettings.jobs == 1)
+                if (mSettings.useSingleJob())
                     mFileInfo.push_back(fi);
                 if (!mSettings.buildDir.empty())
                     mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
@@ -1652,9 +1649,6 @@ void CppCheck::reportProgress(const std::string &filename, const char stage[], c
     mErrorLogger.reportProgress(filename, stage, value);
 }
 
-void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
-{}
-
 void CppCheck::getErrorMessages()
 {
     Settings s(mSettings);
@@ -1730,8 +1724,8 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
         const std::string errorString = line.substr(endErrorPos, line.length());
 
         std::string fixedpath = Path::simplifyPath(line.substr(0, endNamePos));
-        const int64_t lineNumber = std::atol(lineNumString.c_str());
-        const int64_t column = std::atol(columnNumString.c_str());
+        const int64_t lineNumber = strToInt<int64_t>(lineNumString);
+        const int64_t column = strToInt<int64_t>(columnNumString);
         fixedpath = Path::toNativeSeparators(fixedpath);
 
         ErrorMessage errmsg;
@@ -1837,7 +1831,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
 
 bool CppCheck::isUnusedFunctionCheckEnabled() const
 {
-    return (mSettings.jobs == 1 && mSettings.checks.isEnabled(Checks::unusedFunction));
+    return (mSettings.useSingleJob() && mSettings.checks.isEnabled(Checks::unusedFunction));
 }
 
 void CppCheck::removeCtuInfoFiles(const std::map<std::string, std::size_t> &files)

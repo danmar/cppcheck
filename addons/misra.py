@@ -1543,10 +1543,19 @@ class MisraChecker:
     def misra_3_1(self, rawTokens):
         for token in rawTokens:
             starts_with_double_slash = token.str.startswith('//')
-            if token.str.startswith('/*') or starts_with_double_slash:
-                s = token.str.lstrip('/')
-                if ((not starts_with_double_slash) and '//' in s) or '/*' in s:
-                    self.reportError(token, 3, 1)
+            starts_with_block_comment = token.str.startswith("/*")
+            s = token.str.lstrip('/')
+            if (starts_with_double_slash or starts_with_block_comment) and "/*" in s:
+                # Block comment inside of regular comment, violation
+                self.reportError(token, 3, 1)
+            elif starts_with_block_comment and "//" in s:
+                # "//" in block comment, check if it's a uri
+                while "//" in s:
+                    possible_uri, s = s.split("//", 1)
+                    if not re.search(r"\w+:$", possible_uri):
+                        # Violation if no uri was found
+                        self.reportError(token, 3, 1)
+                        break
 
     def misra_3_2(self, rawTokens):
         for token in rawTokens:
@@ -2207,7 +2216,7 @@ class MisraChecker:
             if not token.astOperand1.valueType or not token.astOperand2.valueType:
                 continue
             if ((token.astOperand1.str in op or token.astOperand1.isComparisonOp) and
-                    (token.astOperand2.str in op or token.astOperand1.isComparisonOp)):
+                (token.astOperand2.str in op or token.astOperand2.isComparisonOp)):
                 e1, e2 = getEssentialCategorylist(token.astOperand1.astOperand2, token.astOperand2.astOperand1)
             elif token.astOperand1.str in op or token.astOperand1.isComparisonOp:
                 e1, e2 = getEssentialCategorylist(token.astOperand1.astOperand2, token.astOperand2)
@@ -4435,9 +4444,9 @@ class MisraChecker:
             self.executeCheck(2210, self.misra_22_10, cfg)
 
     def analyse_ctu_info(self, ctu_info_files):
-        all_typedef_info = []
-        all_tagname_info = []
-        all_macro_info = []
+        all_typedef_info = {}
+        all_tagname_info = {}
+        all_macro_info = {}
         all_external_identifiers_decl = {}
         all_external_identifiers_def = {}
         all_internal_identifiers = {}
@@ -4461,47 +4470,38 @@ class MisraChecker:
 
                     if summary_type == 'MisraTypedefInfo':
                         for new_typedef_info in summary_data:
-                            found = False
-                            for old_typedef_info in all_typedef_info:
-                                if old_typedef_info['name'] == new_typedef_info['name']:
-                                    found = True
-                                    if is_different_location(old_typedef_info, new_typedef_info):
-                                        self.reportError(Location(old_typedef_info), 5, 6)
-                                        self.reportError(Location(new_typedef_info), 5, 6)
-                                    else:
-                                        if new_typedef_info['used']:
-                                            old_typedef_info['used'] = True
-                                    break
-                            if not found:
-                                all_typedef_info.append(new_typedef_info)
+                            key = new_typedef_info['name']
+                            existing_typedef_info = all_typedef_info.get(key, None)
+                            if existing_typedef_info:
+                                if is_different_location(existing_typedef_info, new_typedef_info):
+                                    self.reportError(Location(existing_typedef_info), 5, 6)
+                                    self.reportError(Location(new_typedef_info), 5, 6)
+                                else:
+                                    existing_typedef_info['used'] = existing_typedef_info['used'] or new_typedef_info['used']
+                            else:
+                                all_typedef_info[key] = new_typedef_info
 
                     if summary_type == 'MisraTagName':
                         for new_tagname_info in summary_data:
-                            found = False
-                            for old_tagname_info in all_tagname_info:
-                                if old_tagname_info['name'] == new_tagname_info['name']:
-                                    found = True
-                                    if is_different_location(old_tagname_info, new_tagname_info):
-                                        self.reportError(Location(old_tagname_info), 5, 7)
-                                        self.reportError(Location(new_tagname_info), 5, 7)
-                                    else:
-                                        if new_tagname_info['used']:
-                                            old_tagname_info['used'] = True
-                                    break
-                            if not found:
-                                all_tagname_info.append(new_tagname_info)
+                            key = new_tagname_info['name']
+                            existing_tagname_info = all_tagname_info.get(key, None)
+                            if existing_tagname_info:
+                                if is_different_location(existing_tagname_info, new_tagname_info):
+                                    self.reportError(Location(existing_tagname_info), 5, 7)
+                                    self.reportError(Location(new_tagname_info), 5, 7)
+                                else:
+                                    existing_tagname_info['used'] = existing_tagname_info['used'] or new_tagname_info['used']
+                            else:
+                                all_tagname_info[key] = new_tagname_info
 
                     if summary_type == 'MisraMacro':
                         for new_macro in summary_data:
-                            found = False
-                            for old_macro in all_macro_info:
-                                if old_macro['name'] == new_macro['name']:
-                                    found = True
-                                    if new_macro['used']:
-                                        old_macro['used'] = True
-                                    break
-                            if not found:
-                                all_macro_info.append(new_macro)
+                            key = new_macro['name']
+                            existing_macro = all_macro_info.get(key, None)
+                            if existing_macro:
+                                existing_macro['used'] = existing_macro['used'] or new_macro['used']
+                            else:
+                                all_macro_info[key] = new_macro
 
                     if summary_type == 'MisraExternalIdentifiers':
                         for s in summary_data:
@@ -4540,17 +4540,17 @@ class MisraChecker:
         except FileNotFoundError:
             return
 
-        for ti in all_typedef_info:
-            if not ti['used']:
-                self.reportError(Location(ti), 2, 3)
+        unused_typedefs = [tdi for tdi in all_typedef_info.values() if not tdi['used']]
+        for tdi in unused_typedefs:
+            self.reportError(Location(tdi), 2, 3)
 
-        for ti in all_tagname_info:
-            if not ti['used']:
-                self.reportError(Location(ti), 2, 4)
+        unused_tags = [tag for tag in all_tagname_info.values() if not tag['used']]
+        for tag in unused_tags:
+            self.reportError(Location(tag), 2, 4)
 
-        for m in all_macro_info:
-            if not m['used']:
-                self.reportError(Location(m), 2, 5)
+        unused_macros = [m for m in all_macro_info.values() if not m['used']]
+        for m in unused_macros:
+            self.reportError(Location(m), 2, 5)
 
         all_external_identifiers = all_external_identifiers_decl
         all_external_identifiers.update(all_external_identifiers_def)

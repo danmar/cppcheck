@@ -59,7 +59,6 @@ Settings::Settings()
     force(false),
     inlineSuppressions(false),
     jobs(1),
-    jointSuppressionReport(false),
     loadAverage(0),
     maxConfigs(12),
     maxCtuDepth(2),
@@ -79,6 +78,7 @@ Settings::Settings()
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
+    setCheckLevelNormal();
 }
 
 void Settings::loadCppcheckCfg()
@@ -222,4 +222,17 @@ bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) 
 void Settings::loadSummaries()
 {
     Summaries::loadReturn(buildDir, summaryReturn);
+}
+
+
+void Settings::setCheckLevelExhaustive()
+{
+    // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
+    performanceValueFlowMaxIfCount = -1;
+}
+
+void Settings::setCheckLevelNormal()
+{
+    // Checking should finish in reasonable time.
+    performanceValueFlowMaxIfCount = 100;
 }

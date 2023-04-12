@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,32 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef colorH
-#define colorH
+#ifndef SINGLEEXECUTOR_H
+#define SINGLEEXECUTOR_H
 
-#include "config.h"
+#include "executor.h"
 
-#include <ostream>
+#include <cstddef>
+#include <map>
 #include <string>
 
-enum class Color {
-    Reset      = 0,
-    Bold       = 1,
-    Dim        = 2,
-    FgRed      = 31,
-    FgGreen    = 32,
-    FgBlue     = 34,
-    FgMagenta  = 35,
-    FgDefault  = 39,
-    BgRed      = 41,
-    BgGreen    = 42,
-    BgBlue     = 44,
-    BgDefault  = 49
+class ErrorLogger;
+class Settings;
+class CppCheck;
+
+class SingleExecutor : public Executor
+{
+public:
+    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    SingleExecutor(const SingleExecutor &) = delete;
+    ~SingleExecutor() override;
+    void operator=(const SingleExecutor &) = delete;
+
+    unsigned int check() override;
+
+private:
+    CppCheck &mCppcheck;
 };
-CPPCHECKLIB std::ostream& operator<<(std::ostream& os, const Color& c);
 
-CPPCHECKLIB std::string toString(const Color& c);
-
-extern CPPCHECKLIB bool gDisableColors; // for testing
-
-#endif
+#endif // SINGLEEXECUTOR_H
