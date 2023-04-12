@@ -7361,6 +7361,7 @@ std::string ValueType::dump() const
         break;
     case CONTAINER:
         ret << "valueType-type=\"container\"";
+        ret << " valueType-containerId=\"" << container << "\"";
         break;
     case ITERATOR:
         ret << "valueType-type=\"iterator\"";
