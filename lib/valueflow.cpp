@@ -9049,14 +9049,12 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const S
 }
 
 struct ValueFlowState {
-    explicit ValueFlowState(TokenList* tokenlist = nullptr, SymbolDatabase* symboldatabase = nullptr, ErrorLogger* errorLogger = nullptr, const Settings* settings = nullptr)
-    : 
-    tokenlist(tokenlist),
-    symboldatabase(symboldatabase),
-    errorLogger(errorLogger),
-    settings(settings)
+    explicit ValueFlowState(TokenList* tokenlist = nullptr,
+                            SymbolDatabase* symboldatabase = nullptr,
+                            ErrorLogger* errorLogger = nullptr,
+                            const Settings* settings = nullptr)
+        : tokenlist(tokenlist), symboldatabase(symboldatabase), errorLogger(errorLogger), settings(settings)
     {}
-    
 
     TokenList* tokenlist = nullptr;
     SymbolDatabase* symboldatabase = nullptr;
