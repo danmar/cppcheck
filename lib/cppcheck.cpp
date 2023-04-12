@@ -544,7 +544,7 @@ unsigned int CppCheck::check(const std::string &path)
             Tokenizer tokenizer(&mSettings, this);
             tokenizer.list.appendFileIfNew(path);
             clangimport::parseClangAstDump(&tokenizer, ast);
-            ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
+            ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings,  &s_timerResults);
             if (mSettings.debugnormal)
                 tokenizer.printDebugOutput(1);
             checkNormalTokens(tokenizer);

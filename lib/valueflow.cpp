@@ -97,6 +97,7 @@
 #include "sourcelocation.h"
 #include "standards.h"
 #include "symboldatabase.h"
+#include "timer.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
@@ -106,6 +107,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <climits>
 #include <cstdint>
 #include <cstdlib>
@@ -9046,154 +9048,232 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const S
     return expr && expr->hasKnownValue() ? &expr->values().front() : nullptr;
 }
 
-static std::size_t getTotalValues(TokenList *tokenlist)
+struct ValueFlowState
 {
-    std::size_t n = 1;
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next())
-        n += tok->values().size();
-    return n;
+    TokenList *tokenlist = nullptr;
+    SymbolDatabase* symboldatabase = nullptr;
+    ErrorLogger *errorLogger = nullptr;
+    const Settings *settings = nullptr;
+    std::set<const Scope*> skippedFunctions = {};
+
+};
+
+struct ValueFlowPass
+{
+    ValueFlowPass() = default;
+    ValueFlowPass(const ValueFlowPass&) = default;
+    // Name of pass
+    virtual const char* name() const = 0;
+    // Run the pass
+    virtual void run(const ValueFlowState& state) const = 0;
+    // Returns true if pass needs C++
+    virtual bool cpp() const = 0;
+    virtual ~ValueFlowPass() noexcept {}
+};
+
+struct ValueFlowPassRunner
+{
+    using Clock = std::chrono::steady_clock;
+    using TimePoint = std::chrono::time_point<Clock>;
+    explicit ValueFlowPassRunner(ValueFlowState state, TimerResultsIntf* timerResults = nullptr)
+    : state(std::move(state)), stop(TimePoint::max()), timerResults(timerResults)
+    {
+        setSkippedFunctions();
+        setStopTime();
+    }
+
+    bool run_once(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const {
+        for(const auto& pass:passes)
+            if (run(pass))
+                return true;
+        return false;
+    }
+
+    bool run(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const {
+        std::size_t values = 0;
+        std::size_t n = state.settings->valueFlowMaxIterations;
+        while (n > 0 && values != getTotalValues()) {
+            values = getTotalValues();
+            for(const auto& pass:passes)
+                if (run(pass))
+                    return true;
+        }
+        if (state.settings->debugwarnings) {
+            if (n == 0 && values != getTotalValues()) {
+                ErrorMessage::FileLocation loc;
+                loc.setfile(state.tokenlist->getFiles()[0]);
+                ErrorMessage errmsg({std::move(loc)},
+                                    emptyString,
+                                    Severity::debug,
+                                    "ValueFlow maximum iterations exceeded",
+                                    "valueFlowMaxIterations",
+                                    Certainty::normal);
+                state.errorLogger->reportErr(errmsg);
+            }
+        }
+        return false;
+    }
+
+    bool run(const ValuePtr<ValueFlowPass>& pass) const
+    {
+        auto start = Clock::now();
+        if (start > stop)
+            return true;
+        if (!state.tokenlist->isCPP() && pass->cpp())
+            return false;
+        if (timerResults) {
+            Timer t(pass->name(), state.settings->showtime, timerResults);
+            pass->run(state);
+        } else {
+            pass->run(state);
+        }
+        return false;
+    }
+
+    std::size_t getTotalValues() const
+    {
+        std::size_t n = 1;
+        for (Token *tok = state.tokenlist->front(); tok; tok = tok->next())
+            n += tok->values().size();
+        return n;
+    }
+
+    void setSkippedFunctions() {
+        if (state.settings->performanceValueFlowMaxIfCount > 0) {
+            for (const Scope* functionScope: state.symboldatabase->functionScopes) {
+                int countIfScopes = 0;
+                std::vector<const Scope*> scopes{functionScope};
+                while (!scopes.empty()) {
+                    const Scope* s = scopes.back();
+                    scopes.pop_back();
+                    for (const Scope* s2: s->nestedList) {
+                        scopes.emplace_back(s2);
+                        if (s2->type == Scope::ScopeType::eIf)
+                            ++countIfScopes;
+                    }
+                }
+                if (countIfScopes > state.settings->performanceValueFlowMaxIfCount) {
+                    state.skippedFunctions.emplace(functionScope);
+
+                    if (state.settings->severity.isEnabled(Severity::information)) {
+                        const std::string& functionName = functionScope->className;
+                        const std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(functionScope->bodyStart, state.tokenlist));
+                        const ErrorMessage errmsg(callstack, state.tokenlist->getSourceFilePath(), Severity::information,
+                                                  "ValueFlow analysis is limited in " + functionName + ". Use --check-level=exhaustive if full analysis is wanted.",
+                                                  "checkLevelNormal", Certainty::normal);
+                        state.errorLogger->reportErr(errmsg);
+                    }
+                }
+            }
+        }
+    }
+
+    void setStopTime() {
+        if (state.settings->performanceValueFlowMaxTime >= 0)
+            stop = Clock::now() + std::chrono::seconds{state.settings->performanceValueFlowMaxTime};
+    }
+
+    ValueFlowState state;
+    TimePoint stop;
+    TimerResultsIntf* timerResults;
+};
+
+template<class F>
+struct ValueFlowPassAdaptor : ValueFlowPass
+{
+    const char* mName = nullptr;
+    bool mCPP = false;
+    F mRun;
+    ValueFlowPassAdaptor(const char* pname, bool pcpp, F prun)
+    : mName(pname), mCPP(pcpp), mRun(prun)
+    {}
+    virtual const char* name() const override {
+        return mName;
+    }
+    virtual void run(const ValueFlowState& state) const override {
+        mRun(state.tokenlist, state.symboldatabase, state.errorLogger, state.settings, state.skippedFunctions);
+    }
+    virtual bool cpp() const override {
+        return mCPP;
+    }
+};
+
+template<class F>
+ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool cpp, F run)
+{
+    return {name, cpp, run};
 }
 
-static std::uint64_t getValueFlowStopTime(const Settings* settings) {
-    if (settings->performanceValueFlowMaxTime >= 0)
-        return std::time(nullptr) + settings->performanceValueFlowMaxTime;
-    return ~0ULL;
-}
+#define VALUEFLOW_ADAPTOR(cpp, ...) \
+    makeValueFlowPassAdaptor(#__VA_ARGS__, cpp, [](TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings, const std::set<const Scope*>& skippedFunctions) { \
+        (void)tokenlist;\
+        (void)symboldatabase;\
+        (void)errorLogger;\
+        (void)settings;\
+        (void)skippedFunctions;\
+        __VA_ARGS__;\
+    })
 
-void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+#define VFA(...) VALUEFLOW_ADAPTOR(false, __VA_ARGS__)
+#define VFA_CPP(...) VALUEFLOW_ADAPTOR(true, __VA_ARGS__)
+
+void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings, TimerResultsIntf* timerResults)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
-    valueFlowEnumValue(symboldatabase, settings);
-    valueFlowNumber(tokenlist, settings);
-    valueFlowString(tokenlist, settings);
-    valueFlowArray(tokenlist, settings);
-    valueFlowUnknownFunctionReturn(tokenlist, settings);
-    valueFlowGlobalConstVar(tokenlist, settings);
-    valueFlowEnumValue(symboldatabase, settings);
-    valueFlowNumber(tokenlist, settings);
-    valueFlowGlobalStaticVar(tokenlist, settings);
-    valueFlowPointerAlias(tokenlist, settings);
-    valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowSymbolic(tokenlist, symboldatabase, settings);
-    valueFlowBitAnd(tokenlist, settings);
-    valueFlowSameExpressions(tokenlist, settings);
-    valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, *settings);
+    ValueFlowPassRunner runner{{tokenlist, symboldatabase, errorLogger, settings}, timerResults};
+    runner.run_once({
+        VFA(valueFlowEnumValue(symboldatabase, settings)),
+        VFA(valueFlowNumber(tokenlist, settings)),
+        VFA(valueFlowString(tokenlist, settings)),
+        VFA(valueFlowArray(tokenlist, settings)),
+        VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
+        VFA(valueFlowGlobalConstVar(tokenlist, settings)),
+        VFA(valueFlowEnumValue(symboldatabase, settings)),
+        VFA(valueFlowNumber(tokenlist, settings)),
+        VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
+        VFA(valueFlowPointerAlias(tokenlist, settings)),
+        VFA(valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings)),
+        VFA(valueFlowSymbolic(tokenlist, symboldatabase, settings)),
+        VFA(valueFlowBitAnd(tokenlist, settings)),
+        VFA(valueFlowSameExpressions(tokenlist, settings)),
+        VFA(valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, *settings)),
+    });
 
-    const std::uint64_t stopTime = getValueFlowStopTime(settings);
+    runner.run({
+            VFA(valueFlowImpossibleValues(tokenlist, settings)),
+            VFA(valueFlowSymbolicOperators(symboldatabase, settings)),
+            VFA(valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+            VFA(valueFlowSymbolicInfer(symboldatabase, settings)),
+            VFA(valueFlowArrayBool(tokenlist, settings)),
+            VFA(valueFlowArrayElement(tokenlist, settings)),
+            VFA(valueFlowRightShift(tokenlist, settings)),
+            VFA(valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+            VFA_CPP(valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings)),
+            VFA(valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+            VFA(valueFlowInferCondition(tokenlist, settings)),
+            VFA(valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings)),
+            VFA(valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings)),
+            VFA(valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, *settings)),
+            VFA(valueFlowFunctionReturn(tokenlist, errorLogger, settings)),
+            VFA(valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings)),
+            VFA(valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, settings)),
+            VFA(valueFlowUninit(tokenlist, symboldatabase, settings)),
+            VFA_CPP(valueFlowAfterMove(tokenlist, symboldatabase, settings)),
+            VFA_CPP(valueFlowSmartPointer(tokenlist, errorLogger, settings)),
+            VFA_CPP(valueFlowIterators(tokenlist, settings)),
+            VFA_CPP(valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+            VFA_CPP(valueFlowIteratorInfer(tokenlist, settings)),
+            VFA_CPP(valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+            VFA_CPP(valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+            VFA(valueFlowSafeFunctions(tokenlist, symboldatabase, settings))
+    });
 
-    std::set<const Scope*> skippedFunctions;
-    if (settings->performanceValueFlowMaxIfCount > 0) {
-        for (const Scope* functionScope: symboldatabase->functionScopes) {
-            int countIfScopes = 0;
-            std::vector<const Scope*> scopes{functionScope};
-            while (!scopes.empty()) {
-                const Scope* s = scopes.back();
-                scopes.pop_back();
-                for (const Scope* s2: s->nestedList) {
-                    scopes.emplace_back(s2);
-                    if (s2->type == Scope::ScopeType::eIf)
-                        ++countIfScopes;
-                }
-            }
-            if (countIfScopes > settings->performanceValueFlowMaxIfCount) {
-                skippedFunctions.emplace(functionScope);
-
-                if (settings->severity.isEnabled(Severity::information)) {
-                    const std::string& functionName = functionScope->className;
-                    const std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(functionScope->bodyStart, tokenlist));
-                    const ErrorMessage errmsg(callstack, tokenlist->getSourceFilePath(), Severity::information,
-                                              "ValueFlow analysis is limited in " + functionName + ". Use --check-level=exhaustive if full analysis is wanted.",
-                                              "checkLevelNormal", Certainty::normal);
-                    errorLogger->reportErr(errmsg);
-                }
-            }
-        }
-    }
-
-    std::size_t values = 0;
-    std::size_t n = settings->valueFlowMaxIterations;
-    while (n > 0 && values != getTotalValues(tokenlist)) {
-        values = getTotalValues(tokenlist);
-
-        if (std::time(nullptr) < stopTime)
-            valueFlowImpossibleValues(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowSymbolicOperators(symboldatabase, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
-        if (std::time(nullptr) < stopTime)
-            valueFlowSymbolicInfer(symboldatabase, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowArrayBool(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowArrayElement(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowRightShift(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
-        if (std::time(nullptr) < stopTime)
-            valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
-        if (std::time(nullptr) < stopTime)
-            valueFlowInferCondition(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, *settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowFunctionReturn(tokenlist, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowUninit(tokenlist, symboldatabase, settings);
-
-        if (tokenlist->isCPP()) {
-            if (std::time(nullptr) < stopTime)
-                valueFlowAfterMove(tokenlist, symboldatabase, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowSmartPointer(tokenlist, errorLogger, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowIterators(tokenlist, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
-            if (std::time(nullptr) < stopTime)
-                valueFlowIteratorInfer(tokenlist, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
-            if (std::time(nullptr) < stopTime)
-                valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
-        }
-        if (std::time(nullptr) < stopTime)
-            valueFlowSafeFunctions(tokenlist, symboldatabase, settings);
-        n--;
-    }
-
-    if (settings->debugwarnings) {
-        if (n == 0 && values != getTotalValues(tokenlist)) {
-            ErrorMessage::FileLocation loc;
-            loc.setfile(tokenlist->getFiles()[0]);
-            ErrorMessage errmsg({std::move(loc)},
-                                emptyString,
-                                Severity::debug,
-                                "ValueFlow maximum iterations exceeded",
-                                "valueFlowMaxIterations",
-                                Certainty::normal);
-            errorLogger->reportErr(errmsg);
-        }
-    }
-
-    if (std::time(nullptr) < stopTime)
-        valueFlowDynamicBufferSize(tokenlist, symboldatabase, settings);
-
-    if (std::time(nullptr) < stopTime)
-        valueFlowDebug(tokenlist, errorLogger, settings);
+    runner.run_once({
+        VFA(valueFlowDynamicBufferSize(tokenlist, symboldatabase, settings)),
+        VFA(valueFlowDebug(tokenlist, errorLogger, settings))
+    });
 }
 
 std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
