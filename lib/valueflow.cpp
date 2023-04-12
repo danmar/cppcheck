@@ -9197,14 +9197,14 @@ struct ValueFlowPassAdaptor : ValueFlowPass {
     bool mCPP = false;
     F mRun;
     ValueFlowPassAdaptor(const char* pname, bool pcpp, F prun) : mName(pname), mCPP(pcpp), mRun(prun) {}
-    virtual const char* name() const override {
+    const char* name() const override {
         return mName;
     }
-    virtual void run(const ValueFlowState& state) const override
+    void run(const ValueFlowState& state) const override
     {
         mRun(state.tokenlist, state.symboldatabase, state.errorLogger, state.settings, state.skippedFunctions);
     }
-    virtual bool cpp() const override {
+    bool cpp() const override {
         return mCPP;
     }
 };
