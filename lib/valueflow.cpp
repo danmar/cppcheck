@@ -7244,7 +7244,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
 };
 
 template<class Key, class F>
-bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& vars, F f)
+bool productParams(const Settings* settings, const std::unordered_map<Key, std::list<ValueFlow::Value>>& vars, F f)
 {
     using Args = std::vector<std::unordered_map<Key, ValueFlow::Value>>;
     Args args(1);
@@ -7254,9 +7254,15 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
             continue;
         args.back()[p.first] = p.second.front();
     }
+    bool bail = false;
+    int max = 8;
+    if (settings)
+        max = settings->performanceValueFlowMaxSubFunctionArgs;
     for (const auto& p:vars) {
-        if (args.size() > 256)
-            return false;
+        if (args.size() > max) {
+            bail = true;
+            break;
+        }
         if (p.second.empty())
             continue;
         std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
@@ -7279,6 +7285,11 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
         });
     }
 
+    if (args.size() > max) {
+        bail = true;
+        args.resize(max);
+    }
+
     for (const auto& arg:args) {
         if (arg.empty())
             continue;
@@ -7290,7 +7301,7 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
             continue;
         f(arg);
     }
-    return true;
+    return !bail;
 }
 
 static void valueFlowInjectParameter(TokenList* tokenlist,
@@ -7300,7 +7311,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist,
                                      const Scope* functionScope,
                                      const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
 {
-    const bool r = productParams(vars, [&](const std::unordered_map<const Variable*, ValueFlow::Value>& arg) {
+    const bool r = productParams(&settings, vars, [&](const std::unordered_map<const Variable*, ValueFlow::Value>& arg) {
         MultiValueFlowAnalyzer a(arg, tokenlist, &settings, symboldatabase);
         valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, settings);
     });
@@ -7431,7 +7442,7 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     }
     if (returnValue.find("arg") != std::string::npos && argValues.empty())
         return;
-    productParams(argValues, [&](const std::unordered_map<nonneg int, ValueFlow::Value>& arg) {
+    productParams(settings, argValues, [&](const std::unordered_map<nonneg int, ValueFlow::Value>& arg) {
         ValueFlow::Value value = evaluateLibraryFunction(arg, returnValue, settings);
         if (value.isUninitValue())
             return;
