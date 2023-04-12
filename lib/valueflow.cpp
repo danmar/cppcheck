@@ -9236,7 +9236,7 @@ void ValueFlow::setValues(TokenList* tokenlist,
     for (Token* tok = tokenlist->front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
-    ValueFlowPassRunner runner{{tokenlist, symboldatabase, errorLogger, settings}, timerResults};
+    ValueFlowPassRunner runner{ValueFlowState{tokenlist, symboldatabase, errorLogger, settings}, timerResults};
     runner.run_once({
         VFA(valueFlowEnumValue(symboldatabase, settings)),
         VFA(valueFlowNumber(tokenlist, settings)),
