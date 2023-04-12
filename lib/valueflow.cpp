@@ -9088,8 +9088,8 @@ struct ValueFlowPassRunner {
     bool run_once(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const
     {
         return std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
-                return run(pass);
-            });
+            return run(pass);
+        });
     }
 
     bool run(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const
