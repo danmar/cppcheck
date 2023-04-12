@@ -9087,10 +9087,9 @@ struct ValueFlowPassRunner {
 
     bool run_once(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const
     {
-        for (const auto& pass : passes)
-            if (run(pass))
-                return true;
-        return false;
+        return std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
+                return run(pass);
+            });
     }
 
     bool run(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const
@@ -9099,9 +9098,10 @@ struct ValueFlowPassRunner {
         std::size_t n = state.settings->valueFlowMaxIterations;
         while (n > 0 && values != getTotalValues()) {
             values = getTotalValues();
-            for (const auto& pass : passes)
-                if (run(pass))
-                    return true;
+            if (std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
+                return run(pass);
+            }))
+                return true;
         }
         if (state.settings->debugwarnings) {
             if (n == 0 && values != getTotalValues()) {
