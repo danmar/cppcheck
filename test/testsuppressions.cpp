@@ -246,8 +246,7 @@ private:
             ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine(suppression));
         }
 
-        CppCheck cppCheck(supprs, *this, true, nullptr);
-        Settings& settings = cppCheck.settings();
+        Settings settings;
         settings.jobs = 1;
         settings.quiet = true;
         settings.inlineSuppressions = true;
@@ -264,6 +263,7 @@ private:
         if (useFS)
             filelist.clear();
 
+        CppCheck cppCheck(settings, supprs, *this, true, nullptr);
         SingleExecutor executor(cppCheck, filelist, fileSettings, settings, supprs, *this);
         const unsigned int exitCode = executor.check();
 
@@ -1195,13 +1195,14 @@ private:
     }
 
     void globalSuppressions() { // Testing that Cppcheck::useGlobalSuppressions works (#8515)
+        Settings settings;
+        settings.quiet = true;
+        settings.exitCode = 1;
+
         Suppressions supprs;
         ASSERT_EQUALS("", supprs.nomsg.addSuppressionLine("uninitvar"));
 
-        CppCheck cppCheck(supprs, *this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
-        Settings& settings = cppCheck.settings();
-        settings.quiet = true;
-        settings.exitCode = 1;
+        CppCheck cppCheck(settings, supprs, *this, false, nullptr); // <- do not "use global suppressions". pretend this is a thread that just checks a file.
 
         const char code[] = "int f() { int a; return a; }";
         ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("test.c"), code)); // <- no unsuppressed error is seen
@@ -1231,8 +1232,7 @@ private:
     void suppressionWithRelativePaths() {
         Suppressions supprs;
 
-        CppCheck cppCheck(supprs, *this, true, nullptr);
-        Settings& settings = cppCheck.settings();
+        Settings settings;
         settings.quiet = true;
         settings.severity.enable(Severity::style);
         settings.inlineSuppressions = true;
@@ -1246,6 +1246,7 @@ private:
             "    // cppcheck-suppress unusedStructMember\n"
             "    int y;\n"
             "};";
+        CppCheck cppCheck(settings, supprs, *this, true, nullptr);
         ASSERT_EQUALS(0, cppCheck.check(FileWithDetails("/somewhere/test.cpp"), code));
         ASSERT_EQUALS("",errout_str());
     }

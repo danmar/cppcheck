@@ -50,10 +50,12 @@ static const FileWithDetails s_file("test.cpp");
 
 static void doCheck(const std::string& code)
 {
+    // TODO: create the settings only once
+    Settings s;
+    s.addEnabled("all");
+    s.certainty.setEnabled(Certainty::inconclusive, true);
     Suppressions supprs;
-    CppCheck cppcheck(supprs, s_errorLogger, false, nullptr);
-    cppcheck.settings().addEnabled("all");
-    cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
+    CppCheck cppcheck(s, supprs, s_errorLogger, false, nullptr);
     cppcheck.check(s_file, code);
 }
 
