@@ -2,7 +2,6 @@ missingIncludeSystem
 
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
-varid0:gui/projectfile.cpp
 naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
 symbolDatabaseWarning:*/moc_*.cpp
 simplifyUsing:*/moc_*.cpp
@@ -21,8 +20,6 @@ templateInstantiation:test/testutils.cpp
 
 naming-varname:externals/simplecpp/simplecpp.h
 naming-privateMemberVariable:externals/simplecpp/simplecpp.h
-
-valueFlowMaxIterations:externals/tinyxml2/tinyxml2.cpp
 
 # TODO: these warnings need to be addressed upstream
 uninitMemberVar:externals/tinyxml2/tinyxml2.h

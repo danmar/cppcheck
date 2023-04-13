@@ -1435,14 +1435,12 @@ private:
     void createSymbolDatabaseNeedInitialization();
     void createSymbolDatabaseVariableSymbolTable();
     void createSymbolDatabaseSetScopePointers();
-    void createSymbolDatabaseSetFunctionPointers(bool firstPass); // cppcheck-suppress functionConst // has side effects
+    void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
-    // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
-    void createSymbolDatabaseEnums(); // cppcheck-suppress functionConst // has side effects
-    void createSymbolDatabaseEscapeFunctions(); // cppcheck-suppress functionConst // has side effects
-    // cppcheck-suppress functionConst
+    void createSymbolDatabaseEnums();
+    void createSymbolDatabaseEscapeFunctions();
     void createSymbolDatabaseIncompleteVars();
 
     void debugSymbolDatabase() const;
