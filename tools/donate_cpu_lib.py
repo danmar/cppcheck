@@ -716,12 +716,17 @@ class LibraryIncludes:
         for root, _, files in os.walk(path):
             for name in files:
                 filename = os.path.join(root, name)
-                try:
-                    with open(filename, 'rt', errors='ignore') as f:
-                        filedata = f.read()
-                    has_include_cb(filedata)
-                except IOError:
-                    pass
+                for enc in ['utf-8', 'cp437']: # TODO: add unit test
+                    ex = None
+                    try:
+                        with open(filename, 'rt', encoding=enc) as f:
+                            filedata = f.read()
+                        break
+                    except Exception as e:
+                        ex = e
+                if ex:
+                    raise Exception("__iterate_files - opening '{}' failed: {}".format(filename, ex))
+                has_include_cb(filedata)
 
     def get_libraries(self, folder):
         print('Detecting library usage...')
