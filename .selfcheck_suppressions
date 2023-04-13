@@ -2,7 +2,6 @@ missingIncludeSystem
 
 # temporary suppressions - fix the warnings!
 simplifyUsing:lib/valueptr.h
-varid0:gui/projectfile.cpp
 naming-privateMemberVariable:gui/test/cppchecklibrarydata/testcppchecklibrarydata.h
 symbolDatabaseWarning:*/moc_*.cpp
 simplifyUsing:*/moc_*.cpp
