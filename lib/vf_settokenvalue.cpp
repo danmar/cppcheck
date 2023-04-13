@@ -406,7 +406,6 @@ namespace ValueFlow
                 }
             } else if (!value.isImpossible()) {
                 // is condition only depending on 1 variable?
-                // cppcheck-suppress[variableScope] #8541
                 nonneg int varId = 0;
                 bool ret = false;
                 visitAstNodes(parent->astOperand1(),

@@ -10834,7 +10834,6 @@ private:
     // cppcheck-suppress unusedPrivateFunction
     void redundantMemWrite() {
         // Simple tests
-        // cppcheck-suppress unreachableCode - remove when code is enabled again
         check("void f() {\n"
               "    char a[10];\n"
               "    memcpy(a, foo, bar);\n"

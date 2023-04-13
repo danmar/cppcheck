@@ -108,7 +108,6 @@ static const Signalmap_t listofsignals = {
  * but when ending up here something went terribly wrong anyway.
  * And all which is left is just printing some information and terminate.
  */
-// cppcheck-suppress constParameterCallback
 static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 {
     int type = -1;
