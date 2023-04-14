@@ -298,9 +298,8 @@ private:
                                         "    a++;\n"
                                         "}\n",
                                         "uninitvar:test.cpp"));
-        //TODO_ASSERT_EQUALS("", "[test.cpp]: (information) Unmatched suppression: uninitvar\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
-        // TODO: add assert - gives different result with threads/processes
         // suppress uninitvar for this file only, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
@@ -315,9 +314,8 @@ private:
                                         "    a++;\n"
                                         "}\n",
                                         "*:test.cpp"));
-        //TODO_ASSERT_EQUALS("", "[test.cpp]: (information) Unmatched suppression: *\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
-        // TODO: add assert - gives different result with threads/processes
         // suppress all for this file only, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
@@ -334,14 +332,13 @@ private:
                                         "uninitvar:test.cpp:3"));
         ASSERT_EQUALS("", errout.str());
 
-        // TODO: add assert - gives different result with threads/processes
         // suppress uninitvar for this file and line, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
                        "    b++;\n"
                        "}\n",
                        "uninitvar:test.cpp:3");
-        //TODO_ASSERT_EQUALS("[test.cpp:3]: (information) Unmatched suppression: uninitvar\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) Unmatched suppression: uninitvar\n", errout.str());
 
         // suppress uninitvar inline
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
@@ -464,7 +461,6 @@ private:
                                         ""));
         ASSERT_EQUALS("", errout.str());
 
-        // TODO: add assert - gives different result with threads/processes
         // suppress uninitvar inline, without error present
         (this->*check)("void f() {\n"
                        "    int a;\n"
@@ -472,7 +468,7 @@ private:
                        "    b++;\n"
                        "}\n",
                        "");
-        //TODO_ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout.str());
 
         // #5746 - exitcode
         ASSERT_EQUALS(1U,
