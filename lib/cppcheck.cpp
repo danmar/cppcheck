@@ -1150,11 +1150,9 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 #ifdef HAVE_RULES
 bool CppCheck::hasRule(const std::string &tokenlist) const
 {
-    for (const Settings::Rule &rule : mSettings.rules) {
-        if (rule.tokenlist == tokenlist)
-            return true;
-    }
-    return false;
+    return std::any_of(mSettings.rules.cbegin(), mSettings.rules.cend(), [&](const Settings::Rule& rule) {
+        return rule.tokenlist == tokenlist;
+    });
 }
 
 static const char * pcreErrorCodeToString(const int pcreExecRet)
