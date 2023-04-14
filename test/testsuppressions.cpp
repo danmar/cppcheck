@@ -184,7 +184,6 @@ private:
 
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
-        settings.exitCode = 1;
         settings.jobs = 1;
         settings.inlineSuppressions = true;
         if (suppression == "unusedFunction")
