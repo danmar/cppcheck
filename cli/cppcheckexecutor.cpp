@@ -78,9 +78,8 @@ CppCheckExecutor::~CppCheckExecutor()
     delete mErrorOutput;
 }
 
-bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
+bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* const argv[])
 {
-    Settings& settings = cppcheck->settings();
     CmdLineParser parser(settings);
     const bool success = parser.parseFromArgs(argc, argv);
 
@@ -199,23 +198,20 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     CheckUnusedFunctions::clear();
 
-    CppCheck cppCheck(*this, true, executeCommand);
-
-    const Settings& settings = cppCheck.settings();
-    mSettings = &settings;
-
-    if (!parseFromArgs(&cppCheck, argc, argv)) {
-        mSettings = nullptr;
+    Settings settings;
+    if (!parseFromArgs(settings, argc, argv)) {
         return EXIT_FAILURE;
     }
     if (Settings::terminated()) {
-        mSettings = nullptr;
         return EXIT_SUCCESS;
     }
 
-    int ret;
+    CppCheck cppCheck(*this, true, executeCommand);
+    cppCheck.settings() = settings;
+    mSettings = &settings;
 
-    if (cppCheck.settings().exceptionHandling)
+    int ret;
+    if (settings.exceptionHandling)
         ret = check_wrapper(cppCheck);
     else
         ret = check_internal(cppCheck);
