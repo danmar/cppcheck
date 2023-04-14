@@ -999,6 +999,7 @@ Settings MainWindow::getCppcheckSettings()
 
             addonFilePath.replace(QChar('\\'), QChar('/'));
 
+            // TODO: use picojson to generate the JSON
             QString json;
             json += "{ \"script\":\"" + addonFilePath + "\"";
             if (!pythonCmd.isEmpty())
@@ -1014,6 +1015,9 @@ Settings MainWindow::getCppcheckSettings()
             }
             json += " }";
             result.addons.emplace(json.toStdString());
+            AddonInfo addonInfo;
+            addonInfo.getAddonInfo(json.toStdString(), result.exename);
+            result.addonInfos.emplace_back(std::move(addonInfo));
         }
 
         if (isCppcheckPremium()) {

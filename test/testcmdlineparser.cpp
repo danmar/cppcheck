@@ -287,6 +287,7 @@ private:
         TEST_CASE(projectEmpty);
         TEST_CASE(projectMissing);
         TEST_CASE(projectNoPaths);
+        TEST_CASE(addon);
 
         TEST_CASE(ignorepaths1);
         TEST_CASE(ignorepaths2);
@@ -2004,6 +2005,16 @@ private:
         const char * const argv[] = {"cppcheck", "--project=project.cppcheck"};
         ASSERT(!parser->parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: no C or C++ source files found.\n", logger->str());
+    }
+
+    void addon() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--addon=misra", "file.cpp"};
+        settings->addons.clear();
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->addons.size());
+        ASSERT_EQUALS("misra", *settings->addons.cbegin());
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void ignorepaths1() {

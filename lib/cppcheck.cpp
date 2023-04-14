@@ -1388,14 +1388,10 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             fout << f << std::endl;
     }
 
-    for (const std::string &addon : mSettings.addons) {
-        AddonInfo addonInfo;
-        const std::string &failedToGetAddonInfo = addonInfo.getAddonInfo(addon, mSettings.exename);
-        if (!failedToGetAddonInfo.empty()) {
-            reportOut(failedToGetAddonInfo, Color::FgRed);
-            mExitCode = 1;
-            continue;
-        }
+    // ensure all addons have already been resolved - TODO: remove when settings are const after creation
+    assert(mSettings.addonInfos.size() == mSettings.addons.size());
+
+    for (const AddonInfo &addonInfo : mSettings.addonInfos) {
         if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
