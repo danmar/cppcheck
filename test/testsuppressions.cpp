@@ -185,11 +185,11 @@ private:
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
         settings.exitCode = 1;
+        settings.jobs = 1;
         settings.inlineSuppressions = true;
         if (suppression == "unusedFunction")
             settings.checks.setEnabled(Checks::unusedFunction, true);
         settings.severity.enable(Severity::information);
-        settings.jobs = 1;
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
             EXPECT_EQ("", r);
@@ -219,7 +219,7 @@ private:
         files["test.cpp"] = strlen(code);
 
         Settings settings;
-        settings.jobs = 1;
+        settings.jobs = 2;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
@@ -247,7 +247,7 @@ private:
         files["test.cpp"] = strlen(code);
 
         Settings settings;
-        settings.jobs = 1;
+        settings.jobs = 2;
         settings.inlineSuppressions = true;
         settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
