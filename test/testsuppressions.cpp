@@ -740,16 +740,14 @@ private:
     }
 
     void suppressingSyntaxErrors() { // syntaxErrors should be suppressible (#7076)
-        std::map<std::string, std::string> files;
-        files["test.cpp"] = "if if\n";
+        const char code[] = "if if\n";
 
-        ASSERT_EQUALS(0, checkSuppression(files, "syntaxError:test.cpp:1"));
+        ASSERT_EQUALS(0, checkSuppression(code, "syntaxError:test.cpp:1"));
         ASSERT_EQUALS("", errout.str());
     }
 
     void suppressingSyntaxErrorsInline() { // syntaxErrors should be suppressible (#5917)
-        std::map<std::string, std::string> files;
-        files["test.cpp"] = "double result(0.0);\n"
+        const char code[] = "double result(0.0);\n"
                             "_asm\n"
                             "{\n"
                             "   // cppcheck-suppress syntaxError\n"
@@ -759,13 +757,12 @@ private:
                             "   fstp  QWORD PTR result  ; store a double (8 bytes)\n"
                             "   pop   EAX               ; restore EAX\n"
                             "}";
-        ASSERT_EQUALS(0, checkSuppression(files, ""));
+        ASSERT_EQUALS(0, checkSuppression(code, ""));
         ASSERT_EQUALS("", errout.str());
     }
 
     void suppressingSyntaxErrorsWhileFileRead() { // syntaxError while file read should be suppressible (PR #1333)
-        std::map<std::string, std::string> files;
-        files["test.cpp"] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
+        const char code[] = "CONST (genType, KS_CONST) genService[KS_CFG_NR_OF_NVM_BLOCKS] =\n"
                             "{\n"
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
                             "[!IF \"(as:modconf('Ks')[1]/KsGeneral/KsType = 'KS_CFG_TYPE_KS_MASTER') and\n"
@@ -778,7 +775,7 @@ private:
                             "[!VAR \"BC\" = \"$BC + 1\"!][!//\n"
                             "[!ENDIF!][!//\n"
                             "};";
-        ASSERT_EQUALS(0, checkSuppression(files, "syntaxError:test.cpp:4"));
+        ASSERT_EQUALS(0, checkSuppression(code, "syntaxError:test.cpp:4"));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -808,10 +805,9 @@ private:
     }
 
     void suppressingSyntaxErrorAndExitCode() {
-        std::map<std::string, std::string> files;
-        files["test.cpp"] = "fi if;";
+        const char code[] = "fi if;";
 
-        ASSERT_EQUALS(0, checkSuppression(files, "*:test.cpp"));
+        ASSERT_EQUALS(0, checkSuppression(code, "*:test.cpp"));
         ASSERT_EQUALS("", errout.str());
 
         // multi files, but only suppression one
@@ -822,20 +818,18 @@ private:
         ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error
-        std::map<std::string, std::string> file2;
-        file2["test.cpp"] = "fi fi\n"
-                            "if if;";
-        ASSERT_EQUALS(1, checkSuppression(file2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
+        const char code2[] = "fi fi\n"
+                             "if if;";
+        ASSERT_EQUALS(1, checkSuppression(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
         ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error (2)
-        std::map<std::string, std::string> file3;
-        file3["test.cpp"] = "void f(int x, int y){\n"
-                            "    int a = x/0;\n"
-                            "    int b = y/0;\n"
-                            "}\n"
-                            "f(0, 1);\n";
-        ASSERT_EQUALS(1, checkSuppression(file3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
+        const char code3[] = "void f(int x, int y){\n"
+                             "    int a = x/0;\n"
+                             "    int b = y/0;\n"
+                             "}\n"
+                             "f(0, 1);\n";
+        ASSERT_EQUALS(1, checkSuppression(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
     }
 
 };
