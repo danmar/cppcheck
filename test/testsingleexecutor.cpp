@@ -64,6 +64,7 @@ private:
     struct CheckOptions
     {
         CheckOptions() = default;
+        bool quiet = true;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
@@ -102,6 +103,7 @@ private:
         }
 
         settings.showtime = opt.showtime;
+        settings.quiet = opt.quiet;
         if (opt.plistOutput)
             settings.plistOutput = opt.plistOutput;
 
@@ -149,26 +151,26 @@ private:
         TEST_CASE(one_error_several_files);
         TEST_CASE(markup);
         TEST_CASE(clangTidy);
+        TEST_CASE(showtime_top5_file);
+        TEST_CASE(showtime_top5_summary);
+        TEST_CASE(showtime_file);
+        TEST_CASE(showtime_summary);
     }
 
     void many_files() {
-        const Settings settingsOld = settings;
-        settings.quiet = false;
-
         check(100, 100,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}");
+              "}", dinit(CheckOptions,
+                         $.quiet = false));
         std::string expected;
         for (int i = 1; i <= 100; ++i) {
             expected += "Checking " + fprefix() + "_" + zpad3(i) + ".cpp ...\n";
             expected += std::to_string(i) + "/100 files checked " + std::to_string(i) + "% done\n";
         }
         ASSERT_EQUALS(expected, output.str());
-
-        settings = settingsOld;
     }
 
     void many_files_showtime() {
@@ -251,7 +253,9 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}",
-              dinit(CheckOptions, $.filesList = files));
+              dinit(CheckOptions,
+                    $.quiet = false,
+                        $.filesList = files));
         // TODO: filter out the "files checked" messages
         ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
                       "1/4 files checked 25% done\n"
@@ -285,11 +289,61 @@ private:
               "  return 0;\n"
               "}",
               dinit(CheckOptions,
-                    $.executeCommandCalled = true,
+                    $.quiet = false,
+                        $.executeCommandCalled = true,
                         $.exe = exe,
                         $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}));
         ASSERT_EQUALS("Checking " + file + " ...\n", output.str());
         settings = settingsOld;
+    }
+
+// TODO: provide data which actually shows values above 0
+
+    void showtime_top5_file() {
+        REDIRECT;
+        check(2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        // for each file: top5 results + overall + empty line
+        TODO_ASSERT_EQUALS((5 + 1 + 1) * 2, (5 + 1 + 1), cppcheck::count_all_of(output_s, '\n'));
+    }
+
+    void showtime_top5_summary() {
+        REDIRECT;
+        check(2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        // once: top5 results + overall + empty line
+        TODO_ASSERT_EQUALS(5 + 1 + 1, 0, cppcheck::count_all_of(output_s, '\n'));
+        // should only report the top5 once
+        ASSERT(output_s.find("1 result(s)") == std::string::npos);
+        TODO_ASSERT(output_s.find("2 result(s)") != std::string::npos);
+    }
+
+    void showtime_file() {
+        REDIRECT;
+        check(2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        TODO_ASSERT_EQUALS(2, 1, cppcheck::count_all_of(output_s, "Overall time:"));
+    }
+
+    void showtime_summary() {
+        REDIRECT;
+        check(2, 0,
+              "int main() {}",
+              dinit(CheckOptions,
+                    $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+        const std::string output_s = GET_REDIRECT_OUTPUT;
+        // should only report the actual summary once
+        ASSERT(output_s.find("1 result(s)") == std::string::npos);
+        TODO_ASSERT(output_s.find("2 result(s)") != std::string::npos);
     }
 
     // TODO: test whole program analysis
