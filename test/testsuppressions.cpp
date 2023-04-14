@@ -26,6 +26,7 @@
 #include "fixture.h"
 #include "helpers.h"
 #include "threadexecutor.h"
+#include "singleexecutor.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -178,34 +179,35 @@ private:
     }
 
     // Check the suppression for multiple files
-    unsigned int checkSuppression(std::map<std::string, std::string> &files, const std::string &suppression = emptyString) {
+    unsigned int checkSuppression(std::map<std::string, std::string> &f, const std::string &suppression = emptyString) {
         // Clear the error log
         errout.str("");
+        output.str("");
+
+        std::map<std::string, std::size_t> files;
+        for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i) {
+            files[i->first] = i->second.size();
+        }
 
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
         settings.jobs = 1;
         settings.inlineSuppressions = true;
+        settings.severity.enable(Severity::information);
         if (suppression == "unusedFunction")
             settings.checks.setEnabled(Checks::unusedFunction, true);
-        settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
-            std::string r = settings.nomsg.addSuppressionLine(suppression);
-            EXPECT_EQ("", r);
+            EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
+        SingleExecutor executor(cppCheck, files, settings, *this);
+        std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
+        scopedfiles.reserve(files.size());
+        for (std::map<std::string, std::string>::const_iterator i = f.cbegin(); i != f.cend(); ++i)
+            scopedfiles.emplace_back(new ScopedFile(i->first, i->second));
 
-        unsigned int exitCode = std::accumulate(files.cbegin(), files.cend(), 0U, [&](unsigned int v, const std::pair<std::string, std::string>& f) {
-            return v | cppCheck.check(f.first, f.second);
-        });
+        const unsigned int exitCode = executor.check();
 
-        if (cppCheck.analyseWholeProgram())
-            exitCode |= settings.exitCode;
-
-        std::map<std::string, std::size_t> files_for_report;
-        for (std::map<std::string, std::string>::const_iterator file = files.cbegin(); file != files.cend(); ++file)
-            files_for_report[file->first] = file->second.size();
-
-        CppCheckExecutor::reportSuppressions(settings, false, files_for_report, *this);
+        CppCheckExecutor::reportSuppressions(settings, false, files, *this);
 
         return exitCode;
     }
@@ -814,13 +816,13 @@ private:
         std::map<std::string, std::string> mfiles;
         mfiles["test.cpp"] = "fi if;";
         mfiles["test2.cpp"] = "fi if";
-        ASSERT_EQUALS(1, checkSuppression(mfiles, "*:test.cpp"));
+        ASSERT_EQUALS(2, checkSuppression(mfiles, "*:test.cpp"));
         ASSERT_EQUALS("[test2.cpp:1]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error
         const char code2[] = "fi fi\n"
                              "if if;";
-        ASSERT_EQUALS(1, checkSuppression(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
+        ASSERT_EQUALS(2, checkSuppression(code2, "*:test.cpp:1"));  // suppress all error at line 1 of test.cpp
         ASSERT_EQUALS("[test.cpp:2]: (error) syntax error\n", errout.str());
 
         // multi error in file, but only suppression one error (2)
@@ -829,7 +831,7 @@ private:
                              "    int b = y/0;\n"
                              "}\n"
                              "f(0, 1);\n";
-        ASSERT_EQUALS(1, checkSuppression(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
+        ASSERT_EQUALS(2, checkSuppression(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
     }
 
 };
