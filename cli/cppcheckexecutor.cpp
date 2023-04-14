@@ -101,7 +101,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (parser.getShowErrorMessages()) {
             mShowAllErrors = true;
             std::cout << ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName);
-            cppcheck->getErrorMessages();
+            CppCheck::getErrorMessages(*this);
             std::cout << ErrorMessage::getXMLFooter() << std::endl;
         }
 
