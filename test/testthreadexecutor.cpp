@@ -39,7 +39,7 @@ public:
     TestThreadExecutor() : TestFixture("TestThreadExecutor") {}
 
 private:
-    const Settings settings = settingsBuilder().library("std.cfg").build();
+    Settings settings = settingsBuilder().library("std.cfg").build();
 
     /**
      * Execute check using n jobs for y files which are have
