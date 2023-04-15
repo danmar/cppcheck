@@ -1948,7 +1948,7 @@ private:
 
     void initvar_smartptr() { // #10237
         // TODO: test should probably not pass without library
-        static const Settings s = settingsBuilder() /*.library("std.cfg")*/.build();
+        const Settings s = settingsBuilder() /*.library("std.cfg")*/.build();
         check("struct S {\n"
               "    explicit S(const std::shared_ptr<S>& sp) {\n"
               "        set(*sp);\n"
@@ -1990,7 +1990,7 @@ private:
               "{ }", true);
         ASSERT_EQUALS("[test.cpp:13]: (warning, inconclusive) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='.\n", errout.str());
 
-        static const Settings s = settingsBuilder().certainty(Certainty::inconclusive).severity(Severity::style).severity(Severity::warning).library("std.cfg").build();
+        const Settings s = settingsBuilder().certainty(Certainty::inconclusive).severity(Severity::style).severity(Severity::warning).library("std.cfg").build();
         check("struct S {\n"
               "    S& operator=(const S& s) { return *this; }\n"
               "    std::mutex m;\n"
@@ -3603,7 +3603,7 @@ private:
 
     void uninitVarInheritClassInit() {
         // TODO: test should probably not pass without library
-        static const Settings s = settingsBuilder() /*.library("vcl.cfg")*/.build();
+        const Settings s = settingsBuilder() /*.library("vcl.cfg")*/.build();
 
         check("class Fred: public TObject\n"
               "{\n"

@@ -33,7 +33,7 @@ class Suppressions;
 class givenACodeSampleToTokenize {
 private:
     Tokenizer tokenizer;
-    static const Settings settings;
+    const Settings settings;
 
 public:
     explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)

@@ -50,7 +50,7 @@ private:
 
 #define findLambdaEndToken(code) findLambdaEndToken_(code, __FILE__, __LINE__)
     bool findLambdaEndToken_(const char code[], const char* file, int line) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -84,7 +84,7 @@ private:
 
 #define findLambdaStartToken(code) findLambdaStartToken_(code, __FILE__, __LINE__)
     bool findLambdaStartToken_(const char code[], const char* file, int line) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -117,7 +117,7 @@ private:
 
 #define isNullOperand(code) isNullOperand_(code, __FILE__, __LINE__)
     bool isNullOperand_(const char code[], const char* file, int line) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -139,7 +139,7 @@ private:
 
 #define isReturnScope(code, offset) isReturnScope_(code, offset, __FILE__, __LINE__)
     bool isReturnScope_(const char code[], int offset, const char* file, int line) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -170,7 +170,7 @@ private:
 
 #define isSameExpression(code, tokStr1, tokStr2) isSameExpression_(code, tokStr1, tokStr2, __FILE__, __LINE__)
     bool isSameExpression_(const char code[], const char tokStr1[], const char tokStr2[], const char* file, int line) {
-        static const Settings settings;
+        const Settings settings;
         Library library;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -210,7 +210,7 @@ private:
 
 #define isVariableChanged(code, startPattern, endPattern) isVariableChanged_(code, startPattern, endPattern, __FILE__, __LINE__)
     bool isVariableChanged_(const char code[], const char startPattern[], const char endPattern[], const char* file, int line) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -240,7 +240,7 @@ private:
 
 #define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
     bool isVariableChangedByFunctionCall_(const char code[], const char pattern[], bool *inconclusive, const char* file, int line) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -416,7 +416,7 @@ private:
 
 #define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)
     bool nextAfterAstRightmostLeaf_(const char code[], const char parentPattern[], const char rightPattern[], const char* file, int line) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -441,7 +441,7 @@ private:
     enum class Result {False, True, Fail};
 
     Result isUsedAsBool(const char code[], const char pattern[]) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         if (!tokenizer.tokenize(istr, "test.cpp"))

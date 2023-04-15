@@ -195,7 +195,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        static const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");

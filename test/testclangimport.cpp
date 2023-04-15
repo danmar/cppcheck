@@ -137,7 +137,7 @@ private:
     }
 
     std::string parse(const char clang[]) {
-        static const Settings settings = settingsBuilder().clang().build();
+        const Settings settings = settingsBuilder().clang().build();
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(clang);
         clangimport::parseClangAstDump(&tokenizer, istr);
