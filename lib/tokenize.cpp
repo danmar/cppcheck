@@ -5725,6 +5725,8 @@ void Tokenizer::dump(std::ostream &out) const
     // The idea is not that this will be readable for humans. It's a
     // data dump that 3rd party tools could load and get useful info from.
 
+    std::set<const Library::Container*> containers;
+
     // tokens..
     out << "  <tokenlist>" << std::endl;
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
@@ -5804,6 +5806,7 @@ void Tokenizer::dump(std::ostream &out) const
             const std::string vt = tok->valueType()->dump();
             if (!vt.empty())
                 out << ' ' << vt;
+            containers.insert(tok->valueType()->container);
         }
         if (!tok->varId() && tok->scope()->isExecutable() && Token::Match(tok, "%name% (")) {
             if (mSettings->library.isnoreturn(tok))
@@ -5815,6 +5818,18 @@ void Tokenizer::dump(std::ostream &out) const
     out << "  </tokenlist>" << std::endl;
 
     mSymbolDatabase->printXml(out);
+
+    containers.erase(nullptr);
+    if (!containers.empty()) {
+        out << "  <containers>\n";
+        for (const Library::Container* c: containers) {
+            out << "    <container id=\"" << c << "\" array-like-index-op=\""
+                << (c->arrayLike_indexOp ? "true" : "false") << "\" "
+                << "std-string-like=\"" << (c->stdStringLike ? "true" : "false") << "\"/>\n";
+        }
+        out << "  </containers>\n";
+    }
+
     if (list.front())
         list.front()->printValueFlow(true, out);
 

@@ -252,6 +252,9 @@ public:
     /** @brief --performance-valueflow-max-if-count=C */
     int performanceValueFlowMaxIfCount;
 
+    /** @brief max number of sets of arguments to pass to subfuncions in valueflow */
+    int performanceValueFlowMaxSubFunctionArgs;
+
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
 

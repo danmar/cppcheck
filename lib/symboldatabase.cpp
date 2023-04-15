@@ -6340,7 +6340,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     // range for loop, auto
     if (vt2 &&
         parent->str() == ":" &&
-        Token::Match(parent->astParent(), "( const| auto *|&| %var% :") && // TODO: east-const, multiple const, ref to ptr, rvalue ref
+        Token::Match(parent->astParent(), "( const| auto *|&|&&| %var% :") && // TODO: east-const, multiple const, ref to ptr
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
@@ -6357,7 +6357,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 varvt.reference = Reference::LValue;
             if (isconst) {
                 if (varvt.pointer && varvt.reference != Reference::None)
-                    varvt.constness |= 2;
+                    varvt.constness |= (1 << varvt.pointer);
                 else
                     varvt.constness |= 1;
             }
@@ -6405,6 +6405,16 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 } else if (parsedecl(vt2->containerTypeToken, &autovt, mDefaultSignedness, mSettings, mIsCpp)) {
                     setType = true;
                     templateArgType = vt2->containerTypeToken->type();
+                    if (Token::simpleMatch(autoToken->next(), "&"))
+                        autovt.reference = Reference::LValue;
+                    else if (Token::simpleMatch(autoToken->next(), "&&"))
+                        autovt.reference = Reference::RValue;
+                    if (autoToken->previous()->str() == "const") {
+                        if (autovt.pointer && autovt.reference != Reference::None)
+                            autovt.constness |= 2;
+                        else
+                            autovt.constness |= 1;
+                    }
                 }
             }
 
@@ -6730,6 +6740,7 @@ static const Token* parsedecl(const Token* type,
                 return nullptr;
             valuetype->type = vt->type;
             valuetype->pointer = vt->pointer;
+            valuetype->reference = vt->reference;
             if (vt->sign != ValueType::Sign::UNKNOWN_SIGN)
                 valuetype->sign = vt->sign;
             valuetype->constness = vt->constness;
@@ -7113,6 +7124,15 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                                     vt.container = contTok->variable()->valueType()->container;
                                     vt.containerTypeToken = contTok->variable()->valueType()->containerTypeToken;
                                     setValueType(tok, vt);
+                                } else if (Token::simpleMatch(contTok, "(") && contTok->astOperand1() && contTok->astOperand1()->function()) {
+                                    const Function* func = contTok->astOperand1()->function();
+                                    if (const ValueType* funcVt = func->tokenDef->next()->valueType()) {
+                                        ValueType vt;
+                                        vt.type = ValueType::Type::ITERATOR;
+                                        vt.container = funcVt->container;
+                                        vt.containerTypeToken = funcVt->containerTypeToken;
+                                        setValueType(tok, vt);
+                                    }
                                 }
                             }
                         }
@@ -7361,6 +7381,7 @@ std::string ValueType::dump() const
         break;
     case CONTAINER:
         ret << "valueType-type=\"container\"";
+        ret << " valueType-containerId=\"" << container << "\"";
         break;
     case ITERATOR:
         ret << "valueType-type=\"iterator\"";
