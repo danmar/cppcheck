@@ -51,6 +51,8 @@ unsigned int SingleExecutor::check()
 
     std::size_t processedsize = 0;
     unsigned int c = 0;
+    // TODO: processes either mSettings.project.fileSettings or mFiles - process/thread implementations process both
+    // TODO: thread/process implementations process fileSettings first
     if (mSettings.project.fileSettings.empty()) {
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
             if (!mSettings.library.markupFile(i->first)
@@ -59,6 +61,7 @@ unsigned int SingleExecutor::check()
                 processedsize += i->second;
                 if (!mSettings.quiet)
                     reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
+                // TODO: call analyseClangTidy()
                 c++;
             }
         }
@@ -66,6 +69,7 @@ unsigned int SingleExecutor::check()
         // filesettings
         // check all files of the project
         for (const ImportProject::FileSettings &fs : mSettings.project.fileSettings) {
+            // TODO: handle markup files
             result += mCppcheck.check(fs);
             ++c;
             if (!mSettings.quiet)
