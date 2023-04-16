@@ -116,7 +116,7 @@ public:
      * @brief Call all "getErrorMessages" in all registered Check classes.
      * Also print out XML header and footer.
      */
-    void getErrorMessages();
+    static void getErrorMessages(ErrorLogger &errorlogger);
 
     void tooManyConfigsError(const std::string &file, const int numberOfConfigurations);
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);

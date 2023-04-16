@@ -115,12 +115,12 @@ protected:
      * @brief Parse command line args and get settings and file lists
      * from there.
      *
-     * @param cppcheck cppcheck instance
+     * @param settings the settings to store into
      * @param argc argc from main()
      * @param argv argv from main()
      * @return false when errors are found in the input
      */
-    bool parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[]);
+    bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
 
 private:
 
