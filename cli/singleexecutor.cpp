@@ -69,25 +69,45 @@ unsigned int SingleExecutor::check()
         // filesettings
         // check all files of the project
         for (const ImportProject::FileSettings &fs : mSettings.project.fileSettings) {
-            // TODO: handle markup files
-            result += mCppcheck.check(fs);
-            ++c;
-            if (!mSettings.quiet)
-                reportStatus(c, mSettings.project.fileSettings.size(), c, mSettings.project.fileSettings.size());
-            if (mSettings.clangTidy)
-                mCppcheck.analyseClangTidy(fs);
+            if (!mSettings.library.markupFile(fs.filename)
+                || !mSettings.library.processMarkupAfterCode(fs.filename)) {
+                result += mCppcheck.check(fs);
+                ++c;
+                if (!mSettings.quiet)
+                    reportStatus(c, mSettings.project.fileSettings.size(), c, mSettings.project.fileSettings.size());
+                if (mSettings.clangTidy)
+                    mCppcheck.analyseClangTidy(fs);
+            }
         }
     }
 
     // second loop to parse all markup files which may not work until all
     // c/cpp files have been parsed and checked
-    for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-        if (mSettings.library.markupFile(i->first) && mSettings.library.processMarkupAfterCode(i->first)) {
-            result += mCppcheck.check(i->first);
-            processedsize += i->second;
-            if (!mSettings.quiet)
-                reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-            c++;
+    // TODO: get rid of duplicated code
+    if (mSettings.project.fileSettings.empty()) {
+        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
+            if (mSettings.library.markupFile(i->first)
+                && mSettings.library.processMarkupAfterCode(i->first)) {
+                result += mCppcheck.check(i->first);
+                processedsize += i->second;
+                if (!mSettings.quiet)
+                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
+                // TODO: call analyseClangTidy()
+                c++;
+            }
+        }
+    }
+    else {
+        for (const ImportProject::FileSettings &fs : mSettings.project.fileSettings) {
+            if (mSettings.library.markupFile(fs.filename)
+                && mSettings.library.processMarkupAfterCode(fs.filename)) {
+                result += mCppcheck.check(fs);
+                ++c;
+                if (!mSettings.quiet)
+                    reportStatus(c, mSettings.project.fileSettings.size(), c, mSettings.project.fileSettings.size());
+                if (mSettings.clangTidy)
+                    mCppcheck.analyseClangTidy(fs);
+            }
         }
     }
     if (mCppcheck.analyseWholeProgram())
