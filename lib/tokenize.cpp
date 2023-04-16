@@ -8884,10 +8884,6 @@ void Tokenizer::simplifyCPPAttribute()
         }
         Token::eraseTokens(tok, skipCPPOrAlignAttribute(tok)->next());
         tok->deleteThis();
-        // fix iterator after removing
-        if (!tok->previous()) {
-            tok = list.front();
-        }
     }
 }
 
