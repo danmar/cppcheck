@@ -36,12 +36,13 @@
 #include <utility>
 #include <vector>
 
-class TestSingleExecutor : public TestFixture {
-public:
-    TestSingleExecutor() : TestFixture("TestSingleExecutor") {}
+class TestSingleExecutorBase : public TestFixture {
+protected:
+    TestSingleExecutorBase(const char * const name, bool useFS) : TestFixture(name), useFS(useFS) {}
 
 private:
     Settings settings = settingsBuilder().library("std.cfg").build();
+    bool useFS;
 
     static std::string zpad3(int i)
     {
@@ -55,18 +56,29 @@ private:
     void check(int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr, const std::vector<std::string>& filesList = {}) {
         errout.str("");
         output.str("");
+        settings.project.fileSettings.clear();
 
         std::map<std::string, std::size_t> filemap;
         if (filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
                 const std::string s = "file_" + zpad3(i) + ".cpp";
                 filemap[s] = data.size();
+                if (useFS) {
+                    ImportProject::FileSettings fs;
+                    fs.filename = s;
+                    settings.project.fileSettings.emplace_back(std::move(fs));
+                }
             }
         }
         else {
             for (const auto& f : filesList)
             {
                 filemap[f] = data.size();
+                if (useFS) {
+                    ImportProject::FileSettings fs;
+                    fs.filename = f;
+                    settings.project.fileSettings.emplace_back(std::move(fs));
+                }
             }
         }
 
@@ -84,6 +96,10 @@ private:
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, data));
+
+        // clear files list so only fileSettings ware used
+        if (useFS)
+            filemap.clear();
 
         ASSERT_EQUALS(result, executor.check());
     }
@@ -217,4 +233,15 @@ private:
     // TODO: test whole program analysis
 };
 
-REGISTER_TEST(TestSingleExecutor)
+class TestSingleExecutorFiles : public TestSingleExecutorBase {
+public:
+    TestSingleExecutorFiles() : TestSingleExecutorBase("TestSingleExecutorFiles", false) {}
+};
+
+class TestSingleExecutorFS : public TestSingleExecutorBase {
+public:
+    TestSingleExecutorFS() : TestSingleExecutorBase("TestSingleExecutorFS", true) {}
+};
+
+REGISTER_TEST(TestSingleExecutorFiles)
+REGISTER_TEST(TestSingleExecutorFS)
