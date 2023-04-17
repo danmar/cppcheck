@@ -2702,6 +2702,8 @@ class MisraChecker:
                 continue
             if not token.astParent:
                 continue
+            if (token.astOperand1 is None) or (token.astOperand2 is None):
+                continue
             if token.astOperand1.str == '[' and token.astOperand1.previous.str in ('{', ','):
                 continue
             if not (token.astParent.str in [',', ';', '{']):
