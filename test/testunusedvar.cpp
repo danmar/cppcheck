@@ -75,6 +75,7 @@ private:
         TEST_CASE(structmember21); // #4759
         TEST_CASE(structmember22); // #11016
         TEST_CASE(structmember23);
+        TEST_CASE(classmember);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1868,6 +1869,13 @@ private:
                                "    return m[0].s;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void classmember() {
+        checkStructMemberUsage("class C {\n"
+                               "    int i{};\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) class member 'C::i' is never used.\n", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
