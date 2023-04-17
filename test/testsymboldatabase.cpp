@@ -7410,6 +7410,7 @@ private:
                       "[[noreturn]] void func3() { }\n"
                       "template <class T> [[noreturn]] void func4() { }\n"
                       "[[noreturn]] [[gnu::format(printf, 1, 2)]] void func5(const char*, ...);\n"
+                      "[[gnu::format(printf, 1, 2)]] [[noreturn]] void func6(const char*, ...);\n"
                       );
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(true,  db != nullptr); // not null
@@ -7431,6 +7432,10 @@ private:
         ASSERT_EQUALS(true, func->isAttributeNoreturn());
 
         func = findFunctionByName("func5", &db->scopeList.front());
+        ASSERT_EQUALS(true, func != nullptr);
+        ASSERT_EQUALS(true, func->isAttributeNoreturn());
+
+        func = findFunctionByName("func6", &db->scopeList.front());
         ASSERT_EQUALS(true, func != nullptr);
         ASSERT_EQUALS(true, func->isAttributeNoreturn());
 
