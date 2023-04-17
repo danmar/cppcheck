@@ -8825,36 +8825,35 @@ void Tokenizer::simplifyCPPAttribute()
     if (mSettings->standards.cpp < Standards::CPP11 || isC())
         return;
 
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
+    for (Token *tok = list.front(); tok;) {
         if (!isCPPAttribute(tok) && !isAlignAttribute(tok)) {
+            tok = tok->next();
             continue;
         }
         if (isCPPAttribute(tok)) {
             if (Token::findsimplematch(tok->tokAt(2), "noreturn", tok->link())) {
-                Token * head = skipCPPOrAlignAttribute(tok);
+                Token * head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
-                    head = skipCPPOrAlignAttribute(head);
-                head = head->next();
+                    head = skipCPPOrAlignAttribute(head)->next();
                 while (Token::Match(head, "%name%|::|*|&|<|>|,")) // skip return type
                     head = head->next();
                 if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
                     head->previous()->isAttributeNoreturn(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "nodiscard", tok->link())) {
-                Token * head = skipCPPOrAlignAttribute(tok);
+                Token * head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
-                    head = skipCPPOrAlignAttribute(head);
-                head = head->next();
+                    head = skipCPPOrAlignAttribute(head)->next();
                 while (Token::Match(head, "%name%|::|*|&|<|>|,"))
                     head = head->next();
                 if (head && head->str() == "(" && isFunctionHead(head, "{|;")) {
                     head->previous()->isAttributeNodiscard(true);
                 }
             } else if (Token::findsimplematch(tok->tokAt(2), "maybe_unused", tok->link())) {
-                Token* head = skipCPPOrAlignAttribute(tok);
+                Token* head = skipCPPOrAlignAttribute(tok)->next();
                 while (isCPPAttribute(head) || isAlignAttribute(head))
-                    head = skipCPPOrAlignAttribute(head);
-                head->next()->isAttributeMaybeUnused(true);
+                    head = skipCPPOrAlignAttribute(head)->next();
+                head->isAttributeMaybeUnused(true);
             } else if (Token::Match(tok->previous(), ") [ [ expects|ensures|assert default|audit|axiom| : %name% <|<=|>|>= %num% ] ]")) {
                 const Token *vartok = tok->tokAt(4);
                 if (vartok->str() == ":")
@@ -8884,14 +8883,7 @@ void Tokenizer::simplifyCPPAttribute()
             }
         }
         Token::eraseTokens(tok, skipCPPOrAlignAttribute(tok)->next());
-        // fix iterator after removing
-        if (tok->previous()) {
-            tok = tok->previous();
-            tok->next()->deleteThis();
-        } else {
-            tok->deleteThis();
-            tok = list.front();
-        }
+        tok->deleteThis();
     }
 }
 
