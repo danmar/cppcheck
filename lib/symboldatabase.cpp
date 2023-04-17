@@ -5547,7 +5547,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
 //---------------------------------------------------------------------------
 
-const Function* SymbolDatabase::findFunction(const Token *tok) const
+const Function* SymbolDatabase::findFunction(const Token* const tok) const
 {
     // find the scope this function is in
     const Scope *currScope = tok->scope();
@@ -5661,6 +5661,18 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
             const Function *func = currScope->findFunction(tok);
             if (func)
                 return func;
+            currScope = currScope->nestedIn;
+        }
+        // check using namespace
+        currScope = tok->scope();
+        while (currScope) {
+            for (const auto& ul : currScope->usingList) {
+                if (ul.scope) {
+                    const Function* func = ul.scope->findFunction(tok);
+                    if (func)
+                        return func;
+                }
+            }
             currScope = currScope->nestedIn;
         }
     }
