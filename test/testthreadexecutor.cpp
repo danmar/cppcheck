@@ -46,16 +46,24 @@ private:
         return "thread";
     }
 
+    struct CheckOptions
+    {
+        CheckOptions() noexcept = default;
+        SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+        const char* plistOutput = nullptr;
+        std::vector<std::string> filesList;
+    };
+
     /**
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr, const std::vector<std::string>& filesList = {}) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions &opt = {}) {
         errout.str("");
         output.str("");
 
         std::map<std::string, std::size_t> filemap;
-        if (filesList.empty()) {
+        if (opt.filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
                 std::ostringstream oss;
                 oss << fprefix() << "_" << i << ".cpp";
@@ -63,7 +71,7 @@ private:
             }
         }
         else {
-            for (const auto& f : filesList)
+            for (const auto& f : opt.filesList)
             {
                 filemap[f] = data.size();
             }
@@ -71,9 +79,9 @@ private:
 
         Settings settings1 = settings;
         settings1.jobs = jobs;
-        settings1.showtime = showtime;
-        if (plistOutput)
-            settings1.plistOutput = plistOutput;
+        settings1.showtime = opt.showtime;
+        if (opt.plistOutput)
+            settings1.plistOutput = opt.plistOutput;
         // TODO: test with settings.project.fileSettings;
         ThreadExecutor executor(filemap, settings1, *this);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
@@ -126,7 +134,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", SHOWTIME_MODES::SHOWTIME_SUMMARY);
+              "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
     }
 
     void many_threads_plist() {
@@ -138,7 +146,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", SHOWTIME_MODES::SHOWTIME_NONE, plistOutput);
+              "}", dinit(CheckOptions, $.plistOutput = plistOutput));
     }
 
     void no_errors_more_files() {
@@ -199,7 +207,7 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}",
-              SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
+              dinit(CheckOptions, $.filesList = files));
         // TODO: order of "Checking" and "checked" is affected by thread
         /*TODO_ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
                            "1/4 files checked 25% done\n"
