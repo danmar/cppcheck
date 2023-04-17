@@ -443,6 +443,7 @@ private:
         TEST_CASE(findFunction44); // #11182
         TEST_CASE(findFunction45);
         TEST_CASE(findFunction46);
+        TEST_CASE(findFunction47);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -7147,6 +7148,18 @@ private:
         ASSERT(functok && functok->function());
         ASSERT(functok->function()->name() == "g");
         ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
+    }
+
+    void findFunction47() {
+        GET_SYMBOL_DB("struct S {\n"
+                      "    S() {}\n"
+                      "    std::list<S> l;\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token* typeTok = Token::findsimplematch(tokenizer.tokens(), "S >");
+        ASSERT(typeTok && typeTok->type());
+        ASSERT(typeTok->type()->name() == "S");
+        ASSERT_EQUALS(1, typeTok->type()->classDef->linenr());
     }
 
     void findFunctionContainer() {
