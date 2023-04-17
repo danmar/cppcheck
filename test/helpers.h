@@ -92,4 +92,18 @@ public:
     static std::string getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression = nullptr);
 };
 
+/* designated initialization helper
+    Usage:
+    struct S
+    {
+        int i;
+    };
+
+    const auto s = dinit(S,
+        $.i = 1
+    );
+ */
+#define dinit(T, ...) \
+    ([&] { T ${}; __VA_ARGS__; return $; }())
+
 #endif // helpersH
