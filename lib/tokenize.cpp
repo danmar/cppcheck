@@ -895,7 +895,7 @@ namespace {
         bool canReplace(const Token* tok) {
             if (mNameToken == tok)
                 return false;
-            if (!Token::Match(tok->previous(), "%name%|;|{|}|(|,|<") && !Token::Match(tok, "%name% ("))
+            if (!Token::Match(tok->previous(), "%name%|;|{|}|(|,|<") && !Token::Match(tok->previous(), "!!. %name% ("))
                 return false;
             if (!Token::Match(tok, "%name% %name%|*|&|&&|;|(|)|,|::")) {
                 if (Token::Match(tok->previous(), "( %name% =") && Token::Match(tok->linkAt(-1), ") %name%|{") && !tok->tokAt(-2)->isKeyword())
