@@ -2896,7 +2896,7 @@ private:
         checkNoMemset_(file, line, code, settings);
     }
 
-    void checkNoMemset_(const char* file, int line, const char code[], Settings &settings) {
+    void checkNoMemset_(const char* file, int line, const char code[], const Settings &settings) {
         // Clear the error log
         errout.str("");
 
