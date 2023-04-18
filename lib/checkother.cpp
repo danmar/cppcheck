@@ -1620,7 +1620,7 @@ void CheckOther::checkConstPointer()
                 continue;
             if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
-            constVariableError(p, nullptr);
+            constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
         }
     }
 }
