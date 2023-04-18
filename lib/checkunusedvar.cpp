@@ -1463,7 +1463,7 @@ void CheckUnusedVar::checkStructMemberUsage()
         const bool isInherited = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) {
             const Type* dType = derivedScope.definedType;
             return dType && std::any_of(dType->derivedFrom.cbegin(), dType->derivedFrom.cend(), [&](const Type::BaseInfo& derivedFrom) {
-                return derivedFrom.type == scope.definedType;
+                return derivedFrom.type == scope.definedType && derivedFrom.access != AccessControl::Private;
             });
         });
 
