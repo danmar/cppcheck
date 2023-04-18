@@ -3512,7 +3512,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'c' can be declared as pointer to const\n", errout.str());
 
         check("typedef void (*cb_t)(int*);\n" // #11674
-              "    void cb(int* p) {\n"
+              "void cb(int* p) {\n"
               "    if (*p) {}\n"
               "}\n"
               "void g(cb_t);\n"
