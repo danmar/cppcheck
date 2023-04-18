@@ -1464,16 +1464,15 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // bail out if struct is inherited
-        bool bailout = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) {
+        const bool isInherited = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) {
             const Type* dType = derivedScope.definedType;
             return dType && std::any_of(dType->derivedFrom.cbegin(), dType->derivedFrom.cend(), [&](const Type::BaseInfo& derivedFrom) {
                 return derivedFrom.type == scope.definedType;
             });
         });
-        if (bailout)
-            continue;
 
         // bail out for extern/global struct
+        bool bailout = false;
         for (const Variable* var : symbolDatabase->variableList()) {
             if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic())) && var->typeEndToken()->str() == scope.className) {
                 bailout = true;
@@ -1509,6 +1508,8 @@ void CheckUnusedVar::checkStructMemberUsage()
         for (const Variable &var : scope.varlist) {
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
+                continue;
+            if (isInherited && !var.isPrivate())
                 continue;
 
             // Check if the struct member variable is used anywhere in the file
