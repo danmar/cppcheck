@@ -1545,7 +1545,9 @@ void CheckOther::checkConstPointer()
         const ValueType* const vt = tok->valueType();
         if (!vt)
             continue;
-        if ((vt->pointer != 1 && !(vt->pointer == 2 && var->isArray())) || (vt->constness & 1) || vt->reference != Reference::None)
+        if ((vt->pointer != 1 && !(vt->pointer == 2 && var->isArray())) || (vt->constness & 1))
+            continue;
+        if (var->typeStartToken()->isTemplateArg())
             continue;
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), var) != nonConstPointers.cend())
             continue;
@@ -1618,7 +1620,7 @@ void CheckOther::checkConstPointer()
                 continue;
             if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
-            constVariableError(p, nullptr);
+            constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
         }
     }
 }

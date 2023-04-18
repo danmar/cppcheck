@@ -3298,7 +3298,7 @@ private:
               "    for (const auto& h : v)\n"
               "        if (h) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'h' can be declared as pointer to const\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'h' can be declared as pointer to const\n", errout.str());
 
         check("void f(const std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
@@ -3306,7 +3306,7 @@ private:
               "    for (const auto* p : v)\n"
               "        if (p == nullptr) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n", errout.str());
 
         check("void f(std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
@@ -3318,10 +3318,9 @@ private:
               "    for (const int* p : v)\n"
               "        if (p == nullptr) {}\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
-                           "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
-                           "[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
+                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
 
         check("void f(std::vector<const int*>& v) {\n"
               "    for (const auto& p : v)\n"
@@ -3511,6 +3510,18 @@ private:
               "    g(c);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'c' can be declared as pointer to const\n", errout.str());
+
+        check("typedef void (*cb_t)(int*);\n" // #11674
+              "void cb(int* p) {\n"
+              "    if (*p) {}\n"
+              "}\n"
+              "void g(cb_t);\n"
+              "void f() {\n"
+              "    g(cb);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (style) Parameter 'p' can be declared as pointer to const. "
+                      "However it seems that 'cb' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
