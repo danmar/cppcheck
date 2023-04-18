@@ -833,34 +833,20 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
-    if (!mSettings.checks.isEnabled(Checks::missingInclude))
+    if (!mSettings.checks.isEnabled(Checks::missingInclude) || !mErrorLogger)
         return;
 
-    std::string fname = Path::fromNativeSeparators(filename);
-    std::string errorId = (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude";
-    Suppressions::ErrorMessage errorMessage;
-    errorMessage.errorId = errorId;
-    errorMessage.setFileName(std::move(fname));
-    errorMessage.lineNumber = linenr;
-    if (mSuppressions.isSuppressed(errorMessage))
-        return;
-
-    if (mErrorLogger) {
-        std::list<ErrorMessage::FileLocation> locationList;
-        if (!filename.empty()) {
-            ErrorMessage::FileLocation loc;
-            loc.line = linenr;
-            loc.setfile(Path::toNativeSeparators(filename));
-            locationList.push_back(std::move(loc));
-        }
-        ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
-                            (headerType==SystemHeader) ?
-                            "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
-                            "Include file: \"" + header + "\" not found.",
-                            std::move(errorId),
-                            Certainty::normal);
-        mErrorLogger->reportErr(errmsg);
+    std::list<ErrorMessage::FileLocation> locationList;
+    if (!filename.empty()) {
+        locationList.emplace_back(filename, linenr);
     }
+    ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
+                        (headerType==SystemHeader) ?
+                        "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
+                        "Include file: \"" + header + "\" not found.",
+                        (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
+                        Certainty::normal);
+    mErrorLogger->reportErr(errmsg);
 }
 
 void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
