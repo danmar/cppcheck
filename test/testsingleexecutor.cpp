@@ -108,7 +108,7 @@ private:
             filemap.clear();
 
         // TODO: test with settings.project.fileSettings;
-        SingleExecutor executor(cppcheck, filemap, settings, *this);
+        SingleExecutor executor(cppcheck, filemap, settings, settings.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
     }
 
