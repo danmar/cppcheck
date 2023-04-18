@@ -90,17 +90,18 @@ private:
             return false;
         });
         cppcheck.settings() = settings;
-        // TODO: test with settings.project.fileSettings;
-        SingleExecutor executor(cppcheck, filemap, settings, *this);
+
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
             scopedfiles.emplace_back(new ScopedFile(i->first, data));
 
-        // clear files list so only fileSettings ware used
+        // clear files list so only fileSettings are used
         if (useFS)
             filemap.clear();
 
+        // TODO: test with settings.project.fileSettings;
+        SingleExecutor executor(cppcheck, filemap, settings, *this);
         ASSERT_EQUALS(result, executor.check());
     }
 
