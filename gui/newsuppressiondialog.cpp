@@ -50,8 +50,7 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     };
 
     QErrorLogger errorLogger;
-    CppCheck cppcheck(errorLogger, false, nullptr);
-    cppcheck.getErrorMessages();
+    CppCheck::getErrorMessages(errorLogger);
     errorLogger.errorIds.sort();
 
     mUI->mComboErrorId->addItems(errorLogger.errorIds);
