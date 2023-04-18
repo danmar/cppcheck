@@ -41,6 +41,11 @@ public:
 private:
     Settings settings = settingsBuilder().library("std.cfg").build();
 
+    std::string fprefix() const
+    {
+        return "process";
+    }
+
     /**
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
@@ -53,7 +58,7 @@ private:
         if (filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
                 std::ostringstream oss;
-                oss << "file_" << i << ".cpp";
+                oss << fprefix() << "_" << i << ".cpp";
                 filemap[oss.str()] = data.size();
             }
         }
@@ -186,7 +191,7 @@ private:
         settings.library.mProcessAfterCode.emplace(".cp1", true);
 
         const std::vector<std::string> files = {
-            "file_1.cp1", "file_2.cpp", "file_3.cp1", "file_4.cpp"
+            fprefix() + "_1.cp1", fprefix() + "_2.cpp", fprefix() + "_3.cp1", fprefix() + "_4.cpp"
         };
 
         // the checks are not executed on the markup files => expected result is 2
@@ -198,21 +203,21 @@ private:
               "}",
               SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
         // TODO: order of "Checking" and "checked" is affected by thread
-        /*TODO_ASSERT_EQUALS("Checking file_2.cpp ...\n"
+        /*TODO_ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
                            "1/4 files checked 25% done\n"
-                           "Checking file_4.cpp ...\n"
+                           "Checking " + fprefix() + "_4.cpp ...\n"
                            "2/4 files checked 50% done\n"
-                           "Checking file_1.cp1 ...\n"
+                           "Checking " + fprefix() + "_1.cp1 ...\n"
                            "3/4 files checked 75% done\n"
-                           "Checking file_3.cp1 ...\n"
+                           "Checking " + fprefix() + "_3.cp1 ...\n"
                            "4/4 files checked 100% done\n",
-                           "Checking file_1.cp1 ...\n"
+                           "Checking " + fprefix() + "_1.cp1 ...\n"
                            "1/4 files checked 25% done\n"
-                           "Checking file_2.cpp ...\n"
+                           "Checking " + fprefix() + "_2.cpp ...\n"
                            "2/4 files checked 50% done\n"
-                           "Checking file_3.cp1 ...\n"
+                           "Checking " + fprefix() + "_3.cp1 ...\n"
                            "3/4 files checked 75% done\n"
-                           "Checking file_4.cpp ...\n"
+                           "Checking " + fprefix() + "_4.cpp ...\n"
                            "4/4 files checked 100% done\n",
                            output.str());*/
         settings = settingsOld;
