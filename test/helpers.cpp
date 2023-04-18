@@ -22,6 +22,7 @@
 #include "preprocessor.h"
 
 #include <cstdio>
+#include <iostream>
 #include <fstream>
 #include <stdexcept>
 #include <utility>
@@ -60,12 +61,21 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
 }
 
 ScopedFile::~ScopedFile() {
-    std::remove(mFullPath.c_str());
+    const int remove_res = std::remove(mFullPath.c_str());
+    if (remove_res != 0) {
+        std::cout << "ScopedFile(" << mFullPath + ") - could not delete file (" << remove_res << ")";
+    }
     if (!mPath.empty() && mPath != Path::getCurrentPath()) {
 #ifdef _WIN32
-        RemoveDirectoryA(mPath.c_str());
+        if (!RemoveDirectoryA(mPath.c_str())) {
+            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << GetLastError() << ")";
+        }
 #else
-        rmdir(mPath.c_str());
+        const int rmdir_res = rmdir(mPath.c_str());
+        if (rmdir_res == -1) {
+            const int err = errno;
+            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << err << ")";
+        }
 #endif
     }
 }
