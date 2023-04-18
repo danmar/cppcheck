@@ -1455,10 +1455,6 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
         }
 
-        // Bail out if struct/union contains any functions
-        if (!scope.functionList.empty())
-            continue;
-
         // Bail out for template struct, members might be used in non-matching instantiations
         if (scope.className.find('<') != std::string::npos)
             continue;

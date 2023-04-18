@@ -1876,6 +1876,13 @@ private:
                                "    int i{};\n"
                                "};\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) class member 'C::i' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "    int i{}, j{};\n"
+                               "public:\n"
+                               "    int& get() { return i; }\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) class member 'C::j' is never used.\n", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
