@@ -7185,14 +7185,14 @@ private:
         valueOfTok(code, "a");
 
         code = "void f(int i, int j, int n) {\n"
-                "    if ((j == 0) != (i == 0)) {}\n"
-                "    int t = 0;\n"
-                "    if (j > 0) {\n"
-                "        t = 1;\n"
-                "        if (n < j)\n"
-                "            n = j;\n"
-                "    }\n"
-                "}\n";
+               "    if ((j == 0) != (i == 0)) {}\n"
+               "    int t = 0;\n"
+               "    if (j > 0) {\n"
+               "        t = 1;\n"
+               "        if (n < j)\n"
+               "            n = j;\n"
+               "    }\n"
+               "}\n";
         valueOfTok(code, "i");
     }
 
