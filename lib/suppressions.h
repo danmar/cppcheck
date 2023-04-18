@@ -175,9 +175,10 @@ public:
     /**
      * @brief Returns true if this message should not be shown to the user.
      * @param errmsg error message
+     * @param global use global suppressions
      * @return true if this error is suppressed.
      */
-    bool isSuppressed(const ErrorMessage &errmsg);
+    bool isSuppressed(const ErrorMessage &errmsg, bool global = true);
 
     /**
      * @brief Returns true if this message should not be shown to the user.
@@ -185,13 +186,6 @@ public:
      * @return true if this error is suppressed.
      */
     bool isSuppressed(const ::ErrorMessage &errmsg);
-
-    /**
-     * @brief Returns true if this message should not be shown to the user, only uses local suppressions.
-     * @param errmsg error message
-     * @return true if this error is suppressed.
-     */
-    bool isSuppressedLocal(const ErrorMessage &errmsg);
 
     /**
      * @brief Create an xml dump of suppressions

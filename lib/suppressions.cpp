@@ -367,10 +367,12 @@ std::string Suppressions::Suppression::getText() const
     return ret;
 }
 
-bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
+bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg, bool global)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
     for (Suppression &s : mSuppressions) {
+        if (!global && !s.isLocal())
+            continue;
         if (unmatchedSuppression && s.errorId != errmsg.errorId)
             continue;
         if (s.isMatch(errmsg))
@@ -384,20 +386,6 @@ bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg)
     if (mSuppressions.empty())
         return false;
     return isSuppressed(errmsg.toSuppressionsErrorMessage());
-}
-
-bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)
-{
-    const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
-    for (Suppression &s : mSuppressions) {
-        if (!s.isLocal())
-            continue;
-        if (unmatchedSuppression && s.errorId != errmsg.errorId)
-            continue;
-        if (s.isMatch(errmsg))
-            return true;
-    }
-    return false;
 }
 
 void Suppressions::dump(std::ostream & out) const

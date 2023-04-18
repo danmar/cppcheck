@@ -82,6 +82,7 @@ private:
         TEST_CASE(unusedFunction);
 
         TEST_CASE(suppressingSyntaxErrorAndExitCode);
+        TEST_CASE(suppressLocal);
     }
 
     void suppressionsBadId1() const {
@@ -833,6 +834,20 @@ private:
         ASSERT_EQUALS(2, checkSuppression(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
     }
 
+    void suppressLocal() const {
+        Suppressions suppressions;
+        std::istringstream s("errorid:test.cpp\n"
+                             "errorid2");
+        ASSERT_EQUALS("", suppressions.parseFile(s));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "test.cpp", 1)));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "test.cpp", 1), false));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "test2.cpp", 1)));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "test2.cpp", 1), false));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid2", "test.cpp", 1)));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid2", "test.cpp", 1), false));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid2", "test2.cpp", 1)));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid2", "test2.cpp", 1), false));
+    }
 };
 
 REGISTER_TEST(TestSuppressions)
