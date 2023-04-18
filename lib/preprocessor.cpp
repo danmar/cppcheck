@@ -64,7 +64,7 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(const Settings& settings, Suppressions &suppressions, ErrorLogger *errorLogger) : mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
+Preprocessor::Preprocessor(const Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
 {}
 
 Preprocessor::~Preprocessor()
@@ -184,15 +184,15 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, const Sett
     }
 }
 
-void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
+void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppressions &suppressions)
 {
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::addinlineSuppressions(tokens, mSettings, mSuppressions, err);
+    ::addinlineSuppressions(tokens, mSettings, suppressions, err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (it->second)
-            ::addinlineSuppressions(*it->second, mSettings, mSuppressions, err);
+            ::addinlineSuppressions(*it->second, mSettings, suppressions, err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
@@ -752,14 +752,15 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
     return ret.str();
 }
 
-std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename)
+std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression)
 {
     simplecpp::OutputList outputList;
     std::vector<std::string> files;
 
     std::istringstream istr(filedata);
     simplecpp::TokenList tokens1(istr, files, Path::simplifyPath(filename), &outputList);
-    inlineSuppressions(tokens1);
+    if (inlineSuppression)
+        inlineSuppressions(tokens1, *inlineSuppression);
     tokens1.removeComments();
     removeComments();
     setDirectives(tokens1);
@@ -852,8 +853,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
 void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
 {
     Settings settings2(*settings);
-    Suppressions supressions2;
-    Preprocessor preprocessor(settings2, supressions2, errorLogger);
+    Preprocessor preprocessor(settings2, errorLogger);
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
     preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
     preprocessor.error(emptyString, 1, "#error message");   // #error ..
