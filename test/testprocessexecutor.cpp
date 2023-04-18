@@ -41,7 +41,7 @@ public:
 private:
     Settings settings = settingsBuilder().library("std.cfg").build();
 
-    std::string fprefix() const
+    static std::string fprefix()
     {
         return "process";
     }
