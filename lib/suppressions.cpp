@@ -110,7 +110,7 @@ std::string Suppressions::parseXmlFile(const char *filename)
                 return "Unknown suppression element \"" + std::string(e2->Name()) + "\", expected id/fileName/lineNumber/symbolName/hash";
         }
 
-        const std::string err = addSuppression(s);
+        const std::string err = addSuppression(std::move(s));
         if (!err.empty())
             return err;
     }
@@ -218,10 +218,10 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
 
     suppression.fileName = Path::simplifyPath(suppression.fileName);
 
-    return addSuppression(suppression);
+    return addSuppression(std::move(suppression));
 }
 
-std::string Suppressions::addSuppression(const Suppressions::Suppression &suppression)
+std::string Suppressions::addSuppression(Suppressions::Suppression suppression)
 {
     // Check if suppression is already in list
     auto foundSuppression = std::find_if(mSuppressions.begin(), mSuppressions.end(),
@@ -253,15 +253,15 @@ std::string Suppressions::addSuppression(const Suppressions::Suppression &suppre
     if (!isValidGlobPattern(suppression.fileName))
         return "Failed to add suppression. Invalid glob pattern '" + suppression.fileName + "'.";
 
-    mSuppressions.push_back(suppression);
+    mSuppressions.push_back(std::move(suppression));
 
     return "";
 }
 
-std::string Suppressions::addSuppressions(const std::list<Suppression> &suppressions)
+std::string Suppressions::addSuppressions(std::list<Suppression> suppressions)
 {
-    for (const auto &newSuppression : suppressions) {
-        auto errmsg = addSuppression(newSuppression);
+    for (auto &newSuppression : suppressions) {
+        auto errmsg = addSuppression(std::move(newSuppression));
         if (!errmsg.empty())
             return errmsg;
     }
