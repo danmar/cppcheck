@@ -760,11 +760,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
-            // Report progress
-            else if (std::strcmp(argv[i], "--report-progress") == 0) {
-                mSettings.reportProgress = true;
-            }
-
 #ifdef HAVE_RULES
             // Rule given at command line
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
@@ -1295,7 +1290,6 @@ void CmdLineParser::printHelp()
         "                         using e.g. ~ for home folder does not work. It is\n"
         "                         currently only possible to apply the base paths to\n"
         "                         files that are on a lower level in the directory tree.\n"
-        "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
     "    --rule=<rule>        Match regular expression.\n"
     "    --rule-file=<file>   Use given rule file. For more information, see:\n"

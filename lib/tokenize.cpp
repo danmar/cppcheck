@@ -1127,9 +1127,6 @@ void Tokenizer::simplifyTypedefCpp()
     const std::time_t maxTime = mSettings->typedefMaxTime > 0 ? std::time(nullptr) + mSettings->typedefMaxTime: 0;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (mErrorLogger && !list.getFiles().empty())
-            mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (typedef)", tok->progressValue());
-
         if (Settings::terminated())
             return;
 
@@ -2832,9 +2829,6 @@ bool Tokenizer::simplifyUsing()
     std::list<Using> usingList;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (mErrorLogger && !list.getFiles().empty())
-            mErrorLogger->reportProgress(list.getFiles()[0], "Tokenize (using)", tok->progressValue());
-
         if (Settings::terminated())
             return substitute;
 

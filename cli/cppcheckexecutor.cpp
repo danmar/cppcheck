@@ -70,7 +70,7 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
+    : mSettings(nullptr), mErrorOutput(nullptr), mShowAllErrors(false)
 {}
 
 CppCheckExecutor::~CppCheckExecutor()
@@ -262,9 +262,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
 
-    if (settings.reportProgress)
-        mLatestProgressOutputTime = std::time(nullptr);
-
     if (!settings.outputFile.empty()) {
         mErrorOutput = new std::ofstream(settings.outputFile);
     }
@@ -392,29 +389,6 @@ void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
         std::cout << ansiToOEM(outmsg, true) << std::endl;
     else
         std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
-}
-
-void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
-{
-    (void)filename;
-
-    if (!mLatestProgressOutputTime)
-        return;
-
-    // Report progress messages every 10 seconds
-    const std::time_t currentTime = std::time(nullptr);
-    if (currentTime >= (mLatestProgressOutputTime + 10)) {
-        mLatestProgressOutputTime = currentTime;
-
-        // format a progress message
-        std::ostringstream ostr;
-        ostr << "progress: "
-             << stage
-             << ' ' << value << '%';
-
-        // Report progress message
-        reportOut(ostr.str());
-    }
 }
 
 void CppCheckExecutor::reportErr(const ErrorMessage &msg)

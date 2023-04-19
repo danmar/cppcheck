@@ -9,3 +9,4 @@ GUI:
 Changed interface:
 
 Other:
+- removed command-line option "--report-progress" as it didn't provide much of a progress

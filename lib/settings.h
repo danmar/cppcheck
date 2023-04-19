@@ -266,9 +266,6 @@ public:
     /** @brief Use relative paths in output. */
     bool relativePaths;
 
-    /** @brief --report-progress */
-    bool reportProgress;
-
     /** Rule */
     class CPPCHECKLIB Rule {
     public:

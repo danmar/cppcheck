@@ -79,8 +79,6 @@ public:
     /** xml output of errors */
     void reportErr(const ErrorMessage &msg) override;
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
-
     /**
      * @param exceptionOutput Output file
      */
@@ -165,11 +163,6 @@ private:
      * Filename associated with size of file
      */
     std::map<std::string, std::size_t> mFiles;
-
-    /**
-     * Report progress time
-     */
-    std::time_t mLatestProgressOutputTime;
 
     /**
      * Output file name for exception handler

@@ -239,18 +239,6 @@ public:
     virtual void reportErr(const ErrorMessage &msg) = 0;
 
     /**
-     * Report progress to client
-     * @param filename main file that is checked
-     * @param stage for example preprocess / tokenize / simplify / check
-     * @param value progress value (0-100)
-     */
-    virtual void reportProgress(const std::string &filename, const char stage[], const std::size_t value) {
-        (void)filename;
-        (void)stage;
-        (void)value;
-    }
-
-    /**
      * Report unmatched suppressions
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
      * @return true is returned if errors are reported

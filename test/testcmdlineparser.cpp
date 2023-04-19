@@ -132,7 +132,6 @@ private:
         TEST_CASE(maxConfigsMissingCount);
         TEST_CASE(maxConfigsInvalid);
         TEST_CASE(maxConfigsTooSmall);
-        TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
         TEST_CASE(stdc99);
         TEST_CASE(stdcpp11);
         TEST_CASE(stdunknown);
@@ -1022,15 +1021,6 @@ private:
         // Fails since limit must be greater than 0
         ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' must be greater than 0.\n", GET_REDIRECT_OUTPUT);
-    }
-
-    void reportProgressTest() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--report-progress", "file.cpp"};
-        settings.reportProgress = false;
-        ASSERT(defParser.parseFromArgs(3, argv));
-        ASSERT(settings.reportProgress);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void stdc99() {

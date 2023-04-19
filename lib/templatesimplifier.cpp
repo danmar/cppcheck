@@ -3159,8 +3159,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             continue;
 
         Token * const tok2 = instantiation.token();
-        if (mErrorLogger && !mTokenList.getFiles().empty())
-            mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
             if (mSettings.debugwarnings) {
@@ -3230,8 +3228,6 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
     // TODO: remove the specialized check and handle all uninstantiated templates someday.
     if (!instantiated && specialized) {
         Token * tok2 = const_cast<Token *>(templateDeclaration.nameToken());
-        if (mErrorLogger && !mTokenList.getFiles().empty())
-            mErrorLogger->reportProgress(mTokenList.getFiles()[0], "TemplateSimplifier::simplifyTemplateInstantiations()", tok2->progressValue());
 
         if (maxtime > 0 && std::time(nullptr) > maxtime) {
             if (mSettings.debugwarnings) {
