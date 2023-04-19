@@ -3201,7 +3201,7 @@ private:
             tok(code));
     }
 
-    void simplifyTypedef140() {        
+    void simplifyTypedef140() {
         { // #10798
             const char code[] = "typedef void (*b)();\n"
                                 "enum class E { a, b, c };\n";
