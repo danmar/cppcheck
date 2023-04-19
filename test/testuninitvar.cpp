@@ -3499,7 +3499,7 @@ private:
                         "    }\n"
                         "}",
                         "test.cpp");
-        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("void f() {\n"
                         "    int i, y;\n"
@@ -3510,7 +3510,7 @@ private:
                         "    }\n"
                         "}",
                         "test.cpp");
-        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("void f() {\n"
                         "    int i, y;\n"
@@ -5966,6 +5966,15 @@ private:
                         "    int a[N];\n"
                         "    g(a);\n"
                         "    if (a[0]) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11673
+        valueFlowUninit("void f() {\n"
+                        "    bool b;\n"
+                        "    auto g = [&b]() {\n"
+                        "        b = true;\n"
+                        "    };\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }
