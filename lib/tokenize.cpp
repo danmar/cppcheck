@@ -5178,20 +5178,8 @@ void Tokenizer::createLinks2()
             if (!top2 || top2->str() != "<") {
                 if (token->str() == ">>")
                     continue;
-                if (!Token::Match(token->next(), "%name%|%cop%|%assign%|::|,|(|)|{|}|;|[|:|.|=|...") &&
+                if (!Token::Match(token->next(), "%name%|%cop%|%assign%|::|,|(|)|{|}|;|[|]|:|.|=|...") &&
                     !Token::Match(token->next(), "&& %name% ="))
-                    continue;
-            }
-            // if > is followed by [ .. "new a<b>[" is expected
-            // unless this is from varidiac expansion
-            if (token->strAt(1) == "[" && !Token::simpleMatch(token->tokAt(-1), "... >") &&
-                !Token::Match(token->tokAt(1), "[ ]")) {
-                Token *prev = type.top()->previous();
-                while (prev && Token::Match(prev->previous(), ":: %name%"))
-                    prev = prev->tokAt(-2);
-                if (prev && prev->str() != "new")
-                    prev = prev->previous();
-                if (!prev || prev->str() != "new")
                     continue;
             }
 
