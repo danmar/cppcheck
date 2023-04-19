@@ -7739,7 +7739,7 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
 template<class Found, class Predicate>
 bool findTokenSkipDeadCodeImpl(const Library* library, Token* start, const Token* end, Predicate pred, Found found)
 {
-    for(Token* tok=start;precedes(tok, end);tok=tok->next()) {
+    for (Token* tok = start; precedes(tok, end); tok = tok->next()) {
         if (pred(tok)) {
             if (found(tok))
                 return true;
@@ -7780,7 +7780,8 @@ bool findTokenSkipDeadCodeImpl(const Library* library, Token* start, const Token
         } else if (Token::Match(tok->astParent(), "&&|?|%oror%") && astIsLHS(tok) && tok->hasKnownIntValue()) {
             int r = tok->values().front().intvalue;
             Token* next = nullptr;
-            if ((r == 0 && Token::simpleMatch(tok->astParent(), "||")) || (r != 0 && Token::simpleMatch(tok->astParent(), "&&"))) {
+            if ((r == 0 && Token::simpleMatch(tok->astParent(), "||")) ||
+                (r != 0 && Token::simpleMatch(tok->astParent(), "&&"))) {
                 next = nextAfterAstRightmostLeaf(tok->astParent());
             } else if (Token::simpleMatch(tok->astParent(), "?")) {
                 Token* colon = tok->astParent()->astOperand2();
@@ -7828,7 +7829,9 @@ std::vector<Token*> findTokensSkipDeadCode(const Library* library, Token* start,
     return result;
 }
 
-static std::vector<Token*> findAllUsages(const Variable* var, Token* start, const Library* library) // cppcheck-suppress constParameterPointer // FP
+static std::vector<Token*> findAllUsages(const Variable* var,
+                                         Token* start, // cppcheck-suppress constParameterPointer // FP
+                                         const Library* library)
 {
     // std::vector<Token*> result;
     const Scope* scope = var->scope();
