@@ -5250,6 +5250,16 @@ private:
             "    g(a);\n"
             "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        ctu("const int a[1] = { 1 };\n" // #11042
+            "void g(const int* d) {\n"
+            "    (void)d[2];\n"
+            "}\n"
+            "void f() {\n"
+            "    g(a);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (error) Array index out of bounds; 'd' buffer size is 4 and it is accessed at offset 8.\n",
+                      errout.str());
     }
 
     void ctu_variable() {
