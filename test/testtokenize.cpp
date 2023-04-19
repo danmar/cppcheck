@@ -3456,7 +3456,7 @@ private:
         }
 
         {
-            // #11490
+            // #11453
             const char code[] = "template<typename T>\n"
                                 "std::array<T, 1> a{};\n"
                                 "void f() {\n"
