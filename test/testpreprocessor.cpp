@@ -268,25 +268,36 @@ private:
         TEST_CASE(testMissingIncludeCheckConfig);
     }
 
-    // TODO: we should be calling the actual Preprocessor::preprocess() implementation
+    // TODO: merge with `PreprocessorHelper::getcode()`
     void preprocess(const char* code, std::map<std::string, std::string>& actual, const char filename[] = "file.c") {
         errout.str("");
         std::istringstream istr(code);
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        simplecpp::TokenList tokens(istr, files, filename, &outputList);
+        simplecpp::TokenList tokens(istr, files, Path::simplifyPath(filename), &outputList);
         tokens.removeComments();
         preprocessor0.simplifyPragmaAsm(&tokens);
-        const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
+        preprocessor0.removeComments();
         preprocessor0.setDirectives(tokens);
+
+        preprocessor0.reportOutput(outputList, true);
+
+        if (Preprocessor::hasErrors(outputList))
+            return;
+
+        const std::set<std::string> configs(preprocessor0.getConfigs(tokens));
         for (const std::string & config : configs) {
             try {
                 const std::string &cfgcode = preprocessor0.getcode(tokens, config, files, std::string(code).find("#file") != std::string::npos);
                 actual[config] = cfgcode;
             } catch (const simplecpp::Output &) {
                 actual[config] = "";
-            } catch (...) {}
+            }
         }
+
+        // Since "files" is a local variable the tracking info must be cleared..
+        preprocessor0.mMacroUsage.clear();
+        preprocessor0.mIfCond.clear();
     }
 
     std::string getConfigsStr(const char filedata[], const char *arg = nullptr) {
@@ -1476,7 +1487,7 @@ private:
             preprocess(filedata, actual);
 
             ASSERT_EQUALS("", actual[""]);
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS("[file.c:2]: (error) No pair for character ('). Can't process file. File is either invalid or unicode, which is currently not supported.\n", errout.str());
         }
     }
 

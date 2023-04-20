@@ -72,6 +72,7 @@ public:
 class CPPCHECKLIB Preprocessor {
     // TODO: get rid of this
     friend class PreprocessorHelper;
+    friend class TestPreprocessor;
 
 public:
 

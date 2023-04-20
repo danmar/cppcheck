@@ -66,6 +66,7 @@ ScopedFile::~ScopedFile() {
     }
 }
 
+// TODO: we should be using the actual Preprocessor implementation
 std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression)
 {
     simplecpp::OutputList outputList;
@@ -76,6 +77,7 @@ std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::s
     if (inlineSuppression)
         preprocessor.inlineSuppressions(tokens1, *inlineSuppression);
     tokens1.removeComments();
+    preprocessor.simplifyPragmaAsm(&tokens1);
     preprocessor.removeComments();
     preprocessor.setDirectives(tokens1);
 
@@ -87,11 +89,13 @@ std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::s
     std::string ret;
     try {
         ret = preprocessor.getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
-        // Since "files" is a local variable the tracking info must be cleared..
-        preprocessor.mMacroUsage.clear();
-        preprocessor.mIfCond.clear();
     } catch (const simplecpp::Output &) {
         ret.clear();
     }
+
+    // Since "files" is a local variable the tracking info must be cleared..
+    preprocessor.mMacroUsage.clear();
+    preprocessor.mIfCond.clear();
+
     return ret;
 }
