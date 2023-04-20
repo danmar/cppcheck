@@ -4574,7 +4574,7 @@ void Tokenizer::setVarIdPass1()
                                     continue;
 
                                 if (tok3->isLiteral() ||
-                                    (tok3->isName() && (variableMap.hasVariable(tok3->str()) || Token::simpleMatch(tok3->next(), "("))) ||
+                                    (tok3->isName() && (variableMap.hasVariable(tok3->str()) || (tok3->strAt(-1) == "(" && Token::simpleMatch(tok3->next(), "(")))) ||
                                     tok3->isOp() ||
                                     tok3->str() == "(" ||
                                     notstart.find(tok3->str()) != notstart.end()) {
