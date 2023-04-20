@@ -4787,7 +4787,7 @@ static Token * matchMemberVarName(const Member &var, const std::list<ScopeInfo2>
 {
     Token *tok = matchMemberName(var, scopeInfo);
     if (Token::Match(tok, "%name%")) {
-        if (!tok->next() || tok->strAt(1) != "(" || tok->tokAt(2) && tok->tokAt(2)->isLiteral())
+        if (!tok->next() || tok->strAt(1) != "(" || (tok->tokAt(2) && tok->tokAt(2)->isLiteral()))
             return tok;
     }
     return nullptr;
