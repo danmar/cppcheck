@@ -7691,36 +7691,35 @@ private:
     }
 
     void executableScopeWithUnknownFunction() {
-         {
-               GET_SYMBOL_DB("class Fred {\n"
-                             "    void foo(const std::string & a = \"\");\n"
-                             "};\n"
-                             "Fred::foo(const std::string & b) { }");
+        {
+            GET_SYMBOL_DB("class Fred {\n"
+                          "    void foo(const std::string & a = \"\");\n"
+                          "};\n"
+                          "Fred::foo(const std::string & b) { }");
 
-               ASSERT(db && db->scopeList.size() == 3);
-               std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
-               ASSERT_EQUALS(Scope::eGlobal, scope->type);
-               ++scope;
-               ASSERT_EQUALS(Scope::eClass, scope->type);
-               const Scope * class_scope = &*scope;
-               ++scope;
-               ASSERT(class_scope->functionList.size() == 1);
-               ASSERT(class_scope->functionList.cbegin()->hasBody());
-               ASSERT(class_scope->functionList.cbegin()->functionScope == &*scope);
-         }
-         {
-               GET_SYMBOL_DB("bool f(bool (*g)(int));\n"
-                             "bool f(bool (*g)(int)) { return g(0); }\n");
+            ASSERT(db && db->scopeList.size() == 3);
+            std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eClass, scope->type);
+            const Scope* class_scope = &*scope;
+            ++scope;
+            ASSERT(class_scope->functionList.size() == 1);
+            ASSERT(class_scope->functionList.cbegin()->hasBody());
+            ASSERT(class_scope->functionList.cbegin()->functionScope == &*scope);
+        }
+        {
+            GET_SYMBOL_DB("bool f(bool (*g)(int));\n"
+                          "bool f(bool (*g)(int)) { return g(0); }\n");
 
-               ASSERT(db && db->scopeList.size() == 2);
-               std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
-               ASSERT_EQUALS(Scope::eGlobal, scope->type);
-               ASSERT(scope->functionList.size() == 1);
-               ++scope;
-               ASSERT_EQUALS(Scope::eFunction, scope->type);
-         }
+            ASSERT(db && db->scopeList.size() == 2);
+            std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ASSERT(scope->functionList.size() == 1);
+            ++scope;
+            ASSERT_EQUALS(Scope::eFunction, scope->type);
+        }
     }
-
 #define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)
     std::string typeOf_(const char* file, int line, const char code[], const char pattern[], const char filename[] = "test.cpp", const Settings *settings = nullptr) {
         Tokenizer tokenizer(settings ? settings : &settings2, this);
