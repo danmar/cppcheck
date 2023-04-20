@@ -386,7 +386,7 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
                               "cppcheckError",
                               Certainty::normal);
 
-    if (!mSettings.nomsg.isSuppressed(errmsg))
+    if (hasToLog(errmsg))
         mErrorLogger.reportErr(errmsg);
 }
 
