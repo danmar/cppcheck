@@ -4060,6 +4060,22 @@ private:
     }
 
     void invalidLifetime() {
+        check("void createPipelineLayout() { \n"
+              "    constexpr bool HAS_DATA = true;"
+              "    struct DataHolder { \n"
+              "        int count; \n"
+              "        const int* pData; \n"
+              "    } dataHolder = {}; \n"
+              "    if constexpr (HAS_DATA) { \n"
+              "        int data = 20; \n "
+              "        dataHolder.count = 1;\n"
+              "        dataHolder.pData = &data;\n"
+              "    }\n"
+              "    if(dataHolder.count) \n"
+              "        printf(\"Data=%d\", *dataHolder.pData); \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void foo(int a) {\n"
               "    std::function<void()> f;\n"
               "    if (a > 0) {\n"
