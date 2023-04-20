@@ -5262,7 +5262,7 @@ private:
 
     void createSymbolDatabaseFindAllScopes5()
     {
-        GET_SYMBOL_DB("class C {\n"
+        GET_SYMBOL_DB("class C {\n" // #11444
                       "public:\n"
                       "    template<typename T>\n"
                       "    class D;\n"
@@ -5282,7 +5282,12 @@ private:
         ASSERT(db);
         ASSERT_EQUALS(6, db->scopeList.size());
         const Token* const var = Token::findsimplematch(tokenizer.tokens(), "IN (");
-        TODO_ASSERT(var && var->variable());
+        ASSERT(var && var->variable());
+        ASSERT_EQUALS(var->variable()->name(), "IN");
+        auto it = db->scopeList.begin();
+        std::advance(it, 4);
+        ASSERT_EQUALS(it->className, "S");
+        ASSERT_EQUALS(var->variable()->scope(), &*it);
     }
 
     void createSymbolDatabaseFindAllScopes6()
