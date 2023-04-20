@@ -4750,6 +4750,15 @@ private:
               "    return true;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #6925
+        check("void f(const std::string& s, std::string::iterator i) {\n"
+              "    if (i != s.end() && *(i + 1) == *i) {\n"
+              "        if (i + 1 != s.end()) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'i+1!=s.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n",
+                      errout.str());
     }
 
     void dereferenceInvalidIterator2() {

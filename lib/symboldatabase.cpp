@@ -1100,16 +1100,18 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
             if (tok->next()->str() == ">" && !tok->next()->link())
                 continue;
 
+            bool isTemplateArg = false;
             if (tok->next()->str() != "(") {
                 const Token *start = tok;
                 while (Token::Match(start->tokAt(-2), "%name% ::"))
                     start = start->tokAt(-2);
                 if (!Token::Match(start->previous(), "[(,<=]") && !Token::Match(start->tokAt(-2), "[(,<=] &") && !Token::Match(start, "%name% ;"))
                     continue;
+                isTemplateArg = Token::simpleMatch(start->previous(), "<") || Token::simpleMatch(start->tokAt(-2), "<");
             }
 
             const Function *function = findFunction(tok);
-            if (!function)
+            if (!function || (isTemplateArg && function->isConstructor()))
                 continue;
 
             const_cast<Token *>(tok)->function(function);

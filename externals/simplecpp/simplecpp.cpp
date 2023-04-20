@@ -1393,7 +1393,7 @@ namespace simplecpp {
         explicit Macro(std::vector<std::string> &f) : nameTokDef(nullptr), valueToken(nullptr), endToken(nullptr), files(f), tokenListDefine(f), variadic(false), valueDefinedInCode_(false) {}
 
         Macro(const Token *tok, std::vector<std::string> &f) : nameTokDef(nullptr), files(f), tokenListDefine(f), valueDefinedInCode_(true) {
-            if (sameline(tok->previous, tok))
+            if (sameline(tok->previousSkipComments(), tok))
                 throw std::runtime_error("bad macro syntax");
             if (tok->op != '#')
                 throw std::runtime_error("bad macro syntax");
@@ -3238,7 +3238,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             continue;
         }
 
-        if (rawtok->op == '#' && !sameline(rawtok->previous, rawtok)) {
+        if (rawtok->op == '#' && !sameline(rawtok->previousSkipComments(), rawtok)) {
             if (!sameline(rawtok, rawtok->next)) {
                 rawtok = rawtok->next;
                 continue;
