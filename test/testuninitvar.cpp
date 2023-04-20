@@ -5968,6 +5968,27 @@ private:
                         "    if (a[0]) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #6619
+        valueFlowUninit("void f() {\n"
+                        "    int nok, i;\n"
+                        "    for (i = 1; i < 5; i++) {\n"
+                        "        if (i == 8)\n"
+                        "            nok = 8;\n"
+                        "    }\n"
+                        "    printf(\"nok = %d\\n\", nok);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Uninitialized variable: nok\n", errout.str());
+
+        // #7475
+        valueFlowUninit("struct S {\n"
+                        "    int a, b, c;\n"
+                        "} typedef s_t;\n"
+                        "void f() {\n"
+                        "    s_t s;\n"
+                        "    printf(\"%d\", s.a);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: s.a\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

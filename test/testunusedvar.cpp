@@ -1640,6 +1640,14 @@ private:
                                "\n"
                                "input.skip(sizeof(struct Header));");
         ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a, b, c; };\n" // #6561
+                               "int f(FILE * fp) {\n"
+                               "    S s;\n"
+                               "    ::fread(&s, sizeof(S), 1, fp);\n"
+                               "    return s.b;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember16() {
