@@ -18,6 +18,7 @@
 
 #include "config.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "platform.h"
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include "settings.h"
@@ -6652,7 +6653,7 @@ private:
         std::string filedata;
         std::istringstream fin(raw_code);
         preprocessor.preprocess(fin, filedata, configurations, emptyString, settings0.includePaths);
-        const std::string code = preprocessor.getcode(filedata, emptyString, emptyString);
+        const std::string code = PreprocessorHelper::getcode(preprocessor, filedata, emptyString, emptyString);
 
         ASSERT_THROW(tokenizeAndStringify(code.c_str()), InternalError);
     }
