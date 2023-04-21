@@ -670,24 +670,26 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
 
         // If there is a syntax error, report it and stop
-        for (const simplecpp::Output &output : outputList) {
-            if (Preprocessor::hasErrors(output)) {
-                std::string file = Path::fromNativeSeparators(output.location.file());
-                if (mSettings.relativePaths)
-                    file = Path::getRelativePath(file, mSettings.basePaths);
+        const auto output_it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
+            return Preprocessor::hasErrors(output);
+        });
+        if (output_it != outputList.cend()) {
+            const simplecpp::Output &output = *output_it;
+            std::string file = Path::fromNativeSeparators(output.location.file());
+            if (mSettings.relativePaths)
+                file = Path::getRelativePath(file, mSettings.basePaths);
 
-                const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
-                std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+            const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
+            std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-                ErrorMessage errmsg(callstack,
-                                    "",
-                                    Severity::error,
-                                    output.msg,
-                                    "syntaxError",
-                                    Certainty::normal);
-                reportErr(errmsg);
-                return mExitCode;
-            }
+            ErrorMessage errmsg(callstack,
+                                "",
+                                Severity::error,
+                                output.msg,
+                                "syntaxError",
+                                Certainty::normal);
+            reportErr(errmsg);
+            return mExitCode;
         }
 
         if (!preprocessor.loadFiles(tokens1, files))
@@ -785,10 +787,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // Run define rules on raw code
-        const auto it = std::find_if(mSettings.rules.cbegin(), mSettings.rules.cend(), [](const Settings::Rule& rule) {
+        const auto rules_it = std::find_if(mSettings.rules.cbegin(), mSettings.rules.cend(), [](const Settings::Rule& rule) {
             return rule.tokenlist == "define";
         });
-        if (it != mSettings.rules.cend()) {
+        if (rules_it != mSettings.rules.cend()) {
             std::string code;
             const std::list<Directive> &directives = preprocessor.getDirectives();
             for (const Directive &dir : directives) {
