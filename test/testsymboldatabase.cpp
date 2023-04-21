@@ -5262,7 +5262,7 @@ private:
 
     void createSymbolDatabaseFindAllScopes5()
     {
-        GET_SYMBOL_DB("class C {\n"
+        GET_SYMBOL_DB("class C {\n" // #11444
                       "public:\n"
                       "    template<typename T>\n"
                       "    class D;\n"
@@ -5282,7 +5282,12 @@ private:
         ASSERT(db);
         ASSERT_EQUALS(6, db->scopeList.size());
         const Token* const var = Token::findsimplematch(tokenizer.tokens(), "IN (");
-        TODO_ASSERT(var && var->variable());
+        ASSERT(var && var->variable());
+        ASSERT_EQUALS(var->variable()->name(), "IN");
+        auto it = db->scopeList.begin();
+        std::advance(it, 4);
+        ASSERT_EQUALS(it->className, "S");
+        ASSERT_EQUALS(var->variable()->scope(), &*it);
     }
 
     void createSymbolDatabaseFindAllScopes6()
@@ -7686,23 +7691,35 @@ private:
     }
 
     void executableScopeWithUnknownFunction() {
-        GET_SYMBOL_DB("class Fred {\n"
-                      "    void foo(const std::string & a = \"\");\n"
-                      "};\n"
-                      "Fred::foo(const std::string & b) { }");
+        {
+            GET_SYMBOL_DB("class Fred {\n"
+                          "    void foo(const std::string & a = \"\");\n"
+                          "};\n"
+                          "Fred::foo(const std::string & b) { }");
 
-        ASSERT(db && db->scopeList.size() == 3);
-        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
-        ASSERT_EQUALS(Scope::eGlobal, scope->type);
-        ++scope;
-        ASSERT_EQUALS(Scope::eClass, scope->type);
-        const Scope * class_scope = &*scope;
-        ++scope;
-        ASSERT(class_scope->functionList.size() == 1);
-        ASSERT(class_scope->functionList.cbegin()->hasBody());
-        ASSERT(class_scope->functionList.cbegin()->functionScope == &*scope);
+            ASSERT(db && db->scopeList.size() == 3);
+            std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ++scope;
+            ASSERT_EQUALS(Scope::eClass, scope->type);
+            const Scope* class_scope = &*scope;
+            ++scope;
+            ASSERT(class_scope->functionList.size() == 1);
+            ASSERT(class_scope->functionList.cbegin()->hasBody());
+            ASSERT(class_scope->functionList.cbegin()->functionScope == &*scope);
+        }
+        {
+            GET_SYMBOL_DB("bool f(bool (*g)(int));\n"
+                          "bool f(bool (*g)(int)) { return g(0); }\n");
+
+            ASSERT(db && db->scopeList.size() == 2);
+            std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
+            ASSERT_EQUALS(Scope::eGlobal, scope->type);
+            ASSERT(scope->functionList.size() == 1);
+            ++scope;
+            ASSERT_EQUALS(Scope::eFunction, scope->type);
+        }
     }
-
 #define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)
     std::string typeOf_(const char* file, int line, const char code[], const char pattern[], const char filename[] = "test.cpp", const Settings *settings = nullptr) {
         Tokenizer tokenizer(settings ? settings : &settings2, this);
@@ -8374,6 +8391,15 @@ private:
             ASSERT_EQUALS("signed int * const &", tok->valueType()->str());
             ASSERT(tok->variable() && tok->variable()->valueType());
             ASSERT_EQUALS("signed int * const &", tok->variable()->valueType()->str());
+        }
+        {
+            GET_SYMBOL_DB("auto a = 1;\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("signed int", tok->valueType()->str());
         }
     }
 
