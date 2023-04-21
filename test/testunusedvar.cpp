@@ -259,7 +259,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
         if (directives)
             preprocessor.setDirectives(*directives);
 
@@ -284,7 +284,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
@@ -1639,6 +1639,14 @@ private:
                                "}\n"
                                "\n"
                                "input.skip(sizeof(struct Header));");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a, b, c; };\n" // #6561
+                               "int f(FILE * fp) {\n"
+                               "    S s;\n"
+                               "    ::fread(&s, sizeof(S), 1, fp);\n"
+                               "    return s.b;\n"
+                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
