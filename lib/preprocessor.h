@@ -180,6 +180,8 @@ public:
 
     void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
+    static bool hasErrors(const simplecpp::Output &output);
+
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);

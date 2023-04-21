@@ -671,23 +671,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         // If there is a syntax error, report it and stop
         for (const simplecpp::Output &output : outputList) {
-            bool err;
-            switch (output.type) {
-            case simplecpp::Output::ERROR:
-            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-            case simplecpp::Output::SYNTAX_ERROR:
-            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-                err = true;
-                break;
-            case simplecpp::Output::WARNING:
-            case simplecpp::Output::MISSING_HEADER:
-            case simplecpp::Output::PORTABILITY_BACKSLASH:
-                err = false;
-                break;
-            }
-
-            if (err) {
+            if (Preprocessor::hasErrors(output)) {
                 std::string file = Path::fromNativeSeparators(output.location.file());
                 if (mSettings.relativePaths)
                     file = Path::getRelativePath(file, mSettings.basePaths);
