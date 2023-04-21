@@ -8410,10 +8410,14 @@ private:
             const Token* tok = tokenizer.tokens();
             tok = Token::findsimplematch(tok, "auto");
             ASSERT(tok && tok->valueType());
-            ASSERT_EQUALS("const char", tok->valueType()->str());
+            ASSERT_EQUALS(ValueType::CHAR, tok->valueType()->type);
+            ASSERT_EQUALS(1, tok->valueType()->constness);
+            ASSERT_EQUALS(0, tok->valueType()->pointer);
             tok = Token::findsimplematch(tok, "p");
             ASSERT(tok && tok->variable() && tok->variable()->valueType());
-            ASSERT_EQUALS("const char * const", tok->variable()->valueType()->str());
+            ASSERT_EQUALS(ValueType::CHAR, tok->variable()->valueType()->type);
+            ASSERT_EQUALS(3, tok->variable()->valueType()->constness);
+            ASSERT_EQUALS(1, tok->variable()->valueType()->pointer);
         }
     }
 
