@@ -412,6 +412,15 @@ static bool isDeadScope(const Token * tok, const Scope * scope)
     const Variable * var = tok->variable();
     if (var && (!var->isLocal() || var->isStatic() || var->isExtern()))
         return false;
+    const Scope* curScope = tok->scope();
+    while (curScope && (curScope != scope->nestedIn)) {
+        if (curScope->type == Scope::eIf && curScope->classDef && !curScope->classDef->isConstexpr()) {
+            if (curScope->bodyEnd != scope->bodyEnd && precedes(curScope->bodyEnd, scope->bodyEnd))
+                return true;
+        }
+        curScope = curScope->nestedIn;
+    }
+
     if (tok->scope()->type == Scope::eIf && tok->scope()->classDef->isConstexpr()) {
         return false;
     }
