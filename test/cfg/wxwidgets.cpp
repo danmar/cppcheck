@@ -145,7 +145,7 @@ wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer *sizer, wxWindow * windo
     return sizer->Add(window,flags);
 }
 
-bool invalidFunctionArgBool_wxPGProperty_Hide(const wxPGProperty *pg, bool hide, int flags)
+bool invalidFunctionArgBool_wxPGProperty_Hide(wxPGProperty *pg, bool hide, int flags)
 {
     // cppcheck-suppress invalidFunctionArgBool
     (void)pg->Hide(hide, true);
