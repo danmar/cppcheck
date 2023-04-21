@@ -62,7 +62,7 @@ public:
         cppcheck.check("test.cpp", code);
     }
 
-    void reportOut(const std::string &outmsg, Color c) override {}
+    void reportOut(const std::string & /*outmsg*/, Color /*c*/) override {}
     void reportErr(const ErrorMessage &msg) override {
         const std::string s = msg.toString(true);
 
@@ -72,9 +72,9 @@ public:
             std::fprintf(logfile, "%s\n", s.c_str());
     }
 
-    void reportProgress(const std::string& filename,
-                        const char stage[],
-                        const std::size_t value) override {
+    void reportProgress(const std::string& /*filename*/,
+                        const char /*stage*/[],
+                        const std::size_t /*value*/) override {
         if (std::time(nullptr) >= stoptime) {
             std::cout << "Time to analyse the code exceeded 2 seconds. Terminating.\n\n";
             Settings::terminate();
