@@ -6647,7 +6647,7 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        Preprocessor preprocessor(settings0, settings0.nomsg);
+        Preprocessor preprocessor(settings0);
         std::list<std::string> configurations;
         std::string filedata;
         std::istringstream fin(raw_code);
@@ -7398,7 +7398,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
