@@ -3107,6 +3107,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::array<int, 2>& a) {\n"
+              "    if (a[0]) {}\n"
+              "}\n"
+              "void g(std::array<int, 2>& a) {\n"
+              "    a.fill(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a' can be declared as const array\n", errout.str());
     }
 
     void constParameterCallback() {
