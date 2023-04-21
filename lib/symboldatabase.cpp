@@ -6228,7 +6228,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                         vt2_.constness |= (1 << vt2->pointer);
                     if (!Token::Match(autoTok->tokAt(1), "*|&"))
                         vt2_.constness = vt.constness;
-                    if (Token::Match(autoTok->tokAt(1), "* const"))
+                    if (Token::simpleMatch(autoTok->tokAt(1), "* const"))
                         vt2_.constness |= (1 << vt2->pointer);
                     var->setValueType(vt2_);
                     if (vt2->typeScope && vt2->typeScope->definedType) {
