@@ -3541,6 +3541,18 @@ private:
               "  *ptr++ = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #11635
+        check("void f(char *cons, int rlen, int pos) {\n"
+              "    int i;\n"
+              "    char* cp1;\n"
+              "    for (cp1 = &cons[pos], i = 1; i < rlen; cp1--)\n"
+              "        if (*cp1 == '*')\n"
+              "            continue;\n"
+              "        else\n"
+              "            i++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerDelete() {
