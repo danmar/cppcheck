@@ -7185,6 +7185,7 @@ private:
             ASSERT(functok->function()->name() == "toupper");
             ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
         }
+    }
 
     void findFunction48() {
         GET_SYMBOL_DB("struct S {\n"
