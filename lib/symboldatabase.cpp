@@ -6202,7 +6202,7 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 autoTok = var1Tok->previous();
             else if (Token::Match(var1Tok->tokAt(-2), "auto *|&|&&"))
                 autoTok = var1Tok->tokAt(-2);
-            else if (Token::Match(var1Tok->tokAt(-3), "auto * const"))
+            else if (Token::simpleMatch(var1Tok->tokAt(-3), "auto * const"))
                 autoTok = var1Tok->tokAt(-3);
             if (autoTok) {
                 ValueType vt(*vt2);
