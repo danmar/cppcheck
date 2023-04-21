@@ -84,10 +84,10 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(const Settings& settings, Suppressions &suppressions, ErrorLogger *errorLogger = nullptr);
+    explicit Preprocessor(const Settings& settings, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
 
-    void inlineSuppressions(const simplecpp::TokenList &tokens);
+    void inlineSuppressions(const simplecpp::TokenList &tokens, Suppressions &suppressions);
 
     void setDirectives(const simplecpp::TokenList &tokens);
     void setDirectives(const std::list<Directive> &directives) {
@@ -147,11 +147,15 @@ public:
 
     /**
      * Get preprocessed code for a given configuration
+     *
+     * Note: for testing only.
+     *
      * @param filedata file data including preprocessing 'if', 'define', etc
      * @param cfg configuration to read out
      * @param filename name of source file
+     * @param inlineSuppression the inline suppressions
      */
-    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
+    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression = nullptr);
 
     /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.
@@ -189,7 +193,6 @@ private:
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
     const Settings& mSettings;
-    Suppressions &mSuppressions;
     ErrorLogger *mErrorLogger;
 
     /** list of all directives met while preprocessing file */

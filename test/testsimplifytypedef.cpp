@@ -57,6 +57,7 @@ private:
         TEST_CASE(c2);
         TEST_CASE(canreplace1);
         TEST_CASE(canreplace2);
+        TEST_CASE(canreplace3);
         TEST_CASE(cconst);
         TEST_CASE(cstruct1);
         TEST_CASE(cstruct2);
@@ -340,6 +341,17 @@ private:
         const char code3[] = "typedef char* entry;\n"
                              "void f() { dostuff(entry * y < z); }\n";
         ASSERT_EQUALS("void f ( ) { dostuff ( entry * y < z ) ; }", simplifyTypedefC(code3));
+    }
+
+    void canreplace3() {
+        const char code1[] = "typedef char* c_str;\n" // #11640
+                             "struct S {\n"
+                             "    const char* g() const {\n"
+                             "        return s.c_str();\n"
+                             "    }\n"
+                             "    std::string s;\n"
+                             "};\n";
+        ASSERT_EQUALS("struct S { const char * g ( ) const { return s . c_str ( ) ; } std :: string s ; } ;", simplifyTypedefC(code1));
     }
 
     void cconst() {
@@ -3201,8 +3213,8 @@ private:
             tok(code));
     }
 
-    void simplifyTypedef140() { // #10798
-        {
+    void simplifyTypedef140() {
+        { // #10798
             const char code[] = "typedef void (*b)();\n"
                                 "enum class E { a, b, c };\n";
             ASSERT_EQUALS("enum class E { a , b , c } ;", tok(code));
@@ -3211,6 +3223,11 @@ private:
             const char code[] = "typedef int A;\n"
                                 "enum class E { A };\n";
             ASSERT_EQUALS("enum class E { A } ;", tok(code));
+        }
+        { // #11494
+            const char code[] = "typedef struct S {} KEY;\n"
+                                "class C { enum E { KEY }; };\n";
+            ASSERT_EQUALS("struct S { } ; class C { enum E { KEY } ; } ;", tok(code));
         }
     }
 

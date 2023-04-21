@@ -919,7 +919,7 @@ struct InvalidContainerAnalyzer {
             const Token* ftok;
         };
         std::unordered_map<int, Reference> expressions;
-        ErrorPath errorPath;
+
         void add(const std::vector<Reference>& refs) {
             for (const Reference& r : refs) {
                 add(r);
