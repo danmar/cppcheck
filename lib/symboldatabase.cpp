@@ -6202,6 +6202,8 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                 autoTok = var1Tok->previous();
             else if (Token::Match(var1Tok->tokAt(-2), "auto *|&|&&"))
                 autoTok = var1Tok->tokAt(-2);
+            else if (Token::Match(var1Tok->tokAt(-3), "auto * const"))
+                autoTok = var1Tok->tokAt(-3);
             if (autoTok) {
                 ValueType vt(*vt2);
                 if (vt.constness & (1 << vt.pointer))
@@ -6226,6 +6228,8 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                         vt2_.constness |= (1 << vt2->pointer);
                     if (!Token::Match(autoTok->tokAt(1), "*|&"))
                         vt2_.constness = vt.constness;
+                    if (Token::Match(autoTok->tokAt(1), "* const"))
+                        vt2_.constness |= (1 << vt2->pointer);
                     var->setValueType(vt2_);
                     if (vt2->typeScope && vt2->typeScope->definedType) {
                         var->type(vt2->typeScope->definedType);
