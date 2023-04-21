@@ -662,7 +662,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     CheckUnusedFunctions checkUnusedFunctions(nullptr, nullptr, nullptr);
 
     try {
-        Preprocessor preprocessor(mSettings, mSettings.nomsg, this);
+        Preprocessor preprocessor(mSettings, this);
         std::set<std::string> configurations;
 
         simplecpp::OutputList outputList;
@@ -739,7 +739,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         }
 
         // Parse comments and then remove them
-        preprocessor.inlineSuppressions(tokens1);
+        preprocessor.inlineSuppressions(tokens1, mSettings.nomsg);
         if (mSettings.dump || !mSettings.addons.empty()) {
             mSettings.nomsg.dump(dumpProlog);
         }

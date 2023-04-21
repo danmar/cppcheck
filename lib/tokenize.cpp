@@ -4574,7 +4574,7 @@ void Tokenizer::setVarIdPass1()
                                     continue;
 
                                 if (tok3->isLiteral() ||
-                                    (tok3->isName() && variableMap.hasVariable(tok3->str())) ||
+                                    (tok3->isName() && (variableMap.hasVariable(tok3->str()) || (tok3->strAt(-1) == "(" && Token::simpleMatch(tok3->next(), "(")))) ||
                                     tok3->isOp() ||
                                     tok3->str() == "(" ||
                                     notstart.find(tok3->str()) != notstart.end()) {
@@ -4786,7 +4786,11 @@ static Token * matchMemberName(const Member &member, const std::list<ScopeInfo2>
 static Token * matchMemberVarName(const Member &var, const std::list<ScopeInfo2> &scopeInfo)
 {
     Token *tok = matchMemberName(var, scopeInfo);
-    return Token::Match(tok, "%name% !!(") ? tok : nullptr;
+    if (Token::Match(tok, "%name%")) {
+        if (!tok->next() || tok->strAt(1) != "(" || (tok->tokAt(2) && tok->tokAt(2)->isLiteral()))
+            return tok;
+    }
+    return nullptr;
 }
 
 static Token * matchMemberFunctionName(const Member &func, const std::list<ScopeInfo2> &scopeInfo)
@@ -4854,7 +4858,7 @@ void Tokenizer::setVarIdPass2()
             }
             if (!tok->next())
                 syntaxError(tok);
-            if (Token::Match(tok, "%name% ("))
+            if (Token::Match(tok, "%name% (") && !(tok->tokAt(2) && tok->tokAt(2)->isLiteral()))
                 allMemberFunctions.emplace_back(scope, usingnamespaces, tok1);
             else
                 allMemberVars.emplace_back(scope, usingnamespaces, tok1);
@@ -8095,8 +8099,12 @@ void Tokenizer::findGarbageCode() const
             if (!isCPP() || mSettings->standards.cpp < Standards::CPP20 || !Token::Match(tok->previous(), "%name% : %num% ="))
                 syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
         }
-        else if (Token::simpleMatch(tok, ") return") && !Token::Match(tok->link()->previous(), "if|while|for ("))
-            syntaxError(tok);
+        else if (Token::simpleMatch(tok, ") return") && !Token::Match(tok->link()->previous(), "if|while|for (")) {
+            if (tok->link()->previous() && tok->link()->previous()->isUpperCaseName())
+                unknownMacroError(tok->link()->previous());
+            else
+                syntaxError(tok);
+        }
 
         if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
