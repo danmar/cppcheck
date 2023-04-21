@@ -182,7 +182,7 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    void traverse(Token* start, const Token* end = nullptr) {
+    void traverse(const Token* start, const Token* end = nullptr) {
         if (start == end)
             return;
         std::size_t i = start->index();
@@ -388,13 +388,13 @@ struct ReverseTraversal {
     }
 };
 
-void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings& settings)
+void valueFlowGenericReverse(const Token* start, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start);
 }
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
+void valueFlowGenericReverse(const Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start, end);

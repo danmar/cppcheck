@@ -379,7 +379,7 @@ struct ForwardTraversal {
         return bail;
     }
 
-    bool reentersLoop(Token* endBlock, const Token* condTok, const Token* stepTok) const {
+    bool reentersLoop(const Token* endBlock, const Token* condTok, const Token* stepTok) const {
         if (!condTok)
             return true;
         if (Token::simpleMatch(condTok, ":"))
@@ -531,7 +531,7 @@ struct ForwardTraversal {
         return updateLoop(endToken, endBlock, condTok, initTok, stepTok, true);
     }
 
-    Progress updateScope(Token* endBlock) {
+    Progress updateScope(const Token* endBlock) {
         return updateRange(endBlock->link(), endBlock);
     }
 
