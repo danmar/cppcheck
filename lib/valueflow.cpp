@@ -1922,7 +1922,7 @@ static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings *
 
         for (Enumerator & enumerator : scope.enumeratorList) {
             if (enumerator.start) {
-                Token *rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
+                Token* rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
                 ValueFlow::valueFlowConstantFoldAST(rhs, settings);
                 if (rhs && rhs->hasKnownIntValue()) {
                     enumerator.value = rhs->values().front().intvalue;
@@ -5176,7 +5176,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
-            Token * parenTok = tok->next();
+            Token* parenTok = tok->next();
             if (!Token::simpleMatch(parenTok->link(), ") {"))
                 continue;
             Token * blockTok = parenTok->link()->tokAt(1);
@@ -5239,7 +5239,6 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                     }
                 }
             }
-
         }
     }
 }
@@ -7491,7 +7490,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
         const Function* function = scope->function;
         if (!function)
             continue;
-        for (Token *tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
                 continue;
 
@@ -8562,8 +8561,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
             continue;
         if (!staticSize) {
             if (!Token::Match(nameToken, "%name% ;") &&
-                !(Token::Match(nameToken, "%name% {") &&
-                  Token::simpleMatch(nameToken->next()->link(), "} ;")) &&
+                !(Token::Match(nameToken, "%name% {") && Token::simpleMatch(nameToken->next()->link(), "} ;")) &&
                 !Token::Match(nameToken, "%name% ("))
                 continue;
         }

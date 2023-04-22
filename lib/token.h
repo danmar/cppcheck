@@ -830,14 +830,13 @@ public:
         mImpl->mColumn = c;
     }
 
-    Token *next() {
+    Token* next() {
         return mNext;
     }
 
-    const Token *next() const {
+    const Token* next() const {
         return mNext;
     }
-
 
     /**
      * Delete tokens between begin and end. E.g. if begin = 1
@@ -863,14 +862,13 @@ public:
         return insertToken(tokenStr, originalNameStr, true);
     }
 
-    Token *previous() {
+    Token* previous() {
         return mPrevious;
     }
 
-    const Token *previous() const {
+    const Token* previous() const {
         return mPrevious;
     }
-
 
     nonneg int varId() const {
         return mImpl->mVarId;
@@ -1020,11 +1018,11 @@ public:
      *
      * @return The token where this token links to.
      */
-    const Token *link() const {
+    const Token* link() const {
         return mLink;
     }
 
-    Token *link() {
+    Token* link() {
         return mLink;
     }
 

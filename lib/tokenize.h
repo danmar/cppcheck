@@ -591,8 +591,8 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(Token * const startToken, // cppcheck-suppress functionConst // has side effects
-                                  VariableMap &variableMap,
+    void setVarIdClassDeclaration(Token* const startToken, // cppcheck-suppress functionConst // has side effects
+                                  VariableMap& variableMap,
                                   const nonneg int scopeStartVarId,
                                   std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
 

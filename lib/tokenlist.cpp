@@ -1640,7 +1640,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token * const tok1 = tok;
         AST_state state(cpp);
         compileExpression(tok, state);
-        Token * const endToken = tok;
+        Token* const endToken = tok;
         if (endToken == tok1 || !endToken)
             return tok1;
 

@@ -4014,10 +4014,9 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
     it->second = ++mVarId;
 }
 
-
-static bool setVarIdParseDeclaration(Token **tok, const VariableMap& variableMap, bool executableScope, bool cpp, bool c)
+static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap, bool executableScope, bool cpp, bool c)
 {
-    Token *tok2 = *tok;
+    Token* tok2 = *tok;
     if (!tok2->isName())
         return false;
 
@@ -4056,7 +4055,7 @@ static bool setVarIdParseDeclaration(Token **tok, const VariableMap& variableMap
             const Token *start = *tok;
             if (Token::Match(start->previous(), "%or%|%oror%|&&|&|^|+|-|*|/"))
                 return false;
-            Token * const closingBracket = tok2->findClosingBracket();
+            Token* const closingBracket = tok2->findClosingBracket();
             if (closingBracket == nullptr) { /* Ticket #8151 */
                 throw tok2;
             }
@@ -4209,14 +4208,13 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
     *tok1 = tok;
 }
 
-
-void Tokenizer::setVarIdClassDeclaration(Token * const startToken,
-                                         VariableMap &variableMap,
+void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
+                                         VariableMap& variableMap,
                                          const nonneg int scopeStartVarId,
                                          std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
 {
     // end of scope
-    Token * const endToken = startToken->link();
+    Token* const endToken = startToken->link();
 
     // determine class name
     std::string className;
@@ -4493,7 +4491,7 @@ void Tokenizer::setVarIdPass1()
                 return;
 
             // locate the variable name..
-            Token *tok2 = (tok->isName()) ? tok : tok->next();
+            Token* tok2 = (tok->isName()) ? tok : tok->next();
 
             // private: protected: public: etc
             while (tok2 && endsWith(tok2->str(), ':')) {
