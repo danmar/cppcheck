@@ -1922,7 +1922,7 @@ static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings *
 
         for (Enumerator & enumerator : scope.enumeratorList) {
             if (enumerator.start) {
-                Token *rhs = enumerator.start->previous()->astOperand2();
+                Token *rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
                 ValueFlow::valueFlowConstantFoldAST(rhs, settings);
                 if (rhs && rhs->hasKnownIntValue()) {
                     enumerator.value = rhs->values().front().intvalue;
@@ -5173,10 +5173,10 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             }
         }
 
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
-            const Token * parenTok = tok->next();
+            Token * parenTok = tok->next();
             if (!Token::simpleMatch(parenTok->link(), ") {"))
                 continue;
             Token * blockTok = parenTok->link()->tokAt(1);
@@ -6134,7 +6134,7 @@ struct ConditionHandler {
             if (tok->hasKnownIntValue())
                 return;
 
-            const Token* top = tok->astTop();
+            Token* top = tok->astTop();
 
             if (Token::Match(top, "%assign%"))
                 return;
@@ -6275,7 +6275,7 @@ struct ConditionHandler {
                         const Settings* settings,
                         const std::set<const Scope*>& skippedFunctions) const {
         traverseCondition(tokenlist, symboldatabase, settings, skippedFunctions, [&](const Condition& cond, Token* condTok, const Scope* scope) {
-            const Token* top = condTok->astTop();
+            Token* top = condTok->astTop();
 
             const MathLib::bigint path = cond.getPath();
             const bool allowKnown = path == 0;
@@ -7491,7 +7491,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
         const Function* function = scope->function;
         if (!function)
             continue;
-        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (Token *tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
                 continue;
 
@@ -8280,8 +8280,8 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
             continue;
         if (!astIsContainer(tok))
             continue;
-        const Token* ftok = nullptr;
-        const Library::Container::Yield yield = findIteratorYield(tok, &ftok, settings);
+        Token* ftok = nullptr;
+        const Library::Container::Yield yield = findIteratorYield(tok, const_cast<const Token**>(&ftok), settings);
         if (ftok) {
             ValueFlow::Value v(0);
             v.setKnown();
@@ -8557,39 +8557,40 @@ static void valueFlowContainerSize(TokenList* tokenlist,
         }
         if (!staticSize && nonLocal)
             continue;
-        if (var->nameToken()->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+        Token* nameToken = const_cast<Token*>(var->nameToken());
+        if (nameToken->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;
         if (!staticSize) {
-            if (!Token::Match(var->nameToken(), "%name% ;") &&
-                !(Token::Match(var->nameToken(), "%name% {") &&
-                  Token::simpleMatch(var->nameToken()->next()->link(), "} ;")) &&
-                !Token::Match(var->nameToken(), "%name% ("))
+            if (!Token::Match(nameToken, "%name% ;") &&
+                !(Token::Match(nameToken, "%name% {") &&
+                  Token::simpleMatch(nameToken->next()->link(), "} ;")) &&
+                !Token::Match(nameToken, "%name% ("))
                 continue;
         }
-        if (var->nameToken()->astTop() && Token::Match(var->nameToken()->astTop()->previous(), "for|while"))
+        if (nameToken->astTop() && Token::Match(nameToken->astTop()->previous(), "for|while"))
             known = !isVariableChanged(var, settings, true);
         std::vector<ValueFlow::Value> values{ValueFlow::Value{size}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
         if (known)
             values.back().setKnown();
         if (!staticSize) {
-            if (Token::simpleMatch(var->nameToken()->next(), "{")) {
-                Token* initList = var->nameToken()->next();
-                valueFlowContainerSetTokValue(tokenlist, settings, var->nameToken(), initList);
+            if (Token::simpleMatch(nameToken->next(), "{")) {
+                Token* initList = nameToken->next();
+                valueFlowContainerSetTokValue(tokenlist, settings, nameToken, initList);
                 values = getInitListSize(initList, var->valueType(), settings, known);
-            } else if (Token::simpleMatch(var->nameToken()->next(), "(")) {
-                const Token* constructorArgs = var->nameToken()->next();
+            } else if (Token::simpleMatch(nameToken->next(), "(")) {
+                const Token* constructorArgs = nameToken->next();
                 values = getContainerSizeFromConstructor(constructorArgs, var->valueType(), settings, known);
             }
         }
 
         if (constSize) {
-            valueFlowForwardConst(var->nameToken()->next(), var->scope()->bodyEnd, var, values, settings);
+            valueFlowForwardConst(nameToken->next(), var->scope()->bodyEnd, var, values, settings);
             continue;
         }
 
         for (const ValueFlow::Value& value : values) {
-            valueFlowForward(var->nameToken()->next(), var->nameToken(), value, tokenlist, settings);
+            valueFlowForward(nameToken->next(), var->nameToken(), value, tokenlist, settings);
         }
     }
 

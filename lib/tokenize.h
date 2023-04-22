@@ -591,7 +591,7 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(const Token * const startToken, // cppcheck-suppress functionConst // has side effects
+    void setVarIdClassDeclaration(Token * const startToken, // cppcheck-suppress functionConst // has side effects
                                   VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
                                   std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
@@ -654,6 +654,10 @@ public:
     TokenList list;
     // Implement tokens() as a wrapper for convenience when using the TokenList
     const Token* tokens() const {
+        return list.front();
+    }
+
+    Token* tokens() {
         return list.front();
     }
 

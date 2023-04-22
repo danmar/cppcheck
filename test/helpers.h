@@ -49,6 +49,10 @@ public:
             tokenizer.tokenize(iss, cpp ? "test.cpp" : "test.c");
     }
 
+    Token* tokens() {
+        return tokenizer.tokens();
+    }
+
     const Token* tokens() const {
         return tokenizer.tokens();
     }

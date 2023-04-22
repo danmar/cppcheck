@@ -1366,7 +1366,7 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(const Tokenizer &tokenizer, const Settings &settings, ErrorLogger *errorLogger);
+    SymbolDatabase(Tokenizer &tokenizer, const Settings &settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
@@ -1510,7 +1510,7 @@ private:
     void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
     void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
 
-    const Tokenizer &mTokenizer;
+    Tokenizer &mTokenizer;
     const Settings &mSettings;
     ErrorLogger *mErrorLogger;
 

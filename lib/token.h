@@ -830,7 +830,11 @@ public:
         mImpl->mColumn = c;
     }
 
-    Token *next() const {
+    Token *next() {
+        return mNext;
+    }
+
+    const Token *next() const {
         return mNext;
     }
 
@@ -859,7 +863,11 @@ public:
         return insertToken(tokenStr, originalNameStr, true);
     }
 
-    Token *previous() const {
+    Token *previous() {
+        return mPrevious;
+    }
+
+    const Token *previous() const {
         return mPrevious;
     }
 
@@ -1012,7 +1020,11 @@ public:
      *
      * @return The token where this token links to.
      */
-    Token *link() const {
+    const Token *link() const {
+        return mLink;
+    }
+
+    Token *link() {
         return mLink;
     }
 
