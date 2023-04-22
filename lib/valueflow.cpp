@@ -4523,6 +4523,10 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                                    "Passed to constructor of '" + t->name() + "'.",
                                    ValueFlow::Value::LifetimeKind::SubObject,
                                    [&](const LifetimeStore& ls) {
+                // Skip static variable
+                it = std::find_if(it, scope->varlist.cend(), [](const Variable& var) {
+                    return !var.isStatic();
+                });
                 if (it == scope->varlist.cend())
                     return;
                 const Variable& var = *it;
