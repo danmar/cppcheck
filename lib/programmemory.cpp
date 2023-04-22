@@ -1416,7 +1416,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
         return v;
     if (!expr)
         return v;
-    if (pm.hasValue(expr->exprId()))
+    if (expr->exprId() > 0 && pm.hasValue(expr->exprId()))
         return pm.at(expr->exprId());
     if (const ValueFlow::Value* value = getImpossibleValue(expr))
         return *value;
