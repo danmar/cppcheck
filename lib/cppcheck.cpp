@@ -698,6 +698,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             return mExitCode;
         }
 
+        if (mSettings.library.markupFile(filename)) {
+            Tokenizer tokenizer(&mSettings, this, &preprocessor);
+            tokenizer.createTokens(std::move(tokens1));
+            checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
+            return mExitCode;
+        }
+
         if (!preprocessor.loadFiles(tokens1, files))
             return mExitCode;
 

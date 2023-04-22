@@ -112,6 +112,11 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         return false;
     }
 
+    // Libraries must be loaded before FileLister is executed to ensure markup files will be
+    // listed properly.
+    if (!loadLibraries(settings))
+        return false;
+
     // Check that all include paths exist
     {
         for (std::list<std::string>::iterator iter = settings.includePaths.begin();
@@ -255,9 +260,6 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
-
-    if (!loadLibraries(settings))
-        return EXIT_FAILURE;
 
     if (settings.reportProgress)
         mLatestProgressOutputTime = std::time(nullptr);
