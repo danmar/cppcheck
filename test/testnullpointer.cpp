@@ -143,7 +143,7 @@ private:
         TEST_CASE(nullpointer97); // #11229
         TEST_CASE(nullpointer98); // #11458
         TEST_CASE(nullpointer99); // #10602
-        TEST_CASE(nullpointer100); // #11636
+        TEST_CASE(nullpointer100);        // #11636
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
