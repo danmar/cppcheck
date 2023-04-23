@@ -3235,6 +3235,28 @@ private:
               "    return &a[0].x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11666
+        check("template <class T, int M, int N>\n"
+              "struct Matrix;\n"
+              "template <class T, int N>\n"
+              "struct Matrix<T, 1, N> {\n"
+              "    std::array<T, N> x;\n"
+              "private:\n"
+              "    static constexpr decltype(&Matrix::x) members[] = {&Matrix::x};\n"
+              "};\n"
+              "template <class T, int N>\n"
+              "struct Matrix<T, 2, N> {\n"
+              "    std::array<T, N> x;\n"
+              "    std::array<T, N> y;\n"
+              "private:\n"
+              "    static constexpr decltype(&Matrix::x) members[] = {&Matrix::x, &Matrix::y};\n"
+              "};\n"
+              "template <class T>\n"
+              "Matrix<T, 2, 2> O() {\n"
+              "    return { {}, {} };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
