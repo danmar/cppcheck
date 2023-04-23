@@ -307,7 +307,7 @@ private:
         settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings->verbose = verbose;
 
-        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
+        Preprocessor preprocessor(*settings);
 
         // Tokenize..
         Tokenizer tokenizer(settings, this, &preprocessor);
@@ -347,7 +347,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
+        Preprocessor preprocessor(*settings);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
@@ -1572,7 +1572,7 @@ private:
         settings.severity.enable(Severity::style);
         settings.standards.cpp = Standards::CPP03; // #5560
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizerCpp(&settings, this, &preprocessor);
@@ -1778,7 +1778,7 @@ private:
         settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings.platform.defaultSign = 's';
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -3107,6 +3107,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::array<int, 2>& a) {\n"
+              "    if (a[0]) {}\n"
+              "}\n"
+              "void g(std::array<int, 2>& a) {\n"
+              "    a.fill(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a' can be declared as const array\n", errout.str());
     }
 
     void constParameterCallback() {

@@ -1424,7 +1424,7 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isStatic())
             continue;
-        if (var->isArray())
+        if (var->isArray() && !var->isStlType())
             continue;
         if (var->isEnumType())
             continue;

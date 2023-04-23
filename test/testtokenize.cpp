@@ -18,6 +18,7 @@
 
 #include "config.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "platform.h"
 #include "preprocessor.h" // usually tests here should not use preprocessor...
 #include "settings.h"
@@ -6647,12 +6648,12 @@ private:
                                 "int PTR4 q4_var RBR4 = 0;\n";
 
         // Preprocess file..
-        Preprocessor preprocessor(settings0, settings0.nomsg);
+        Preprocessor preprocessor(settings0);
         std::list<std::string> configurations;
         std::string filedata;
         std::istringstream fin(raw_code);
         preprocessor.preprocess(fin, filedata, configurations, emptyString, settings0.includePaths);
-        const std::string code = preprocessor.getcode(filedata, emptyString, emptyString);
+        const std::string code = PreprocessorHelper::getcode(preprocessor, filedata, emptyString, emptyString);
 
         ASSERT_THROW(tokenizeAndStringify(code.c_str()), InternalError);
     }
@@ -6834,6 +6835,9 @@ private:
         ASSERT_THROW_EQUALS(tokenizeAndStringify("enum : 3 { };"), InternalError, "syntax error: Unexpected token '3'");
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int a() { b((c)return 0) }"), InternalError, "syntax error");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
     }
 
 
@@ -7395,7 +7399,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
