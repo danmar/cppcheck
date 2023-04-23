@@ -143,6 +143,7 @@ private:
         TEST_CASE(nullpointer97); // #11229
         TEST_CASE(nullpointer98); // #11458
         TEST_CASE(nullpointer99); // #10602
+        TEST_CASE(nullpointer100);        // #11636
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2828,6 +2829,17 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:14]: (error) Null pointer dereference: buf\n", errout.str());
+    }
+
+    void nullpointer100() // #11636
+    {
+        check("const char* type_of(double) { return \"unknown\"; }\n"
+              "void f() {\n"
+              "    double tmp = 0.0;\n"
+              "    const char* t = type_of(tmp);\n"
+              "    std::cout << t;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
