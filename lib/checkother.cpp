@@ -3597,6 +3597,8 @@ void CheckOther::checkKnownArgument()
                 continue;
             if (isConstVarExpression(tok))
                 continue;
+            if (Token::Match(tok->astOperand1(), "%name% ("))
+                continue;
             const Token * tok2 = tok;
             if (isCPPCast(tok2))
                 tok2 = tok2->astOperand2();

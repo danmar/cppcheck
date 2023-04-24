@@ -4504,6 +4504,13 @@ private:
               "    if (j == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void h(int);\n" // #11679
+              "bool g(int a) { h(a); return false; }\n"
+              "bool f(int i) {\n"
+              "    return g(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()

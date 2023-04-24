@@ -10688,6 +10688,15 @@ private:
               "    dostuff(self->maxsize * sizeof(intptr_t));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #11679
+        check("bool g(int);\n"
+              "void h(int);\n"
+              "int k(int a) { h(a); return 0; }\n"
+              "void f(int i) {\n"
+              "    if (g(k(i))) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void knownArgumentHiddenVariableExpression() {
