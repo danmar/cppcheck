@@ -315,8 +315,8 @@ static void createDumpFile(const Settings& settings,
         break;
     }
 
-    fdump << "<?xml version=\"1.0\"?>" << std::endl;
-    fdump << "<dumps" << language << ">" << std::endl;
+    fdump << "<?xml version=\"1.0\"?>\n";
+    fdump << "<dumps" << language << ">\n";
     fdump << "  <platform"
           << " name=\"" << settings.platform.toString() << '\"'
           << " char_bit=\"" << settings.platform.char_bit << '\"'
@@ -325,7 +325,7 @@ static void createDumpFile(const Settings& settings,
           << " long_bit=\"" << settings.platform.long_bit << '\"'
           << " long_long_bit=\"" << settings.platform.long_long_bit << '\"'
           << " pointer_bit=\"" << (settings.platform.sizeof_pointer * settings.platform.char_bit) << '\"'
-          << "/>\n";
+          << "/>" << '\n';
 }
 
 static std::string executeAddon(const AddonInfo &addonInfo,
@@ -571,16 +571,16 @@ unsigned int CppCheck::check(const std::string &path)
             std::string dumpFile;
             createDumpFile(mSettings, path, fdump, dumpFile);
             if (fdump.is_open()) {
-                fdump << "<dump cfg=\"\">" << std::endl;
+                fdump << "<dump cfg=\"\">\n";
                 for (const ErrorMessage& errmsg: compilerWarnings)
                     fdump << "  <clang-warning file=\"" << toxml(errmsg.callStack.front().getfile()) << "\" line=\"" << errmsg.callStack.front().line << "\" column=\"" << errmsg.callStack.front().column << "\" message=\"" << toxml(errmsg.shortMessage()) << "\"/>\n";
-                fdump << "  <standards>" << std::endl;
-                fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
-                fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
-                fdump << "  </standards>" << std::endl;
+                fdump << "  <standards>\n";
+                fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>\n";
+                fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>\n";
+                fdump << "  </standards>\n";
                 tokenizer.dump(fdump);
-                fdump << "</dump>" << std::endl;
-                fdump << "</dumps>" << std::endl;
+                fdump << "</dump>\n";
+                fdump << "</dumps>\n";
                 fdump.close();
             }
 
