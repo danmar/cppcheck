@@ -7443,64 +7443,67 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings &sett
 
 std::string ValueType::dump() const
 {
-    std::ostringstream ret;
+    std::string ret;
     switch (type) {
     case UNKNOWN_TYPE:
         return "";
     case NONSTD:
-        ret << "valueType-type=\"nonstd\"";
+        ret += "valueType-type=\"nonstd\"";
         break;
     case POD:
-        ret << "valueType-type=\"pod\"";
+        ret += "valueType-type=\"pod\"";
         break;
     case RECORD:
-        ret << "valueType-type=\"record\"";
+        ret += "valueType-type=\"record\"";
         break;
     case SMART_POINTER:
-        ret << "valueType-type=\"smart-pointer\"";
+        ret += "valueType-type=\"smart-pointer\"";
         break;
-    case CONTAINER:
-        ret << "valueType-type=\"container\"";
-        ret << " valueType-containerId=\"" << container << "\"";
+    case CONTAINER: {
+        ret += "valueType-type=\"container\"";
+        ret += " valueType-containerId=\"";
+        ret += ptr_to_string(container);
+        ret += "\"";
         break;
+    }
     case ITERATOR:
-        ret << "valueType-type=\"iterator\"";
+        ret += "valueType-type=\"iterator\"";
         break;
     case VOID:
-        ret << "valueType-type=\"void\"";
+        ret += "valueType-type=\"void\"";
         break;
     case BOOL:
-        ret << "valueType-type=\"bool\"";
+        ret += "valueType-type=\"bool\"";
         break;
     case CHAR:
-        ret << "valueType-type=\"char\"";
+        ret += "valueType-type=\"char\"";
         break;
     case SHORT:
-        ret << "valueType-type=\"short\"";
+        ret += "valueType-type=\"short\"";
         break;
     case WCHAR_T:
-        ret << "valueType-type=\"wchar_t\"";
+        ret += "valueType-type=\"wchar_t\"";
         break;
     case INT:
-        ret << "valueType-type=\"int\"";
+        ret += "valueType-type=\"int\"";
         break;
     case LONG:
-        ret << "valueType-type=\"long\"";
+        ret += "valueType-type=\"long\"";
         break;
     case LONGLONG:
-        ret << "valueType-type=\"long long\"";
+        ret += "valueType-type=\"long long\"";
         break;
     case UNKNOWN_INT:
-        ret << "valueType-type=\"unknown int\"";
+        ret += "valueType-type=\"unknown int\"";
         break;
     case FLOAT:
-        ret << "valueType-type=\"float\"";
+        ret += "valueType-type=\"float\"";
         break;
     case DOUBLE:
-        ret << "valueType-type=\"double\"";
+        ret += "valueType-type=\"double\"";
         break;
     case LONGDOUBLE:
-        ret << "valueType-type=\"long double\"";
+        ret += "valueType-type=\"long double\"";
         break;
     }
 
@@ -7508,36 +7511,51 @@ std::string ValueType::dump() const
     case Sign::UNKNOWN_SIGN:
         break;
     case Sign::SIGNED:
-        ret << " valueType-sign=\"signed\"";
+        ret += " valueType-sign=\"signed\"";
         break;
     case Sign::UNSIGNED:
-        ret << " valueType-sign=\"unsigned\"";
+        ret += " valueType-sign=\"unsigned\"";
         break;
     }
 
-    if (bits > 0)
-        ret << " valueType-bits=\"" << bits << '\"';
+    if (bits > 0) {
+        ret += " valueType-bits=\"";
+        ret += std::to_string(bits);
+        ret += '\"';
+    }
 
-    if (pointer > 0)
-        ret << " valueType-pointer=\"" << pointer << '\"';
+    if (pointer > 0) {
+        ret += " valueType-pointer=\"";
+        ret += std::to_string(pointer);
+        ret += '\"';
+    }
 
-    if (constness > 0)
-        ret << " valueType-constness=\"" << constness << '\"';
+    if (constness > 0) {
+        ret += " valueType-constness=\"";
+        ret += std::to_string(constness);
+        ret += '\"';
+    }
 
     if (reference == Reference::None)
-        ret << " valueType-reference=\"None\"";
+        ret += " valueType-reference=\"None\"";
     else if (reference == Reference::LValue)
-        ret << " valueType-reference=\"LValue\"";
+        ret += " valueType-reference=\"LValue\"";
     else if (reference == Reference::RValue)
-        ret << " valueType-reference=\"RValue\"";
+        ret += " valueType-reference=\"RValue\"";
 
-    if (typeScope)
-        ret << " valueType-typeScope=\"" << typeScope << '\"';
+    if (typeScope) {
+        ret += " valueType-typeScope=\"";
+        ret += ptr_to_string(typeScope);
+        ret += '\"';
+    }
 
-    if (!originalTypeName.empty())
-        ret << " valueType-originalTypeName=\"" << ErrorLogger::toxml(originalTypeName) << '\"';
+    if (!originalTypeName.empty()) {
+        ret += " valueType-originalTypeName=\"";
+        ret += ErrorLogger::toxml(originalTypeName);
+        ret += '\"';
+    }
 
-    return ret.str();
+    return ret;
 }
 
 bool ValueType::isConst(nonneg int indirect) const
