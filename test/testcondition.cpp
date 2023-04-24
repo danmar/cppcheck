@@ -4511,6 +4511,13 @@ private:
               "    return g(i);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string a) {\n" // #11051
+              "    a = \"x\";\n"
+              "    if (a == \"x\") {}\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'a==\"x\"' is always true\n", errout.str());
     }
 
     void alwaysTrueSymbolic()
