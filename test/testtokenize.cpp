@@ -3939,12 +3939,12 @@ private:
             ASSERT_EQUALS(std::string::npos, tokenizeAndStringify(code).find("> >"));
         }
         {
-          const char code[] = "struct S { bool vector; };\n"
-                              "struct T { std::vector<std::shared_ptr<int>> v; };\n";
-          ASSERT_EQUALS("struct S { bool vector ; } ;\n"
-                        "struct T { std :: vector < std :: shared_ptr < int > > v ; } ;",
-                        tokenizeAndStringify(code));
-          ASSERT_EQUALS("", errout.str());
+            const char code[] = "struct S { bool vector; };\n"
+                                "struct T { std::vector<std::shared_ptr<int>> v; };\n";
+            ASSERT_EQUALS("struct S { bool vector ; } ;\n"
+                          "struct T { std :: vector < std :: shared_ptr < int > > v ; } ;",
+                          tokenizeAndStringify(code));
+            ASSERT_EQUALS("", errout.str());
         }
     }
 

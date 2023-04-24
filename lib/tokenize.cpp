@@ -6035,7 +6035,7 @@ void Tokenizer::splitTemplateRightAngleBrackets(bool check)
             }
         } else if (Token::Match(tok, "class|struct|union|=|:|public|protected|private %name% <") && std::none_of(vars.begin(), vars.end(), [&](const std::pair<std::string, int>& v) {
             return v.first == tok->next()->str();
-            })) {
+        })) {
             Token *endTok = tok->tokAt(2)->findClosingBracket();
             if (check) {
                 if (Token::simpleMatch(endTok, ">>"))
