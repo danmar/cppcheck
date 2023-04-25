@@ -1172,7 +1172,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         ValueFlow::Value value(0);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings), isInitList;
+        setTokenValue(tok, std::move(value), settings, isInitList);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         if (tok->next()->astOperand2() && !tok->next()->astOperand2()->isLiteral() && tok->next()->astOperand2()->valueType() &&
             (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
