@@ -4959,6 +4959,11 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
             if (varTok && varTok->variable() && varTok->variable()->type() && varTok->variable()->type()->classScope)
                 scope = varTok->variable()->type()->classScope;
         }
+        else if (Token::simpleMatch(tok->astParent(), "[")) {
+            const Token* varTok = tok->astParent()->previous();
+            if (varTok && varTok->variable() && varTok->variable()->scope() && Token::simpleMatch(tok->astParent()->astOperand1(), "::"))
+                scope = varTok->variable()->scope();
+        }
 
         for (std::vector<Scope *>::const_iterator s = scope->nestedList.cbegin(); s != scope->nestedList.cend(); ++s) {
             enumerator = (*s)->findEnumerator(tokStr);
