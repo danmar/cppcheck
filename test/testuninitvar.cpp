@@ -6007,10 +6007,10 @@ private:
                         "};\n"
                         "const int S::A[N] = { 0, 1, 2 };\n"
                         "void S::f() {\n"
-                        "  int tmp[N];\n"
-                        "  for (int i = 0; i < N; i++)\n"
-                        "    tmp[i] = 0;\n"
-                        "  if (tmp[0]) {}\n"
+                        "    int tmp[N];\n"
+                        "    for (int i = 0; i < N; i++)\n"
+                        "        tmp[i] = 0;\n"
+                        "    if (tmp[0]) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }
