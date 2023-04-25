@@ -3749,6 +3749,18 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             mTemplateNamePos.clear();
         }
 
+        const bool hasTemplates = getTemplateDeclarations();
+
+        if (passCount == 0) {
+            mDump.clear();
+            for (const TokenAndName& t: mTemplateDeclarations)
+                mDump += t.dump(mTokenizer.list.getFiles());
+            for (const TokenAndName& t: mTemplateForwardDeclarations)
+                mDump += t.dump(mTokenizer.list.getFiles());
+            if (!mDump.empty())
+                mDump = "  <TemplateSimplifier>\n" + mDump + "  </TemplateSimplifier>\n";
+        }
+
         // Make sure there is something to simplify.
         if (mTemplateDeclarations.empty() && mTemplateForwardDeclarations.empty())
             return;
