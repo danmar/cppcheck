@@ -5998,6 +5998,21 @@ private:
                         "        if ((cp = getenv(envar)) != NULL) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11459
+        valueFlowUninit("struct S {\n"
+                        "    enum E { N = 3 };\n"
+                        "    static const int A[N];\n"
+                        "    static void f();\n"
+                        "};\n"
+                        "const int S::A[N] = { 0, 1, 2 };\n"
+                        "void S::f() {\n"
+                        "    int tmp[N];\n"
+                        "    for (int i = 0; i < N; i++)\n"
+                        "        tmp[i] = 0;\n"
+                        "    if (tmp[0]) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
