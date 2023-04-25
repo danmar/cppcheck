@@ -619,11 +619,6 @@ private:
 
 public:
 
-    void setSettings(const Settings *settings) {
-        mSettings = settings;
-        list.setSettings(settings);
-    }
-
     const SymbolDatabase *getSymbolDatabase() const {
         return mSymbolDatabase;
     }
