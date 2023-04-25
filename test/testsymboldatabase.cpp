@@ -444,6 +444,7 @@ private:
         TEST_CASE(findFunction45);
         TEST_CASE(findFunction46);
         TEST_CASE(findFunction47);
+        TEST_CASE(findFunction48);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -7155,7 +7156,38 @@ private:
         ASSERT_EQUALS(3, functok->function()->tokenDef->linenr());
     }
 
-    void findFunction47() {
+    void findFunction47() { // #8592
+        {
+            GET_SYMBOL_DB("namespace N {\n"
+                          "    void toupper(std::string& str);\n"
+                          "}\n"
+                          "void f(std::string s) {\n"
+                          "    using namespace N;\n"
+                          "    toupper(s);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "toupper ( s");
+            ASSERT(functok && functok->function());
+            ASSERT(functok->function()->name() == "toupper");
+            ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("namespace N {\n"
+                          "    void toupper(std::string& str);\n"
+                          "}\n"
+                          "using namespace N;\n"
+                          "void f(std::string s) {\n"
+                          "    toupper(s);\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+            const Token *functok = Token::findsimplematch(tokenizer.tokens(), "toupper ( s");
+            ASSERT(functok && functok->function());
+            ASSERT(functok->function()->name() == "toupper");
+            ASSERT_EQUALS(2, functok->function()->tokenDef->linenr());
+        }
+    }
+
+    void findFunction48() {
         GET_SYMBOL_DB("struct S {\n"
                       "    S() {}\n"
                       "    std::list<S> l;\n"

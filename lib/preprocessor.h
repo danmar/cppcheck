@@ -70,6 +70,10 @@ public:
  * configurations that exist in a source file.
  */
 class CPPCHECKLIB Preprocessor {
+    // TODO: get rid of this
+    friend class PreprocessorHelper;
+    friend class TestPreprocessor;
+
 public:
 
     /**
@@ -146,18 +150,6 @@ public:
     std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations);
 
     /**
-     * Get preprocessed code for a given configuration
-     *
-     * Note: for testing only.
-     *
-     * @param filedata file data including preprocessing 'if', 'define', etc
-     * @param cfg configuration to read out
-     * @param filename name of source file
-     * @param inlineSuppression the inline suppressions
-     */
-    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression = nullptr);
-
-    /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.
      *
      * @param tokens1    Sourcefile tokens
@@ -191,6 +183,8 @@ public:
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
+
+    static bool hasErrors(const simplecpp::OutputList &outputList);
 
     const Settings& mSettings;
     ErrorLogger *mErrorLogger;
