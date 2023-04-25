@@ -94,7 +94,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             usage.lineNumber = func->token->linenr();
 
         usage.fileIndex = func->token->fileIndex();
-        const std::string& fileName = tokenizer.list.getFiles()[func->token->fileIndex()];
+        const std::string& fileName = tokenizer.list.file(func->token);
 
         // No filename set yet..
         if (usage.filename.empty()) {
