@@ -5990,6 +5990,15 @@ private:
                         "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: s.a\n", errout.str());
 
+        valueFlowUninit("void f(char* src) {\n" // #11608
+                        "    char envar[64], *cp, c;\n"
+                        "    for (src += 2, cp = envar; (c = *src) != '\\0'; src++)\n"
+                        "        *cp++ = c;\n"
+                        "    if (cp != envar)\n"
+                        "        if ((cp = getenv(envar)) != NULL) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #11459
         valueFlowUninit("struct S {\n"
                         "    enum E { N = 3 };\n"
