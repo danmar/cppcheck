@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,12 @@
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
-
-#include <tinyxml2.h>
 
 class TestFunctions : public TestFixture {
 public:
@@ -43,11 +41,11 @@ private:
         settings.severity.enable(Severity::performance);
         settings.severity.enable(Severity::portability);
         settings.certainty.enable(Certainty::inconclusive);
-        settings.libraries.emplace_back("posix");
         settings.standards.c = Standards::C11;
         settings.standards.cpp = Standards::CPP11;
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         // Prohibited functions
         TEST_CASE(prohibitedFunctions_posix);
@@ -131,8 +129,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
-        CheckFunctions checkFunctions(&tokenizer, settings_, this);
-        checkFunctions.runChecks(&tokenizer, settings_, this);
+        runChecks<CheckFunctions>(&tokenizer, settings_, this);
     }
 
     void prohibitedFunctions_posix() {
@@ -1314,9 +1311,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings2.library.load(doc);
+        ASSERT(settings2.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
@@ -1452,6 +1447,10 @@ private:
               "}", "test.cpp", &settings2);
         ASSERT_EQUALS("[test.cpp:2]: (warning) Return value of function mystrcmp() is not used.\n", errout.str());
 
+        check("void f(std::vector<int*> v) {\n"
+              "    delete *v.begin();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIgnoredErrorCode() {
@@ -1465,9 +1464,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings2.library.load(doc);
+        ASSERT(settings2.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
@@ -1827,9 +1824,9 @@ private:
     }
 
     void checkLibraryMatchFunctions() {
+        const auto settings_old = settings;
         settings.checkLibrary = true;
-        auto severity_old = settings.severity;
-        settings.severity.enable(Severity::information);
+        settings.daca = true;
 
         check("void f() {\n"
               "    lib_func();"
@@ -1951,8 +1948,74 @@ private:
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
 
-        settings.severity = severity_old;
-        settings.checkLibrary = false;
+        check("struct F { void g(int); };\n"
+              "void f(std::list<F>& l) {\n"
+              "    std::list<F>::iterator it;\n"
+              "    for (it = l.begin(); it != l.end(); ++it)\n"
+              "        it->g(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("auto f() {\n"
+              "    return std::runtime_error(\"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #11543
+              "    S() {}\n"
+              "    std::vector<std::shared_ptr<S>> v;\n"
+              "    void f(int i) const;\n"
+              "};\n"
+              "void S::f(int i) const {\n"
+              "    for (const std::shared_ptr<S>& c : v)\n"
+              "        c->f(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace N {\n"
+              "    struct S { static const std::set<std::string> s; };\n"
+              "}\n"
+              "void f() {\n"
+              "    const auto& t = N::S::s;\n"
+              "    if (t.find(\"abc\") != t.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
+              "    auto& s = v[i][j];\n"
+              "    s.insert(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<std::string>& v, int i, char c) {\n"
+              "    const auto& s = v[i];\n"
+              "    return s.find(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #11604
+              "    int (*g)() = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    INT (*g)() = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T;\n"
+              "std::shared_ptr<T> get();\n"
+              "void f(int i) {\n"
+              "    auto p = get();\n"
+              "    p->h(i);\n"
+              "    p.reset(nullptr);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n",
+                           "[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n"
+                           "[test.cpp:6]: (information) --check-library: There is no matching configuration for function std::shared_ptr::reset()\n",
+                           errout.str());
+
+        settings = settings_old;
     }
 
     void checkUseStandardLibrary1() {

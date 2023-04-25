@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Header Files">
@@ -18,7 +18,7 @@
       <Extensions>cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="SourceFiles">
     <ClCompile Include="options.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -211,9 +211,6 @@
     <ClCompile Include="testastutils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\astutils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="testsimplifyusing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -230,7 +227,7 @@
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="HeaderFiles">
     <ClInclude Include="options.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -250,9 +247,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\cli\cmdlineparser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\lib\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="precompiled.h">

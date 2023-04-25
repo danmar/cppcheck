@@ -113,8 +113,8 @@ namespace simplecpp {
             name = (std::isalpha(static_cast<unsigned char>(string[0])) || string[0] == '_' || string[0] == '$')
                    && (std::memchr(string.c_str(), '\'', string.size()) == nullptr);
             comment = string.size() > 1U && string[0] == '/' && (string[1] == '/' || string[1] == '*');
-            number = std::isdigit(static_cast<unsigned char>(string[0])) || (string.size() > 1U && string[0] == '-' && std::isdigit(static_cast<unsigned char>(string[1])));
-            op = (string.size() == 1U) ? string[0] : '\0';
+            number = std::isdigit(static_cast<unsigned char>(string[0])) || (string.size() > 1U && (string[0] == '-' || string[0] == '+') && std::isdigit(static_cast<unsigned char>(string[1])));
+            op = (string.size() == 1U && !name && !comment && !number) ? string[0] : '\0';
         }
 
         const TokenString& str() const {
@@ -193,8 +193,13 @@ namespace simplecpp {
     /** List of tokens. */
     class SIMPLECPP_LIB TokenList {
     public:
+        class Stream;
+
         explicit TokenList(std::vector<std::string> &filenames);
+        /** generates a token list from the given std::istream parameter */
         TokenList(std::istream &istr, std::vector<std::string> &filenames, const std::string &filename=std::string(), OutputList *outputList = nullptr);
+        /** generates a token list from the given filename parameter */
+        TokenList(const std::string &filename, std::vector<std::string> &filenames, OutputList *outputList = nullptr);
         TokenList(const TokenList &other);
 #if __cplusplus >= 201103L
         TokenList(TokenList &&other);
@@ -214,7 +219,7 @@ namespace simplecpp {
         void dump() const;
         std::string stringify() const;
 
-        void readfile(std::istream &istr, const std::string &filename=std::string(), OutputList *outputList = nullptr);
+        void readfile(Stream &stream, const std::string &filename=std::string(), OutputList *outputList = nullptr);
         void constFold();
 
         void removeComments();
@@ -279,7 +284,7 @@ namespace simplecpp {
         void constFoldLogicalOp(Token *tok);
         void constFoldQuestionOp(Token **tok1);
 
-        std::string readUntil(std::istream &istr, const Location &location, char start, char end, OutputList *outputList, unsigned int bom);
+        std::string readUntil(Stream &stream, const Location &location, char start, char end, OutputList *outputList);
         void lineDirective(unsigned int fileIndex, unsigned int line, Location *location);
 
         std::string lastLine(int maxsize=100000) const;
@@ -314,12 +319,13 @@ namespace simplecpp {
      * On the command line these are configured by -D, -U, -I, --include, -std
      */
     struct SIMPLECPP_LIB DUI {
-        DUI() {}
+        DUI() : clearIncludeCache(false) {}
         std::list<std::string> defines;
         std::set<std::string> undefined;
         std::list<std::string> includePaths;
         std::list<std::string> includes;
         std::string std;
+        bool clearIncludeCache;
     };
 
     SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);

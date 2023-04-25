@@ -17,6 +17,10 @@ parser.add_argument('--debug-warnings', action='store_true', help='passed throug
 parser.add_argument('--check-library', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--timeout', type=int, default=2, help='the amount of seconds to wait for the analysis to finish')
 parser.add_argument('--compact', action='store_true', help='only print versions with changes with --compare')
+parser.add_argument('--no-quiet', action='store_true', default=False, help='do not specify -q')
+package_group = parser.add_mutually_exclusive_group()
+package_group.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
+package_group.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
 args = parser.parse_args()
 
 def sort_commit_hashes(commits):
@@ -72,6 +76,9 @@ except:
     # if you use the folder from the bisect script that contains the repo as a folder - so remove it from the list
     if versions.count('cppcheck'):
         versions.remove('cppcheck')
+    # this is the commit hash for the 2.9 release tag. it does not exist in the main branch so the version for it cannot be determined
+    if versions.count('aca3f6fef'):
+        versions.remove('aca3f6fef')
     len_in = len(versions)
     versions = sort_commit_hashes(versions)
     if len(versions) != len_in:
@@ -97,31 +104,49 @@ for entry in versions:
         # sanitize version
         version = version.replace('Cppcheck ', '').replace(' dev', '')
 
-    cmd = exe
-    cmd += ' '
-    if do_compare:
-        cmd += ' -q '
+    cmd = [exe]
+    if do_compare and not args.no_quiet:
+        cmd.append('-q')
     if args.debug and Version(version) >= Version('1.45'):
-        cmd += '--debug '
+        cmd.append('--debug')
     if args.debug_warnings and Version(version) >= Version('1.45'):
-        cmd += '--debug-warnings '
+        cmd.append('--debug-warnings')
     if args.check_library and Version(version) >= Version('1.61'):
-        cmd += '--check-library '
+        cmd.append('--check-library')
     if Version(version) >= Version('1.39'):
-        cmd += '--enable=all '
+        cmd.append('--enable=all')
     if Version(version) >= Version('1.40'):
-        cmd += '--inline-suppr '
+        cmd.append('--inline-suppr')
     if Version(version) >= Version('1.48'):
-        cmd += '--suppress=missingInclude --suppress=missingIncludeSystem --suppress=unmatchedSuppression --suppress=unusedFunction '
+        cmd.append('--suppress=missingInclude')
+        cmd.append('--suppress=missingIncludeSystem')
+        cmd.append('--suppress=unmatchedSuppression')
+        cmd.append('--suppress=unusedFunction')
     if Version(version) >= Version('1.49'):
-        cmd += '--inconclusive '
-    cmd += input_file
+        cmd.append('--inconclusive')
+    if Version(version) >= Version('1.69'):
+        cmd.append('--platform=native')
+    if Version(version) >= Version('1.52') and Version(version) < Version('2.0'):
+        # extend Cppcheck 1.x format with error ID
+        if Version(version) < Version('1.61'):
+            # TODO: re-add inconclusive
+            cmd.append('--template=[{file}:{line}]: ({severity}) {message} [{id}]')
+        else:
+            # TODO: re-add inconclusive: {callstack}: ({severity}{inconclusive:, inconclusive}) {message
+            cmd.append('--template={callstack}: ({severity}) {message} [{id}]')
+    cmd.append(input_file)
     if verbose:
-        print("running '{}'". format(cmd))
-    p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
+        print("running '{}'". format(' '.join(cmd)))
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
         comm = p.communicate(timeout=args.timeout)
-        out = comm[0] + '\n' + comm[1]
+        out = ''
+        if not args.no_stdout:
+            out += comm[0]
+        if not args.no_stderr and not args.no_stderr:
+            out += '\n'
+        if not args.no_stderr:
+            out += comm[1]
     except subprocess.TimeoutExpired:
         out = "timeout"
         p.kill()

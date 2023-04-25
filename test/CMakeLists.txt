@@ -1,9 +1,12 @@
 if (BUILD_TESTS)
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
-    list(APPEND testrunner_SOURCES ${hdrs} ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:simplecpp_objs>)
-    if(USE_BUNDLED_TINYXML2)
-        list(APPEND testrunner_SOURCES $<TARGET_OBJECTS:tinyxml2_objs>)
+    list(APPEND testrunner_SOURCES ${hdrs} ${srcs} $<TARGET_OBJECTS:cli_objs>)
+    if (NOT BUILD_CORE_DLL)
+        list(APPEND testrunner_SOURCES $<TARGET_OBJECTS:cppcheck-core> $<TARGET_OBJECTS:simplecpp_objs>)
+        if(USE_BUNDLED_TINYXML2)
+            list(APPEND testrunner_SOURCES $<TARGET_OBJECTS:tinyxml2_objs>)
+        endif()
     endif()
 
     add_executable(testrunner ${testrunner_SOURCES})
@@ -28,6 +31,10 @@ if (BUILD_TESTS)
         target_link_libraries(testrunner ${tinyxml2_LIBRARIES})
     endif()
     target_link_libraries(testrunner ${CMAKE_THREAD_LIBS_INIT})
+    if (BUILD_CORE_DLL)
+        target_compile_definitions(testrunner PRIVATE CPPCHECKLIB_IMPORT SIMPLECPP_IMPORT)
+        target_link_libraries(testrunner cppcheck-core)
+    endif()
 
     if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
         target_precompile_headers(testrunner PRIVATE precompiled.h)
@@ -35,7 +42,10 @@ if (BUILD_TESTS)
 
     add_dependencies(testrunner copy_cfg)
     add_dependencies(testrunner copy_addons)
-    add_dependencies(testrunner run-dmake)
+    add_dependencies(testrunner copy_platforms)
+    if (NOT DISABLE_DMAKE)
+        add_dependencies(testrunner run-dmake)
+    endif()
 
     if (LIBXML2_XMLLINT_EXECUTABLE)
         # TODO: run the CMake implementation of the tests
@@ -80,15 +90,15 @@ if (BUILD_TESTS)
         endforeach()
 
         function(add_cfg CFG_TEST)
-            set(options INCONCLUSIVE)
             set(oneValueArgs PLATFORM NAME)
-            set(multiValueArgs LIBRARY)
+            set(multiValueArgs ADD_LIBRARY)
 
             cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-            if(PARSE_LIBRARY)
-                string(REPLACE ";" "," LIBRARY "${PARSE_LIBRARY}")
-            else()
-                get_filename_component(LIBRARY ${CFG_TEST} NAME_WE)
+            get_filename_component(LIBRARY ${CFG_TEST} NAME_WE)
+            # TODO: get rid of this
+            if(PARSE_ADD_LIBRARY)
+                string(REPLACE ";" "," ADD_LIBRARY "${PARSE_ADD_LIBRARY}")
+                set(LIBRARY "${ADD_LIBRARY},${LIBRARY}")
             endif()
             set(PLATFORM unix64)
             if(PARSE_PLATFORM)
@@ -99,36 +109,36 @@ if (BUILD_TESTS)
             else()
                 string(MAKE_C_IDENTIFIER ${CFG_TEST} TEST_NAME)
             endif()
-            set(INCONCLUSIVE)
-            if(PARSE_INCONCLUSIVE)
-                set(INCONCLUSIVE "--inconclusive")
-            endif()
             if ("cfg-${TEST_NAME}" IN_LIST SKIP_TESTS)
             else()
+                # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
                 # TODO: add syntax check
                 add_test(NAME cfg-${TEST_NAME}
                         COMMAND $<TARGET_FILE:cppcheck>
                         --check-library
                         --platform=${PLATFORM}
                         --library=${LIBRARY}
-                        --enable=information
-                        --enable=style
+                        --enable=style,information
+                        --inconclusive
+                        --force
                         --error-exitcode=1
-                        --suppress=missingIncludeSystem
+                        --disable=missingInclude
                         --inline-suppr
-                        ${INCONCLUSIVE}
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
             endif()
         endfunction()
-        add_cfg(boost.cpp INCONCLUSIVE)
+        # TODO: glob this
+        add_cfg(boost.cpp)
         add_cfg(bsd.c)
         add_cfg(cairo.c)
-        add_cfg(cppunit.cpp INCONCLUSIVE)
-        add_cfg(gnu.c LIBRARY posix;gnu)
-        add_cfg(googletest.cpp INCONCLUSIVE)
-        add_cfg(gtk.c INCONCLUSIVE)
-        add_cfg(kde.cpp INCONCLUSIVE)
+        add_cfg(cppunit.cpp)
+        # TODO: posix needs to specified first or it has a different mmap() config
+        # TODO: get rid of posix dependency
+        add_cfg(gnu.c ADD_LIBRARY posix)
+        add_cfg(googletest.cpp)
+        add_cfg(gtk.c)
+        add_cfg(kde.cpp)
         add_cfg(libcurl.c)
         add_cfg(libsigc++.cpp)
         add_cfg(lua.c)
@@ -137,14 +147,14 @@ if (BUILD_TESTS)
         add_cfg(openssl.c)
         add_cfg(posix.c)
         add_cfg(python.c)
-        add_cfg(qt.cpp INCONCLUSIVE)
-        add_cfg(sqlite3.c INCONCLUSIVE)
-        add_cfg(std.c INCONCLUSIVE)
-        add_cfg(std.cpp INCONCLUSIVE)
-        add_cfg(windows.cpp INCONCLUSIVE NAME windows32A PLATFORM win32A)
-        add_cfg(windows.cpp INCONCLUSIVE NAME windows32W PLATFORM win32W)
-        add_cfg(windows.cpp INCONCLUSIVE NAME windows64 PLATFORM win64)
-        add_cfg(wxwidgets.cpp INCONCLUSIVE)
+        add_cfg(qt.cpp)
+        add_cfg(sqlite3.c)
+        add_cfg(std.c)
+        add_cfg(std.cpp)
+        add_cfg(windows.cpp NAME windows32A PLATFORM win32A)
+        add_cfg(windows.cpp NAME windows32W PLATFORM win32W)
+        add_cfg(windows.cpp NAME windows64 PLATFORM win64)
+        add_cfg(wxwidgets.cpp)
 
         function(fixture_cost NAME COST)
             if(TEST ${NAME})

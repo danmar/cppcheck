@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -137,14 +137,7 @@ public:
      */
     void resourceLeakError(const Token *tok, const std::string &varname) const;
 
-    /**
-     * @brief Report error: deallocating a deallocated pointer
-     * @param tok token where error occurs
-     * @param varname name of variable
-     */
-    void deallocDeallocError(const Token *tok, const std::string &varname) const;
     void deallocuseError(const Token *tok, const std::string &varname) const;
-    void mismatchSizeError(const Token *tok, const std::string &sz) const;
     void mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname) const;
     void memleakUponReallocFailureError(const Token *tok, const std::string &reallocfunction, const std::string &varname) const;
 
@@ -190,19 +183,15 @@ public:
     /**
      * Checking for a memory leak caused by improper realloc usage.
      */
-    void checkReallocUsage();
+    void checkReallocUsage() const;
 
 private:
     /** Report all possible errors (for the --errorlist) */
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const override {
         CheckMemoryLeakInFunction c(nullptr, settings, e);
-
         c.memleakError(nullptr, "varname");
         c.resourceLeakError(nullptr, "varname");
-
-        c.deallocDeallocError(nullptr, "varname");
         c.deallocuseError(nullptr, "varname");
-        c.mismatchSizeError(nullptr, "sz");
         const std::list<const Token *> callstack;
         c.mismatchAllocDealloc(callstack, "varname");
         c.memleakUponReallocFailureError(nullptr, "realloc", "varname");
@@ -352,7 +341,6 @@ private:
 
     void getErrorMessages(ErrorLogger *e, const Settings *settings) const override {
         CheckMemoryLeakNoVar c(nullptr, settings, e);
-
         c.functionCallLeak(nullptr, "funcName", "funcName");
         c.returnValueNotUsedError(nullptr, "funcName");
         c.unsafeArgAllocError(nullptr, "funcName", "shared_ptr", "int");

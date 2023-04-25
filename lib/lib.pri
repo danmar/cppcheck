@@ -3,8 +3,10 @@
 include($$PWD/pcrerules.pri)
 include($$PWD/../externals/externals.pri)
 INCLUDEPATH += $$PWD
-HEADERS += $${PWD}/analyzerinfo.h \
+HEADERS += $${PWD}/analyzer.h \
+           $${PWD}/analyzerinfo.h \
            $${PWD}/astutils.h \
+           $${PWD}/calculate.h \
            $${PWD}/check.h \
            $${PWD}/check64bit.h \
            $${PWD}/checkassert.h \
@@ -33,6 +35,7 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/checkvaarg.h \
            $${PWD}/clangimport.h \
            $${PWD}/color.h \
+           $${PWD}/config.h \
            $${PWD}/cppcheck.h \
            $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
@@ -41,16 +44,20 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/fwdanalysis.h \
            $${PWD}/importproject.h \
            $${PWD}/infer.h \
+           $${PWD}/keywords.h \
            $${PWD}/library.h \
            $${PWD}/mathlib.h \
            $${PWD}/path.h \
            $${PWD}/pathanalysis.h \
            $${PWD}/pathmatch.h \
            $${PWD}/platform.h \
+           $${PWD}/precompiled.h \
            $${PWD}/preprocessor.h \
            $${PWD}/programmemory.h \
            $${PWD}/reverseanalyzer.h \
            $${PWD}/settings.h \
+           $${PWD}/smallvector.h \
+           $${PWD}/standards.h \
            $${PWD}/summaries.h \
            $${PWD}/suppressions.h \
            $${PWD}/symboldatabase.h \
@@ -59,8 +66,12 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/token.h \
            $${PWD}/tokenize.h \
            $${PWD}/tokenlist.h \
+           $${PWD}/tokenrange.h \
            $${PWD}/utils.h \
-           $${PWD}/valueflow.h
+           $${PWD}/valueflow.h \
+           $${PWD}/valueptr.h \
+           $${PWD}/version.h \
+           $${PWD}/vfvalue.h
 
 SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/astutils.cpp \
@@ -100,6 +111,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/fwdanalysis.cpp \
            $${PWD}/importproject.cpp \
            $${PWD}/infer.cpp \
+           $${PWD}/keywords.cpp \
            $${PWD}/library.cpp \
            $${PWD}/mathlib.cpp \
            $${PWD}/path.cpp \
@@ -119,4 +131,5 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/tokenize.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
-           $${PWD}/valueflow.cpp
+           $${PWD}/valueflow.cpp \
+           $${PWD}/vfvalue.cpp

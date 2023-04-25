@@ -33,7 +33,7 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="SourceFiles">
     <ClCompile Include="..\externals\simplecpp\simplecpp.cpp" />
     <ClCompile Include="..\externals\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="analyzerinfo.cpp" />
@@ -56,9 +56,8 @@
     <ClCompile Include="checkbufferoverrun.cpp" />
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkcondition.cpp" />
-    <ClCompile Include="checkfunctions.cpp" />
-    <ClCompile Include="checkstring.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
+    <ClCompile Include="checkfunctions.cpp" />
     <ClCompile Include="checkinternal.cpp" />
     <ClCompile Include="checkio.cpp" />
     <ClCompile Include="checkleakautovar.cpp" />
@@ -68,6 +67,7 @@
     <ClCompile Include="checkpostfixoperator.cpp" />
     <ClCompile Include="checksizeof.cpp" />
     <ClCompile Include="checkstl.cpp" />
+    <ClCompile Include="checkstring.cpp" />
     <ClCompile Include="checktype.cpp" />
     <ClCompile Include="checkuninitvar.cpp" />
     <ClCompile Include="checkunusedfunctions.cpp" />
@@ -79,8 +79,11 @@
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
     <ClCompile Include="errortypes.cpp" />
+    <ClCompile Include="forwardanalyzer.cpp" />
     <ClCompile Include="fwdanalysis.cpp" />
+    <ClCompile Include="importproject.cpp" />
     <ClCompile Include="infer.cpp" />
+    <ClCompile Include="keywords.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="path.cpp" />
@@ -88,8 +91,8 @@
     <ClCompile Include="pathmatch.cpp" />
     <ClCompile Include="platform.cpp" />
     <ClCompile Include="preprocessor.cpp" />
-    <ClCompile Include="importproject.cpp" />
     <ClCompile Include="programmemory.cpp" />
+    <ClCompile Include="reverseanalyzer.cpp" />
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="summaries.cpp" />
     <ClCompile Include="suppressions.cpp" />
@@ -101,10 +104,9 @@
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="valueflow.cpp" />
-    <ClCompile Include="forwardanalyzer.cpp" />
-    <ClCompile Include="reverseanalyzer.cpp" />
+    <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="HeaderFiles">
     <ClInclude Include="..\externals\simplecpp\simplecpp.h" />
     <ClInclude Include="..\externals\tinyxml2\tinyxml2.h" />
     <ClInclude Include="analyzer.h" />
@@ -120,9 +122,8 @@
     <ClInclude Include="checkbufferoverrun.h" />
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkcondition.h" />
-    <ClInclude Include="checkfunctions.h" />
-    <ClInclude Include="checkstring.h" />
     <ClInclude Include="checkexceptionsafety.h" />
+    <ClInclude Include="checkfunctions.h" />
     <ClInclude Include="checkinternal.h" />
     <ClInclude Include="checkio.h" />
     <ClInclude Include="checkleakautovar.h" />
@@ -132,6 +133,7 @@
     <ClInclude Include="checkpostfixoperator.h" />
     <ClInclude Include="checksizeof.h" />
     <ClInclude Include="checkstl.h" />
+    <ClInclude Include="checkstring.h" />
     <ClInclude Include="checktype.h" />
     <ClInclude Include="checkuninitvar.h" />
     <ClInclude Include="checkunusedfunctions.h" />
@@ -144,9 +146,11 @@
     <ClInclude Include="ctu.h" />
     <ClInclude Include="errorlogger.h" />
     <ClInclude Include="errortypes.h" />
-    <ClInclude Include="fwdanalysis.h" />
     <ClInclude Include="forwardanalyzer.h" />
+    <ClInclude Include="fwdanalysis.h" />
+    <ClInclude Include="importproject.h" />
     <ClInclude Include="infer.h" />
+    <ClInclude Include="keywords.h" />
     <ClInclude Include="library.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="path.h" />
@@ -155,7 +159,6 @@
     <ClInclude Include="platform.h" />
     <ClInclude Include="precompiled.h" />
     <ClInclude Include="preprocessor.h" />
-    <ClInclude Include="importproject.h" />
     <ClInclude Include="programmemory.h" />
     <ClInclude Include="reverseanalyzer.h" />
     <ClInclude Include="settings.h" />
@@ -174,6 +177,7 @@
     <ClInclude Include="valueflow.h" />
     <ClInclude Include="valueptr.h" />
     <ClInclude Include="version.h" />
+    <ClInclude Include="vfvalue.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="version.rc" />

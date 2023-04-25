@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,6 @@
 
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
-
-#include "config.h"
 
 #include "executor.h"
 
@@ -46,9 +44,7 @@ public:
 
     unsigned int check() override;
 
-private:
-    class SyncLogForwarder;
-    static unsigned int STDCALL threadProc(SyncLogForwarder *logForwarder);
+    friend class SyncLogForwarder;
 };
 
 /// @}

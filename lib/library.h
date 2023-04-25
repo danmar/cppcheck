@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +32,7 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -50,7 +51,11 @@ namespace tinyxml2 {
  * @brief Library definitions handling
  */
 class CPPCHECKLIB Library {
+    // TODO: get rid of this
     friend class TestSymbolDatabase; // For testing only
+    friend class TestSingleExecutor; // For testing only
+    friend class TestThreadExecutor; // For testing only
+    friend class TestProcessExecutor; // For testing only
 
 public:
     Library();
@@ -158,7 +163,7 @@ public:
         return ((id > 0) && ((id & 1) == 0));
     }
     static bool ismemory(const AllocFunc* const func) {
-        return ((func->groupId > 0) && ((func->groupId & 1) == 0));
+        return func && (func->groupId > 0) && ((func->groupId & 1) == 0);
     }
 
     /** is allocation type resource? */
@@ -166,7 +171,7 @@ public:
         return ((id > 0) && ((id & 1) == 1));
     }
     static bool isresource(const AllocFunc* const func) {
-        return ((func->groupId > 0) && ((func->groupId & 1) == 1));
+        return func && (func->groupId > 0) && ((func->groupId & 1) == 1);
     }
 
     bool formatstr_function(const Token* ftok) const;
@@ -481,6 +486,10 @@ public:
         return -1;
     }
 
+    bool isentrypoint(const std::string &func) const {
+        return func == "main" || mEntrypoints.find(func) != mEntrypoints.end();
+    }
+
     std::vector<std::string> defines; // to provide some library defines
 
     struct SmartPointer {
@@ -648,10 +657,11 @@ private:
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
     std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
     std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
+    std::unordered_set<std::string> mEntrypoints;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 
-    std::string getFunctionName(const Token *ftok, bool *error) const;
+    std::string getFunctionName(const Token *ftok, bool &error) const;
 
     static const AllocFunc* getAllocDealloc(const std::map<std::string, AllocFunc> &data, const std::string &name) {
         const std::map<std::string, AllocFunc>::const_iterator it = data.find(name);

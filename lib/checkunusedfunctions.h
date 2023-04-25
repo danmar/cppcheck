@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -76,12 +76,12 @@ public:
     std::string analyzerInfo() const;
 
     /** @brief Combine and analyze all analyzerInfos for all TUs */
-    static void analyseWholeProgram(ErrorLogger * const errorLogger, const std::string &buildDir);
+    static void analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
 
 private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const override {
-        CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
+        CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
     }
 
     void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) override {}
@@ -90,7 +90,7 @@ private:
      * Dummy implementation, just to provide error for --errorlist
      */
     static void unusedFunctionError(ErrorLogger * const errorLogger,
-                                    const std::string &filename, unsigned int lineNumber,
+                                    const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
                                     const std::string &funcname);
 
     static std::string myName() {
@@ -107,6 +107,7 @@ private:
 
         std::string filename;
         unsigned int lineNumber;
+        unsigned int fileIndex{};
         bool usedSameFile;
         bool usedOtherFile;
     };

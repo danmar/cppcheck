@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <list>
 #include <string>
@@ -34,6 +34,9 @@ struct InferModel {
     virtual bool match(const ValueFlow::Value& value) const = 0;
     virtual ValueFlow::Value yield(MathLib::bigint value) const = 0;
     virtual ~InferModel() {}
+    InferModel(const InferModel&) = default;
+protected:
+    InferModel() = default;
 };
 
 std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,

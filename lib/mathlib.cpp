@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 
 #include <cctype>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <exception>
 #include <limits>
@@ -285,7 +286,7 @@ MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
     return ret;
 }
 
-
+// TODO: remove handling of non-literal stuff
 MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
@@ -364,6 +365,7 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
     });
 }
 
+// TODO: remove handling of non-literal stuff
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:

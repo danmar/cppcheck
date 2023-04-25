@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,18 +21,18 @@
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include <simplecpp.h>
-
-#include <tinyxml2.h>
 
 class TestLeakAutoVarStrcpy;
 class TestLeakAutoVarWindows;
@@ -65,9 +65,7 @@ private:
                                "<def>\n"
                                "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // Assign
         TEST_CASE(assign1);
@@ -106,7 +104,6 @@ private:
         TEST_CASE(freopen2);
 
         TEST_CASE(deallocuse1);
-        TEST_CASE(deallocuse2);
         TEST_CASE(deallocuse3);
         TEST_CASE(deallocuse4);
         TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
@@ -212,6 +209,7 @@ private:
         TEST_CASE(configuration3);
         TEST_CASE(configuration4);
         TEST_CASE(configuration5);
+        TEST_CASE(configuration6);
 
         TEST_CASE(ptrptr);
 
@@ -236,11 +234,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
-        // Check for leaks..
-        CheckLeakAutoVar c;
         settings.checkLibrary = true;
-        settings.severity.enable(Severity::information);
-        c.runChecks(&tokenizer, &settings, this);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void check_(const char* file, int line, const char code[], Settings & settings_) {
@@ -252,11 +249,10 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        // Check for leaks..
-        CheckLeakAutoVar c;
         settings_.checkLibrary = true;
-        settings_.severity.enable(Severity::information);
-        c.runChecks(&tokenizer, &settings_, this);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings_, this);
     }
 
     void assign1() {
@@ -475,6 +471,7 @@ private:
     void assign23() {
         Settings s = settings;
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
         check("void f() {\n"
               "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
               "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
@@ -510,8 +507,8 @@ private:
         settings = s;
     }
 
-    void assign24() { // #7440
-        check("void f() {\n"
+    void assign24() {
+        check("void f() {\n" // #7440
               "    char* data = new char[100];\n"
               "    char** dataPtr = &data;\n"
               "    delete[] *dataPtr;\n"
@@ -524,6 +521,46 @@ private:
               "    printf(\"test\");\n"
               "    delete[] *dataPtr;\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #9279
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function g() should have <noreturn> configuration\n",
+                      errout.str());
+
+        check("void g();\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
+
+        check("void g() {}\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
+
+        check("[[noreturn]] void g();\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g() { exit(1); }\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -647,20 +684,6 @@ private:
               "    char c = *p;\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
-    }
-
-    void deallocuse2() {
-        check("void f(char *p) {\n"
-              "    free(p);\n"
-              "    strcpy(a, p);\n"
-              "}");
-        TODO_ASSERT_EQUALS("error (free,use)", "[test.c:3]: (information) --check-library: Function strcpy() should have <noreturn> configuration\n", errout.str());
-
-        check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
-              "    free(p);\n"
-              "    strcpy(a, p=b());\n"
-              "}");
-        TODO_ASSERT_EQUALS("", "[test.c:3]: (information) --check-library: Function strcpy() should have <noreturn> configuration\n", errout.str());
     }
 
     void deallocuse3() {
@@ -1439,8 +1462,7 @@ private:
               "    char *p = malloc(10);\n"
               "    fatal_error();\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n"
-                      "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<leak-ignore> configuration\n",
+        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n",
                       errout.str());
     }
 
@@ -1855,6 +1877,7 @@ private:
         Settings s;
         LOAD_LIB_2(s.library, "std.cfg");
         LOAD_LIB_2(s.library, "posix.cfg");
+        s.libraries.emplace_back("posix");
 
         check("void f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"
@@ -2403,6 +2426,12 @@ private:
         ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function x() should have <noreturn> configuration\n"
                       "[test.c:4]: (information) --check-library: Function x() should have <use>/<leak-ignore> configuration\n",
                       errout.str());
+
+        check("void cb();\n" // #11190, #11523
+              "void f() {\n"
+              "    cb();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void configuration2() {
@@ -2505,6 +2534,14 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: file\n", errout.str());
     }
 
+    void configuration6() { // #11198
+        check("void f() {}\n"
+              "void g() {\n"
+              "    f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void ptrptr() {
         check("void f() {\n"
               "    char **p = malloc(10);\n"
@@ -2581,9 +2618,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settingsFunctionCall.library.load(doc);
+        ASSERT(settingsFunctionCall.library.loadxmldata(xmldata, sizeof(xmldata)));
         check("void test_func()\n"
               "{\n"
               "    char * buf = malloc(4);\n"
@@ -2603,9 +2638,7 @@ private:
                                "    <arg nr=\"1\" direction=\"in\"/>\n"
                                "  </function>\n"
                                "</def>\n";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settingsLeakIgnore.library.load(doc);
+        ASSERT(settingsLeakIgnore.library.loadxmldata(xmldata, sizeof(xmldata)));
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
@@ -2642,11 +2675,10 @@ private:
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
-        // Check for leaks..
-        CheckLeakAutoVar c;
         settings.checkLibrary = true;
-        settings.addEnabled("information");
-        c.runChecks(&tokenizer, &settings, this);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
@@ -2693,17 +2725,17 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        // Check for leaks..
-        CheckLeakAutoVar checkLeak;
         settings.checkLibrary = true;
-        settings.severity.enable(Severity::information);
-        checkLeak.runChecks(&tokenizer, &settings, this);
+
+        // Check for leaks..
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(returnedValue); // #9298
+        TEST_CASE(deallocuse2);
         TEST_CASE(fclose_false_positive); // #9575
     }
 
@@ -2713,6 +2745,20 @@ private:
               "{\n"
               "    char* ptr = new char[strlen(str)+1];\n"
               "    m = strcpy(ptr, str);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse2() {
+        check("void f(char *p) {\n"
+              "    free(p);\n"
+              "    strcpy(a, p);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error (free,use)", "", errout.str());
+
+        check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
+              "    free(p);\n"
+              "    strcpy(a, p=b());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2744,8 +2790,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.c"), file, line);
 
         // Check for leaks..
-        CheckLeakAutoVar checkLeak;
-        checkLeak.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {

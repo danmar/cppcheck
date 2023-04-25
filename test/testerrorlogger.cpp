@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "suppressions.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <iosfwd>
 #include <list>
-#include <memory>
 #include <string>
 
 #include <tinyxml2.h>
@@ -64,6 +64,8 @@ private:
         TEST_CASE(SerializeFileLocation);
 
         TEST_CASE(suppressUnmatchedSuppressions);
+        TEST_CASE(substituteTemplateFormatStatic);
+        TEST_CASE(substituteTemplateLocationStatic);
     }
 
     void TestPatternSearchReplace(const std::string& idPlaceholder, const std::string& id) const {
@@ -249,12 +251,12 @@ private:
                                "  <location file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
                                "</error>";
         tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
+        ASSERT(doc.Parse(xmldata, sizeof(xmldata)) == tinyxml2::XML_SUCCESS);
         ErrorMessage msg(doc.FirstChildElement());
         ASSERT_EQUALS("errorId", msg.id);
         ASSERT_EQUALS(Severity::error, msg.severity);
         ASSERT_EQUALS(123u, msg.cwe.id);
-        ASSERT_EQUALS(Certainty::inconclusive, msg.certainty);
+        ASSERT_EQUALS(static_cast<int>(Certainty::inconclusive), static_cast<int>(msg.certainty));
         ASSERT_EQUALS("Programming error.", msg.shortMessage());
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS(456u, msg.hash);
@@ -303,7 +305,7 @@ private:
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
         ASSERT_EQUALS("test.cpp", msg2.file0);
-        ASSERT_EQUALS(Certainty::inconclusive, msg2.certainty);
+        ASSERT_EQUALS(static_cast<int>(Certainty::inconclusive), static_cast<int>(msg2.certainty));
         ASSERT_EQUALS("Programming error", msg2.shortMessage());
         ASSERT_EQUALS("Programming error", msg2.verboseMessage());
     }
@@ -334,27 +336,27 @@ private:
             // invalid CWE ID
             const char str[] = "7 errorId"
                                "5 error"
-                               "7 invalid"
+                               "7 invalid" // cwe
                                "1 0"
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid CWE ID");
+            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid CWE ID - not an integer");
         }
         {
             // invalid hash
             const char str[] = "7 errorId"
                                "5 error"
                                "1 0"
-                               "7 invalid"
+                               "7 invalid" // hash
                                "8 test.cpp"
                                "17 Programming error"
                                "17 Programming error"
                                "0 ";
             ErrorMessage msg;
-            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid hash");
+            ASSERT_THROW_EQUALS(msg.deserialize(str), InternalError, "Internal Error: Deserialization of error message failed - invalid hash - not an integer");
         }
         {
             // out-of-range CWE ID
@@ -481,6 +483,69 @@ private:
         suppressions.emplace_back("unmatchedSuppression", "a.c", 1U);
         reportUnmatchedSuppressions(suppressions);
         ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
+    }
+
+    void substituteTemplateFormatStatic() const
+    {
+        {
+            std::string s;
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("", s);
+        }
+        {
+            std::string s = "template{black}\\z";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("template{black}\\z", s);
+        }
+        {
+            std::string s = "{reset}{bold}{dim}{red}{blue}{magenta}{default}\\b\\n\\r\\t";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("\b\n\r\t", s);
+        }
+        {
+            std::string s = "\\\\n";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("\\\n", s);
+        }
+        {
+            std::string s = "{{red}";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("{", s);
+        }
+    }
+
+    void substituteTemplateLocationStatic() const
+    {
+        {
+            std::string s;
+            ::substituteTemplateLocationStatic(s);
+            ASSERT_EQUALS("", s);
+        }
+        {
+            std::string s = "template";
+            ::substituteTemplateLocationStatic(s);
+            ASSERT_EQUALS("template", s);
+        }
+        {
+            std::string s = "template{black}\\z";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("template{black}\\z", s);
+        }
+        {
+            std::string s = "{reset}{bold}{dim}{red}{blue}{magenta}{default}\\b\\n\\r\\t";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("\b\n\r\t", s);
+        }
+        {
+            std::string s = "\\\\n";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("\\\n", s);
+        }
+        {
+            std::string s = "{{red}";
+            ::substituteTemplateFormatStatic(s);
+            ASSERT_EQUALS("{", s);
+        }
     }
 };
 

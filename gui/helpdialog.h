@@ -20,10 +20,12 @@
 #define HELPDIALOG_H
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
 #include <QTextBrowser>
+#include <QVariant>
 
 class QHelpEngine;
-class QObject;
 class QUrl;
 class QWidget;
 namespace Ui {

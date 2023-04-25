@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -148,7 +148,8 @@ struct Interval {
                 result.setMinValue(minValue->intvalue + 1, minValue);
             if (minValue->isPossible() && minValue->bound == ValueFlow::Value::Bound::Lower)
                 result.setMinValue(minValue->intvalue, minValue);
-            if (minValue->isKnown())
+            if (!minValue->isImpossible() && (minValue->bound == ValueFlow::Value::Bound::Point || minValue->isKnown()) &&
+                std::count_if(values.begin(), values.end(), predicate) == 1)
                 return Interval::fromInt(minValue->intvalue, minValue);
         }
         const ValueFlow::Value* maxValue = getCompareValue(values, predicate, std::greater<MathLib::bigint>{});
@@ -266,6 +267,12 @@ static void addToErrorPath(ValueFlow::Value& value, const std::vector<const Valu
         std::copy_if(ref->errorPath.cbegin(),
                      ref->errorPath.cend(),
                      std::back_inserter(value.errorPath),
+                     [&](const ErrorPathItem& e) {
+            return locations.insert(e.first).second;
+        });
+        std::copy_if(ref->debugPath.cbegin(),
+                     ref->debugPath.cend(),
+                     std::back_inserter(value.debugPath),
                      [&](const ErrorPathItem& e) {
             return locations.insert(e.first).second;
         });

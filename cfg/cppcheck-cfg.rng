@@ -625,6 +625,9 @@
         </oneOrMore>
       </element>
 
+      <element name="entrypoint">
+        <attribute name="name"><text/></attribute>
+      </element>
     </choice>
   </zeroOrMore>
 </element>

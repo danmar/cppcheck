@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,17 +28,19 @@
 #include "platform.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "timer.h"
 
 #include <algorithm>
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <list>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 #include <unordered_set>
 
+enum class SHOWTIME_MODES;
 namespace ValueFlow {
     class Value;
 }
@@ -65,8 +67,14 @@ public:
     void enable(T flag) {
         mFlags |= (1U << (uint32_t)flag);
     }
+    void enable(SimpleEnableGroup<T> group) {
+        mFlags |= group.intValue();
+    }
     void disable(T flag) {
         mFlags &= ~(1U << (uint32_t)flag);
+    }
+    void disable(SimpleEnableGroup<T> group) {
+        mFlags &= ~(group.intValue());
     }
     void setEnabled(T flag, bool enabled) {
         if (enabled)
@@ -82,7 +90,7 @@ public:
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
-class CPPCHECKLIB Settings : public cppcheck::Platform {
+class CPPCHECKLIB Settings {
 private:
 
     /** @brief terminate checking */
@@ -136,6 +144,9 @@ public:
 
     /** Use clang-tidy */
     bool clangTidy;
+
+    /** Internal: Clear the simplecpp non-existing include cache */
+    bool clearIncludeCache;
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
@@ -199,11 +210,6 @@ public:
         time. Default is 1. (-j N) */
     unsigned int jobs;
 
-    /** @brief Collect unmatched suppressions in one run.
-     * This delays the reporting until all files are checked.
-     * It is needed by checks that analyse the whole code base. */
-    bool jointSuppressionReport;
-
     /** @brief --library= */
     std::list<std::string> libraries;
 
@@ -232,8 +238,16 @@ public:
     /** @brief write results (--output-file=&lt;file&gt;) */
     std::string outputFile;
 
+    cppcheck::Platform platform;
+
     /** @brief Experimental: --performance-valueflow-max-time=T */
     int performanceValueFlowMaxTime;
+
+    /** @brief --performance-valueflow-max-if-count=C */
+    int performanceValueFlowMaxIfCount;
+
+    /** @brief max number of sets of arguments to pass to subfuncions in valueflow */
+    int performanceValueFlowMaxSubFunctionArgs;
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
@@ -322,8 +336,8 @@ public:
     SafeChecks safeChecks;
 
     SimpleEnableGroup<Severity::SeverityType> severity;
-    SimpleEnableGroup<Certainty::CertaintyLevel> certainty;
-    SimpleEnableGroup<Checks::CheckList> checks;
+    SimpleEnableGroup<Certainty> certainty;
+    SimpleEnableGroup<Checks> checks;
 
     /** @brief show timing information (--showtime=file|summary|top5) */
     SHOWTIME_MODES showtime;
@@ -339,7 +353,7 @@ public:
      *  text mode, e.g. "{file}:{line} {info}" */
     std::string templateLocation;
 
-    /** @brief The maximum time in seconds for the template instantation */
+    /** @brief The maximum time in seconds for the template instantiation */
     std::size_t templateMaxTime;
 
     /** @brief The maximum time in seconds for the typedef simplification */
@@ -371,12 +385,9 @@ public:
      * @return true for the file to be excluded.
      */
     bool configurationExcluded(const std::string &file) const {
-        for (const std::string & configExcludePath : configExcludePaths) {
-            if (file.length()>=configExcludePath.length() && file.compare(0,configExcludePath.length(),configExcludePath)==0) {
-                return true;
-            }
-        }
-        return false;
+        return std::any_of(configExcludePaths.begin(), configExcludePaths.end(), [&file](const std::string& path) {
+            return file.length() >= path.length() && file.compare(0, path.length(), path) == 0;
+        });
     }
 
     /**
@@ -388,14 +399,22 @@ public:
     std::string addEnabled(const std::string &str);
 
     /**
+     * @brief Disable extra checks by id
+     * @param str single id or list of id values to be enabled
+     * or empty string to enable all. e.g. "style,possibleError"
+     * @return error message. empty upon success
+     */
+    std::string removeEnabled(const std::string &str);
+
+    /**
      * @brief Returns true if given value can be shown
      * @return true if the value can be shown
      */
     bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
 
-    /** Is posix library specified? */
-    bool posix() const {
-        return std::find(libraries.cbegin(), libraries.cend(), "posix") != libraries.cend();
+    /** Is library specified? */
+    bool hasLib(const std::string &lib) const {
+        return std::find(libraries.cbegin(), libraries.cend(), lib) != libraries.cend();
     }
 
     /** @brief Request termination of checking */
@@ -411,6 +430,17 @@ public:
     std::set<std::string> summaryReturn;
 
     void loadSummaries();
+
+    bool useSingleJob() const {
+        return jobs == 1;
+    }
+
+    void setCheckLevelExhaustive();
+    void setCheckLevelNormal();
+
+private:
+    static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups);
+    std::string applyEnabled(const std::string &str, bool enable);
 };
 
 /// @}

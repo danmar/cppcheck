@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,21 +82,6 @@ public:
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
     /**
-     * Output information messages.
-     */
-    void reportInfo(const ErrorMessage &msg) override;
-
-    /**
-     * Information about how many files have been checked
-     *
-     * @param fileindex This many files have been checked.
-     * @param filecount This many files there are in total.
-     * @param sizedone The sum of sizes of the files checked.
-     * @param sizetotal The total sizes of the files.
-     */
-    static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
-
-    /**
      * @param exceptionOutput Output file
      */
     static void setExceptionOutput(FILE* exceptionOutput);
@@ -114,7 +99,7 @@ public:
     /**
      * Execute a shell command and read the output from it. Returns true if command terminated successfully.
      */
-    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output_);
+    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
 
     static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
 
@@ -130,18 +115,12 @@ protected:
      * @brief Parse command line args and get settings and file lists
      * from there.
      *
-     * @param cppcheck cppcheck instance
+     * @param settings the settings to store into
      * @param argc argc from main()
      * @param argv argv from main()
      * @return false when errors are found in the input
      */
-    bool parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[]);
-
-    /**
-     * Helper function to supply settings. This can be used for testing.
-     * @param settings Reference to an Settings instance
-     */
-    void setSettings(const Settings &settings);
+    bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
 
 private:
 
@@ -166,7 +145,7 @@ private:
     int check_internal(CppCheck& cppcheck);
 
     /**
-     * Pointer to current settings; set while check() is running.
+     * Pointer to current settings; set while check() is running for reportError().
      */
     const Settings* mSettings;
 

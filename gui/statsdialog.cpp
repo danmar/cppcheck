@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,33 +19,52 @@
 #include "statsdialog.h"
 
 #include "checkstatistics.h"
-#include "common.h"
 #include "projectfile.h"
 #include "showtypes.h"
 
 #include "ui_statsdialog.h"
 
+#include <QApplication>
 #include <QClipboard>
 #include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QLabel>
+#include <QLineEdit>
 #include <QMimeData>
+#include <QPageSize>
 #include <QPrinter>
-#include <QRegularExpression>
+#include <QPushButton>
+#include <QStringList>
 #include <QTextDocument>
 #include <QWidget>
+#include <Qt>
 
-#ifdef HAVE_QCHART
+#ifdef QT_CHARTS_LIB
+#include "common.h"
+
 #include <QAbstractSeries>
 #include <QChartView>
+#include <QDateTime>
 #include <QDateTimeAxis>
+#include <QDir>
+#include <QFile>
+#include <QIODevice>
+#include <QLayout>
 #include <QLineSeries>
+#include <QList>
+#include <QPainter>
+#include <QPointF>
+#include <QRegularExpression>
 #include <QTextStream>
 #include <QValueAxis>
 
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
-using namespace QtCharts;
+QT_CHARTS_USE_NAMESPACE
 #endif
+
+static QLineSeries *numberOfReports(const QString &fileName, const QString &severity);
+static QChartView *createChart(const QString &statsFile, const QString &tool);
 #endif
 
 static const QString CPPCHECK("cppcheck");
@@ -76,7 +95,7 @@ void StatsDialog::setProject(const ProjectFile* projectFile)
         mUI->mIncludePaths->setText(projectFile->getIncludeDirs().join(";"));
         mUI->mDefines->setText(projectFile->getDefines().join(";"));
         mUI->mUndefines->setText(projectFile->getUndefines().join(";"));
-#ifndef HAVE_QCHART
+#ifndef QT_CHARTS_LIB
         mUI->mTabHistory->setVisible(false);
 #else
         QString statsFile;
@@ -356,8 +375,8 @@ void StatsDialog::setStatistics(const CheckStatistics *stats)
     mUI->mLblInformation->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowInformation)));
 }
 
-#ifdef HAVE_QCHART
-QChartView *StatsDialog::createChart(const QString &statsFile, const QString &tool)
+#ifdef QT_CHARTS_LIB
+QChartView *createChart(const QString &statsFile, const QString &tool)
 {
     QChart *chart = new QChart;
     chart->addSeries(numberOfReports(statsFile, tool + "-error"));
@@ -399,7 +418,7 @@ QChartView *StatsDialog::createChart(const QString &statsFile, const QString &to
     return chartView;
 }
 
-QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString &severity) const
+QLineSeries *numberOfReports(const QString &fileName, const QString &severity)
 {
     QLineSeries *series = new QLineSeries();
     series->setName(severity);

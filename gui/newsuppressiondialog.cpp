@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 #include "newsuppressiondialog.h"
 
 #include "cppcheck.h"
-#include "color.h"
 #include "errorlogger.h"
 #include "suppressions.h"
 
@@ -28,7 +27,12 @@
 #include <functional>
 #include <string>
 
+#include <QComboBox>
+#include <QLineEdit>
+#include <QStringList>
+
 class QWidget;
+enum class Color;
 
 NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     QDialog(parent),
@@ -46,8 +50,7 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     };
 
     QErrorLogger errorLogger;
-    CppCheck cppcheck(errorLogger, false, nullptr);
-    cppcheck.getErrorMessages();
+    CppCheck::getErrorMessages(errorLogger);
     errorLogger.errorIds.sort();
 
     mUI->mComboErrorId->addItems(errorLogger.errorIds);

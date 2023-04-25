@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include <cstddef>
 #include <iosfwd>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 class Settings;
@@ -49,10 +48,6 @@ public:
 
     void setSettings(const Settings *settings) {
         mSettings = settings;
-    }
-
-    const Settings *getSettings() const {
-        return mSettings;
     }
 
     /** @return the source file path. e.g. "file.cpp" */
@@ -212,8 +207,6 @@ private:
     /** settings */
     const Settings* mSettings;
 
-    std::unordered_set<std::string> mKeywords;
-
     /** File is known to be C/C++ code */
     bool mIsC;
     bool mIsCpp;
@@ -222,6 +215,7 @@ private:
 /// @}
 
 const Token* isLambdaCaptureList(const Token* tok);
+const Token* findLambdaEndTokenWithoutAST(const Token* tok);
 
 //---------------------------------------------------------------------------
 #endif // tokenlistH

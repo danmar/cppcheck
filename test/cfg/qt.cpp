@@ -2,7 +2,7 @@
 // Test library configuration for qt.cfg
 //
 // Usage:
-// $ cppcheck --check-library --enable=information --inconclusive --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr --library=qt test/cfg/qt.cpp
+// $ cppcheck --check-library --library=qt --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/qt.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <QCoreApplication>
 #include <QLoggingCategory>
+#include <QTest>
 
 
 void QString1(QString s)
@@ -412,8 +413,16 @@ void MacroTest2_test()
 #endif
 }
 
-void validCode(int * pIntPtr, QString & qstrArg)
+void MacroTest3()
 {
+    QByteArray message = QByteArrayLiteral("Test1");
+    message += QByteArrayLiteral("Test2");
+    QVERIFY2(2 >= 0, message.constData());
+}
+
+void validCode(int * pIntPtr, QString & qstrArg, double d)
+{
+    Q_UNUSED(d)
     if (QFile::exists("test")) {}
 
     if (pIntPtr != Q_NULLPTR) {
@@ -486,4 +495,81 @@ namespace {
         }
         void slot() {};
     };
+
+    // findFunction11
+    class Fred : public QObject {
+        Q_OBJECT
+    private slots:
+        void foo();
+    };
+    void Fred::foo() {}
+
+    // bitfields14
+    class X {
+    signals:
+    };
+
+    // simplifyQtSignalsSlots1
+    class Counter1 : public QObject {
+        Q_OBJECT
+    public:
+        Counter1() {
+            m_value = 0;
+        }
+        int value() const {
+            return m_value;
+        }
+    public slots:
+        void setValue(int value);
+    signals:
+        void valueChanged(int newValue);
+    private:
+        int m_value;
+    };
+    void Counter1::setValue(int value) {
+        if (value != m_value) {
+            m_value = value;
+            emit valueChanged(value);
+        }
+    }
+
+    class Counter2 : public QObject {
+        Q_OBJECT
+    public:
+        Counter2() {
+            m_value = 0;
+        }
+        int value() const {
+            return m_value;
+        }
+    public Q_SLOTS:
+        void setValue(int value);
+    Q_SIGNALS:
+        void valueChanged(int newValue);
+    private:
+        int m_value;
+    };
+    void Counter2::setValue(int value) {
+        if (value != m_value) {
+            m_value = value;
+            emit valueChanged(value);
+        }
+    }
+
+    class MyObject1 : public QObject {
+        MyObject1() {}
+        ~MyObject1() {}
+    public slots:
+    signals:
+        void test() {}
+    };
+
+    class MyObject2 : public QObject {
+        Q_OBJECT
+    public slots:
+    };
+
+    // simplifyQtSignalsSlots2
+    namespace Foo { class Bar; }
+    class Foo::Bar : public QObject { private slots: };
 }

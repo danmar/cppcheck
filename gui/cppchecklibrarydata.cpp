@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,16 @@
 #include <stdexcept>
 #include <string>
 
-#include <QXmlStreamReader>
+#include <QObject>
 #include <QVariant>
+#include <QXmlStreamAttributes>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+#include <QtGlobal>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QStringRef>
+#endif
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;
@@ -365,12 +373,12 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
         mandatoryAttibuteMissing(xmlReader, "ext");
     }
     if (xmlReader.attributes().hasAttribute("aftercode")) {
-        markup.afterCode = (xmlReader.attributes().value("aftercode") == QString("true")) ? true : false;
+        markup.afterCode = (xmlReader.attributes().value("aftercode") == QString("true"));
     } else {
         mandatoryAttibuteMissing(xmlReader, "aftercode");
     }
     if (xmlReader.attributes().hasAttribute("reporterrors")) {
-        markup.reportErrors = (xmlReader.attributes().value("reporterrors") == QString("true")) ? true : false;
+        markup.reportErrors = (xmlReader.attributes().value("reporterrors") == QString("true"));
     } else {
         mandatoryAttibuteMissing(xmlReader, "reporterrors");
     }
@@ -446,6 +454,13 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
     return markup;
 }
 
+static CppcheckLibraryData::Entrypoint loadEntrypoint(QXmlStreamReader &xmlReader)
+{
+    CppcheckLibraryData::Entrypoint entrypoint;
+    entrypoint.name = xmlReader.attributes().value("name").toString();
+    return entrypoint;
+}
+
 QString CppcheckLibraryData::open(QIODevice &file)
 {
     clear();
@@ -486,6 +501,8 @@ QString CppcheckLibraryData::open(QIODevice &file)
                     reflections.append(loadReflection(xmlReader));
                 else if (elementName == "markup")
                     markups.append(loadMarkup(xmlReader));
+                else if (elementName == "entrypoint")
+                    entrypoints.append(loadEntrypoint(xmlReader));
                 else
                     unhandledElement(xmlReader);
             } catch (std::runtime_error &e) {
@@ -916,6 +933,12 @@ QString CppcheckLibraryData::toString() const
 
     for (const Markup &mup : markups) {
         writeMarkup(xmlWriter, mup);
+    }
+
+    for (const Entrypoint &ent : entrypoints) {
+        xmlWriter.writeStartElement("entrypoint");
+        xmlWriter.writeAttribute("name", ent.name);
+        xmlWriter.writeEndElement();
     }
 
     xmlWriter.writeEndElement();

@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      # TODO: files are cached but are still cache misses on platforms other than ubuntu-22.04
+      # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
@@ -45,13 +45,13 @@ jobs:
       - name: CMake build on ubuntu (with GUI / system tinyxml2)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: CMake build on macos (with GUI / system tinyxml2)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: Run CMake test (system tinyxml2)
@@ -68,7 +68,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      # TODO: files are cached but are still cache misses
+      # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
@@ -95,13 +95,13 @@ jobs:
       - name: CMake build on ubuntu (with GUI)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output -- -j$(nproc)
 
       - name: CMake build on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
           cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
@@ -250,8 +250,7 @@ jobs:
           pushd gui/test/filelist
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
-          # TODO: requires X session
-          #./test-filelist
+          ./test-filelist
           popd
           pushd gui/test/projectfile
           qmake CONFIG+=debug CONFIG+=ccache
@@ -261,14 +260,13 @@ jobs:
           pushd gui/test/translationhandler
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
-          # TODO: requires X session
+          # TODO: requires X session because of QApplication dependency in translationhandler.cpp
           #./test-translationhandler
           popd
           pushd gui/test/xmlreportv2
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
-          # TODO: requires X session
-          #./test-xmlreportv2
+          ./test-xmlreportv2
 
       - name: Generate Qt help file
         run: |
@@ -281,23 +279,6 @@ jobs:
           pushd tools/triage
           qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
-
-  build_fuzz:
-
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, ubuntu-22.04] # only needs to build on ubuntu
-      fail-fast: false # Prefer quick result
-
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Build Fuzzer
-        run: |
-          pushd oss-fuzz
-          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
 
   build:
 
@@ -333,7 +314,7 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           # pcre was removed from runner images in November 2022
-          brew install coreutils python3 pcre
+          brew install coreutils python3 pcre gnu-sed
 
       - name: Install missing Python packages
         run: |
@@ -354,9 +335,8 @@ jobs:
         run: |
           make -j$(nproc) check HAVE_RULES=yes
 
-      # the script uses sed parameters not supported by MacOS
+      # requires "gnu-sed" installed on macos
       - name: Run extra tests
-        if: contains(matrix.os, 'ubuntu')
         run: |
           tools/generate_and_run_more_tests.sh
 
@@ -370,9 +350,8 @@ jobs:
           cd 'cpp check/test/cli'
           python3 -m pytest test-*.py
 
-      # fails on macos since some includes (e.g. sys/epoll.h) are not available
       - name: Run cfg tests
-        if: contains(matrix.os, 'ubuntu') && matrix.os != 'ubuntu-22.04'
+        if: matrix.os != 'ubuntu-22.04'
         run: |
           make -j$(nproc) checkcfg
 
@@ -383,9 +362,7 @@ jobs:
         env:
           STRICT: 1
 
-      # it seems macos has no "wc" command
       - name: Run showtimetop5 tests
-        if: contains(matrix.os, 'ubuntu')
         run: |
           ./tools/test_showtimetop5.sh
 
@@ -469,14 +446,8 @@ jobs:
 
       - name: Self check
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
           ec=0
-          
-          # work around missingInclude not being reported with -j and the --check-config requirement for detailed warnings 
-          ./cppcheck $selfcheck_options -DCHECK_INTERNAL cli lib --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
-          ./cppcheck $selfcheck_options -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
-          ./cppcheck $selfcheck_options -Icli test/*.cpp tools/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
-          ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
           
           # early exit
           if [ $ec -eq 1 ]; then
@@ -488,9 +459,9 @@ jobs:
           ./cppcheck $selfcheck_options --cppcheck-build-dir=b1 --addon=naming.json -DCHECK_INTERNAL cli lib || ec=1
           # check gui with qt settings
           mkdir b2
-          ./cppcheck $selfcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
           # self check test and tools
           ./cppcheck $selfcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
           # triage
-          ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 -DQT_CHARTS_LIB --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
           exit $ec

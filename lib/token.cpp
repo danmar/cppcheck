@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,15 @@
 #include <unordered_set>
 #include <utility>
 
+namespace {
+    struct less {
+        template<class T, class U>
+        bool operator()(const T &x, const U &y) const {
+            return x < y;
+        }
+    };
+}
+
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
@@ -68,6 +77,7 @@ Token::~Token()
  * e.g. for the sequence of tokens A B C D E, C.until(E) would yield the Range C D
  * note t can be nullptr to iterate all the way to the end.
  */
+// cppcheck-suppress unusedFunction // only used in testtokenrange.cpp
 ConstTokenRange Token::until(const Token* t) const
 {
     return ConstTokenRange(this, t);
@@ -87,6 +97,7 @@ static const std::unordered_set<std::string> controlFlowKeywords = {
     "return"
 };
 
+// TODO: replace with Keywords::getX()?
 // Another list of keywords
 static const std::unordered_set<std::string> baseKeywords = {
     "asm",
@@ -221,11 +232,9 @@ bool Token::isUpperCaseName() const
 {
     if (!isName())
         return false;
-    for (const char i : mStr) {
-        if (std::islower(i))
-            return false;
-    }
-    return true;
+    return std::none_of(mStr.begin(), mStr.end(), [](char c) {
+        return std::islower(c);
+    });
 }
 
 void Token::concatStr(std::string const& b)
@@ -426,14 +435,6 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
     ++haystack;
     // Compare only the first character of the string for optimization reasons
     switch (haystack[0]) {
-    case '\0':
-    case ' ':
-    case '|':
-        //simple '%' character
-        haystack += 1;
-        if (tok->isArithmeticalOp() && tok->str() == "%")
-            return 1;
-        break;
     case 'v':
         if (haystack[3] == '%') { // %var%
             haystack += 4;
@@ -835,7 +836,7 @@ void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
         tok->mImpl->mProgressValue = newLocation->mImpl->mProgressValue;
 }
 
-Token* Token::nextArgument() const
+const Token* Token::nextArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
@@ -848,7 +849,7 @@ Token* Token::nextArgument() const
     return nullptr;
 }
 
-Token* Token::nextArgumentBeforeCreateLinks2() const
+const Token* Token::nextArgumentBeforeCreateLinks2() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
@@ -865,7 +866,7 @@ Token* Token::nextArgumentBeforeCreateLinks2() const
     return nullptr;
 }
 
-Token* Token::nextTemplateArgument() const
+const Token* Token::nextTemplateArgument() const
 {
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
@@ -1920,7 +1921,7 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 continue;
             if (!x.equalValue(y)) {
                 auto compare = [](const ValueFlow::Value& x, const ValueFlow::Value& y) {
-                    return x.compareValue(y, ValueFlow::less{});
+                    return x.compareValue(y, less{});
                 };
                 const ValueFlow::Value& maxValue = std::max(x, y, compare);
                 const ValueFlow::Value& minValue = std::min(x, y, compare);
@@ -2011,9 +2012,9 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
                 if (y->bound != ValueFlow::Value::Bound::Point)
                     continue;
             }
-            if (x->bound == ValueFlow::Value::Bound::Lower && !y->compareValue(*x, ValueFlow::less{}))
+            if (x->bound == ValueFlow::Value::Bound::Lower && !y->compareValue(*x, less{}))
                 continue;
-            if (x->bound == ValueFlow::Value::Bound::Upper && !x->compareValue(*y, ValueFlow::less{}))
+            if (x->bound == ValueFlow::Value::Bound::Upper && !x->compareValue(*y, less{}))
                 continue;
             adjValues.push_back(y);
         }
@@ -2024,7 +2025,7 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
         std::sort(adjValues.begin(), adjValues.end(), [&values](ValueIterator xx, ValueIterator yy) {
             (void)values;
             assert(xx != values.end() && yy != values.end());
-            return xx->compareValue(*yy, ValueFlow::less{});
+            return xx->compareValue(*yy, less{});
         });
         if (x->bound == ValueFlow::Value::Bound::Lower)
             x = removeAdjacentValues(values, x, adjValues.rbegin(), adjValues.rend());
@@ -2151,7 +2152,8 @@ bool Token::addValue(const ValueFlow::Value &value)
         ValueFlow::Value v(value);
         if (v.varId == 0)
             v.varId = mImpl->mVarId;
-        mImpl->mValues = new std::list<ValueFlow::Value>(1, v);
+        mImpl->mValues = new std::list<ValueFlow::Value>;
+        mImpl->mValues->push_back(std::move(v));
     }
 
     removeContradictions(*mImpl->mValues);
@@ -2255,6 +2257,16 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
         const Variable *var = tok->variable();
         if (!var->typeStartToken() || !var->typeEndToken())
             return {};
+        if (pointedToType && astIsSmartPointer(var->nameToken())) {
+            const ValueType* vt = var->valueType();
+            if (vt && vt->smartPointerTypeToken)
+                return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
+        }
+        if (pointedToType && astIsIterator(var->nameToken())) {
+            const ValueType* vt = var->valueType();
+            if (vt && vt->containerTypeToken)
+                return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+        }
         std::pair<const Token*, const Token*> result;
         if (Token::simpleMatch(var->typeStartToken(), "auto")) {
             const Token * tok2 = var->declEndToken();
@@ -2262,9 +2274,22 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                 tok2 = tok2->tokAt(2);
             if (Token::simpleMatch(tok2, "=") && Token::Match(tok2->astOperand2(), "!!=") && tok != tok2->astOperand2()) {
                 tok2 = tok2->astOperand2();
-                std::pair<const Token*, const Token*> r = typeDecl(tok2);
+
+                if (Token::simpleMatch(tok2, "[") && tok2->astOperand1()) {
+                    const ValueType* vt = tok2->astOperand1()->valueType();
+                    if (vt && vt->containerTypeToken)
+                        return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+                }
+
+                const Token* varTok = tok2; // try to find a variable
+                if (Token::Match(varTok, ":: %name%"))
+                    varTok = varTok->next();
+                while (Token::Match(varTok, "%name% ::"))
+                    varTok = varTok->tokAt(2);
+                std::pair<const Token*, const Token*> r = typeDecl(varTok);
                 if (r.first)
                     return r;
+
                 if (pointedToType && tok2->astOperand1() && Token::simpleMatch(tok2, "new")) {
                     if (Token::simpleMatch(tok2->astOperand1(), "("))
                         return { tok2->next(), tok2->astOperand1() };
@@ -2290,19 +2315,9 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                 if (vt && vt->containerTypeToken)
                     return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
-            if (pointedToType && astIsSmartPointer(var->nameToken())) {
-                const ValueType* vt = var->valueType();
-                if (vt && vt->smartPointerTypeToken)
-                    return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
-            }
-            if (pointedToType && astIsIterator(var->nameToken())) {
-                const ValueType* vt = var->valueType();
-                if (vt && vt->containerTypeToken)
-                    return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
-            }
-            if (result.first)
-                return result;
         }
+        if (result.first)
+            return result;
         return {var->typeStartToken(), var->typeEndToken()->next()};
     } else if (Token::simpleMatch(tok, "return")) {
         const Scope* scope = tok->scope();
@@ -2479,13 +2494,13 @@ void TokenImpl::setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, M
     }
 }
 
-bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const
+bool TokenImpl::getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const
 {
     struct CppcheckAttributes *attr = mCppcheckAttributes;
     while (attr && attr->type != type)
         attr = attr->next;
     if (attr)
-        *value = attr->value;
+        value = attr->value;
     return attr != nullptr;
 }
 

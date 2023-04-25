@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,13 +36,13 @@
 #include <vector>
 
 struct ReverseTraversal {
-    ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
+    ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
         : analyzer(analyzer), settings(settings)
     {}
     ValuePtr<Analyzer> analyzer;
-    const Settings* settings;
+    const Settings& settings;
 
-    std::pair<bool, bool> evalCond(const Token* tok) {
+    std::pair<bool, bool> evalCond(const Token* tok) const {
         std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
         const bool checkThen = std::any_of(result.cbegin(), result.cend(), [](int x) {
@@ -56,12 +56,12 @@ struct ReverseTraversal {
 
     bool update(Token* tok) {
         Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
-        if (!action.isNone())
-            analyzer->update(tok, action, Analyzer::Direction::Reverse);
         if (action.isInconclusive() && !analyzer->lowerToInconclusive())
             return false;
         if (action.isInvalid())
             return false;
+        if (!action.isNone())
+            analyzer->update(tok, action, Analyzer::Direction::Reverse);
         return true;
     }
 
@@ -78,10 +78,10 @@ struct ReverseTraversal {
                     return nullptr;
                 if (ftok->index() >= tok->index())
                     return nullptr;
-                if (ftok->link())
-                    ftok = ftok->link()->next();
-                else
+                if (!ftok->link() || ftok->str() == ")")
                     ftok = ftok->next();
+                else
+                    ftok = ftok->link()->next();
             }
             if (ftok == tok)
                 return nullptr;
@@ -131,7 +131,7 @@ struct ReverseTraversal {
         return result;
     }
 
-    Analyzer::Action analyzeRange(const Token* start, const Token* end) {
+    Analyzer::Action analyzeRange(const Token* start, const Token* end) const {
         Analyzer::Action result = Analyzer::Action::None;
         for (const Token* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Reverse);
@@ -142,7 +142,7 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr) const {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
             if (tok == end)
@@ -244,7 +244,7 @@ struct ReverseTraversal {
                         // Assignment to
                     } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() &&
                                assignTok->astOperand2()->exprId() > 0 &&
-                               isConstExpression(assignTok->astOperand2(), settings->library, true)) {
+                               isConstExpression(assignTok->astOperand2(), settings.library, true)) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {
@@ -388,13 +388,13 @@ struct ReverseTraversal {
     }
 };
 
-void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
+void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start);
 }
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start, end);

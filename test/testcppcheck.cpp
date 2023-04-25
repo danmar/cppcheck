@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <algorithm>
 #include <functional>
@@ -75,8 +75,7 @@ private:
 
     void getErrorMessages() const {
         ErrorLogger2 errorLogger;
-        CppCheck cppCheck(errorLogger, true, nullptr);
-        cppCheck.getErrorMessages();
+        CppCheck::getErrorMessages(errorLogger);
         ASSERT(!errorLogger.id.empty());
 
         // Check if there are duplicate error ids in errorLogger.id

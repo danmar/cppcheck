@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@
  */
 
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
+#include "platform.h"
 #include "token.h"
 #include "tokenlist.h"
 
@@ -48,7 +49,7 @@ private:
 
     void testaddtoken2() {
         const std::string code = "0xF0000000";
-        settings.int_bit = 32;
+        settings.platform.int_bit = 32;
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
         ASSERT_EQUALS("0xF0000000", tokenlist.front()->str());

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenize.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <string>
 
@@ -230,8 +230,6 @@ private:
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
     void dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
 
-    void readingEmptyStlContainerError(const Token* tok, const ValueFlow::Value *value=nullptr);
-
     void useStlAlgorithmError(const Token *tok, const std::string &algoName);
 
     void knownEmptyContainerError(const Token *tok, const std::string& algo);
@@ -273,7 +271,6 @@ private:
         c.uselessCallsEmptyError(nullptr);
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
-        c.readingEmptyStlContainerError(nullptr);
         c.useStlAlgorithmError(nullptr, emptyString);
         c.knownEmptyContainerError(nullptr, emptyString);
         c.globalLockGuardError(nullptr);

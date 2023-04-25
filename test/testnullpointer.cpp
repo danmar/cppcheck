@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 
@@ -141,6 +141,8 @@ private:
         TEST_CASE(nullpointer95); // #11142
         TEST_CASE(nullpointer96); // #11416
         TEST_CASE(nullpointer97); // #11229
+        TEST_CASE(nullpointer98); // #11458
+        TEST_CASE(nullpointer99); // #10602
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -188,8 +190,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for null pointer dereferences..
-        CheckNullPointer checkNullPointer;
-        checkNullPointer.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckNullPointer>(&tokenizer, &settings, this);
     }
 
     void checkP(const char code[]) {
@@ -214,8 +215,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check for null pointer dereferences..
-        CheckNullPointer checkNullPointer;
-        checkNullPointer.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckNullPointer>(&tokenizer, &settings, this);
     }
 
 
@@ -2790,12 +2790,44 @@ private:
               "struct D : public B { int f() override; };\n"
               "int g(B* p) {\n"
               "    if (p) {\n"
-              "        auto d = dynamic_cast<B*>(p);\n"
+              "        auto d = dynamic_cast<D*>(p);\n"
               "        return d ? d->f() : 0;\n"
               "    }\n"
               "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer98() // #11458
+    {
+        check("struct S { double* d() const; };\n"
+              "struct T {\n"
+              "    virtual void g(double* b, double* d) const = 0;\n"
+              "    void g(S* b) const { g(b->d(), nullptr); }\n"
+              "    void g(S* b, S* d) const { g(b->d(), d->d()); }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer99() // #10602
+    {
+        check("class A\n"
+              "{\n"
+              "    int *foo(const bool b)\n"
+              "    {\n"
+              "        if(b)\n"
+              "            return nullptr;\n"
+              "        else\n"
+              "            return new int [10];\n"
+              "    }\n"
+              "public:\n"
+              "    void bar(void)\n"
+              "    {\n"
+              "        int * buf = foo(true);\n"
+              "        buf[2] = 0;" // <<
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:14]: (error) Null pointer dereference: buf\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
@@ -2838,13 +2870,20 @@ private:
         ASSERT_EQUALS("[test.cpp:7]: (warning) Possible null pointer dereference: p\n", errout.str());
     }
 
-    void nullpointer_cast() { // #4692
-        check("char *nasm_skip_spaces(const char *p) {\n"
+    void nullpointer_cast() {
+        check("char *nasm_skip_spaces(const char *p) {\n" // #4692
               "    if (p)\n"
               "        while (*p && nasm_isspace(*p))\n"
               "            p++;\n"
               "    return p;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char* origin) {\n" // #11449
+              "    char* cp = (strchr)(origin, '\\0');\n"
+              "    if (cp[-1] != '/')\n"
+              "        *cp++ = '/';\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3689,6 +3728,11 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: p\n"
                       "[test.cpp:4]: (error) Null pointer dereference\n",
+                      errout.str());
+
+        check("const char* g(long) { return nullptr; }\n" // #11561
+              "void f() { std::string s = g(0L); }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Null pointer dereference: g(0L)\n",
                       errout.str());
     }
 

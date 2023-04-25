@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #include "errortypes.h"
 #include "standards.h"
 #include "library.h"
-#include "preprocessor.h"
+#include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <map>
@@ -36,8 +36,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-
-#include <tinyxml2.h>
 
 class TestBufferOverrun : public TestFixture {
 public:
@@ -59,8 +57,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun;
-        checkBufferOverrun.runChecks(&tokenizer, &settings0, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings0, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -72,8 +69,7 @@ private:
         errout.str("");
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
-        checkBufferOverrun.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
     }
 
     void checkP(const char code[], const char* filename = "test.cpp")
@@ -89,7 +85,6 @@ private:
         settings->standards.c = Standards::CLatest;
         settings->standards.cpp = Standards::CPPLatest;
         settings->certainty.enable(Certainty::inconclusive);
-        settings->certainty.disable(Certainty::experimental);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -101,18 +96,13 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, nullptr);
-        preprocessor.setDirectives(tokens1);
-
         // Tokenizer..
         Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, settings, this);
-        checkBufferOverrun.runChecks(&tokenizer, settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, settings, this);
     }
 
     void run() override {
@@ -195,6 +185,7 @@ private:
         TEST_CASE(array_index_68); // #6655
         TEST_CASE(array_index_69); // #6370
         TEST_CASE(array_index_70); // #11355
+        TEST_CASE(array_index_71); // #11461
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -206,6 +197,8 @@ private:
         TEST_CASE(array_index_negative4);
         TEST_CASE(array_index_negative5);    // #10526
         TEST_CASE(array_index_negative6);    // #11349
+        TEST_CASE(array_index_negative7);    // #5685
+        TEST_CASE(array_index_negative8);    // #11651
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -952,7 +945,7 @@ private:
 
     void array_index_24() {
         // ticket #1492 and #1539
-        const std::string charMaxPlusOne(settings0.defaultSign == 'u' ? "256" : "128");
+        const std::string charMaxPlusOne(settings0.platform.defaultSign == 'u' ? "256" : "128");
         check(("void f(char n) {\n"
                "    int a[n];\n"     // n <= CHAR_MAX
                "    a[-1] = 0;\n"    // negative index
@@ -1723,7 +1716,7 @@ private:
             errout.str());
     }
 
-    void array_index_59()
+    void array_index_59() // #10413
     {
         check("long f(long b) {\n"
               "  const long a[] = { 0, 1, };\n"
@@ -1731,6 +1724,22 @@ private:
               "  if (b < 0 || b >= c)\n"
               "    return 0;\n"
               "  return a[b];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "    const int S[2] = {};\n"
+              "    if (a < 0) {}\n"
+              "    else {\n"
+              "        if (b < 0) {}\n"
+              "        else if (S[b] > S[a]) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int a[2] = {};\n"
+              "void f(int i) {\n"
+              "    g(i < 0 ? 0 : a[i]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1910,6 +1919,19 @@ private:
               "    printf(\"%c\", a[5]);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[5]' accessed at index 5, which is out of bounds.\n", errout.str());
+    }
+
+    // #11461
+    void array_index_71()
+    {
+        check("unsigned int f(unsigned int Idx) {\n"
+              "  if (Idx < 64)\n"
+              "    return 0;\n"
+              "  Idx -= 64;\n"
+              "  int arr[64] = { 0 };\n"
+              "  return arr[Idx];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
@@ -2237,6 +2259,31 @@ private:
               "  const int k = j < 0 ? 0 : j;\n"
               "  (void)a[k];\n"
               "  if (i == -3) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #5685
+    void array_index_negative7()
+    {
+        check("void f() {\n"
+              "    int i = -9;\n"
+              "    int a[5];\n"
+              "    for (; i < 5; i++)\n"
+              "        a[i] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[5]' accessed at index -9, which is out of bounds.\n", errout.str());
+    }
+
+    // #11651
+    void array_index_negative8()
+    {
+        check("unsigned g(char*);\n"
+              "void f() {\n"
+              "    char buf[10];\n"
+              "    unsigned u = g(buf);\n"
+              "    for (int i = u, j = sizeof(i); --i >= 0;)\n"
+              "        char c = buf[i];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3488,9 +3535,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
         check("void f() {\n"
@@ -4043,11 +4088,9 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
         settings.severity.enable(Severity::warning);
-        settings.sizeof_wchar_t = 4;
+        settings.platform.sizeof_wchar_t = 4;
 
         check("void f() {\n"
               "    char c[10];\n"
@@ -4185,9 +4228,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void f() {\n"
               "    char c[7];\n"
@@ -4249,9 +4290,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // formatstr..
         check("void f() {\n"
@@ -4363,9 +4402,7 @@ private:
                                "    <arg nr=\"4\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void f() {\n"
               "    char c[5];\n"
@@ -4851,8 +4888,7 @@ private:
 
     void getErrorMessages() {
         // Ticket #2292: segmentation fault when using --errorlist
-        CheckBufferOverrun c;
-        c.getErrorMessages(this, nullptr);
+        getCheck<CheckBufferOverrun>().getErrorMessages(this, nullptr);
     }
 
     void arrayIndexThenCheck() {
@@ -5207,6 +5243,23 @@ private:
             "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 5.\n",
                       errout.str());
+
+        ctu("void g(int *b) { b[0] = 0; }\n"
+            "void f() {\n"
+            "    GLint a[1];\n"
+            "    g(a);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("const int a[1] = { 1 };\n" // #11042
+            "void g(const int* d) {\n"
+            "    (void)d[2];\n"
+            "}\n"
+            "void f() {\n"
+            "    g(a);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (error) Array index out of bounds; 'd' buffer size is 4 and it is accessed at offset 8.\n",
+                      errout.str());
     }
 
     void ctu_variable() {
@@ -5459,6 +5512,7 @@ private:
 
         Settings settings;
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         check("void f(){\n"
               "int pipefd[1];\n" // <--  array of two integers is needed

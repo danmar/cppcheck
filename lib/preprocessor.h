@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include <atomic>
 #include <cstddef>
 #include <istream>
 #include <list>
@@ -36,6 +35,7 @@
 
 class ErrorLogger;
 class Settings;
+class Suppressions;
 
 /**
  * @brief A preprocessor directive
@@ -84,11 +84,8 @@ public:
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(Settings& settings, ErrorLogger *errorLogger = nullptr);
+    explicit Preprocessor(const Settings& settings, Suppressions &suppressions, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
-
-    static std::atomic<bool> missingIncludeFlag;
-    static std::atomic<bool> missingSystemIncludeFlag;
 
     void inlineSuppressions(const simplecpp::TokenList &tokens);
 
@@ -157,15 +154,6 @@ public:
     std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
 
     /**
-     * make sure empty configuration macros are not used in code. the given code must be a single configuration
-     * @param cfg configuration
-     * @param macroUsageList macro usage list
-     * @return true => configuration is valid
-     */
-    bool validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList);
-    void validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro);
-
-    /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.
      *
      * @param tokens1    Sourcefile tokens
@@ -196,7 +184,8 @@ private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
-    Settings& mSettings;
+    const Settings& mSettings;
+    Suppressions &mSuppressions;
     ErrorLogger *mErrorLogger;
 
     /** list of all directives met while preprocessing file */

@@ -49,16 +49,17 @@ We are not interesting in the size/complexity of a function.
 
 `readability-magic-numbers`<br>
 `readability-redundant-member-init`<br>
-`readability-simplify-boolean-expr`<br>
 
 These do not (always) increase readability.
 
 `bugprone-macro-parentheses`<br>
-`readability-implicit-bool-conversion`<br>
 
 To be documented.
 
-`performance-faster-string-find`<br>
+`readability-implicit-bool-conversion`<br>
+
+This does not appear not to be useful as it is reported on very common code.
+
 `bugprone-narrowing-conversions`<br>
 `performance-no-automatic-move`<br>
 
@@ -79,11 +80,11 @@ Disabled because of false positives with Qt `slot` methods (see https://github.c
 
 `-clang-analyzer-*`<br>
 
-Disable because of false positives (needs to file an upstream bug report).
+Disabled because of false positives (needs to file an upstream bug report).
 
 `misc-non-private-member-variables-in-classes`<br>
 
-We actively use this.
+We intentionally use this.
 
 `misc-no-recursion`<br>
 
@@ -115,9 +116,17 @@ Produces a lot of false positives since it is too vague in its analysis.
 
 `performance-inefficient-string-concatenation`<br>
 
-Produces many warnings which very much look like false positives (needs to be reported upstream).
+Produces warnings which might be considered false positives starting with C++11 - see https://github.com/llvm/llvm-project/issues/54526.
+
+`readability-redundant-access-specifiers`<br>
+
+Reports warning with the Qt `<access-specifier> slots:` syntax in class declarations - see https://github.com/llvm/llvm-project/issues/60055.
 
 `modernize-avoid-c-arrays`<br>
+
+Produces warnings when `const char[]` is being used which is quite common in our code. Does not make sense to enable before C++17 when `std::string_view` becomes available.
+Also reports a false positive about templates which deduce the array length: https://github.com/llvm/llvm-project/issues/60053.
+
 `readability-container-size-empty`<br>
 `bugprone-branch-clone`<br>
 `readability-const-return-type`<br>
@@ -126,8 +135,8 @@ Produces many warnings which very much look like false positives (needs to be re
 `readability-avoid-const-params-in-decls`<br>
 `bugprone-signed-char-misuse`<br>
 `readability-redundant-access-specifiers`<br>
-`performance-noexcept-move-constructor`<br>
 `concurrency-mt-unsafe`<br>
+`misc-use-anonymous-namespace`<br>
 
 To be evaluated.
 

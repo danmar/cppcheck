@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,12 @@
 #include "library.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
+#include <list>
+#include <map>
 #include <string>
+#include <utility>
 
 static bool isUnchanged(const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local)
 {
@@ -264,7 +267,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             // TODO: This is a quick bailout to avoid FP #9420, there are false negatives (TODO_ASSERT_EQUALS)
             return Result(Result::Type::BAILOUT);
 
-        if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find("<") != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
+        if (expr->isName() && Token::Match(tok, "%name% (") && tok->str().find('<') != std::string::npos && tok->str().find(expr->str()) != std::string::npos)
             return Result(Result::Type::BAILOUT);
 
         if (exprVarIds.find(tok->varId()) != exprVarIds.end()) {
@@ -481,6 +484,8 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
     if (isEscapedAlias(expr))
         return false;
     if (hasVolatileCastOrVar(expr))
+        return false;
+    if (Token::simpleMatch(expr, "[") && astIsContainerView(expr->astOperand1()))
         return false;
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);

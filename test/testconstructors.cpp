@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,10 @@
 #include "errortypes.h"
 #include "standards.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
-#include <string>
 
 
 class TestConstructors : public TestFixture {
@@ -196,6 +194,7 @@ private:
         TEST_CASE(uninitVarArray7);
         TEST_CASE(uninitVarArray8);
         TEST_CASE(uninitVarArray9); // ticket #6957, #6959
+        TEST_CASE(uninitVarArray10);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarCpp11Init1);
@@ -1952,7 +1951,8 @@ private:
 
     void initvar_smartptr() { // #10237
         Settings s;
-        s.libraries.emplace_back("std");
+        // TODO: test shuld probably not pass without library
+        //LOAD_LIB_2(s.library, "std.cfg");
         check("struct S {\n"
               "    explicit S(const std::shared_ptr<S>& sp) {\n"
               "        set(*sp);\n"
@@ -3118,6 +3118,28 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'sRAIUnitDef::List' is not initialized in the constructor.\n", errout.str());
     }
 
+    void uninitVarArray10() { // #11650
+        Settings s(settings);
+        LOAD_LIB_2(s.library, "std.cfg");
+        check("struct T { int j; };\n"
+              "struct U { int k{}; };\n"
+              "struct S {\n"
+              "    std::array<int, 2> a;\n"
+              "    std::array<T, 2> b;\n"
+              "    std::array<std::size_t, 2> c;\n"
+              "    std::array<clock_t, 2> d;\n"
+              "    std::array<std::string, 2> e;\n"
+              "    std::array<U, 2> f;\n"
+              "S() {}\n"
+              "};\n", s);
+
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'S::a' is not initialized in the constructor.\n"
+                      "[test.cpp:10]: (warning) Member variable 'S::b' is not initialized in the constructor.\n"
+                      "[test.cpp:10]: (warning) Member variable 'S::c' is not initialized in the constructor.\n"
+                      "[test.cpp:10]: (warning) Member variable 'S::d' is not initialized in the constructor.\n",
+                      errout.str());
+    }
+
     void uninitVarArray2D() {
         check("class John\n"
               "{\n"
@@ -3589,7 +3611,9 @@ private:
 
     void uninitVarInheritClassInit() {
         Settings s;
-        s.libraries.emplace_back("vcl");
+        // TODO: test should probably not pass without library
+        //LOAD_LIB_2(s.library, "vcl.cfg");
+        //s.libraries.emplace_back("vcl");
 
         check("class Fred: public TObject\n"
               "{\n"

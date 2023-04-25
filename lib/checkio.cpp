@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,12 @@
 
 #include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cctype>
@@ -33,7 +34,6 @@
 #include <functional>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream> // IWYU pragma: keep
 #include <unordered_set>
@@ -121,7 +121,7 @@ namespace {
 
 void CheckIO::checkFileUsage()
 {
-    const bool windows = mSettings->isWindowsPlatform();
+    const bool windows = mSettings->platform.isWindows();
     const bool printPortability = mSettings->severity.isEnabled(Severity::portability);
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
@@ -517,7 +517,7 @@ static inline bool typesMatch(const std::string& iToTest, const std::string& iTy
 void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const bool isWindows = mSettings->isWindowsPlatform();
+    const bool isWindows = mSettings->platform.isWindows();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -590,7 +590,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 const bool scan,
                                 const bool scanf_s)
 {
-    const bool isWindows = mSettings->isWindowsPlatform();
+    const bool isWindows = mSettings->platform.isWindows();
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
     const std::string &formatString = formatStringTok->str();
 
@@ -643,7 +643,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                 } else if (std::isdigit(*i)) {
                     width += *i;
                 } else if (*i == '$') {
-                    parameterPosition = std::atoi(width.c_str());
+                    parameterPosition = strToInt<int>(width);
                     hasParameterPosition = true;
                     width.clear();
                 }
@@ -695,7 +695,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 specifier += (*i == 's' || bracketBeg == formatString.end()) ? std::string{ 's' } : std::string{ bracketBeg, i + 1 };
                                 if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
                                     if (!width.empty()) {
-                                        const int numWidth = std::atoi(width.c_str());
+                                        const int numWidth = strToInt<int>(width);
                                         if (numWidth != (argInfo.variableInfo->dimension(0) - 1))
                                             invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, specifier);
                                     }
@@ -718,7 +718,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'c':
                                 if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
                                     if (!width.empty()) {
-                                        const int numWidth = std::atoi(width.c_str());
+                                        const int numWidth = strToInt<int>(width);
                                         if (numWidth > argInfo.variableInfo->dimension(0))
                                             invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, std::string(1, *i));
                                     }
@@ -1483,12 +1483,12 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                 tempToken->linenr(tok1->linenr());
                 if (tok1->next()->str() == "size") {
                     // size_t is platform dependent
-                    if (settings->sizeof_size_t == 8) {
+                    if (settings->platform.sizeof_size_t == 8) {
                         tempToken->str("long");
-                        if (settings->sizeof_long != 8)
+                        if (settings->platform.sizeof_long != 8)
                             tempToken->isLong(true);
-                    } else if (settings->sizeof_size_t == 4) {
-                        if (settings->sizeof_long == 4) {
+                    } else if (settings->platform.sizeof_size_t == 4) {
+                        if (settings->platform.sizeof_long == 4) {
                             tempToken->str("long");
                         } else {
                             tempToken->str("int");

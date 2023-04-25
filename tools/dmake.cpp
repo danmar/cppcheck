@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,17 @@
 
 #include <algorithm>
 #include <array>
+#include <cstdlib>
 #include <fstream> // IWYU pragma: keep
+#include <functional>
 #include <iostream>
+#include <map>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
+
+#include "config.h"
 
 #include "../cli/filelister.h"
 #include "../lib/pathmatch.h"
@@ -157,6 +164,105 @@ static void makeConditionalVariable(std::ostream &os, const std::string &variabl
        << "\n";
 }
 
+static int write_vcxproj(const std::string &proj_name, const std::function<void(std::string&)> &source_f, const std::function<void(std::string&)> &header_f)
+{
+    std::string outstr;
+
+    {
+        // treat as binary to prevent inplicit line ending conversions
+        std::ifstream in(proj_name, std::ios::binary);
+        if (!in.is_open()) {
+            std::cerr << "Could not open " << proj_name << std::endl;
+            return EXIT_FAILURE;
+        }
+
+        std::string line;
+        bool in_itemgroup = false;
+        while (std::getline(in, line)) {
+            if (in_itemgroup) {
+                if (line.find("</ItemGroup>") == std::string::npos)
+                    continue;
+                in_itemgroup = false;
+            }
+
+            // strip all remaining line endings
+            const std::string::size_type pos = line.find_last_not_of("\r\n");
+            if (pos != std::string::npos)
+                line.resize(pos+1, '\0');
+
+            outstr += line;
+            outstr += "\r\n";
+
+            if (line.find("<ItemGroup Label=\"SourceFiles\">") != std::string::npos) {
+                in_itemgroup = true;
+
+                source_f(outstr);
+            }
+
+            if (line.find("<ItemGroup Label=\"HeaderFiles\">") != std::string::npos) {
+                in_itemgroup = true;
+
+                header_f(outstr);
+            }
+        }
+    }
+
+    // strip trailing \r\n
+    {
+        const std::string::size_type pos = outstr.find_last_not_of("\r\n");
+        if (pos != std::string::npos)
+            outstr.resize(pos+1, '\0');
+    }
+
+    // treat as binary to prevent inplicit line ending conversions
+    std::ofstream out(proj_name, std::ios::binary|std::ios::trunc);
+    out << outstr;
+
+    return EXIT_SUCCESS;
+}
+
+enum ClType { Compile, Include, Precompile, PrecompileNoPCRE };
+
+static std::string make_vcxproj_cl_entry(const std::string& file, ClType type)
+{
+    std::string outstr;
+    if (type == Precompile || type == PrecompileNoPCRE) {
+        outstr += R"(    <ClCompile Include=")";
+        outstr += file;
+        outstr += R"(">)";
+        outstr += "\r\n";
+        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>)";
+        outstr += "\r\n";
+        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>)";
+        outstr += "\r\n";
+        if (type == Precompile) {
+            outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">Create</PrecompiledHeader>)";
+            outstr += "\r\n";
+            outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">Create</PrecompiledHeader>)";
+            outstr += "\r\n";
+        }
+        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>)";
+        outstr += "\r\n";
+        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>)";
+        outstr += "\r\n";
+        if (type == Precompile) {
+            outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">Create</PrecompiledHeader>)";
+            outstr += "\r\n";
+            outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">Create</PrecompiledHeader>)";
+            outstr += "\r\n";
+        }
+        outstr += "    </ClCompile>\r\n";
+        return outstr;
+    }
+    outstr += "    <";
+    outstr += (type == Compile) ? "ClCompile" : "ClInclude";
+    outstr += R"( Include=")";
+    outstr += file;
+    outstr += R"(" />)";
+    outstr += "\r\n";
+    return outstr;
+}
+
 int main(int argc, char **argv)
 {
     const bool release(argc >= 2 && std::string(argv[1]) == "--release");
@@ -202,6 +308,94 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    // TODO: add files without source via parsing
+    std::vector<std::string> libfiles_h;
+    for (const std::string &libfile : libfiles) {
+        std::string fname(libfile.substr(4));
+        fname.erase(fname.find(".cpp"));
+        libfiles_h.emplace_back(fname + ".h");
+    }
+    libfiles_h.emplace_back("analyzer.h");
+    libfiles_h.emplace_back("calculate.h");
+    libfiles_h.emplace_back("config.h");
+    libfiles_h.emplace_back("precompiled.h");
+    libfiles_h.emplace_back("smallvector.h");
+    libfiles_h.emplace_back("standards.h");
+    libfiles_h.emplace_back("tokenrange.h");
+    libfiles_h.emplace_back("valueptr.h");
+    libfiles_h.emplace_back("version.h");
+    std::sort(libfiles_h.begin(), libfiles_h.end());
+
+    std::vector<std::string> clifiles_h;
+    for (const std::string &clifile : clifiles) {
+        std::string fname(clifile.substr(4));
+        if (fname == "main.cpp")
+            continue;
+        fname.erase(fname.find(".cpp"));
+        clifiles_h.emplace_back(fname + ".h");
+    }
+
+    std::vector<std::string> testfiles_h;
+    testfiles_h.emplace_back("fixture.h");
+    testfiles_h.emplace_back("helpers.h");
+    testfiles_h.emplace_back("options.h");
+    testfiles_h.emplace_back("precompiled.h");
+    testfiles_h.emplace_back("redirect.h");
+    std::sort(testfiles_h.begin(), testfiles_h.end());
+
+    // TODO: write filter files
+    // Visual Studio projects
+    write_vcxproj("cli/cli.vcxproj", [&](std::string &outstr){
+        for (const std::string &clifile: clifiles) {
+            const std::string c = clifile.substr(4);
+            outstr += make_vcxproj_cl_entry(c, c == "executor.cpp" ? Precompile : Compile);
+        }
+    }, [&](std::string &outstr){
+        for (const std::string &clifile_h: clifiles_h) {
+            outstr += make_vcxproj_cl_entry(clifile_h, Include);
+        }
+    });
+
+    write_vcxproj("lib/cppcheck.vcxproj", [&](std::string &outstr){
+        outstr += make_vcxproj_cl_entry(R"(..\externals\simplecpp\simplecpp.cpp)", Compile);
+        outstr += make_vcxproj_cl_entry(R"(..\externals\tinyxml2\tinyxml2.cpp)", Compile);
+
+        for (const std::string &libfile: libfiles) {
+            const std::string l = libfile.substr(4);
+            outstr += make_vcxproj_cl_entry(l, l == "check.cpp" ? Precompile : Compile);
+        }
+    }, [&](std::string &outstr){
+        outstr += make_vcxproj_cl_entry(R"(..\externals\simplecpp\simplecpp.h)", Include);
+        outstr += make_vcxproj_cl_entry(R"(..\externals\tinyxml2\tinyxml2.h)", Include);
+
+        for (const std::string &libfile_h: libfiles_h) {
+            outstr += make_vcxproj_cl_entry(libfile_h, Include);
+        }
+    });
+
+    write_vcxproj("test/testrunner.vcxproj", [&](std::string &outstr){
+        for (const std::string &clifile: clifiles) {
+            if (clifile == "cli/main.cpp")
+                continue;
+            const std::string c = R"(..\cli\)" + clifile.substr(4);
+            outstr += make_vcxproj_cl_entry(c, Compile);
+        }
+
+        for (const std::string &testfile: testfiles) {
+            const std::string t = testfile.substr(5);
+            outstr += make_vcxproj_cl_entry(t, t == "fixture.cpp" ? PrecompileNoPCRE : Compile);
+        }
+    }, [&](std::string &outstr){
+        for (const std::string &clifile_h: clifiles_h) {
+            const std::string c = R"(..\cli\)" + clifile_h;
+            outstr += make_vcxproj_cl_entry(c, Include);
+        }
+
+        for (const std::string &testfile_h: testfiles_h) {
+            outstr += make_vcxproj_cl_entry(testfile_h, Include);
+        }
+    });
+
     // QMAKE - lib/lib.pri
     {
         std::ofstream fout1("lib/lib.pri");
@@ -211,13 +405,9 @@ int main(int argc, char **argv)
             fout1 << "include($$PWD/../externals/externals.pri)\n";
             fout1 << "INCLUDEPATH += $$PWD\n";
             fout1 << "HEADERS += ";
-            for (const std::string &libfile : libfiles) {
-                std::string fname(libfile.substr(4));
-                if (fname.find(".cpp") == std::string::npos)
-                    continue;   // shouldn't happen
-                fname.erase(fname.find(".cpp"));
-                fout1 << "$${PWD}/" << fname << ".h";
-                if (libfile != libfiles.back())
+            for (const std::string &libfile_h : libfiles_h) {
+                fout1 << "$${PWD}/" << libfile_h;
+                if (libfile_h != libfiles_h.back())
                     fout1 << " \\\n" << std::string(11, ' ');
             }
             fout1 << "\n\nSOURCES += ";
@@ -469,7 +659,8 @@ int main(int argc, char **argv)
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
-    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o\n";
+    // TODO: generate from clifiles
+    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/singleexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";

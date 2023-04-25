@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,11 +37,14 @@
 #include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
+#include <iterator>
 #include <list>
 #include <set>
 #include <sstream> // IWYU pragma: keep
+#include <stdexcept>
+#include <unordered_set>
 #include <utility>
 
 #ifdef HAVE_RULES
@@ -78,7 +81,7 @@ static bool addFilesToList(const std::string& fileList, std::vector<std::string>
     return true;
 }
 
-static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
+static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>& pathNames)
 {
     std::ifstream files(fileList);
     if (files) {
@@ -93,7 +96,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
                 if (!endsWith(pathName, '/'))
                     pathName += '/';
 
-                pathNames->emplace_back(std::move(pathName));
+                pathNames.emplace_back(std::move(pathName));
             }
         }
         return true;
@@ -101,16 +104,16 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
     return false;
 }
 
-static bool addPathsToSet(const std::string& fileName, std::set<std::string>* set)
+static bool addPathsToSet(const std::string& fileName, std::set<std::string>& set)
 {
     std::list<std::string> templist;
-    if (!addIncludePathsToList(fileName, &templist))
+    if (!addIncludePathsToList(fileName, templist))
         return false;
-    set->insert(templist.cbegin(), templist.cend());
+    set.insert(templist.cbegin(), templist.cend());
     return true;
 }
 
-CmdLineParser::CmdLineParser(Settings *settings)
+CmdLineParser::CmdLineParser(Settings &settings)
     : mSettings(settings)
     , mShowHelp(false)
     , mShowVersion(false)
@@ -128,20 +131,28 @@ void CmdLineParser::printError(const std::string &message)
     printMessage("error: " + message);
 }
 
+#if defined(_WIN64) || defined(_WIN32)
+bool CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
+#endif
+
 // TODO: normalize/simplify/native all path parameters
 // TODO: error out on all missing given files/paths
 bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
+#if defined(_WIN64) || defined(_WIN32)
+    bool default_platform = true;
+#endif
+
     bool def = false;
     bool maxconfigs = false;
 
-    mSettings->exename = argv[0];
+    mSettings.exename = argv[0];
 #ifdef __linux__
     // Executing cppcheck in PATH. argv[0] does not contain the path.
-    if (mSettings->exename.find_first_of("/\\") == std::string::npos) {
+    if (mSettings.exename.find_first_of("/\\") == std::string::npos) {
         char buf[PATH_MAX] = {0};
         if (FileLister::fileExists("/proc/self/exe") && readlink("/proc/self/exe", buf, sizeof(buf)-1) > 0)
-            mSettings->exename = buf;
+            mSettings.exename = buf;
     }
 #endif
 
@@ -170,17 +181,17 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (define.find('=') == std::string::npos)
                     define += "=1";
 
-                if (!mSettings->userDefines.empty())
-                    mSettings->userDefines += ";";
-                mSettings->userDefines += define;
+                if (!mSettings.userDefines.empty())
+                    mSettings.userDefines += ";";
+                mSettings.userDefines += define;
 
                 def = true;
             }
 
             // -E
             else if (std::strcmp(argv[i], "-E") == 0) {
-                mSettings->preprocessOnly = true;
-                mSettings->quiet = true;
+                mSettings.preprocessOnly = true;
+                mSettings.quiet = true;
             }
 
             // Include paths
@@ -208,7 +219,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (!endsWith(path,'/'))
                     path += '/';
 
-                mSettings->includePaths.emplace_back(std::move(path));
+                mSettings.includePaths.emplace_back(std::move(path));
             }
 
             // User undef
@@ -230,74 +241,90 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     undef = 2 + argv[i];
                 }
 
-                mSettings->userUndefs.insert(std::move(undef));
+                mSettings.userUndefs.insert(std::move(undef));
             }
 
             else if (std::strncmp(argv[i], "--addon=", 8) == 0)
-                mSettings->addons.emplace(argv[i]+8);
+                mSettings.addons.emplace(argv[i]+8);
 
             else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
-                mSettings->addonPython.assign(argv[i]+15);
+                mSettings.addonPython.assign(argv[i]+15);
 
             // Check configuration
             else if (std::strcmp(argv[i], "--check-config") == 0)
-                mSettings->checkConfiguration = true;
+                mSettings.checkConfiguration = true;
+
+            // Check code exhaustively
+            else if (std::strcmp(argv[i], "--check-level=exhaustive") == 0)
+                mSettings.setCheckLevelExhaustive();
+
+            // Check code with normal analysis
+            else if (std::strcmp(argv[i], "--check-level=normal") == 0)
+                mSettings.setCheckLevelNormal();
 
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
-                mSettings->checkLibrary = true;
-                // need to add "information" or no messages will be shown at all
-                mSettings->addEnabled("information");
+                mSettings.checkLibrary = true;
             }
 
             else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
-                mSettings->checksMaxTime = std::atoi(argv[i] + 18);
+                if (!parseNumberArg(argv[i], 18, mSettings.checksMaxTime))
+                    return false;
             }
 
             else if (std::strcmp(argv[i], "--clang") == 0) {
-                mSettings->clang = true;
+                mSettings.clang = true;
             }
 
             else if (std::strncmp(argv[i], "--clang=", 8) == 0) {
-                mSettings->clang = true;
-                mSettings->clangExecutable = argv[i] + 8;
+                mSettings.clang = true;
+                mSettings.clangExecutable = argv[i] + 8;
             }
 
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
-                mSettings->configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
+                mSettings.configExcludePaths.insert(Path::fromNativeSeparators(argv[i] + 17));
             }
 
             else if (std::strncmp(argv[i], "--config-excludes-file=", 23) == 0) {
                 // open this file and read every input file (1 file name per line)
                 const std::string cfgExcludesFile(23 + argv[i]);
-                if (!addPathsToSet(cfgExcludesFile, &mSettings->configExcludePaths)) {
+                if (!addPathsToSet(cfgExcludesFile, mSettings.configExcludePaths)) {
                     printError("unable to open config excludes file at '" + cfgExcludesFile + "'");
                     return false;
                 }
             }
 
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
-                mSettings->buildDir = Path::fromNativeSeparators(argv[i] + 21);
-                if (endsWith(mSettings->buildDir, '/'))
-                    mSettings->buildDir.pop_back();
+                // TODO: bail out when the folder does not exist? will silently do nothing
+                mSettings.buildDir = Path::fromNativeSeparators(argv[i] + 21);
+                if (endsWith(mSettings.buildDir, '/'))
+                    mSettings.buildDir.pop_back();
             }
 
             // Show --debug output after the first simplifications
             else if (std::strcmp(argv[i], "--debug") == 0 ||
                      std::strcmp(argv[i], "--debug-normal") == 0)
-                mSettings->debugnormal = true;
+                mSettings.debugnormal = true;
 
             // Flag used for various purposes during debugging
             else if (std::strcmp(argv[i], "--debug-simplified") == 0)
-                mSettings->debugSimplified = true;
+                mSettings.debugSimplified = true;
 
             // Show template information
             else if (std::strcmp(argv[i], "--debug-template") == 0)
-                mSettings->debugtemplate = true;
+                mSettings.debugtemplate = true;
 
             // Show debug warnings
             else if (std::strcmp(argv[i], "--debug-warnings") == 0)
-                mSettings->debugwarnings = true;
+                mSettings.debugwarnings = true;
+
+            else if (std::strncmp(argv[i], "--disable=", 10) == 0) {
+                const std::string errmsg = mSettings.removeEnabled(argv[i] + 10);
+                if (!errmsg.empty()) {
+                    printError(errmsg);
+                    return false;
+                }
+            }
 
             // documentation..
             else if (std::strcmp(argv[i], "--doc") == 0) {
@@ -318,42 +345,43 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // dump cppcheck data
             else if (std::strcmp(argv[i], "--dump") == 0)
-                mSettings->dump = true;
+                mSettings.dump = true;
 
             else if (std::strncmp(argv[i], "--enable=", 9) == 0) {
-                const std::string errmsg = mSettings->addEnabled(argv[i] + 9);
+                const std::string enable_arg = argv[i] + 9;
+                const std::string errmsg = mSettings.addEnabled(enable_arg);
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
-                if (mSettings->severity.isEnabled(Severity::style)) {
-                    mSettings->addEnabled("warning");
-                    mSettings->addEnabled("performance");
-                    mSettings->addEnabled("portability");
+                if (enable_arg.find("style") != std::string::npos) {
+                    mSettings.addEnabled("warning");
+                    mSettings.addEnabled("performance");
+                    mSettings.addEnabled("portability");
+                }
+                if (enable_arg.find("information") != std::string::npos) {
+                    mSettings.addEnabled("missingInclude");
+                    printMessage("'--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.");
                 }
             }
 
             // print all possible error messages..
             else if (std::strcmp(argv[i], "--errorlist") == 0) {
                 mShowErrorMessages = true;
-                mSettings->xml = true;
+                mSettings.xml = true;
                 mExitAfterPrint = true;
             }
 
             // --error-exitcode=1
             else if (std::strncmp(argv[i], "--error-exitcode=", 17) == 0) {
-                const std::string temp = argv[i]+17;
-                std::istringstream iss(temp);
-                if (!(iss >> mSettings->exitCode)) {
-                    printError("argument must be an integer. Try something like '--error-exitcode=1'.");
+                if (!parseNumberArg(argv[i], 17, mSettings.exitCode))
                     return false;
-                }
             }
 
             // Exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0) {
-                mSettings->exceptionHandling = true;
+                mSettings.exceptionHandling = true;
             }
 
             // Exception handling inside cppcheck client
@@ -363,7 +391,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("invalid '--exception-handling' argument");
                     return false;
                 }
-                mSettings->exceptionHandling = true;
+                mSettings.exceptionHandling = true;
                 CppCheckExecutor::setExceptionOutput((exceptionOutfilename == "stderr") ? stderr : stdout);
             }
 
@@ -377,7 +405,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("couldn't open the file: \"" + filename + "\".");
                     return false;
                 }
-                const std::string errmsg(mSettings->nofail.parseFile(f));
+                const std::string errmsg(mSettings.nofail.parseFile(f));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -386,7 +414,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // use a file filter
             else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
-                mSettings->fileFilters.emplace_back(argv[i] + 14);
+                mSettings.fileFilters.emplace_back(argv[i] + 14);
 
             // file list specified
             else if (std::strncmp(argv[i], "--file-list=", 12) == 0) {
@@ -400,7 +428,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Force checking of files that have "too many" configurations
             else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)
-                mSettings->force = true;
+                mSettings.force = true;
 
             // Print help
             else if (std::strcmp(argv[i], "-h") == 0 || std::strcmp(argv[i], "--help") == 0) {
@@ -444,13 +472,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--include=", 10) == 0) {
-                mSettings->userIncludes.emplace_back(Path::fromNativeSeparators(argv[i] + 10));
+                mSettings.userIncludes.emplace_back(Path::fromNativeSeparators(argv[i] + 10));
             }
 
             else if (std::strncmp(argv[i], "--includes-file=", 16) == 0) {
                 // open this file and read every input file (1 file name per line)
                 const std::string includesFile(16 + argv[i]);
-                if (!addIncludePathsToList(includesFile, &mSettings->includePaths)) {
+                if (!addIncludePathsToList(includesFile, mSettings.includePaths)) {
                     printError("unable to open includes file at '" + includesFile + "'");
                     return false;
                 }
@@ -458,11 +486,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Inconclusive checking
             else if (std::strcmp(argv[i], "--inconclusive") == 0)
-                mSettings->certainty.enable(Certainty::inconclusive);
+                mSettings.certainty.enable(Certainty::inconclusive);
 
             // Enables inline suppressions.
             else if (std::strcmp(argv[i], "--inline-suppr") == 0)
-                mSettings->inlineSuppressions = true;
+                mSettings.inlineSuppressions = true;
 
             // Checking threads
             else if (std::strncmp(argv[i], "-j", 2) == 0) {
@@ -483,18 +511,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else
                     numberString = argv[i]+2;
 
-                std::istringstream iss(numberString);
-                if (!(iss >> mSettings->jobs)) {
-                    printError("argument to '-j' is not a number.");
+                unsigned int tmp;
+                std::string err;
+                if (!strToInt(numberString, tmp, &err)) {
+                    printError("argument to '-j' is not valid - " +  err + ".");
                     return false;
                 }
-
-                if (mSettings->jobs > 10000) {
+                if (tmp > 10000) {
                     // This limit is here just to catch typos. If someone has
                     // need for more jobs, this value should be increased.
                     printError("argument for '-j' is allowed to be 10000 at max.");
                     return false;
                 }
+                mSettings.jobs = tmp;
             }
 
 #ifdef THREADING_MODEL_FORK
@@ -516,11 +545,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else
                     numberString = argv[i]+2;
 
-                std::istringstream iss(numberString);
-                if (!(iss >> mSettings->loadAverage)) {
-                    printError("argument to '-l' is not a number.");
+                int tmp;
+                std::string err;
+                if (!strToInt(numberString, tmp, &err)) {
+                    printError("argument to '-l' is not valid - " + err + ".");
                     return false;
                 }
+                mSettings.loadAverage = tmp;
             }
 #endif
 
@@ -539,9 +570,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
 
                 if (str == "c")
-                    mSettings->enforcedLang = Settings::Language::C;
+                    mSettings.enforcedLang = Settings::Language::C;
                 else if (str == "c++")
-                    mSettings->enforcedLang = Settings::Language::CPP;
+                    mSettings.enforcedLang = Settings::Language::CPP;
                 else {
                     printError("unknown language '" + str + "' enforced.");
                     return false;
@@ -550,76 +581,79 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --library
             else if (std::strncmp(argv[i], "--library=", 10) == 0) {
-                mSettings->libraries.emplace_back(argv[i] + 10);
+                mSettings.libraries.emplace_back(argv[i] + 10);
             }
 
             // Set maximum number of #ifdef configurations to check
             else if (std::strncmp(argv[i], "--max-configs=", 14) == 0) {
-                mSettings->force = false;
-
-                std::istringstream iss(14+argv[i]);
-                if (!(iss >> mSettings->maxConfigs)) {
-                    printError("argument to '--max-configs=' is not a number.");
+                int tmp;
+                if (!parseNumberArg(argv[i], 14, tmp))
                     return false;
-                }
-
-                if (mSettings->maxConfigs < 1) {
+                if (tmp < 1) {
                     printError("argument to '--max-configs=' must be greater than 0.");
                     return false;
                 }
 
+                mSettings.maxConfigs = tmp;
+                mSettings.force = false;
                 maxconfigs = true;
             }
 
             // max ctu depth
-            else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
-                mSettings->maxCtuDepth = std::atoi(argv[i] + 16);
+            else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0) {
+                if (!parseNumberArg(argv[i], 16, mSettings.maxCtuDepth))
+                    return false;
+            }
 
             // Write results in file
             else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
-                mSettings->outputFile = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 14));
+                mSettings.outputFile = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 14));
 
             // Experimental: limit execution time for extended valueflow analysis. basic valueflow analysis
             // is always executed.
-            else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0)
-                mSettings->performanceValueFlowMaxTime = std::atoi(argv[i] + 33);
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0) {
+                if (!parseNumberArg(argv[i], 33, mSettings.performanceValueFlowMaxTime, true))
+                    return false;
+            }
+
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-if-count=", 37) == 0) {
+                if (!parseNumberArg(argv[i], 37, mSettings.performanceValueFlowMaxIfCount, true))
+                    return false;
+            }
 
             // Specify platform
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
                 const std::string platform(11+argv[i]);
 
-                if (platform == "win32A")
-                    mSettings->platform(Settings::Win32A);
-                else if (platform == "win32W")
-                    mSettings->platform(Settings::Win32W);
-                else if (platform == "win64")
-                    mSettings->platform(Settings::Win64);
-                else if (platform == "unix32")
-                    mSettings->platform(Settings::Unix32);
-                else if (platform == "unix64")
-                    mSettings->platform(Settings::Unix64);
-                else if (platform == "native")
-                    mSettings->platform(Settings::Native);
-                else if (platform == "unspecified")
-                    mSettings->platform(Settings::Unspecified);
-                else if (!mSettings->loadPlatformFile(argv[0], platform)) {
-                    std::string message("unrecognized platform: \"");
-                    message += platform;
-                    message += "\".";
-                    printError(message);
+                std::string errstr;
+                const std::vector<std::string> paths = {argv[0]};
+                if (!mSettings.platform.set(platform, errstr, paths)) {
+                    printError(errstr);
                     return false;
                 }
+
+#if defined(_WIN64) || defined(_WIN32)
+                default_platform = false;
+#endif
+
+                // TODO: remove
+                // these are loaded via external files and thus have Settings::PlatformFile set instead.
+                // override the type so they behave like the regular platforms.
+                if (platform == "unix32-unsigned")
+                    mSettings.platform.type = cppcheck::Platform::Type::Unix32;
+                else if (platform == "unix64-unsigned")
+                    mSettings.platform.type = cppcheck::Platform::Type::Unix64;
             }
 
             // Write results in results.plist
             else if (std::strncmp(argv[i], "--plist-output=", 15) == 0) {
-                mSettings->plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
-                if (mSettings->plistOutput.empty())
-                    mSettings->plistOutput = "./";
-                else if (!endsWith(mSettings->plistOutput,'/'))
-                    mSettings->plistOutput += '/';
+                mSettings.plistOutput = Path::simplifyPath(Path::fromNativeSeparators(argv[i] + 15));
+                if (mSettings.plistOutput.empty())
+                    mSettings.plistOutput = "./";
+                else if (!endsWith(mSettings.plistOutput,'/'))
+                    mSettings.plistOutput += '/';
 
-                const std::string plistOutput = Path::toNativeSeparators(mSettings->plistOutput);
+                const std::string plistOutput = Path::toNativeSeparators(mSettings.plistOutput);
                 if (!FileLister::isDirectory(plistOutput)) {
                     std::string message("plist folder does not exist: \"");
                     message += plistOutput;
@@ -631,59 +665,54 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Special Cppcheck Premium options
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
-                if (!mSettings->premiumArgs.empty())
-                    mSettings->premiumArgs += " ";
+                if (!mSettings.premiumArgs.empty())
+                    mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
-                mSettings->premiumArgs += "--" + p;
+                mSettings.premiumArgs += "--" + p;
                 if (p == "misra-c-2012")
-                    mSettings->addons.emplace("misra");
+                    mSettings.addons.emplace("misra");
             }
 
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
-                mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
-                const std::string projectFile = argv[i]+10;
-                ImportProject::Type projType = mSettings->project.import(projectFile, mSettings);
-                mSettings->project.projectType = projType;
+                mSettings.checkAllConfigurations = false; // Can be overridden with --max-configs or --force
+                std::string projectFile = argv[i]+10;
+                ImportProject::Type projType = mSettings.project.import(projectFile, &mSettings);
+                mSettings.project.projectType = projType;
                 if (projType == ImportProject::Type::CPPCHECK_GUI) {
-                    mPathNames = mSettings->project.guiProject.pathNames;
-                    for (const std::string &lib : mSettings->project.guiProject.libraries)
-                        mSettings->libraries.emplace_back(lib);
+                    mPathNames = mSettings.project.guiProject.pathNames;
+                    for (const std::string &lib : mSettings.project.guiProject.libraries)
+                        mSettings.libraries.emplace_back(lib);
 
-                    const auto& excludedPaths = mSettings->project.guiProject.excludedPaths;
+                    const auto& excludedPaths = mSettings.project.guiProject.excludedPaths;
                     std::copy(excludedPaths.cbegin(), excludedPaths.cend(), std::back_inserter(mIgnoredPaths));
 
-                    const std::string platform(mSettings->project.guiProject.platform);
+                    std::string platform(mSettings.project.guiProject.platform);
 
-                    if (platform == "win32A")
-                        mSettings->platform(Settings::Win32A);
-                    else if (platform == "win32W")
-                        mSettings->platform(Settings::Win32W);
-                    else if (platform == "win64")
-                        mSettings->platform(Settings::Win64);
-                    else if (platform == "unix32")
-                        mSettings->platform(Settings::Unix32);
-                    else if (platform == "unix64")
-                        mSettings->platform(Settings::Unix64);
-                    else if (platform == "native")
-                        mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
-                        ;
-                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
-                        std::string message("unrecognized platform: \"");
-                        message += platform;
-                        message += "\".";
-                        printError(message);
-                        return false;
+                    // keep existing platform from command-line intact
+                    if (!platform.empty()) {
+                        if (platform == "Unspecified") {
+                            printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
+                            platform = "unspecified";
+                        }
+
+                        std::string errstr;
+                        const std::vector<std::string> paths = {projectFile, argv[0]};
+                        if (!mSettings.platform.set(platform, errstr, paths)) {
+                            printError(errstr);
+                            return false;
+                        }
                     }
 
-                    if (!mSettings->project.guiProject.projectFile.empty())
-                        projType = mSettings->project.import(mSettings->project.guiProject.projectFile, mSettings);
+                    if (!mSettings.project.guiProject.projectFile.empty()) {
+                        projectFile = mSettings.project.guiProject.projectFile;
+                        projType = mSettings.project.import(mSettings.project.guiProject.projectFile, &mSettings);
+                    }
                 }
                 if (projType == ImportProject::Type::VS_SLN || projType == ImportProject::Type::VS_VCXPROJ) {
-                    if (mSettings->project.guiProject.analyzeAllVsConfigs == "false")
-                        mSettings->project.selectOneVsConfig(mSettings->platformType);
-                    if (!CppCheckExecutor::tryLoadLibrary(mSettings->library, argv[0], "windows.cfg")) {
+                    if (mSettings.project.guiProject.analyzeAllVsConfigs == "false")
+                        mSettings.project.selectOneVsConfig(mSettings.platform.type);
+                    if (!CppCheckExecutor::tryLoadLibrary(mSettings.library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
                         printError("failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
                         return false;
@@ -706,28 +735,28 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // --project-configuration
             else if (std::strncmp(argv[i], "--project-configuration=", 24) == 0) {
                 mVSConfig = argv[i] + 24;
-                if (!mVSConfig.empty() && (mSettings->project.projectType == ImportProject::Type::VS_SLN || mSettings->project.projectType == ImportProject::Type::VS_VCXPROJ))
-                    mSettings->project.ignoreOtherConfigs(mVSConfig);
+                if (!mVSConfig.empty() && (mSettings.project.projectType == ImportProject::Type::VS_SLN || mSettings.project.projectType == ImportProject::Type::VS_VCXPROJ))
+                    mSettings.project.ignoreOtherConfigs(mVSConfig);
             }
 
             // Only print something when there are errors
             else if (std::strcmp(argv[i], "-q") == 0 || std::strcmp(argv[i], "--quiet") == 0)
-                mSettings->quiet = true;
+                mSettings.quiet = true;
 
             // Output relative paths
             else if (std::strcmp(argv[i], "-rp") == 0 || std::strcmp(argv[i], "--relative-paths") == 0)
-                mSettings->relativePaths = true;
+                mSettings.relativePaths = true;
             else if (std::strncmp(argv[i], "-rp=", 4) == 0 || std::strncmp(argv[i], "--relative-paths=", 17) == 0) {
-                mSettings->relativePaths = true;
+                mSettings.relativePaths = true;
                 if (argv[i][argv[i][3]=='='?4:17] != 0) {
                     std::string paths = argv[i]+(argv[i][3]=='='?4:17);
                     for (;;) {
                         const std::string::size_type pos = paths.find(';');
                         if (pos == std::string::npos) {
-                            mSettings->basePaths.emplace_back(Path::fromNativeSeparators(paths));
+                            mSettings.basePaths.emplace_back(Path::fromNativeSeparators(paths));
                             break;
                         }
-                        mSettings->basePaths.emplace_back(Path::fromNativeSeparators(paths.substr(0, pos)));
+                        mSettings.basePaths.emplace_back(Path::fromNativeSeparators(paths.substr(0, pos)));
                         paths.erase(0, pos + 1);
                     }
                 } else {
@@ -738,7 +767,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Report progress
             else if (std::strcmp(argv[i], "--report-progress") == 0) {
-                mSettings->reportProgress = true;
+                mSettings.reportProgress = true;
             }
 
 #ifdef HAVE_RULES
@@ -746,7 +775,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
                 Settings::Rule rule;
                 rule.pattern = 7 + argv[i];
-                mSettings->rules.emplace_back(std::move(rule));
+                mSettings.rules.emplace_back(std::move(rule));
             }
 
             // Rule file
@@ -784,7 +813,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         }
 
                         if (!rule.pattern.empty())
-                            mSettings->rules.emplace_back(std::move(rule));
+                            mSettings.rules.emplace_back(std::move(rule));
                     }
                 } else {
                     printError("unable to load rule-file: " + std::string(12+argv[i]));
@@ -797,13 +826,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--showtime=", 11) == 0) {
                 const std::string showtimeMode = argv[i] + 11;
                 if (showtimeMode == "file")
-                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_FILE;
+                    mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE;
                 else if (showtimeMode == "summary")
-                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
+                    mSettings.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
                 else if (showtimeMode == "top5")
-                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_TOP5;
+                    mSettings.showtime = SHOWTIME_MODES::SHOWTIME_TOP5;
                 else if (showtimeMode.empty())
-                    mSettings->showtime = SHOWTIME_MODES::SHOWTIME_NONE;
+                    mSettings.showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
                     printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, summary, top5.");
                     return false;
@@ -815,10 +844,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const std::string std = argv[i] + 6;
                 // TODO: print error when standard is unknown
                 if (std::strncmp(std.c_str(), "c++", 3) == 0) {
-                    mSettings->standards.cpp = Standards::getCPP(std);
+                    mSettings.standards.cpp = Standards::getCPP(std);
                 }
                 else if (std::strncmp(std.c_str(), "c", 1) == 0) {
-                    mSettings->standards.c = Standards::getC(std);
+                    mSettings.standards.c = Standards::getC(std);
                 }
                 else {
                     printError("unknown --std value '" + std + "'");
@@ -828,7 +857,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
                 const std::string suppression = argv[i]+11;
-                const std::string errmsg(mSettings->nomsg.addSuppressionLine(suppression));
+                const std::string errmsg(mSettings.nomsg.addSuppressionLine(suppression));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -855,7 +884,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError(message);
                     return false;
                 }
-                const std::string errmsg(mSettings->nomsg.parseFile(f));
+                const std::string errmsg(mSettings.nomsg.parseFile(f));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -864,116 +893,108 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             else if (std::strncmp(argv[i], "--suppress-xml=", 15) == 0) {
                 const char * filename = argv[i] + 15;
-                const std::string errmsg(mSettings->nomsg.parseXmlFile(filename));
+                const std::string errmsg(mSettings.nomsg.parseXmlFile(filename));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
                 }
             }
 
+            // TODO: deprecate "--template <template>"
             // Output formatter
             else if (std::strcmp(argv[i], "--template") == 0 ||
                      std::strncmp(argv[i], "--template=", 11) == 0) {
                 // "--template format"
                 if (argv[i][10] == '=')
-                    mSettings->templateFormat = argv[i] + 11;
+                    mSettings.templateFormat = argv[i] + 11;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
                     ++i;
-                    mSettings->templateFormat = argv[i];
+                    mSettings.templateFormat = argv[i];
                 } else {
                     printError("argument to '--template' is missing.");
                     return false;
                 }
+                // TODO: bail out when no placeholders are found?
 
-                if (mSettings->templateFormat == "gcc") {
-                    mSettings->templateFormat = "{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}";
-                    mSettings->templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
-                } else if (mSettings->templateFormat == "daca2") {
-                    mSettings->daca = true;
-                    mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
-                    mSettings->templateLocation = "{file}:{line}:{column}: note: {info}";
-                } else if (mSettings->templateFormat == "vs")
-                    mSettings->templateFormat = "{file}({line}): {severity}: {message}";
-                else if (mSettings->templateFormat == "edit")
-                    mSettings->templateFormat = "{file} +{line}: {severity}: {message}";
-                else if (mSettings->templateFormat == "cppcheck1")
-                    mSettings->templateFormat = "{callstack}: ({severity}{inconclusive:, inconclusive}) {message}";
-                else if (mSettings->templateFormat == "selfcheck") {
-                    mSettings->templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
-                    mSettings->templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
-                    mSettings->daca = true;
+                if (mSettings.templateFormat == "gcc") {
+                    mSettings.templateFormat = "{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}";
+                    mSettings.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
+                } else if (mSettings.templateFormat == "daca2") {
+                    mSettings.daca = true;
+                    mSettings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+                    mSettings.templateLocation = "{file}:{line}:{column}: note: {info}";
+                } else if (mSettings.templateFormat == "vs")
+                    mSettings.templateFormat = "{file}({line}): {severity}: {message}";
+                else if (mSettings.templateFormat == "edit")
+                    mSettings.templateFormat = "{file} +{line}: {severity}: {message}";
+                else if (mSettings.templateFormat == "cppcheck1")
+                    mSettings.templateFormat = "{callstack}: ({severity}{inconclusive:, inconclusive}) {message}";
+                else if (mSettings.templateFormat == "selfcheck") {
+                    mSettings.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]\\n{code}";
+                    mSettings.templateLocation = "{file}:{line}:{column}: note: {info}\\n{code}";
+                    mSettings.daca = true;
                 }
             }
 
+            // TODO: deprecate "--template-location <template>"
             else if (std::strcmp(argv[i], "--template-location") == 0 ||
                      std::strncmp(argv[i], "--template-location=", 20) == 0) {
                 // "--template-location format"
                 if (argv[i][19] == '=')
-                    mSettings->templateLocation = argv[i] + 20;
+                    mSettings.templateLocation = argv[i] + 20;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
                     ++i;
-                    mSettings->templateLocation = argv[i];
+                    mSettings.templateLocation = argv[i];
                 } else {
-                    printError("argument to '--template' is missing.");
+                    printError("argument to '--template-location' is missing.");
                     return false;
                 }
+                // TODO: bail out when no placeholders are found?
             }
 
             else if (std::strncmp(argv[i], "--template-max-time=", 20) == 0) {
-                mSettings->templateMaxTime = std::atoi(argv[i] + 20);
+                if (!parseNumberArg(argv[i], 20, mSettings.templateMaxTime))
+                    return false;
             }
 
             else if (std::strncmp(argv[i], "--typedef-max-time=", 19) == 0) {
-                mSettings->typedefMaxTime = std::atoi(argv[i] + 19);
+                if (!parseNumberArg(argv[i], 19, mSettings.typedefMaxTime))
+                    return false;
             }
 
             else if (std::strncmp(argv[i], "--valueflow-max-iterations=", 27) == 0) {
-                long tmp;
-                try {
-                    tmp = std::stol(argv[i] + 27);
-                } catch (const std::invalid_argument &) {
-                    printError("argument to '--valueflow-max-iteration' is invalid.");
+                if (!parseNumberArg(argv[i], 27, mSettings.valueFlowMaxIterations))
                     return false;
-                }
-                if (tmp < 0) {
-                    printError("argument to '--valueflow-max-iteration' needs to be at least 0.");
-                    return false;
-                }
-                mSettings->valueFlowMaxIterations = static_cast<std::size_t>(tmp);
             }
 
             else if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--verbose") == 0)
-                mSettings->verbose = true;
+                mSettings.verbose = true;
 
             else if (std::strcmp(argv[i], "--version") == 0) {
                 mShowVersion = true;
                 mExitAfterPrint = true;
-                mSettings->loadCppcheckCfg();
+                mSettings.loadCppcheckCfg();
                 return true;
             }
 
             // Write results in results.xml
             else if (std::strcmp(argv[i], "--xml") == 0)
-                mSettings->xml = true;
+                mSettings.xml = true;
 
             // Define the XML file version (and enable XML output)
             else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
-                const std::string numberString(argv[i]+14);
-
-                std::istringstream iss(numberString);
-                if (!(iss >> mSettings->xml_version)) {
-                    printError("argument to '--xml-version' is not a number.");
+                int tmp;
+                if (!parseNumberArg(argv[i], 14, tmp))
                     return false;
-                }
-
-                if (mSettings->xml_version != 2) {
+                if (tmp != 2) {
                     // We only have xml version 2
                     printError("'--xml-version' can only be 2.");
                     return false;
                 }
 
+                mSettings.xml_version = tmp;
                 // Enable also XML if version is set
-                mSettings->xml = true;
+                mSettings.xml = true;
             }
 
             else {
@@ -990,27 +1011,30 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         }
     }
 
-    mSettings->loadCppcheckCfg();
+    mSettings.loadCppcheckCfg();
 
     // Default template format..
-    if (mSettings->templateFormat.empty()) {
-        mSettings->templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
-        if (mSettings->templateLocation.empty())
-            mSettings->templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
+    if (mSettings.templateFormat.empty()) {
+        mSettings.templateFormat = "{bold}{file}:{line}:{column}: {red}{inconclusive:{magenta}}{severity}:{inconclusive: inconclusive:}{default} {message} [{id}]{reset}\\n{code}";
+        if (mSettings.templateLocation.empty())
+            mSettings.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
+    // replace static parts of the templates
+    substituteTemplateFormatStatic(mSettings.templateFormat);
+    substituteTemplateLocationStatic(mSettings.templateLocation);
 
-    mSettings->project.ignorePaths(mIgnoredPaths);
+    mSettings.project.ignorePaths(mIgnoredPaths);
 
-    if (mSettings->force || maxconfigs)
-        mSettings->checkAllConfigurations = true;
+    if (mSettings.force || maxconfigs)
+        mSettings.checkAllConfigurations = true;
 
-    if (mSettings->force)
-        mSettings->maxConfigs = INT_MAX;
+    if (mSettings.force)
+        mSettings.maxConfigs = INT_MAX;
 
-    else if ((def || mSettings->preprocessOnly) && !maxconfigs)
-        mSettings->maxConfigs = 1U;
+    else if ((def || mSettings.preprocessOnly) && !maxconfigs)
+        mSettings.maxConfigs = 1U;
 
-    if (mSettings->checks.isEnabled(Checks::unusedFunction) && mSettings->jobs > 1) {
+    if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1) {
         printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 
@@ -1024,15 +1048,23 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         return true;
     }
 
+#if defined(_WIN64)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+        printMessage("Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.");
+#elif defined(_WIN32)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+        printMessage("Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.");
+#endif
+
     // Print error only if we have "real" command and expect files
-    if (!mExitAfterPrint && mPathNames.empty() && mSettings->project.fileSettings.empty()) {
+    if (!mExitAfterPrint && mPathNames.empty() && mSettings.project.fileSettings.empty()) {
         printError("no C or C++ source files found.");
         return false;
     }
 
     // Use paths _pathnames if no base paths for relative path output are given
-    if (mSettings->basePaths.empty() && mSettings->relativePaths)
-        mSettings->basePaths = mPathNames;
+    if (mSettings.basePaths.empty() && mSettings.relativePaths)
+        mSettings.basePaths = mPathNames;
 
     return true;
 }
@@ -1068,6 +1100,13 @@ void CmdLineParser::printHelp()
         "                            execute clang/clang-tidy/addons.\n"
         "    --check-config       Check cppcheck configuration. The normal code\n"
         "                         analysis is disabled by this flag.\n"
+        "    --check-level=<level>\n"
+        "                         Configure how much checking you want:\n"
+        "                          * normal: Cppcheck uses some compromises in the checking so\n"
+        "                            the checking will finish in reasonable time.\n"
+        "                          * exhaustive: deeper analysis that you choose when you can\n"
+        "                            wait.\n"
+        "                         The default choice is 'normal'.\n"
         "    --check-library      Show information messages when library files have\n"
         "                         incomplete info.\n"
         "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
@@ -1084,6 +1123,9 @@ void CmdLineParser::printHelp()
         "                         be considered for evaluation.\n"
         "    --config-excludes-file=<file>\n"
         "                         A file that contains a list of config-excludes\n"
+        "    --disable=<id>       Disable individual checks.\n"
+        "                         Please refer to the documentation of --enable=<id>\n"
+        "                         for further details.\n"
         "    --dump               Dump xml data for each translation unit. The dump\n"
         "                         files have the extension .dump and contain ast,\n"
         "                         tokenlist, symboldatabase, valueflow.\n"
@@ -1115,8 +1157,7 @@ void CmdLineParser::printHelp()
         "                                  to only enable this when the whole program is\n"
         "                                  scanned.\n"
         "                          * missingInclude\n"
-        "                                  Warn if there are missing includes. For\n"
-        "                                  detailed information, use '--check-config'.\n"
+        "                                  Warn if there are missing includes.\n"
         "                         Several ids can be given if you separate them with\n"
         "                         commas. See also --std\n"
         "    --error-exitcode=<n> If errors are found, integer [n] is returned instead of\n"
@@ -1361,7 +1402,7 @@ void CmdLineParser::printHelp()
 }
 
 bool CmdLineParser::isCppcheckPremium() const {
-    if (mSettings->cppcheckCfgProductName.empty())
-        mSettings->loadCppcheckCfg();
-    return mSettings->cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0;
+    if (mSettings.cppcheckCfgProductName.empty())
+        mSettings.loadCppcheckCfg();
+    return mSettings.cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0;
 }

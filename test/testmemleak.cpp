@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,11 @@
 #include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 
 #include <list>
-#include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
@@ -151,6 +150,7 @@ private:
     void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "posix.cfg");
+        settings1.libraries.emplace_back("posix");
         LOAD_LIB_2(settings2.library, "std.cfg");
 
         TEST_CASE(realloc1);
@@ -1705,6 +1705,7 @@ private:
     void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         // testing that errors are detected
         TEST_CASE(err);
@@ -2291,11 +2292,11 @@ private:
 
     void run() override {
         settings.certainty.setEnabled(Certainty::inconclusive, true);
-        settings.libraries.emplace_back("posix");
         settings.severity.enable(Severity::warning);
 
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         // pass allocated memory to function..
         TEST_CASE(functionParameter);

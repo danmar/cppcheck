@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@
 #include <array>
 #include <cstddef>
 #include <initializer_list>
+#include <limits>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -176,6 +178,86 @@ CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name);
 CPPCHECKLIB bool matchglobs(const std::vector<std::string> &patterns, const std::string &name);
 
 CPPCHECKLIB void strTolower(std::string& str);
+
+template<typename T, typename std::enable_if<std::is_signed<T>::value, bool>::type=true>
+bool strToInt(const std::string& str, T &num, std::string* err = nullptr)
+{
+    long long tmp;
+    try {
+        std::size_t idx = 0;
+        tmp = std::stoll(str, &idx);
+        if (idx != str.size()) {
+            if (err)
+                *err = "not an integer";
+            return false;
+        }
+    } catch (const std::out_of_range&) {
+        if (err)
+            *err = "out of range (stoll)";
+        return false;
+    } catch (const std::invalid_argument &) {
+        if (err)
+            *err = "not an integer";
+        return false;
+    }
+    if (str.front() == '-' && std::numeric_limits<T>::min() == 0) {
+        if (err)
+            *err = "needs to be positive";
+        return false;
+    }
+    if (tmp < std::numeric_limits<T>::min() || tmp > std::numeric_limits<T>::max()) {
+        if (err)
+            *err = "out of range (limits)";
+        return false;
+    }
+    num = static_cast<T>(tmp);
+    return true;
+}
+
+template<typename T, typename std::enable_if<std::is_unsigned<T>::value, bool>::type=true>
+bool strToInt(const std::string& str, T &num, std::string* err = nullptr)
+{
+    unsigned long long tmp;
+    try {
+        std::size_t idx = 0;
+        tmp = std::stoull(str, &idx);
+        if (idx != str.size()) {
+            if (err)
+                *err = "not an integer";
+            return false;
+        }
+    } catch (const std::out_of_range&) {
+        if (err)
+            *err = "out of range (stoull)";
+        return false;
+    } catch (const std::invalid_argument &) {
+        if (err)
+            *err = "not an integer";
+        return false;
+    }
+    if (str.front() == '-') {
+        if (err)
+            *err = "needs to be positive";
+        return false;
+    }
+    if (tmp > std::numeric_limits<T>::max()) {
+        if (err)
+            *err = "out of range (limits)";
+        return false;
+    }
+    num = tmp;
+    return true;
+}
+
+template<typename T>
+T strToInt(const std::string& str)
+{
+    T tmp = 0;
+    std::string err;
+    if (!strToInt(str, tmp, &err))
+        throw std::runtime_error("converting '" + str + "' to integer failed - " + err);
+    return tmp;
+}
 
 /**
  *  Simple helper function:

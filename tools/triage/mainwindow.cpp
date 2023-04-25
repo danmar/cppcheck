@@ -18,23 +18,48 @@
 
 #include "mainwindow.h"
 
+#include "codeeditor.h"
+
 #include "ui_mainwindow.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <ctime>
 #include <random>
 
+#include <QAction>
+#include <QApplication>
+#include <QByteArray>
+#include <QCheckBox>
 #include <QClipboard>
+#include <QComboBox>
+#include <QCoreApplication>
 #include <QDir>
 #include <QDirIterator>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFlags>
+#include <QHeaderView>
+#include <QIODevice>
+#include <QLineEdit>
+#include <QList>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QMenu>
 #include <QMimeDatabase>
+#include <QMimeType>
 #include <QProcess>
 #include <QProgressDialog>
 #include <QRegularExpression>
+#include <QStatusBar>
+#include <QStringLiteral>
+#include <QTabWidget>
 #include <QTextStream>
+#include <QTreeView>
+#include <QtCore>
+
+class QWidget;
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
 const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");

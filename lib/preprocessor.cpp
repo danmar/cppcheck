@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "path.h"
+#include "platform.h"
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
@@ -31,7 +32,6 @@
 #include <array>
 #include <cstddef>
 #include <iterator> // back_inserter
-#include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 
@@ -62,12 +62,9 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
     str(trim(_str))
 {}
 
-std::atomic<bool> Preprocessor::missingIncludeFlag;
-std::atomic<bool> Preprocessor::missingSystemIncludeFlag;
-
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
+Preprocessor::Preprocessor(const Settings& settings, Suppressions &suppressions, ErrorLogger *errorLogger) : mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
 {}
 
 Preprocessor::~Preprocessor()
@@ -84,7 +81,7 @@ namespace {
     };
 }
 
-static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> *bad)
+static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> &bad)
 {
     const std::string cppchecksuppress("cppcheck-suppress");
 
@@ -100,7 +97,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         return false;
 
     // skip spaces after "cppcheck-suppress"
-    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+cppchecksuppress.size());
+    const std::string::size_type pos2 = comment.find_first_not_of(' ', pos1+cppchecksuppress.size());
     if (pos2 == std::string::npos)
         return false;
 
@@ -110,7 +107,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         std::vector<Suppressions::Suppression> suppressions = Suppressions::parseMultiSuppressComment(comment, &errmsg);
 
         if (!errmsg.empty())
-            bad->emplace_back(tok->location, std::move(errmsg));
+            bad.emplace_back(tok->location, std::move(errmsg));
 
         std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
             return !s.errorId.empty();
@@ -126,13 +123,13 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             inlineSuppressions.push_back(std::move(s));
 
         if (!errmsg.empty())
-            bad->emplace_back(tok->location, std::move(errmsg));
+            bad.emplace_back(tok->location, std::move(errmsg));
     }
 
     return true;
 }
 
-static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+static void addinlineSuppressions(const simplecpp::TokenList &tokens, const Settings &settings, Suppressions &suppressions, std::list<BadInlineSuppression> &bad)
 {
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
@@ -158,8 +155,8 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &
 
         // Relative filename
         std::string relativeFilename(tok->location.file());
-        if (mSettings.relativePaths) {
-            for (const std::string & basePath : mSettings.basePaths) {
+        if (settings.relativePaths) {
+            for (const std::string & basePath : settings.basePaths) {
                 const std::string bp = basePath + "/";
                 if (relativeFilename.compare(0,bp.size(),bp)==0) {
                     relativeFilename = relativeFilename.substr(bp.size());
@@ -182,7 +179,7 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
             suppr.thisAndNextLine = thisAndNextLine;
-            mSettings.nomsg.addSuppression(suppr);
+            suppressions.addSuppression(suppr);
         }
     }
 }
@@ -192,10 +189,10 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::addinlineSuppressions(tokens, mSettings, &err);
+    ::addinlineSuppressions(tokens, mSettings, mSuppressions, err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (it->second)
-            ::addinlineSuppressions(*it->second, mSettings, &err);
+            ::addinlineSuppressions(*it->second, mSettings, mSuppressions, err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
@@ -498,7 +495,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                     if (c.find(configs_ifndef.back()) != std::string::npos)
                         ret.insert(c);
                     else if (c.empty())
-                        ret.insert(configs.empty() ? configs_ifndef.back() : "");
+                        ret.insert("");
                     else
                         ret.insert(c + ";" + configs_ifndef.back());
                 }
@@ -626,6 +623,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         dui.std = mSettings.standards.getCPP();
     else
         dui.std = mSettings.standards.getC();
+    dui.clearIncludeCache = mSettings.clearIncludeCache;
     return dui;
 }
 
@@ -690,22 +688,22 @@ void Preprocessor::removeComments()
 
 void Preprocessor::setPlatformInfo(simplecpp::TokenList *tokens) const
 {
-    tokens->sizeOfType["bool"]          = mSettings.sizeof_bool;
-    tokens->sizeOfType["short"]         = mSettings.sizeof_short;
-    tokens->sizeOfType["int"]           = mSettings.sizeof_int;
-    tokens->sizeOfType["long"]          = mSettings.sizeof_long;
-    tokens->sizeOfType["long long"]     = mSettings.sizeof_long_long;
-    tokens->sizeOfType["float"]         = mSettings.sizeof_float;
-    tokens->sizeOfType["double"]        = mSettings.sizeof_double;
-    tokens->sizeOfType["long double"]   = mSettings.sizeof_long_double;
-    tokens->sizeOfType["bool *"]        = mSettings.sizeof_pointer;
-    tokens->sizeOfType["short *"]       = mSettings.sizeof_pointer;
-    tokens->sizeOfType["int *"]         = mSettings.sizeof_pointer;
-    tokens->sizeOfType["long *"]        = mSettings.sizeof_pointer;
-    tokens->sizeOfType["long long *"]   = mSettings.sizeof_pointer;
-    tokens->sizeOfType["float *"]       = mSettings.sizeof_pointer;
-    tokens->sizeOfType["double *"]      = mSettings.sizeof_pointer;
-    tokens->sizeOfType["long double *"] = mSettings.sizeof_pointer;
+    tokens->sizeOfType["bool"]          = mSettings.platform.sizeof_bool;
+    tokens->sizeOfType["short"]         = mSettings.platform.sizeof_short;
+    tokens->sizeOfType["int"]           = mSettings.platform.sizeof_int;
+    tokens->sizeOfType["long"]          = mSettings.platform.sizeof_long;
+    tokens->sizeOfType["long long"]     = mSettings.platform.sizeof_long_long;
+    tokens->sizeOfType["float"]         = mSettings.platform.sizeof_float;
+    tokens->sizeOfType["double"]        = mSettings.platform.sizeof_double;
+    tokens->sizeOfType["long double"]   = mSettings.platform.sizeof_long_double;
+    tokens->sizeOfType["bool *"]        = mSettings.platform.sizeof_pointer;
+    tokens->sizeOfType["short *"]       = mSettings.platform.sizeof_pointer;
+    tokens->sizeOfType["int *"]         = mSettings.platform.sizeof_pointer;
+    tokens->sizeOfType["long *"]        = mSettings.platform.sizeof_pointer;
+    tokens->sizeOfType["long long *"]   = mSettings.platform.sizeof_pointer;
+    tokens->sizeOfType["float *"]       = mSettings.platform.sizeof_pointer;
+    tokens->sizeOfType["double *"]      = mSettings.platform.sizeof_pointer;
+    tokens->sizeOfType["long double *"] = mSettings.platform.sizeof_pointer;
 }
 
 simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, bool throwError)
@@ -723,10 +721,6 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
     handleErrors(outputList, throwError);
 
     tokens2.removeComments();
-
-    // ensure that guessed define macros without value are not used in the code
-    if (!validateCfg(cfg, macroUsage))
-        return simplecpp::TokenList(files);
 
     return tokens2;
 }
@@ -839,27 +833,19 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
-    if (!mSettings.checks.isEnabled(Checks::missingInclude) && !mSettings.checkConfiguration)
+    if (!mSettings.checks.isEnabled(Checks::missingInclude))
         return;
 
     std::string fname = Path::fromNativeSeparators(filename);
+    std::string errorId = (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude";
     Suppressions::ErrorMessage errorMessage;
-    errorMessage.errorId = "missingInclude";
+    errorMessage.errorId = errorId;
     errorMessage.setFileName(std::move(fname));
     errorMessage.lineNumber = linenr;
-    if (mSettings.nomsg.isSuppressed(errorMessage))
-        return;
-    errorMessage.errorId = "missingIncludeSystem";
-    if (headerType == SystemHeader && mSettings.nomsg.isSuppressed(errorMessage))
+    if (mSuppressions.isSuppressed(errorMessage))
         return;
 
-    if (headerType == SystemHeader)
-        missingSystemIncludeFlag = true;
-    else
-        missingIncludeFlag = true;
-
-    if (mErrorLogger && mSettings.checkConfiguration) {
-
+    if (mErrorLogger) {
         std::list<ErrorMessage::FileLocation> locationList;
         if (!filename.empty()) {
             ErrorMessage::FileLocation loc;
@@ -867,62 +853,23 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
             loc.setfile(Path::toNativeSeparators(filename));
             locationList.push_back(std::move(loc));
         }
-        ErrorMessage errmsg(locationList, mFile0, Severity::information,
+        ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
                             (headerType==SystemHeader) ?
                             "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
                             "Include file: \"" + header + "\" not found.",
-                            (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
+                            std::move(errorId),
                             Certainty::normal);
-        mErrorLogger->reportInfo(errmsg);
+        mErrorLogger->reportErr(errmsg);
     }
-}
-
-bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp::MacroUsage> &macroUsageList)
-{
-    bool ret = true;
-    std::list<std::string> defines;
-    splitcfg(cfg, defines, emptyString);
-    for (const std::string &define : defines) {
-        if (define.find('=') != std::string::npos)
-            continue;
-        const std::string macroName(define.substr(0, define.find('(')));
-        for (const simplecpp::MacroUsage &mu : macroUsageList) {
-            if (mu.macroValueKnown)
-                continue;
-            if (mu.macroName != macroName)
-                continue;
-            const bool directiveLocation = std::any_of(mDirectives.cbegin(), mDirectives.cend(),
-                                                       [=](const Directive &dir) {
-                return mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr;
-            });
-
-            if (!directiveLocation) {
-                if (mSettings.severity.isEnabled(Severity::information))
-                    validateCfgError(mu.useLocation.file(), mu.useLocation.line, cfg, macroName);
-                ret = false;
-            }
-        }
-    }
-
-    return ret;
-}
-
-void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro)
-{
-    const std::string id = "ConfigurationNotChecked";
-    ErrorMessage::FileLocation loc(file, line, 0);
-    const ErrorMessage errmsg({std::move(loc)}, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, Certainty::normal);
-    mErrorLogger->reportInfo(errmsg);
 }
 
 void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
 {
     Settings settings2(*settings);
-    Preprocessor preprocessor(settings2, errorLogger);
-    settings2.checkConfiguration = true;
+    Suppressions supressions2;
+    Preprocessor preprocessor(settings2, supressions2, errorLogger);
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
     preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
-    preprocessor.validateCfgError(emptyString, 1, "X", "X");
     preprocessor.error(emptyString, 1, "#error message");   // #error ..
 }
 

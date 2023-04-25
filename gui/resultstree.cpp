@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,26 +32,35 @@
 #include "xmlreportv2.h"
 
 #include <string>
-#include <utility>
 
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
+#include <QContextMenuEvent>
 #include <QDebug>
 #include <QDesktopServices>
 #include <QDir>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QIcon>
+#include <QItemSelectionModel>
 #include <QKeyEvent>
 #include <QList>
+#include <QLocale>
 #include <QMap>
 #include <QMenu>
 #include <QMessageBox>
+#include <QModelIndex>
+#include <QModelIndexList>
 #include <QProcess>
+#include <QSet>
 #include <QSettings>
 #include <QSignalMapper>
+#include <QStandardItem>
 #include <QUrl>
 #include <QVariant>
+#include <QVariantMap>
+#include <Qt>
 
 static const char COLUMN[] = "column";
 static const char CWE[] = "cwe";

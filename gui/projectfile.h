@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <map>
 #include <utility>
 
+#include <QList>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -159,10 +160,18 @@ public:
 
     /**
      * @brief Get platform.
-     * @return Current platform. If it ends with .xml then it is a file. Otherwise it must match one of the return values from @sa cppcheck::Platform::platformString() ("win32A", "unix32", ..)
+     * @return Current platform. If it ends with .xml then it is a file. Otherwise it must match one of the return values from @sa cppcheck::Platform::toString() ("win32A", "unix32", ..)
      */
     QString getPlatform() const {
         return mPlatform;
+    }
+
+    QString getProjectName() const {
+        return mProjectName;
+    }
+
+    void setProjectName(QString projectName) {
+        mProjectName = std::move(projectName);
     }
 
     /**
@@ -420,6 +429,8 @@ protected:
 
     static int readInt(QXmlStreamReader &reader, int defaultValue);
 
+    static QString readString(QXmlStreamReader &reader);
+
     /**
      * @brief Read list of include directories from XML.
      * @param reader XML stream reader.
@@ -580,6 +591,9 @@ private:
      * @brief List of coding standards, checked by Cppcheck Premium.
      */
     QStringList mCodingStandards;
+
+    /** @brief Project name, used when generating compliance report */
+    QString mProjectName;
 
     int mCertIntPrecision;
 

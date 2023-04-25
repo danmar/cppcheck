@@ -18,10 +18,47 @@
 
 #include "executor.h"
 
+#include "color.h"
+#include "errorlogger.h"
+#include "settings.h"
+#include "suppressions.h"
+
+#include <algorithm>
+#include <iostream>
+#include <sstream> // IWYU pragma: keep
+#include <utility>
+
 Executor::Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : mFiles(files), mSettings(settings), mErrorLogger(errorLogger)
 {}
 
 Executor::~Executor()
 {}
+
+bool Executor::hasToLog(const ErrorMessage &msg)
+{
+    if (!mSettings.nomsg.isSuppressed(msg))
+    {
+        std::string errmsg = msg.toString(mSettings.verbose);
+
+        std::lock_guard<std::mutex> lg(mErrorListSync);
+        if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
+            mErrorList.emplace_back(std::move(errmsg));
+            return true;
+        }
+    }
+    return false;
+}
+
+void Executor::reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal)
+{
+    if (filecount > 1) {
+        std::ostringstream oss;
+        const unsigned long percentDone = (sizetotal > 0) ? (100 * sizedone) / sizetotal : 0;
+        oss << fileindex << '/' << filecount
+            << " files checked " << percentDone
+            << "% done";
+        mErrorLogger.reportOut(oss.str(), Color::FgBlue);
+    }
+}
 

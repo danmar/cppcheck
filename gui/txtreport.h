@@ -22,10 +22,10 @@
 #include "report.h"
 
 #include <QString>
+#include <QObject>
 #include <QTextStream>
 
 class ErrorItem;
-class QObject;
 
 /// @addtogroup GUI
 /// @{

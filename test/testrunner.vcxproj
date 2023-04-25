@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -23,15 +23,25 @@
       <Project>{c183db5b-ad6c-423d-80ca-1f9549555a1a}</Project>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="SourceFiles">
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutorseh.cpp" />
-    <ClCompile Include="..\cli\filelister.cpp" />
+    <ClCompile Include="..\cli\cppcheckexecutorsig.cpp" />
     <ClCompile Include="..\cli\executor.cpp" />
+    <ClCompile Include="..\cli\filelister.cpp" />
     <ClCompile Include="..\cli\processexecutor.cpp" />
+    <ClCompile Include="..\cli\singleexecutor.cpp" />
+    <ClCompile Include="..\cli\stacktrace.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
-    <ClCompile Include="..\lib\astutils.cpp" />
+    <ClCompile Include="fixture.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="helpers.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="options.cpp" />
     <ClCompile Include="test64bit.cpp" />
     <ClCompile Include="testanalyzerinformation.cpp" />
@@ -45,12 +55,14 @@
     <ClCompile Include="testclangimport.cpp" />
     <ClCompile Include="testclass.cpp" />
     <ClCompile Include="testcmdlineparser.cpp" />
+    <ClCompile Include="testcolor.cpp" />
     <ClCompile Include="testcondition.cpp" />
     <ClCompile Include="testconstructors.cpp" />
     <ClCompile Include="testcppcheck.cpp" />
     <ClCompile Include="testerrorlogger.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
     <ClCompile Include="testfilelister.cpp" />
+    <ClCompile Include="testfunctions.cpp" />
     <ClCompile Include="testgarbage.cpp" />
     <ClCompile Include="testimportproject.cpp" />
     <ClCompile Include="testincompletestatement.cpp" />
@@ -61,7 +73,6 @@
     <ClCompile Include="testmathlib.cpp" />
     <ClCompile Include="testmemleak.cpp" />
     <ClCompile Include="testnullpointer.cpp" />
-    <ClCompile Include="testfunctions.cpp" />
     <ClCompile Include="testoptions.cpp" />
     <ClCompile Include="testother.cpp" />
     <ClCompile Include="testpath.cpp" />
@@ -70,20 +81,15 @@
     <ClCompile Include="testpostfixoperator.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
     <ClCompile Include="testprocessexecutor.cpp" />
-    <ClCompile Include="testrunner.cpp" />
+    <ClCompile Include="testsettings.cpp" />
     <ClCompile Include="testsimplifytemplate.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />
     <ClCompile Include="testsimplifytypedef.cpp" />
     <ClCompile Include="testsimplifyusing.cpp" />
+    <ClCompile Include="testsingleexecutor.cpp" />
     <ClCompile Include="testsizeof.cpp" />
     <ClCompile Include="teststl.cpp" />
     <ClCompile Include="teststring.cpp" />
-    <ClCompile Include="testsuite.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="testsummaries.cpp" />
     <ClCompile Include="testsuppressions.cpp" />
     <ClCompile Include="testsymboldatabase.cpp" />
@@ -103,16 +109,22 @@
     <ClCompile Include="testvalueflow.cpp" />
     <ClCompile Include="testvarid.cpp" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Label="HeaderFiles">
     <ClInclude Include="..\cli\cmdlineparser.h" />
+    <ClInclude Include="..\cli\cppcheckexecutor.h" />
+    <ClInclude Include="..\cli\cppcheckexecutorseh.h" />
+    <ClInclude Include="..\cli\cppcheckexecutorsig.h" />
+    <ClInclude Include="..\cli\executor.h" />
     <ClInclude Include="..\cli\filelister.h" />
+    <ClInclude Include="..\cli\processexecutor.h" />
+    <ClInclude Include="..\cli\singleexecutor.h" />
+    <ClInclude Include="..\cli\stacktrace.h" />
     <ClInclude Include="..\cli\threadexecutor.h" />
-    <ClInclude Include="..\lib\config.h" />
+    <ClInclude Include="fixture.h" />
+    <ClInclude Include="helpers.h" />
     <ClInclude Include="options.h" />
     <ClInclude Include="precompiled.h" />
     <ClInclude Include="redirect.h" />
-    <ClInclude Include="testsuite.h" />
-    <ClInclude Include="testutils.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4F7DCE5E-6CDE-38C4-9EA7-27AF3B25CEB4}</ProjectGuid>

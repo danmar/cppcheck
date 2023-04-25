@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@
 #include "sourcelocation.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iosfwd>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <type_traits>
@@ -225,7 +225,7 @@ class CPPCHECKLIB Variable {
      * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings, bool* isContainer);
+    bool arrayDimensions(const Settings* settings, bool& isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -933,6 +933,7 @@ public:
 
     static bool returnsConst(const Function* function, bool unknown = false);
 
+    static bool returnsPointer(const Function* function, bool unknown = false);
     static bool returnsReference(const Function* function, bool unknown = false);
     static bool returnsStandardType(const Function* function, bool unknown = false);
 
@@ -1093,9 +1094,7 @@ public:
         const Scope * parent = nestedIn;
         while (outer != parent && parent)
             parent = parent->nestedIn;
-        if (parent && parent == outer)
-            return true;
-        return false;
+        return parent && parent == outer;
     }
 
     static Function* nestedInFunction(const Scope* scope) {
@@ -1324,7 +1323,7 @@ public:
         debugPath()
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings *settings, bool isCpp);
+    static ValueType parseDecl(const Token *type, const Settings &settings, bool isCpp);
 
     static Type typeFromString(const std::string &typestr, bool longType);
 
@@ -1344,11 +1343,13 @@ public:
         return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
     }
 
-    bool fromLibraryType(const std::string &typestr, const Settings *settings);
+    bool fromLibraryType(const std::string &typestr, const Settings &settings);
 
     bool isEnum() const {
         return typeScope && typeScope->type == Scope::eEnum;
     }
+
+    bool isConst(nonneg int indirect = 0) const;
 
     MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 
@@ -1365,7 +1366,7 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    SymbolDatabase(const Tokenizer &tokenizer, const Settings &settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
@@ -1399,12 +1400,12 @@ public:
     const Scope *findScopeByName(const std::string& name) const;
 
     const Type* findType(const Token *startTok, const Scope *startScope, bool lookOutside = false) const;
-    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) const {
+    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) {
         return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope), lookOutside));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
-    Scope *findScope(const Token *tok, Scope *startScope) const {
+    Scope *findScope(const Token *tok, Scope *startScope) {
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
@@ -1449,7 +1450,7 @@ public:
     nonneg int sizeOfType(const Token *type) const;
 
     /** Set array dimensions when valueflow analysis is completed */
-    void setArrayDimensionsUsingValueFlow();
+    void setArrayDimensionsUsingValueFlow(); // cppcheck-suppress functionConst // has side effects
 
     void clangSetVariables(const std::vector<const Variable *> &variableList);
     void createSymbolDatabaseExprIds();
@@ -1469,12 +1470,12 @@ private:
     void createSymbolDatabaseNeedInitialization();
     void createSymbolDatabaseVariableSymbolTable();
     void createSymbolDatabaseSetScopePointers();
-    void createSymbolDatabaseSetFunctionPointers(bool firstPass);
+    void createSymbolDatabaseSetFunctionPointers(bool firstPass); // cppcheck-suppress functionConst // has side effects
     void createSymbolDatabaseSetVariablePointers();
     // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
-    void createSymbolDatabaseEnums();
+    void createSymbolDatabaseEnums(); // cppcheck-suppress functionConst // has side effects
     void createSymbolDatabaseEscapeFunctions();
     // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
@@ -1505,8 +1506,8 @@ private:
     void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
     void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
 
-    const Tokenizer *mTokenizer;
-    const Settings *mSettings;
+    const Tokenizer &mTokenizer;
+    const Settings &mSettings;
     ErrorLogger *mErrorLogger;
 
     /** variable symbol table */

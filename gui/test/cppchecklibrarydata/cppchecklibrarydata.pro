@@ -7,7 +7,7 @@ MOC_DIR = ../../temp
 
 QT -= gui
 QT += core
-CONFIG += console
+QT += testlib
 
 include(../common.pri)
 

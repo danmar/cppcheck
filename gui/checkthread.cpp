@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,10 @@
 #include "standards.h"
 #include "threadresult.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <list>
 #include <map>
 #include <ostream>
@@ -37,17 +39,26 @@
 #include <string>
 #include <vector>
 
+#include <QByteArray>
+#include <QChar>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QIODevice>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSettings>
+#include <QTextStream>
+#include <QVariant>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QCharRef>
+#endif
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
 {
-    output->clear();
+    output.clear();
 
     QStringList args2;
     for (const std::string &arg: args)
@@ -60,9 +71,9 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
     if (redirect == "2>&1") {
         QString s1 = process.readAllStandardOutput();
         QString s2 = process.readAllStandardError();
-        *output = (s1 + "\n" + s2).toStdString();
+        output = (s1 + "\n" + s2).toStdString();
     } else
-        *output = process.readAllStandardOutput().toStdString();
+        output = process.readAllStandardOutput().toStdString();
 
     if (redirect.compare(0,3,"2> ") == 0) {
         std::ofstream fout(redirect.substr(3));
@@ -108,13 +119,10 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        const std::string &buildDir = mCppcheck.settings().buildDir;
-        if (!buildDir.empty()) {
-            std::map<std::string,std::size_t> files2;
-            for (const QString& file : mFiles)
-                files2[file.toStdString()] = 0;
-            mCppcheck.analyseWholeProgram(buildDir, files2);
-        }
+        std::map<std::string,std::size_t> files2;
+        for (const QString& file : mFiles)
+            files2[file.toStdString()] = 0;
+        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2);
         mFiles.clear();
         emit done();
         return;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,19 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "color.h"
 #include "options.h"
 #include "preprocessor.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <cstdlib>
-
-#ifdef NDEBUG
-#include "errortypes.h"    // for InternalError
-
-#include <exception>
-#include <iostream>
-#include <string>
-#endif
 
 int main(int argc, char *argv[])
 {
@@ -37,10 +30,8 @@ int main(int argc, char *argv[])
     _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
-#ifdef NDEBUG
-    try {
-#endif
     Preprocessor::macroChar = '$';     // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
+    gDisableColors = true;
 
     options args(argc, argv);
 
@@ -50,15 +41,4 @@ int main(int argc, char *argv[])
     }
     const std::size_t failedTestsCount = TestFixture::runTests(args);
     return (failedTestsCount == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
-#ifdef NDEBUG
-}
-catch (const InternalError& e) {
-    std::cout << e.errorMessage << std::endl;
-} catch (const std::exception& error) {
-    std::cout << error.what() << std::endl;
-} catch (...) {
-    std::cout << "Unknown exception" << std::endl;
-}
-return EXIT_FAILURE;
-#endif
 }

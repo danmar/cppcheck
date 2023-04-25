@@ -2,10 +2,12 @@
 // Test library configuration for posix.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=posix --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/posix.c
+// $ cppcheck --check-library --library=posix --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/posix.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
+
+#define _BSD_SOURCE
 
 #include <aio.h>
 #include <stdio.h> // <- FILE
@@ -19,7 +21,7 @@
 #include <pwd.h>
 #include <dlfcn.h>
 #include <fcntl.h>
-// unavailable on some linux systems #include <ndbm.h>
+// #include <ndbm.h> // unavailable on some linux systems
 #include <netdb.h>
 #include <regex.h>
 #include <time.h>
@@ -28,20 +30,23 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#if !(defined(__APPLE__) && defined(__MACH__))
 #include <mqueue.h>
-#define _XOPEN_SOURCE
+#endif
 #include <stdlib.h>
 #include <unistd.h>
 #include <wchar.h>
 #include <string.h>
 #include <strings.h>
 
+#if !(defined(__APPLE__) && defined(__MACH__))
 void nullPointer_mq_timedsend(mqd_t mqdes, const char* msg_ptr, size_t msg_len, unsigned msg_prio, const struct timespec* abs_timeout) {
     // cppcheck-suppress nullPointer
     (void) mq_timedsend(mqdes, NULL, msg_len, msg_prio, abs_timeout);
     // cppcheck-suppress nullPointer
     (void) mq_timedsend(mqdes, msg_ptr, msg_len, msg_prio, NULL);
 }
+#endif
 
 #if __TRACE_H__ // <trace.h>
 
@@ -143,6 +148,7 @@ int nullPointer_getopt(int argc, char* const argv[], const char* optstring)
     return getopt(argc, argv, optstring);
 }
 
+#if !(defined(__APPLE__) && defined(__MACH__))
 int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
 {
     // No warning is expected for:
@@ -150,6 +156,7 @@ int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_l
     (void) mq_send(mqdes, &msg, 1, 0);
     return mq_send(mqdes, msg_ptr, msg_len, 0);
 }
+#endif
 
 void invalidFunctionArgStr_mbsnrtowcs(void)
 {
@@ -492,6 +499,7 @@ int nullPointer_aio_suspend(const struct aiocb *const aiocb_list[], int nitems, 
     return aio_suspend(aiocb_list, nitems, timeout);
 }
 
+#ifdef __linux__
 // Note: Since glibc 2.28, this function symbol is no longer available to newly linked applications.
 void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
 {
@@ -522,6 +530,7 @@ void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
     // cppcheck-suppress llseekCalled
     (void)llseek(fd, offset, SEEK_END);
 }
+#endif
 
 void invalidFunctionArg_lseek64(int fd, off_t offset, int origin)
 {
@@ -1235,11 +1244,11 @@ void uninitvar_types(void)
 {
     // cppcheck-suppress unassignedVariable
     blkcnt_t b;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar,constStatement]
     b + 1;
 
     struct dirent d;
-    // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress constStatement - TODO: uninitvar
     d.d_ino + 1;
 }
 

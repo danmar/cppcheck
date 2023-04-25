@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 
@@ -98,12 +98,12 @@ private:
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
+    std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true) {
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
         settings0.debugwarnings = debugwarnings;
-        settings0.platform(type);
+        PLATFORM(settings0.platform, type);
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
@@ -406,7 +406,7 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        TODO_ASSERT_THROW(tok(code, Settings::Native, false), InternalError); // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tok(code, cppcheck::Platform::Type::Native, false), InternalError); // TODO: Do not throw AST validation exception
         //ASSERT_EQUALS("", errout.str());
     }
 
@@ -696,11 +696,11 @@ private:
 
         const char exp[] = "int i ;";
 
-        ASSERT_EQUALS(exp, tok(code, Settings::Unix32));
-        ASSERT_EQUALS(exp, tok(code, Settings::Unix64));
-        ASSERT_EQUALS(exp, tok(code, Settings::Win32A));
-        ASSERT_EQUALS(exp, tok(code, Settings::Win32W));
-        ASSERT_EQUALS(exp, tok(code, Settings::Win64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix32));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32A));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32W));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
     }
 
     void simplifyUsing9042() {
@@ -720,7 +720,7 @@ private:
                            "} ; "
                            "template < class T > class s { } ;";
 
-        ASSERT_EQUALS(exp, tok(code, Settings::Win64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
     }
 
     void simplifyUsing9191() {

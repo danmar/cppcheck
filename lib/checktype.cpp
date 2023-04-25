@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "valueflow.h"
 
 #include <cmath>
 #include <list>
@@ -56,7 +57,7 @@ static const struct CWE CWE190(190U);   // Integer Overflow or Wraparound
 void CheckType::checkTooBigBitwiseShift()
 {
     // unknown sizeof(int) => can't run this checker
-    if (mSettings->platformType == Settings::Unspecified)
+    if (mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -83,11 +84,11 @@ void CheckType::checkTooBigBitwiseShift()
             (lhstype->type == ValueType::Type::WCHAR_T) ||
             (lhstype->type == ValueType::Type::BOOL) ||
             (lhstype->type == ValueType::Type::INT))
-            lhsbits = mSettings->int_bit;
+            lhsbits = mSettings->platform.int_bit;
         else if (lhstype->type == ValueType::Type::LONG)
-            lhsbits = mSettings->long_bit;
+            lhsbits = mSettings->platform.long_bit;
         else if (lhstype->type == ValueType::Type::LONGLONG)
-            lhsbits = mSettings->long_long_bit;
+            lhsbits = mSettings->platform.long_long_bit;
         else
             continue;
 
@@ -159,7 +160,7 @@ void CheckType::tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, con
 void CheckType::checkIntegerOverflow()
 {
     // unknown sizeof(int) => can't run this checker
-    if (mSettings->platformType == Settings::Unspecified || mSettings->int_bit >= MathLib::bigint_bits)
+    if (mSettings->platform.type == cppcheck::Platform::Type::Unspecified || mSettings->platform.int_bit >= MathLib::bigint_bits)
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -173,11 +174,11 @@ void CheckType::checkIntegerOverflow()
 
         unsigned int bits;
         if (vt->type == ValueType::Type::INT)
-            bits = mSettings->int_bit;
+            bits = mSettings->platform.int_bit;
         else if (vt->type == ValueType::Type::LONG)
-            bits = mSettings->long_bit;
+            bits = mSettings->platform.long_bit;
         else if (vt->type == ValueType::Type::LONGLONG)
-            bits = mSettings->long_long_bit;
+            bits = mSettings->platform.long_long_bit;
         else
             continue;
 
@@ -300,7 +301,7 @@ void CheckType::checkLongCast()
 
         if (tok->astOperand2()->hasKnownIntValue()) {
             const ValueFlow::Value &v = tok->astOperand2()->values().front();
-            if (mSettings->isIntValue(v.intvalue))
+            if (mSettings->platform.isIntValue(v.intvalue))
                 continue;
         }
 
@@ -386,22 +387,19 @@ void CheckType::checkFloatToIntegerOverflow()
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         const ValueType *vtint, *vtfloat;
-        const std::list<ValueFlow::Value> *floatValues;
 
         // Explicit cast
         if (Token::Match(tok, "( %name%") && tok->astOperand1() && !tok->astOperand2()) {
             vtint = tok->valueType();
             vtfloat = tok->astOperand1()->valueType();
-            floatValues = &tok->astOperand1()->values();
-            checkFloatToIntegerOverflow(tok, vtint, vtfloat, floatValues);
+            checkFloatToIntegerOverflow(tok, vtint, vtfloat, tok->astOperand1()->values());
         }
 
         // Assignment
         else if (tok->str() == "=" && tok->astOperand1() && tok->astOperand2()) {
             vtint = tok->astOperand1()->valueType();
             vtfloat = tok->astOperand2()->valueType();
-            floatValues = &tok->astOperand2()->values();
-            checkFloatToIntegerOverflow(tok, vtint, vtfloat, floatValues);
+            checkFloatToIntegerOverflow(tok, vtint, vtfloat, tok->astOperand2()->values());
         }
 
         else if (tok->str() == "return" && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isFloat()) {
@@ -409,16 +407,15 @@ void CheckType::checkFloatToIntegerOverflow()
             while (scope && scope->type != Scope::ScopeType::eLambda && scope->type != Scope::ScopeType::eFunction)
                 scope = scope->nestedIn;
             if (scope && scope->type == Scope::ScopeType::eFunction && scope->function && scope->function->retDef) {
-                const ValueType &valueType = ValueType::parseDecl(scope->function->retDef, mSettings, mTokenizer->isCPP());
+                const ValueType &valueType = ValueType::parseDecl(scope->function->retDef, *mSettings, mTokenizer->isCPP());
                 vtfloat = tok->astOperand1()->valueType();
-                floatValues = &tok->astOperand1()->values();
-                checkFloatToIntegerOverflow(tok, &valueType, vtfloat, floatValues);
+                checkFloatToIntegerOverflow(tok, &valueType, vtfloat, tok->astOperand1()->values());
             }
         }
     }
 }
 
-void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> *floatValues)
+void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> &floatValues)
 {
     // Conversion of float to integer?
     if (!vtint || !vtint->isIntegral())
@@ -426,27 +423,27 @@ void CheckType::checkFloatToIntegerOverflow(const Token *tok, const ValueType *v
     if (!vtfloat || !vtfloat->isFloat())
         return;
 
-    for (const ValueFlow::Value &f : *floatValues) {
+    for (const ValueFlow::Value &f : floatValues) {
         if (f.valueType != ValueFlow::Value::ValueType::FLOAT)
             continue;
         if (!mSettings->isEnabled(&f, false))
             continue;
-        if (f.floatValue >= std::exp2(mSettings->long_long_bit))
+        if (f.floatValue >= std::exp2(mSettings->platform.long_long_bit))
             floatToIntegerOverflowError(tok, f);
-        else if ((-f.floatValue) > std::exp2(mSettings->long_long_bit - 1))
+        else if ((-f.floatValue) > std::exp2(mSettings->platform.long_long_bit - 1))
             floatToIntegerOverflowError(tok, f);
-        else if (mSettings->platformType != Settings::Unspecified) {
+        else if (mSettings->platform.type != cppcheck::Platform::Type::Unspecified) {
             int bits = 0;
             if (vtint->type == ValueType::Type::CHAR)
-                bits = mSettings->char_bit;
+                bits = mSettings->platform.char_bit;
             else if (vtint->type == ValueType::Type::SHORT)
-                bits = mSettings->short_bit;
+                bits = mSettings->platform.short_bit;
             else if (vtint->type == ValueType::Type::INT)
-                bits = mSettings->int_bit;
+                bits = mSettings->platform.int_bit;
             else if (vtint->type == ValueType::Type::LONG)
-                bits = mSettings->long_bit;
+                bits = mSettings->platform.long_bit;
             else if (vtint->type == ValueType::Type::LONGLONG)
-                bits = mSettings->long_long_bit;
+                bits = mSettings->platform.long_long_bit;
             else
                 continue;
             if (bits < MathLib::bigint_bits && f.floatValue >= (((MathLib::biguint)1) << bits))

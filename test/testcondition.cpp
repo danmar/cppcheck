@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,10 @@
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -32,8 +33,6 @@
 #include <vector>
 
 #include <simplecpp.h>
-
-#include <tinyxml2.h>
 
 class TestCondition : public TestFixture {
 public:
@@ -45,10 +44,11 @@ private:
 
     void run() override {
         // known platform..
-        settings0.platform(cppcheck::Platform::PlatformType::Native);
-        settings1.platform(cppcheck::Platform::PlatformType::Native);
+        PLATFORM(settings0.platform, cppcheck::Platform::Type::Native);
+        PLATFORM(settings1.platform, cppcheck::Platform::Type::Native);
 
         LOAD_LIB_2(settings0.library, "qt.cfg");
+        settings0.libraries.emplace_back("qt");
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.severity.enable(Severity::style);
@@ -58,11 +58,9 @@ private:
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
                            "</def>";
-        tinyxml2::XMLDocument xmldoc;
-        xmldoc.Parse(cfg, sizeof(cfg));
+        ASSERT(settings1.library.loadxmldata(cfg, sizeof(cfg)));
         settings1.severity.enable(Severity::style);
         settings1.severity.enable(Severity::warning);
-        settings1.library.load(xmldoc);
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
@@ -157,18 +155,16 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, nullptr);
+        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(settings, this, &preprocessor);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Run checks..
-        CheckCondition checkCondition;
-        checkCondition.runChecks(&tokenizer, settings, this);
+        runChecks<CheckCondition>(&tokenizer, settings, this);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -357,11 +353,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // no crash on unary operator& (#5643)
+        // #11610
         check("SdrObject* ApplyGraphicToObject() {\n"
               "    if (&rHitObject) {}\n"
               "    else if (rHitObject.IsClosedObj() && !&rHitObject) { }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition '&rHitObject' is always true\n"
+                      "[test.cpp:3]: (style) Condition '!&rHitObject' is always false\n",
+                      errout.str());
 
         // #5695: increment
         check("void f(int a0, int n) {\n"
@@ -569,8 +568,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckCondition checkCondition;
-        checkCondition.runChecks(&tokenizer, &settings1, this);
+        runChecks<CheckCondition>(&tokenizer, &settings1, this);
     }
 
     void overlappingElseIfCondition() {
@@ -2587,7 +2585,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.size() < 0) if(s.empty()) {}} "); // <- CheckOther reports: checking if unsigned expression is less than zero
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Condition 's.empty()' is always false\n", errout.str());
 
         check("void f1(const std::string &s) { if(s.empty()) if(s.size() > 42) {}}");
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
@@ -2885,6 +2883,23 @@ private:
               "    f(true);\n"
               "    if (i) return i;\n"
               "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11478
+        check("struct S {\n"
+              "    void run();\n"
+              "    bool b = false;\n"
+              "    const std::function<void(S&)> f;\n"
+              "};\n"
+              "void S::run() {\n"
+              "    while (true) {\n"
+              "        if (b)\n"
+              "            return;\n"
+              "        f(*this);\n"
+              "        if (b)\n"
+              "            return;\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3788,6 +3803,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // TODO: if (!v) is a known condition as well
         check("struct a {\n"
               "  int *b();\n"
               "};\n"
@@ -3801,7 +3817,7 @@ private:
               "  if (v == nullptr && e) {}\n"
               "  return d;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (style) Condition 'e' is always true\n", errout.str());
 
         // #10037
         check("struct a {\n"
@@ -4468,6 +4484,26 @@ private:
               "    g(s ? s->get() : 0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7]: (style) Condition 's' is always true\n", errout.str());
+
+        check("void f(const char* o) {\n" // #11558
+              "    if (!o || !o[0])\n"
+              "        return;\n"
+              "    if (o[0] == '-' && o[1]) {\n"
+              "        if (o[1] == '-') {}\n"
+              "        if (o[1] == '\\0') {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'o[1]=='\\0'' is always false\n", errout.str());
+
+        check("void f(int x) {\n" // #11449
+              "    int i = x;\n"
+              "    i = (std::min)(i, 1);\n"
+              "    if (i == 1) {}\n"
+              "    int j = x;\n"
+              "    j = (::std::min)(j, 1);\n"
+              "    if (j == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4930,6 +4966,38 @@ private:
               "       buffer.back() == '\\0') {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'buffer.back()=='\\0'' is always false\n", errout.str());
+
+        // #9353
+        check("typedef struct { std::string s; } X;\n"
+              "void f(const std::vector<X>&v) {\n"
+              "    for (std::vector<X>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
+              "        if (!it->s.empty()) {\n"
+              "            if (!it->s.empty()) {}\n"
+              "        }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (style) Condition '!it->s.empty()' is always true\n", errout.str());
+
+        // #10508
+        check("bool f(const std::string& a, const std::string& b) {\n"
+              "    return a.empty() || (b.empty() && a.empty());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Return value 'a.empty()' is always false\n", errout.str());
+
+        check("struct A {\n"
+              "    struct iterator;\n"
+              "    iterator begin() const;\n"
+              "    iterator end() const;\n"
+              "};\n"
+              "A g();\n"
+              "void f(bool b) {\n"
+              "    std::set<int> s;\n"
+              "    auto v = g();\n"
+              "    s.insert(v.begin(), v.end());\n"
+              "    if(!b && s.size() != 1)\n"
+              "        return;\n"
+              "    if(!s.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueLoop()
@@ -4977,6 +5045,21 @@ private:
               "   if (pool) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8499
+        check("void f(void)\n"
+              "{\n"
+              "    for (int i = 0; i < 2; ++i)\n"
+              "    {\n"
+              "        for (int j = 0; j < 8; ++j)\n"
+              "        {\n"
+              "            if ( (i==0|| i==1)\n" // << always true
+              "              && (j==0) )\n"
+              "            {;}\n"
+              "        }\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7]: (style) Condition 'i==1' is always true\n", errout.str());
 
         // #10863
         check("void f(const int A[], int Len) {\n"
@@ -5549,7 +5632,7 @@ private:
     void compareOutOfTypeRange() {
         Settings settingsUnix64;
         settingsUnix64.severity.enable(Severity::style);
-        settingsUnix64.platform(cppcheck::Platform::PlatformType::Unix64);
+        PLATFORM(settingsUnix64.platform, cppcheck::Platform::Type::Unix64);
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

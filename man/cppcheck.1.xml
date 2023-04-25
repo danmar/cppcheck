@@ -106,6 +106,9 @@ man(1), man(7), http://www.tldp.org/HOWTO/Man-Page/
         <option>-U&lt;id&gt;</option>
       </arg>
       <arg choice="opt">
+        <option>--disable=&lt;id&gt;</option>
+      </arg>
+      <arg choice="opt">
         <option>--enable=&lt;id&gt;</option>
       </arg>
       <arg choice="opt">
@@ -274,6 +277,15 @@ Example: '-UDEBUG'</para>
       </varlistentry>
       <varlistentry>
         <term>
+          <option>--disable=&lt;id&gt;</option>
+        </term>
+        <listitem>
+          <para>Disable individual checks. Please refer to the documentation of --enable=&lt;id&gt; for further details.
+          </para>
+        </listitem>
+      </varlistentry>
+      <varlistentry>
+        <term>
           <option>--enable=&lt;id&gt;</option>
         </term>
         <listitem>
@@ -283,7 +295,7 @@ Example: '-UDEBUG'</para>
                   enables unusedFunction.</para></glossdef></glossentry><glossentry><glossterm>warning</glossterm><glossdef><para>Enable warning messages</para></glossdef></glossentry><glossentry><glossterm>style</glossterm><glossdef><para>Enable all coding style checks. All messages with the
                   severities 'style', 'performance' and 'portability' are
                   enabled.</para></glossdef></glossentry><glossentry><glossterm>performance</glossterm><glossdef><para>Enable performance messages</para></glossdef></glossentry><glossentry><glossterm>portability</glossterm><glossdef><para>Enable portability messages</para></glossdef></glossentry><glossentry><glossterm>information</glossterm><glossdef><para>Enable information messages</para></glossdef></glossentry><glossentry><glossterm>unusedFunction</glossterm><glossdef><para>Check for unused functions. It is recommend to only
-                  enable this when the whole program is scanned</para></glossdef></glossentry><glossentry><glossterm>missingInclude</glossterm><glossdef><para>Warn if there are missing includes. For detailed information use --check-config</para></glossdef></glossentry></glosslist>
+                  enable this when the whole program is scanned</para></glossdef></glossentry><glossentry><glossterm>missingInclude</glossterm><glossdef><para>Warn if there are missing includes</para></glossdef></glossentry></glosslist>
             By default none of the additional checks are enabled. Several ids can be given if you separate them with commas, e.g. --enable=style,unusedFunction. See also --std
           </para>
         </listitem>

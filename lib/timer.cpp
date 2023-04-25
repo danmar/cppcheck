@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 /*
     TODO:
     - rename "file" to "single"
-    - synchronise map access in multithreaded mode or disable timing
     - add unit tests
         - for --showtime (needs input file)
         - for Timer* classes
@@ -48,9 +47,9 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     TimerResultsData overallData;
 
     std::vector<dataElementType> data;
-    data.reserve(mResults.size());
     {
         std::lock_guard<std::mutex> l(mResultsSync);
+        data.reserve(mResults.size());
         data.insert(data.begin(), mResults.cbegin(), mResults.cend());
     }
     std::sort(data.begin(), data.end(), more_second_sec);
@@ -59,7 +58,17 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     for (std::vector<dataElementType>::const_iterator iter=data.cbegin(); iter!=data.cend(); ++iter) {
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
-        overallData.mClocks += iter->second.mClocks;
+        bool hasParent = false;
+        {
+            // Do not use inner timers in "Overall time"
+            const std::string::size_type pos = iter->first.rfind("::");
+            if (pos != std::string::npos)
+                hasParent = std::any_of(data.cbegin(), data.cend(), [iter,pos](const dataElementType& d) {
+                    return d.first.size() == pos && iter->first.compare(0, d.first.size(), d.first) == 0;
+                });
+        }
+        if (!hasParent)
+            overallData.mClocks += iter->second.mClocks;
         if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5) || (ordinal<=5)) {
             std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
         }

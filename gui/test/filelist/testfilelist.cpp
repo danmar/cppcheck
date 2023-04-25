@@ -22,7 +22,8 @@
 
 #include <QDir>
 #include <QString>
-#include <QTest>
+#include <QStringList>
+#include <QtTest>
 
 void TestFileList::addFile() const
 {
@@ -82,7 +83,7 @@ void TestFileList::addDirectory() const
     FileList list;
     list.addDirectory(QString(SRCDIR) + "/../data/files");
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 7);
+    QCOMPARE(files.size(), 9);
 }
 
 void TestFileList::addDirectory_recursive() const
@@ -90,7 +91,7 @@ void TestFileList::addDirectory_recursive() const
     FileList list;
     list.addDirectory(QString(SRCDIR) + "/../data/files", true);
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 10);
+    QCOMPARE(files.size(), 12);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
     QVERIFY(files.contains(base + "/dir1/foo1.cpp"));
@@ -129,7 +130,7 @@ void TestFileList::filterFiles2() const
     list.addExcludeList(filters);
     list.addDirectory(QString(SRCDIR) + "/../data/files");
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 5);
+    QCOMPARE(files.size(), 7);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
     QVERIFY(!files.contains(base + "/foo1.cpp"));
@@ -144,7 +145,7 @@ void TestFileList::filterFiles3() const
     list.addExcludeList(filters);
     list.addDirectory(QString(SRCDIR) + "/../data/files", true);
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 6);
+    QCOMPARE(files.size(), 8);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
     QVERIFY(!files.contains(base + "/foo1.cpp"));
@@ -161,26 +162,26 @@ void TestFileList::filterFiles4() const
     list.addExcludeList(filters);
     list.addDirectory(QString(SRCDIR) + "/../data/files", true);
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 8);
+    QCOMPARE(files.size(), 10);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
     QVERIFY(!files.contains(base + "/dir1/foo1.cpp"));
     QVERIFY(!files.contains(base + "/dir1/dir11/foo11.cpp"));
 }
-/*
-   void TestFileList::filterFiles5()
-   {
+
+void TestFileList::filterFiles5() const
+{
     FileList list;
     QStringList filters;
     filters << QDir(QString(SRCDIR) + "/../data/files/dir1/").absolutePath() + "/";
     list.addExcludeList(filters);
     list.addDirectory(QString(SRCDIR) + "/../data/files", true);
     QStringList files = list.getFileList();
-    QCOMPARE(files.size(), 8);
+    QCOMPARE(files.size(), 10);
     QDir dir(QString(SRCDIR) + "/../data/files");
     QString base = dir.canonicalPath();
-    QVERIFY(! files.contains(base + "/dir1/foo1.cpp"));
-    QVERIFY(! files.contains(base + "/dir1/dir11/foo11.cpp"));
-   }
- */
+    QVERIFY(!files.contains(base + "/dir1/foo1.cpp"));
+    QVERIFY(!files.contains(base + "/dir1/dir11/foo11.cpp"));
+}
+
 QTEST_MAIN(TestFileList)

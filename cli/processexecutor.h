@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,11 +47,9 @@ public:
 private:
     /**
      * Read from the pipe, parse and handle what ever is in there.
-     *@return -1 in case of error
-     *         0 if there is nothing in the pipe to be read
-     *         1 if we did read something
+     * @return False in case of an recoverable error - will exit process on others
      */
-    int handleRead(int rpipe, unsigned int &result);
+    bool handleRead(int rpipe, unsigned int &result, const std::string& filename);
 
     /**
      * @brief Check load average condition

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@
 
 #include <string>
 #include <vector>
+
+#include "utils.h"
 
 class Settings;
 
@@ -43,7 +45,7 @@ public:
      * @param settings Settings instance that will be modified according to
      * options user has given.
      */
-    explicit CmdLineParser(Settings *settings);
+    explicit CmdLineParser(Settings &settings);
 
     /**
      * Parse given command line.
@@ -94,6 +96,11 @@ public:
         return mIgnoredPaths;
     }
 
+#if defined(_WIN64) || defined(_WIN32)
+    // temporary variable to "un-break" tests
+    static bool SHOW_DEF_PLATFORM_MSG;
+#endif
+
 protected:
 
     /**
@@ -114,9 +121,27 @@ protected:
 private:
     bool isCppcheckPremium() const;
 
+    // TODO: get rid of is_signed
+    template<typename T>
+    static bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool is_signed = false)
+    {
+        T tmp;
+        std::string err;
+        if (!strToInt(arg + offset, tmp, &err)) {
+            printError("argument to '" + std::string(arg, offset) + "' is not valid - " + err + ".");
+            return false;
+        }
+        if (is_signed && tmp < 0) {
+            printError("argument to '" + std::string(arg, offset) + "' needs to be a positive integer.");
+            return false;
+        }
+        num = tmp;
+        return true;
+    }
+
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;
-    Settings *mSettings;
+    Settings &mSettings;
     bool mShowHelp;
     bool mShowVersion;
     bool mShowErrorMessages;

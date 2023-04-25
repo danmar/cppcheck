@@ -21,11 +21,15 @@
 
 #include <QFileSystemModel>
 #include <QMainWindow>
+#include <QObject>
 #include <QRegularExpression>
 #include <QString>
+#include <QStringList>
 
 class QListWidgetItem;
 class QTextStream;
+class QPoint;
+class QWidget;
 namespace Ui {
     class MainWindow;
 }

@@ -26,9 +26,9 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.35"
+SERVER_VERSION = "1.3.39"
 
-OLD_VERSION = '2.9'
+OLD_VERSION = '2.10'
 
 
 # Set up logging
@@ -49,7 +49,8 @@ logger.addHandler(handler_file)
 
 
 def print_ts(msg) -> None:
-    print('[{}] {}'.format(strDateTime(), msg))
+    dt = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    print('[{}] {}'.format(dt, msg))
 
 
 # Set up an exception hook for all uncaught exceptions so they can be logged
@@ -65,7 +66,7 @@ sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime() -> str:
-    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
 def dateTimeFromStr(datestr: str) -> datetime.datetime:
@@ -101,6 +102,7 @@ def overviewReport() -> str:
     html += '<a href="head-simplifyUsingUnmatchedBodyEnd">simplifyUsingUnmatchedBodyEnd</a><br>\n'
     html += '<a href="head-simplifyUsing">simplifyUsing</a><br>\n'
     html += '<a href="head-valueFlowMaxIterations">valueFlowMaxIterations</a><br>\n'
+    html += '<a href="head-templateInstantiation">templateInstantiation</a><br>\n'
     #html += '<a href="head-autoNoType">autoNoType</a><br>\n'
     #html += '<a href="head-valueFlowBailout">valueFlowBailout</a><br>\n'
     #html += '<a href="head-bailoutUninitVar">bailoutUninitVar</a><br>\n'
@@ -225,10 +227,10 @@ def crashReport(results_path: str, query_params: dict):
                     if counts[1] == 'Crash!':
                         c_head = 'Crash'
                     html += fmt(package, datestr, c_version, c_head) + '\n'
-                    if package_url is not None:
-                        pkgs += '{}\n'.format(package_url)
                     if c_head != 'Crash':
                         break
+                    if package_url is not None:
+                        pkgs += '{}\n'.format(package_url)
                 elif line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
                     location_index = crash_line.rfind(' at ')
@@ -1110,7 +1112,7 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
                 t += 0.2
         connection.close()
     except socket.error as e:
-        print_ts('Socket error occured ({}): {}'.format(cmd_name, e))
+        print_ts('Socket error occurred ({}): {}'.format(cmd_name, e))
         data = None
 
     if (timeout > 0 and t >= timeout):

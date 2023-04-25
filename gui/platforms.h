@@ -19,7 +19,7 @@
 #ifndef PLATFORMS_H
 #define PLATFORMS_H
 
-#include "settings.h"
+#include "platform.h"
 
 #include <QList>
 #include <QObject>
@@ -35,7 +35,7 @@ class QAction;
  */
 struct Platform {
     QString mTitle;  /**< Text visible in the GUI. */
-    Settings::PlatformType mType; /**< Type in the core. */
+    cppcheck::Platform::Type mType; /**< Type in the core. */
     QAction *mActMainWindow; /**< Pointer to main window action item. */
 };
 
@@ -47,10 +47,10 @@ class Platforms : public QObject {
 
 public:
     explicit Platforms(QObject *parent = nullptr);
-    void add(const QString &title, Settings::PlatformType platform);
+    void add(const QString &title, cppcheck::Platform::Type platform);
     int getCount() const;
     void init();
-    Platform& get(Settings::PlatformType platform);
+    Platform& get(cppcheck::Platform::Type platform);
 
     QList<Platform> mPlatforms;
 };

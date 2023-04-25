@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,23 @@
 
 #include "ui_settings.h"
 
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
 #include <QList>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QPushButton>
+#include <QRadioButton>
 #include <QSettings>
+#include <QSize>
 #include <QThread>
+#include <QVariant>
 #include <QWidget>
 
 SettingsDialog::SettingsDialog(ApplicationList *list,
@@ -147,10 +159,7 @@ Qt::CheckState SettingsDialog::boolToCheckState(bool yes)
 
 bool SettingsDialog::checkStateToBool(Qt::CheckState state)
 {
-    if (state == Qt::Checked) {
-        return true;
-    }
-    return false;
+    return state == Qt::Checked;
 }
 
 

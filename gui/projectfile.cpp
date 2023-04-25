@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,15 @@
 
 #include <QFile>
 #include <QDir>
+#include <QIODevice>
+#include <QLatin1String>
+#include <QXmlStreamAttributes>
 #include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QStringRef>
+#endif
 
 ProjectFile *ProjectFile::mActiveProject;
 
@@ -53,7 +61,6 @@ void ProjectFile::clear()
     mRootPath.clear();
     mBuildDir.clear();
     mImportProject.clear();
-    mAnalyzeAllVsConfigs = true;
     mIncludeDirs.clear();
     mDefines.clear();
     mUndefines.clear();
@@ -61,6 +68,7 @@ void ProjectFile::clear()
     mExcludedPaths.clear();
     mLibraries.clear();
     mPlatform.clear();
+    mProjectName.clear();
     mSuppressions.clear();
     mAddons.clear();
     mClangAnalyzer = mClangTidy = false;
@@ -208,6 +216,8 @@ bool ProjectFile::read(const QString &filename)
                 readStringList(mCodingStandards, xmlReader, CppcheckXml::CodingStandardElementName);
             if (xmlReader.name() == QString(CppcheckXml::CertIntPrecisionElementName))
                 mCertIntPrecision = readInt(xmlReader, 0);
+            if (xmlReader.name() == QString(CppcheckXml::ProjectNameElementName))
+                mProjectName = readString(xmlReader);
 
             break;
 
@@ -328,6 +338,32 @@ int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
         switch (type) {
         case QXmlStreamReader::Characters:
             ret = reader.text().toString().toInt();
+            FALLTHROUGH;
+        case QXmlStreamReader::EndElement:
+            return ret;
+        // Not handled
+        case QXmlStreamReader::StartElement:
+        case QXmlStreamReader::NoToken:
+        case QXmlStreamReader::Invalid:
+        case QXmlStreamReader::StartDocument:
+        case QXmlStreamReader::EndDocument:
+        case QXmlStreamReader::Comment:
+        case QXmlStreamReader::DTD:
+        case QXmlStreamReader::EntityReference:
+        case QXmlStreamReader::ProcessingInstruction:
+            break;
+        }
+    } while (true);
+}
+
+QString ProjectFile::readString(QXmlStreamReader &reader)
+{
+    QString ret;
+    do {
+        const QXmlStreamReader::TokenType type = reader.readNext();
+        switch (type) {
+        case QXmlStreamReader::Characters:
+            ret = reader.text().toString();
             FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return ret;
@@ -959,6 +995,12 @@ bool ProjectFile::write(const QString &filename)
         xmlWriter.writeEndElement();
     }
 
+    if (!mProjectName.isEmpty()) {
+        xmlWriter.writeStartElement(CppcheckXml::ProjectNameElementName);
+        xmlWriter.writeCharacters(mProjectName);
+        xmlWriter.writeEndElement();
+    }
+
     xmlWriter.writeEndDocument();
     file.close();
     return true;
@@ -1040,21 +1082,21 @@ void ProjectFile::SafeChecks::saveToXml(QXmlStreamWriter &xmlWriter) const
 {
     if (!classes && !externalFunctions && !internalFunctions && !externalVariables)
         return;
-    xmlWriter.writeStartElement(Settings::SafeChecks::XmlRootName);
+    xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlRootName));
     if (classes) {
-        xmlWriter.writeStartElement(Settings::SafeChecks::XmlClasses);
+        xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlClasses));
         xmlWriter.writeEndElement();
     }
     if (externalFunctions) {
-        xmlWriter.writeStartElement(Settings::SafeChecks::XmlExternalFunctions);
+        xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlExternalFunctions));
         xmlWriter.writeEndElement();
     }
     if (internalFunctions) {
-        xmlWriter.writeStartElement(Settings::SafeChecks::XmlInternalFunctions);
+        xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlInternalFunctions));
         xmlWriter.writeEndElement();
     }
     if (externalVariables) {
-        xmlWriter.writeStartElement(Settings::SafeChecks::XmlExternalVariables);
+        xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlExternalVariables));
         xmlWriter.writeEndElement();
     }
     xmlWriter.writeEndElement();
