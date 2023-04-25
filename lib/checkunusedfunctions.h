@@ -81,7 +81,7 @@ public:
 private:
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const override {
-        CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
+        CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
     }
 
     void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) override {}
@@ -90,7 +90,7 @@ private:
      * Dummy implementation, just to provide error for --errorlist
      */
     static void unusedFunctionError(ErrorLogger * const errorLogger,
-                                    const std::string &filename, unsigned int lineNumber,
+                                    const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
                                     const std::string &funcname);
 
     static std::string myName() {
@@ -107,6 +107,7 @@ private:
 
         std::string filename;
         unsigned int lineNumber;
+        unsigned int fileIndex{};
         bool usedSameFile;
         bool usedOtherFile;
     };
