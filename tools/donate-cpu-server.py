@@ -691,7 +691,8 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-def timeReport(resultPath: str, show_gt: bool, query_params: dict) -> str:
+# TODO: needs to dinicate that it returns 'tuple[str, str]' but that isn't supported until Python 3.9
+def timeReport(resultPath: str, show_gt: bool, query_params: dict):
     # no need for package report support in "improved" report
     pkgs = '' if show_gt and query_params and query_params.get('pkgs') == '1' else None
     factor = float(query_params.get('factor')) if query_params and 'factor' in query_params else 2.0
@@ -994,6 +995,7 @@ class HttpClientThread(Thread):
         self.latestResults = latestResults
 
     # TODO: use a proper parser
+    @staticmethod
     def parse_req(cmd):
         req_parts = cmd.split(' ')
         if len(req_parts) != 3 or req_parts[0] != 'GET' or not req_parts[2].startswith('HTTP'):
@@ -1005,7 +1007,7 @@ class HttpClientThread(Thread):
         try:
             cmd = self.cmd
             print_ts(cmd)
-            url, queryParams = HttpClientThread.parse_req(cmd)
+            url, queryParams = self.parse_req(cmd)
             if url is None:
                 print_ts('invalid request: {}'.format(cmd))
                 self.connection.close()
@@ -1092,8 +1094,8 @@ class HttpClientThread(Thread):
 
 def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, timeout=10):
     data = cmd[pos_nl+1:]
+    t = 0.0
     try:
-        t = 0.0
         while (len(data) < max_data_size) and (not check_done or not data.endswith('\nDONE')) and (timeout > 0 and t < timeout):
             bytes_received = connection.recv(1024)
             if bytes_received:
@@ -1115,7 +1117,7 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
         print_ts('Socket error occurred ({}): {}'.format(cmd_name, e))
         data = None
 
-    if (timeout > 0 and t >= timeout):
+    if timeout > 0 and t >= timeout:
         print_ts('Timeout occurred ({}).'.format(cmd_name))
         data = None
 
