@@ -992,6 +992,7 @@ class HttpClientThread(Thread):
         self.connection = connection
         self.cmd = cmd[:cmd.find('\r\n')]
         self.resultPath = resultPath
+        self.infoPath = os.path.join(self.resultPath, 'info_output')
         self.latestResults = latestResults
 
     # TODO: use a proper parser
@@ -1059,20 +1060,20 @@ class HttpClientThread(Thread):
                 text = timeReportSlow(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == '/check_library_function_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
+                text = check_library_report(self.infoPath, message_id='checkLibraryFunction')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == '/check_library_noreturn_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryNoReturn')
+                text = check_library_report(self.infoPath, message_id='checkLibraryNoReturn')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == '/check_library_use_ignore_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryUseIgnore')
+                text = check_library_report(self.infoPath, message_id='checkLibraryUseIgnore')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == '/check_library_check_type_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryCheckType')
+                text = check_library_report(self.infoPath, message_id='checkLibraryCheckType')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('/check_library-'):
                 function_name = url[len('/check_library-'):]
-                text = check_library_function_name(self.resultPath + '/' + 'info_output', function_name)
+                text = check_library_function_name(self.infoPath, function_name)
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + url
