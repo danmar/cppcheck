@@ -1628,8 +1628,9 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             const std::vector<Token*>& tokens = p.second;
             const std::size_t N = tokens.size();
             for (std::size_t i = 0; i < N; ++i) {
+                Token* const tok1 = tokens[i];
                 for (std::size_t j = i + 1; j < N; ++j) {
-                    Token* const tok1 = tokens[i], * const tok2 = tokens[j];
+                    Token* const tok2 = tokens[j];
                     if (tok1->exprId() == tok2->exprId())
                         continue;
                     if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings.library, false, false))
