@@ -2760,10 +2760,22 @@ static bool scopesMatch(const std::string &scope1, const std::string &scope2, co
     return false;
 }
 
+static unsigned int tokDistance(const Token* tok1, const Token* tok2) {
+    unsigned int dist = 0;
+    const Token* tok = tok1;
+    while (tok != tok2) {
+        ++dist;
+        tok = tok->next();
+    }
+    return dist;
+};
+
 bool Tokenizer::simplifyUsing()
 {
     if (!isCPP() || mSettings->standards.cpp < Standards::CPP11)
         return false;
+
+    const unsigned int maxReplacementTokens = 1000; // limit the number of tokens we replace
 
     bool substitute = false;
     ScopeInfo3 scopeInfo;
@@ -3006,6 +3018,12 @@ bool Tokenizer::simplifyUsing()
             } else if (!usingMatch(nameToken, scope, &tok1, scope1, currentScope1, nullptr))
                 continue;
 
+            const auto nReplace = tokDistance(start, usingEnd);
+            if (nReplace > maxReplacementTokens) {
+                simplifyUsingError(usingStart, usingEnd);
+                continue;
+            }
+
             // remove the qualification
             std::string fullScope = scope;
             std::string removed;
@@ -3187,18 +3205,7 @@ bool Tokenizer::simplifyUsing()
                 }
             } else {
                 skip = true;
-                if (mSettings->debugwarnings && mErrorLogger) {
-                    std::string str;
-                    for (Token *tok3 = usingStart; tok3 && tok3 != usingEnd; tok3 = tok3->next()) {
-                        if (!str.empty())
-                            str += ' ';
-                        str += tok3->str();
-                    }
-                    str += " ;";
-                    std::list<const Token *> callstack(1, usingStart);
-                    mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "simplifyUsing",
-                                                         "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
-                }
+                simplifyUsingError(usingStart, usingEnd);
             }
             tok1 = after;
         }
@@ -3231,6 +3238,22 @@ bool Tokenizer::simplifyUsing()
     }
 
     return substitute;
+}
+
+void Tokenizer::simplifyUsingError(const Token* usingStart, const Token* usingEnd)
+{
+    if (mSettings->debugwarnings && mErrorLogger) {
+        std::string str;
+        for (const Token *tok = usingStart; tok && tok != usingEnd; tok = tok->next()) {
+            if (!str.empty())
+                str += ' ';
+            str += tok->str();
+        }
+        str += " ;";
+        std::list<const Token *> callstack(1, usingStart);
+        mErrorLogger->reportErr(ErrorMessage(callstack, &list, Severity::debug, "simplifyUsing",
+                                             "Failed to parse \'" + str + "\'. The checking continues anyway.", Certainty::normal));
+    }
 }
 
 bool Tokenizer::createTokens(std::istream &code,
