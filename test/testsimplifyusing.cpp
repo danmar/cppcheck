@@ -117,7 +117,7 @@ private:
             simplecpp::TokenList tokens2(files);
             std::map<std::string, simplecpp::TokenList*> filedata;
             simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
-            
+
             tokenizer.createTokens(std::move(tokens2));
         }
 
@@ -1368,7 +1368,6 @@ private:
                             "STAMP(A, int);\n"
                             "STAMP(B, A);\n"
                             "STAMP(C, B);\n";
-        const char exp[]  = "enum E : unsigned char { E0 } ;";
         tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
         ASSERT_EQUALS(errout.str().compare(0, 64, "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"), 0);
     }
