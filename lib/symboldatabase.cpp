@@ -1626,10 +1626,10 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         // Apply CSE
         for (const auto& p:exprs) {
             const std::vector<Token*>& tokens = p.second;
-            for (Token* tok1:tokens) {
-                for (Token* tok2:tokens) {
-                    if (tok1 == tok2)
-                        continue;
+            const std::size_t N = tokens.size();
+            for (std::size_t i = 0; i < N; ++i) {
+                for (std::size_t j = i + 1; j < N; ++j) {
+                    Token* const tok1 = tokens[i], * const tok2 = tokens[j];
                     if (tok1->exprId() == tok2->exprId())
                         continue;
                     if (!isSameExpression(isCPP(), true, tok1, tok2, mSettings.library, false, false))
