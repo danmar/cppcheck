@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <array>
 #include <cstddef>
+#include <cstdint>
 #include <initializer_list>
 #include <limits>
 #include <stdexcept>
@@ -267,6 +268,73 @@ template<typename T, int size>
 std::size_t getArrayLength(const T (& /*unused*/)[size])
 {
     return size;
+}
+
+/** this is meant as a replacement for when we cannot print a pointer via the stream insertion operator (operator<<) for performance reasons */
+// TODO: should give portable value / only used by Tokenizer::dump() and underlying functions - something deterministic would also help with comparing the output
+static inline std::string ptr_to_string(const void* p)
+{
+#if (defined(__APPLE__) && defined(__MACH__))
+    if (p == nullptr)
+        return "0x0";
+#elif !defined(_WIN32) || defined(__MINGW32__)
+    if (p == nullptr)
+        return "0";
+#endif
+
+    static constexpr int ptr_size = sizeof(void*);
+
+#if defined(_WIN32) && !defined(__MINGW32__)
+    // two characters of each byte / contains terminating \0
+    static constexpr int buf_size = (ptr_size * 2) + 1;
+#else
+    // two characters of each byte / contains 0x prefix and contains terminating \0
+    static constexpr int buf_size = (ptr_size * 2) + 2 + 1;
+#endif
+    char buf[buf_size];
+
+    // needs to be signed so we don't underflow in padding loop
+    int idx = sizeof(buf) - 1;
+    buf[idx--] = '\0'; // terminate string
+
+    uintptr_t l = reinterpret_cast<uintptr_t>(p);
+    while (l != 0)
+    {
+        char c;
+        const uintptr_t temp = l % 16; // get the remainder
+        if (temp < 10) {
+            // 0-9
+            c = '0' + temp;
+        }
+        else {
+#if !defined(_WIN32) || defined(__MINGW32__)
+            // a-f
+            c = 'a' + (temp - 10);
+#else
+            // A-F
+            c = 'A' + (temp - 10);
+#endif
+        }
+        buf[idx--] = c; // store in reverse order
+        l = l / 16;
+    }
+
+#if defined(_WIN32) && !defined(__MINGW32__)
+    // pad address with 0
+    while (idx >= 0) {
+        buf[idx--] = '0';
+    }
+
+    // 000000F0A61FF122 or 0230FB33
+    return buf;
+#else
+    // add 0x prefix
+    buf[idx--] = 'x';
+    buf[idx--] = '0';
+
+    // 0x7ffc5aa334d8
+    return &buf[idx+1];
+#endif
 }
 
 #endif
