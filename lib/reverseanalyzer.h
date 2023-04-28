@@ -25,6 +25,6 @@ class Token;
 template<class T>
 class ValuePtr;
 
-void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings);
+void valueFlowGenericReverse(const Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings);
 
 #endif
