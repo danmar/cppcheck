@@ -1144,15 +1144,14 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
             while (it != eq.cend()) {
                 // check for end
                 if (!it->end) {
-                    if (mSettings.debugwarnings) {
+                    if (mSettings.debugwarnings && mErrorLogger && mSettings.severity.isEnabled(Severity::debug)) {
                         const std::list<const Token*> locationList(1, it->eq);
                         const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                                   Severity::debug,
                                                   "noparamend",
                                                   "TemplateSimplifier couldn't find end of template parameter.",
                                                   Certainty::normal);
-                        if (mErrorLogger && mSettings.severity.isEnabled(Severity::debug))
-                            mErrorLogger->reportErr(errmsg);
+                        mErrorLogger->reportErr(errmsg);
                     }
                     break;
                 }
@@ -3045,20 +3044,21 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
             numberOfTemplateInstantiations = mTemplateInstantiations.size();
             ++recursiveCount;
             if (recursiveCount > mSettings.maxTemplateRecursion) {
-                std::list<std::string> typeStringsUsedInTemplateInstantiation;
-                const std::string typeForNewName = templateDeclaration.name() + "<" + getNewName(instantiation.token(), typeStringsUsedInTemplateInstantiation) + ">";
+                if (mErrorLogger && mSettings.severity.isEnabled(Severity::information)) {
+                    std::list<std::string> typeStringsUsedInTemplateInstantiation;
+                    const std::string typeForNewName = templateDeclaration.name() + "<" + getNewName(instantiation.token(), typeStringsUsedInTemplateInstantiation) + ">";
 
-                const std::list<const Token *> callstack(1, instantiation.token());
-                const ErrorMessage errmsg(callstack,
-                                          &mTokenizer.list,
-                                          Severity::information,
-                                          "templateRecursion",
-                                          "TemplateSimplifier: max template recursion ("
-                                          + MathLib::toString(mSettings.maxTemplateRecursion)
-                                          + ") reached for template '"+typeForNewName+"'. You might want to limit Cppcheck recursion.",
-                                          Certainty::normal);
-                if (mErrorLogger && mSettings.severity.isEnabled(Severity::information))
+                    const std::list<const Token *> callstack(1, instantiation.token());
+                    const ErrorMessage errmsg(callstack,
+                                              &mTokenizer.list,
+                                              Severity::information,
+                                              "templateRecursion",
+                                              "TemplateSimplifier: max template recursion ("
+                                              + MathLib::toString(mSettings.maxTemplateRecursion)
+                                              + ") reached for template '"+typeForNewName+"'. You might want to limit Cppcheck recursion.",
+                                              Certainty::normal);
                     mErrorLogger->reportErr(errmsg);
+                }
 
                 // bail out..
                 break;
@@ -3896,15 +3896,14 @@ void TemplateSimplifier::simplifyTemplates(
     }
 
     if (passCount == passCountMax) {
-        if (mSettings.debugwarnings) {
+        if (mSettings.debugwarnings && mErrorLogger) {
             const std::list<const Token*> locationList(1, mTokenList.front());
             const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                       Severity::debug,
                                       "debug",
                                       "TemplateSimplifier: pass count limit hit before simplifications were finished.",
                                       Certainty::normal);
-            if (mErrorLogger)
-                mErrorLogger->reportErr(errmsg);
+            mErrorLogger->reportErr(errmsg);
         }
     }
 
