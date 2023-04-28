@@ -61,12 +61,6 @@ public:
     void fill() {
         mFlags = 0xFFFFFFFF;
     }
-    void setEnabledAll(bool enabled) {
-        if (enabled)
-            fill();
-        else
-            clear();
-    }
     bool isEnabled(T flag) const {
         return (mFlags & (1U << (uint32_t)flag)) != 0;
     }

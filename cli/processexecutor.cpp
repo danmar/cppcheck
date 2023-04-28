@@ -71,7 +71,7 @@ ProcessExecutor::~ProcessExecutor()
 
 class PipeWriter : public ErrorLogger {
 public:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_VERIFICATION='4', CHILD_END='5'};
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};
 
     explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 

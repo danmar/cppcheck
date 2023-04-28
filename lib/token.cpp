@@ -2516,10 +2516,6 @@ Token* findTypeEnd(Token* tok)
     return tok;
 }
 
-const Token* findTypeEnd(const Token* tok) {
-    return findTypeEnd(const_cast<Token*>(tok));
-}
-
 Token* findLambdaEndScope(Token* tok)
 {
     if (!Token::simpleMatch(tok, "["))
