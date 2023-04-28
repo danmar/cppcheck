@@ -280,6 +280,7 @@ public:
     /**
      */
     bool simplifyUsing();
+    void simplifyUsingError(const Token* usingStart, const Token* usingEnd);
 
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
