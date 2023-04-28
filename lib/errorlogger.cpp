@@ -116,6 +116,10 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
     // Format callstack
     for (const ErrorPathItem& e: errorPath) {
         const Token *tok = e.first;
+        // --errorlist can provide null values here
+        if (!tok)
+            continue;
+
         std::string info = e.second;
 
         if (info.compare(0,8,"$symbol:") == 0 && info.find('\n') < info.size()) {
@@ -124,9 +128,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
             info = replaceStr(info.substr(pos+1), "$symbol", symbolName);
         }
 
-        // --errorlist can provide null values here
-        if (tok)
-            callStack.emplace_back(tok, info, tokenList);
+        callStack.emplace_back(tok, info, tokenList);
     }
 
     if (tokenList && !tokenList->getFiles().empty())

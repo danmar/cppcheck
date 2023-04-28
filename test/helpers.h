@@ -31,8 +31,8 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
-
 class Token;
+class Processor;
 
 class givenACodeSampleToTokenize {
 private:
@@ -90,6 +90,22 @@ private:
     const std::string mName;
     const std::string mPath;
     const std::string mFullPath;
+};
+
+class PreprocessorHelper
+{
+public:
+    /**
+     * Get preprocessed code for a given configuration
+     *
+     * Note: for testing only.
+     *
+     * @param filedata file data including preprocessing 'if', 'define', etc
+     * @param cfg configuration to read out
+     * @param filename name of source file
+     * @param inlineSuppression the inline suppressions
+     */
+    static std::string getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression = nullptr);
 };
 
 #endif // helpersH

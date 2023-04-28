@@ -32,6 +32,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <cassert>
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
@@ -61,7 +62,9 @@ using std::memset;
 
 ProcessExecutor::ProcessExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : Executor(files, settings, errorLogger)
-{}
+{
+    assert(mSettings.jobs > 1);
+}
 
 ProcessExecutor::~ProcessExecutor()
 {}

@@ -278,6 +278,7 @@ private:
 
         TEST_CASE(simplifyTemplateArgs1);
         TEST_CASE(simplifyTemplateArgs2);
+        TEST_CASE(simplifyTemplateArgs3);
 
         TEST_CASE(template_variadic_1); // #9144
         TEST_CASE(template_variadic_2); // #4349
@@ -6048,6 +6049,35 @@ private:
         const char expected[] = "struct a_t<false> ; "
                                 "void foo ( ) { bool b ; b = a_t<false> :: t ; } "
                                 "struct a_t<false> { static const bool t = false ; } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyTemplateArgs3() { // #11418
+        const char code[] = "template <class T> struct S {};\n"
+                            "template<typename T>\n"
+                            "T f() {}\n"
+                            "template<typename T, typename U>\n"
+                            "void g() {\n"
+                            "    S<decltype(true ? f<T>() : f<U>())> s1;\n"
+                            "    S<decltype(false ? f<T>() : f<U>())> s2;\n"
+                            "}\n"
+                            "void h() {\n"
+                            "    g<int, char>();\n"
+                            "}\n";
+        const char expected[] = "struct S<decltype((f<int>()))> ; "
+                                "struct S<decltype(f<char>())> ; "
+                                "int f<int> ( ) ; "
+                                "char f<char> ( ) ; "
+                                "void g<int,char> ( ) ; "
+                                "void h ( ) { g<int,char> ( ) ; } "
+                                "void g<int,char> ( ) { "
+                                "S<decltype((f<int>()))> s1 ; "
+                                "S<decltype(f<char>())> s2 ; "
+                                "} "
+                                "int f<int> ( ) { } "
+                                "char f<char> ( ) { } "
+                                "struct S<decltype((f<int>()))> { } ; "
+                                "struct S<decltype(f<char>())> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

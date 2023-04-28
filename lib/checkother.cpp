@@ -1424,7 +1424,7 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isStatic())
             continue;
-        if (var->isArray())
+        if (var->isArray() && !var->isStlType())
             continue;
         if (var->isEnumType())
             continue;
@@ -3608,6 +3608,8 @@ void CheckOther::checkKnownArgument()
             if (tok->tokType() == Token::eIncDecOp)
                 continue;
             if (isConstVarExpression(tok))
+                continue;
+            if (Token::Match(tok->astOperand1(), "%name% ("))
                 continue;
             const Token * tok2 = tok;
             if (isCPPCast(tok2))

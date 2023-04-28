@@ -102,6 +102,7 @@ private:
         TEST_CASE(varid63);
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
         TEST_CASE(varid65); // #10936
+        TEST_CASE(varid66);
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1191,6 +1192,25 @@ private:
         {
             const char code[] = "int (i);";
             const char expected[] = "1: int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+    }
+
+    void varid66() {
+        {
+            const char code[] = "std::string g();\n"
+                                "const std::string s(g() + \"abc\");\n";
+            const char expected[] = "1: std :: string g ( ) ;\n"
+                                    "2: const std :: string s@1 ( g ( ) + \"abc\" ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "enum E {};\n"
+                                "typedef E(*fp_t)();\n"
+                                "E f(fp_t fp);\n";
+            const char expected[] = "1: enum E { } ;\n"
+                                    "2:\n"
+                                    "3: E f ( E ( * fp@1 ) ( ) ) ;\n";
             ASSERT_EQUALS(expected, tokenize(code));
         }
     }

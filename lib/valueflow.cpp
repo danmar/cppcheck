@@ -604,6 +604,7 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
 static void setTokenValue(Token* tok,
                           ValueFlow::Value value,
                           const Settings* settings,
+                          bool isInitList = false,
                           SourceLocation loc = SourceLocation::current())
 {
     // Skip setting values that are too big since its ambiguous
@@ -627,7 +628,7 @@ static void setTokenValue(Token* tok,
     if (!parent)
         return;
 
-    if (Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
+    if (!isInitList && Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
         const Token* callParent = findParent(parent, [](const Token* p) {
             return !Token::simpleMatch(p, ",");
         });
@@ -1137,7 +1138,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 static bool getMinMaxValues(const ValueType* vt, const cppcheck::Platform& platform, MathLib::bigint& minValue, MathLib::bigint& maxValue);
 
 // Handle various constants..
-static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp)
+static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp, bool isInitList = false)
 {
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
         try {
@@ -1151,7 +1152,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             ValueFlow::Value value(signedValue);
             if (!tok->isTemplateArg())
                 value.setKnown();
-            setTokenValue(tok, std::move(value), settings);
+            setTokenValue(tok, std::move(value), settings, isInitList);
         } catch (const std::exception & /*e*/) {
             // Bad character literal
         }
@@ -1161,17 +1162,17 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         value.floatValue = MathLib::toDoubleNumber(tok->str());
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
+        setTokenValue(tok, std::move(value), settings, isInitList);
     } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
+        setTokenValue(tok, std::move(value), settings, isInitList);
     } else if (tok->str() == "NULL" || (cpp && tok->str() == "nullptr")) {
         ValueFlow::Value value(0);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
+        setTokenValue(tok, std::move(value), settings, isInitList);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         if (tok->next()->astOperand2() && !tok->next()->astOperand2()->isLiteral() && tok->next()->astOperand2()->valueType() &&
             (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
@@ -1339,8 +1340,16 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
 
 static void valueFlowNumber(TokenList *tokenlist, const Settings* settings)
 {
+    bool isInitList = false;
+    const Token* endInit{};
     for (Token *tok = tokenlist->front(); tok;) {
-        tok = valueFlowSetConstantValue(tok, settings, tokenlist->isCPP());
+        if (!isInitList && tok->str() == "{" && Token::simpleMatch(tok->astOperand1(), ",")) {
+            isInitList = true;
+            endInit = tok->link();
+        }
+        tok = valueFlowSetConstantValue(tok, settings, tokenlist->isCPP(), isInitList);
+        if (isInitList && tok == endInit)
+            isInitList = false;
     }
 
     if (tokenlist->isCPP()) {
@@ -4519,10 +4528,15 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
         std::vector<const Token*> args = getArguments(tok);
         if (scope->numConstructors == 0) {
             auto it = scope->varlist.cbegin();
-            LifetimeStore::forEach(args,
-                                   "Passed to constructor of '" + t->name() + "'.",
-                                   ValueFlow::Value::LifetimeKind::SubObject,
-                                   [&](const LifetimeStore& ls) {
+            LifetimeStore::forEach(
+                args,
+                "Passed to constructor of '" + t->name() + "'.",
+                ValueFlow::Value::LifetimeKind::SubObject,
+                [&](const LifetimeStore& ls) {
+                // Skip static variable
+                it = std::find_if(it, scope->varlist.cend(), [](const Variable& var) {
+                    return !var.isStatic();
+                });
                 if (it == scope->varlist.cend())
                     return;
                 const Variable& var = *it;
