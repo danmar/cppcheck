@@ -24,6 +24,7 @@
 #include "path.h"
 #include "token.h"
 #include "tokenlist.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>
@@ -32,9 +33,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
-#include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include <tinyxml2.h>

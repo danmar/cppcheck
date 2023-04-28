@@ -39,7 +39,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <numeric>
 
 class TestSuppressions : public TestFixture {
 public:
