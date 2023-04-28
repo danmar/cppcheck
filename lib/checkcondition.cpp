@@ -1498,6 +1498,8 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::simpleMatch(tok, ":"))
                 continue;
+            if (Token::Match(tok->astOperand1(), "%name% (") && Token::simpleMatch(tok->astParent(), "return"))
+                continue;
             if (tok->isComparisonOp() && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1()) &&
                 isSameExpression(mTokenizer->isCPP(),
                                  true,
