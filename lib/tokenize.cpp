@@ -5797,134 +5797,223 @@ void Tokenizer::dump(std::ostream &out) const
     // The idea is not that this will be readable for humans. It's a
     // data dump that 3rd party tools could load and get useful info from.
 
+    std::string outs;
+
     std::set<const Library::Container*> containers;
 
     // tokens..
-    out << "  <tokenlist>" << std::endl;
+    outs += "  <tokenlist>";
+    outs += '\n';
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\" column=\"" << tok->column() << "\"";
-        out << " str=\"" << ErrorLogger::toxml(tok->str()) << '\"';
-        out << " scope=\"" << tok->scope() << '\"';
+        outs += "    <token id=\"";
+        outs += ptr_to_string(tok);
+        outs += "\" file=\"";
+        outs += ErrorLogger::toxml(list.file(tok));
+        outs += "\" linenr=\"";
+        outs += std::to_string(tok->linenr());
+        outs += "\" column=\"";
+        outs += std::to_string(tok->column());
+        outs += "\"";
+
+        outs += " str=\"";
+        outs += ErrorLogger::toxml(tok->str());
+        outs += '\"';
+
+        outs += " scope=\"";
+        outs += ptr_to_string(tok->scope());
+        outs += '\"';
         if (tok->isName()) {
-            out << " type=\"name\"";
+            outs += " type=\"name\"";
             if (tok->isUnsigned())
-                out << " isUnsigned=\"true\"";
+                outs += " isUnsigned=\"true\"";
             else if (tok->isSigned())
-                out << " isSigned=\"true\"";
+                outs += " isSigned=\"true\"";
         } else if (tok->isNumber()) {
-            out << " type=\"number\"";
+            outs += " type=\"number\"";
             if (MathLib::isInt(tok->str()))
-                out << " isInt=\"true\"";
+                outs += " isInt=\"true\"";
             if (MathLib::isFloat(tok->str()))
-                out << " isFloat=\"true\"";
-        } else if (tok->tokType() == Token::eString)
-            out << " type=\"string\" strlen=\"" << Token::getStrLength(tok) << '\"';
+                outs += " isFloat=\"true\"";
+        } else if (tok->tokType() == Token::eString) {
+            outs += " type=\"string\" strlen=\"";
+            outs += std::to_string(Token::getStrLength(tok));
+            outs += '\"';
+        }
         else if (tok->tokType() == Token::eChar)
-            out << " type=\"char\"";
+            outs += " type=\"char\"";
         else if (tok->isBoolean())
-            out << " type=\"boolean\"";
+            outs += " type=\"boolean\"";
         else if (tok->isOp()) {
-            out << " type=\"op\"";
+            outs += " type=\"op\"";
             if (tok->isArithmeticalOp())
-                out << " isArithmeticalOp=\"true\"";
+                outs += " isArithmeticalOp=\"true\"";
             else if (tok->isAssignmentOp())
-                out << " isAssignmentOp=\"true\"";
+                outs += " isAssignmentOp=\"true\"";
             else if (tok->isComparisonOp())
-                out << " isComparisonOp=\"true\"";
+                outs += " isComparisonOp=\"true\"";
             else if (tok->tokType() == Token::eLogicalOp)
-                out << " isLogicalOp=\"true\"";
+                outs += " isLogicalOp=\"true\"";
         }
         if (tok->isCast())
-            out << " isCast=\"true\"";
+            outs += " isCast=\"true\"";
         if (tok->isExternC())
-            out << " externLang=\"C\"";
+            outs += " externLang=\"C\"";
         if (tok->isExpandedMacro())
-            out << " isExpandedMacro=\"true\"";
+            outs += " isExpandedMacro=\"true\"";
         if (tok->isTemplateArg())
-            out << " isTemplateArg=\"true\"";
+            outs += " isTemplateArg=\"true\"";
         if (tok->isRemovedVoidParameter())
-            out << " isRemovedVoidParameter=\"true\"";
+            outs += " isRemovedVoidParameter=\"true\"";
         if (tok->isSplittedVarDeclComma())
-            out << " isSplittedVarDeclComma=\"true\"";
+            outs += " isSplittedVarDeclComma=\"true\"";
         if (tok->isSplittedVarDeclEq())
-            out << " isSplittedVarDeclEq=\"true\"";
+            outs += " isSplittedVarDeclEq=\"true\"";
         if (tok->isImplicitInt())
-            out << " isImplicitInt=\"true\"";
+            outs += " isImplicitInt=\"true\"";
         if (tok->isComplex())
-            out << " isComplex=\"true\"";
+            outs += " isComplex=\"true\"";
         if (tok->isRestrict())
-            out << " isRestrict=\"true\"";
+            outs += " isRestrict=\"true\"";
         if (tok->isAtomic())
-            out << " isAtomic=\"true\"";
+            outs += " isAtomic=\"true\"";
         if (tok->isAttributeExport())
-            out << " isAttributeExport=\"true\"";
-        if (tok->link())
-            out << " link=\"" << tok->link() << '\"';
-        if (tok->varId() > 0)
-            out << " varId=\"" << tok->varId() << '\"';
-        if (tok->exprId() > 0)
-            out << " exprId=\"" << tok->exprId() << '\"';
-        if (tok->variable())
-            out << " variable=\"" << tok->variable() << '\"';
-        if (tok->function())
-            out << " function=\"" << tok->function() << '\"';
-        if (!tok->values().empty())
-            out << " values=\"" << &tok->values() << '\"';
-        if (tok->type())
-            out << " type-scope=\"" << tok->type()->classScope << '\"';
-        if (tok->astParent())
-            out << " astParent=\"" << tok->astParent() << '\"';
-        if (tok->astOperand1())
-            out << " astOperand1=\"" << tok->astOperand1() << '\"';
-        if (tok->astOperand2())
-            out << " astOperand2=\"" << tok->astOperand2() << '\"';
-        if (!tok->originalName().empty())
-            out << " originalName=\"" << tok->originalName() << '\"';
+            outs += " isAttributeExport=\"true\"";
+        if (tok->link()) {
+            outs += " link=\"";
+            outs += ptr_to_string(tok->link());
+            outs += '\"';
+        }
+        if (tok->varId() > 0) {
+            outs += " varId=\"";
+            outs += std::to_string(tok->varId());
+            outs += '\"';
+        }
+        if (tok->exprId() > 0) {
+            outs += " exprId=\"";
+            outs += std::to_string(tok->exprId());
+            outs += '\"';
+        }
+        if (tok->variable()) {
+            outs += " variable=\"";
+            outs += ptr_to_string(tok->variable());
+            outs += '\"';
+        }
+        if (tok->function()) {
+            outs += " function=\"";
+            outs += ptr_to_string(tok->function());
+            outs += '\"';
+        }
+        if (!tok->values().empty()) {
+            outs += " values=\"";
+            outs += ptr_to_string(&tok->values());
+            outs += '\"';
+        }
+        if (tok->type()) {
+            outs += " type-scope=\"";
+            outs += ptr_to_string(tok->type()->classScope);
+            outs += '\"';
+        }
+        if (tok->astParent()) {
+            outs += " astParent=\"";
+            outs += ptr_to_string(tok->astParent());
+            outs += '\"';
+        }
+        if (tok->astOperand1()) {
+            outs += " astOperand1=\"";
+            outs += ptr_to_string(tok->astOperand1());
+            outs += '\"';
+        }
+        if (tok->astOperand2()) {
+            outs += " astOperand2=\"";
+            outs += ptr_to_string(tok->astOperand2());
+            outs += '\"';
+        }
+        if (!tok->originalName().empty()) {
+            outs += " originalName=\"";
+            outs += tok->originalName();
+            outs += '\"';
+        }
         if (tok->valueType()) {
             const std::string vt = tok->valueType()->dump();
-            if (!vt.empty())
-                out << ' ' << vt;
+            if (!vt.empty()) {
+                outs += ' ';
+                outs += vt;
+            }
             containers.insert(tok->valueType()->container);
         }
         if (!tok->varId() && tok->scope()->isExecutable() && Token::Match(tok, "%name% (")) {
             if (mSettings->library.isnoreturn(tok))
-                out << " noreturn=\"true\"";
+                outs += " noreturn=\"true\"";
         }
 
-        out << "/>" << std::endl;
+        outs += "/>";
+        outs += '\n';
     }
-    out << "  </tokenlist>" << std::endl;
+    outs += "  </tokenlist>";
+    outs += '\n';
+
+    out << outs;
+    outs.clear();
 
     mSymbolDatabase->printXml(out);
 
     containers.erase(nullptr);
     if (!containers.empty()) {
-        out << "  <containers>\n";
+        outs += "  <containers>";
+        outs += '\n';
         for (const Library::Container* c: containers) {
-            out << "    <container id=\"" << c << "\" array-like-index-op=\""
-                << (c->arrayLike_indexOp ? "true" : "false") << "\" "
-                << "std-string-like=\"" << (c->stdStringLike ? "true" : "false") << "\"/>\n";
+            outs += "    <container id=\"";
+            outs += ptr_to_string(c);
+            outs += "\" array-like-index-op=\"";
+            outs += (c->arrayLike_indexOp ? "true" : "false");
+            outs += "\" ";
+            outs += "std-string-like=\"";
+            outs +=(c->stdStringLike ? "true" : "false");
+            outs += "\"/>";
+            outs += '\n';
         }
-        out << "  </containers>\n";
+        outs += "  </containers>";
+        outs += '\n';
     }
 
     if (list.front())
         list.front()->printValueFlow(true, out);
 
     if (!mTypedefInfo.empty()) {
-        out << "  <typedef-info>" << std::endl;
+        outs += "  <typedef-info>";
+        outs += '\n';
         for (const TypedefInfo &typedefInfo: mTypedefInfo) {
-            out << "    <info"
-                << " name=\"" << typedefInfo.name << "\""
-                << " file=\"" << ErrorLogger::toxml(typedefInfo.filename) << "\""
-                << " line=\"" << typedefInfo.lineNumber << "\""
-                << " column=\"" << typedefInfo.column << "\""
-                << " used=\"" << (typedefInfo.used?1:0) << "\""
-                << "/>" << std::endl;
+            outs += "    <info";
+
+            outs += " name=\"";
+            outs += typedefInfo.name;
+            outs += "\"";
+
+            outs += " file=\"";
+            outs += ErrorLogger::toxml(typedefInfo.filename);
+            outs += "\"";
+
+            outs += " line=\"";
+            outs += std::to_string(typedefInfo.lineNumber);
+            outs += "\"";
+
+            outs += " column=\"";
+            outs += std::to_string(typedefInfo.column);
+            outs += "\"";
+
+            outs += " used=\"";
+            outs += std::to_string(typedefInfo.used?1:0);
+            outs += "\"";
+
+            outs += "/>";
+            outs += '\n';
         }
-        out << "  </typedef-info>" << std::endl;
+        outs += "  </typedef-info>";
+        outs += '\n';
     }
-    out << mTemplateSimplifier->dump();
+    outs += mTemplateSimplifier->dump();
+
+    out << outs;
 }
 
 void Tokenizer::simplifyHeadersAndUnusedTemplates()
