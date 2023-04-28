@@ -626,13 +626,26 @@ void TemplateSimplifier::deleteToken(Token *tok)
         tok->deleteThis();
 }
 
-bool TemplateSimplifier::removeTemplate(Token *tok)
+static void invalidateForwardDecls(const Token* beg, const Token* end, std::map<Token*, Token*>* forwardDecls) {
+    if (!forwardDecls)
+        return;
+    for (auto& fwd : *forwardDecls) {
+        for (const Token* tok = beg; tok != end; tok = tok->next())
+            if (fwd.second == tok) {
+                fwd.second = nullptr;
+                break;
+            }
+    }
+}
+
+bool TemplateSimplifier::removeTemplate(Token *tok, std::map<Token*, Token*>* forwardDecls)
 {
     if (!Token::simpleMatch(tok, "template <"))
         return false;
 
     Token *end = findTemplateDeclarationEnd(tok);
     if (end && end->next()) {
+        invalidateForwardDecls(tok, end->next(), forwardDecls);
         eraseTokens(tok, end->next());
         deleteToken(tok);
         return true;
@@ -2417,8 +2430,10 @@ static void invalidateInst(const Token* beg, const Token* end, std::vector<newIn
         return;
     for (auto& inst : *newInst) {
         for (const Token* tok = beg; tok != end; tok = tok->next())
-            if (inst.token == tok)
+            if (inst.token == tok) {
                 inst.token = nullptr;
+                break;
+            }
     }
 }
 
@@ -3850,8 +3865,8 @@ void TemplateSimplifier::simplifyTemplates(
                     // remove forward declaration if found
                     auto it1 = mTemplateForwardDeclarationsMap.find(it->token());
                     if (it1 != mTemplateForwardDeclarationsMap.end())
-                        removeTemplate(it1->second);
-                    removeTemplate(it->token());
+                        removeTemplate(it1->second, &mTemplateForwardDeclarationsMap);
+                    removeTemplate(it->token(), &mTemplateForwardDeclarationsMap);
                 }
                 mTemplateDeclarations.erase(decl);
             }
