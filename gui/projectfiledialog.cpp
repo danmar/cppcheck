@@ -347,6 +347,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI->mComboBoxPlatform->setCurrentText(projectFile->getPlatform());
     setSuppressions(projectFile->getSuppressions());
 
+    // TODO
     // Human knowledge..
     /*
        mUI->mListUnknownFunctionReturn->clear();

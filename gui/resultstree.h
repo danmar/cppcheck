@@ -347,14 +347,6 @@ protected:
     void startApplication(QStandardItem *target, int application = -1);
 
     /**
-     * @brief Helper function to copy filename/full path to the clipboard
-     *
-     * @param target Error tree item to open
-     * @param fullPath Are we copying full path or only filename?
-     */
-    void copyPathToClipboard(QStandardItem *target, bool fullPath);
-
-    /**
      * @brief Helper function returning the filename/full path of the error tree item \a target.
      *
      * @param target The error tree item containing the filename/full path

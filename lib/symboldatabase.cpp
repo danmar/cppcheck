@@ -4462,13 +4462,6 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
         className = nameTok->str();
 }
 
-bool Scope::hasDefaultConstructor() const
-{
-    return numConstructors > 0 && std::any_of(functionList.begin(), functionList.end(), [](const Function& func) {
-        return func.type == Function::eConstructor && func.argCount() == 0;
-    });
-}
-
 AccessControl Scope::defaultAccess() const
 {
     switch (type) {

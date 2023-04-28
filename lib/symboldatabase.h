@@ -1175,8 +1175,6 @@ public:
         functionMap.insert(make_pair(back->tokenDef->str(), back));
     }
 
-    bool hasDefaultConstructor() const;
-
     AccessControl defaultAccess() const;
 
     /**
