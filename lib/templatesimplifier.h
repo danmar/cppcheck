@@ -37,6 +37,7 @@ class Settings;
 class Token;
 class Tokenizer;
 class TokenList;
+struct newInstantiation;
 
 /// @addtogroup Core
 /// @{
@@ -333,7 +334,7 @@ public:
      * @param start first token of arguments
      * @param end token following last argument token
      */
-    void simplifyTemplateArgs(Token *start, const Token *end);
+    void simplifyTemplateArgs(Token *start, const Token *end, std::vector<newInstantiation>* newInst = nullptr);
 
 private:
     /**

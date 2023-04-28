@@ -1583,6 +1583,12 @@ bool TemplateSimplifier::alreadyHasNamespace(const TokenAndName &templateDeclara
     return Token::simpleMatch(tok->tokAt(offset), scope.c_str(), scope.size());
 }
 
+struct newInstantiation {
+    newInstantiation(Token* t, std::string s) : token(t), scope(std::move(s)) {}
+    Token* token;
+    std::string scope;
+};
+
 void TemplateSimplifier::expandTemplate(
     const TokenAndName &templateDeclaration,
     const TokenAndName &templateInstantiation,
@@ -1599,11 +1605,7 @@ void TemplateSimplifier::expandTemplate(
     const bool isFunction = templateDeclaration.isFunction();
     const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
-    struct newInstantiation {
-        newInstantiation(Token *t, std::string s) : token(t), scope(std::move(s)) {}
-        Token *token;
-        std::string scope;
-    };
+
     std::vector<newInstantiation> newInstantiations;
 
     // add forward declarations
@@ -2251,7 +2253,9 @@ void TemplateSimplifier::expandTemplate(
 
     // add new instantiations
     for (const auto & inst : newInstantiations) {
-        simplifyTemplateArgs(inst.token->tokAt(2), inst.token->next()->findClosingBracket());
+        if (!inst.token)
+            continue;
+        simplifyTemplateArgs(inst.token->tokAt(2), inst.token->next()->findClosingBracket(), &newInstantiations);
         // only add recursive instantiation if its arguments are a constant expression
         if (templateDeclaration.name() != inst.token->str() ||
             (inst.token->tokAt(2)->isNumber() || inst.token->tokAt(2)->isStandardType()))
@@ -2409,7 +2413,17 @@ static Token *skipTernaryOp(Token *tok, const Token *backToken)
     return tok;
 }
 
-void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end)
+static void invalidateInst(const Token* beg, const Token* end, std::vector<newInstantiation>* newInst) {
+    if (!newInst)
+        return;
+    for (auto& inst : *newInst) {
+        for (const Token* tok = beg; tok != end; tok = tok->next())
+            if (inst.token == tok)
+                inst.token = nullptr;
+    }
+}
+
+void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, std::vector<newInstantiation>* newInst)
 {
     // start could be erased so use the token before start if available
     Token * first = (start && start->previous()) ? start->previous() : mTokenList.front();
@@ -2517,6 +2531,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end)
                 }
 
                 if (Token::Match(tok->next(), "false|0")) {
+                    invalidateInst(tok->next(), colon, newInst);
                     // Use code after colon, remove code before it.
                     Token::eraseTokens(tok, colon);
 
@@ -2543,6 +2558,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end)
                             else if (endTok->str() == ">" && !end)
                                 ;
                             else {
+                                invalidateInst(colon->tokAt(-1), endTok, newInst);
                                 Token::eraseTokens(colon->tokAt(-2), endTok);
                                 again = true;
                                 break;
