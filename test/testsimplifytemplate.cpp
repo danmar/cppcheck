@@ -4054,6 +4054,26 @@ private:
                             "b<a100<int>> d100;";
         // don't bother checking the output because this is not instantiated properly
         tok(code); // don't crash
+
+        const char code2[] = "template<typename T> void* allocateCell(Heap&);\n"
+                             "template<typename T> void* allocateCell(Heap&, size_t);\n"
+                             "JSRopeString* createNull(VM& vm) {\n"
+                             "  JSRopeString* newString = new (NotNull, allocateCell<JSRopeString>(vm.heap)) JSRopeString(vm);\n"
+                             "  return newString;\n"
+                             "}\n"
+                             "JSFinalObject* create(VM& vm, Structure* structure) {\n"
+                             "  JSFinalObject* finalObject = new (NotNull, allocateCell<JSFinalObject>(vm.heap, allocationSize(structure->inlineCapacity()))) JSFinalObject(vm, structure);\n"
+                             "  return finalObject;\n"
+                             "}\n"
+                             "template<typename T>\n"
+                             "void* allocateCell(Heap& heap, size_t size) {\n"
+                             "  return 0;\n"
+                             "}\n"
+                             "template<typename T>\n"
+                             "void* allocateCell(Heap& heap) {\n"
+                             "  return allocateCell<T>(heap, sizeof(T));\n"
+                             "}\n";
+        tok(code2);
     }
 
     void template159() {  // #9886
