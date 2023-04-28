@@ -627,23 +627,29 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     return dui;
 }
 
-bool Preprocessor::hasErrors(const simplecpp::OutputList &outputList)
+bool Preprocessor::hasErrors(const simplecpp::Output &output)
 {
-    for (simplecpp::OutputList::const_iterator it = outputList.cbegin(); it != outputList.cend(); ++it) {
-        switch (it->type) {
-        case simplecpp::Output::ERROR:
-        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-        case simplecpp::Output::SYNTAX_ERROR:
-        case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-        case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-            return true;
-        case simplecpp::Output::WARNING:
-        case simplecpp::Output::MISSING_HEADER:
-        case simplecpp::Output::PORTABILITY_BACKSLASH:
-            break;
-        }
+    switch (output.type) {
+    case simplecpp::Output::ERROR:
+    case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+    case simplecpp::Output::SYNTAX_ERROR:
+    case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+    case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
+        return true;
+    case simplecpp::Output::WARNING:
+    case simplecpp::Output::MISSING_HEADER:
+    case simplecpp::Output::PORTABILITY_BACKSLASH:
+        break;
     }
     return false;
+}
+
+bool Preprocessor::hasErrors(const simplecpp::OutputList &outputList)
+{
+    const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output) {
+        return hasErrors(output);
+    });
+    return it != outputList.cend();
 }
 
 void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool throwError)
@@ -651,19 +657,11 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
     const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
     reportOutput(outputList, showerror);
     if (throwError) {
-        for (const simplecpp::Output& output : outputList) {
-            switch (output.type) {
-            case simplecpp::Output::ERROR:
-            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-            case simplecpp::Output::SYNTAX_ERROR:
-            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-                throw output;
-            case simplecpp::Output::WARNING:
-            case simplecpp::Output::MISSING_HEADER:
-            case simplecpp::Output::PORTABILITY_BACKSLASH:
-                break;
-            }
+        const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
+            return hasErrors(output);
+        });
+        if (it != outputList.cend()) {
+            throw *it;
         }
     }
 }
