@@ -4014,8 +4014,8 @@ void Tokenizer::simplifyTemplates()
 /** Class used in Tokenizer::setVarIdPass1 */
 class VariableMap {
 private:
-    std::map<std::string, nonneg int> mVariableId;
-    std::map<std::string, nonneg int> mVariableId_global;
+    std::unordered_map<std::string, nonneg int> mVariableId;
+    std::unordered_map<std::string, nonneg int> mVariableId_global;
     std::stack<std::vector<std::pair<std::string, nonneg int>>> mScopeInfo;
     mutable nonneg int mVarId{};
 public:
@@ -4027,7 +4027,7 @@ public:
         return mVariableId.find(varname) != mVariableId.end();
     }
 
-    const std::map<std::string, nonneg int>& map(bool global) const {
+    const std::unordered_map<std::string, nonneg int>& map(bool global) const {
         return global ? mVariableId_global : mVariableId;
     }
     nonneg int getVarId() const {
@@ -4067,7 +4067,7 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
             mVariableId_global[varname] = mVariableId[varname];
         return;
     }
-    std::map<std::string, nonneg int>::iterator it = mVariableId.find(varname);
+    std::unordered_map<std::string, nonneg int>::iterator it = mVariableId.find(varname);
     if (it == mVariableId.end()) {
         mScopeInfo.top().emplace_back(varname, 0);
         mVariableId[varname] = ++mVarId;
@@ -4330,7 +4330,7 @@ void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
             --indentlevel;
             inEnum = false;
         } else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %name% [({]")) {
-            const std::map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+            const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
             if (it != variableMap.map(false).end()) {
                 tok->varId(it->second);
             }
@@ -4348,7 +4348,7 @@ void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
                 }
 
                 if (!inEnum) {
-                    const std::map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+                    const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
                     if (it != variableMap.map(false).end()) {
                         tok->varId(it->second);
                         setVarIdStructMembers(&tok, structMembers, variableMap.getVarId());
@@ -4692,7 +4692,7 @@ void Tokenizer::setVarIdPass1()
                         while (tok != end) {
                             if (tok->isName() && !(Token::simpleMatch(tok->next(), "<") &&
                                                    Token::Match(tok->tokAt(-1), ":: %name%"))) {
-                                const std::map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+                                const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
                                 if (it != variableMap.map(false).end())
                                     tok->varId(it->second);
                             }
@@ -4757,7 +4757,7 @@ void Tokenizer::setVarIdPass1()
 
             if ((!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,") && Token::Match(tok->next(), ",|=|}"))) &&
                 !Token::simpleMatch(tok->next(), ": ;")) {
-                const std::map<std::string, nonneg int>::const_iterator it = variableMap.map(globalNamespace).find(tok->str());
+                const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(globalNamespace).find(tok->str());
                 if (it != variableMap.map(globalNamespace).end()) {
                     tok->varId(it->second);
                     setVarIdStructMembers(&tok, structMembers, variableMap.getVarId());
