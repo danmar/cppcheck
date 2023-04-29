@@ -64,7 +64,6 @@ static const struct CWE CWE571(571U);   // Expression is Always True
 static const struct CWE CWE672(672U);   // Operation on a Resource after Expiration or Release
 static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
 static const struct CWE CWE683(683U);   // Function Call With Incorrect Order of Arguments
-static const struct CWE CWE686(686U);   // Function Call With Incorrect Argument Type
 static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
 static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const struct CWE CWE768(768U);   // Incorrect Short Circuit Evaluation
@@ -3596,6 +3595,8 @@ void CheckOther::checkKnownArgument()
             if (tok->tokType() == Token::eIncDecOp)
                 continue;
             if (isConstVarExpression(tok))
+                continue;
+            if (Token::Match(tok->astOperand1(), "%name% ("))
                 continue;
             const Token * tok2 = tok;
             if (isCPPCast(tok2))

@@ -23,6 +23,7 @@
 #include "library.h"
 #include "settings.h"
 
+#include <cassert>
 #include <list>
 #include <numeric>
 #include <utility>
@@ -32,7 +33,9 @@ class ErrorLogger;
 SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : Executor(files, settings, errorLogger)
     , mCppcheck(cppcheck)
-{}
+{
+    assert(mSettings.jobs == 1);
+}
 
 SingleExecutor::~SingleExecutor()
 {}

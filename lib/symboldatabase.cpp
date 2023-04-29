@@ -3463,15 +3463,14 @@ const std::string& Type::name() const
 
 void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, const std::string &msg) const
 {
-    if (tok && mSettings.debugwarnings) {
+    if (tok && mSettings.debugwarnings && mErrorLogger) {
         const std::list<const Token*> locationList(1, tok);
         const ErrorMessage errmsg(locationList, &mTokenizer.list,
                                   Severity::debug,
                                   type,
                                   msg,
                                   Certainty::normal);
-        if (mErrorLogger)
-            mErrorLogger->reportErr(errmsg);
+        mErrorLogger->reportErr(errmsg);
     }
 }
 
@@ -4463,13 +4462,6 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
         className = nameTok->str();
 }
 
-bool Scope::hasDefaultConstructor() const
-{
-    return numConstructors > 0 && std::any_of(functionList.begin(), functionList.end(), [](const Function& func) {
-        return func.type == Function::eConstructor && func.argCount() == 0;
-    });
-}
-
 AccessControl Scope::defaultAccess() const
 {
     switch (type) {
@@ -5013,7 +5005,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
 
 //---------------------------------------------------------------------------
 
-const Type* SymbolDatabase::findVariableTypeInBase(const Scope* scope, const Token* typeTok) const
+const Type* SymbolDatabase::findVariableTypeInBase(const Scope* scope, const Token* typeTok)
 {
     if (scope && scope->definedType && !scope->definedType->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo> &derivedFrom = scope->definedType->derivedFrom;

@@ -1175,8 +1175,6 @@ public:
         functionMap.insert(make_pair(back->tokenDef->str(), back));
     }
 
-    bool hasDefaultConstructor() const;
-
     AccessControl defaultAccess() const;
 
     /**
@@ -1493,8 +1491,8 @@ private:
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
     const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
-    Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
-    const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
+    static Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
+    static const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok);
 
     using MemberIdMap = std::map<unsigned int, unsigned int>;
     using VarIdMap = std::map<unsigned int, MemberIdMap>;

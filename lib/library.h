@@ -254,7 +254,7 @@ public:
         };
         struct RangeItemRecordTypeItem {
             std::string name;
-            int templateParameter;
+            int templateParameter; // TODO: use this
         };
         std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
@@ -406,15 +406,6 @@ public:
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg ? arg->valid : emptyString;
     }
-
-    struct InvalidArgValue {
-        enum class Type {le, lt, eq, ge, gt, range} type;
-        std::string op1;
-        std::string op2;
-        bool isInt() const {
-            return MathLib::isInt(op1);
-        }
-    };
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);

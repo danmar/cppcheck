@@ -158,13 +158,6 @@ public:
     nonneg int sizeOfType(const std::string& type) const;
 
     void simplifyDebug();
-    /**
-     * Try to determine if function parameter is passed by value by looking
-     * at the function declaration.
-     * @param fpar token for function parameter in the function call
-     * @return true if the parameter is passed by value. if unsure, false is returned
-     */
-    bool isFunctionParameterPassedByValue(const Token *fpar) const;
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
@@ -280,6 +273,7 @@ public:
     /**
      */
     bool simplifyUsing();
+    void simplifyUsingError(const Token* usingStart, const Token* usingEnd);
 
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
@@ -552,12 +546,6 @@ private:
      * Remove [[attribute]] (C++11 and later) from TokenList
      */
     void simplifyCPPAttribute();
-
-    /**
-     * Replace strlen(str)
-     * @return true if any replacement took place, false else
-     * */
-    bool simplifyStrlen();
 
     /**
      * Convert namespace aliases

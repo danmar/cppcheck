@@ -80,8 +80,7 @@ public:
      * Include file types.
      */
     enum HeaderTypes {
-        NoHeader = 0,
-        UserHeader,
+        UserHeader = 1,
         SystemHeader
     };
 
@@ -169,16 +168,14 @@ public:
 
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
-    void setFile0(const std::string &f) {
-        mFile0 = f;
-    }
-
     /**
      * dump all directives present in source file
      */
     void dump(std::ostream &out) const;
 
     void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
+
+    static bool hasErrors(const simplecpp::Output &output);
 
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);

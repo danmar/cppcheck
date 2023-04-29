@@ -1197,11 +1197,22 @@ private:
     }
 
     void varid66() {
-        const char code[] = "std::string g();\n"
-                            "const std::string s(g() + \"abc\");\n";
-        const char expected[] = "1: std :: string g ( ) ;\n"
-                                "2: const std :: string s@1 ( g ( ) + \"abc\" ) ;\n";
-        ASSERT_EQUALS(expected, tokenize(code));
+        {
+            const char code[] = "std::string g();\n"
+                                "const std::string s(g() + \"abc\");\n";
+            const char expected[] = "1: std :: string g ( ) ;\n"
+                                    "2: const std :: string s@1 ( g ( ) + \"abc\" ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "enum E {};\n"
+                                "typedef E(*fp_t)();\n"
+                                "E f(fp_t fp);\n";
+            const char expected[] = "1: enum E { } ;\n"
+                                    "2:\n"
+                                    "3: E f ( E ( * fp@1 ) ( ) ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
     }
 
     void varid_for_1() {
