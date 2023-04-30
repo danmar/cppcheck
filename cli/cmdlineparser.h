@@ -25,6 +25,7 @@
 #include "utils.h"
 
 class Settings;
+class Suppressions;
 
 /// @addtogroup CLI
 /// @{
@@ -44,8 +45,10 @@ public:
      * The constructor.
      * @param settings Settings instance that will be modified according to
      * options user has given.
+     * @param suppressions Suppressions instance that keeps the suppressions
+     * @param suppressionsNoFail Suppressions instance that keeps the "do not fail" suppressions
      */
-    explicit CmdLineParser(Settings &settings);
+    CmdLineParser(Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail);
 
     /**
      * Parse given command line.
@@ -141,6 +144,8 @@ private:
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
+    Suppressions &mSuppressions;
+    Suppressions &mSuppressionsNoFail;
     bool mShowHelp;
     bool mShowVersion;
     bool mShowErrorMessages;

@@ -114,8 +114,10 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>& se
     return true;
 }
 
-CmdLineParser::CmdLineParser(Settings &settings)
+CmdLineParser::CmdLineParser(Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail)
     : mSettings(settings)
+    , mSuppressions(suppressions)
+    , mSuppressionsNoFail(suppressionsNoFail)
     , mShowHelp(false)
     , mShowVersion(false)
     , mShowErrorMessages(false)
@@ -406,7 +408,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("couldn't open the file: \"" + filename + "\".");
                     return false;
                 }
-                const std::string errmsg(mSettings.nofail.parseFile(f));
+                const std::string errmsg(mSuppressionsNoFail.parseFile(f));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -858,7 +860,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
                 const std::string suppression = argv[i]+11;
-                const std::string errmsg(mSettings.nomsg.addSuppressionLine(suppression));
+                const std::string errmsg(mSuppressions.addSuppressionLine(suppression));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -885,7 +887,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError(message);
                     return false;
                 }
-                const std::string errmsg(mSettings.nomsg.parseFile(f));
+                const std::string errmsg(mSuppressions.parseFile(f));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -894,7 +896,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             else if (std::strncmp(argv[i], "--suppress-xml=", 15) == 0) {
                 const char * filename = argv[i] + 15;
-                const std::string errmsg(mSettings.nomsg.parseXmlFile(filename));
+                const std::string errmsg(mSuppressions.parseXmlFile(filename));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
