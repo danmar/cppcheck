@@ -8451,6 +8451,19 @@ private:
             ASSERT_EQUALS(3, tok->variable()->valueType()->constness);
             ASSERT_EQUALS(1, tok->variable()->valueType()->pointer);
         }
+        {
+            GET_SYMBOL_DB("std::string f(const std::string& s) {\n"
+                          "    auto t = s.substr(3, 7);\n"
+                          "    auto r = t.substr(1, 2);\n"
+                          "    return r;\n"
+                          "}\n");
+            ASSERT_EQUALS("", errout.str());
+
+            const Token* tok = tokenizer.tokens();
+            tok = Token::findsimplematch(tok, "auto r");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("container(std :: string|wstring|u16string|u32string)", tok->valueType()->str());
+        }
     }
 
     void valueTypeThis() {

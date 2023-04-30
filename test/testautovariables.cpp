@@ -2274,7 +2274,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("auto f() {\n"
+        check("std::vector<int>::iterator f() {\n"
               "    std::vector<int> x;\n"
               "    auto it = x.begin();\n"
               "    return it;\n"
@@ -2288,7 +2288,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());
 
-        check("auto f() {\n"
+        check("int* f() {\n"
               "    std::vector<int> x;\n"
               "    auto p = x.data();\n"
               "    return p;\n"
@@ -2315,7 +2315,7 @@ private:
             "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning pointer to local variable 'v' that will be invalid when returning.\n",
             errout.str());
 
-        check("auto f(std::vector<int> x) {\n"
+        check("std::vector<int>::iterator f(std::vector<int> x) {\n"
               "    auto it = x.begin();\n"
               "    return it;\n"
               "}");
@@ -2447,11 +2447,12 @@ private:
                       errout.str());
 
         check("std::vector<int> g();\n"
-              "auto f() {\n"
+              "std::vector<int>::iterator f() {\n"
               "    auto it = g().begin();\n"
               "    return it;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning iterator that will be invalid when returning.\n",
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator that is a temporary.\n"
+                      "[test.cpp:3] -> [test.cpp:4]: (error) Returning iterator that will be invalid when returning.\n",
                       errout.str());
 
         check("std::vector<int> g();\n"
