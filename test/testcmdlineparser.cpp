@@ -17,7 +17,7 @@
  */
 
 #include "cmdlineparser.h"
-#include "color.h"
+#include "config.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "platform.h"

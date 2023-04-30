@@ -19,20 +19,16 @@
 #ifndef helpersH
 #define helpersH
 
-#include "color.h"
-#include "errorlogger.h"
-#include "settings.h"
-#include "suppressions.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <fstream> // IWYU pragma: keep
-#include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
 class Token;
-class Processor;
+class Preprocessor;
+class Settings;
+class Suppressions;
 
 class givenACodeSampleToTokenize {
 private:

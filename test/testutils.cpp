@@ -21,6 +21,11 @@
 #include "settings.h"
 #include "utils.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <string>
+
 const Settings givenACodeSampleToTokenize::settings;
 
 class TestUtils : public TestFixture {
