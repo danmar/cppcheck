@@ -44,11 +44,10 @@ public:
     TestTokenizer() : TestFixture("TestTokenizer") {}
 
 private:
-    // If there are unused templates, keep those
-    const Settings settings0 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
-    const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").checkUnusedTemplates().build();
-    const Settings settings2 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
-    const Settings settings_windows = settingsBuilder().library("windows.cfg").checkUnusedTemplates().build();
+    const Settings settings0 = settingsBuilder().library("qt.cfg").build();
+    const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").build();
+    const Settings settings2 = settingsBuilder().library("qt.cfg").build();
+    const Settings settings_windows = settingsBuilder().library("windows.cfg").build();
 
     void run() override {
         TEST_CASE(tokenize1);
@@ -946,7 +945,7 @@ private:
         }
 
         {
-            const Settings s = settingsBuilder().checkUnusedTemplates().build();
+            const Settings s;
             ASSERT_EQUALS("; template < typename T , u_int uBAR = 0 >\n"
                           "class Foo {\n"
                           "public:\n"

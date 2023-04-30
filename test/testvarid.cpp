@@ -34,7 +34,7 @@ public:
     TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).checkUnusedTemplates().platform(cppcheck::Platform::Type::Unix64).build();
+    Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).platform(cppcheck::Platform::Type::Unix64).build();
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
