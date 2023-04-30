@@ -40,8 +40,6 @@ public:
 
 private:
     const Settings settings0 = settingsBuilder().severity(Severity::style).build();
-    const Settings settings1 = settingsBuilder().build();
-    const Settings settings2 = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
         TEST_CASE(simplifyUsing1);

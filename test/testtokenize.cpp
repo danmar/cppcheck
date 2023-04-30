@@ -46,7 +46,6 @@ public:
 private:
     const Settings settings0 = settingsBuilder().library("qt.cfg").build();
     const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").build();
-    const Settings settings2 = settingsBuilder().library("qt.cfg").build();
     const Settings settings_windows = settingsBuilder().library("windows.cfg").build();
 
     void run() override {
@@ -521,7 +520,7 @@ private:
     std::string tokenizeDebugListing_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
-        const Settings settings = settingsBuilder(settings2).c(Standards::C89).cpp(Standards::CPP03).build();
+        const Settings settings = settingsBuilder(settings0).c(Standards::C89).cpp(Standards::CPP03).build();
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);

@@ -42,7 +42,6 @@ public:
 private:
     const Settings settings0 = settingsBuilder().severity(Severity::style).build();
     const Settings settings1 = settingsBuilder().severity(Severity::portability).build();
-    const Settings settings2 = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
         TEST_CASE(c1);
@@ -284,7 +283,7 @@ private:
         errout.str("");
         // Tokenize..
         // show warnings about unhandled typedef
-        const Settings settings = settingsBuilder(settings2).certainty(Certainty::inconclusive).debugwarnings().build();
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings().build();
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
