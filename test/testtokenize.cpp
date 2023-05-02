@@ -5821,7 +5821,7 @@ private:
         return ret;
     }
 
-    void astexpr() { // simple expressions with arithmetical ops
+    void astexpr() const { // simple expressions with arithmetical ops
         ASSERT_EQUALS("12+3+", testAst("1+2+3"));
         ASSERT_EQUALS("12*3+", testAst("1*2+3"));
         ASSERT_EQUALS("123*+", testAst("1+2*3"));
@@ -6081,7 +6081,7 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify(code));
     }
 
-    void astnewdelete() {
+    void astnewdelete() const {
         ASSERT_EQUALS("aintnew=", testAst("a = new int;"));
         ASSERT_EQUALS("aint4[new=", testAst("a = new int[4];"));
         ASSERT_EQUALS("aFoobar(new=", testAst("a = new Foo(bar);"));
@@ -6298,7 +6298,7 @@ private:
                                              "}\n"));
     }
 
-    void astbrackets() { // []
+    void astbrackets() const { // []
         ASSERT_EQUALS("a23+[4+", testAst("a[2+3]+4"));
         ASSERT_EQUALS("a1[0[", testAst("a[1][0]"));
         ASSERT_EQUALS("ab0[=", testAst("a=(b)[0];"));
@@ -6306,7 +6306,7 @@ private:
         ASSERT_EQUALS("ab0[1[=", testAst("a=b[0][1];"));
     }
 
-    void astvardecl() {
+    void astvardecl() const {
         // Variable declaration
         ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
         ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
@@ -6340,7 +6340,7 @@ private:
         ASSERT_EQUALS("i(j=", testAst("(int&)(i) = j;"));
     }
 
-    void astunaryop() { // unary operators
+    void astunaryop() const { // unary operators
         ASSERT_EQUALS("1a--+", testAst("1 + --a"));
         ASSERT_EQUALS("1a--+", testAst("1 + a--"));
         ASSERT_EQUALS("ab+!", testAst("!(a+b)"));
@@ -6366,7 +6366,7 @@ private:
         ASSERT_EQUALS("int0{1&return", testAst("int g() { return int{ 0 } & 1; }"));
     }
 
-    void astfunction() { // function calls
+    void astfunction() const { // function calls
         ASSERT_EQUALS("1f(+2+", testAst("1+f()+2"));
         ASSERT_EQUALS("1f2(+3+", testAst("1+f(2)+3"));
         ASSERT_EQUALS("1f23,(+4+", testAst("1+f(2,3)+4"));
@@ -6411,7 +6411,7 @@ private:
                                              "}\n"));
     }
 
-    void astcast() {
+    void astcast() const {
         ASSERT_EQUALS("ac&(=", testAst("a = (long)&c;"));
         ASSERT_EQUALS("ac*(=", testAst("a = (Foo*)*c;"));
         ASSERT_EQUALS("ac-(=", testAst("a = (long)-c;"));
@@ -6584,14 +6584,14 @@ private:
         ASSERT_EQUALS("sf.{(i[{={", testAst("void g(int i) { S s{ .f = { [i]() {} } }; }"));
     }
 
-    void astcase() {
+    void astcase() const {
         ASSERT_EQUALS("0case", testAst("case 0:"));
         ASSERT_EQUALS("12+case", testAst("case 1+2:"));
         ASSERT_EQUALS("xyz:?case", testAst("case (x?y:z):"));
         ASSERT_EQUALS("switchx( 1case y++ 2case", testAst("switch(x){case 1:{++y;break;case 2:break;}}"));
     }
 
-    void astrefqualifier() {
+    void astrefqualifier() const {
         ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&; };"));
         ASSERT_EQUALS("b(int.", testAst("class a { auto b() -> int&&; };"));
         ASSERT_EQUALS("b(", testAst("class a { void b() &&; };"));
@@ -6602,7 +6602,7 @@ private:
 
     //Verify that returning a newly constructed object generates the correct AST even when the class name is scoped
     //Addresses https://trac.cppcheck.net/ticket/9700
-    void astnewscoped() {
+    void astnewscoped() const {
         ASSERT_EQUALS("(return (new A))", testAst("return new A;", AstStyle::Z3));
         ASSERT_EQUALS("(return (new (( A)))", testAst("return new A();", AstStyle::Z3));
         ASSERT_EQUALS("(return (new (( A true)))", testAst("return new A(true);", AstStyle::Z3));
