@@ -476,6 +476,7 @@ jobs:
           # compile with verification and ast matchers
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2 -w -DHAVE_BOOST" MATCHCOMPILER=yes VERIFY=1
 
+      # TODO: update to Qt6
       - name: Generate UI files
         run: |
           pushd gui
