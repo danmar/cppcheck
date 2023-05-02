@@ -7222,7 +7222,7 @@ private:
     }
 
     void qualifiedNameMember() { // #10872
-        Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
+        const Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
         checkConst("struct data {};\n"
                    "    struct S {\n"
                    "    std::vector<data> std;\n"
