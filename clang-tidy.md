@@ -135,6 +135,7 @@ Also reports a false positive about templates which deduce the array length: htt
 `readability-redundant-access-specifiers`<br>
 `concurrency-mt-unsafe`<br>
 `misc-use-anonymous-namespace`<br>
+`performance-avoid-endl`<br>
 
 To be evaluated.
 

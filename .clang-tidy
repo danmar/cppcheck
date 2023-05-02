@@ -44,6 +44,7 @@ Checks: >
         -modernize-use-auto,
         -modernize-use-equals-default,
         -modernize-use-trailing-return-type,
+        -performance-avoid-endl,
         -performance-inefficient-string-concatenation,
         -performance-no-automatic-move,
         -portability-simd-intrinsics,
