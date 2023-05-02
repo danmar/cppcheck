@@ -2098,7 +2098,7 @@ static Analyzer::Result valueFlowForwardRecursive(Token* top,
     return result;
 }
 
-static void valueFlowReverse(const Token* tok,
+static void valueFlowReverse(Token* tok,
                              const Token* const endToken,
                              const Token* const varToken,
                              std::list<ValueFlow::Value> values,
@@ -2115,7 +2115,7 @@ static void valueFlowReverse(const Token* tok,
 
 // Deprecated
 static void valueFlowReverse(const TokenList* tokenlist,
-                             const Token* tok,
+                             Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
                              const ValueFlow::Value& val2,
