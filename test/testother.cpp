@@ -1568,9 +1568,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.severity.enable(Severity::style);
-        settings.standards.cpp = Standards::CPP03; // #5560
+        // #5560 - set c++03
+        const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
 
         Preprocessor preprocessor(settings);
 
@@ -1771,11 +1770,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        if (portability)
-            settings.severity.enable(Severity::portability);
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
         Preprocessor preprocessor(settings);
@@ -2049,8 +2044,7 @@ private:
                       "[test.cpp:18]: (performance) Function parameter 'v' should be passed by const reference.\n",
                       errout.str());
 
-        Settings settings1;
-        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
+        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2195,13 +2189,11 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            Settings s32(_settings);
-            PLATFORM(s32.platform, cppcheck::Platform::Type::Unix32);
+            Settings s32 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix32).build();
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
-            Settings s64(_settings);
-            PLATFORM(s64.platform, cppcheck::Platform::Type::Unix64);
+            Settings s64 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix64).build();
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -7573,11 +7565,10 @@ private:
         }
 
         {
-            Settings keepTemplates;
-            keepTemplates.checkUnusedTemplates = true;
+            Settings s = settingsBuilder().checkUnusedTemplates().build();
             check("template<int n> void foo(unsigned int x) {\n"
                   "if (x <= 0);\n"
-                  "}", &keepTemplates);
+                  "}", &s);
             ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
         }
 
@@ -7592,8 +7583,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'value' is less than zero.\n", errout.str());
 
         // #9040
-        Settings settings1;
-        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
+        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"
@@ -10385,14 +10375,13 @@ private:
     }
 
     void forwardAndUsed() {
-        Settings keepTemplates;
-        keepTemplates.checkUnusedTemplates = true;
+        Settings s = settingsBuilder().checkUnusedTemplates().build();
 
         check("template<typename T>\n"
               "void f(T && t) {\n"
               "    g(std::forward<T>(t));\n"
               "    T s = t;\n"
-              "}", &keepTemplates);
+              "}", &s);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
     }
 

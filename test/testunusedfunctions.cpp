@@ -81,18 +81,18 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        PLATFORM(settings.platform, platform);
+        const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused functions..
-        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
-        checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
+        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings1, this);
+        checkUnusedFunctions.parseTokens(tokenizer, "someFile.c", &settings1);
         // check() returns error if and only if errout is not empty.
-        if ((checkUnusedFunctions.check)(this, settings)) {
+        if ((checkUnusedFunctions.check)(this, settings1)) {
             ASSERT(!errout.str().empty());
         } else {
             ASSERT_EQUALS("", errout.str());
@@ -612,7 +612,7 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
+        const Settings settingsOld = settings;
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         check("int WinMain() { }");
@@ -631,7 +631,7 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
+        const Settings settingsOld = settings;
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         check("int wWinMain() { }");
@@ -649,7 +649,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_init' is never used.\n"
                       "[test.cpp:2]: (style) The function '_fini' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
+        const Settings settingsOld = settings;
         LOAD_LIB_2(settings.library, "gnu.cfg");
 
         check("int _init() { }\n"

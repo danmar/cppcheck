@@ -1048,11 +1048,7 @@ private:
 
 
 #define GET_SYMBOL_DB(AST) \
-    Settings settings = settingsBuilder().clang().build(); \
-    { \
-        std::string errstr; \
-        ASSERT_EQUALS_MSG(true, settings.platform.set("unix64", errstr, {exename.c_str()}), errstr); \
-    } \
+    const Settings settings = settingsBuilder().clang().platform(cppcheck::Platform::Type::Unix64).build(); \
     Tokenizer tokenizer(&settings, this); \
     { \
         std::istringstream istr(AST); \

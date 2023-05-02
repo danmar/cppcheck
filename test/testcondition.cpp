@@ -39,14 +39,10 @@ public:
     TestCondition() : TestFixture("TestCondition") {}
 
 private:
-    Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).build();
-    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
+    const Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).platform(cppcheck::Platform::Type::Native).build();
+    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).platform(cppcheck::Platform::Type::Native).build();
 
     void run() override {
-        // known platform..
-        PLATFORM(settings0.platform, cppcheck::Platform::Type::Native);
-        PLATFORM(settings1.platform, cppcheck::Platform::Type::Native);
-
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
@@ -132,7 +128,7 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], Settings *settings, const char* filename = "test.cpp") {
+    void check(const char code[], Settings &settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -146,21 +142,21 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings);
+        Preprocessor preprocessor(settings);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
-        Tokenizer tokenizer(settings, this, &preprocessor);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Run checks..
-        runChecks<CheckCondition>(&tokenizer, settings, this);
+        runChecks<CheckCondition>(&tokenizer, &settings, this);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
-        settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        check(code, &settings0, filename);
+        Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
+        check(code, settings, filename);
     }
 
     void assignAndCompare() {
@@ -5635,70 +5631,69 @@ private:
     }
 
     void compareOutOfTypeRange() {
-        Settings settingsUnix64 = settingsBuilder().severity(Severity::style).build();
-        PLATFORM(settingsUnix64.platform, cppcheck::Platform::Type::Unix64);
+        Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
 
         check("void f(unsigned char* b, int i) {\n" // #6372
               "  if (b[i] == 256) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
 
         check("void f(unsigned char c) {\n"
               "  if (c == 255) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(bool b) {\n"
               "  if (b == true) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
         // #10372
         check("void f(signed char x) {\n"
               "  if (x == 0xff) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed char' against value 255. Condition is always false.\n", errout.str());
 
         check("void f(short x) {\n"
               "  if (x == 0xffff) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed short' against value 65535. Condition is always false.\n", errout.str());
 
         check("void f(int x) {\n"
               "  if (x == 0xffffffff) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(long x) {\n"
               "  if (x == ~0L) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(long long x) {\n"
               "  if (x == ~0LL) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
         check("int f(int x) {\n"
               "    const int i = 0xFFFFFFFF;\n"
               "    if (x == i) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  char c;\n"
               "  if ((c = foo()) != -1) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) {\n"
               "  if (x < 3000000000) {}\n"
-              "}", &settingsUnix64);
+              "}", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed int' against value 3000000000. Condition is always true.\n", errout.str());
 
         check("void f(const signed char i) {\n" // #8545
@@ -5708,7 +5703,7 @@ private:
               "    if (i <  +128) {}\n" // warn
               "    if (i <= +127) {}\n" // warn
               "    if (i <= +126) {}\n"
-              "}\n", &settingsUnix64);
+              "}\n", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'const signed char' against value -129. Condition is always true.\n"
                       "[test.cpp:3]: (style) Comparing expression of type 'const signed char' against value -128. Condition is always true.\n"
                       "[test.cpp:5]: (style) Comparing expression of type 'const signed char' against value 128. Condition is always true.\n"
@@ -5732,7 +5727,7 @@ private:
               "    if (255 >  u) {}\n"
               "    if (255 <= u) {}\n"
               "    if (255 >= u) {}\n" // warn
-              "}\n", &settingsUnix64);
+              "}\n", settingsUnix64);
         ASSERT_EQUALS("[test.cpp:3]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always false.\n"
                       "[test.cpp:4]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always true.\n"
                       "[test.cpp:6]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false.\n"

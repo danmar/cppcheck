@@ -134,8 +134,8 @@ protected:
         explicit SettingsBuilder(const TestFixture &fixture) : fixture(fixture) {}
         SettingsBuilder(const TestFixture &fixture, Settings settings) : fixture(fixture), settings(std::move(settings)) {}
 
-        SettingsBuilder& severity(Severity::SeverityType sev) {
-            settings.severity.enable(sev);
+        SettingsBuilder& severity(Severity::SeverityType sev, bool b = true) {
+            settings.severity.setEnabled(sev, b);
             return *this;
         }
 
@@ -154,8 +154,8 @@ protected:
             return *this;
         }
 
-        SettingsBuilder& checkUnusedTemplates() {
-            settings.checkUnusedTemplates = true;
+        SettingsBuilder& checkUnusedTemplates(bool b = true) {
+            settings.checkUnusedTemplates = b;
             return *this;
         }
 
@@ -175,6 +175,18 @@ protected:
         }
 
         SettingsBuilder& library(const char lib[]);
+
+        SettingsBuilder& platform(cppcheck::Platform::Type type);
+
+        SettingsBuilder& checkConfiguration() {
+            settings.checkConfiguration = true;
+            return *this;
+        }
+
+        SettingsBuilder& checkHeaders(bool b = true) {
+            settings.checkHeaders = b;
+            return *this;
+        }
 
         Settings build() {
             return std::move(settings);

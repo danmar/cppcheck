@@ -41,7 +41,7 @@ public:
     TestSingleExecutor() : TestFixture("TestSingleExecutor") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().library("std.cfg").build();
 
     static std::string zpad3(int i)
     {
@@ -89,8 +89,6 @@ private:
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(many_files);
         TEST_CASE(many_files_showtime);
         TEST_CASE(many_files_plist);

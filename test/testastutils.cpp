@@ -383,8 +383,7 @@ private:
                               const char* file,
                               int line)
     {
-        Settings settings;
-        LOAD_LIB_2(settings.library, "std.cfg");
+        const Settings settings = settingsBuilder().library("std.cfg").build();
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);

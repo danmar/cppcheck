@@ -1787,6 +1787,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
 
+        const Settings settingsOld = settings;
         settings.enforcedLang = Settings::C;
         checkStructMemberUsage("struct A {\n" // #10852
                                "    struct B {\n"
@@ -1816,7 +1817,7 @@ private:
                                "    pc->s[0] = 1;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
-        settings.enforcedLang = Settings::None;
+        settings = settingsOld;
     }
 
     void structmember20() { // #10737
