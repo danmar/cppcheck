@@ -357,8 +357,6 @@ private:
         c.checkModuloOfOneError(nullptr);
     }
 
-    bool isSimpleExpr(const Token* tok, const Variable* var) const;
-
     static std::string myName() {
         return "Other";
     }

@@ -855,7 +855,7 @@ void CheckOther::redundantContinueError(const Token *tok)
                 "'continue' is redundant since it is the last statement in a loop.", CWE561, Certainty::normal);
 }
 
-bool CheckOther::isSimpleExpr(const Token* tok, const Variable* var) const {
+static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* settings) {
     if (!tok)
         return false;
     if (tok->isNumber() || tok->tokType() == Token::eString || tok->tokType() == Token::eChar || tok->isBoolean())
@@ -864,10 +864,10 @@ bool CheckOther::isSimpleExpr(const Token* tok, const Variable* var) const {
     if (!needsCheck) {
         const Token* ftok = tok->previous();
         if (Token::Match(ftok, "%name% (") &&
-            ((ftok->function() && ftok->function()->isConst()) || mSettings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
+            ((ftok->function() && ftok->function()->isConst()) || settings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
             needsCheck = true;
     }
-    return (needsCheck && !isExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, mSettings, true));
+    return (needsCheck && !isExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings, true));
 };
 
 //---------------------------------------------------------------------------
@@ -924,7 +924,7 @@ void CheckOther::checkVariableScope()
         const Token* tok = var->nameToken()->next();
         if (Token::Match(tok, "; %varid% =", var->declarationId())) { // bailout for assignment
             tok = tok->tokAt(2)->astOperand2();
-            if (!isSimpleExpr(tok, var))
+            if (!isSimpleExpr(tok, var, mSettings))
                 continue;
         }
         else if (Token::Match(tok, "{|(")) { // bailout for constructor
@@ -932,11 +932,11 @@ void CheckOther::checkVariableScope()
             bool bail = false;
             while (argTok) {
                 if (Token::simpleMatch(argTok, ",")) {
-                    if (!isSimpleExpr(argTok->astOperand2(), var)) {
+                    if (!isSimpleExpr(argTok->astOperand2(), var, mSettings)) {
                         bail = true;
                         break;
                     }
-                } else if (argTok->str() != "." && !isSimpleExpr(argTok, var)) {
+                } else if (argTok->str() != "." && !isSimpleExpr(argTok, var, mSettings)) {
                     bail = true;
                     break;
                 }
