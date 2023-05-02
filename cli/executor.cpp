@@ -24,7 +24,6 @@
 #include "suppressions.h"
 
 #include <algorithm>
-#include <iostream>
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 

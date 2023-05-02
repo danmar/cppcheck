@@ -665,7 +665,7 @@ namespace {
             }
 
             for (Token* type = start; Token::Match(type, "%name%|*|&"); type = type->next()) {
-                if (Token::Match(type, "%name% ;")) {
+                if (Token::Match(type, "%name% ;") && !type->isStandardType()) {
                     mRangeType.first = start;
                     mRangeType.second = type;
                     mNameToken = type;
@@ -2603,7 +2603,7 @@ namespace {
             // fixme: this is wrong
             // skip to end of scope
             if (currentScope->bodyEnd)
-                *tok = currentScope->bodyEnd->previous();
+                *tok = const_cast<Token*>(currentScope->bodyEnd->previous());
             return false;
         }
 
@@ -2938,7 +2938,7 @@ bool Tokenizer::simplifyUsing()
             if (!currentScope1)
                 return substitute; // something bad happened
             startToken = usingEnd->next();
-            endToken = currentScope->bodyEnd->next();
+            endToken = const_cast<Token*>(currentScope->bodyEnd->next());
             if (currentScope->type == ScopeInfo3::MemberFunction) {
                 const ScopeInfo3 * temp = currentScope->findScope(currentScope->fullName);
                 if (temp) {
@@ -3316,9 +3316,9 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (doValueFlow) {
         if (mTimerResults) {
             Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
         } else {
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
         }
     }
 
@@ -4037,10 +4037,9 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
     it->second = ++mVarId;
 }
 
-
-static bool setVarIdParseDeclaration(const Token **tok, const VariableMap& variableMap, bool executableScope, bool cpp, bool c)
+static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap, bool executableScope, bool cpp, bool c)
 {
-    const Token *tok2 = *tok;
+    Token* tok2 = *tok;
     if (!tok2->isName())
         return false;
 
@@ -4079,7 +4078,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const VariableMap& varia
             const Token *start = *tok;
             if (Token::Match(start->previous(), "%or%|%oror%|&&|&|^|+|-|*|/"))
                 return false;
-            const Token * const closingBracket = tok2->findClosingBracket();
+            Token* const closingBracket = tok2->findClosingBracket();
             if (closingBracket == nullptr) { /* Ticket #8151 */
                 throw tok2;
             }
@@ -4232,14 +4231,13 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
     *tok1 = tok;
 }
 
-
-void Tokenizer::setVarIdClassDeclaration(const Token * const startToken,
-                                         VariableMap &variableMap,
+void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
+                                         VariableMap& variableMap,
                                          const nonneg int scopeStartVarId,
                                          std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
 {
     // end of scope
-    const Token * const endToken = startToken->link();
+    Token* const endToken = startToken->link();
 
     // determine class name
     std::string className;
@@ -4516,7 +4514,7 @@ void Tokenizer::setVarIdPass1()
                 return;
 
             // locate the variable name..
-            const Token *tok2 = (tok->isName()) ? tok : tok->next();
+            Token* tok2 = (tok->isName()) ? tok : tok->next();
 
             // private: protected: public: etc
             while (tok2 && endsWith(tok2->str(), ':')) {

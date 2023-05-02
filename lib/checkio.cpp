@@ -26,6 +26,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 #include "vfvalue.h"
 
 #include <algorithm>

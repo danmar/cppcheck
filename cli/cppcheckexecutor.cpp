@@ -80,7 +80,7 @@ CppCheckExecutor::~CppCheckExecutor()
 
 bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* const argv[])
 {
-    CmdLineParser parser(settings);
+    CmdLineParser parser(settings, settings.nomsg, settings.nofail);
     const bool success = parser.parseFromArgs(argc, argv);
 
     if (success) {
@@ -255,36 +255,9 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
-    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
 
-    auto failed_lib = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&](const std::string& lib) {
-        return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
-    });
-    if (failed_lib != settings.libraries.end()) {
-        const std::string msg("Failed to load the library " + *failed_lib);
-        const std::list<ErrorMessage::FileLocation> callstack;
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
+    if (!loadLibraries(settings))
         return EXIT_FAILURE;
-    }
-
-    if (!std) {
-        const std::list<ErrorMessage::FileLocation> callstack;
-        const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
-#ifdef FILESDIR
-        const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
-                                  FILESDIR "\" and will therefore search for "
-                                  "std.cfg in " FILESDIR "/cfg.");
-#else
-        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(settings.exename)) + "cfg");
-        const std::string details("The Cppcheck binary was compiled without FILESDIR set. Either the "
-                                  "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
-                                  "should be configured.");
-#endif
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
-        return EXIT_FAILURE;
-    }
 
     if (settings.reportProgress)
         mLatestProgressOutputTime = std::time(nullptr);
@@ -339,6 +312,42 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     if (returnValue)
         return settings.exitCode;
     return 0;
+}
+
+bool CppCheckExecutor::loadLibraries(Settings& settings)
+{
+    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
+
+    const auto failed_lib = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&](const std::string& lib) {
+        return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
+    });
+    if (failed_lib != settings.libraries.end()) {
+        const std::string msg("Failed to load the library " + *failed_lib);
+        const std::list<ErrorMessage::FileLocation> callstack;
+        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
+        reportErr(errmsg);
+        return false;
+    }
+
+    if (!std) {
+        const std::list<ErrorMessage::FileLocation> callstack;
+        const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
+#ifdef FILESDIR
+        const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
+                                  FILESDIR "\" and will therefore search for "
+                                  "std.cfg in " FILESDIR "/cfg.");
+#else
+        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(settings.exename)) + "cfg");
+        const std::string details("The Cppcheck binary was compiled without FILESDIR set. Either the "
+                                  "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
+                                  "should be configured.");
+#endif
+        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
+        reportErr(errmsg);
+        return false;
+    }
+
+    return true;
 }
 
 #ifdef _WIN32

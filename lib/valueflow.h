@@ -36,6 +36,7 @@ class ErrorLogger;
 struct InferModel;
 class Settings;
 class SymbolDatabase;
+class TimerResultsIntf;
 class Token;
 class TokenList;
 class ValueType;
@@ -50,7 +51,11 @@ namespace ValueFlow {
     const Value * valueFlowConstantFoldAST(Token *expr, const Settings *settings);
 
     /// Perform valueflow analysis.
-    void setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings);
+    void setValues(TokenList* tokenlist,
+                   SymbolDatabase* symboldatabase,
+                   ErrorLogger* errorLogger,
+                   const Settings* settings,
+                   TimerResultsIntf* timerResults);
 
     std::string eitherTheConditionIsRedundant(const Token *condition);
 

@@ -145,6 +145,13 @@ private:
     int check_internal(CppCheck& cppcheck);
 
     /**
+     * @brief Load libraries
+     * @param settings Settings
+     * @return Returns true if successful
+     */
+    bool loadLibraries(Settings& settings);
+
+    /**
      * Pointer to current settings; set while check() is running for reportError().
      */
     const Settings* mSettings;

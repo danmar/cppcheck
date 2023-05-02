@@ -457,7 +457,7 @@ private:
     /**
      * Remove a specific "template < ..." template class/function
      */
-    static bool removeTemplate(Token *tok);
+    static bool removeTemplate(Token *tok, std::map<Token*, Token*>* forwardDecls = nullptr);
 
     /** Syntax error */
     NORETURN static void syntaxError(const Token *tok);

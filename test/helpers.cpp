@@ -22,8 +22,10 @@
 #include "preprocessor.h"
 
 #include <cstdio>
+#include <fstream>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -33,6 +35,8 @@
 #endif
 
 #include <simplecpp.h>
+
+class Suppressions;
 
 ScopedFile::ScopedFile(std::string name, const std::string &content, std::string path)
     : mName(std::move(name))
