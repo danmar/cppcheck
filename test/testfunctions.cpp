@@ -1291,7 +1291,6 @@ private:
     }
 
     void checkIgnoredReturnValue() {
-        Settings settings2 = settingsBuilder().severity(Severity::warning).build();
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp,foo::mystrcmp\">\n"
@@ -1300,7 +1299,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings2.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings2 = settingsBuilder().severity(Severity::warning).libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"
@@ -1443,7 +1442,6 @@ private:
     }
 
     void checkIgnoredErrorCode() {
-        Settings settings2 = settingsBuilder().severity(Severity::style).build();
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp\">\n"
@@ -1452,7 +1450,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings2.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings2 = settingsBuilder().severity(Severity::style).libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"
               "  mystrcmp(a, b);\n"

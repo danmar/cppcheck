@@ -2625,8 +2625,6 @@ private:
     }
 
     void functionCallLeakIgnoreConfig() { // #7923
-        Settings settingsLeakIgnore = settings;
-
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def format=\"2\">\n"
                                "  <function name=\"SomeClass::someMethod\">\n"
@@ -2635,7 +2633,7 @@ private:
                                "    <arg nr=\"1\" direction=\"in\"/>\n"
                                "  </function>\n"
                                "</def>\n";
-        ASSERT(settingsLeakIgnore.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settingsLeakIgnore = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
