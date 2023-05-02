@@ -104,6 +104,7 @@ private:
         TEST_CASE(varScope30);      // #8541
         TEST_CASE(varScope31);      // #11099
         TEST_CASE(varScope32);      // #11441
+        TEST_CASE(varScope33);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1561,6 +1562,53 @@ private:
               "        w = g([&]() { x; }, w);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Unused variable value 'x'\n", errout.str());
+    }
+
+    void varScope33() { // #11131
+        check("struct S {\n"
+              "    const std::string& getStr() const;\n"
+              "    void mutate();\n"
+              "    bool getB() const;\n"
+              "};\n"
+              "void g(S& s) {\n"
+              "    std::string str = s.getStr();\n"
+              "    s.mutate();\n"
+              "    if (s.getB()) {\n"
+              "        if (str == \"abc\") {}\n"
+              "    }\n"
+              "}\n"
+              "void g(char* s, bool b) {\n"
+              "    int i = strlen(s);\n"
+              "    s[0] = '\\0';\n"
+              "    if (b) {\n"
+              "        if (i == 5) {}\n"
+              "    }\n"
+              "}\n"
+              "void f(const S& s) {\n"
+              "    std::string str = s.getStr();\n"
+              "    std::string str2{ s.getStr() };\n"
+              "    if (s.getB()) {\n"
+              "        if (str == \"abc\") {}\n"
+              "        if (str2 == \"abc\") {}\n"
+              "    }\n"
+              "}\n"
+              "void f(const char* s, bool b) {\n"
+              "    int i = strlen(s);\n"
+              "    if (b) {\n"
+              "        if (i == 5) {}\n"
+              "    }\n"
+              "}\n"
+              "void f(int j, bool b) {\n"
+              "    int k = j;\n"
+              "    if (b) {\n"
+              "        if (k == 5) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:21]: (style) The scope of the variable 'str' can be reduced.\n"
+                      "[test.cpp:22]: (style) The scope of the variable 'str2' can be reduced.\n"
+                      "[test.cpp:29]: (style) The scope of the variable 'i' can be reduced.\n"
+                      "[test.cpp:35]: (style) The scope of the variable 'k' can be reduced.\n",
+                      errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
@@ -5690,7 +5738,9 @@ private:
               "        x = j;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n"
+                      "[test.cpp:2]: (style) The scope of the variable 'j' can be reduced.\n",
+                      errout.str());
 
         check("void f(bool b, int i) {\n"
               "    int j = i;\n"
