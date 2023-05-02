@@ -696,7 +696,10 @@ public:
     unsigned char bits() const {
         return mImpl->mBits;
     }
-    std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
+    const std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
+        return mImpl->mTemplateSimplifierPointers;
+    }
+    std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() {
         return mImpl->mTemplateSimplifierPointers;
     }
     void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
