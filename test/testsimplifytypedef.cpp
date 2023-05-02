@@ -3277,7 +3277,8 @@ private:
         ASSERT_EQUALS("struct X { } ; std :: vector < X > v ;", tok(code));
     }
 
-    void simplifyTypedef145() { // #11634
+    void simplifyTypedef145() {
+        // #11634
         const char* code{};
         code = "int typedef i;\n"
                "i main() {}\n";
@@ -3292,6 +3293,11 @@ private:
         code = "struct {} typedef S;\n" // don't crash
                "S();\n";
         ASSERT_EQUALS("struct S { } ; struct S ( ) ;", tok(code));
+
+        // #11693
+        code = "typedef unsigned char unsigned char;\n" // don't hang
+               "void f(char);\n";
+        ASSERT_EQUALS("void f ( char ) ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {

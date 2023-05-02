@@ -4054,6 +4054,26 @@ private:
                             "b<a100<int>> d100;";
         // don't bother checking the output because this is not instantiated properly
         tok(code); // don't crash
+
+        const char code2[] = "template<typename T> void f();\n" // #11489
+                             "template<typename T> void f(int);\n"
+                             "void g() {\n"
+                             "    f<int>();\n"
+                             "    f<char>(1);\n"
+                             "}\n"
+                             "template<typename T>\n"
+                             "void f(int) {}\n"
+                             "template<typename T>\n"
+                             "void f() {\n"
+                             "    f<T>(0);\n"
+                             "}\n";
+        const char exp2[] = "template < typename T > void f ( ) ; "
+                            "void f<int> ( int ) ; "
+                            "void f<char> ( int ) ; "
+                            "void g ( ) { f<int> ( ) ; f<char> ( 1 ) ; } "
+                            "void f<int> ( ) { f<int> ( 0 ) ; } "
+                            "void f<char> ( int ) { }";
+        ASSERT_EQUALS(exp2, tok(code2));
     }
 
     void template159() {  // #9886

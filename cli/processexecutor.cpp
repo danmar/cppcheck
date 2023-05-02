@@ -20,7 +20,6 @@
 
 #if !defined(WIN32) && !defined(__MINGW32__)
 
-#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
@@ -55,6 +54,8 @@
 #if defined(__linux__)
 #include <sys/prctl.h>
 #endif
+
+enum class Color;
 
 // NOLINTNEXTLINE(misc-unused-using-decls) - required for FD_ZERO
 using std::memset;
