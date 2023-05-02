@@ -37,13 +37,9 @@ public:
     TestUnusedVar() : TestFixture("TestUnusedVar") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().severity(Severity::style).checkLibrary().library("std.cfg").build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-        settings.checkLibrary = true;
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(isRecordTypeWithoutSideEffects);
         TEST_CASE(cleanFunction);
 

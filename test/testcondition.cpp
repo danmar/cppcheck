@@ -39,28 +39,19 @@ public:
     TestCondition() : TestFixture("TestCondition") {}
 
 private:
-    Settings settings0;
-    Settings settings1;
+    Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).build();
+    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
 
     void run() override {
         // known platform..
         PLATFORM(settings0.platform, cppcheck::Platform::Type::Native);
         PLATFORM(settings1.platform, cppcheck::Platform::Type::Native);
 
-        LOAD_LIB_2(settings0.library, "qt.cfg");
-        settings0.libraries.emplace_back("qt");
-        LOAD_LIB_2(settings0.library, "std.cfg");
-
-        settings0.severity.enable(Severity::style);
-        settings0.severity.enable(Severity::warning);
-
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
                            "</def>";
         ASSERT(settings1.library.loadxmldata(cfg, sizeof(cfg)));
-        settings1.severity.enable(Severity::style);
-        settings1.severity.enable(Severity::warning);
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks
@@ -5644,8 +5635,7 @@ private:
     }
 
     void compareOutOfTypeRange() {
-        Settings settingsUnix64;
-        settingsUnix64.severity.enable(Severity::style);
+        Settings settingsUnix64 = settingsBuilder().severity(Severity::style).build();
         PLATFORM(settingsUnix64.platform, cppcheck::Platform::Type::Unix64);
 
         check("void f(unsigned char c) {\n"

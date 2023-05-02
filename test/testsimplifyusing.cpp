@@ -39,19 +39,12 @@ public:
 
 
 private:
-    Settings settings0;
-    Settings settings1;
-    Settings settings2;
+    // If there are unused templates, keep those
+    const Settings settings0 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
+    const Settings settings1 = settingsBuilder().checkUnusedTemplates().build();
+    const Settings settings2 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
 
     void run() override {
-        settings0.severity.enable(Severity::style);
-        settings2.severity.enable(Severity::style);
-
-        // If there are unused templates, keep those
-        settings0.checkUnusedTemplates = true;
-        settings1.checkUnusedTemplates = true;
-        settings2.checkUnusedTemplates = true;
-
         TEST_CASE(simplifyUsing1);
         TEST_CASE(simplifyUsing2);
         TEST_CASE(simplifyUsing3);
@@ -107,10 +100,9 @@ private:
     std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
         errout.str("");
 
-        settings0.certainty.enable(Certainty::inconclusive);
-        settings0.debugwarnings = debugwarnings;
-        PLATFORM(settings0.platform, type);
-        Tokenizer tokenizer(&settings0, this);
+        Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).build();
+        PLATFORM(settings.platform, type);
+        Tokenizer tokenizer(&settings, this);
 
         if (preprocess) {
             std::vector<std::string> files{ "test.cpp" };

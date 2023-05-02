@@ -34,24 +34,13 @@ public:
 
 
 private:
-    Settings settings0;
-    Settings settings1;
-    Settings settings_std;
-    Settings settings_windows;
+    // If there are unused templates, keep those
+    const Settings settings0 = settingsBuilder().severity(Severity::portability).checkUnusedTemplates().build();
+    const Settings settings1 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
+    const Settings settings_std = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
+    const Settings settings_windows = settingsBuilder().library("windows.cfg").severity(Severity::portability).checkUnusedTemplates().build();
 
     void run() override {
-        LOAD_LIB_2(settings_std.library, "std.cfg");
-        LOAD_LIB_2(settings_windows.library, "windows.cfg");
-        settings0.severity.enable(Severity::portability);
-        settings1.severity.enable(Severity::style);
-        settings_windows.severity.enable(Severity::portability);
-
-        // If there are unused templates, keep those
-        settings0.checkUnusedTemplates = true;
-        settings1.checkUnusedTemplates = true;
-        settings_std.checkUnusedTemplates = true;
-        settings_windows.checkUnusedTemplates = true;
-
         TEST_CASE(combine_strings);
         TEST_CASE(combine_wstrings);
         TEST_CASE(combine_ustrings);
@@ -178,13 +167,12 @@ private:
     std::string tok_(const char* file, int line, const char code[], bool simplify = true, cppcheck::Platform::Type type = cppcheck::Platform::Type::Native) {
         errout.str("");
 
-        PLATFORM(settings0.platform, type);
-        Tokenizer tokenizer(&settings0, this);
+        Settings settings = settings0;
+        PLATFORM(settings.platform, type);
+        Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-
-        (void)simplify;
 
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
@@ -206,12 +194,12 @@ private:
     std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool simplify = false, bool expand = true, cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
-        settings1.debugwarnings = true;
-        PLATFORM(settings1.platform, platform);
-        settings1.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
+        Settings settings = settingsBuilder(settings1).debugwarnings().build();
+        PLATFORM(settings.platform, platform);
+        settings.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
 
         // tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
 

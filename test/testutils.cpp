@@ -26,8 +26,6 @@
 #include <limits>
 #include <string>
 
-const Settings givenACodeSampleToTokenize::settings;
-
 class TestUtils : public TestFixture {
 public:
     TestUtils() : TestFixture("TestUtils") {}
