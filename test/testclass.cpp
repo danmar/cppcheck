@@ -3558,7 +3558,7 @@ private:
     }
 
 #define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkConst_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkConst_(const char* file, int line, const char code[], const Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
