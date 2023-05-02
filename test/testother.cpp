@@ -3530,6 +3530,18 @@ private:
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (style) Parameter 'p' can be declared as pointer to const. "
                       "However it seems that 'cb' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
                       errout.str());
+
+        check("typedef void (*cb_t)(int*);\n"
+              "void cb(int* p) {\n"
+              "    if (*p) {}\n"
+              "}\n"
+              "void g(cb_t);\n"
+              "void f() {\n"
+              "    g(::cb);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (style) Parameter 'p' can be declared as pointer to const. "
+                      "However it seems that 'cb' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
