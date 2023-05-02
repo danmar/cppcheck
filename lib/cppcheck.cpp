@@ -702,7 +702,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             Tokenizer tokenizer(&mSettings, this, &preprocessor);
             tokenizer.createTokens(std::move(tokens1));
             checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
-            return mExitCode;
+            return EXIT_SUCCESS;
         }
 
         if (!preprocessor.loadFiles(tokens1, files))

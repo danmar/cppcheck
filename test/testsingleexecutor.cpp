@@ -195,7 +195,8 @@ private:
             "file_1.cp1", "file_2.cpp", "file_3.cp1", "file_4.cpp"
         };
 
-        check(4, 4,
+        // checks are not executed on markup files => expected result is 2
+        check(4, 2,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
