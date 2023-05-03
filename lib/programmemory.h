@@ -29,7 +29,9 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
+class Scope;
 class Token;
 class Settings;
 
@@ -142,6 +144,8 @@ struct ProgramMemoryState {
     ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
 
+std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings* settings);
+
 void execute(const Token* expr,
              ProgramMemory& programMemory,
              MathLib::bigint* result,
@@ -166,8 +170,6 @@ bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* s
  * Get program memory by looking backwards from given token.
  */
 ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings);
-
-ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
 
 ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
                                          const std::string& returnValue,

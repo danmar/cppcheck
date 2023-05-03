@@ -46,3 +46,18 @@ def test_missing_include_check_config(tmpdir):
 
 def test_missing_include_check_config_j(tmpdir):
     __test_missing_include_check_config(tmpdir, True)
+
+def test_missing_include_inline_suppr(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                // cppcheck-suppress missingInclude
+                #include "missing.h"
+                // cppcheck-suppress missingIncludeSystem
+                #include <missing2.h>
+                """)
+
+    args = ['--enable=missingInclude', '--inline-suppr', test_file]
+
+    _, _, stderr = cppcheck(args)
+    assert stderr == ''

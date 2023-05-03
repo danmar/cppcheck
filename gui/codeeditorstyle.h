@@ -22,6 +22,7 @@
 #include <QColor>
 #include <QFont>
 #include <QString>
+#include <Qt>
 
 const QString SETTINGS_STYLE_GROUP("EditorStyle");
 const QString SETTINGS_STYLE_TYPE("StyleType");

@@ -420,8 +420,9 @@ void MacroTest3()
     QVERIFY2(2 >= 0, message.constData());
 }
 
-void validCode(int * pIntPtr, QString & qstrArg)
+void validCode(int * pIntPtr, QString & qstrArg, double d)
 {
+    Q_UNUSED(d)
     if (QFile::exists("test")) {}
 
     if (pIntPtr != Q_NULLPTR) {

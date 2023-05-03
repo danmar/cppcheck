@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
+#ifndef SINGLEEXECUTOR_H
+#define SINGLEEXECUTOR_H
 
-class TestFileList : public QObject {
-    Q_OBJECT
+#include "executor.h"
 
-private slots:
-    void addFile() const;
-    void addPathList() const;
-    void addFile_notexist() const;
-    void addFile_unknown() const;
-    void addDirectory() const;
-    void addDirectory_recursive() const;
-    void filterFiles() const;
-    void filterFiles2() const;
-    void filterFiles3() const;
-    void filterFiles4() const;
-    void filterFiles5() const;
+#include <cstddef>
+#include <map>
+#include <string>
+
+class ErrorLogger;
+class Settings;
+class CppCheck;
+
+class SingleExecutor : public Executor
+{
+public:
+    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    SingleExecutor(const SingleExecutor &) = delete;
+    ~SingleExecutor() override;
+    void operator=(const SingleExecutor &) = delete;
+
+    unsigned int check() override;
+
+private:
+    CppCheck &mCppcheck;
 };
+
+#endif // SINGLEEXECUTOR_H

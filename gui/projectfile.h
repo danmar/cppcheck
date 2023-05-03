@@ -26,6 +26,7 @@
 #include <map>
 #include <utility>
 
+#include <QList>
 #include <QObject>
 #include <QString>
 #include <QStringList>
@@ -401,9 +402,11 @@ public:
     QStringList getCheckUnknownFunctionReturn() const {
         return mCheckUnknownFunctionReturn;
     }
-    void setCheckUnknownFunctionReturn(const QStringList &s) {
+    /*
+       void setCheckUnknownFunctionReturn(const QStringList &s) {
         mCheckUnknownFunctionReturn = s;
-    }
+       }
+     */
 
     /** Use Clang parser */
     bool clangParser;

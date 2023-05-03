@@ -19,9 +19,11 @@
 #include "settings.h"
 #include "path.h"
 #include "summaries.h"
+#include "timer.h"
 #include "vfvalue.h"
 
 #include <fstream>
+#include <utility>
 
 #define PICOJSON_USE_INT64
 #include <picojson.h>
@@ -38,6 +40,7 @@ Settings::Settings()
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
+    setCheckLevelNormal();
 }
 
 void Settings::loadCppcheckCfg()
@@ -181,4 +184,19 @@ bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) 
 void Settings::loadSummaries()
 {
     Summaries::loadReturn(buildDir, summaryReturn);
+}
+
+
+void Settings::setCheckLevelExhaustive()
+{
+    // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
+    performanceValueFlowMaxIfCount = -1;
+    performanceValueFlowMaxSubFunctionArgs = 256;
+}
+
+void Settings::setCheckLevelNormal()
+{
+    // Checking should finish in reasonable time.
+    performanceValueFlowMaxSubFunctionArgs = 8;
+    performanceValueFlowMaxIfCount = 100;
 }

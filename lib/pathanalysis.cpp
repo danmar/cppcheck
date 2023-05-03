@@ -24,7 +24,6 @@
 #include "vfvalue.h"
 
 #include <algorithm>
-#include <memory>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -69,7 +68,7 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
     return std::make_pair(true, true);
 }
 
-PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
+PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f)
 {
     if (!tok)
         return Progress::Continue;

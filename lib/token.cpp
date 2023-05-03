@@ -2252,6 +2252,16 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
         const Variable *var = tok->variable();
         if (!var->typeStartToken() || !var->typeEndToken())
             return {};
+        if (pointedToType && astIsSmartPointer(var->nameToken())) {
+            const ValueType* vt = var->valueType();
+            if (vt && vt->smartPointerTypeToken)
+                return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
+        }
+        if (pointedToType && astIsIterator(var->nameToken())) {
+            const ValueType* vt = var->valueType();
+            if (vt && vt->containerTypeToken)
+                return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
+        }
         std::pair<const Token*, const Token*> result;
         if (Token::simpleMatch(var->typeStartToken(), "auto")) {
             const Token * tok2 = var->declEndToken();
@@ -2271,6 +2281,8 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                     varTok = varTok->next();
                 while (Token::Match(varTok, "%name% ::"))
                     varTok = varTok->tokAt(2);
+                if (Token::simpleMatch(varTok, "(") && Token::simpleMatch(varTok->astOperand1(), "."))
+                    varTok = varTok->astOperand1()->astOperand1();
                 std::pair<const Token*, const Token*> r = typeDecl(varTok);
                 if (r.first)
                     return r;
@@ -2300,16 +2312,6 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
                 if (vt && vt->containerTypeToken)
                     return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
             }
-        }
-        if (pointedToType && astIsSmartPointer(var->nameToken())) {
-            const ValueType* vt = var->valueType();
-            if (vt && vt->smartPointerTypeToken)
-                return { vt->smartPointerTypeToken, vt->smartPointerTypeToken->linkAt(-1) };
-        }
-        if (pointedToType && astIsIterator(var->nameToken())) {
-            const ValueType* vt = var->valueType();
-            if (vt && vt->containerTypeToken)
-                return { vt->containerTypeToken, vt->containerTypeToken->linkAt(-1) };
         }
         if (result.first)
             return result;
@@ -2509,10 +2511,6 @@ Token* findTypeEnd(Token* tok)
         tok = tok->next();
     }
     return tok;
-}
-
-const Token* findTypeEnd(const Token* tok) {
-    return findTypeEnd(const_cast<Token*>(tok));
 }
 
 Token* findLambdaEndScope(Token* tok)

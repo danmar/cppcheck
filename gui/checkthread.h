@@ -21,11 +21,15 @@
 #define CHECKTHREAD_H
 
 #include "cppcheck.h"
+#include "importproject.h"
 #include "suppressions.h"
 
+#include <QList>
+#include <QObject>
+#include <QString>
+#include <QStringList>
 #include <QThread>
 
-class QObject;
 class Settings;
 class ThreadResult;
 

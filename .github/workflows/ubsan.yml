@@ -15,9 +15,16 @@ jobs:
     env:
       QT_VERSION: 5.15.2
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1:report_error_type=1
+      # TODO: figure out why there are cache misses with PCH enabled
+      CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v4
@@ -45,7 +52,7 @@ jobs:
 
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DUSE_MATCHCOMPILER=Verify -DANALYZE_UNDEFINED=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DUSE_MATCHCOMPILER=Verify -DANALYZE_UNDEFINED=On -DENABLE_CHECK_INTERNAL=On -DUSE_BOOST=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DDISABLE_DMAKE=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
         env:
           CC: clang-16
           CXX: clang++-16
@@ -56,7 +63,7 @@ jobs:
 
       - name: Build test
         run: |
-          cmake --build cmake.output --target testrunner -- -j $(nproc)          
+          cmake --build cmake.output --target testrunner -- -j $(nproc)
 
       - name: Run tests
         run: ./cmake.output/bin/testrunner

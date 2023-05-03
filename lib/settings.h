@@ -28,7 +28,6 @@
 #include "platform.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "timer.h"
 
 #include <algorithm>
 #include <atomic>
@@ -41,6 +40,7 @@
 #include <vector>
 #include <unordered_set>
 
+enum class SHOWTIME_MODES;
 namespace ValueFlow {
     class Value;
 }
@@ -60,12 +60,6 @@ public:
     }
     void fill() {
         mFlags = 0xFFFFFFFF;
-    }
-    void setEnabledAll(bool enabled) {
-        if (enabled)
-            fill();
-        else
-            clear();
     }
     bool isEnabled(T flag) const {
         return (mFlags & (1U << (uint32_t)flag)) != 0;
@@ -216,11 +210,6 @@ public:
         time. Default is 1. (-j N) */
     unsigned int jobs = 1;
 
-    /** @brief Collect unmatched suppressions in one run.
-     * This delays the reporting until all files are checked.
-     * It is needed by checks that analyse the whole code base. */
-    bool jointSuppressionReport{};
-
     /** @brief --library= */
     std::list<std::string> libraries;
 
@@ -253,6 +242,12 @@ public:
 
     /** @brief Experimental: --performance-valueflow-max-time=T */
     int performanceValueFlowMaxTime = -1;
+
+    /** @brief --performance-valueflow-max-if-count=C */
+    int performanceValueFlowMaxIfCount;
+
+    /** @brief max number of sets of arguments to pass to subfuncions in valueflow */
+    int performanceValueFlowMaxSubFunctionArgs;
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
@@ -426,6 +421,13 @@ public:
     std::set<std::string> summaryReturn;
 
     void loadSummaries();
+
+    bool useSingleJob() const {
+        return jobs == 1;
+    }
+
+    void setCheckLevelExhaustive();
+    void setCheckLevelNormal();
 
 private:
     static std::string parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups);

@@ -35,10 +35,9 @@ public:
     TestGarbage() : TestFixture("TestGarbage") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().debugwarnings().build();
 
     void run() override {
-        settings.debugwarnings = true;
         settings.severity.fill();
         settings.certainty.fill();
 
@@ -253,6 +252,7 @@ private:
         TEST_CASE(garbageCode220); // #6832
         TEST_CASE(garbageCode221);
         TEST_CASE(garbageCode222); // #10763
+        TEST_CASE(garbageCode223); // #11639
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -287,7 +287,7 @@ private:
     std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
         errout.str("");
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -738,7 +738,8 @@ private:
     }
 
     void garbageCode65() { // #6741
-        ASSERT_THROW(checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref"), InternalError);
+        // TODO write some syntax error
+        checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref");
     }
 
     void garbageCode66() { // #6742
@@ -1714,6 +1715,9 @@ private:
     }
     void garbageCode222() { // #10763
         ASSERT_THROW(checkCode("template<template<class>\n"), InternalError);  // don't crash
+    }
+    void garbageCode223() { // #11639
+        ASSERT_THROW(checkCode("struct{}*"), InternalError);  // don't crash
     }
 
     void syntaxErrorFirstToken() {

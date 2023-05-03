@@ -21,6 +21,7 @@
 #include "library.h"
 #include "settings.h"
 #include "fixture.h"
+#include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -42,13 +43,14 @@ private:
         TEST_CASE(isSameExpressionTest);
         TEST_CASE(isVariableChangedTest);
         TEST_CASE(isVariableChangedByFunctionCallTest);
+        TEST_CASE(isExpressionChangedTest);
         TEST_CASE(nextAfterAstRightmostLeafTest);
         TEST_CASE(isUsedAsBool);
     }
 
 #define findLambdaEndToken(code) findLambdaEndToken_(code, __FILE__, __LINE__)
     bool findLambdaEndToken_(const char code[], const char* file, int line) {
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -82,7 +84,7 @@ private:
 
 #define findLambdaStartToken(code) findLambdaStartToken_(code, __FILE__, __LINE__)
     bool findLambdaStartToken_(const char code[], const char* file, int line) {
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -115,7 +117,7 @@ private:
 
 #define isNullOperand(code) isNullOperand_(code, __FILE__, __LINE__)
     bool isNullOperand_(const char code[], const char* file, int line) {
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -137,7 +139,7 @@ private:
 
 #define isReturnScope(code, offset) isReturnScope_(code, offset, __FILE__, __LINE__)
     bool isReturnScope_(const char code[], int offset, const char* file, int line) {
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -168,7 +170,7 @@ private:
 
 #define isSameExpression(code, tokStr1, tokStr2) isSameExpression_(code, tokStr1, tokStr2, __FILE__, __LINE__)
     bool isSameExpression_(const char code[], const char tokStr1[], const char tokStr2[], const char* file, int line) {
-        Settings settings;
+        const Settings settings;
         Library library;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -208,7 +210,7 @@ private:
 
 #define isVariableChanged(code, startPattern, endPattern) isVariableChanged_(code, startPattern, endPattern, __FILE__, __LINE__)
     bool isVariableChanged_(const char code[], const char startPattern[], const char endPattern[], const char* file, int line) {
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -227,16 +229,25 @@ private:
         ASSERT_EQUALS(true, isVariableChanged("void f() {\n"
                                               "    int &a = a;\n"
                                               "}\n", "= a", "}"));
+
+        ASSERT_EQUALS(false, isVariableChanged("void f(const A& a) { a.f(); }", "{", "}"));
+        ASSERT_EQUALS(true,
+                      isVariableChanged("void g(int*);\n"
+                                        "void f(int x) { g(&x); }\n",
+                                        "{",
+                                        "}"));
     }
 
 #define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
     bool isVariableChangedByFunctionCall_(const char code[], const char pattern[], bool *inconclusive, const char* file, int line) {
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
-        return (isVariableChangedByFunctionCall)(argtok, 0, &settings, inconclusive);
+        ASSERT_LOC(argtok, file, line);
+        int indirect = (argtok->variable() && argtok->variable()->isArray());
+        return (isVariableChangedByFunctionCall)(argtok, indirect, &settings, inconclusive);
     }
 
     void isVariableChangedByFunctionCallTest() {
@@ -254,13 +265,157 @@ private:
         code = "int f(int x) {\n"
                "return int(x);\n"
                "}\n";
+        inconclusive = false;
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
-        TODO_ASSERT_EQUALS(false, true, inconclusive);
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(int* p);\n"
+               "void f(int x) {\n"
+               "    return g(&x);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(const int* p);\n"
+               "void f(int x) {\n"
+               "    return g(&x);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(int** pp);\n"
+               "void f(int* p) {\n"
+               "    return g(&p);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "p ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(int* const* pp);\n"
+               "void f(int* p) {\n"
+               "    return g(&p);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "p ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(int a[2]);\n"
+               "void f() {\n"
+               "    int b[2] = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(const int a[2]);\n"
+               "void f() {\n"
+               "    int b[2] = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        TODO_ASSERT_EQUALS(false, true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2> a);\n"
+               "void f() {\n"
+               "    std::array<int, 2> b = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2>& a);\n"
+               "void f() {\n"
+               "    std::array<int, 2> b = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(const std::array<int, 2>& a);\n"
+               "void f() {\n"
+               "    std::array<int, 2> b = {};\n"
+               "    return g(b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "void g(std::array<int, 2>* p);\n"
+               "void f() {\n"
+               "    std::array<int, 2> b = {};\n"
+               "    return g(&b);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(true, isVariableChangedByFunctionCall(code, "b ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "struct S {};\n"
+               "void g(S);\n"
+               "void f(S* s) {\n"
+               "    g(*s);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "s ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+
+        code = "struct S {};\n"
+               "void g(const S&);\n"
+               "void f(S* s) {\n"
+               "    g(*s);\n"
+               "}\n";
+        inconclusive = false;
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "s ) ;", &inconclusive));
+        ASSERT_EQUALS(false, inconclusive);
+    }
+
+#define isExpressionChanged(code, var, startPattern, endPattern)                                                       \
+    isExpressionChanged_(code, var, startPattern, endPattern, __FILE__, __LINE__)
+    bool isExpressionChanged_(const char code[],
+                              const char var[],
+                              const char startPattern[],
+                              const char endPattern[],
+                              const char* file,
+                              int line)
+    {
+        const Settings settings = settingsBuilder().library("std.cfg").build();
+        Tokenizer tokenizer(&settings, this);
+        std::istringstream istr(code);
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        const Token* const start = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
+        const Token* const end = Token::findsimplematch(start, endPattern, strlen(endPattern));
+        const Token* const expr = Token::findsimplematch(tokenizer.tokens(), var, strlen(var));
+        return (isExpressionChanged)(expr, start, end, &settings, true);
+    }
+
+    void isExpressionChangedTest()
+    {
+        ASSERT_EQUALS(true, isExpressionChanged("void f(std::map<int, int>& m) { m[0]; }", "m [", "{", "}"));
+        ASSERT_EQUALS(false, isExpressionChanged("void f(const A& a) { a.f(); }", "a .", "{", "}"));
+
+        ASSERT_EQUALS(true,
+                      isExpressionChanged("void g(int*);\n"
+                                          "void f(int x) { g(&x); }\n",
+                                          "x",
+                                          ") {",
+                                          "}"));
+
+        ASSERT_EQUALS(true,
+                      isExpressionChanged("struct S { void f(); int i; };\n"
+                                          "void call_f(S& s) { (s.*(&S::f))(); }\n",
+                                          "s .",
+                                          "{ (",
+                                          "}"));
     }
 
 #define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)
     bool nextAfterAstRightmostLeaf_(const char code[], const char parentPattern[], const char rightPattern[], const char* file, int line) {
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -285,7 +440,7 @@ private:
     enum class Result {False, True, Fail};
 
     Result isUsedAsBool(const char code[], const char pattern[]) {
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         if (!tokenizer.tokenize(istr, "test.cpp"))

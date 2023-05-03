@@ -26,6 +26,7 @@
 #include "library.h"
 #include "mathlib.h"
 #include "path.h"
+#include "platform.h"
 #include "settings.h"
 #include "standards.h"
 #include "token.h"
@@ -939,7 +940,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                 }
             }
 
-            const Token* const tok2 = tok;
+            Token* const tok2 = tok;
             if (tok->strAt(1) != "]")
                 compileBinOp(tok, state, compileExpression);
             else
@@ -1410,7 +1411,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
 {
     // skip function pointer declaration
     if (Token::Match(tok, "%type%") && !Token::Match(tok, "return|throw|if|while|new|delete")) {
-        const Token* type = tok;
+        Token* type = tok;
         while (Token::Match(type, "%type%|*|&|<")) {
             if (type->str() == "<") {
                 if (type->link())
@@ -1636,7 +1637,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         Token * const tok1 = tok;
         AST_state state(cpp);
         compileExpression(tok, state);
-        const Token * const endToken = tok;
+        Token* const endToken = tok;
         if (endToken == tok1 || !endToken)
             return tok1;
 

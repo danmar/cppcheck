@@ -24,21 +24,22 @@
 #include "tokenize.h"
 
 #include <list>
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
+#include <vector>
+
+#include <simplecpp.h>
 
 class TestUnusedVar : public TestFixture {
 public:
     TestUnusedVar() : TestFixture("TestUnusedVar") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().severity(Severity::style).checkLibrary().library("std.cfg").build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-        settings.checkLibrary = true;
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(isRecordTypeWithoutSideEffects);
         TEST_CASE(cleanFunction);
 
@@ -69,6 +70,8 @@ private:
         TEST_CASE(structmember20); // #10737
         TEST_CASE(structmember21); // #4759
         TEST_CASE(structmember22); // #11016
+        TEST_CASE(structmember23);
+        TEST_CASE(classmember);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -252,7 +255,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
         if (directives)
             preprocessor.setDirectives(*directives);
 
@@ -277,7 +280,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
@@ -1633,6 +1636,14 @@ private:
                                "\n"
                                "input.skip(sizeof(struct Header));");
         ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a, b, c; };\n" // #6561
+                               "int f(FILE * fp) {\n"
+                               "    S s;\n"
+                               "    ::fread(&s, sizeof(S), 1, fp);\n"
+                               "    return s.b;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember16() {
@@ -1676,7 +1687,7 @@ private:
                                "    uint8_t* p = (uint8_t*)&s;\n"
                                "    return p[10];\n"
                                "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::padding' is never used.\n", errout.str());
 
         checkStructMemberUsage("struct S { uint8_t padding[500]; };\n"
                                "uint8_t f(const S& s) {\n"
@@ -1684,7 +1695,14 @@ private:
                                "    auto p = reinterpret_cast<const uint8_t*>(&s);\n"
                                "    return p[10];\n"
                                "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::padding' is never used.\n", errout.str());
+
+        checkStructMemberUsage("struct S { int i, j; };\n" // #11577
+                               "void f(S s) {\n"
+                               "  void* p = (void*)&s;\n"
+                               "  if (s.i) {}\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::j' is never used.\n", errout.str());
     }
 
     void structmember19() {
@@ -1769,6 +1787,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
 
+        const Settings settingsOld = settings;
         settings.enforcedLang = Settings::C;
         checkStructMemberUsage("struct A {\n" // #10852
                                "    struct B {\n"
@@ -1798,7 +1817,7 @@ private:
                                "    pc->s[0] = 1;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
-        settings.enforcedLang = Settings::None;
+        settings = settingsOld;
     }
 
     void structmember20() { // #10737
@@ -1843,6 +1862,52 @@ private:
                                "    std::vector<A>::const_iterator it = b.begin();\n"
                                "    if (it->b) {}\n"
                                "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember23() {
+        checkStructMemberUsage("namespace N {\n"
+                               "    struct S { std::string s; };\n"
+                               "}\n"
+                               "std::string f() {\n"
+                               "    std::map<int, N::S> m = { { 0, { \"abc\" } } };\n"
+                               "    return m[0].s;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void classmember() {
+        checkStructMemberUsage("class C {\n"
+                               "    int i{};\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) class member 'C::i' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "    int i{}, j{};\n"
+                               "public:\n"
+                               "    int& get() { return i; }\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) class member 'C::j' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "private:\n"
+                               "    int i;\n"
+                               "};\n"
+                               "class D : public C {};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) class member 'C::i' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "public:\n"
+                               "    int i;\n"
+                               "};\n"
+                               "class D : C {};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) class member 'C::i' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "public:\n"
+                               "    int i;\n"
+                               "};\n"
+                               "class D : public C {};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

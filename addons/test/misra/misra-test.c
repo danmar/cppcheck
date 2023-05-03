@@ -82,6 +82,7 @@ static void misra_2_2(int x) {
 /* // */   // 3.1
 /* /* */   // 3.1
 ////
+/* https://cppcheck.net */
 
 // http://example.com // no warning
 

@@ -317,8 +317,8 @@ private:
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok) const;
-    bool isMemberFunc(const Scope *scope, const Token *tok) const;
-    bool isConstMemberFunc(const Scope *scope, const Token *tok) const;
+    static bool isMemberFunc(const Scope *scope, const Token *tok);
+    static bool isConstMemberFunc(const Scope *scope, const Token *tok);
     bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const;
 
     // constructors helper function
@@ -410,7 +410,7 @@ private:
      * @param callToken token where pure virtual function is called directly or indirectly
      * @param[in,out] pureFuncStack list to append the stack
      */
-    void getFirstVirtualFunctionCallStack(
+    static void getFirstVirtualFunctionCallStack(
         std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap,
         const Token *callToken,
         std::list<const Token *> & pureFuncStack);

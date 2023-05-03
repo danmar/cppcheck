@@ -19,7 +19,6 @@
 #include "checkstl.h"
 
 #include "astutils.h"
-#include "check.h"
 #include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
@@ -39,7 +38,6 @@
 #include <iterator>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <tuple>
@@ -452,11 +450,6 @@ static std::string getContainerName(const Token *containerToken)
     }
     return ret;
 }
-
-enum OperandPosition {
-    Left,
-    Right
-};
 
 static bool isVector(const Token* tok)
 {
@@ -921,7 +914,7 @@ struct InvalidContainerAnalyzer {
             const Token* ftok;
         };
         std::unordered_map<int, Reference> expressions;
-        ErrorPath errorPath;
+
         void add(const std::vector<Reference>& refs) {
             for (const Reference& r : refs) {
                 add(r);
@@ -1558,13 +1551,12 @@ static std::pair<const Token *, const Token *> isMapFind(const Token *tok)
     return {contTok, tok->astOperand2()};
 }
 
-static const Token *skipLocalVars(const Token *tok)
+static const Token* skipLocalVars(const Token* const tok)
 {
     if (!tok)
         return tok;
     if (Token::simpleMatch(tok, "{"))
         return skipLocalVars(tok->next());
-    const Scope *scope = tok->scope();
 
     const Token *top = tok->astTop();
     if (!top) {
@@ -1586,7 +1578,7 @@ static const Token *skipLocalVars(const Token *tok)
         const Variable *var = varTok->variable();
         if (!var)
             return tok;
-        if (var->scope() != scope)
+        if (var->scope() != tok->scope())
             return tok;
         const Token *endTok = nextAfterAstRightmostLeaf(top);
         if (!endTok)

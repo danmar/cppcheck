@@ -20,9 +20,11 @@
 #define CPPCHECKLIBRARYDATA_H
 
 #include <QList>
+#include <QMap>
+#include <QPair>
+#include <QSet>
 #include <QString>
 #include <QStringList>
-#include <QMap>
 
 class QIODevice;
 

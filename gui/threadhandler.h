@@ -27,7 +27,9 @@
 
 #include <QDateTime>
 #include <QElapsedTimer>
+#include <QList>
 #include <QObject>
+#include <QString>
 #include <QStringList>
 
 class ResultsView;

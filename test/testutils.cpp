@@ -21,7 +21,10 @@
 #include "settings.h"
 #include "utils.h"
 
-const Settings givenACodeSampleToTokenize::settings;
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <string>
 
 class TestUtils : public TestFixture {
 public:
@@ -33,6 +36,7 @@ private:
         TEST_CASE(matchglob);
         TEST_CASE(isStringLiteral);
         TEST_CASE(isCharLiteral);
+        TEST_CASE(strToInt);
     }
 
     void isValidGlobPattern() const {
@@ -178,6 +182,154 @@ private:
         ASSERT_EQUALS(true, ::isCharLiteral("u'test'"));
         ASSERT_EQUALS(true, ::isCharLiteral("U'test'"));
         ASSERT_EQUALS(true, ::isCharLiteral("L'test'"));
+    }
+
+    void strToInt() {
+        ASSERT_EQUALS(1, ::strToInt<int>("1"));
+        ASSERT_EQUALS(-1, ::strToInt<int>("-1"));
+        ASSERT_EQUALS(1, ::strToInt<std::size_t>("1"));
+        ASSERT_THROW_EQUALS_2(::strToInt<int>(""), std::runtime_error, "converting '' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<std::size_t>(""), std::runtime_error, "converting '' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<int>(" "), std::runtime_error, "converting ' ' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<std::size_t>(" "), std::runtime_error, "converting ' ' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<unsigned int>("-1"), std::runtime_error, "converting '-1' to integer failed - needs to be positive");
+        ASSERT_THROW_EQUALS_2(::strToInt<int>("1ms"), std::runtime_error, "converting '1ms' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<int>("1.0"), std::runtime_error, "converting '1.0' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<int>("one"), std::runtime_error, "converting 'one' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<unsigned int>("1ms"), std::runtime_error, "converting '1ms' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<unsigned int>("1.0"), std::runtime_error, "converting '1.0' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<unsigned int>("one"), std::runtime_error, "converting 'one' to integer failed - not an integer");
+        ASSERT_THROW_EQUALS_2(::strToInt<int>(std::to_string(static_cast<int64_t>(std::numeric_limits<int>::max()) + 1)), std::runtime_error, "converting '2147483648' to integer failed - out of range (limits)");
+        ASSERT_THROW_EQUALS_2(::strToInt<int>(std::to_string(static_cast<int64_t>(std::numeric_limits<int>::min()) - 1)), std::runtime_error, "converting '-2147483649' to integer failed - out of range (limits)");
+        ASSERT_THROW_EQUALS_2(::strToInt<int8_t>(std::to_string(static_cast<int64_t>(std::numeric_limits<int8_t>::max()) + 1)), std::runtime_error, "converting '128' to integer failed - out of range (limits)");
+        ASSERT_THROW_EQUALS_2(::strToInt<int8_t>(std::to_string(static_cast<int64_t>(std::numeric_limits<int8_t>::min()) - 1)), std::runtime_error, "converting '-129' to integer failed - out of range (limits)");
+        ASSERT_THROW_EQUALS_2(::strToInt<unsigned int>(std::to_string(static_cast<uint64_t>(std::numeric_limits<unsigned int>::max()) + 1)), std::runtime_error, "converting '4294967296' to integer failed - out of range (limits)");
+        ASSERT_THROW_EQUALS_2(::strToInt<int>("9223372036854775808"), std::runtime_error, "converting '9223372036854775808' to integer failed - out of range (stoll)"); // LLONG_MAX + 1
+        ASSERT_THROW_EQUALS_2(::strToInt<std::size_t>("18446744073709551616"), std::runtime_error, "converting '18446744073709551616' to integer failed - out of range (stoull)"); // ULLONG_MAX + 1
+
+        {
+            long tmp;
+            ASSERT(::strToInt("1", tmp));
+            ASSERT_EQUALS(1, tmp);
+        }
+        {
+            long tmp;
+            ASSERT(::strToInt("-1", tmp));
+            ASSERT_EQUALS(-1, tmp);
+        }
+        {
+            std::size_t tmp;
+            ASSERT(::strToInt("1", tmp));
+        }
+        {
+            std::size_t tmp;
+            ASSERT(!::strToInt("-1", tmp));
+        }
+        {
+            long tmp;
+            ASSERT(!::strToInt("1ms", tmp));
+        }
+        {
+            unsigned long tmp;
+            ASSERT(!::strToInt("1ms", tmp));
+        }
+        {
+            long tmp;
+            ASSERT(!::strToInt("", tmp));
+        }
+        {
+            unsigned long tmp;
+            ASSERT(!::strToInt("", tmp));
+        }
+        {
+            long tmp;
+            ASSERT(!::strToInt(" ", tmp));
+        }
+        {
+            unsigned long tmp;
+            ASSERT(!::strToInt(" ", tmp));
+        }
+
+        {
+            long tmp;
+            std::string err;
+            ASSERT(::strToInt("1", tmp, &err));
+            ASSERT_EQUALS(1, tmp);
+            ASSERT_EQUALS("", err);
+        }
+        {
+            std::size_t tmp;
+            std::string err;
+            ASSERT(::strToInt("1", tmp, &err));
+            ASSERT_EQUALS(1, tmp);
+            ASSERT_EQUALS("", err);
+        }
+        {
+            unsigned long tmp;
+            std::string err;
+            ASSERT(!::strToInt("-1", tmp, &err));
+            ASSERT_EQUALS("needs to be positive", err);
+        }
+        {
+            long tmp;
+            std::string err;
+            ASSERT(!::strToInt("1ms", tmp, &err));
+            ASSERT_EQUALS("not an integer", err);
+        }
+        {
+            long tmp;
+            std::string err;
+            ASSERT(!::strToInt("1.0", tmp, &err));
+            ASSERT_EQUALS("not an integer", err);
+        }
+        {
+            long tmp;
+            std::string err;
+            ASSERT(!::strToInt("one", tmp, &err));
+            ASSERT_EQUALS("not an integer", err);
+        }
+        {
+            std::size_t tmp;
+            std::string err;
+            ASSERT(!::strToInt("1ms", tmp, &err));
+            ASSERT_EQUALS("not an integer", err);
+        }
+        {
+            long tmp;
+            std::string err;
+            ASSERT(!::strToInt("9223372036854775808", tmp, &err)); // LLONG_MAX + 1
+            ASSERT_EQUALS("out of range (stoll)", err);
+        }
+        {
+            int tmp;
+            std::string err;
+            ASSERT(!::strToInt(std::to_string(static_cast<int64_t>(std::numeric_limits<int>::max()) + 1), tmp, &err));
+            ASSERT_EQUALS("out of range (limits)", err);
+        }
+        {
+            int tmp;
+            std::string err;
+            ASSERT(!::strToInt(std::to_string(static_cast<int64_t>(std::numeric_limits<int>::min()) - 1), tmp, &err));
+            ASSERT_EQUALS("out of range (limits)", err);
+        }
+        {
+            int8_t tmp;
+            std::string err;
+            ASSERT(!::strToInt(std::to_string(static_cast<int64_t>(std::numeric_limits<int8_t>::max()) + 1), tmp, &err));
+            ASSERT_EQUALS("out of range (limits)", err);
+        }
+        {
+            int8_t tmp;
+            std::string err;
+            ASSERT(!::strToInt(std::to_string(static_cast<int64_t>(std::numeric_limits<int8_t>::min()) - 1), tmp, &err));
+            ASSERT_EQUALS("out of range (limits)", err);
+        }
+        {
+            std::size_t tmp;
+            std::string err;
+            ASSERT(!::strToInt("18446744073709551616", tmp, &err)); // ULLONG_MAX + 1
+            ASSERT_EQUALS("out of range (stoull)", err);
+        }
     }
 };
 
