@@ -18,7 +18,7 @@ Checks: >
         -objc-*,
         -openmp-*,
         -zircon-*,
-        cert-err34-c
+        cert-err34-c,
         google-explicit-constructor,
         -bugprone-assignment-in-if-condition,
         -bugprone-branch-clone,
