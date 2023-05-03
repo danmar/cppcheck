@@ -111,7 +111,7 @@ jobs:
       - name: Run CTest
         run: |
           pushd cmake.output
-          ctest -j$(nproc)
+          ctest --output-on-failure -j$(nproc)
 
   build_uchar:
 
