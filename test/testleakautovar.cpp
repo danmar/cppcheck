@@ -240,19 +240,19 @@ private:
         runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
-    void check_(const char* file, int line, const char code[], Settings & settings_) {
+    void check_(const char* file, int line, const char code[], const Settings & s) {
         // Clear the error buffer..
         errout.str("");
 
+        const Settings settings0 = settingsBuilder(s).checkLibrary().build();
+
         // Tokenize..
-        Tokenizer tokenizer(&settings_, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        settings_.checkLibrary = true;
-
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings_, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings0, this);
     }
 
     void assign1() {
@@ -469,7 +469,7 @@ private:
     }
 
     void assign23() {
-        Settings s = settings;
+        const Settings settingsOld = settings;
         LOAD_LIB_2(settings.library, "posix.cfg");
         settings.libraries.emplace_back("posix");
         check("void f() {\n"
@@ -504,7 +504,7 @@ private:
                       "[test.cpp:17]: (error) Resource leak: n13\n"
                       "[test.cpp:17]: (error) Resource leak: n14\n",
                       errout.str());
-        settings = s;
+        settings = settingsOld;
     }
 
     void assign24() {
@@ -1874,10 +1874,7 @@ private:
     }
 
     void ifelse24() { // #1733
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
-        LOAD_LIB_2(s.library, "posix.cfg");
-        s.libraries.emplace_back("posix");
+        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
 
         check("void f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"
@@ -2654,7 +2651,7 @@ public:
     TestLeakAutoVarRecursiveCountLimit() : TestFixture("TestLeakAutoVarRecursiveCountLimit") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
     void checkP(const char code[], bool cpp = false) {
         // Clear the error buffer..
@@ -2675,15 +2672,11 @@ private:
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
-        settings.checkLibrary = true;
-
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
     }
 
@@ -2714,7 +2707,7 @@ public:
     TestLeakAutoVarStrcpy() : TestFixture("TestLeakAutoVarStrcpy") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
     void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
@@ -2725,15 +2718,11 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        settings.checkLibrary = true;
-
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(returnedValue); // #9298
         TEST_CASE(deallocuse2);
         TEST_CASE(fclose_false_positive); // #9575
@@ -2778,7 +2767,7 @@ public:
     TestLeakAutoVarWindows() : TestFixture("TestLeakAutoVarWindows") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("windows.cfg").build();
 
     void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
@@ -2794,8 +2783,6 @@ private:
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "windows.cfg");
-
         TEST_CASE(heapDoubleFree);
     }
 

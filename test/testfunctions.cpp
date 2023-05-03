@@ -33,20 +33,10 @@ public:
     TestFunctions() : TestFixture("TestFunctions") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::warning).severity(Severity::performance).severity(Severity::portability).
+                        certainty(Certainty::inconclusive).c(Standards::C11).cpp(Standards::CPP11).library("std.cfg").library("posix.cfg").build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::performance);
-        settings.severity.enable(Severity::portability);
-        settings.certainty.enable(Certainty::inconclusive);
-        settings.standards.c = Standards::C11;
-        settings.standards.cpp = Standards::CPP11;
-        LOAD_LIB_2(settings.library, "std.cfg");
-        LOAD_LIB_2(settings.library, "posix.cfg");
-        settings.libraries.emplace_back("posix");
-
         // Prohibited functions
         TEST_CASE(prohibitedFunctions_posix);
         TEST_CASE(prohibitedFunctions_index);
@@ -272,6 +262,7 @@ private:
               "}", "test.c");
         ASSERT_EQUALS("[test.c:3]: (warning) Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n", errout.str());
 
+        const Settings settingsOld = settings;
         settings.standards.c = Standards::C89;
         settings.standards.cpp = Standards::CPP03;
         check("void f()\n"
@@ -291,8 +282,7 @@ private:
               "    char *x = alloca(10);\n"
               "}", "test.c");
         ASSERT_EQUALS("", errout.str());
-        settings.standards.c = Standards::C11;
-        settings.standards.cpp = Standards::CPP11;
+        settings = settingsOld;
     }
 
     // ticket #3121
@@ -1301,8 +1291,7 @@ private:
     }
 
     void checkIgnoredReturnValue() {
-        Settings settings2;
-        settings2.severity.enable(Severity::warning);
+        Settings settings2 = settingsBuilder().severity(Severity::warning).build();
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp,foo::mystrcmp\">\n"
@@ -1454,8 +1443,7 @@ private:
     }
 
     void checkIgnoredErrorCode() {
-        Settings settings2;
-        settings2.addEnabled("style");
+        Settings settings2 = settingsBuilder().severity(Severity::style).build();
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp\">\n"
