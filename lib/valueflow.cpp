@@ -9126,6 +9126,7 @@ struct ValueFlowPassRunner {
                 return run(pass);
             }))
                 return true;
+            --n;
         }
         if (state.settings->debugwarnings) {
             if (n == 0 && values != getTotalValues()) {
