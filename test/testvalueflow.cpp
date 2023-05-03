@@ -7189,6 +7189,23 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "i");
+
+        code = "void f() {\n" // #11701
+               "std::vector<int> v(500);\n"
+               "    for (int i = 0; i < 500; i++) {\n"
+               "        if (i < 122)\n"
+               "            v[i] = 255;\n"
+               "        else if (i == 122)\n"
+               "            v[i] = 220;\n"
+               "        else if (i < 386)\n"
+               "            v[i] = 196;\n"
+               "        else if (i == 386)\n"
+               "            v[i] = 118;\n"
+               "        else\n"
+               "            v[i] = 0;\n"
+               "    }\n"
+               "}\n";
+        valueOfTok(code, "i");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
