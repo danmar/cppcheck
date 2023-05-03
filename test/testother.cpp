@@ -1587,9 +1587,11 @@ private:
               "void f(const S& s) {\n"
               "    std::string str = s.getStr();\n"
               "    std::string str2{ s.getStr() };\n"
+              "    std::string str3(s.getStr());\n"
               "    if (s.getB()) {\n"
               "        if (str == \"abc\") {}\n"
               "        if (str2 == \"abc\") {}\n"
+              "        if (str3 == \"abc\") {}\n"
               "    }\n"
               "}\n"
               "void f(const char* s, bool b) {\n"
@@ -1606,8 +1608,9 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:21]: (style) The scope of the variable 'str' can be reduced.\n"
                       "[test.cpp:22]: (style) The scope of the variable 'str2' can be reduced.\n"
-                      "[test.cpp:29]: (style) The scope of the variable 'i' can be reduced.\n"
-                      "[test.cpp:35]: (style) The scope of the variable 'k' can be reduced.\n",
+                      "[test.cpp:23]: (style) The scope of the variable 'str3' can be reduced.\n"
+                      "[test.cpp:31]: (style) The scope of the variable 'i' can be reduced.\n"
+                      "[test.cpp:37]: (style) The scope of the variable 'k' can be reduced.\n",
                       errout.str());
     }
 
