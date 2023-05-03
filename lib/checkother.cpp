@@ -922,12 +922,14 @@ void CheckOther::checkVariableScope()
             continue;
 
         const Token* tok = var->nameToken()->next();
+        bool isConstructor = false;
         if (Token::Match(tok, "; %varid% =", var->declarationId())) { // bailout for assignment
             tok = tok->tokAt(2)->astOperand2();
             if (!isSimpleExpr(tok, var, mSettings))
                 continue;
         }
         else if (Token::Match(tok, "{|(")) { // bailout for constructor
+            isConstructor = true;
             const Token* argTok = tok->astOperand2();
             bool bail = false;
             while (argTok) {
@@ -946,7 +948,7 @@ void CheckOther::checkVariableScope()
                 continue;
         }
         // bailout if initialized with function call that has possible side effects
-        if (Token::Match(tok, "[(=]") && Token::simpleMatch(tok->astOperand2(), "("))
+        if (!isConstructor && Token::Match(tok, "[(=]") && Token::simpleMatch(tok->astOperand2(), "("))
             continue;
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
