@@ -24,6 +24,7 @@
 #include "path.h"
 #include "token.h"
 #include "tokenlist.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>
@@ -32,9 +33,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
-#include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include <tinyxml2.h>
@@ -116,6 +117,10 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
     // Format callstack
     for (const ErrorPathItem& e: errorPath) {
         const Token *tok = e.first;
+        // --errorlist can provide null values here
+        if (!tok)
+            continue;
+
         std::string info = e.second;
 
         if (info.compare(0,8,"$symbol:") == 0 && info.find('\n') < info.size()) {
@@ -124,9 +129,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
             info = replaceStr(info.substr(pos+1), "$symbol", symbolName);
         }
 
-        // --errorlist can provide null values here
-        if (tok)
-            callStack.emplace_back(tok, info, tokenList);
+        callStack.emplace_back(tok, info, tokenList);
     }
 
     if (tokenList && !tokenList->getFiles().empty())

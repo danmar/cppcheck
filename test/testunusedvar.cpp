@@ -37,13 +37,9 @@ public:
     TestUnusedVar() : TestFixture("TestUnusedVar") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().severity(Severity::style).checkLibrary().library("std.cfg").build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-        settings.checkLibrary = true;
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(isRecordTypeWithoutSideEffects);
         TEST_CASE(cleanFunction);
 
@@ -259,7 +255,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
         if (directives)
             preprocessor.setDirectives(*directives);
 
@@ -284,7 +280,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
@@ -1640,6 +1636,14 @@ private:
                                "\n"
                                "input.skip(sizeof(struct Header));");
         ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a, b, c; };\n" // #6561
+                               "int f(FILE * fp) {\n"
+                               "    S s;\n"
+                               "    ::fread(&s, sizeof(S), 1, fp);\n"
+                               "    return s.b;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember16() {
@@ -1783,6 +1787,7 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
 
+        const Settings settingsOld = settings;
         settings.enforcedLang = Settings::C;
         checkStructMemberUsage("struct A {\n" // #10852
                                "    struct B {\n"
@@ -1812,7 +1817,7 @@ private:
                                "    pc->s[0] = 1;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
-        settings.enforcedLang = Settings::None;
+        settings = settingsOld;
     }
 
     void structmember20() { // #10737

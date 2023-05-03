@@ -36,13 +36,10 @@ public:
     TestClass() : TestFixture("TestClass") {}
 
 private:
-    Settings settings0;
-    Settings settings1;
+    Settings settings0 = settingsBuilder().severity(Severity::style).build();
+    Settings settings1 = settingsBuilder().severity(Severity::warning).build();
 
     void run() override {
-        settings0.severity.enable(Severity::style);
-        settings1.severity.enable(Severity::warning);
-
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -262,10 +259,9 @@ private:
     void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.severity.enable(Severity::warning);
+        const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -371,7 +367,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -525,7 +521,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -688,7 +684,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -1137,7 +1133,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -1613,7 +1609,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -2574,10 +2570,11 @@ private:
         // Clear the error log
         errout.str("");
 
+        // TODO: subsequent tests depend on these changes - should use SettingsBuilder
         settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings0.severity.enable(Severity::warning);
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -2890,17 +2887,15 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::portability);
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
         checkNoMemset_(file, line, code, settings);
     }
 
-    void checkNoMemset_(const char* file, int line, const char code[], Settings &settings) {
+    void checkNoMemset_(const char* file, int line, const char code[], const Settings &settings) {
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -3156,8 +3151,7 @@ private:
                       errout.str());
 
         // #1655
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().library("std.cfg").build();
         checkNoMemset("void f() {\n"
                       "    char c[] = \"abc\";\n"
                       "    std::string s;\n"
@@ -3533,7 +3527,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -3564,23 +3558,20 @@ private:
     }
 
 #define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkConst_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkConst_(const char* file, int line, const char code[], const Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
-        // Check..
-        if (!s)
-            s = &settings0;
-        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings = settingsBuilder(s ? *s : settings0).certainty(Certainty::inconclusive, inconclusive).build();
 
-        Preprocessor preprocessor(*s, s->nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(s, this, &preprocessor);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, s, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         (checkClass.checkConst)();
     }
 
@@ -7231,10 +7222,7 @@ private:
     }
 
     void qualifiedNameMember() { // #10872
-        Settings s;
-        s.severity.enable(Severity::style);
-        s.debugwarnings = true;
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
         checkConst("struct data {};\n"
                    "    struct S {\n"
                    "    std::vector<data> std;\n"
@@ -7254,7 +7242,7 @@ private:
         // Check..
         settings0.certainty.setEnabled(Certainty::inconclusive, true);
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -7289,10 +7277,9 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.severity.enable(Severity::performance);
+        const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -7506,7 +7493,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -7620,11 +7607,9 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings = settingsBuilder().severity(Severity::warning).certainty(Certainty::inconclusive, inconclusive).build();
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -7970,10 +7955,10 @@ private:
     void checkOverride_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.severity.enable(Severity::style);
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        const Settings settings = settingsBuilder().severity(Severity::style).build();
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -8147,11 +8132,11 @@ private:
     void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.safeChecks.classes = true;
-        settings.severity.enable(Severity::warning);
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Settings settings = settingsBuilder().severity(Severity::warning).build();
+        settings.safeChecks.classes = true;
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -8174,7 +8159,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -8328,7 +8313,7 @@ private:
 
 
     void ctu(const std::vector<std::string> &code) {
-        Settings settings;
+        const Settings settings;
         auto &check = getCheck<CheckClass>();
 
         // getFileInfo
@@ -8373,7 +8358,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);

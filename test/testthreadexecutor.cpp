@@ -39,7 +39,12 @@ public:
     TestThreadExecutor() : TestFixture("TestThreadExecutor") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().library("std.cfg").build();
+
+    static std::string fprefix()
+    {
+        return "thread";
+    }
 
     /**
      * Execute check using n jobs for y files which are have
@@ -53,7 +58,7 @@ private:
         if (filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
                 std::ostringstream oss;
-                oss << "file_" << i << ".cpp";
+                oss << fprefix() << "_" << i << ".cpp";
                 filemap[oss.str()] = data.size();
             }
         }
@@ -64,12 +69,13 @@ private:
             }
         }
 
-        settings.jobs = jobs;
-        settings.showtime = showtime;
+        Settings settings1 = settings;
+        settings1.jobs = jobs;
+        settings1.showtime = showtime;
         if (plistOutput)
-            settings.plistOutput = plistOutput;
+            settings1.plistOutput = plistOutput;
         // TODO: test with settings.project.fileSettings;
-        ThreadExecutor executor(filemap, settings, *this);
+        ThreadExecutor executor(filemap, settings1, *this);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
@@ -79,8 +85,6 @@ private:
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(many_threads_showtime);
@@ -185,10 +189,11 @@ private:
         settings.library.mProcessAfterCode.emplace(".cp1", true);
 
         const std::vector<std::string> files = {
-            "file_1.cp1", "file_2.cpp", "file_3.cp1", "file_4.cpp"
+            fprefix() + "_1.cp1", fprefix() + "_2.cpp", fprefix() + "_3.cp1", fprefix() + "_4.cpp"
         };
 
-        check(2, 4, 4,
+        // checks are not executed on markup files => expected result is 2
+        check(2, 4, 2,
               "int main()\n"
               "{\n"
               "  char *a = malloc(10);\n"
@@ -196,21 +201,21 @@ private:
               "}",
               SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
         // TODO: order of "Checking" and "checked" is affected by thread
-        /*TODO_ASSERT_EQUALS("Checking file_2.cpp ...\n"
+        /*TODO_ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
                            "1/4 files checked 25% done\n"
-                           "Checking file_4.cpp ...\n"
+                           "Checking " + fprefix() + "_4.cpp ...\n"
                            "2/4 files checked 50% done\n"
-                           "Checking file_1.cp1 ...\n"
+                           "Checking " + fprefix() + "_1.cp1 ...\n"
                            "3/4 files checked 75% done\n"
-                           "Checking file_3.cp1 ...\n"
+                           "Checking " + fprefix() + "_3.cp1 ...\n"
                            "4/4 files checked 100% done\n",
-                           "Checking file_1.cp1 ...\n"
+                           "Checking " + fprefix() + "_1.cp1 ...\n"
                            "1/4 files checked 25% done\n"
-                           "Checking file_2.cpp ...\n"
+                           "Checking " + fprefix() + "_2.cpp ...\n"
                            "2/4 files checked 50% done\n"
-                           "Checking file_3.cp1 ...\n"
+                           "Checking " + fprefix() + "_3.cp1 ...\n"
                            "3/4 files checked 75% done\n"
-                           "Checking file_4.cpp ...\n"
+                           "Checking " + fprefix() + "_4.cpp ...\n"
                            "4/4 files checked 100% done\n",
                            output.str());*/
         settings = settingsOld;

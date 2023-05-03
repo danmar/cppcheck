@@ -2223,7 +2223,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     return false;
 }
 
-bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
+bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function()) {
         for (const Function &func : scope->functionList) {
@@ -2264,7 +2264,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
-bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
+bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function())
         return false;

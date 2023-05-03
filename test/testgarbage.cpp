@@ -35,10 +35,9 @@ public:
     TestGarbage() : TestFixture("TestGarbage") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().debugwarnings().build();
 
     void run() override {
-        settings.debugwarnings = true;
         settings.severity.fill();
         settings.certainty.fill();
 
@@ -288,7 +287,7 @@ private:
     std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
         errout.str("");
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);

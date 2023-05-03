@@ -121,10 +121,6 @@ public:
     void tooManyConfigsError(const std::string &file, const int numberOfConfigurations);
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
 
-    void dontSimplify() {
-        mSimplify = false;
-    }
-
     /** Analyse whole program, run this after all TUs has been scanned.
      * This is deprecated and the plan is to remove this when
      * .analyzeinfo is good enough.
@@ -159,7 +155,7 @@ private:
      * @param fileStream stream the file content can be read from
      * @return number of errors found
      */
-    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
+    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream* fileStream = nullptr);
 
     /**
      * @brief Check raw tokens
