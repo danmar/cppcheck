@@ -44,7 +44,7 @@ private:
         errout.str("");
 
         // tokenize..
-        Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);

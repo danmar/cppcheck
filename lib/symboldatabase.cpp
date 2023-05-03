@@ -1105,7 +1105,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
                 const Token *start = tok;
                 while (Token::Match(start->tokAt(-2), "%name% ::"))
                     start = start->tokAt(-2);
-                if (!Token::Match(start->previous(), "[(,<=]") && !Token::Match(start->tokAt(-2), "[(,<=] &") && !Token::Match(start, "%name% ;"))
+                if (!Token::Match(start->previous(), "[(,<=]") && !Token::simpleMatch(start->previous(), "::") && !Token::Match(start->tokAt(-2), "[(,<=] &") && !Token::Match(start, "%name% ;"))
                     continue;
                 isTemplateArg = Token::simpleMatch(start->previous(), "<") || Token::simpleMatch(start->tokAt(-2), "<");
             }
@@ -5577,8 +5577,8 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
         if (tok1->strAt(-1) == "::") {
             currScope = &scopeList.front();
 
-            if (Token::Match(tok1, "%name% ("))
-                return currScope->findFunction(tok);
+            if (const Function* f = currScope->findFunction(tok))
+                return f;
 
             currScope = currScope->findRecordInNestedList(tok1->str());
         }

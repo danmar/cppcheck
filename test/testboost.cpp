@@ -31,12 +31,9 @@ public:
     TestBoost() : TestFixture("TestBoost") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::performance).build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-        settings.severity.enable(Severity::performance);
-
         TEST_CASE(BoostForeachContainerModification);
     }
 
