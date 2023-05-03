@@ -5445,7 +5445,7 @@ private:
                "    }\n"
                "}\n";
         values = tokenValues(code, "i ++", ValueFlow::Value::ValueType::UNINIT);
-        TODO_ASSERT_EQUALS(0, 1, values.size());
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {
