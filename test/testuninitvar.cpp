@@ -6014,6 +6014,15 @@ private:
                         "    if (tmp[0]) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11055
+        valueFlowUninit("void g(int*);\n"
+                        "void f(bool b) {\n"
+                        "    int i;\n"
+                        "    int* p = b ? &i : nullptr;\n"
+                        "    g(p);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
