@@ -304,8 +304,8 @@ public:
             MinSize(Type t, int a) : type(t), arg(a) {}
             Type type;
             int arg;
-            int arg2{};
-            long long value{};
+            int arg2 = 0;
+            long long value = 0;
             std::string baseType;
         };
         std::vector<MinSize> minsizes;
