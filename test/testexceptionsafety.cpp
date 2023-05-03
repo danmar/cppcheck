@@ -60,19 +60,19 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false) {
+    void check_(const char* file, int line, const char code[], bool inconclusive = false, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        Settings settings1 = settingsBuilder(s ? *s : settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check char variable usage..
-        runChecks<CheckExceptionSafety>(&tokenizer, &settings, this);
+        runChecks<CheckExceptionSafety>(&tokenizer, &settings1, this);
     }
 
     void destructors() {
@@ -398,13 +398,9 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n"
                       "[test.cpp:6] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n", errout.str());
 
-        Settings settingsOld = settings;
-        LOAD_LIB_2(settings.library, "gnu.cfg");
-
-        check(code, true);
+        const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
+        check(code, true, &s);
         ASSERT_EQUALS("", errout.str());
-
-        settings = settingsOld;
     }
 
     void nothrowAttributeThrow() {
