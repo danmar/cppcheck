@@ -1805,7 +1805,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
                 ctuFileInfo.loadFromXml(e);
                 continue;
             }
-            for (Check *check : Check::instances()) {
+            for (const Check *check : Check::instances()) {
                 if (checkClassAttr == check->name())
                     fileInfoList.push_back(check->loadFileInfoFromXml(e));
             }
