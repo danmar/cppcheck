@@ -1387,7 +1387,7 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
     }
 }
 
-static Token * findAstTop(Token *tok1, Token *tok2)
+static Token * findAstTop(Token *tok1, const Token *tok2)
 {
     for (Token *tok = tok1; tok && (tok != tok2); tok = tok->next()) {
         if (tok->astParent() || tok->astOperand1() || tok->astOperand2()) {

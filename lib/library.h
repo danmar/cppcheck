@@ -53,7 +53,7 @@ namespace tinyxml2 {
 class CPPCHECKLIB Library {
     // TODO: get rid of this
     friend class TestSymbolDatabase; // For testing only
-    friend class TestSingleExecutor; // For testing only
+    friend class TestSingleExecutorBase; // For testing only
     friend class TestThreadExecutor; // For testing only
     friend class TestProcessExecutor; // For testing only
 

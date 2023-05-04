@@ -1587,9 +1587,11 @@ private:
               "void f(const S& s) {\n"
               "    std::string str = s.getStr();\n"
               "    std::string str2{ s.getStr() };\n"
+              "    std::string str3(s.getStr());\n"
               "    if (s.getB()) {\n"
               "        if (str == \"abc\") {}\n"
               "        if (str2 == \"abc\") {}\n"
+              "        if (str3 == \"abc\") {}\n"
               "    }\n"
               "}\n"
               "void f(const char* s, bool b) {\n"
@@ -1606,8 +1608,9 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:21]: (style) The scope of the variable 'str' can be reduced.\n"
                       "[test.cpp:22]: (style) The scope of the variable 'str2' can be reduced.\n"
-                      "[test.cpp:29]: (style) The scope of the variable 'i' can be reduced.\n"
-                      "[test.cpp:35]: (style) The scope of the variable 'k' can be reduced.\n",
+                      "[test.cpp:23]: (style) The scope of the variable 'str3' can be reduced.\n"
+                      "[test.cpp:31]: (style) The scope of the variable 'i' can be reduced.\n"
+                      "[test.cpp:37]: (style) The scope of the variable 'k' can be reduced.\n",
                       errout.str());
     }
 
@@ -3581,6 +3584,38 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (style) Parameter 'p' can be declared as pointer to const. "
                       "However it seems that 'cb' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
+                      errout.str());
+
+        check("void f1(std::vector<int>* p) {\n" // #11681
+              "    if (p->empty()) {}\n" // warn
+              "}\n"
+              "void f2(std::vector<int>* p) {\n"
+              "    p->resize(0);\n"
+              "}\n"
+              "struct S {\n"
+              "    void h1() const;\n"
+              "    void h2();\n"
+              "    int i;\n"
+              "};\n"
+              "void k(int&);\n"
+              "void g1(S* s) {\n"
+              "    s->h1();\n" // warn
+              "}\n"
+              "void g1(S* s) {\n"
+              "    s->h2();\n"
+              "}\n"
+              "void g1(S* s) {\n"
+              "    if (s->i) {}\n" // warn
+              "}\n"
+              "void g2(S* s) {\n"
+              "    s->i = 0;\n"
+              "}\n"
+              "void g3(S* s) {\n"
+              "    k(s->i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n"
+                      "[test.cpp:13]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:19]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
     }
 
@@ -6110,7 +6145,6 @@ private:
     }
 
     void duplicateExpression3() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mystrcmp\">\n"
@@ -6119,7 +6153,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"
@@ -7178,13 +7212,19 @@ private:
               "    int start = x->first;\n"
               "    int end   = x->first;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n",
+                      errout.str());
+
         check("struct SW { int first; };\n"
               "void foo(SW* x, int i, int j) {\n"
               "    int start = x->first;\n"
               "    int end   = x->first;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n",
+                      errout.str());
+
         check("struct Foo { int f() const; };\n"
               "void test() {\n"
               "    Foo f = Foo{};\n"
@@ -7736,7 +7776,9 @@ private:
               "void foo(S* first) {\n"
               "  if (first.ptr >= 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n"
+                      "[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7744,7 +7786,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if((first.ptr - second.ptr) >= 0) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7752,7 +7796,9 @@ private:
               "void foo(S* first) {\n"
               "  if((first.ptr) >= 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n"
+                      "[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7760,7 +7806,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(0 <= first.ptr - second.ptr) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7768,7 +7816,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(0 <= (first.ptr - second.ptr)) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7776,7 +7826,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(first.ptr - second.ptr < 0) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7784,7 +7836,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if((first.ptr - second.ptr) < 0) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7792,7 +7846,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(0 > first.ptr - second.ptr) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7800,7 +7856,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(0 > (first.ptr - second.ptr)) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("void foo(const int* x) {\n"
               "  if (0 <= x[0]) {}\n"
@@ -7810,17 +7868,19 @@ private:
         check("void foo(Bar* x) {\n"
               "  if (0 <= x.y) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
 
         check("void foo(Bar* x) {\n"
               "  if (0 <= x->y) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
 
         check("void foo(Bar* x, Bar* y) {\n"
               "  if (0 <= x->y - y->y ) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n"
+                      "[test.cpp:1]: (style) Parameter 'y' can be declared as pointer to const\n",
+                      errout.str());
 
         check("void foo(const Bar* x) {\n"
               "  if (0 > x) {}\n"
@@ -7835,12 +7895,12 @@ private:
         check("void foo(Bar* x) {\n"
               "  if (0 > x.y) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
 
         check("void foo(Bar* x) {\n"
               "  if (0 > x->y) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
 
         check("void foo() {\n"
               "  int (*t)(void *a, void *b);\n"
@@ -7858,13 +7918,17 @@ private:
               "void packed_object_info(struct object_info *oi) {\n"
               "  if (oi->typep < 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n"
+                      "[test.cpp:2]: (style) Parameter 'oi' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct object_info { int typep[10]; };\n"
               "void packed_object_info(struct object_info *oi) {\n"
               "  if (oi->typep < 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n"
+                      "[test.cpp:2]: (style) Parameter 'oi' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct object_info { int *typep; };\n"
               "void packed_object_info(struct object_info *oi) {\n"

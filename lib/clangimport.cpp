@@ -1523,7 +1523,7 @@ static void setTypes(TokenList *tokenList)
     }
 }
 
-static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
+static void setValues(const Tokenizer *tokenizer, const SymbolDatabase *symbolDatabase)
 {
     const Settings * const settings = tokenizer->getSettings();
 
