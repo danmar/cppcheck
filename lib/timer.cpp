@@ -25,14 +25,15 @@
 #include <utility>
 #include <vector>
 
-// TODO: print through a synchronized logger
-
 namespace {
     using dataElementType = std::pair<std::string, struct TimerResultsData>;
     bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
     {
         return lhs.second.seconds() > rhs.second.seconds();
     }
+
+    // TODO: remove and print through (synchronized) ErrorLogger instead
+    std::mutex stdCoutLock;
 }
 
 // TODO: this does not include any file context when SHOWTIME_FILE thus rendering it useless - should we include the logging with the progress logging?
@@ -45,12 +46,16 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     TimerResultsData overallData;
     std::vector<dataElementType> data;
 
-    // lock the whole logging operation to avoid multiple threads printing their results at the same time
-    std::lock_guard<std::mutex> l(mResultsSync);
+    {
+        std::lock_guard<std::mutex> l(mResultsSync);
 
-    data.reserve(mResults.size());
-    data.insert(data.begin(), mResults.cbegin(), mResults.cend());
+        data.reserve(mResults.size());
+        data.insert(data.begin(), mResults.cbegin(), mResults.cend());
+    }
     std::sort(data.begin(), data.end(), more_second_sec);
+
+    // lock the whole logging operation to avoid multiple threads printing their results at the same time
+    std::lock_guard<std::mutex> l(stdCoutLock);
 
     std::cout << std::endl;
 
@@ -123,7 +128,7 @@ void Timer::stop()
 
         if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
-            std::lock_guard<std::mutex> l(mCoutLock);
+            std::lock_guard<std::mutex> l(stdCoutLock);
             std::cout << mStr << ": " << sec << "s" << std::endl;
         } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
@@ -136,5 +141,3 @@ void Timer::stop()
 
     mStopped = true;
 }
-
-std::mutex Timer::mCoutLock;
