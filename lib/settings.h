@@ -285,10 +285,12 @@ public:
         Severity::SeverityType severity;
     };
 
+#ifdef HAVE_RULES
     /**
      * @brief Extra rules
      */
     std::list<Rule> rules;
+#endif
 
     /** Do not only check how interface is used. Also check that interface is safe. */
     class CPPCHECKLIB SafeChecks {
