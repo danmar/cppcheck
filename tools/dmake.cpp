@@ -221,12 +221,12 @@ static int write_vcxproj(const std::string &proj_name, const std::function<void(
     return EXIT_SUCCESS;
 }
 
-enum ClType { Compile, Include, Precompile, PrecompileNoPCRE };
+enum ClType { Compile, Include, Precompile };
 
 static std::string make_vcxproj_cl_entry(const std::string& file, ClType type)
 {
     std::string outstr;
-    if (type == Precompile || type == PrecompileNoPCRE) {
+    if (type == Precompile) {
         outstr += R"(    <ClCompile Include=")";
         outstr += file;
         outstr += R"(">)";
@@ -235,22 +235,18 @@ static std::string make_vcxproj_cl_entry(const std::string& file, ClType type)
         outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>)";
         outstr += "\r\n";
-        if (type == Precompile) {
-            outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">Create</PrecompiledHeader>)";
-            outstr += "\r\n";
-            outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">Create</PrecompiledHeader>)";
-            outstr += "\r\n";
-        }
+        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">Create</PrecompiledHeader>)";
+        outstr += "\r\n";
+        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">Create</PrecompiledHeader>)";
+        outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>)";
         outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>)";
         outstr += "\r\n";
-        if (type == Precompile) {
-            outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">Create</PrecompiledHeader>)";
-            outstr += "\r\n";
-            outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">Create</PrecompiledHeader>)";
-            outstr += "\r\n";
-        }
+        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">Create</PrecompiledHeader>)";
+        outstr += "\r\n";
+        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|x64'">Create</PrecompiledHeader>)";
+        outstr += "\r\n";
         outstr += "    </ClCompile>\r\n";
         return outstr;
     }
@@ -383,7 +379,7 @@ int main(int argc, char **argv)
 
         for (const std::string &testfile: testfiles) {
             const std::string t = testfile.substr(5);
-            outstr += make_vcxproj_cl_entry(t, t == "fixture.cpp" ? PrecompileNoPCRE : Compile);
+            outstr += make_vcxproj_cl_entry(t, t == "fixture.cpp" ? Precompile : Compile);
         }
     }, [&](std::string &outstr){
         for (const std::string &clifile_h: clifiles_h) {
@@ -659,7 +655,8 @@ int main(int argc, char **argv)
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
-    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o\n";
+    // TODO: generate from clifiles
+    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/singleexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";

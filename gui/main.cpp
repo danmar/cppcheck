@@ -29,12 +29,17 @@
 #else
 #include <iostream>
 #endif
+#include <algorithm>
 #include <string>
 
 #include <QApplication>
 #include <QCoreApplication>
-#include <QStringList>
+#include <QIcon>
 #include <QSettings>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QtCore>
 
 
 static void ShowUsage();

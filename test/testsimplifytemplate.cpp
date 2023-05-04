@@ -37,14 +37,10 @@ public:
     TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {}
 
 private:
-    Settings settings;
+    // If there are unused templates, keep those
+    const Settings settings = settingsBuilder().severity(Severity::portability).checkUnusedTemplates().build();
 
     void run() override {
-        settings.severity.enable(Severity::portability);
-
-        // If there are unused templates, keep those
-        settings.checkUnusedTemplates = true;
-
         TEST_CASE(template1);
         TEST_CASE(template2);
         TEST_CASE(template3);
@@ -278,6 +274,7 @@ private:
 
         TEST_CASE(simplifyTemplateArgs1);
         TEST_CASE(simplifyTemplateArgs2);
+        TEST_CASE(simplifyTemplateArgs3);
 
         TEST_CASE(template_variadic_1); // #9144
         TEST_CASE(template_variadic_2); // #4349
@@ -312,9 +309,8 @@ private:
     std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, cppcheck::Platform::Type type = cppcheck::Platform::Type::Native) {
         errout.str("");
 
-        settings.debugwarnings = debugwarnings;
-        PLATFORM(settings.platform, type);
-        Tokenizer tokenizer(&settings, this);
+        const Settings settings1 = settingsBuilder(settings).debugwarnings(debugwarnings).platform(type).build();
+        Tokenizer tokenizer(&settings1, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -4053,6 +4049,26 @@ private:
                             "b<a100<int>> d100;";
         // don't bother checking the output because this is not instantiated properly
         tok(code); // don't crash
+
+        const char code2[] = "template<typename T> void f();\n" // #11489
+                             "template<typename T> void f(int);\n"
+                             "void g() {\n"
+                             "    f<int>();\n"
+                             "    f<char>(1);\n"
+                             "}\n"
+                             "template<typename T>\n"
+                             "void f(int) {}\n"
+                             "template<typename T>\n"
+                             "void f() {\n"
+                             "    f<T>(0);\n"
+                             "}\n";
+        const char exp2[] = "template < typename T > void f ( ) ; "
+                            "void f<int> ( int ) ; "
+                            "void f<char> ( int ) ; "
+                            "void g ( ) { f<int> ( ) ; f<char> ( 1 ) ; } "
+                            "void f<int> ( ) { f<int> ( 0 ) ; } "
+                            "void f<char> ( int ) { }";
+        ASSERT_EQUALS(exp2, tok(code2));
     }
 
     void template159() {  // #9886
@@ -6048,6 +6064,35 @@ private:
         const char expected[] = "struct a_t<false> ; "
                                 "void foo ( ) { bool b ; b = a_t<false> :: t ; } "
                                 "struct a_t<false> { static const bool t = false ; } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyTemplateArgs3() { // #11418
+        const char code[] = "template <class T> struct S {};\n"
+                            "template<typename T>\n"
+                            "T f() {}\n"
+                            "template<typename T, typename U>\n"
+                            "void g() {\n"
+                            "    S<decltype(true ? f<T>() : f<U>())> s1;\n"
+                            "    S<decltype(false ? f<T>() : f<U>())> s2;\n"
+                            "}\n"
+                            "void h() {\n"
+                            "    g<int, char>();\n"
+                            "}\n";
+        const char expected[] = "struct S<decltype((f<int>()))> ; "
+                                "struct S<decltype(f<char>())> ; "
+                                "int f<int> ( ) ; "
+                                "char f<char> ( ) ; "
+                                "void g<int,char> ( ) ; "
+                                "void h ( ) { g<int,char> ( ) ; } "
+                                "void g<int,char> ( ) { "
+                                "S<decltype((f<int>()))> s1 ; "
+                                "S<decltype(f<char>())> s2 ; "
+                                "} "
+                                "int f<int> ( ) { } "
+                                "char f<char> ( ) { } "
+                                "struct S<decltype((f<int>()))> { } ; "
+                                "struct S<decltype(f<char>())> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

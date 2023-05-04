@@ -49,7 +49,6 @@ We are not interesting in the size/complexity of a function.
 
 `readability-magic-numbers`<br>
 `readability-redundant-member-init`<br>
-`readability-simplify-boolean-expr`<br>
 
 These do not (always) increase readability.
 

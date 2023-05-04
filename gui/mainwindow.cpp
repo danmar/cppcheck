@@ -49,29 +49,49 @@
 
 #include <algorithm>
 #include <functional>
+#include <iterator>
 #include <list>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <QApplication>
 #include <QAction>
 #include <QActionGroup>
+#include <QByteArray>
+#include <QChar>
 #include <QCloseEvent>
+#include <QCoreApplication>
+#include <QDateTime>
 #include <QDebug>
+#include <QDialog>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QHBoxLayout>
 #include <QInputDialog>
+#include <QKeySequence>
+#include <QLabel>
+#include <QLineEdit>
+#include <QList>
+#include <QMap>
+#include <QMenu>
 #include <QMessageBox>
-#include <QRegularExpression>
-#include <QSettings>
-#include <QTimer>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
+#include <QtNetwork/QNetworkRequest>
+#include <QPushButton>
+#include <QRegularExpression>
+#include <QSettings>
+#include <QSize>
+#include <QTimer>
 #include <QTemporaryFile>
+#include <QToolBar>
+#include <QUrl>
+#include <QVariant>
+#include <Qt>
 
-static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
 
 static QString fromNativePath(const QString& p) {
@@ -1158,7 +1178,7 @@ void MainWindow::checkConfiguration()
         analyzeProject(mProjectFile, false, true);
 }
 
-void MainWindow::reAnalyzeSelected(QStringList files)
+void MainWindow::reAnalyzeSelected(const QStringList& files)
 {
     if (files.empty())
         return;
@@ -1687,7 +1707,38 @@ void MainWindow::analyzeProject(const ProjectFile *projectFile, const bool check
             prjfile = inf.canonicalPath() + '/' + projectFile->getImportProject();
         }
         try {
-            p.import(prjfile.toStdString());
+
+            const ImportProject::Type result = p.import(prjfile.toStdString());
+
+            QString errorMessage;
+            switch (result) {
+            case ImportProject::Type::COMPILE_DB:
+            case ImportProject::Type::VS_SLN:
+            case ImportProject::Type::VS_VCXPROJ:
+            case ImportProject::Type::BORLAND:
+            case ImportProject::Type::CPPCHECK_GUI:
+                // Loading was successful
+                break;
+            case ImportProject::Type::MISSING:
+                errorMessage = tr("Failed to open file");
+                break;
+            case ImportProject::Type::UNKNOWN:
+                errorMessage = tr("Unknown project file format");
+                break;
+            case ImportProject::Type::FAILURE:
+                errorMessage = tr("Failed to import project file");
+                break;
+            }
+
+            if (!errorMessage.isEmpty()) {
+                QMessageBox msg(QMessageBox::Critical,
+                                tr("Cppcheck"),
+                                tr("Failed to import '%1': %2\n\nAnalysis is stopped.").arg(prjfile).arg(errorMessage),
+                                QMessageBox::Ok,
+                                this);
+                msg.exec();
+                return;
+            }
         } catch (InternalError &e) {
             QMessageBox msg(QMessageBox::Critical,
                             tr("Cppcheck"),

@@ -23,7 +23,6 @@
 #include "fixture.h"
 
 #include <algorithm>
-#include <functional>
 #include <list>
 #include <string>
 
@@ -75,8 +74,7 @@ private:
 
     void getErrorMessages() const {
         ErrorLogger2 errorLogger;
-        CppCheck cppCheck(errorLogger, true, nullptr);
-        cppCheck.getErrorMessages();
+        CppCheck::getErrorMessages(errorLogger);
         ASSERT(!errorLogger.id.empty());
 
         // Check if there are duplicate error ids in errorLogger.id

@@ -29,10 +29,11 @@
 #include "library.h"
 #include "path.h"
 #include "pathmatch.h"
-#include "preprocessor.h"
 #include "settings.h"
+#include "singleexecutor.h"
 #include "suppressions.h"
 #include "utils.h"
+
 #include "checkunusedfunctions.h"
 
 #if defined(THREADING_MODEL_THREAD)
@@ -42,7 +43,6 @@
 #endif
 
 #include <algorithm>
-#include <atomic>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <functional>
@@ -53,7 +53,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 #include <vector>
-#include <numeric>
 
 #ifdef USE_UNIX_SIGNAL_HANDLING
 #include "cppcheckexecutorsig.h"
@@ -79,10 +78,9 @@ CppCheckExecutor::~CppCheckExecutor()
     delete mErrorOutput;
 }
 
-bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
+bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* const argv[])
 {
-    Settings& settings = cppcheck->settings();
-    CmdLineParser parser(settings);
+    CmdLineParser parser(settings, settings.nomsg, settings.nofail);
     const bool success = parser.parseFromArgs(argc, argv);
 
     if (success) {
@@ -102,7 +100,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (parser.getShowErrorMessages()) {
             mShowAllErrors = true;
             std::cout << ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName);
-            cppcheck->getErrorMessages();
+            CppCheck::getErrorMessages(*this);
             std::cout << ErrorMessage::getXMLFooter() << std::endl;
         }
 
@@ -113,6 +111,11 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     } else {
         return false;
     }
+
+    // Libraries must be loaded before FileLister is executed to ensure markup files will be
+    // listed properly.
+    if (!loadLibraries(settings))
+        return false;
 
     // Check that all include paths exist
     {
@@ -200,23 +203,20 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
 {
     CheckUnusedFunctions::clear();
 
-    CppCheck cppCheck(*this, true, executeCommand);
-
-    const Settings& settings = cppCheck.settings();
-    mSettings = &settings;
-
-    if (!parseFromArgs(&cppCheck, argc, argv)) {
-        mSettings = nullptr;
+    Settings settings;
+    if (!parseFromArgs(settings, argc, argv)) {
         return EXIT_FAILURE;
     }
     if (Settings::terminated()) {
-        mSettings = nullptr;
         return EXIT_SUCCESS;
     }
 
-    int ret;
+    CppCheck cppCheck(*this, true, executeCommand);
+    cppCheck.settings() = settings;
+    mSettings = &settings;
 
-    if (cppCheck.settings().exceptionHandling)
+    int ret;
+    if (settings.exceptionHandling)
         ret = check_wrapper(cppCheck);
     else
         ret = check_internal(cppCheck);
@@ -244,7 +244,7 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
         return false;
 
     bool err = false;
-    if (settings.jointSuppressionReport) {
+    if (settings.useSingleJob()) {
         for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
             err |= errorLogger.reportUnmatchedSuppressions(
                 settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled));
@@ -260,35 +260,6 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
 int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
-    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
-
-    for (const std::string &lib : settings.libraries) {
-        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
-            const std::string msg("Failed to load the library " + lib);
-            const std::list<ErrorMessage::FileLocation> callstack;
-            ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
-            reportErr(errmsg);
-            return EXIT_FAILURE;
-        }
-    }
-
-    if (!std) {
-        const std::list<ErrorMessage::FileLocation> callstack;
-        const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
-#ifdef FILESDIR
-        const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
-                                  FILESDIR "\" and will therefore search for "
-                                  "std.cfg in " FILESDIR "/cfg.");
-#else
-        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(settings.exename)) + "cfg");
-        const std::string details("The Cppcheck binary was compiled without FILESDIR set. Either the "
-                                  "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
-                                  "should be configured.");
-#endif
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
-        return EXIT_FAILURE;
-    }
 
     if (settings.reportProgress)
         mLatestProgressOutputTime = std::time(nullptr);
@@ -311,54 +282,10 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     }
 
     unsigned int returnValue = 0;
-    if (settings.jobs == 1) {
+    if (settings.useSingleJob()) {
         // Single process
-        settings.jointSuppressionReport = true;
-
-        const std::size_t totalfilesize = std::accumulate(mFiles.cbegin(), mFiles.cend(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
-            return v + f.second;
-        });
-
-        std::size_t processedsize = 0;
-        unsigned int c = 0;
-        if (settings.project.fileSettings.empty()) {
-            for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-                if (!settings.library.markupFile(i->first)
-                    || !settings.library.processMarkupAfterCode(i->first)) {
-                    returnValue += cppcheck.check(i->first);
-                    processedsize += i->second;
-                    if (!settings.quiet)
-                        reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                    c++;
-                }
-            }
-        } else {
-            // filesettings
-            // check all files of the project
-            for (const ImportProject::FileSettings &fs : settings.project.fileSettings) {
-                returnValue += cppcheck.check(fs);
-                ++c;
-                if (!settings.quiet)
-                    reportStatus(c, settings.project.fileSettings.size(), c, settings.project.fileSettings.size());
-                if (settings.clangTidy)
-                    cppcheck.analyseClangTidy(fs);
-            }
-        }
-
-        // TODO: not performed when multiple jobs are being used
-        // second loop to parse all markup files which may not work until all
-        // c/cpp files have been parsed and checked
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i) {
-            if (settings.library.markupFile(i->first) && settings.library.processMarkupAfterCode(i->first)) {
-                returnValue += cppcheck.check(i->first);
-                processedsize += i->second;
-                if (!settings.quiet)
-                    reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                c++;
-            }
-        }
-        if (cppcheck.analyseWholeProgram())
-            returnValue++;
+        SingleExecutor executor(cppcheck, mFiles, settings, *this);
+        returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
         ThreadExecutor executor(mFiles, settings, *this);
@@ -387,6 +314,42 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     if (returnValue)
         return settings.exitCode;
     return 0;
+}
+
+bool CppCheckExecutor::loadLibraries(Settings& settings)
+{
+    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
+
+    const auto failed_lib = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&](const std::string& lib) {
+        return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
+    });
+    if (failed_lib != settings.libraries.end()) {
+        const std::string msg("Failed to load the library " + *failed_lib);
+        const std::list<ErrorMessage::FileLocation> callstack;
+        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
+        reportErr(errmsg);
+        return false;
+    }
+
+    if (!std) {
+        const std::list<ErrorMessage::FileLocation> callstack;
+        const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
+#ifdef FILESDIR
+        const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
+                                  FILESDIR "\" and will therefore search for "
+                                  "std.cfg in " FILESDIR "/cfg.");
+#else
+        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(settings.exename)) + "cfg");
+        const std::string details("The Cppcheck binary was compiled without FILESDIR set. Either the "
+                                  "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
+                                  "should be configured.");
+#endif
+        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
+        reportErr(errmsg);
+        return false;
+    }
+
+    return true;
 }
 
 #ifdef _WIN32
@@ -424,8 +387,10 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
 
 void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    // TODO: do not unconditionally apply colors
-    std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
+    if (c == Color::Reset)
+        std::cout << ansiToOEM(outmsg, true) << std::endl;
+    else
+        std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
@@ -448,19 +413,6 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
         // Report progress message
         reportOut(ostr.str());
-    }
-}
-
-void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal)
-{
-    if (filecount > 1) {
-        std::ostringstream oss;
-        const long percentDone = (sizetotal > 0) ? static_cast<long>(static_cast<long double>(sizedone) / sizetotal * 100) : 0;
-        oss << fileindex << '/' << filecount
-            << " files checked " << percentDone
-            << "% done";
-        // TODO: do not unconditionally print in color
-        std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
     }
 }
 

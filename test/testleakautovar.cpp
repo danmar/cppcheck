@@ -18,6 +18,7 @@
 
 
 #include "checkleakautovar.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "fixture.h"
@@ -35,7 +36,6 @@
 
 class TestLeakAutoVarStrcpy;
 class TestLeakAutoVarWindows;
-struct InternalError;
 
 class TestLeakAutoVar : public TestFixture {
 public:
@@ -104,7 +104,6 @@ private:
         TEST_CASE(freopen2);
 
         TEST_CASE(deallocuse1);
-        TEST_CASE(deallocuse2);
         TEST_CASE(deallocuse3);
         TEST_CASE(deallocuse4);
         TEST_CASE(deallocuse5); // #4018: FP. free(p), p = 0;
@@ -226,34 +225,34 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool cpp = false) {
+    void check_(const char* file, int line, const char code[], bool cpp = false, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
+        const Settings settings1 = settingsBuilder(s ? *s : settings).checkLibrary().build();
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
-        settings.checkLibrary = true;
-
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings1, this);
     }
 
-    void check_(const char* file, int line, const char code[], Settings & settings_) {
+    void check_(const char* file, int line, const char code[], const Settings & s) {
         // Clear the error buffer..
         errout.str("");
 
+        const Settings settings0 = settingsBuilder(s).checkLibrary().build();
+
         // Tokenize..
-        Tokenizer tokenizer(&settings_, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        settings_.checkLibrary = true;
-
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings_, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings0, this);
     }
 
     void assign1() {
@@ -470,9 +469,7 @@ private:
     }
 
     void assign23() {
-        Settings s = settings;
-        LOAD_LIB_2(settings.library, "posix.cfg");
-        settings.libraries.emplace_back("posix");
+        const Settings s = settingsBuilder(settings).library("posix.cfg").build();
         check("void f() {\n"
               "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
               "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
@@ -489,7 +486,7 @@ private:
               "    ((*&n12)) = open(\"xx.log\", O_RDONLY);\n"
               "    *(&(*&n13)) = open(\"xx.log\", O_RDONLY);\n"
               "    ((*&(*&n14))) = open(\"xx.log\", O_RDONLY);\n"
-              "}\n", true);
+              "}\n", true, &s);
         ASSERT_EQUALS("[test.cpp:17]: (error) Resource leak: n1\n"
                       "[test.cpp:17]: (error) Resource leak: n2\n"
                       "[test.cpp:17]: (error) Resource leak: n3\n"
@@ -505,11 +502,10 @@ private:
                       "[test.cpp:17]: (error) Resource leak: n13\n"
                       "[test.cpp:17]: (error) Resource leak: n14\n",
                       errout.str());
-        settings = s;
     }
 
-    void assign24() { // #7440
-        check("void f() {\n"
+    void assign24() {
+        check("void f() {\n" // #7440
               "    char* data = new char[100];\n"
               "    char** dataPtr = &data;\n"
               "    delete[] *dataPtr;\n"
@@ -522,6 +518,46 @@ private:
               "    printf(\"test\");\n"
               "    delete[] *dataPtr;\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #9279
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function g() should have <noreturn> configuration\n",
+                      errout.str());
+
+        check("void g();\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
+
+        check("void g() {}\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: p\n", errout.str());
+
+        check("[[noreturn]] void g();\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g() { exit(1); }\n"
+              "void f() {\n"
+              "    int* p = new int;\n"
+              "    *p = 42;\n"
+              "    g();\n"
+              "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -645,20 +681,6 @@ private:
               "    char c = *p;\n"
               "}");
         ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
-    }
-
-    void deallocuse2() {
-        check("void f(char *p) {\n"
-              "    free(p);\n"
-              "    strcpy(a, p);\n"
-              "}");
-        TODO_ASSERT_EQUALS("error (free,use)", "[test.c:3]: (information) --check-library: Function strcpy() should have <noreturn> configuration\n", errout.str());
-
-        check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
-              "    free(p);\n"
-              "    strcpy(a, p=b());\n"
-              "}");
-        TODO_ASSERT_EQUALS("", "[test.c:3]: (information) --check-library: Function strcpy() should have <noreturn> configuration\n", errout.str());
     }
 
     void deallocuse3() {
@@ -1437,8 +1459,7 @@ private:
               "    char *p = malloc(10);\n"
               "    fatal_error();\n"
               "}");
-        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n"
-                      "[test.c:4]: (information) --check-library: Function fatal_error() should have <use>/<leak-ignore> configuration\n",
+        ASSERT_EQUALS("[test.c:3]: (information) --check-library: Function fatal_error() should have <noreturn> configuration\n",
                       errout.str());
     }
 
@@ -1850,10 +1871,7 @@ private:
     }
 
     void ifelse24() { // #1733
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
-        LOAD_LIB_2(s.library, "posix.cfg");
-        s.libraries.emplace_back("posix");
+        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
 
         check("void f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"
@@ -2604,8 +2622,6 @@ private:
     }
 
     void functionCallLeakIgnoreConfig() { // #7923
-        Settings settingsLeakIgnore = settings;
-
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def format=\"2\">\n"
                                "  <function name=\"SomeClass::someMethod\">\n"
@@ -2614,7 +2630,7 @@ private:
                                "    <arg nr=\"1\" direction=\"in\"/>\n"
                                "  </function>\n"
                                "</def>\n";
-        ASSERT(settingsLeakIgnore.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settingsLeakIgnore = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
@@ -2630,7 +2646,7 @@ public:
     TestLeakAutoVarRecursiveCountLimit() : TestFixture("TestLeakAutoVarRecursiveCountLimit") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
     void checkP(const char code[], bool cpp = false) {
         // Clear the error buffer..
@@ -2651,15 +2667,11 @@ private:
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
-        settings.checkLibrary = true;
-
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
     }
 
@@ -2690,7 +2702,7 @@ public:
     TestLeakAutoVarStrcpy() : TestFixture("TestLeakAutoVarStrcpy") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
 
     void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
@@ -2701,16 +2713,13 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        settings.checkLibrary = true;
-
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(returnedValue); // #9298
+        TEST_CASE(deallocuse2);
         TEST_CASE(fclose_false_positive); // #9575
     }
 
@@ -2720,6 +2729,20 @@ private:
               "{\n"
               "    char* ptr = new char[strlen(str)+1];\n"
               "    m = strcpy(ptr, str);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse2() {
+        check("void f(char *p) {\n"
+              "    free(p);\n"
+              "    strcpy(a, p);\n"
+              "}");
+        TODO_ASSERT_EQUALS("error (free,use)", "", errout.str());
+
+        check("void f(char *p) {\n"   // #3041 - assigning pointer when it's used
+              "    free(p);\n"
+              "    strcpy(a, p=b());\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2739,7 +2762,7 @@ public:
     TestLeakAutoVarWindows() : TestFixture("TestLeakAutoVarWindows") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("windows.cfg").build();
 
     void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
@@ -2755,8 +2778,6 @@ private:
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "windows.cfg");
-
         TEST_CASE(heapDoubleFree);
     }
 

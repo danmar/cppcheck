@@ -37,7 +37,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iterator>
-#include <memory>
 #include <utility>
 #include <unordered_map>
 
@@ -107,13 +106,13 @@ static bool isVclTypeInit(const Type *type)
 {
     if (!type)
         return false;
-    for (const Type::BaseInfo &baseInfo: type->derivedFrom) {
+    return std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [&](const Type::BaseInfo& baseInfo) {
         if (!baseInfo.type)
             return true;
         if (isVclTypeInit(baseInfo.type))
             return true;
-    }
-    return false;
+        return false;
+    });
 }
 //---------------------------------------------------------------------------
 
@@ -252,8 +251,17 @@ void CheckClass::constructors()
                 // Check if this is a class constructor
                 if (!var.isPointer() && !var.isPointerArray() && var.isClass() && func.type == Function::eConstructor) {
                     // Unknown type so assume it is initialized
-                    if (!var.type())
-                        continue;
+                    if (!var.type()) {
+                        if (var.isStlType() && var.valueType() && var.valueType()->containerTypeToken && var.getTypeName() == "std::array") {
+                            const Token* ctt = var.valueType()->containerTypeToken;
+                            if (!ctt->isStandardType() &&
+                                (!ctt->type() || ctt->type()->needInitialization != Type::NeedInitialization::True) &&
+                                !mSettings->library.podtype(ctt->str())) // TODO: handle complex type expression
+                                continue;
+                        }
+                        else
+                            continue;
+                    }
 
                     // Known type that doesn't need initialization or
                     // known type that has member variables of an unknown type
@@ -2215,7 +2223,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     return false;
 }
 
-bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
+bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function()) {
         for (const Function &func : scope->functionList) {
@@ -2256,7 +2264,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
-bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
+bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function())
         return false;
@@ -2313,7 +2321,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             mayModifyArgs = false;
             for (nonneg int argIndex = 0; argIndex < argMax; ++argIndex) {
                 const Variable* const argVar = f->getArgumentVar(argIndex);
-                if (!argVar || !argVar->valueType() || ((argVar->valueType()->pointer || argVar->valueType()->reference != Reference::None) && !argVar->isConst())) {
+                if (!argVar || ((argVar->isArrayOrPointer() || argVar->isReference()) && !argVar->isConst())) {
                     mayModifyArgs = true;
                     break;
                 }
@@ -2328,7 +2336,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 tok = tok->link();
             else if ((tok->isName() && isMemberVar(scope, tok)) || (tok->isUnaryOp("&") && (tok = tok->astOperand1()) && isMemberVar(scope, tok))) {
                 const Variable* var = tok->variable();
-                if ((!var || !var->isMutable()) && mayModifyArgs)
+                if ((!var || (!var->isMutable() && !var->isConst())) && mayModifyArgs)
                     return false; // TODO: Only bailout if function takes argument as non-const reference
             }
         }
@@ -2365,10 +2373,14 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->astParent() && lhs->astParent()->str() == "?")
                 lhs = lhs->astParent()->astParent();
             if (lhs->str() == "&") {
-                lhs = lhs->previous();
-                if (lhs->isAssignmentOp() && lhs->previous()->variable()) {
-                    if (lhs->previous()->variable()->typeStartToken()->strAt(-1) != "const" && lhs->previous()->variable()->isPointer())
+                const Token* const top = lhs->astTop();
+                if (top->isAssignmentOp()) {
+                    if (Token::simpleMatch(top->astOperand2(), "{")) // TODO: check usage in init list
                         return false;
+                    else if (top->previous()->variable()) {
+                        if (top->previous()->variable()->typeStartToken()->strAt(-1) != "const" && top->previous()->variable()->isPointer())
+                            return false;
+                    }
                 }
             } else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->str() == "(") { // range-based for-loop (C++11)
                 // TODO: We could additionally check what is done with the elements to avoid false negatives. Here we just rely on "const" keyword being used.
@@ -2894,7 +2906,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
     // This is disabled because of #8388
     // The message must be clarified. How is the behaviour different?
     // cppcheck-suppress unreachableCode - remove when code is enabled again
-    if ((true) || !mSettings->severity.isEnabled(Severity::warning))
+    if ((true) || !mSettings->severity.isEnabled(Severity::warning)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
@@ -3212,9 +3224,9 @@ Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xm
             MyFileInfo::NameLoc nameLoc;
             nameLoc.className = name;
             nameLoc.fileName = file;
-            nameLoc.lineNumber = std::atoi(line);
-            nameLoc.column = std::atoi(col);
-            nameLoc.hash = MathLib::toULongNumber(hash);
+            nameLoc.lineNumber = strToInt<int>(line);
+            nameLoc.column = strToInt<int>(col);
+            nameLoc.hash = strToInt<std::size_t>(hash);
             fileInfo->classDefinitions.push_back(std::move(nameLoc));
         }
     }

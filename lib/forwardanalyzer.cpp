@@ -27,12 +27,12 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <functional>
 #include <list>
-#include <memory>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -49,7 +49,7 @@ struct OnExit {
 
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
-    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
+    enum class Terminate { None, Bail, Inconclusive };
     ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
         : analyzer(analyzer), settings(settings), actions(Analyzer::Action::None), analyzeOnly(false), analyzeTerminate(false)
     {}
@@ -333,8 +333,6 @@ struct ForwardTraversal {
 
     enum class Status {
         None,
-        Escaped,
-        Modified,
         Inconclusive,
     };
 
@@ -413,7 +411,7 @@ struct ForwardTraversal {
             return Break();
         if (stepTok && updateRecursive(stepTok) == Progress::Break)
             return Break();
-        if (condTok && updateRecursive(condTok) == Progress::Break)
+        if (condTok && !Token::simpleMatch(condTok, ":") && updateRecursive(condTok) == Progress::Break)
             return Break();
         return Progress::Continue;
     }
@@ -825,9 +823,7 @@ struct ForwardTraversal {
     }
 
     static bool isUnevaluated(const Token* tok) {
-        if (Token::Match(tok->previous(), "sizeof|decltype ("))
-            return true;
-        return false;
+        return Token::Match(tok->previous(), "sizeof|decltype (");
     }
 
     static bool isFunctionCall(const Token* tok)

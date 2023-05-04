@@ -21,6 +21,9 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
+#include <Qt>
 
 class QSettings;
 class QWidget;
@@ -28,7 +31,6 @@ class ApplicationList;
 class TranslationHandler;
 class CodeEditorStyle;
 class QCheckBox;
-class QObject;
 namespace Ui {
     class Settings;
 }

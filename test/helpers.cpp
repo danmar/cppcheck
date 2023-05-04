@@ -19,10 +19,14 @@
 #include "helpers.h"
 
 #include "path.h"
+#include "preprocessor.h"
 
 #include <cstdio>
+#include <iostream>
+#include <fstream>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -30,6 +34,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
+
+#include <simplecpp.h>
+
+class Suppressions;
 
 ScopedFile::ScopedFile(std::string name, const std::string &content, std::string path)
     : mName(std::move(name))
@@ -53,12 +61,55 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
 }
 
 ScopedFile::~ScopedFile() {
-    std::remove(mFullPath.c_str());
+    const int remove_res = std::remove(mFullPath.c_str());
+    if (remove_res != 0) {
+        std::cout << "ScopedFile(" << mFullPath + ") - could not delete file (" << remove_res << ")";
+    }
     if (!mPath.empty() && mPath != Path::getCurrentPath()) {
 #ifdef _WIN32
-        RemoveDirectoryA(mPath.c_str());
+        if (!RemoveDirectoryA(mPath.c_str())) {
+            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << GetLastError() << ")";
+        }
 #else
-        rmdir(mPath.c_str());
+        const int rmdir_res = rmdir(mPath.c_str());
+        if (rmdir_res == -1) {
+            const int err = errno;
+            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << err << ")";
+        }
 #endif
     }
+}
+
+// TODO: we should be using the actual Preprocessor implementation
+std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression)
+{
+    simplecpp::OutputList outputList;
+    std::vector<std::string> files;
+
+    std::istringstream istr(filedata);
+    simplecpp::TokenList tokens1(istr, files, Path::simplifyPath(filename), &outputList);
+    if (inlineSuppression)
+        preprocessor.inlineSuppressions(tokens1, *inlineSuppression);
+    tokens1.removeComments();
+    preprocessor.simplifyPragmaAsm(&tokens1);
+    preprocessor.removeComments();
+    preprocessor.setDirectives(tokens1);
+
+    preprocessor.reportOutput(outputList, true);
+
+    if (Preprocessor::hasErrors(outputList))
+        return "";
+
+    std::string ret;
+    try {
+        ret = preprocessor.getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
+    } catch (const simplecpp::Output &) {
+        ret.clear();
+    }
+
+    // Since "files" is a local variable the tracking info must be cleared..
+    preprocessor.mMacroUsage.clear();
+    preprocessor.mIfCond.clear();
+
+    return ret;
 }

@@ -20,6 +20,7 @@
 #include "settings.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "library.h"
 #include "threadexecutor.h"
 #include "timer.h"
 
@@ -27,6 +28,7 @@
 #include <cstddef>
 #include <map>
 #include <memory>
+#include <set>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -37,29 +39,43 @@ public:
     TestThreadExecutor() : TestFixture("TestThreadExecutor") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().library("std.cfg").build();
+
+    static std::string fprefix()
+    {
+        return "thread";
+    }
 
     /**
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr, const std::vector<std::string>& filesList = {}) {
         errout.str("");
         output.str("");
 
         std::map<std::string, std::size_t> filemap;
-        for (int i = 1; i <= files; ++i) {
-            std::ostringstream oss;
-            oss << "file_" << i << ".cpp";
-            filemap[oss.str()] = data.size();
+        if (filesList.empty()) {
+            for (int i = 1; i <= files; ++i) {
+                std::ostringstream oss;
+                oss << fprefix() << "_" << i << ".cpp";
+                filemap[oss.str()] = data.size();
+            }
+        }
+        else {
+            for (const auto& f : filesList)
+            {
+                filemap[f] = data.size();
+            }
         }
 
-        settings.jobs = jobs;
-        settings.showtime = showtime;
+        Settings settings1 = settings;
+        settings1.jobs = jobs;
+        settings1.showtime = showtime;
         if (plistOutput)
-            settings.plistOutput = plistOutput;
+            settings1.plistOutput = plistOutput;
         // TODO: test with settings.project.fileSettings;
-        ThreadExecutor executor(filemap, settings, *this);
+        ThreadExecutor executor(filemap, settings1, *this);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
@@ -69,8 +85,6 @@ private:
     }
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(many_threads_showtime);
@@ -80,6 +94,7 @@ private:
         TEST_CASE(no_errors_equal_amount_files);
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
+        TEST_CASE(markup);
     }
 
     void deadlock_with_many_errors() {
@@ -118,7 +133,6 @@ private:
         const char plistOutput[] = "plist";
         ScopedFile plistFile("dummy", plistOutput);
 
-        SUPPRESS;
         check(16, 100, 100,
               "int main()\n"
               "{\n"
@@ -167,6 +181,44 @@ private:
               "  {char *a = malloc(10);}\n"
               "  return 0;\n"
               "}");
+    }
+
+    void markup() {
+        const Settings settingsOld = settings;
+        settings.library.mMarkupExtensions.emplace(".cp1");
+        settings.library.mProcessAfterCode.emplace(".cp1", true);
+
+        const std::vector<std::string> files = {
+            fprefix() + "_1.cp1", fprefix() + "_2.cpp", fprefix() + "_3.cp1", fprefix() + "_4.cpp"
+        };
+
+        // checks are not executed on markup files => expected result is 2
+        check(2, 4, 2,
+              "int main()\n"
+              "{\n"
+              "  char *a = malloc(10);\n"
+              "  return 0;\n"
+              "}",
+              SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
+        // TODO: order of "Checking" and "checked" is affected by thread
+        /*TODO_ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
+                           "1/4 files checked 25% done\n"
+                           "Checking " + fprefix() + "_4.cpp ...\n"
+                           "2/4 files checked 50% done\n"
+                           "Checking " + fprefix() + "_1.cp1 ...\n"
+                           "3/4 files checked 75% done\n"
+                           "Checking " + fprefix() + "_3.cp1 ...\n"
+                           "4/4 files checked 100% done\n",
+                           "Checking " + fprefix() + "_1.cp1 ...\n"
+                           "1/4 files checked 25% done\n"
+                           "Checking " + fprefix() + "_2.cpp ...\n"
+                           "2/4 files checked 50% done\n"
+                           "Checking " + fprefix() + "_3.cp1 ...\n"
+                           "3/4 files checked 75% done\n"
+                           "Checking " + fprefix() + "_4.cpp ...\n"
+                           "4/4 files checked 100% done\n",
+                           output.str());*/
+        settings = settingsOld;
     }
 };
 

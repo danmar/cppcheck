@@ -1437,7 +1437,7 @@ void CheckUnusedVar::checkStructMemberUsage()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
-        if (scope.type != Scope::eStruct && scope.type != Scope::eUnion)
+        if (scope.type != Scope::eStruct && scope.type != Scope::eClass && scope.type != Scope::eUnion)
             continue;
 
         if (scope.bodyStart->fileIndex() != 0 || scope.className.empty())
@@ -1455,44 +1455,25 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
         }
 
-        // Bail out if struct/union contains any functions
-        if (!scope.functionList.empty())
-            continue;
-
         // Bail out for template struct, members might be used in non-matching instantiations
         if (scope.className.find('<') != std::string::npos)
             continue;
 
         // bail out if struct is inherited
-        bool bailout = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) {
+        const bool isInherited = std::any_of(symbolDatabase->scopeList.cbegin(), symbolDatabase->scopeList.cend(), [&](const Scope& derivedScope) {
             const Type* dType = derivedScope.definedType;
             return dType && std::any_of(dType->derivedFrom.cbegin(), dType->derivedFrom.cend(), [&](const Type::BaseInfo& derivedFrom) {
-                return derivedFrom.type == scope.definedType;
+                return derivedFrom.type == scope.definedType && derivedFrom.access != AccessControl::Private;
             });
         });
-        if (bailout)
-            continue;
 
         // bail out for extern/global struct
+        bool bailout = false;
         for (const Variable* var : symbolDatabase->variableList()) {
             if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic())) && var->typeEndToken()->str() == scope.className) {
                 bailout = true;
                 break;
             }
-            if (var && (var->typeStartToken()->str() == scope.className || var->typeEndToken()->str() == scope.className)) {
-                const std::string addressPattern("!!" + scope.className + " & " + var->name()); // cast from struct
-                const Token* addrTok = scope.bodyEnd;
-                do {
-                    addrTok = Token::findmatch(addrTok, addressPattern.c_str());
-                    if ((addrTok && addrTok->str() == ")" && addrTok->link()->isCast()) || isCPPCast(addrTok)) {
-                        bailout = true;
-                        break;
-                    }
-                    if (addrTok)
-                        addrTok = addrTok->next();
-                } while (addrTok);
-            }
-
             if (bailout)
                 break;
         }
@@ -1524,6 +1505,8 @@ void CheckUnusedVar::checkStructMemberUsage()
             // only warn for variables without side effects
             if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
                 continue;
+            if (isInherited && !var.isPrivate())
+                continue;
 
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
@@ -1535,16 +1518,21 @@ void CheckUnusedVar::checkStructMemberUsage()
                     break;
                 }
             }
-            if (!use)
-                unusedStructMemberError(var.nameToken(), scope.className, var.name(), scope.type == Scope::eUnion);
+            if (!use) {
+                std::string prefix = "struct";
+                if (scope.type == Scope::ScopeType::eClass)
+                    prefix = "class";
+                else if (scope.type == Scope::ScopeType::eUnion)
+                    prefix = "union";
+                unusedStructMemberError(var.nameToken(), scope.className, var.name(), prefix);
+            }
         }
     }
 }
 
-void CheckUnusedVar::unusedStructMemberError(const Token *tok, const std::string &structname, const std::string &varname, bool isUnion)
+void CheckUnusedVar::unusedStructMemberError(const Token* tok, const std::string& structname, const std::string& varname, const std::string& prefix)
 {
-    const std::string prefix = isUnion ? "union member " : "struct member ";
-    reportError(tok, Severity::style, "unusedStructMember", "$symbol:" + structname + "::" + varname + '\n' + prefix + "'$symbol' is never used.", CWE563, Certainty::normal);
+    reportError(tok, Severity::style, "unusedStructMember", "$symbol:" + structname + "::" + varname + '\n' + prefix + " member '$symbol' is never used.", CWE563, Certainty::normal);
 }
 
 bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)

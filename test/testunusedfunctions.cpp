@@ -31,11 +31,9 @@ public:
     TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-
         TEST_CASE(incondition);
         TEST_CASE(return1);
         TEST_CASE(return2);
@@ -79,22 +77,22 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
-        PLATFORM(settings.platform, platform);
+        const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused functions..
-        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
-        checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
+        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings1, this);
+        checkUnusedFunctions.parseTokens(tokenizer, "someFile.c", &settings1);
         // check() returns error if and only if errout is not empty.
-        if ((checkUnusedFunctions.check)(this, settings)) {
+        if ((checkUnusedFunctions.check)(this, settings1)) {
             ASSERT(!errout.str().empty());
         } else {
             ASSERT_EQUALS("", errout.str());
@@ -614,16 +612,13 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
-        LOAD_LIB_2(settings.library, "windows.cfg");
+        const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int WinMain() { }");
+        check("int WinMain() { }", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }");
+        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
-
-        settings = settingsOld;
     }
 
     void entrypointsWinU() {
@@ -633,16 +628,13 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
-        LOAD_LIB_2(settings.library, "windows.cfg");
+        const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int wWinMain() { }");
+        check("int wWinMain() { }", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }");
+        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
-
-        settings = settingsOld;
     }
 
     void entrypointsUnix() {
@@ -651,14 +643,11 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_init' is never used.\n"
                       "[test.cpp:2]: (style) The function '_fini' is never used.\n", errout.str());
 
-        Settings settingsOld = settings;
-        LOAD_LIB_2(settings.library, "gnu.cfg");
+        const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
 
         check("int _init() { }\n"
-              "int _fini() { }\n");
+              "int _fini() { }\n", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
-
-        settings = settingsOld;
     }
 };
 

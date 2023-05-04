@@ -21,8 +21,16 @@
 #include <stdexcept>
 #include <string>
 
-#include <QXmlStreamReader>
+#include <QObject>
 #include <QVariant>
+#include <QXmlStreamAttributes>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
+#include <QtGlobal>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QStringRef>
+#endif
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;
@@ -365,12 +373,12 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
         mandatoryAttibuteMissing(xmlReader, "ext");
     }
     if (xmlReader.attributes().hasAttribute("aftercode")) {
-        markup.afterCode = (xmlReader.attributes().value("aftercode") == QString("true")) ? true : false;
+        markup.afterCode = (xmlReader.attributes().value("aftercode") == QString("true"));
     } else {
         mandatoryAttibuteMissing(xmlReader, "aftercode");
     }
     if (xmlReader.attributes().hasAttribute("reporterrors")) {
-        markup.reportErrors = (xmlReader.attributes().value("reporterrors") == QString("true")) ? true : false;
+        markup.reportErrors = (xmlReader.attributes().value("reporterrors") == QString("true"));
     } else {
         mandatoryAttibuteMissing(xmlReader, "reporterrors");
     }

@@ -23,7 +23,10 @@
 #include "errortypes.h"
 #include "showtypes.h"
 
+#include <QObject>
 #include <QStandardItemModel>
+#include <QString>
+#include <QStringList>
 #include <QTreeView>
 
 class ApplicationList;
@@ -36,7 +39,6 @@ class QItemSelectionModel;
 class ThreadHandler;
 class QContextMenuEvent;
 class QKeyEvent;
-class QObject;
 class QSettings;
 
 /// @addtogroup GUI
@@ -343,14 +345,6 @@ protected:
      *  (default value) will open the default application.
      */
     void startApplication(QStandardItem *target, int application = -1);
-
-    /**
-     * @brief Helper function to copy filename/full path to the clipboard
-     *
-     * @param target Error tree item to open
-     * @param fullPath Are we copying full path or only filename?
-     */
-    void copyPathToClipboard(QStandardItem *target, bool fullPath);
 
     /**
      * @brief Helper function returning the filename/full path of the error tree item \a target.

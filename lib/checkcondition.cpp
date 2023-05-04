@@ -36,7 +36,6 @@
 #include <algorithm>
 #include <limits>
 #include <list>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -364,15 +363,15 @@ void CheckCondition::comparison()
                 if ((expr1->str() == "&" && (num1 & num2) != num2) ||
                     (expr1->str() == "|" && (num1 | num2) != num2)) {
                     const std::string& op(tok->str());
-                    comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, op != "==");
                 }
             } else if (expr1->str() == "&") {
                 const bool or_equal = Token::Match(tok, ">=|<=");
                 const std::string& op(tok->str());
                 if ((Token::Match(tok, ">=|<")) && (num1 < num2)) {
-                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? false : true);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, !or_equal);
                 } else if ((Token::Match(tok, "<=|>")) && (num1 <= num2)) {
-                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal);
                 }
             } else if (expr1->str() == "|") {
                 if ((expr1->astOperand1()->valueType()) &&
@@ -382,11 +381,11 @@ void CheckCondition::comparison()
                     if ((Token::Match(tok, ">=|<")) && (num1 >= num2)) {
                         //"(a | 0x07) >= 7U" is always true for unsigned a
                         //"(a | 0x07) < 7U" is always false for unsigned a
-                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
+                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal);
                     } else if ((Token::Match(tok, "<=|>")) && (num1 > num2)) {
                         //"(a | 0x08) <= 7U" is always false for unsigned a
                         //"(a | 0x07) > 6U" is always true for unsigned a
-                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? false : true);
+                        comparisonError(expr1, expr1->str(), num1, op, num2, !or_equal);
                     }
                 }
             }
@@ -1048,10 +1047,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
     inconclusive = inconclusive || ((value)[0] == '\'' && !(op == "!=" || op == "=="));
 
     // Only float and int values are currently handled
-    if (!MathLib::isInt(value) && !MathLib::isFloat(value) && (value)[0] != '\'')
-        return false;
-
-    return true;
+    return MathLib::isInt(value) || MathLib::isFloat(value) || (value[0] == '\'');
 }
 
 static std::string conditionString(bool not1, const Token *expr1, const std::string &op, const std::string &value1)
@@ -1501,6 +1497,8 @@ void CheckCondition::alwaysTrueFalse()
                 (tok->astOperand1()->hasKnownIntValue() || tok->astOperand2()->hasKnownIntValue()))
                 continue;
             if (Token::simpleMatch(tok, ":"))
+                continue;
+            if (Token::Match(tok->astOperand1(), "%name% (") && Token::simpleMatch(tok->astParent(), "return"))
                 continue;
             if (tok->isComparisonOp() && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1()) &&
                 isSameExpression(mTokenizer->isCPP(),

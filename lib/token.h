@@ -696,7 +696,10 @@ public:
     unsigned char bits() const {
         return mImpl->mBits;
     }
-    std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
+    const std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
+        return mImpl->mTemplateSimplifierPointers;
+    }
+    std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() {
         return mImpl->mTemplateSimplifierPointers;
     }
     void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
@@ -830,10 +833,13 @@ public:
         mImpl->mColumn = c;
     }
 
-    Token *next() const {
+    Token* next() {
         return mNext;
     }
 
+    const Token* next() const {
+        return mNext;
+    }
 
     /**
      * Delete tokens between begin and end. E.g. if begin = 1
@@ -859,10 +865,13 @@ public:
         return insertToken(tokenStr, originalNameStr, true);
     }
 
-    Token *previous() const {
+    Token* previous() {
         return mPrevious;
     }
 
+    const Token* previous() const {
+        return mPrevious;
+    }
 
     nonneg int varId() const {
         return mImpl->mVarId;
@@ -1012,7 +1021,11 @@ public:
      *
      * @return The token where this token links to.
      */
-    Token *link() const {
+    const Token* link() const {
+        return mLink;
+    }
+
+    Token* link() {
         return mLink;
     }
 
@@ -1455,7 +1468,6 @@ public:
 };
 
 Token* findTypeEnd(Token* tok);
-const Token* findTypeEnd(const Token* tok);
 Token* findLambdaEndScope(Token* tok);
 const Token* findLambdaEndScope(const Token* tok);
 

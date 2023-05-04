@@ -21,6 +21,7 @@
 #include "erroritem.h"
 
 #include <QDir>
+#include <QList>
 
 PrintableReport::PrintableReport() :
     Report(QString())

@@ -82,16 +82,6 @@ public:
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
     /**
-     * Information about how many files have been checked
-     *
-     * @param fileindex This many files have been checked.
-     * @param filecount This many files there are in total.
-     * @param sizedone The sum of sizes of the files checked.
-     * @param sizetotal The total sizes of the files.
-     */
-    static void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
-
-    /**
      * @param exceptionOutput Output file
      */
     static void setExceptionOutput(FILE* exceptionOutput);
@@ -125,12 +115,12 @@ protected:
      * @brief Parse command line args and get settings and file lists
      * from there.
      *
-     * @param cppcheck cppcheck instance
+     * @param settings the settings to store into
      * @param argc argc from main()
      * @param argv argv from main()
      * @return false when errors are found in the input
      */
-    bool parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[]);
+    bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
 
 private:
 
@@ -153,6 +143,13 @@ private:
      *         If no errors are found, 0 is returned.
      */
     int check_internal(CppCheck& cppcheck);
+
+    /**
+     * @brief Load libraries
+     * @param settings Settings
+     * @return Returns true if successful
+     */
+    bool loadLibraries(Settings& settings);
 
     /**
      * Pointer to current settings; set while check() is running for reportError().

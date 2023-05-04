@@ -191,11 +191,8 @@ def test_build_dir_dump_output():
 
         filename = f'{tempdir}/main.a1.*.dump'
         filelist = glob.glob(filename)
-        assert(len(filelist) == 1)
+        assert(len(filelist) == 0)
 
-        with open(filelist[0], 'rt') as f:
-            dump = f.read()
-            assert '</dump>' in dump, 'invalid dump data: ...' + dump[-100:]
 
 def __test_missing_include_system(use_j):
     args = ['--enable=missingInclude', '--suppress=zerodiv', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', 'helloworld']

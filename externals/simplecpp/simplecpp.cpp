@@ -23,6 +23,7 @@
 #include "simplecpp.h"
 
 #include <algorithm>
+#include <cassert>
 #include <climits>
 #include <cstddef>
 #include <cstdlib>
@@ -43,7 +44,6 @@
 #ifdef SIMPLECPP_WINDOWS
 #include <windows.h>
 #undef ERROR
-#undef TRUE
 #endif
 
 #if (__cplusplus < 201103L) && !defined(__APPLE__)
@@ -351,6 +351,7 @@ public:
     StdIStream(std::istream &istr)
         : istr(istr)
     {
+        assert(istr.good());
         init();
     }
 
@@ -378,6 +379,7 @@ public:
         , lastCh(0)
         , lastStatus(0)
     {
+        assert(file != nullptr);
         init();
     }
 
@@ -1391,7 +1393,7 @@ namespace simplecpp {
         explicit Macro(std::vector<std::string> &f) : nameTokDef(nullptr), valueToken(nullptr), endToken(nullptr), files(f), tokenListDefine(f), variadic(false), valueDefinedInCode_(false) {}
 
         Macro(const Token *tok, std::vector<std::string> &f) : nameTokDef(nullptr), files(f), tokenListDefine(f), valueDefinedInCode_(true) {
-            if (sameline(tok->previous, tok))
+            if (sameline(tok->previousSkipComments(), tok))
                 throw std::runtime_error("bad macro syntax");
             if (tok->op != '#')
                 throw std::runtime_error("bad macro syntax");
@@ -3209,12 +3211,12 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
         }
     }
 
-    // TRUE => code in current #if block should be kept
-    // ELSE_IS_TRUE => code in current #if block should be dropped. the code in the #else should be kept.
-    // ALWAYS_FALSE => drop all code in #if and #else
-    enum IfState { TRUE, ELSE_IS_TRUE, ALWAYS_FALSE };
+    // True => code in current #if block should be kept
+    // ElseIsTrue => code in current #if block should be dropped. the code in the #else should be kept.
+    // AlwaysFalse => drop all code in #if and #else
+    enum IfState { True, ElseIsTrue, AlwaysFalse };
     std::stack<int> ifstates;
-    ifstates.push(TRUE);
+    ifstates.push(True);
 
     std::stack<const Token *> includetokenstack;
 
@@ -3236,7 +3238,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             continue;
         }
 
-        if (rawtok->op == '#' && !sameline(rawtok->previous, rawtok)) {
+        if (rawtok->op == '#' && !sameline(rawtok->previousSkipComments(), rawtok)) {
             if (!sameline(rawtok, rawtok->next)) {
                 rawtok = rawtok->next;
                 continue;
@@ -3259,7 +3261,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 return;
             }
 
-            if (ifstates.top() == TRUE && (rawtok->str() == ERROR || rawtok->str() == WARNING)) {
+            if (ifstates.top() == True && (rawtok->str() == ERROR || rawtok->str() == WARNING)) {
                 if (outputList) {
                     simplecpp::Output err(rawtok->location.files);
                     err.type = rawtok->str() == ERROR ? Output::ERROR : Output::WARNING;
@@ -3279,7 +3281,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
             }
 
             if (rawtok->str() == DEFINE) {
-                if (ifstates.top() != TRUE)
+                if (ifstates.top() != True)
                     continue;
                 try {
                     const Macro &macro = Macro(rawtok->previous, files);
@@ -3301,7 +3303,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                     output.clear();
                     return;
                 }
-            } else if (ifstates.top() == TRUE && rawtok->str() == INCLUDE) {
+            } else if (ifstates.top() == True && rawtok->str() == INCLUDE) {
                 TokenList inc1(files);
                 for (const Token *inctok = rawtok->next; sameline(rawtok,inctok); inctok = inctok->next) {
                     if (!inctok->comment)
@@ -3392,7 +3394,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                 }
 
                 bool conditionIsTrue;
-                if (ifstates.top() == ALWAYS_FALSE || (ifstates.top() == ELSE_IS_TRUE && rawtok->str() != ELIF))
+                if (ifstates.top() == AlwaysFalse || (ifstates.top() == ElseIsTrue && rawtok->str() != ELIF))
                     conditionIsTrue = false;
                 else if (rawtok->str() == IFDEF) {
                     conditionIsTrue = (macros.find(rawtok->next->str()) != macros.end() || (hasInclude && rawtok->next->str() == HAS_INCLUDE));
@@ -3520,35 +3522,35 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
 
                 if (rawtok->str() != ELIF) {
                     // push a new ifstate..
-                    if (ifstates.top() != TRUE)
-                        ifstates.push(ALWAYS_FALSE);
+                    if (ifstates.top() != True)
+                        ifstates.push(AlwaysFalse);
                     else
-                        ifstates.push(conditionIsTrue ? TRUE : ELSE_IS_TRUE);
-                } else if (ifstates.top() == TRUE) {
-                    ifstates.top() = ALWAYS_FALSE;
-                } else if (ifstates.top() == ELSE_IS_TRUE && conditionIsTrue) {
-                    ifstates.top() = TRUE;
+                        ifstates.push(conditionIsTrue ? True : ElseIsTrue);
+                } else if (ifstates.top() == True) {
+                    ifstates.top() = AlwaysFalse;
+                } else if (ifstates.top() == ElseIsTrue && conditionIsTrue) {
+                    ifstates.top() = True;
                 }
             } else if (rawtok->str() == ELSE) {
-                ifstates.top() = (ifstates.top() == ELSE_IS_TRUE) ? TRUE : ALWAYS_FALSE;
+                ifstates.top() = (ifstates.top() == ElseIsTrue) ? True : AlwaysFalse;
             } else if (rawtok->str() == ENDIF) {
                 ifstates.pop();
             } else if (rawtok->str() == UNDEF) {
-                if (ifstates.top() == TRUE) {
+                if (ifstates.top() == True) {
                     const Token *tok = rawtok->next;
                     while (sameline(rawtok,tok) && tok->comment)
                         tok = tok->next;
                     if (sameline(rawtok, tok))
                         macros.erase(tok->str());
                 }
-            } else if (ifstates.top() == TRUE && rawtok->str() == PRAGMA && rawtok->next && rawtok->next->str() == ONCE && sameline(rawtok,rawtok->next)) {
+            } else if (ifstates.top() == True && rawtok->str() == PRAGMA && rawtok->next && rawtok->next->str() == ONCE && sameline(rawtok,rawtok->next)) {
                 pragmaOnce.insert(rawtok->location.file());
             }
             rawtok = gotoNextLine(rawtok);
             continue;
         }
 
-        if (ifstates.top() != TRUE) {
+        if (ifstates.top() != True) {
             // drop code
             rawtok = gotoNextLine(rawtok);
             continue;

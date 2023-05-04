@@ -19,12 +19,18 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
+#include <QObject>
 #include <QPlainTextEdit>
 #include <QRegularExpression>
+#include <QSize>
+#include <QString>
+#include <QStringList>
 #include <QSyntaxHighlighter>
+#include <QTextCharFormat>
+#include <QVector>
+#include <QWidget>
 
 class CodeEditorStyle;
-class QObject;
 class QPaintEvent;
 class QRect;
 class QResizeEvent;

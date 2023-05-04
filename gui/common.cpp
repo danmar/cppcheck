@@ -22,7 +22,11 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QFileInfo>
+#include <QList>
 #include <QSettings>
+#include <QStringList>
+#include <QVariant>
+#include <Qt>
 
 
 QString getPath(const QString &type)

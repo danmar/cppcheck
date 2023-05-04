@@ -39,7 +39,7 @@ void valid_code(boost::function<void(void)> &pf_print_hello)
     pf_print_hello = boost::bind(print_hello);
 }
 
-void ignoredReturnValue(char * buf)
+void ignoredReturnValue()
 {
     // cppcheck-suppress ignoredReturnValue
     boost::math::round(1.5);

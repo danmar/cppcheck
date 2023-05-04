@@ -21,6 +21,9 @@
 #include "erroritem.h"
 
 #include <QDir>
+#include <QFile>
+#include <QList>
+#include <QtGlobal>
 
 TxtReport::TxtReport(const QString &filename) :
     Report(filename)

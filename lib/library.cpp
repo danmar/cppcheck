@@ -327,7 +327,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 if (!argString)
                     return Error(ErrorCode::MISSING_ATTRIBUTE, "arg");
 
-                mReflection[reflectionnode->GetText()] = atoi(argString);
+                mReflection[reflectionnode->GetText()] = strToInt<int>(argString);
             }
         }
 
@@ -402,7 +402,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                 mExecutableBlocks[extension].setEnd(end);
                             const char * offset = blocknode->Attribute("offset");
                             if (offset)
-                                mExecutableBlocks[extension].setOffset(atoi(offset));
+                                mExecutableBlocks[extension].setOffset(strToInt<int>(offset));
                         }
 
                         else
@@ -490,7 +490,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     if (containerNodeName == "size") {
                         const char* const templateArg = containerNode->Attribute("templateParameter");
                         if (templateArg)
-                            container.size_templateArgNo = atoi(templateArg);
+                            container.size_templateArgNo = strToInt<int>(templateArg);
                     } else if (containerNodeName == "access") {
                         const char* const indexArg = containerNode->Attribute("indexOperator");
                         if (indexArg)
@@ -499,7 +499,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 } else if (containerNodeName == "type") {
                     const char* const templateArg = containerNode->Attribute("templateParameter");
                     if (templateArg)
-                        container.type_templateArgNo = atoi(templateArg);
+                        container.type_templateArgNo = strToInt<int>(templateArg);
 
                     const char* const string = containerNode->Attribute("string");
                     if (string)
@@ -521,7 +521,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         const char *memberTemplateParameter = memberNode->Attribute("templateParameter");
                         struct Container::RangeItemRecordTypeItem member;
                         member.name = memberName ? memberName : "";
-                        member.templateParameter = memberTemplateParameter ? std::atoi(memberTemplateParameter) : -1;
+                        member.templateParameter = memberTemplateParameter ? strToInt<int>(memberTemplateParameter) : -1;
                         container.rangeItemRecordType.emplace_back(std::move(member));
                     }
                 } else
@@ -584,7 +584,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
             }
             const char * const size = node->Attribute("size");
             if (size)
-                podType.size = atoi(size);
+                podType.size = strToInt<unsigned int>(size);
             const char * const sign = node->Attribute("sign");
             if (sign)
                 podType.sign = *sign;
@@ -678,9 +678,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     for (const tinyxml2::XMLElement *functionnode = node->FirstChildElement(); functionnode; functionnode = functionnode->NextSiblingElement()) {
         const std::string functionnodename = functionnode->Name();
         if (functionnodename == "noreturn") {
-            if (strcmp(functionnode->GetText(), "false") == 0)
+            const char * const text = functionnode->GetText();
+            if (strcmp(text, "false") == 0)
                 mNoReturn[name] = FalseTrueMaybe::False;
-            else if (strcmp(functionnode->GetText(), "maybe") == 0)
+            else if (strcmp(text, "maybe") == 0)
                 mNoReturn[name] = FalseTrueMaybe::Maybe;
             else
                 mNoReturn[name] = FalseTrueMaybe::True; // Safe
@@ -709,7 +710,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
             if (const char *type = functionnode->Attribute("type"))
                 mReturnValueType[name] = type;
             if (const char *container = functionnode->Attribute("container"))
-                mReturnValueContainer[name] = std::atoi(container);
+                mReturnValueContainer[name] = strToInt<int>(container);
             if (const char *unknownReturnValues = functionnode->Attribute("unknownValues")) {
                 if (std::strcmp(unknownReturnValues, "all") == 0) {
                     std::vector<MathLib::bigint> values{LLONG_MIN, LLONG_MAX};
@@ -722,7 +723,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 return Error(ErrorCode::MISSING_ATTRIBUTE, "nr");
             const bool bAnyArg = strcmp(argNrString, "any") == 0;
             const bool bVariadicArg = strcmp(argNrString, "variadic") == 0;
-            const int nr = (bAnyArg || bVariadicArg) ? -1 : std::atoi(argNrString);
+            const int nr = (bAnyArg || bVariadicArg) ? -1 : strToInt<int>(argNrString);
             ArgumentChecks &ac = func.argumentChecks[nr];
             ac.optional  = functionnode->Attribute("default") != nullptr;
             ac.variadic = bVariadicArg;
@@ -742,7 +743,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 int indirect = 0;
                 const char * const indirectStr = argnode->Attribute("indirect");
                 if (indirectStr)
-                    indirect = atoi(indirectStr);
+                    indirect = strToInt<int>(indirectStr);
                 if (argnodename == "not-bool")
                     ac.notbool = true;
                 else if (argnodename == "not-null")
@@ -757,9 +758,9 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     // Validate the validation expression
                     const char *p = argnode->GetText();
                     if (!isCompliantValidationExpression(p))
-                        return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, (!p ? "\"\"" : argnode->GetText()));
+                        return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, (!p ? "\"\"" : p));
                     // Set validation expression
-                    ac.valid = argnode->GetText();
+                    ac.valid = p;
                 }
                 else if (argnodename == "minsize") {
                     const char *typeattr = argnode->Attribute("type");
@@ -786,8 +787,8 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             return Error(ErrorCode::MISSING_ATTRIBUTE, "value");
                         long long minsizevalue = 0;
                         try {
-                            minsizevalue = MathLib::toLongNumber(valueattr);
-                        } catch (const InternalError&) {
+                            minsizevalue = strToInt<long long>(valueattr);
+                        } catch (const std::runtime_error&) {
                             return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, valueattr);
                         }
                         if (minsizevalue <= 0)
@@ -978,7 +979,7 @@ std::string Library::getFunctionName(const Token *ftok, bool &error) const
         return getFunctionName(ftok->astOperand1(),error) + "::" + getFunctionName(ftok->astOperand2(),error);
     }
     if (ftok->str() == "." && ftok->astOperand1()) {
-        const std::string type = astCanonicalType(ftok->astOperand1());
+        const std::string type = astCanonicalType(ftok->astOperand1(), ftok->originalName() == "->");
         if (type.empty()) {
             error = true;
             return "";
@@ -1226,6 +1227,9 @@ bool Library::isContainerYield(const Token * const cond, Library::Container::Yie
 // returns true if ftok is not a library function
 bool Library::isNotLibraryFunction(const Token *ftok) const
 {
+    if (ftok->isKeyword() || ftok->isStandardType())
+        return true;
+
     if (ftok->function() && ftok->function()->nestedIn && ftok->function()->nestedIn->type != Scope::eGlobal)
         return true;
 
@@ -1695,7 +1699,7 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
     for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
         if (tok2->str().compare(0, 3, "arg") != 0)
             continue;
-        nonneg int const id = std::atoi(tok2->str().c_str() + 3);
+        nonneg int const id = strToInt<nonneg int>(tok2->str().c_str() + 3);
         tok2->varId(id);
         if (lookupVarId)
             (*lookupVarId)[id] = tok2;
