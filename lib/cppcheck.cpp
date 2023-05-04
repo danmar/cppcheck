@@ -1608,14 +1608,8 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     // TODO: only convert if necessary
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
-    if (mUseGlobalSuppressions) {
-        if (mSettings.nomsg.isSuppressed(errorMessage)) {
-            return;
-        }
-    } else {
-        if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
-            return;
-        }
+    if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
+        return;
     }
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
