@@ -974,22 +974,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 return mExitCode;
 
             } catch (const InternalError &e) {
-                std::list<ErrorMessage::FileLocation> locationList;
-                if (e.token) {
-                    locationList.emplace_back(e.token, &tokenizer.list);
-                } else {
-                    locationList.emplace_back(filename, 0, 0);
-                    if (filename != tokenizer.list.getSourceFilePath()) {
-                        locationList.emplace_back(tokenizer.list.getSourceFilePath(), 0, 0);
-                    }
-                }
-                ErrorMessage errmsg(std::move(locationList),
-                                    tokenizer.list.getSourceFilePath(),
-                                    Severity::error,
-                                    e.errorMessage,
-                                    e.id,
-                                    Certainty::normal);
-
+                ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, filename);
                 reportErr(errmsg);
             }
         }
@@ -1048,6 +1033,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     return mExitCode;
 }
 
+// TODO: replace with ErrorMessage::fromInternalError()
 void CppCheck::internalError(const std::string &filename, const std::string &msg)
 {
     const std::string fullmsg("Bailing out from analysis: " + msg);
