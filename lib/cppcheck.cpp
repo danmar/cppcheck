@@ -589,7 +589,6 @@ unsigned int CppCheck::check(const std::string &path)
 
         } catch (const InternalError &e) {
             internalError(path, e.errorMessage);
-            mExitCode = 1; // e.g. reflect a syntax error
         } catch (const TerminateException &) {
             // Analysis is terminated
             return mExitCode;
@@ -1031,7 +1030,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         internalError(filename, e.what());
     } catch (const InternalError &e) {
         internalError(filename, e.errorMessage);
-        mExitCode=1; // e.g. reflect a syntax error
     }
 
     if (!mSettings.buildDir.empty()) {
@@ -1526,7 +1524,6 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
         executeAddons(ctuInfoFiles);
     } catch (const InternalError& e) {
         internalError("", "Internal error during whole program analysis: " + e.errorMessage);
-        mExitCode = 1;
     }
 
     if (mSettings.buildDir.empty()) {
