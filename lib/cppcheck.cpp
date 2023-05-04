@@ -588,12 +588,12 @@ unsigned int CppCheck::check(const std::string &path)
             executeAddons(dumpFile);
 
         } catch (const InternalError &e) {
-            internalError(path, e.errorMessage);
+            internalError(path, "Processing Clang AST dump failed: " + e.errorMessage);
         } catch (const TerminateException &) {
             // Analysis is terminated
             return mExitCode;
         } catch (const std::exception &e) {
-            internalError(path, e.what());
+            internalError(path, std::string("Processing Clang AST dump failed: ") + e.what());
         }
 
         return mExitCode;
@@ -1025,11 +1025,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         // Analysis is terminated
         return mExitCode;
     } catch (const std::runtime_error &e) {
-        internalError(filename, e.what());
-    } catch (const std::bad_alloc &e) {
-        internalError(filename, e.what());
+        internalError(filename, std::string("Checking file failed: ") + e.what());
+    } catch (const std::bad_alloc &) {
+        internalError(filename, "Checking file failed: out of memory");
     } catch (const InternalError &e) {
-        internalError(filename, e.errorMessage);
+        internalError(filename, "Checking file failed: " + e.errorMessage);
     }
 
     if (!mSettings.buildDir.empty()) {
@@ -1050,7 +1050,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
 void CppCheck::internalError(const std::string &filename, const std::string &msg)
 {
-    const std::string fullmsg("Bailing out from checking since there was an internal error: " + msg);
+    const std::string fullmsg("Bailing out from analysis: " + msg);
 
     const ErrorMessage::FileLocation loc1(filename, 0, 0);
     std::list<ErrorMessage::FileLocation> callstack(1, loc1);
@@ -1523,7 +1523,7 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     try {
         executeAddons(ctuInfoFiles);
     } catch (const InternalError& e) {
-        internalError("", "Internal error during whole program analysis: " + e.errorMessage);
+        internalError("", "Whole program analysis failed: " + e.errorMessage);
     }
 
     if (mSettings.buildDir.empty()) {
