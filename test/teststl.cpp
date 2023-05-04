@@ -35,14 +35,9 @@ public:
     TestStl() : TestFixture("TestStl") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).severity(Severity::performance).library("std.cfg").build();
 
     void run() override {
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::style);
-        settings.severity.enable(Severity::performance);
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(outOfBounds);
         TEST_CASE(outOfBoundsSymbolic);
         TEST_CASE(outOfBoundsIndexExpression);
@@ -185,17 +180,15 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        settings.standards.cpp = cppstandard;
-
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).cpp(cppstandard).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
 
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        runChecks<CheckStl>(&tokenizer, &settings, this);
+        runChecks<CheckStl>(&tokenizer, &settings1, this);
     }
 
     void check_(const char* file, int line, const std::string& code, const bool inconclusive = false) {
@@ -4750,6 +4743,15 @@ private:
               "    return true;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #6925
+        check("void f(const std::string& s, std::string::iterator i) {\n"
+              "    if (i != s.end() && *(i + 1) == *i) {\n"
+              "        if (i + 1 != s.end()) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'i+1!=s.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n",
+                      errout.str());
     }
 
     void dereferenceInvalidIterator2() {

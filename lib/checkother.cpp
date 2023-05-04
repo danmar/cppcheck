@@ -64,7 +64,6 @@ static const struct CWE CWE571(571U);   // Expression is Always True
 static const struct CWE CWE672(672U);   // Operation on a Resource after Expiration or Release
 static const struct CWE CWE628(628U);   // Function Call with Incorrectly Specified Arguments
 static const struct CWE CWE683(683U);   // Function Call With Incorrect Order of Arguments
-static const struct CWE CWE686(686U);   // Function Call With Incorrect Argument Type
 static const struct CWE CWE704(704U);   // Incorrect Type Conversion or Cast
 static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const struct CWE CWE768(768U);   // Incorrect Short Circuit Evaluation
@@ -856,6 +855,21 @@ void CheckOther::redundantContinueError(const Token *tok)
                 "'continue' is redundant since it is the last statement in a loop.", CWE561, Certainty::normal);
 }
 
+static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* settings) {
+    if (!tok)
+        return false;
+    if (tok->isNumber() || tok->tokType() == Token::eString || tok->tokType() == Token::eChar || tok->isBoolean())
+        return true;
+    bool needsCheck = tok->varId() > 0;
+    if (!needsCheck) {
+        const Token* ftok = tok->previous();
+        if (Token::Match(ftok, "%name% (") &&
+            ((ftok->function() && ftok->function()->isConst()) || settings->library.isFunctionConst(ftok->str(), /*pure*/ true)))
+            needsCheck = true;
+    }
+    return (needsCheck && !isExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings, true));
+};
+
 //---------------------------------------------------------------------------
 // Check scope of variables..
 //---------------------------------------------------------------------------
@@ -907,26 +921,24 @@ void CheckOther::checkVariableScope()
         if (forHead)
             continue;
 
-        auto isSimpleExpr = [](const Token* tok) {
-            return tok && (tok->isNumber() || tok->tokType() == Token::eString || tok->tokType() == Token::eChar || tok->isBoolean());
-        };
-
         const Token* tok = var->nameToken()->next();
-        if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) { // bailout for assignment
-            tok = tok->tokAt(3);
-            if (!isSimpleExpr(tok))
+        bool isConstructor = false;
+        if (Token::Match(tok, "; %varid% =", var->declarationId())) { // bailout for assignment
+            tok = tok->tokAt(2)->astOperand2();
+            if (!isSimpleExpr(tok, var, mSettings))
                 continue;
         }
         else if (Token::Match(tok, "{|(")) { // bailout for constructor
+            isConstructor = true;
             const Token* argTok = tok->astOperand2();
             bool bail = false;
             while (argTok) {
                 if (Token::simpleMatch(argTok, ",")) {
-                    if (!isSimpleExpr(argTok->astOperand2())) {
+                    if (!isSimpleExpr(argTok->astOperand2(), var, mSettings)) {
                         bail = true;
                         break;
                     }
-                } else if (!isSimpleExpr(argTok)) {
+                } else if (argTok->str() != "." && !isSimpleExpr(argTok, var, mSettings)) {
                     bail = true;
                     break;
                 }
@@ -936,7 +948,7 @@ void CheckOther::checkVariableScope()
                 continue;
         }
         // bailout if initialized with function call that has possible side effects
-        if (Token::Match(tok, "[(=]") && Token::simpleMatch(tok->astOperand2(), "("))
+        if (!isConstructor && Token::Match(tok, "[(=]") && Token::simpleMatch(tok->astOperand2(), "("))
             continue;
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
@@ -1424,7 +1436,7 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isStatic())
             continue;
-        if (var->isArray())
+        if (var->isArray() && !var->isStlType())
             continue;
         if (var->isEnumType())
             continue;
@@ -1545,7 +1557,9 @@ void CheckOther::checkConstPointer()
         const ValueType* const vt = tok->valueType();
         if (!vt)
             continue;
-        if ((vt->pointer != 1 && !(vt->pointer == 2 && var->isArray())) || (vt->constness & 1) || vt->reference != Reference::None)
+        if ((vt->pointer != 1 && !(vt->pointer == 2 && var->isArray())) || (vt->constness & 1))
+            continue;
+        if (var->typeStartToken()->isTemplateArg())
             continue;
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), var) != nonConstPointers.cend())
             continue;
@@ -1618,7 +1632,7 @@ void CheckOther::checkConstPointer()
                 continue;
             if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
-            constVariableError(p, nullptr);
+            constVariableError(p, p->isArgument() ? p->scope()->function : nullptr);
         }
     }
 }
@@ -3594,6 +3608,8 @@ void CheckOther::checkKnownArgument()
             if (tok->tokType() == Token::eIncDecOp)
                 continue;
             if (isConstVarExpression(tok))
+                continue;
+            if (Token::Match(tok->astOperand1(), "%name% ("))
                 continue;
             const Token * tok2 = tok;
             if (isCPPCast(tok2))

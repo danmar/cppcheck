@@ -70,24 +70,27 @@ public:
  * configurations that exist in a source file.
  */
 class CPPCHECKLIB Preprocessor {
+    // TODO: get rid of this
+    friend class PreprocessorHelper;
+    friend class TestPreprocessor;
+
 public:
 
     /**
      * Include file types.
      */
     enum HeaderTypes {
-        NoHeader = 0,
-        UserHeader,
+        UserHeader = 1,
         SystemHeader
     };
 
     /** character that is inserted in expanded macros */
     static char macroChar;
 
-    explicit Preprocessor(const Settings& settings, Suppressions &suppressions, ErrorLogger *errorLogger = nullptr);
+    explicit Preprocessor(const Settings& settings, ErrorLogger *errorLogger = nullptr);
     virtual ~Preprocessor();
 
-    void inlineSuppressions(const simplecpp::TokenList &tokens);
+    void inlineSuppressions(const simplecpp::TokenList &tokens, Suppressions &suppressions);
 
     void setDirectives(const simplecpp::TokenList &tokens);
     void setDirectives(const std::list<Directive> &directives) {
@@ -146,14 +149,6 @@ public:
     std::string getcode(const simplecpp::TokenList &tokens1, const std::string &cfg, std::vector<std::string> &files, const bool writeLocations);
 
     /**
-     * Get preprocessed code for a given configuration
-     * @param filedata file data including preprocessing 'if', 'define', etc
-     * @param cfg configuration to read out
-     * @param filename name of source file
-     */
-    std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
-
-    /**
      * Calculate HASH. Using toolinfo, tokens1, filedata.
      *
      * @param tokens1    Sourcefile tokens
@@ -173,10 +168,6 @@ public:
 
     static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
 
-    void setFile0(const std::string &f) {
-        mFile0 = f;
-    }
-
     /**
      * dump all directives present in source file
      */
@@ -184,12 +175,15 @@ public:
 
     void reportOutput(const simplecpp::OutputList &outputList, bool showerror);
 
+    static bool hasErrors(const simplecpp::Output &output);
+
 private:
     void missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType);
     void error(const std::string &filename, unsigned int linenr, const std::string &msg);
 
+    static bool hasErrors(const simplecpp::OutputList &outputList);
+
     const Settings& mSettings;
-    Suppressions &mSuppressions;
     ErrorLogger *mErrorLogger;
 
     /** list of all directives met while preprocessing file */

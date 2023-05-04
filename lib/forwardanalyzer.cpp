@@ -49,7 +49,7 @@ struct OnExit {
 
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
-    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
+    enum class Terminate { None, Bail, Inconclusive };
     ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
         : analyzer(analyzer), settings(settings), actions(Analyzer::Action::None), analyzeOnly(false), analyzeTerminate(false)
     {}
@@ -333,8 +333,6 @@ struct ForwardTraversal {
 
     enum class Status {
         None,
-        Escaped,
-        Modified,
         Inconclusive,
     };
 

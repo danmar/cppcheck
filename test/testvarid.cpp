@@ -31,15 +31,10 @@
 
 class TestVarID : public TestFixture {
 public:
-    TestVarID() : TestFixture("TestVarID") {
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
-        settings.standards.c = Standards::C89;
-        settings.standards.cpp = Standards::CPPLatest;
-        settings.checkUnusedTemplates = true;
-    }
+    TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).checkUnusedTemplates().platform(cppcheck::Platform::Type::Unix64).build();
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -102,6 +97,7 @@ private:
         TEST_CASE(varid63);
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
         TEST_CASE(varid65); // #10936
+        TEST_CASE(varid66);
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1195,6 +1191,25 @@ private:
         }
     }
 
+    void varid66() {
+        {
+            const char code[] = "std::string g();\n"
+                                "const std::string s(g() + \"abc\");\n";
+            const char expected[] = "1: std :: string g ( ) ;\n"
+                                    "2: const std :: string s@1 ( g ( ) + \"abc\" ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "enum E {};\n"
+                                "typedef E(*fp_t)();\n"
+                                "E f(fp_t fp);\n";
+            const char expected[] = "1: enum E { } ;\n"
+                                    "2:\n"
+                                    "3: E f ( E ( * fp@1 ) ( ) ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+    }
+
     void varid_for_1() {
         const char code[] = "void foo(int a, int b) {\n"
                             "  for (int a=1,b=2;;) {}\n"
@@ -2006,7 +2021,7 @@ private:
 
     void varid_in_class25() {
         const char *code{}, *expected{};
-        Settings oldSettings = settings;
+        const Settings oldSettings = settings;
         LOAD_LIB_2(settings.library, "std.cfg");
 
         code = "struct F {\n" // #11497

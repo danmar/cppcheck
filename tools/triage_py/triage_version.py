@@ -3,6 +3,7 @@ import os.path
 import subprocess
 import sys
 import argparse
+import time
 
 from packaging.version import Version
 
@@ -18,6 +19,8 @@ parser.add_argument('--check-library', action='store_true', help='passed through
 parser.add_argument('--timeout', type=int, default=2, help='the amount of seconds to wait for the analysis to finish')
 parser.add_argument('--compact', action='store_true', help='only print versions with changes with --compare')
 parser.add_argument('--no-quiet', action='store_true', default=False, help='do not specify -q')
+parser.add_argument('--perf', action='store_true', default=False, help='output duration of execution in seconds (CSV format)')
+parser.add_argument('--start', default=None, help='specify the start version/commit')
 package_group = parser.add_mutually_exclusive_group()
 package_group.add_argument('--no-stderr', action='store_true', default=False, help='do not display stdout')
 package_group.add_argument('--no-stdout', action='store_true', default=False, help='do not display stderr')
@@ -39,6 +42,13 @@ if args.compact:
     if not do_compare:
         print('error: --compact requires --compare')
         sys.exit(1)
+if args.perf:
+    if args.compact:
+        print('error: --compact has no effect with --perf')
+    if args.no_stdout:
+        print('error: --no-stdout has no effect with --perf')
+    if args.no_stderr:
+        print('error: --no-stderr has no effect with --perf')
 
 directory = args.dir
 input_file = args.infile
@@ -91,7 +101,17 @@ if verbose:
 last_ec = None
 last_out = None
 
+if args.perf:
+    print('version,time')
+
+start_entry = args.start
+
 for entry in versions:
+    if start_entry:
+        if start_entry != entry:
+            continue
+        start_entry = None
+
     exe_path = os.path.join(directory, entry)
     exe = os.path.join(exe_path, 'cppcheck')
 
@@ -134,16 +154,23 @@ for entry in versions:
         else:
             # TODO: re-add inconclusive: {callstack}: ({severity}{inconclusive:, inconclusive}) {message
             cmd.append('--template={callstack}: ({severity}) {message} [{id}]')
+    # TODO: how to pass addtional options?
+    if args.perf:
+        cmd.append('--error-exitcode=0')
     cmd.append(input_file)
     if verbose:
         print("running '{}'". format(' '.join(cmd)))
+    if args.perf:
+        start = time.time_ns()
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
         comm = p.communicate(timeout=args.timeout)
+        if args.perf:
+            end = time.time_ns()
         out = ''
         if not args.no_stdout:
             out += comm[0]
-        if not args.no_stderr and not args.no_stderr:
+        if not args.no_stdout and not args.no_stderr:
             out += '\n'
         if not args.no_stderr:
             out += comm[1]
@@ -156,9 +183,19 @@ for entry in versions:
 
     if not do_compare:
         if not use_hashes:
-            print(version)
+            ver_str = version
         else:
-            print('{} ({})'.format(entry, version))
+            ver_str = '{} ({})'.format(entry, version)
+        if args.perf:
+            if out == "timeout":
+                data_str = "0.0" # TODO: how to handle these properly?
+            elif not ec == 0:
+                continue # skip errors
+            else:
+                data_str = '{}'.format((end - start) / 1000.0 / 1000.0 / 1000.0)
+            print('"{}",{}'.format(ver_str, data_str))
+            continue
+        print(ver_str)
         print(ec)
         print(out)
         continue

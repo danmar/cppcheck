@@ -61,12 +61,6 @@ public:
     void fill() {
         mFlags = 0xFFFFFFFF;
     }
-    void setEnabledAll(bool enabled) {
-        if (enabled)
-            fill();
-        else
-            clear();
-    }
     bool isEnabled(T flag) const {
         return (mFlags & (1U << (uint32_t)flag)) != 0;
     }
@@ -251,6 +245,9 @@ public:
 
     /** @brief --performance-valueflow-max-if-count=C */
     int performanceValueFlowMaxIfCount;
+
+    /** @brief max number of sets of arguments to pass to subfuncions in valueflow */
+    int performanceValueFlowMaxSubFunctionArgs;
 
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;

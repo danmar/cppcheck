@@ -20,7 +20,6 @@
 
 #if !defined(WIN32) && !defined(__MINGW32__)
 
-#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
@@ -32,6 +31,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <cassert>
 #include <cerrno>
 #include <csignal>
 #include <cstdlib>
@@ -55,20 +55,24 @@
 #include <sys/prctl.h>
 #endif
 
+enum class Color;
+
 // NOLINTNEXTLINE(misc-unused-using-decls) - required for FD_ZERO
 using std::memset;
 
 
 ProcessExecutor::ProcessExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : Executor(files, settings, errorLogger)
-{}
+{
+    assert(mSettings.jobs > 1);
+}
 
 ProcessExecutor::~ProcessExecutor()
 {}
 
 class PipeWriter : public ErrorLogger {
 public:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_VERIFICATION='4', CHILD_END='5'};
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};
 
     explicit PipeWriter(int pipe) : mWpipe(pipe) {}
 

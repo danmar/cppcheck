@@ -1082,21 +1082,21 @@ void ProjectFile::SafeChecks::saveToXml(QXmlStreamWriter &xmlWriter) const
 {
     if (!classes && !externalFunctions && !internalFunctions && !externalVariables)
         return;
-    xmlWriter.writeStartElement(Settings::SafeChecks::XmlRootName);
+    xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlRootName));
     if (classes) {
-        xmlWriter.writeStartElement(Settings::SafeChecks::XmlClasses);
+        xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlClasses));
         xmlWriter.writeEndElement();
     }
     if (externalFunctions) {
-        xmlWriter.writeStartElement(Settings::SafeChecks::XmlExternalFunctions);
+        xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlExternalFunctions));
         xmlWriter.writeEndElement();
     }
     if (internalFunctions) {
-        xmlWriter.writeStartElement(Settings::SafeChecks::XmlInternalFunctions);
+        xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlInternalFunctions));
         xmlWriter.writeEndElement();
     }
     if (externalVariables) {
-        xmlWriter.writeStartElement(Settings::SafeChecks::XmlExternalVariables);
+        xmlWriter.writeStartElement(QString(Settings::SafeChecks::XmlExternalVariables));
         xmlWriter.writeEndElement();
     }
     xmlWriter.writeEndElement();

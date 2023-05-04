@@ -111,7 +111,7 @@ jobs:
       - name: Run CTest
         run: |
           pushd cmake.output
-          ctest -j$(nproc)
+          ctest --output-on-failure -j$(nproc)
 
   build_uchar:
 
@@ -407,6 +407,12 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         run: |
           ./cppcheck --addon=misra addons/test/misra/crash1.c | ( ! grep 'Bailing out from checking' )
+
+      - name: Build democlient
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          warnings="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar"
+          g++ $warnings -c -Ilib -Iexternals/tinyxml2 democlient/democlient.cpp
 
   selfcheck:
     needs: build # wait for all tests to be successful first

@@ -230,11 +230,13 @@ void Settings::setCheckLevelExhaustive()
     // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
     performanceValueFlowMaxIfCount = -1;
     valueFlowMaxIterations = 4;
+    performanceValueFlowMaxSubFunctionArgs = 256;
 }
 
 void Settings::setCheckLevelNormal()
 {
     // Checking should finish in reasonable time.
+    performanceValueFlowMaxSubFunctionArgs = 8;
     performanceValueFlowMaxIfCount = 100;
     valueFlowMaxIterations = 2;
 }

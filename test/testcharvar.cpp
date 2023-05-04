@@ -31,13 +31,9 @@ public:
     TestCharVar() : TestFixture("TestCharVar") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).platform(cppcheck::Platform::Type::Unspecified).build();
 
     void run() override {
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unspecified);
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::portability);
-
         TEST_CASE(array_index_1);
         TEST_CASE(array_index_2);
         TEST_CASE(bitop);

@@ -46,7 +46,7 @@ public:
     TestValueFlow() : TestFixture("TestValueFlow") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
         // strcpy, abort cfg
@@ -56,7 +56,6 @@ private:
                            "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
                            "</def>";
         ASSERT_EQUALS(true, settings.library.loadxmldata(cfg, sizeof(cfg)));
-        LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
@@ -486,7 +485,7 @@ private:
     }
 
     void bailout(const char code[]) {
-        settings.debugwarnings = true;
+        const Settings s = settingsBuilder().debugwarnings().build();
         errout.str("");
 
         std::vector<std::string> files(1, "test.cpp");
@@ -498,11 +497,9 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&s, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-
-        settings.debugwarnings = false;
     }
 
 #define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)
@@ -6572,8 +6569,7 @@ private:
     void valueFlowSafeFunctionParameterValues() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
+        Settings s = settingsBuilder().library("std.cfg").build();
         s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
 
         code = "short f(short x) {\n"
@@ -6624,8 +6620,7 @@ private:
     void valueFlowUnknownFunctionReturn() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
+        Settings s = settingsBuilder().library("std.cfg").build();
         s.checkUnknownFunctionReturn.insert("rand");
 
         code = "x = rand();";
@@ -7183,6 +7178,17 @@ private:
                "  a;\n"
                "}\n";
         valueOfTok(code, "a");
+
+        code = "void f(int i, int j, int n) {\n"
+               "    if ((j == 0) != (i == 0)) {}\n"
+               "    int t = 0;\n"
+               "    if (j > 0) {\n"
+               "        t = 1;\n"
+               "        if (n < j)\n"
+               "            n = j;\n"
+               "    }\n"
+               "}\n";
+        valueOfTok(code, "i");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577

@@ -2702,6 +2702,8 @@ class MisraChecker:
                 continue
             if not token.astParent:
                 continue
+            if (token.astOperand1 is None) or (token.astOperand2 is None):
+                continue
             if token.astOperand1.str == '[' and token.astOperand1.previous.str in ('{', ','):
                 continue
             if not (token.astParent.str in [',', ';', '{']):
@@ -4254,7 +4256,7 @@ class MisraChecker:
             if (not self.is_cpp) or rule_num in misra_cpp:
                 check_function(*args)
 
-    def parseDump(self, dumpfile):
+    def parseDump(self, dumpfile, path_premium_addon=None):
         def fillVerifyExpected(verify_expected, tok):
             """Add expected suppressions to verify_expected list."""
             rule_re = re.compile(r'[0-9]+\.[0-9]+')
@@ -4264,7 +4266,6 @@ class MisraChecker:
                         verify_expected.append('%s:%d %s' % (tok.file, tok.linenr, word))
 
         data = cppcheckdata.parsedump(dumpfile)
-
         typeBits['CHAR'] = data.platform.char_bit
         typeBits['SHORT'] = data.platform.short_bit
         typeBits['INT'] = data.platform.int_bit
@@ -4299,7 +4300,8 @@ class MisraChecker:
             if not self.settings.quiet:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
-            self.executeCheck(104, self.misra_1_4, cfg)
+            if not path_premium_addon:
+                self.executeCheck(104, self.misra_1_4, cfg)
             self.executeCheck(202, self.misra_2_2, cfg)
             self.executeCheck(203, self.misra_2_3, dumpfile, cfg.typedefInfo)
             self.executeCheck(204, self.misra_2_4, dumpfile, cfg)
@@ -4346,14 +4348,15 @@ class MisraChecker:
             self.executeCheck(904, self.misra_9_4, cfg)
             if cfgNumber == 0:
                 self.executeCheck(905, self.misra_9_5, cfg, data.rawTokens)
-            self.executeCheck(1001, self.misra_10_1, cfg)
-            self.executeCheck(1002, self.misra_10_2, cfg)
-            self.executeCheck(1003, self.misra_10_3, cfg)
-            self.executeCheck(1004, self.misra_10_4, cfg)
-            self.executeCheck(1005, self.misra_10_5, cfg)
-            self.executeCheck(1006, self.misra_10_6, cfg)
-            self.executeCheck(1007, self.misra_10_7, cfg)
-            self.executeCheck(1008, self.misra_10_8, cfg)
+            if not path_premium_addon:
+                self.executeCheck(1001, self.misra_10_1, cfg)
+                self.executeCheck(1002, self.misra_10_2, cfg)
+                self.executeCheck(1003, self.misra_10_3, cfg)
+                self.executeCheck(1004, self.misra_10_4, cfg)
+                self.executeCheck(1005, self.misra_10_5, cfg)
+                self.executeCheck(1006, self.misra_10_6, cfg)
+                self.executeCheck(1007, self.misra_10_7, cfg)
+                self.executeCheck(1008, self.misra_10_8, cfg)
             self.executeCheck(1101, self.misra_11_1, cfg)
             self.executeCheck(1102, self.misra_11_2, cfg)
             self.executeCheck(1103, self.misra_11_3, cfg)
@@ -4676,7 +4679,7 @@ def main():
         checker.setSeverity(args.severity)
 
     for item in dump_files:
-        checker.parseDump(item)
+        checker.parseDump(item,checker.path_premium_addon)
 
         if settings.verify:
             verify_expected = checker.get_verify_expected()

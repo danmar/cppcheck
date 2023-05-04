@@ -14,3 +14,4 @@ release notes for cppcheck-2.11
     - `constVariableReference`
     - `constVariablePointer`
 - More command-line parameters will now check if the given integer argument is actually valid. Several other internal string-to-integer conversions will not be error checked.
+- scanning projects (with -j1) will now defer the analysis of markup files until the whole code was processed

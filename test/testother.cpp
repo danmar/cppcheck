@@ -104,6 +104,7 @@ private:
         TEST_CASE(varScope30);      // #8541
         TEST_CASE(varScope31);      // #11099
         TEST_CASE(varScope32);      // #11441
+        TEST_CASE(varScope33);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -307,7 +308,7 @@ private:
         settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings->verbose = verbose;
 
-        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
+        Preprocessor preprocessor(*settings);
 
         // Tokenize..
         Tokenizer tokenizer(settings, this, &preprocessor);
@@ -347,7 +348,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
+        Preprocessor preprocessor(*settings);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
@@ -1563,16 +1564,65 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (warning) Unused variable value 'x'\n", errout.str());
     }
 
+    void varScope33() { // #11131
+        check("struct S {\n"
+              "    const std::string& getStr() const;\n"
+              "    void mutate();\n"
+              "    bool getB() const;\n"
+              "};\n"
+              "void g(S& s) {\n"
+              "    std::string str = s.getStr();\n"
+              "    s.mutate();\n"
+              "    if (s.getB()) {\n"
+              "        if (str == \"abc\") {}\n"
+              "    }\n"
+              "}\n"
+              "void g(char* s, bool b) {\n"
+              "    int i = strlen(s);\n"
+              "    s[0] = '\\0';\n"
+              "    if (b) {\n"
+              "        if (i == 5) {}\n"
+              "    }\n"
+              "}\n"
+              "void f(const S& s) {\n"
+              "    std::string str = s.getStr();\n"
+              "    std::string str2{ s.getStr() };\n"
+              "    std::string str3(s.getStr());\n"
+              "    if (s.getB()) {\n"
+              "        if (str == \"abc\") {}\n"
+              "        if (str2 == \"abc\") {}\n"
+              "        if (str3 == \"abc\") {}\n"
+              "    }\n"
+              "}\n"
+              "void f(const char* s, bool b) {\n"
+              "    int i = strlen(s);\n"
+              "    if (b) {\n"
+              "        if (i == 5) {}\n"
+              "    }\n"
+              "}\n"
+              "void f(int j, bool b) {\n"
+              "    int k = j;\n"
+              "    if (b) {\n"
+              "        if (k == 5) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:21]: (style) The scope of the variable 'str' can be reduced.\n"
+                      "[test.cpp:22]: (style) The scope of the variable 'str2' can be reduced.\n"
+                      "[test.cpp:23]: (style) The scope of the variable 'str3' can be reduced.\n"
+                      "[test.cpp:31]: (style) The scope of the variable 'i' can be reduced.\n"
+                      "[test.cpp:37]: (style) The scope of the variable 'k' can be reduced.\n",
+                      errout.str());
+    }
+
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
     void checkOldStylePointerCast_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.severity.enable(Severity::style);
-        settings.standards.cpp = Standards::CPP03; // #5560
+        // #5560 - set c++03
+        const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizerCpp(&settings, this, &preprocessor);
@@ -1771,14 +1821,10 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        if (portability)
-            settings.severity.enable(Severity::portability);
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -2049,8 +2095,7 @@ private:
                       "[test.cpp:18]: (performance) Function parameter 'v' should be passed by const reference.\n",
                       errout.str());
 
-        Settings settings1;
-        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
+        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2195,13 +2240,11 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            Settings s32(_settings);
-            PLATFORM(s32.platform, cppcheck::Platform::Type::Unix32);
+            Settings s32 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix32).build();
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
-            Settings s64(_settings);
-            PLATFORM(s64.platform, cppcheck::Platform::Type::Unix64);
+            Settings s64 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix64).build();
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -3107,6 +3150,14 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::array<int, 2>& a) {\n"
+              "    if (a[0]) {}\n"
+              "}\n"
+              "void g(std::array<int, 2>& a) {\n"
+              "    a.fill(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a' can be declared as const array\n", errout.str());
     }
 
     void constParameterCallback() {
@@ -3510,6 +3561,30 @@ private:
               "    g(c);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'c' can be declared as pointer to const\n", errout.str());
+
+        check("typedef void (*cb_t)(int*);\n" // #11674
+              "void cb(int* p) {\n"
+              "    if (*p) {}\n"
+              "}\n"
+              "void g(cb_t);\n"
+              "void f() {\n"
+              "    g(cb);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (style) Parameter 'p' can be declared as pointer to const. "
+                      "However it seems that 'cb' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
+                      errout.str());
+
+        check("typedef void (*cb_t)(int*);\n"
+              "void cb(int* p) {\n"
+              "    if (*p) {}\n"
+              "}\n"
+              "void g(cb_t);\n"
+              "void f() {\n"
+              "    g(::cb);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (style) Parameter 'p' can be declared as pointer to const. "
+                      "However it seems that 'cb' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -5670,7 +5745,9 @@ private:
               "        x = j;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n"
+                      "[test.cpp:2]: (style) The scope of the variable 'j' can be reduced.\n",
+                      errout.str());
 
         check("void f(bool b, int i) {\n"
               "    int j = i;\n"
@@ -7553,11 +7630,10 @@ private:
         }
 
         {
-            Settings keepTemplates;
-            keepTemplates.checkUnusedTemplates = true;
+            Settings s = settingsBuilder().checkUnusedTemplates().build();
             check("template<int n> void foo(unsigned int x) {\n"
                   "if (x <= 0);\n"
-                  "}", &keepTemplates);
+                  "}", &s);
             ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
         }
 
@@ -7572,8 +7648,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'value' is less than zero.\n", errout.str());
 
         // #9040
-        Settings settings1;
-        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
+        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"
@@ -10365,14 +10440,13 @@ private:
     }
 
     void forwardAndUsed() {
-        Settings keepTemplates;
-        keepTemplates.checkUnusedTemplates = true;
+        Settings s = settingsBuilder().checkUnusedTemplates().build();
 
         check("template<typename T>\n"
               "void f(T && t) {\n"
               "    g(std::forward<T>(t));\n"
               "    T s = t;\n"
-              "}", &keepTemplates);
+              "}", &s);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
     }
 
@@ -10675,6 +10749,15 @@ private:
               "    self->maxsize = 32;\n"
               "    dostuff(self->maxsize * sizeof(intptr_t));\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11679
+        check("bool g(int);\n"
+              "void h(int);\n"
+              "int k(int a) { h(a); return 0; }\n"
+              "void f(int i) {\n"
+              "    if (g(k(i))) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

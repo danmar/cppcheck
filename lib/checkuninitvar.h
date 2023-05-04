@@ -133,7 +133,6 @@ public:
 private:
     std::set<const Token*> mUninitDiags;
     Check::FileInfo* getFileInfo() const;
-    bool isUnsafeFunction(const Scope* scope, int argnr, const Token** tok) const;
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override
     {

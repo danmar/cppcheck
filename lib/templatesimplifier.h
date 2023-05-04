@@ -37,6 +37,7 @@ class Settings;
 class Token;
 class Tokenizer;
 class TokenList;
+struct newInstantiation;
 
 /// @addtogroup Core
 /// @{
@@ -333,7 +334,7 @@ public:
      * @param start first token of arguments
      * @param end token following last argument token
      */
-    void simplifyTemplateArgs(Token *start, const Token *end);
+    void simplifyTemplateArgs(Token *start, const Token *end, std::vector<newInstantiation>* newInst = nullptr);
 
 private:
     /**
@@ -456,7 +457,7 @@ private:
     /**
      * Remove a specific "template < ..." template class/function
      */
-    static bool removeTemplate(Token *tok);
+    static bool removeTemplate(Token *tok, std::map<Token*, Token*>* forwardDecls = nullptr);
 
     /** Syntax error */
     NORETURN static void syntaxError(const Token *tok);

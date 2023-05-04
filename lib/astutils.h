@@ -392,7 +392,7 @@ CPPCHECKLIB const Token *findLambdaStartToken(const Token *last);
  * \return nullptr or the }
  */
 CPPCHECKLIB const Token *findLambdaEndToken(const Token *first);
-Token* findLambdaEndToken(Token* first);
+CPPCHECKLIB Token* findLambdaEndToken(Token* first);
 
 bool isLikelyStream(bool cpp, const Token *stream);
 

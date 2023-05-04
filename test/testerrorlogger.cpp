@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -32,11 +31,11 @@
 
 class TestErrorLogger : public TestFixture {
 public:
-    TestErrorLogger() : TestFixture("TestErrorLogger"), fooCpp5("foo.cpp", 5, 1), barCpp8("bar.cpp", 8, 1) {}
+    TestErrorLogger() : TestFixture("TestErrorLogger") {}
 
 private:
-    const ErrorMessage::FileLocation fooCpp5;
-    const ErrorMessage::FileLocation barCpp8;
+    const ErrorMessage::FileLocation fooCpp5{"foo.cpp", 5, 1};
+    const ErrorMessage::FileLocation barCpp8{"bar.cpp", 8, 1};
 
     void run() override {
         TEST_CASE(PatternSearchReplace);

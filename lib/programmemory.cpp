@@ -356,7 +356,6 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             tok2->astOperand2()) {
             bool setvar = false;
             const Token* vartok = tok2->astOperand1();
-            const Token* valuetok = tok2->astOperand2();
             for (const auto& p:vars) {
                 if (p.first != vartok->exprId())
                     continue;
@@ -367,6 +366,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             }
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
+                    const Token* valuetok = tok2->astOperand2();
                     pm.setValue(vartok, execute(valuetok, pm));
                 }
             }
@@ -1416,7 +1416,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
         return v;
     if (!expr)
         return v;
-    if (pm.hasValue(expr->exprId()))
+    if (expr->exprId() > 0 && pm.hasValue(expr->exprId()))
         return pm.at(expr->exprId());
     if (const ValueFlow::Value* value = getImpossibleValue(expr))
         return *value;
