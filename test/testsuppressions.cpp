@@ -82,6 +82,7 @@ private:
         TEST_CASE(unusedFunction);
 
         TEST_CASE(suppressingSyntaxErrorAndExitCode);
+        TEST_CASE(suppressLocal);
     }
 
     void suppressionsBadId1() const {
@@ -112,7 +113,8 @@ private:
 
     void suppressionsDosFormat() const {
         Suppressions suppressions;
-        std::istringstream s("abc\r\ndef\r\n");
+        std::istringstream s("abc\r\n"
+                             "def\r\n");
         ASSERT_EQUALS("", suppressions.parseFile(s));
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("abc")));
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("def")));
@@ -120,7 +122,8 @@ private:
 
     void suppressionsFileNameWithColon() const {
         Suppressions suppressions;
-        std::istringstream s("errorid:c:\\foo.cpp\nerrorid:c:\\bar.cpp:12");
+        std::istringstream s("errorid:c:\\foo.cpp\n"
+                             "errorid:c:\\bar.cpp:12");
         ASSERT_EQUALS("", suppressions.parseFile(s));
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "c:/foo.cpp", 1111)));
         ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "c:/bar.cpp", 10)));
@@ -138,7 +141,9 @@ private:
         // Check that globbing works
         {
             Suppressions suppressions;
-            std::istringstream s("errorid:x*.cpp\nerrorid:y?.cpp\nerrorid:test.c*");
+            std::istringstream s("errorid:x*.cpp\n"
+                                 "errorid:y?.cpp\n"
+                                 "errorid:test.c*");
             ASSERT_EQUALS("", suppressions.parseFile(s));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "xyz.cpp", 1)));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "xyz.cpp.cpp", 1)));
@@ -152,7 +157,10 @@ private:
         // Check that both a filename match and a glob match apply
         {
             Suppressions suppressions;
-            std::istringstream s("errorid:x*.cpp\nerrorid:xyz.cpp:1\nerrorid:a*.cpp:1\nerrorid:abc.cpp:2");
+            std::istringstream s("errorid:x*.cpp\n"
+                                 "errorid:xyz.cpp:1\n"
+                                 "errorid:a*.cpp:1\n"
+                                 "errorid:abc.cpp:2");
             ASSERT_EQUALS("", suppressions.parseFile(s));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "xyz.cpp", 1)));
             ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "xyz.cpp", 2)));
@@ -526,12 +534,14 @@ private:
     }
 
     void suppressionsFileComment() const {
-        std::istringstream file1("# comment\nabc");
+        std::istringstream file1("# comment\n"
+                                 "abc");
         Suppressions suppressions1;
         suppressions1.parseFile(file1);
         ASSERT_EQUALS(true, suppressions1.isSuppressed(errorMessage("abc", "test.cpp", 123)));
 
-        std::istringstream file2("// comment\nabc");
+        std::istringstream file2("// comment\n"
+                                 "abc");
         Suppressions suppressions2;
         suppressions2.parseFile(file2);
         ASSERT_EQUALS(true, suppressions2.isSuppressed(errorMessage("abc", "test.cpp", 123)));
@@ -700,9 +710,9 @@ private:
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
         Suppressions suppressions;
-        auto suppression = Suppressions::Suppression("unusedFunction", "test.c", 3);
+        Suppressions::Suppression suppression("unusedFunction", "test.c", 3);
         suppression.checked = true; // have to do this because fixes for #5704
-        suppressions.addSuppression(suppression);
+        suppressions.addSuppression(std::move(suppression));
         ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", false).empty());
@@ -795,9 +805,11 @@ private:
         ASSERT_EQUALS(false, s.isSuppressed(errorMsg));
         errorMsg.symbolNames = "array1\n";
         ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
-        errorMsg.symbolNames = "x\narray2\n";
+        errorMsg.symbolNames = "x\n"
+                               "array2\n";
         ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
-        errorMsg.symbolNames = "array3\nx\n";
+        errorMsg.symbolNames = "array3\n"
+                               "x\n";
         ASSERT_EQUALS(true, s.isSuppressed(errorMsg));
     }
 
@@ -833,6 +845,20 @@ private:
         ASSERT_EQUALS(2, checkSuppression(code3, "zerodiv:test.cpp:3"));  // suppress 'errordiv' at line 3 of test.cpp
     }
 
+    void suppressLocal() const {
+        Suppressions suppressions;
+        std::istringstream s("errorid:test.cpp\n"
+                             "errorid2");
+        ASSERT_EQUALS("", suppressions.parseFile(s));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "test.cpp", 1)));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "test.cpp", 1), false));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "test2.cpp", 1)));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid", "test2.cpp", 1), false));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid2", "test.cpp", 1)));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid2", "test.cpp", 1), false));
+        ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid2", "test2.cpp", 1)));
+        ASSERT_EQUALS(false, suppressions.isSuppressed(errorMessage("errorid2", "test2.cpp", 1), false));
+    }
 };
 
 REGISTER_TEST(TestSuppressions)

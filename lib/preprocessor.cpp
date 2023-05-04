@@ -179,7 +179,7 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, const Sett
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
             suppr.thisAndNextLine = thisAndNextLine;
-            suppressions.addSuppression(suppr);
+            suppressions.addSuppression(std::move(suppr));
         }
     }
 }

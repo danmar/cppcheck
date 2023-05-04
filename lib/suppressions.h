@@ -56,22 +56,7 @@ public:
 
     struct CPPCHECKLIB Suppression {
         Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
-        Suppression(const Suppression &other) {
-            *this = other;
-        }
         Suppression(std::string id, std::string file, int line=NO_LINE) : errorId(std::move(id)), fileName(std::move(file)), lineNumber(line), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
-
-        Suppression & operator=(const Suppression &other) {
-            errorId = other.errorId;
-            fileName = other.fileName;
-            lineNumber = other.lineNumber;
-            symbolName = other.symbolName;
-            hash = other.hash;
-            thisAndNextLine = other.thisAndNextLine;
-            matched = other.matched;
-            checked = other.checked;
-            return *this;
-        }
 
         bool operator<(const Suppression &other) const {
             if (errorId != other.errorId)
@@ -163,21 +148,22 @@ public:
      * @param suppression suppression details
      * @return error message. empty upon success
      */
-    std::string addSuppression(const Suppression &suppression);
+    std::string addSuppression(Suppression suppression);
 
     /**
      * @brief Combine list of suppressions into the current suppressions.
      * @param suppressions list of suppression details
      * @return error message. empty upon success
      */
-    std::string addSuppressions(const std::list<Suppression> &suppressions);
+    std::string addSuppressions(std::list<Suppression> suppressions);
 
     /**
      * @brief Returns true if this message should not be shown to the user.
      * @param errmsg error message
+     * @param global use global suppressions
      * @return true if this error is suppressed.
      */
-    bool isSuppressed(const ErrorMessage &errmsg);
+    bool isSuppressed(const ErrorMessage &errmsg, bool global = true);
 
     /**
      * @brief Returns true if this message should not be shown to the user.
@@ -185,13 +171,6 @@ public:
      * @return true if this error is suppressed.
      */
     bool isSuppressed(const ::ErrorMessage &errmsg);
-
-    /**
-     * @brief Returns true if this message should not be shown to the user, only uses local suppressions.
-     * @param errmsg error message
-     * @return true if this error is suppressed.
-     */
-    bool isSuppressedLocal(const ErrorMessage &errmsg);
 
     /**
      * @brief Create an xml dump of suppressions
