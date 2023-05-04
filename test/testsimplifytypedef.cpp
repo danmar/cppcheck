@@ -3290,6 +3290,13 @@ private:
         code = "typedef unsigned char unsigned char;\n" // don't hang
                "void f(char);\n";
         ASSERT_EQUALS("void f ( char ) ;", tok(code));
+
+        // #10796
+        code = "typedef unsigned a[7];\n"
+               "void f(unsigned N) {\n"
+               "    a** p = new a * [N];\n"
+               "}\n";
+        TODO_ASSERT_EQUALS("does not compile", "void f ( int N ) { int ( * * p ) [ 7 ] ; p = new int ( * ) [ N ] [ 7 ] ; }", tok(code));
     }
 
     void simplifyTypedefFunction1() {
