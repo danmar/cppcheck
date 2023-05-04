@@ -710,7 +710,7 @@ private:
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
         Suppressions suppressions;
-        auto suppression = Suppressions::Suppression("unusedFunction", "test.c", 3);
+        Suppressions::Suppression suppression("unusedFunction", "test.c", 3);
         suppression.checked = true; // have to do this because fixes for #5704
         suppressions.addSuppression(std::move(suppression));
         ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
