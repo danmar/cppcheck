@@ -22,7 +22,14 @@
 #include "codeeditstylecontrols.h"
 
 #include <QDialogButtonBox>
+#include <QFlags>
+#include <QFontMetrics>
 #include <QFormLayout>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QStringList>
+#include <QVBoxLayout>
+#include <QtGlobal>
 
 class QWidget;
 

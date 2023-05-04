@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -116,7 +116,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             return New;
         }
 
-        if (mSettings_->posix()) {
+        if (mSettings_->hasLib("posix")) {
             if (Token::Match(tok2, "open|openat|creat|mkstemp|mkostemp|socket (")) {
                 // simple sanity check of function parameters..
                 // TODO: Make such check for all these functions
@@ -154,7 +154,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
         return No;
 
     // Prevent recursion
-    if (callstack && std::find(callstack->begin(), callstack->end(), func) != callstack->end())
+    if (callstack && std::find(callstack->cbegin(), callstack->cend(), func) != callstack->cend())
         return No;
 
     std::list<const Function*> cs;
@@ -237,7 +237,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getDeallocationType(const Token *tok
                 if (tok->str() == "realloc" && Token::simpleMatch(vartok->next(), ", 0 )"))
                     return Malloc;
 
-                if (mSettings_->posix()) {
+                if (mSettings_->hasLib("posix")) {
                     if (tok->str() == "close")
                         return Fd;
                     if (tok->str() == "pclose")
@@ -276,7 +276,7 @@ bool CheckMemoryLeak::isReopenStandardStream(const Token *tok) const
 
 bool CheckMemoryLeak::isOpenDevNull(const Token *tok) const
 {
-    if (mSettings_->posix() && tok->str() == "open" && numberOfArguments(tok) == 2) {
+    if (mSettings_->hasLib("posix") && tok->str() == "open" && numberOfArguments(tok) == 2) {
         const Token* arg = getArguments(tok).at(0);
         if (Token::simpleMatch(arg, "\"/dev/null\""))
             return true;
@@ -338,19 +338,9 @@ void CheckMemoryLeak::resourceLeakError(const Token *tok, const std::string &var
     reportErr(tok, Severity::error, "resourceLeak", errmsg, CWE(775U));
 }
 
-void CheckMemoryLeak::deallocDeallocError(const Token *tok, const std::string &varname) const
-{
-    reportErr(tok, Severity::error, "deallocDealloc", "$symbol:" + varname + "\nDeallocating a deallocated pointer: $symbol", CWE(415U));
-}
-
 void CheckMemoryLeak::deallocuseError(const Token *tok, const std::string &varname) const
 {
     reportErr(tok, Severity::error, "deallocuse", "$symbol:" + varname + "\nDereferencing '$symbol' after it is deallocated / released", CWE(416U));
-}
-
-void CheckMemoryLeak::mismatchSizeError(const Token *tok, const std::string &sz) const
-{
-    reportErr(tok, Severity::error, "mismatchSize", "The allocated size " + sz + " is not a multiple of the underlying type's size.", CWE(131U));
 }
 
 void CheckMemoryLeak::mismatchAllocDealloc(const std::list<const Token *> &callstack, const std::string &varname) const
@@ -462,7 +452,7 @@ bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, con
 //     a = malloc(10); a = realloc(a, 100);
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeakInFunction::checkReallocUsage()
+void CheckMemoryLeakInFunction::checkReallocUsage() const
 {
     // only check functions
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -738,6 +728,8 @@ void CheckMemoryLeakStructMember::check()
 
 bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 {
+    if (!variable)
+        return false;
     const int declarationId(variable->declarationId());
     bool alloc = false;
     for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
@@ -752,6 +744,8 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 
 void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
 {
+    if (!variable)
+        return;
     // Is struct variable a pointer?
     if (variable->isArrayOrPointer()) {
         // Check that variable is allocated with malloc

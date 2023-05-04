@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ public:
          * Set the filename.
          * @param file Filename to set.
          */
-        void setfile(const std::string &file);
+        void setfile(std::string file);
 
         /**
          * @return the location as a string. Format: [file:line]
@@ -112,34 +112,34 @@ public:
                  std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 std::string id, Certainty::CertaintyLevel certainty);
+                 std::string id, Certainty certainty);
     ErrorMessage(std::list<FileLocation> callStack,
                  std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
                  std::string id,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty);
+                 Certainty certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
                  std::string id,
                  const std::string& msg,
-                 Certainty::CertaintyLevel certainty);
+                 Certainty certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
                  std::string id,
                  const std::string& msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty);
+                 Certainty certainty);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
                  Severity::SeverityType severity,
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty);
+                 Certainty certainty);
     ErrorMessage();
     explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
@@ -175,7 +175,7 @@ public:
 
     Severity::SeverityType severity;
     CWE cwe;
-    Certainty::CertaintyLevel certainty;
+    Certainty certainty;
 
     /** Warning hash */
     std::size_t hash;
@@ -251,14 +251,6 @@ public:
     }
 
     /**
-     * Output information messages.
-     * @param msg Location and other information about the found error.
-     */
-    virtual void reportInfo(const ErrorMessage &msg) {
-        reportErr(msg);
-    }
-
-    /**
      * Report unmatched suppressions
      * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
      * @return true is returned if errors are reported
@@ -285,6 +277,12 @@ public:
 
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */
 std::string replaceStr(std::string s, const std::string &from, const std::string &to);
+
+/** replaces the static parts of the location template **/
+CPPCHECKLIB void substituteTemplateFormatStatic(std::string& templateFormat);
+
+/** replaces the static parts of the location template **/
+CPPCHECKLIB void substituteTemplateLocationStatic(std::string& templateLocation);
 
 /// @}
 //---------------------------------------------------------------------------

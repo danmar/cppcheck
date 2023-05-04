@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #include "errortypes.h"
 #include "standards.h"
 #include "library.h"
-#include "preprocessor.h"
+#include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <map>
@@ -37,30 +37,27 @@
 
 #include <simplecpp.h>
 
-#include <tinyxml2.h>
-
 class TestBufferOverrun : public TestFixture {
 public:
     TestBufferOverrun() : TestFixture("TestBufferOverrun") {}
 
 private:
-    Settings settings0;
+    Settings settings0 = settingsBuilder().library("std.cfg").severity(Severity::warning).severity(Severity::style).severity(Severity::portability).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        settings0.certainty.enable(Certainty::inconclusive);
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun;
-        checkBufferOverrun.runChecks(&tokenizer, &settings0, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -72,8 +69,7 @@ private:
         errout.str("");
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
-        checkBufferOverrun.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
     }
 
     void checkP(const char code[], const char* filename = "test.cpp")
@@ -81,15 +77,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings* settings = &settings0;
-        settings->severity.enable(Severity::style);
-        settings->severity.enable(Severity::warning);
-        settings->severity.enable(Severity::portability);
-        settings->severity.enable(Severity::performance);
-        settings->standards.c = Standards::CLatest;
-        settings->standards.cpp = Standards::CPPLatest;
-        settings->certainty.enable(Certainty::inconclusive);
-        settings->certainty.disable(Certainty::experimental);
+        const Settings settings = settingsBuilder(settings0).severity(Severity::style).severity(Severity::warning).severity(Severity::portability).severity(Severity::performance)
+                                  .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -101,27 +90,16 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, nullptr);
-        preprocessor.setDirectives(tokens1);
-
         // Tokenizer..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-        tokenizer.setPreprocessor(&preprocessor);
 
         // Check for buffer overruns..
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, settings, this);
-        checkBufferOverrun.runChecks(&tokenizer, settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
     }
 
     void run() override {
-        LOAD_LIB_2(settings0.library, "std.cfg");
-
-        settings0.severity.enable(Severity::warning);
-        settings0.severity.enable(Severity::style);
-        settings0.severity.enable(Severity::portability);
-
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
         TEST_CASE(noerr3);
@@ -195,6 +173,7 @@ private:
         TEST_CASE(array_index_68); // #6655
         TEST_CASE(array_index_69); // #6370
         TEST_CASE(array_index_70); // #11355
+        TEST_CASE(array_index_71); // #11461
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -205,6 +184,10 @@ private:
         TEST_CASE(array_index_negative3);
         TEST_CASE(array_index_negative4);
         TEST_CASE(array_index_negative5);    // #10526
+        TEST_CASE(array_index_negative6);    // #11349
+        TEST_CASE(array_index_negative7);    // #5685
+        TEST_CASE(array_index_negative8);    // #11651
+        TEST_CASE(array_index_negative9);
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -951,7 +934,7 @@ private:
 
     void array_index_24() {
         // ticket #1492 and #1539
-        const std::string charMaxPlusOne(settings0.defaultSign == 'u' ? "256" : "128");
+        const std::string charMaxPlusOne(settings0.platform.defaultSign == 'u' ? "256" : "128");
         check(("void f(char n) {\n"
                "    int a[n];\n"     // n <= CHAR_MAX
                "    a[-1] = 0;\n"    // negative index
@@ -1722,7 +1705,7 @@ private:
             errout.str());
     }
 
-    void array_index_59()
+    void array_index_59() // #10413
     {
         check("long f(long b) {\n"
               "  const long a[] = { 0, 1, };\n"
@@ -1730,6 +1713,22 @@ private:
               "  if (b < 0 || b >= c)\n"
               "    return 0;\n"
               "  return a[b];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b) {\n"
+              "    const int S[2] = {};\n"
+              "    if (a < 0) {}\n"
+              "    else {\n"
+              "        if (b < 0) {}\n"
+              "        else if (S[b] > S[a]) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int a[2] = {};\n"
+              "void f(int i) {\n"
+              "    g(i < 0 ? 0 : a[i]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1909,6 +1908,19 @@ private:
               "    printf(\"%c\", a[5]);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[5]' accessed at index 5, which is out of bounds.\n", errout.str());
+    }
+
+    // #11461
+    void array_index_71()
+    {
+        check("unsigned int f(unsigned int Idx) {\n"
+              "  if (Idx < 64)\n"
+              "    return 0;\n"
+              "  Idx -= 64;\n"
+              "  int arr[64] = { 0 };\n"
+              "  return arr[Idx];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
@@ -2225,6 +2237,59 @@ private:
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    // #11349
+    void array_index_negative6()
+    {
+        check("void f(int i) {\n"
+              "  int j = i;\n"
+              "  const int a[5] = {};\n"
+              "  const int k = j < 0 ? 0 : j;\n"
+              "  (void)a[k];\n"
+              "  if (i == -3) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #5685
+    void array_index_negative7()
+    {
+        check("void f() {\n"
+              "    int i = -9;\n"
+              "    int a[5];\n"
+              "    for (; i < 5; i++)\n"
+              "        a[i] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Array 'a[5]' accessed at index -9, which is out of bounds.\n", errout.str());
+    }
+
+    // #11651
+    void array_index_negative8()
+    {
+        check("unsigned g(char*);\n"
+              "void f() {\n"
+              "    char buf[10];\n"
+              "    unsigned u = g(buf);\n"
+              "    for (int i = u, j = sizeof(i); --i >= 0;)\n"
+              "        char c = buf[i];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #8075
+    void array_index_negative9()
+    {
+        check("int g(int i) {\n"
+              "    if (i < 10)\n"
+              "        return -1;\n"
+              "    return 0;\n"
+              "}\n"
+              "void f() {\n"
+              "    int a[] = { 1, 2, 3 };\n"
+              "    printf(\"%d\\n\", a[g(4)]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'a[3]' accessed at index -1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_decr() {
@@ -3279,6 +3344,7 @@ private:
 
     void buffer_overrun_errorpath() {
         setMultiline();
+        const Settings settingsOld = settings0;
         settings0.templateLocation = "{file}:{line}:note:{info}";
 
         check("void f() {\n"
@@ -3288,6 +3354,10 @@ private:
         ASSERT_EQUALS("test.cpp:3:error:Buffer is accessed out of bounds: p\n"
                       "test.cpp:2:note:Assign p, buffer with size 10\n"
                       "test.cpp:3:note:Buffer overrun\n", errout.str());
+
+        // TODO: need to reset this but it breaks other tests
+        (void)settingsOld;
+        //settings0 = settingsOld;
     }
 
     void buffer_overrun_bailoutIfSwitch() {
@@ -3462,7 +3532,6 @@ private:
     }
 
     void buffer_overrun_readSizeFromCfg() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
@@ -3474,9 +3543,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
         check("void f() {\n"
@@ -4017,7 +4084,6 @@ private:
     // extracttests.disable
 
     void minsize_argvalue() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mymemset\">\n"
@@ -4029,11 +4095,8 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
-        settings.severity.enable(Severity::warning);
-        settings.sizeof_wchar_t = 4;
+        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).severity(Severity::warning).build();
+        settings.platform.sizeof_wchar_t = 4;
 
         check("void f() {\n"
               "    char c[10];\n"
@@ -4158,7 +4221,6 @@ private:
     }
 
     void minsize_sizeof() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mystrncpy\">\n"
@@ -4171,9 +4233,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
               "    char c[7];\n"
@@ -4221,7 +4281,6 @@ private:
     }
 
     void minsize_strlen() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mysprintf\">\n"
@@ -4235,9 +4294,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // formatstr..
         check("void f() {\n"
@@ -4337,7 +4394,6 @@ private:
     }
 
     void minsize_mul() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"myfread\">\n"
@@ -4349,9 +4405,7 @@ private:
                                "    <arg nr=\"4\"/>\n"
                                "  </function>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
               "    char c[5];\n"
@@ -4837,8 +4891,7 @@ private:
 
     void getErrorMessages() {
         // Ticket #2292: segmentation fault when using --errorlist
-        CheckBufferOverrun c;
-        c.getErrorMessages(this, nullptr);
+        getCheck<CheckBufferOverrun>().getErrorMessages(this, nullptr);
     }
 
     void arrayIndexThenCheck() {
@@ -5193,6 +5246,23 @@ private:
             "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 5.\n",
                       errout.str());
+
+        ctu("void g(int *b) { b[0] = 0; }\n"
+            "void f() {\n"
+            "    GLint a[1];\n"
+            "    g(a);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("const int a[1] = { 1 };\n" // #11042
+            "void g(const int* d) {\n"
+            "    (void)d[2];\n"
+            "}\n"
+            "void f() {\n"
+            "    g(a);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:3]: (error) Array index out of bounds; 'd' buffer size is 4 and it is accessed at offset 8.\n",
+                      errout.str());
     }
 
     void ctu_variable() {
@@ -5443,8 +5513,7 @@ private:
 
     void checkPipeParameterSize() { // #3521
 
-        Settings settings;
-        LOAD_LIB_2(settings.library, "posix.cfg");
+        const Settings settings = settingsBuilder().library("posix.cfg").build();
 
         check("void f(){\n"
               "int pipefd[1];\n" // <--  array of two integers is needed

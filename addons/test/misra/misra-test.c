@@ -82,6 +82,7 @@ static void misra_2_2(int x) {
 /* // */   // 3.1
 /* /* */   // 3.1
 ////
+/* https://cppcheck.net */
 
 // http://example.com // no warning
 
@@ -736,6 +737,7 @@ static void misra_10_6_1(uint32_t *a, uint16_t b, uint16_t c)
     *a = b + c ; // 10.6
 }
 
+static void misra_10_7_f1(struct Timer *pSelf, uint32_t interval_ms);
 static void misra_10_7(uint16_t u16a, uint16_t u16b) {
     uint32_t u32a = 100u;
     res = u32a * u16a + u16b; // 12.1 no-warning
@@ -744,6 +746,7 @@ static void misra_10_7(uint16_t u16a, uint16_t u16b) {
     res = u32a * (u16a + u16b); // 10.7
     u32a *= u16a + u16b; // 10.7
     u32a = ((uint32_t)4 * (uint32_t)2 * (uint32_t)4 ); // no-warning (#10488)
+    dostuff(&t, (2*60*1000)); // no-warning
 }
 
 static void misra_10_8(u8 x, s32 a, s32 b) {

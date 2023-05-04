@@ -22,6 +22,9 @@
 #include "report.h"
 
 #include <QDir>
+#include <QFile>
+#include <QList>
+#include <QtGlobal>
 
 CsvReport::CsvReport(const QString &filename) :
     Report(filename)

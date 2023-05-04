@@ -20,24 +20,13 @@ jobs:
         with:
           key: ${{ github.workflow }}-${{ runner.os }}
 
-      - name: Prepare
-        run: |
-          sudo apt-get update
-          sudo apt-get install debian-goodies ubuntu-dbgsym-keyring
-
-      - name: Add debug repos on ubuntu
-        run:  |
-           echo "deb http://ddebs.ubuntu.com $(lsb_release -cs) main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ddebs.list
-           echo "deb http://ddebs.ubuntu.com $(lsb_release -cs)-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ddebs.list
-           echo "deb http://ddebs.ubuntu.com $(lsb_release -cs)-proposed main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ddebs.list
-
       - name: Install missing software
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install valgrind
-          sudo apt-get install libc6-dbg-amd64-cross
           sudo apt-get install libboost-container-dev
+          sudo apt-get install debuginfod
 
       - name: Build cppcheck
         run: |
@@ -51,10 +40,15 @@ jobs:
 
       - name: Run valgrind
         run: |
-          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log
+          ec=0
+          valgrind --error-limit=yes --leak-check=full --num-callers=50 --show-reachable=yes --track-origins=yes --suppressions=valgrind/testrunner.supp --gen-suppressions=all --log-fd=9 --error-exitcode=42 ./testrunner TestGarbage TestOther TestSimplifyTemplate 9>memcheck.log || ec=1
           cat memcheck.log
+          exit $ec
+        env:
+          DEBUGINFOD_URLS: https://debuginfod.ubuntu.com
           
       - uses: actions/upload-artifact@v3
+        if: success() || failure()
         with:
           name: Logs
           path: ./*.log

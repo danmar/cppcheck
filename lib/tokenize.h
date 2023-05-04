@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "errortypes.h"
 #include "tokenlist.h"
 
+#include <cassert>
 #include <iosfwd>
 #include <list>
 #include <map>
@@ -59,8 +60,7 @@ class CPPCHECKLIB Tokenizer {
     friend class TemplateSimplifier;
 
 public:
-    Tokenizer();
-    Tokenizer(const Settings * settings, ErrorLogger *errorLogger);
+    explicit Tokenizer(const Settings * settings, ErrorLogger *errorLogger = nullptr, const Preprocessor *preprocessor = nullptr);
     ~Tokenizer();
 
     void setTimerResults(TimerResults *tr) {
@@ -158,13 +158,6 @@ public:
     nonneg int sizeOfType(const std::string& type) const;
 
     void simplifyDebug();
-    /**
-     * Try to determine if function parameter is passed by value by looking
-     * at the function declaration.
-     * @param fpar token for function parameter in the function call
-     * @return true if the parameter is passed by value. if unsure, false is returned
-     */
-    bool isFunctionParameterPassedByValue(const Token *fpar) const;
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
@@ -267,6 +260,11 @@ public:
      * A c;
      */
     void simplifyTypedef();
+    void simplifyTypedefCpp();
+    /**
+     * Move typedef token to the left og the expression
+     */
+    void simplifyTypedefLHS();
 
     /**
      */
@@ -275,6 +273,7 @@ public:
     /**
      */
     bool simplifyUsing();
+    void simplifyUsingError(const Token* usingStart, const Token* usingEnd);
 
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
@@ -377,10 +376,8 @@ public:
      */
     static const Token * isFunctionHead(const Token *tok, const std::string &endsWith, bool cpp);
 
-    void setPreprocessor(const Preprocessor *preprocessor) {
-        mPreprocessor = preprocessor;
-    }
     const Preprocessor *getPreprocessor() const {
+        assert(mPreprocessor);
         return mPreprocessor;
     }
 
@@ -537,11 +534,6 @@ private:
     void simplifyBorland();
 
     /**
-     * Remove Qt signals and slots
-     */
-    void simplifyQtSignalsSlots();
-
-    /**
      * Collapse operator name tokens into single token
      * operator = => operator=
      */
@@ -554,12 +546,6 @@ private:
      * Remove [[attribute]] (C++11 and later) from TokenList
      */
     void simplifyCPPAttribute();
-
-    /**
-     * Replace strlen(str)
-     * @return true if any replacement took place, false else
-     * */
-    bool simplifyStrlen();
 
     /**
      * Convert namespace aliases
@@ -593,21 +579,21 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(const Token * const startToken,
-                                  const VariableMap &variableMap,
+    void setVarIdClassDeclaration(Token* const startToken, // cppcheck-suppress functionConst // has side effects
+                                  VariableMap& variableMap,
                                   const nonneg int scopeStartVarId,
                                   std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
 
     void setVarIdStructMembers(Token **tok1,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int *varId) const;
+                               nonneg int &varId) const;
 
-    void setVarIdClassFunction(const std::string &classname,
+    void setVarIdClassFunction(const std::string &classname, // cppcheck-suppress functionConst // has side effects
                                Token * const startToken,
                                const Token * const endToken,
                                const std::map<std::string, nonneg int> &varlist,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
-                               nonneg int *varId_);
+                               nonneg int &varId_);
 
     /**
      * Output list of unknown types.
@@ -624,12 +610,6 @@ public:
     /** Was there templates in the code? */
     bool codeWithTemplates() const {
         return mCodeWithTemplates;
-    }
-
-
-    void setSettings(const Settings *settings) {
-        mSettings = settings;
-        list.setSettings(settings);
     }
 
     const SymbolDatabase *getSymbolDatabase() const {
@@ -665,6 +645,10 @@ public:
         return list.front();
     }
 
+    Token* tokens() {
+        return list.front();
+    }
+
     /**
      * Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?
      * @param s the string to check
@@ -680,15 +664,6 @@ public:
      */
     static const Token * startOfExecutableScope(const Token * tok);
 
-#ifdef MAXTIME
-    bool isMaxTime() const {
-        return (std::time(0) > mMaxTime);
-#else
-    static bool isMaxTime() {
-        return false;
-#endif
-    }
-
     const Settings *getSettings() const {
         return mSettings;
     }
@@ -702,7 +677,8 @@ public:
     Tokenizer &operator=(const Tokenizer &) = delete;
 
 private:
-    Token *processFunc(Token *tok2, bool inOperator) const;
+    const Token *processFunc(const Token *tok2, bool inOperator) const;
+    Token *processFunc(Token *tok2, bool inOperator);
 
     /**
      * Get new variable id.
@@ -716,7 +692,7 @@ private:
     void setPodTypes();
 
     /** settings */
-    const Settings * mSettings;
+    const Settings * const mSettings;
 
     /** errorlogger */
     ErrorLogger* const mErrorLogger;
@@ -724,7 +700,7 @@ private:
     /** Symbol database that all checks etc can use */
     SymbolDatabase *mSymbolDatabase;
 
-    TemplateSimplifier *mTemplateSimplifier;
+    TemplateSimplifier * const mTemplateSimplifier;
 
     /** E.g. "A" for code where "#ifdef A" is true. This is used to
         print additional information in error situations. */
@@ -759,12 +735,7 @@ private:
      */
     TimerResults *mTimerResults;
 
-#ifdef MAXTIME
-    /** Tokenizer maxtime */
-    const std::time_t mMaxTime;
-#endif
-
-    const Preprocessor *mPreprocessor;
+    const Preprocessor * const mPreprocessor;
 };
 
 /// @}

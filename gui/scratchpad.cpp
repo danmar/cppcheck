@@ -23,6 +23,9 @@
 
 #include "ui_scratchpad.h"
 
+#include <QLineEdit>
+#include <QPushButton>
+
 ScratchPad::ScratchPad(MainWindow& mainWindow)
     : QDialog(&mainWindow)
     , mUI(new Ui::ScratchPad)

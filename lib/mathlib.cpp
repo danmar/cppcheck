@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 
 #include <cctype>
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
 #include <exception>
 #include <limits>
@@ -285,7 +286,7 @@ MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
     return ret;
 }
 
-
+// TODO: remove handling of non-literal stuff
 MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
@@ -346,7 +347,7 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         const biguint ret = std::stoull(str, &idx, 10);
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
-            if (s.find_first_not_of("LlUu") != std::string::npos && s != "i64" && s != "ui64")
+            if (!isValidIntegerSuffix(s, true))
                 throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: input was not completely consumed: " + str);
         }
         return ret;
@@ -359,11 +360,12 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 
 unsigned int MathLib::encodeMultiChar(const std::string& str)
 {
-    return std::accumulate(str.begin(), str.end(), uint32_t(), [](uint32_t v, char c) {
+    return std::accumulate(str.cbegin(), str.cend(), uint32_t(), [](uint32_t v, char c) {
         return (v << 8) | c;
     });
 }
 
+// TODO: remove handling of non-literal stuff
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:
@@ -426,7 +428,7 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         const biguint ret = std::stoull(str, &idx, 10);
         if (idx != str.size()) {
             const std::string s = str.substr(idx);
-            if (s.find_first_not_of("LlUu") != std::string::npos && s != "i64" && s != "ui64")
+            if (!isValidIntegerSuffix(s, true))
                 throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: input was not completely consumed: " + str);
         }
         return ret;
@@ -479,9 +481,9 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
 static double floatHexToDoubleNumber(const std::string& str)
 {
     const std::size_t p = str.find_first_of("pP",3);
-    const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
+    const double factor1 = myStod(str, str.cbegin() + 2, str.cbegin()+p, 16);
     const bool suffix = (str.back() == 'f') || (str.back() == 'F') || (str.back() == 'l') || (str.back() == 'L');
-    const double exponent = myStod(str, str.begin() + p + 1, suffix ? str.end()-1:str.end(), 10);
+    const double exponent = myStod(str, str.cbegin() + p + 1, suffix ? str.cend()-1:str.cend(), 10);
     const double factor2 = std::pow(2, exponent);
     return factor1 * factor2;
 }
@@ -498,8 +500,9 @@ double MathLib::toDoubleNumber(const std::string &str)
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
 #ifdef _LIBCPP_VERSION
-    if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
-        // TODO : handle locale
+    if (isFloat(str)) // Workaround libc++ bug at https://github.com/llvm/llvm-project/issues/18156
+        // TODO: handle locale
+        // TODO: make sure all characters are being consumed
         return std::strtod(str.c_str(), nullptr);
 #endif
     if (isFloatHex(str))
@@ -512,7 +515,9 @@ double MathLib::toDoubleNumber(const std::string &str)
         throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: conversion failed: " + str);
     std::string s;
     if (istr >> s) {
-        if (s.find_first_not_of("FfLl") != std::string::npos)
+        if (isDecimalFloat(str))
+            return ret;
+        if (!isValidIntegerSuffix(s, true))
             throw InternalError(nullptr, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: " + str);
     }
     return ret;
@@ -543,10 +548,10 @@ bool MathLib::isDecimalFloat(const std::string &str)
     enum class State {
         START, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L
     } state = State::START;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case State::START:
             if (*it=='.')
@@ -724,7 +729,7 @@ static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::
 // cppcheck-suppress unusedFunction
 bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions)
 {
-    return isValidIntegerSuffixIt(str.begin(), str.end(), supportMicrosoftExtensions);
+    return isValidIntegerSuffixIt(str.cbegin(), str.cend(), supportMicrosoftExtensions);
 }
 
 
@@ -745,10 +750,10 @@ bool MathLib::isOct(const std::string& str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (*it == '0')
@@ -780,10 +785,10 @@ bool MathLib::isIntHex(const std::string& str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (*it == '0')
@@ -821,10 +826,10 @@ bool MathLib::isFloatHex(const std::string& str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (*it == '0')
@@ -911,10 +916,10 @@ bool MathLib::isBin(const std::string& str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (*it == '0')
@@ -952,10 +957,10 @@ bool MathLib::isDec(const std::string & str)
     } state = Status::START;
     if (str.empty())
         return false;
-    std::string::const_iterator it = str.begin();
+    std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
         ++it;
-    for (; it != str.end(); ++it) {
+    for (; it != str.cend(); ++it) {
         switch (state) {
         case Status::START:
             if (isdigit(static_cast<unsigned char>(*it)))

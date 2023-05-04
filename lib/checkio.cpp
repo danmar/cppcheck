@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,13 @@
 
 #include "library.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
+#include "utils.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cctype>
@@ -33,7 +35,6 @@
 #include <functional>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream> // IWYU pragma: keep
 #include <unordered_set>
@@ -121,7 +122,7 @@ namespace {
 
 void CheckIO::checkFileUsage()
 {
-    const bool windows = mSettings->isWindowsPlatform();
+    const bool windows = mSettings->platform.isWindows();
     const bool printPortability = mSettings->severity.isEnabled(Severity::portability);
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
@@ -497,8 +498,8 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
         *formatArgTok = argTok->nextArgument();
         if (!argTok->values().empty()) {
             const std::list<ValueFlow::Value>::const_iterator value = std::find_if(
-                argTok->values().begin(), argTok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
-            if (value != argTok->values().end() && value->isTokValue() && value->tokvalue &&
+                argTok->values().cbegin(), argTok->values().cend(), std::mem_fn(&ValueFlow::Value::isTokValue));
+            if (value != argTok->values().cend() && value->isTokValue() && value->tokvalue &&
                 value->tokvalue->tokType() == Token::eString) {
                 *formatStringTok = value->tokvalue;
             }
@@ -517,7 +518,7 @@ static inline bool typesMatch(const std::string& iToTest, const std::string& iTy
 void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    const bool isWindows = mSettings->isWindowsPlatform();
+    const bool isWindows = mSettings->platform.isWindows();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -590,7 +591,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 const bool scan,
                                 const bool scanf_s)
 {
-    const bool isWindows = mSettings->isWindowsPlatform();
+    const bool isWindows = mSettings->platform.isWindows();
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
     const std::string &formatString = formatStringTok->str();
 
@@ -600,11 +601,11 @@ void CheckIO::checkFormatString(const Token * const tok,
     bool percent = false;
     const Token* argListTok2 = argListTok;
     std::set<int> parameterPositionsUsed;
-    for (std::string::const_iterator i = formatString.begin(); i != formatString.end(); ++i) {
+    for (std::string::const_iterator i = formatString.cbegin(); i != formatString.cend(); ++i) {
         if (*i == '%') {
             percent = !percent;
         } else if (percent && *i == '[') {
-            while (i != formatString.end()) {
+            while (i != formatString.cend()) {
                 if (*i == ']') {
                     numFormat++;
                     if (argListTok)
@@ -620,7 +621,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                     argListTok = argListTok->nextArgument();
                 }
             }
-            if (i == formatString.end())
+            if (i == formatString.cend())
                 break;
         } else if (percent) {
             percent = false;
@@ -630,7 +631,7 @@ void CheckIO::checkFormatString(const Token * const tok,
             std::string width;
             int parameterPosition = 0;
             bool hasParameterPosition = false;
-            while (i != formatString.end() && *i != '[' && !std::isalpha((unsigned char)*i)) {
+            while (i != formatString.cend() && *i != '[' && !std::isalpha((unsigned char)*i)) {
                 if (*i == '*') {
                     skip = true;
                     if (scan)
@@ -643,16 +644,16 @@ void CheckIO::checkFormatString(const Token * const tok,
                 } else if (std::isdigit(*i)) {
                     width += *i;
                 } else if (*i == '$') {
-                    parameterPosition = std::atoi(width.c_str());
+                    parameterPosition = strToInt<int>(width);
                     hasParameterPosition = true;
                     width.clear();
                 }
                 ++i;
             }
-            auto bracketBeg = formatString.end();
-            if (i != formatString.end() && *i == '[') {
+            auto bracketBeg = formatString.cend();
+            if (i != formatString.cend() && *i == '[') {
                 bracketBeg = i;
-                while (i != formatString.end()) {
+                while (i != formatString.cend()) {
                     if (*i == ']')
                         break;
 
@@ -665,7 +666,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                     }
                 }
             }
-            if (i == formatString.end())
+            if (i == formatString.cend())
                 break;
             if (_continue)
                 continue;
@@ -695,7 +696,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 specifier += (*i == 's' || bracketBeg == formatString.end()) ? std::string{ 's' } : std::string{ bracketBeg, i + 1 };
                                 if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
                                     if (!width.empty()) {
-                                        const int numWidth = std::atoi(width.c_str());
+                                        const int numWidth = strToInt<int>(width);
                                         if (numWidth != (argInfo.variableInfo->dimension(0) - 1))
                                             invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, specifier);
                                     }
@@ -718,7 +719,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'c':
                                 if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
                                     if (!width.empty()) {
-                                        const int numWidth = std::atoi(width.c_str());
+                                        const int numWidth = strToInt<int>(width);
                                         if (numWidth > argInfo.variableInfo->dimension(0))
                                             invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, std::string(1, *i));
                                     }
@@ -923,13 +924,13 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 done = true;
                                 break;
                             case 'I':
-                                if ((i+1 != formatString.end() && *(i+1) == '6' &&
-                                     i+2 != formatString.end() && *(i+2) == '4') ||
-                                    (i+1 != formatString.end() && *(i+1) == '3' &&
-                                     i+2 != formatString.end() && *(i+2) == '2')) {
+                                if ((i+1 != formatString.cend() && *(i+1) == '6' &&
+                                     i+2 != formatString.cend() && *(i+2) == '4') ||
+                                    (i+1 != formatString.cend() && *(i+1) == '3' &&
+                                     i+2 != formatString.cend() && *(i+2) == '2')) {
                                     specifier += *i++;
                                     specifier += *i++;
-                                    if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
+                                    if ((i+1) != formatString.cend() && !isalpha(*(i+1))) {
                                         specifier += *i;
                                         invalidLengthModifierError(tok, numFormat, specifier);
                                         done = true;
@@ -937,7 +938,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                         specifier += *i++;
                                     }
                                 } else {
-                                    if ((i+1) != formatString.end() && !isalpha(*(i+1))) {
+                                    if ((i+1) != formatString.cend() && !isalpha(*(i+1))) {
                                         specifier += *i;
                                         invalidLengthModifierError(tok, numFormat, specifier);
                                         done = true;
@@ -948,7 +949,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 break;
                             case 'h':
                             case 'l':
-                                if (i+1 != formatString.end() && *(i+1) == *i)
+                                if (i+1 != formatString.cend() && *(i+1) == *i)
                                     specifier += *i++;
                                 FALLTHROUGH;
                             case 'j':
@@ -1306,6 +1307,8 @@ void CheckIO::checkFormatString(const Token * const tok,
     // Count printf/scanf parameters..
     int numFunction = 0;
     while (argListTok2) {
+        if (Token::Match(argListTok2, "%name% ...")) // bailout for parameter pack
+            return;
         numFunction++;
         argListTok2 = argListTok2->nextArgument(); // Find next argument
     }
@@ -1481,12 +1484,12 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                 tempToken->linenr(tok1->linenr());
                 if (tok1->next()->str() == "size") {
                     // size_t is platform dependent
-                    if (settings->sizeof_size_t == 8) {
+                    if (settings->platform.sizeof_size_t == 8) {
                         tempToken->str("long");
-                        if (settings->sizeof_long != 8)
+                        if (settings->platform.sizeof_long != 8)
                             tempToken->isLong(true);
-                    } else if (settings->sizeof_size_t == 4) {
-                        if (settings->sizeof_long == 4) {
+                    } else if (settings->platform.sizeof_size_t == 4) {
+                        if (settings->platform.sizeof_long == 4) {
                             tempToken->str("long");
                         } else {
                             tempToken->str("int");

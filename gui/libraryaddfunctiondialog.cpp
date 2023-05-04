@@ -20,8 +20,10 @@
 
 #include "ui_libraryaddfunctiondialog.h"
 
+#include <QLineEdit>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
+#include <QSpinBox>
 
 class QWidget;
 

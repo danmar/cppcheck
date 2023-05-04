@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -210,15 +210,17 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
             // TODO: suppress instead?
             (void)dir_result_buffer.buf; // do not trigger cppcheck itself on the "unused buf"
             std::string new_path;
-            new_path.reserve(path.length() + 100);// prealloc some memory to avoid constant new/deletes in loop
-
+            new_path.reserve(path.length() + 1 + sizeof(dir_result->d_name));// prealloc some memory to avoid constant new/deletes in loop
+            new_path += path;
+            new_path += '/';
 
             while ((SUPPRESS_DEPRECATED_WARNING(readdir_r(dir, &dir_result_buffer.entry, &dir_result)) == 0) && (dir_result != nullptr)) {
                 if ((std::strcmp(dir_result->d_name, ".") == 0) ||
                     (std::strcmp(dir_result->d_name, "..") == 0))
                     continue;
 
-                new_path = path + '/' + dir_result->d_name;
+                new_path.erase(path.length() + 1);
+                new_path += dir_result->d_name;
 
 #if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
                 const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
@@ -228,15 +230,19 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                 if (path_is_directory) {
                     if (recursive && !ignored.match(new_path)) {
                         std::string err = addFiles2(files, new_path, extra, recursive, ignored);
-                        if (!err.empty())
+                        if (!err.empty()) {
+                            closedir(dir);
                             return err;
+                        }
                     }
                 } else {
                     if (Path::acceptFile(new_path, extra) && !ignored.match(new_path)) {
                         if (stat(new_path.c_str(), &file_stat) != -1)
                             files[new_path] = file_stat.st_size;
-                        else
+                        else {
+                            closedir(dir);
                             return "Can't stat " + new_path + " errno: " + std::to_string(errno);
+                        }
                     }
                 }
             }

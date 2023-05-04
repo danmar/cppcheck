@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,40 +20,36 @@
 #include "checkautovariables.h"
 #include "errortypes.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <sstream> // IWYU pragma: keep
+#include <string>
 
 class TestAutoVariables : public TestFixture {
 public:
     TestAutoVariables() : TestFixture("TestAutoVariables") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).library("std.cfg").library("qt.cfg").build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false, const char* filename = "test.cpp") {
+    void check_(const char* file, int line, const char code[], bool inconclusive = true, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
-        CheckAutoVariables checkAutoVariables;
-        checkAutoVariables.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckAutoVariables>(&tokenizer, &settings1, this);
     }
 
     void run() override {
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::style);
-        LOAD_LIB_2(settings.library, "std.cfg");
-        LOAD_LIB_2(settings.library, "qt.cfg");
-
         TEST_CASE(testautovar1);
         TEST_CASE(testautovar2);
         TEST_CASE(testautovar3); // ticket #2925
@@ -78,6 +74,7 @@ private:
         TEST_CASE(testautovar_return2);
         TEST_CASE(testautovar_return3);
         TEST_CASE(testautovar_return4);
+        TEST_CASE(testautovar_return5);
         TEST_CASE(testautovar_extern);
         TEST_CASE(testautovar_reassigned);
         TEST_CASE(testinvaliddealloc);
@@ -574,6 +571,14 @@ private:
               "  int cond2;\n"
               "  dostuff([&cond2]() { return &cond2; });\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testautovar_return5() { // #11465
+        check("struct S {};\n"
+              "const std::type_info* f() {\n"
+              "    return &typeid(S);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1706,6 +1711,13 @@ private:
               "    return it->foo;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("static std::vector<int> A[2];\n"
+              "static std::vector<int> B;\n"
+              "std::vector<int>& g(int i) {\n"
+              "    return i ? A[i] : B;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceLiteral() {
@@ -1995,6 +2007,41 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:11] -> [test.cpp:2] -> [test.cpp:11] -> [test.cpp:12]: (error) Using reference to dangling temporary.\n",
             errout.str());
+
+        check("struct C {\n"
+              "  std::vector<std::vector<int>> v;\n"
+              "};\n"
+              "struct P {\n"
+              "  std::vector<C*>::const_iterator find() const { return pv.begin(); }\n"
+              "  std::vector<C*> pv;\n"
+              "};\n"
+              "struct M {\n"
+              "  const P* get() const { return p; }\n"
+              "  P* p;\n"
+              "};\n"
+              "void f(const M* m) {\n"
+              "  auto it = m->get()->find();\n"
+              "  auto e = (*it)->v.begin();\n"
+              "  const int& x = (*e)[1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int* g();\n" // #11188
+              "void f() {\n"
+              "    const auto& p = g();\n"
+              "    if (p != nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<typename S, typename T>\n"
+              "void f(const std::vector<S>& v) {\n"
+              "    T a;\n"
+              "    for (typename std::vector<S>::iterator it = v.begin(); it != v.end(); ++it) {\n"
+              "        const T& b = static_cast<const T&>(it->find(1));\n"
+              "        a = b;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testglobalnamespace() {
@@ -2221,7 +2268,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("auto f() {\n"
+        check("std::vector<int>::iterator f() {\n"
               "    std::vector<int> x;\n"
               "    auto it = x.begin();\n"
               "    return it;\n"
@@ -2229,6 +2276,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());
 
         check("auto f() {\n"
+              "    std::vector<int> x;\n"
+              "    auto it = std::begin(x);\n"
+              "    return it;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning iterator to local container 'x' that will be invalid when returning.\n", errout.str());
+
+        check("int* f() {\n"
               "    std::vector<int> x;\n"
               "    auto p = x.data();\n"
               "    return p;\n"
@@ -2255,7 +2309,7 @@ private:
             "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning pointer to local variable 'v' that will be invalid when returning.\n",
             errout.str());
 
-        check("auto f(std::vector<int> x) {\n"
+        check("std::vector<int>::iterator f(std::vector<int> x) {\n"
               "    auto it = x.begin();\n"
               "    return it;\n"
               "}");
@@ -2387,11 +2441,12 @@ private:
                       errout.str());
 
         check("std::vector<int> g();\n"
-              "auto f() {\n"
+              "std::vector<int>::iterator f() {\n"
               "    auto it = g().begin();\n"
               "    return it;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning iterator that will be invalid when returning.\n",
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:4]: (error) Using iterator that is a temporary.\n"
+                      "[test.cpp:3] -> [test.cpp:4]: (error) Returning iterator that will be invalid when returning.\n",
                       errout.str());
 
         check("std::vector<int> g();\n"
@@ -2757,6 +2812,100 @@ private:
               "    return v[0];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10532
+        check("std::string f(std::string ss) {\n"
+              "  std::string_view sv = true ? \"\" : ss;\n"
+              "  std::string s = sv;\n"
+              "  return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2] -> [test.cpp:3]: (error) Using object that is a temporary.\n",
+                      errout.str());
+
+        check("std::span<int> f() {\n"
+              "    std::vector<int> v{};\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            errout.str());
+
+        check("std::span<int> f() {\n"
+              "    std::vector<int> v;\n"
+              "    std::span sp = v;\n"
+              "    return sp;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            errout.str());
+
+        check("std::span<int> f() {\n"
+              "    std::vector<int> v;\n"
+              "    return std::span{v};\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:2] -> [test.cpp:3]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.back()\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.back()\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.front()\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.last(1)\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
+
+        check("int f() {\n"
+              "    std::span<int> s;\n"
+              "    {\n"
+              "        std::vector<int> v(1);"
+              "        s = v;\n"
+              "    }\n"
+              "return s.first(1)\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:6]: (error) Using object that points to local variable 'v' that is out of scope.\n",
+            errout.str());
     }
 
     void danglingLifetimeUniquePtr()
@@ -3079,6 +3228,28 @@ private:
         check("int* f() {\n"
               "    static struct { int x; } a[] = { { 1 } };\n"
               "    return &a[0].x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11666
+        check("template <class T, int M, int N>\n"
+              "struct Matrix;\n"
+              "template <class T, int N>\n"
+              "struct Matrix<T, 1, N> {\n"
+              "    std::array<T, N> x;\n"
+              "private:\n"
+              "    static constexpr decltype(&Matrix::x) members[] = {&Matrix::x};\n"
+              "};\n"
+              "template <class T, int N>\n"
+              "struct Matrix<T, 2, N> {\n"
+              "    std::array<T, N> x;\n"
+              "    std::array<T, N> y;\n"
+              "private:\n"
+              "    static constexpr decltype(&Matrix::x) members[] = {&Matrix::x, &Matrix::y};\n"
+              "};\n"
+              "template <class T>\n"
+              "Matrix<T, 2, 2> O() {\n"
+              "    return { {}, {} };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3548,21 +3719,16 @@ private:
     }
 
     void danglingTemporaryLifetime() {
-        check("struct MyClass\n" // FP - #11091
-              "{\n"
-              "    MyClass(MyClass& rhs);\n"
-              "    explicit MyClass(const wxString& name, const wxString& path = {});\n"
-              "    bool IsAnotherRunning() const;\n"
-              " \n"
-              "    wxString m_fn;\n"
+        check("struct C {\n" // #11091
+              "    C(C& rhs);\n"
+              "    explicit C(const S& n, const S& p = {});\n"
+              "    bool f() const;\n"
+              "    S m;\n"
               "};\n"
-              " \n"
-              "void bar()\n"
-              "{\n"
-              "    MyClass mutex(\"\");\n"
-              "    while (mutex.IsAnotherRunning())\n"
-              "        DoSomething();\n"
-              "}");
+              "void f() {\n"
+              "    C c(\"\");\n"
+              "    while (c.f()) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("const int& g(const int& x) {\n"
@@ -3723,6 +3889,42 @@ private:
               "    if (u.h()) {}\n"
               "}\n",
               true);
+        ASSERT_EQUALS("", errout.str());
+
+        // #11442
+        check("const std::string& f(const P< std::string >& value) {\n"
+              "   static const std::string empty;\n"
+              "   return value.get() == nullptr ? empty : *value;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        // #11472
+        check("namespace N {\n"
+              "    struct T { int m; };\n"
+              "    int i;\n"
+              "    const T& f(const T* p) {\n"
+              "        return p != nullptr ? *p : *reinterpret_cast<const ::N::T*>(&i);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11609
+        check("struct S {\n"
+              "    void f(const std::string& s) {\n"
+              "        auto it = m.find(s.substr(1,4));\n"
+              "        if (it == m.end()) {}\n"
+              "    }\n"
+              "    std::map<std::string, int> m;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11628
+        check("std::vector<int>* g();\n"
+              "void f() {\n"
+              "	std::unique_ptr<std::vector<int>> p(g());\n"
+              "	if (!p) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4037,6 +4239,27 @@ private:
               "  f(bar);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:10]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        check("void f(std::string_view text);\n" // #11508
+              "void g() {\n"
+              "  std::string teststr;\n"
+              "  f(teststr);"
+              "}\n"
+              "void f(std::string_view text) {"
+              "  g(text.data());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::span<int> data);\n" // #11508
+              "void g() {\n"
+              "  std::vector<int> v;\n"
+              "  f(v);"
+              "}\n"
+              "void f(std::span<int> data) {"
+              "  g(data.begin());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void deadPointer() {

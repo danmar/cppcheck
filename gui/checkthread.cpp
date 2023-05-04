@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,10 @@
 #include "standards.h"
 #include "threadresult.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <iterator>
 #include <list>
 #include <map>
 #include <ostream>
@@ -37,17 +39,26 @@
 #include <string>
 #include <vector>
 
+#include <QByteArray>
+#include <QChar>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
+#include <QIODevice>
 #include <QProcess>
 #include <QRegularExpression>
 #include <QSettings>
+#include <QTextStream>
+#include <QVariant>
+
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+#include <QCharRef>
+#endif
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
+static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
 {
-    output->clear();
+    output.clear();
 
     QStringList args2;
     for (const std::string &arg: args)
@@ -60,9 +71,9 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
     if (redirect == "2>&1") {
         QString s1 = process.readAllStandardOutput();
         QString s2 = process.readAllStandardError();
-        *output = (s1 + "\n" + s2).toStdString();
+        output = (s1 + "\n" + s2).toStdString();
     } else
-        *output = process.readAllStandardOutput().toStdString();
+        output = process.readAllStandardOutput().toStdString();
 
     if (redirect.compare(0,3,"2> ") == 0) {
         std::ofstream fout(redirect.substr(3));
@@ -108,13 +119,10 @@ void CheckThread::run()
     if (!mFiles.isEmpty() || mAnalyseWholeProgram) {
         mAnalyseWholeProgram = false;
         qDebug() << "Whole program analysis";
-        const std::string &buildDir = mCppcheck.settings().buildDir;
-        if (!buildDir.empty()) {
-            std::map<std::string,std::size_t> files2;
-            for (const QString& file : mFiles)
-                files2[file.toStdString()] = 0;
-            mCppcheck.analyseWholeProgram(buildDir, files2);
-        }
+        std::map<std::string,std::size_t> files2;
+        for (const QString& file : mFiles)
+            files2[file.toStdString()] = 0;
+        mCppcheck.analyseWholeProgram(mCppcheck.settings().buildDir, files2);
         mFiles.clear();
         emit done();
         return;
@@ -162,9 +170,9 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 continue;
 
             QStringList args;
-            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.begin(); incIt != fileSettings->includePaths.end(); ++incIt)
+            for (std::list<std::string>::const_iterator incIt = fileSettings->includePaths.cbegin(); incIt != fileSettings->includePaths.cend(); ++incIt)
                 args << ("-I" + QString::fromStdString(*incIt));
-            for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
+            for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.cbegin(); i != fileSettings->systemIncludePaths.cend(); ++i)
                 args << "-isystem" << QString::fromStdString(*i);
             for (const QString& def : QString::fromStdString(fileSettings->defines).split(";")) {
                 args << ("-D" + def);
@@ -398,7 +406,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
             continue;
 
         std::list<ErrorMessage::FileLocation> callstack;
-        std::transform(e.errorPath.begin(), e.errorPath.end(), std::back_inserter(callstack), [](const QErrorPathItem& path) {
+        std::transform(e.errorPath.cbegin(), e.errorPath.cend(), std::back_inserter(callstack), [](const QErrorPathItem& path) {
             return ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column);
         });
         const std::string f0 = file0.toStdString();
@@ -411,7 +419,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
 bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
 {
-    return std::any_of(mSuppressions.begin(), mSuppressions.end(), [&](const Suppressions::Suppression& s) {
+    return std::any_of(mSuppressions.cbegin(), mSuppressions.cend(), [&](const Suppressions::Suppression& s) {
         return s.isSuppressed(errorMessage);
     });
 }

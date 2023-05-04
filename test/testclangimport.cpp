@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2022 Cppcheck team.
+// Copyright (C) 2007-2023 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,11 +20,10 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <cstdint>
 #include <list>
-#include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
@@ -138,8 +137,7 @@ private:
     }
 
     std::string parse(const char clang[]) {
-        Settings settings;
-        settings.clang = true;
+        const Settings settings = settingsBuilder().clang().build();
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(clang);
         clangimport::parseClangAstDump(&tokenizer, istr);
@@ -1050,12 +1048,12 @@ private:
 
 
 #define GET_SYMBOL_DB(AST) \
-    Settings settings; \
-    settings.clang = true; \
-    settings.platform(cppcheck::Platform::PlatformType::Unix64); \
+    const Settings settings = settingsBuilder().clang().platform(cppcheck::Platform::Type::Unix64).build(); \
     Tokenizer tokenizer(&settings, this); \
-    std::istringstream istr(AST); \
-    clangimport::parseClangAstDump(&tokenizer, istr); \
+    { \
+        std::istringstream istr(AST); \
+        clangimport::parseClangAstDump(&tokenizer, istr); \
+    } \
     const SymbolDatabase *db = tokenizer.getSymbolDatabase(); \
     ASSERT(db)
 

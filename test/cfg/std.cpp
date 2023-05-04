@@ -2,11 +2,12 @@
 // Test library configuration for std.cfg
 //
 // Usage:
-// $ cppcheck --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/std.cpp
+// $ cppcheck --check-library --library=std --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/std.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <algorithm>
 #include <bitset>
 #include <cassert>
 #include <cctype>
@@ -34,10 +35,17 @@
 #include <iostream>
 #include <istream>
 #include <iterator>
-#include <vector>
-#include <unordered_set>
-#include <algorithm>
+#include <map>
 #include <numeric>
+#include <string_view>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <vector>
+#include <version>
+#ifdef __cpp_lib_span
+#include <span>
+#endif
 
 int zerodiv_ldexp()
 {
@@ -841,6 +849,34 @@ void std_unordered_set_count_ignoredReturnValue(const std::unordered_set<int>& u
     int i;
     // cppcheck-suppress [uninitvar, ignoredReturnValue]
     u.count(i);
+}
+
+void std_unordered_map_count_ignoredReturnValue(const std::unordered_map<int, int>& u)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    u.count(i);
+}
+
+void std_multimap_count_ignoredReturnValue(const std::multimap<int, int>& m)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    m.count(i);
+}
+
+void std_unordered_map_insert_unnitvar(std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    u.insert(i);
+}
+
+void std_unordered_map_emplace_unnitvar(std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    u.emplace(i);
 }
 
 void valid_code()
@@ -4200,6 +4236,19 @@ void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwst
     testwstr.compare(L"wtest");
 }
 
+// cppcheck-suppress constParameterReference
+void ignoredReturnValue_container_access(std::string& s, std::string_view& sv, std::vector<int>& v)
+{
+    // cppcheck-suppress ignoredReturnValue
+    s.begin();
+    // cppcheck-suppress ignoredReturnValue
+    v.end();
+    // cppcheck-suppress ignoredReturnValue
+    sv.front();
+    // cppcheck-suppress ignoredReturnValue
+    s.at(0);
+}
+
 void ignoredReturnValue_locale_global(const std::locale& loc)
 {
     // no ignoredReturnValue shall be shown for
@@ -4440,6 +4489,11 @@ void getline()
     in.close();
 }
 
+void stream_write(std::ofstream& s, std::vector<char> v) {
+    if (v.empty()) {}
+    s.write(v.data(), v.size());
+}
+
 void stdstring()
 {
     std::string s;
@@ -4508,6 +4562,13 @@ void stdbind()
     auto f2 = std::bind(stdbind_helper, 10);
 }
 
+int stdexchange() {
+    int i;
+    // cppcheck-suppress uninitvar
+    int j = std::exchange(i, 5);
+    return j;
+}
+
 class A
 {
     std::vector<std::string> m_str;
@@ -4550,3 +4611,97 @@ public:
         for (std::vector<std::string>::reverse_iterator it = m_str.rbegin(); it != m_str.rend(); ++it) {;}
     }
 };
+
+void addressof(int a)
+{
+    // cppcheck-suppress ignoredReturnValue
+    std::addressof(a);
+}
+
+void string_view_unused(std::string_view v)
+{
+    // cppcheck-suppress ignoredReturnValue
+    v.substr(1, 3);
+}
+
+void stdspan()
+{
+#ifndef __cpp_lib_span
+#warning "This compiler does not support std::span"
+#else
+    std::vector<int> vec{1,2,3,4};
+    std::span spn{vec};
+    // cppcheck-suppress unreadVariable
+    std::span spn2 = spn;
+
+    spn.begin();
+    spn.end();
+    spn.rbegin();
+    spn.end();
+
+    spn.front();
+    spn.back();
+    //cppcheck-suppress constStatement
+    spn[0];
+    spn.data();
+    spn.size();
+    spn.size_bytes();
+    spn.empty();
+    //cppcheck-suppress ignoredReturnValue
+    spn.first(2);
+    //cppcheck-suppress ignoredReturnValue
+    spn.last(2);
+    //cppcheck-suppress ignoredReturnValue
+    spn.subspan(1, 2);
+    spn.subspan<1>();
+
+    static constexpr std::array<int, 2> arr{1, 2};
+    constexpr std::span spn3{arr};
+    spn3.first<1>();
+    spn3.last<1>();
+    spn3.subspan<1, 1>();
+    #endif
+}
+
+void beginEnd()
+{
+    std::vector<int> v;
+
+    //cppcheck-suppress ignoredReturnValue
+    std::begin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::rbegin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::cbegin(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::crbegin(v);
+
+    //cppcheck-suppress ignoredReturnValue
+    std::end(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::rend(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::cend(v);
+    //cppcheck-suppress ignoredReturnValue
+    std::crend(v);
+
+    int arr[4];
+
+    //cppcheck-suppress ignoredReturnValue
+    std::begin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::rbegin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::cbegin(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::crbegin(arr);
+
+    //cppcheck-suppress ignoredReturnValue
+    std::end(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::rend(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::cend(arr);
+    //cppcheck-suppress ignoredReturnValue
+    std::crend(arr);
+}

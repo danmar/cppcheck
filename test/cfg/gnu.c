@@ -2,7 +2,7 @@
 // Test library configuration for gnu.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=gnu --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/gnu.c
+// $ cppcheck --check-library --library=gnu --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/gnu.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -19,18 +19,94 @@
 #include <sys/mman.h>
 #include <sys/sem.h>
 #include <wchar.h>
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !(defined(__APPLE__) && defined(__MACH__))
 #include <sys/epoll.h>
 #endif
 #include <strings.h>
+#ifdef __gnu_linux__
 #include <error.h>
+#endif
+#include <getopt.h>
+#include <netdb.h>
 
+#ifdef __gnu_linux__
 void unreachableCode_error(void) // #11197
 {
     error(1, 0, ""); // will call exit() if the first parameter is non-zero
     // cppcheck-suppress unusedVariable
     // TODO cppcheck-suppress unreachableCode
     int i;
+}
+#endif
+
+int nullPointer_gethostbyname2_r(const char* name, int af, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+{
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(NULL, af, ret, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(name, af, NULL, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(name, af, ret, NULL, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(name, af, ret, buf, buflen, NULL, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname2_r(name, af, ret, buf, buflen, result, NULL);
+    return gethostbyname2_r(name, af, ret, buf, buflen, result, h_errnop);
+}
+
+int nullPointer_gethostbyname_r(const char* name, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+{
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(NULL, ret, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(name, NULL, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(name, ret, NULL, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(name, ret, buf, buflen, NULL, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyname_r(name, ret, buf, buflen, result, NULL);
+    return gethostbyname_r(name, ret, buf, buflen, result, h_errnop);
+}
+
+
+int nullPointer_gethostbyaddr_r(const void* addr, socklen_t len, int type, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+{
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(NULL, len, type, ret, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(addr, len, type, NULL, buf, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(addr, len, type, ret, NULL, buflen, result, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(addr, len, type, ret, buf, buflen, NULL, h_errnop);
+    // cppcheck-suppress nullPointer
+    (void) gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, NULL);
+    return gethostbyaddr_r(addr, len, type, ret, buf, buflen, result, h_errnop);
+}
+
+int nullPointer_getopt_long(int argc, char **argv, const char *optstring,
+                            const struct option *longopts, int *longindex)
+{
+    // cppcheck-suppress nullPointer
+    (void) getopt_long(argc, argv, NULL, longopts, longindex);
+    // cppcheck-suppress nullPointer
+    (void) getopt_long(argc, argv, optstring, NULL, longindex);
+    // cppcheck-suppress nullPointer
+    (void) getopt_long(argc, NULL, optstring, longopts, longindex);
+    return getopt_long(argc, argv, optstring, longopts, longindex);
+}
+
+int nullPointer_getopt_long_only(int argc, char* const* argv, const char* optstring,
+                                 const struct option* longopts, int* longindex)
+{
+    // cppcheck-suppress nullPointer
+    (void) getopt_long_only(argc, NULL, optstring, longopts, longindex);
+    // cppcheck-suppress nullPointer
+    (void) getopt_long_only(argc, argv, NULL, longopts, longindex);
+    // cppcheck-suppress nullPointer
+    (void) getopt_long_only(argc, argv, optstring, NULL, longindex);
+    return getopt_long_only(argc, argv, optstring, longopts, longindex);
 }
 
 int nullPointer_getservent_r(struct servent *restrict result_buf, char *restrict buf, size_t buflen, struct servent **restrict result)
@@ -359,7 +435,7 @@ void leakReturnValNotUsed()
         return;
 }
 
-#ifndef __CYGWIN__
+#if !defined(__CYGWIN__) && !(defined(__APPLE__) && defined(__MACH__))
 int nullPointer_epoll_ctl(int epfd, int op, int fd, struct epoll_event *event)
 {
     // no warning is expected

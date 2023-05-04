@@ -37,6 +37,7 @@ class Settings;
 class Token;
 class Tokenizer;
 class TokenList;
+struct newInstantiation;
 
 /// @addtogroup Core
 /// @{
@@ -46,8 +47,12 @@ class CPPCHECKLIB TemplateSimplifier {
     friend class TestSimplifyTemplate;
 
 public:
-    explicit TemplateSimplifier(Tokenizer *tokenizer);
+    explicit TemplateSimplifier(Tokenizer &tokenizer);
     ~TemplateSimplifier();
+
+    std::string dump() const {
+        return mDump;
+    }
 
     /**
      */
@@ -148,7 +153,7 @@ public:
          */
         TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
-        TokenAndName(TokenAndName&& other);
+        TokenAndName(TokenAndName&& other) NOEXCEPT;
         ~TokenAndName();
 
         bool operator == (const TokenAndName & rhs) const {
@@ -156,6 +161,9 @@ public:
                    mNameToken == rhs.mNameToken && mParamEnd == rhs.mParamEnd && mFlags == rhs.mFlags;
         }
 
+        std::string dump(const std::vector<std::string>& fileNames) const;
+
+        // TODO: do not return non-const pointer from const object
         Token * token() const {
             return mToken;
         }
@@ -320,13 +328,13 @@ public:
      * @return true if modifications to token-list are done.
      *         false if no modifications are done.
      */
-    bool simplifyCalculations(Token* frontToken = nullptr, Token *backToken = nullptr, bool isTemplate = true);
+    bool simplifyCalculations(Token* frontToken = nullptr, const Token *backToken = nullptr, bool isTemplate = true);
 
     /** Simplify template instantiation arguments.
      * @param start first token of arguments
      * @param end token following last argument token
      */
-    void simplifyTemplateArgs(Token *start, Token *end);
+    void simplifyTemplateArgs(Token *start, const Token *end, std::vector<newInstantiation>* newInst = nullptr);
 
 private:
     /**
@@ -449,7 +457,7 @@ private:
     /**
      * Remove a specific "template < ..." template class/function
      */
-    static bool removeTemplate(Token *tok);
+    static bool removeTemplate(Token *tok, std::map<Token*, Token*>* forwardDecls = nullptr);
 
     /** Syntax error */
     NORETURN static void syntaxError(const Token *tok);
@@ -488,9 +496,9 @@ private:
         const std::string &indent = "    ") const;
     void printOut(const std::string &text = emptyString) const;
 
-    Tokenizer *mTokenizer;
+    Tokenizer &mTokenizer;
     TokenList &mTokenList;
-    const Settings *mSettings;
+    const Settings &mSettings;
     ErrorLogger *mErrorLogger;
     bool mChanged;
 
@@ -505,6 +513,7 @@ private:
     std::vector<TokenAndName> mExplicitInstantiationsToDelete;
     std::vector<TokenAndName> mTypesUsedInTemplateInstantiation;
     std::unordered_map<const Token*, int> mTemplateNamePos;
+    std::string mDump;
 };
 
 /// @}

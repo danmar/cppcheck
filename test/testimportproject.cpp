@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,9 @@
 
 #include "importproject.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <list>
-#include <memory>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -121,7 +120,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
+        ASSERT_EQUALS("TEST1=1;TEST2=2", importer.fileSettings.cbegin()->defines);
     }
 
     void importCompileCommands2() const {
@@ -136,7 +135,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("C:/bar.c", importer.fileSettings.begin()->filename);
+        ASSERT_EQUALS("C:/bar.c", importer.fileSettings.cbegin()->filename);
 #else
         const char json[] = R"([{
                                    "directory": "/foo",
@@ -147,7 +146,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("/bar.c", importer.fileSettings.begin()->filename);
+        ASSERT_EQUALS("/bar.c", importer.fileSettings.cbegin()->filename);
 #endif
     }
 
@@ -161,7 +160,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
+        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.cbegin()->filename);
     }
 
     void importCompileCommands4() const {
@@ -192,7 +191,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(2, importer.fileSettings.size());
-        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.cbegin()->includePaths.front());
     }
 
     void importCompileCommands6() const {
@@ -211,8 +210,8 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(2, importer.fileSettings.size());
-        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.begin()->includePaths.front());
-        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.back());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.cbegin()->includePaths.front());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.cbegin()->includePaths.back());
     }
 
 
@@ -228,12 +227,12 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("FILESDIR=\"/some/path\"", importer.fileSettings.begin()->defines);
-        ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
-        ASSERT_EQUALS("/home/danielm/cppcheck 2/b/lib/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("FILESDIR=\"/some/path\"", importer.fileSettings.cbegin()->defines);
+        ASSERT_EQUALS(1, importer.fileSettings.cbegin()->includePaths.size());
+        ASSERT_EQUALS("/home/danielm/cppcheck 2/b/lib/", importer.fileSettings.cbegin()->includePaths.front());
         TODO_ASSERT_EQUALS("/home/danielm/cppcheck 2/externals/",
                            "/home/danielm/cppcheck 2/b/lib/",
-                           importer.fileSettings.begin()->includePaths.back());
+                           importer.fileSettings.cbegin()->includePaths.back());
     }
 
     void importCompileCommands8() const {
@@ -314,7 +313,7 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
+        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.cbegin()->filename);
     }
 
     void importCompileCommandsNoCommandSection() const {

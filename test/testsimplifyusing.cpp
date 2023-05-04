@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,17 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 
+#include <simplecpp.h>
+
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
+#include <vector>
 
 
 class TestSimplifyUsing : public TestFixture {
@@ -34,19 +39,12 @@ public:
 
 
 private:
-    Settings settings0;
-    Settings settings1;
-    Settings settings2;
+    // If there are unused templates, keep those
+    const Settings settings0 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
+    const Settings settings1 = settingsBuilder().checkUnusedTemplates().build();
+    const Settings settings2 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
 
     void run() override {
-        settings0.severity.enable(Severity::style);
-        settings2.severity.enable(Severity::style);
-
-        // If there are unused templates, keep those
-        settings0.checkUnusedTemplates = true;
-        settings1.checkUnusedTemplates = true;
-        settings2.checkUnusedTemplates = true;
-
         TEST_CASE(simplifyUsing1);
         TEST_CASE(simplifyUsing2);
         TEST_CASE(simplifyUsing3);
@@ -92,19 +90,31 @@ private:
         TEST_CASE(simplifyUsing10172);
         TEST_CASE(simplifyUsing10173);
         TEST_CASE(simplifyUsing10335);
+        TEST_CASE(simplifyUsing10720);
 
         TEST_CASE(scopeInfo1);
         TEST_CASE(scopeInfo2);
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
+    std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
         errout.str("");
 
-        settings0.certainty.enable(Certainty::inconclusive);
-        settings0.debugwarnings = debugwarnings;
-        settings0.platform(type);
-        Tokenizer tokenizer(&settings0, this);
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
+
+        Tokenizer tokenizer(&settings, this);
+
+        if (preprocess) {
+            std::vector<std::string> files{ "test.cpp" };
+            std::istringstream istr(code);
+            const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+            simplecpp::TokenList tokens2(files);
+            std::map<std::string, simplecpp::TokenList*> filedata;
+            simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+            tokenizer.createTokens(std::move(tokens2));
+        }
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -406,7 +416,7 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        TODO_ASSERT_THROW(tok(code, Settings::Native, false), InternalError); // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tok(code, cppcheck::Platform::Type::Native, false), InternalError); // TODO: Do not throw AST validation exception
         //ASSERT_EQUALS("", errout.str());
     }
 
@@ -696,11 +706,11 @@ private:
 
         const char exp[] = "int i ;";
 
-        ASSERT_EQUALS(exp, tok(code, Settings::Unix32));
-        ASSERT_EQUALS(exp, tok(code, Settings::Unix64));
-        ASSERT_EQUALS(exp, tok(code, Settings::Win32A));
-        ASSERT_EQUALS(exp, tok(code, Settings::Win32W));
-        ASSERT_EQUALS(exp, tok(code, Settings::Win64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix32));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Unix64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32A));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win32W));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
     }
 
     void simplifyUsing9042() {
@@ -720,7 +730,7 @@ private:
                            "} ; "
                            "template < class T > class s { } ;";
 
-        ASSERT_EQUALS(exp, tok(code, Settings::Win64));
+        ASSERT_EQUALS(exp, tok(code, cppcheck::Platform::Type::Win64));
     }
 
     void simplifyUsing9191() {
@@ -1344,6 +1354,17 @@ private:
                             "enum E : uint8_t { E0 };";
         const char exp[]  = "enum E : unsigned char { E0 } ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyUsing10720() {
+        const char code[] = "template <typename... Ts>\n"
+                            "struct S {};\n"
+                            "#define STAMP(thiz, prev) using thiz = S<prev, prev, prev, prev, prev, prev, prev, prev, prev, prev>;\n"
+                            "STAMP(A, int);\n"
+                            "STAMP(B, A);\n"
+                            "STAMP(C, B);\n";
+        tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
+        ASSERT_EQUALS(errout.str().compare(0, 64, "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"), 0);
     }
 
     void scopeInfo1() {

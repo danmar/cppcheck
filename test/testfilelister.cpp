@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include "filelister.h"
 #include "pathmatch.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <cstddef>
 #include <fstream>
@@ -29,16 +29,17 @@
 
 class TestFileLister : public TestFixture {
 public:
-    TestFileLister()
-        : TestFixture("TestFileLister") {}
+    TestFileLister() : TestFixture("TestFileLister") {}
 
 private:
     void run() override {
         // bail out if the tests are not executed from the base folder
         {
             std::ifstream fin("test/testfilelister.cpp");
-            if (!fin.is_open())
+            if (!fin.is_open()) {
+                // TODO: log
                 return;
+            }
         }
 
         TEST_CASE(isDirectory);

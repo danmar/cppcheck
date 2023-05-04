@@ -1,4 +1,3 @@
-add_subdirectory(benchmark)
 add_subdirectory(cppchecklibrarydata)
 add_subdirectory(filelist)
 add_subdirectory(projectfile)

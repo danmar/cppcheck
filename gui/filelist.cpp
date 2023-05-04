@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,12 @@
 #include "pathmatch.h"
 
 #include <algorithm>
+#include <iterator>
 #include <string>
 #include <vector>
 
 #include <QDir>
+#include <Qt>
 
 QStringList FileList::getDefaultFilters()
 {
@@ -110,7 +112,7 @@ void FileList::addExcludeList(const QStringList &paths)
 static std::vector<std::string> toStdStringList(const QStringList &stringList)
 {
     std::vector<std::string> ret;
-    std::transform(stringList.begin(), stringList.end(), std::back_inserter(ret), [](const QString& s) {
+    std::transform(stringList.cbegin(), stringList.cend(), std::back_inserter(ret), [](const QString& s) {
         return s.toStdString();
     });
     return ret;

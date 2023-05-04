@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2021 Cppcheck team.
+// Copyright (C) 2007-2023 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ options::options(int argc, const char* const argv[])
     ,mHelp(mWhichTests.count("-h") != 0 || mWhichTests.count("--help"))
     ,mExe(argv[0])
 {
-    for (std::set<std::string>::const_iterator it = mWhichTests.begin(); it != mWhichTests.end();) {
+    for (std::set<std::string>::const_iterator it = mWhichTests.cbegin(); it != mWhichTests.cend();) {
         if (!(*it).empty() && (((*it)[0] == '-') || ((*it).find("::") != std::string::npos && mWhichTests.count((*it).substr(0, (*it).find("::"))))))
             it = mWhichTests.erase(it);
         else

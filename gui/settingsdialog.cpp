@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,23 @@
 
 #include "ui_settings.h"
 
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGroupBox>
+#include <QLabel>
+#include <QLineEdit>
 #include <QList>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QPushButton>
+#include <QRadioButton>
 #include <QSettings>
+#include <QSize>
 #include <QThread>
+#include <QVariant>
 #include <QWidget>
 
 SettingsDialog::SettingsDialog(ApplicationList *list,
@@ -65,6 +77,9 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mUI->mCheckForUpdates->setCheckState(boolToCheckState(settings.value(SETTINGS_CHECK_FOR_UPDATES, false).toBool()));
     mUI->mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
     validateEditPythonPath();
+    if (premium)
+        mUI->mGroupBoxMisra->setVisible(false);
+    mUI->mEditMisraFile->setText(settings.value(SETTINGS_MISRA_FILE, QString()).toString());
 
 #ifdef Q_OS_WIN
     //mUI->mTabClang->setVisible(true);
@@ -94,6 +109,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
             this, SLOT(editApplication()));
 
     connect(mUI->mBtnBrowsePythonPath, &QPushButton::clicked, this, &SettingsDialog::browsePythonPath);
+    connect(mUI->mBtnBrowseMisraFile, &QPushButton::clicked, this, &SettingsDialog::browseMisraFile);
     connect(mUI->mBtnEditTheme, SIGNAL(clicked()), this, SLOT(editCodeEditorStyle()));
     connect(mUI->mThemeSystem, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
     connect(mUI->mThemeDark, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
@@ -143,10 +159,7 @@ Qt::CheckState SettingsDialog::boolToCheckState(bool yes)
 
 bool SettingsDialog::checkStateToBool(Qt::CheckState state)
 {
-    if (state == Qt::Checked) {
-        return true;
-    }
-    return false;
+    return state == Qt::Checked;
 }
 
 
@@ -185,6 +198,8 @@ void SettingsDialog::saveSettingValues() const
     saveCheckboxValue(&settings, mUI->mShowErrorId, SETTINGS_SHOW_ERROR_ID);
     saveCheckboxValue(&settings, mUI->mCheckForUpdates, SETTINGS_CHECK_FOR_UPDATES);
     settings.setValue(SETTINGS_PYTHON_PATH, mUI->mEditPythonPath->text());
+    if (!mPremium)
+        settings.setValue(SETTINGS_MISRA_FILE, mUI->mEditMisraFile->text());
 
 #ifdef Q_OS_WIN
     settings.setValue(SETTINGS_CLANG_PATH, mUI->mEditClangPath->text());
@@ -348,6 +363,13 @@ void SettingsDialog::browsePythonPath()
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select python binary"), QDir::rootPath());
     if (fileName.contains("python", Qt::CaseInsensitive))
         mUI->mEditPythonPath->setText(fileName);
+}
+
+void SettingsDialog::browseMisraFile()
+{
+    const QString fileName = QFileDialog::getOpenFileName(this, tr("Select MISRA File"), QDir::homePath(), "Misra File (*.pdf *.txt)");
+    if (!fileName.isEmpty())
+        mUI->mEditMisraFile->setText(fileName);
 }
 
 // Slot to set default light style

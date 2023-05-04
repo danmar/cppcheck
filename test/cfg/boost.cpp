@@ -2,7 +2,7 @@
 // Test library configuration for boost.cfg
 //
 // Usage:
-// $ cppcheck --check-library --enable=information --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/boost.cpp
+// $ cppcheck --check-library --library=boost --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/boost.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
@@ -39,7 +39,7 @@ void valid_code(boost::function<void(void)> &pf_print_hello)
     pf_print_hello = boost::bind(print_hello);
 }
 
-void ignoredReturnValue(char * buf)
+void ignoredReturnValue()
 {
     // cppcheck-suppress ignoredReturnValue
     boost::math::round(1.5);

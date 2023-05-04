@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,12 +29,17 @@
 #else
 #include <iostream>
 #endif
+#include <algorithm>
 #include <string>
 
 #include <QApplication>
 #include <QCoreApplication>
-#include <QStringList>
+#include <QIcon>
 #include <QSettings>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QtCore>
 
 
 static void ShowUsage();
@@ -58,7 +63,7 @@ int main(int argc, char *argv[])
 
     // Set data dir..
     const QStringList args = QApplication::arguments();
-    auto it = std::find_if(args.begin(), args.end(), [](const QString& arg) {
+    auto it = std::find_if(args.cbegin(), args.cend(), [](const QString& arg) {
         return arg.startsWith("--data-dir=");
     });
     if (it != args.end()) {

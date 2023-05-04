@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ public:
 
     /** File settings. Multiple configurations for a file is allowed. */
     struct CPPCHECKLIB FileSettings {
-        FileSettings() : platformType(cppcheck::Platform::Unspecified), msc(false), useMfc(false) {}
+        FileSettings() : platformType(cppcheck::Platform::Type::Unspecified), msc(false), useMfc(false) {}
         std::string cfg;
         std::string filename;
         std::string defines;
@@ -74,11 +74,11 @@ public:
         std::list<std::string> includePaths;
         std::list<std::string> systemIncludePaths;
         std::string standard;
-        cppcheck::Platform::PlatformType platformType;
+        cppcheck::Platform::Type platformType;
         bool msc;
         bool useMfc;
 
-        void parseCommand(std::string command);
+        void parseCommand(const std::string& command);
         void setDefines(std::string defs);
         void setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables);
     };
@@ -87,8 +87,10 @@ public:
 
     ImportProject();
     virtual ~ImportProject() = default;
+    ImportProject(const ImportProject&) = default;
+    ImportProject& operator=(const ImportProject&) = default;
 
-    void selectOneVsConfig(cppcheck::Platform::PlatformType platform);
+    void selectOneVsConfig(cppcheck::Platform::Type platform);
 
     std::list<std::string> getVSConfigs();
 
@@ -133,7 +135,6 @@ namespace CppcheckXml {
     const char ImportProjectElementName[] = "importproject";
     const char AnalyzeAllVsConfigsElementName[] = "analyze-all-vs-configs";
     const char Parser[] = "parser";
-    const char BugHunting[] = "bug-hunting";
     const char IncludeDirElementName[] = "includedir";
     const char DirElementName[] = "dir";
     const char DirNameAttrib[] = "name";
@@ -184,6 +185,7 @@ namespace CppcheckXml {
     const char CodingStandardsElementName[] = "coding-standards";
     const char CodingStandardElementName[] = "coding-standard";
     const char CertIntPrecisionElementName[] = "cert-c-int-precision";
+    const char ProjectNameElementName[] = "project-name";
 }
 
 /// @}

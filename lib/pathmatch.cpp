@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ bool PathMatch::match(const std::string &path) const
     if (path.empty())
         return false;
 
-    for (std::vector<std::string>::const_iterator i = mExcludedPaths.begin(); i != mExcludedPaths.end(); ++i) {
+    for (std::vector<std::string>::const_iterator i = mExcludedPaths.cbegin(); i != mExcludedPaths.cend(); ++i) {
         const std::string excludedPath((!Path::isAbsolute(path) && Path::isAbsolute(*i)) ? Path::getRelativePath(*i, mWorkingDirectory) : *i);
 
         std::string findpath = Path::fromNativeSeparators(path);

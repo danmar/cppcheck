@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,11 @@
 #include "sourcelocation.h"
 #include "token.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iosfwd>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <string>
 #include <type_traits>
@@ -122,8 +122,12 @@ public:
         else if (classDef_ && classDef_->str() == "using") {
             typeStart = classDef->tokAt(3);
             typeEnd = typeStart;
-            while (typeEnd->next() && typeEnd->next()->str() != ";")
-                typeEnd = typeEnd->next();
+            while (typeEnd->next() && typeEnd->next()->str() != ";") {
+                if (Token::simpleMatch(typeEnd, "decltype ("))
+                    typeEnd = typeEnd->linkAt(1);
+                else
+                    typeEnd = typeEnd->next();
+            }
         }
     }
 
@@ -221,7 +225,7 @@ class CPPCHECKLIB Variable {
      * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings, bool* isContainer);
+    bool arrayDimensions(const Settings* settings, bool& isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -929,6 +933,7 @@ public:
 
     static bool returnsConst(const Function* function, bool unknown = false);
 
+    static bool returnsPointer(const Function* function, bool unknown = false);
     static bool returnsReference(const Function* function, bool unknown = false);
     static bool returnsStandardType(const Function* function, bool unknown = false);
 
@@ -1075,7 +1080,7 @@ public:
     }
 
     const Enumerator * findEnumerator(const std::string & name) const {
-        auto it = std::find_if(enumeratorList.begin(), enumeratorList.end(), [&](const Enumerator& i) {
+        auto it = std::find_if(enumeratorList.cbegin(), enumeratorList.cend(), [&](const Enumerator& i) {
             return i.name->str() == name;
         });
         return it == enumeratorList.end() ? nullptr : &*it;
@@ -1089,9 +1094,7 @@ public:
         const Scope * parent = nestedIn;
         while (outer != parent && parent)
             parent = parent->nestedIn;
-        if (parent && parent == outer)
-            return true;
-        return false;
+        return parent && parent == outer;
     }
 
     static Function* nestedInFunction(const Scope* scope) {
@@ -1171,8 +1174,6 @@ public:
 
         functionMap.insert(make_pair(back->tokenDef->str(), back));
     }
-
-    bool hasDefaultConstructor() const;
 
     AccessControl defaultAccess() const;
 
@@ -1320,7 +1321,7 @@ public:
         debugPath()
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings *settings, bool isCpp);
+    static ValueType parseDecl(const Token *type, const Settings &settings, bool isCpp);
 
     static Type typeFromString(const std::string &typestr, bool longType);
 
@@ -1340,11 +1341,13 @@ public:
         return (type >= ValueType::Type::FLOAT && type <= ValueType::Type::LONGDOUBLE);
     }
 
-    bool fromLibraryType(const std::string &typestr, const Settings *settings);
+    bool fromLibraryType(const std::string &typestr, const Settings &settings);
 
     bool isEnum() const {
         return typeScope && typeScope->type == Scope::eEnum;
     }
+
+    bool isConst(nonneg int indirect = 0) const;
 
     MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 
@@ -1361,17 +1364,17 @@ public:
 class CPPCHECKLIB SymbolDatabase {
     friend class TestSymbolDatabase;
 public:
-    SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+    SymbolDatabase(Tokenizer& tokenizer, const Settings& settings, ErrorLogger* errorLogger);
     ~SymbolDatabase();
 
     /** @brief Information about all namespaces/classes/structures */
     std::list<Scope> scopeList;
 
     /** @brief Fast access to function scopes */
-    std::vector<const Scope *> functionScopes;
+    std::vector<const Scope*> functionScopes;
 
     /** @brief Fast access to class and struct scopes */
-    std::vector<const Scope *> classAndStructScopes;
+    std::vector<const Scope*> classAndStructScopes;
 
     /** @brief Fast access to types */
     std::list<Type> typeList;
@@ -1382,25 +1385,26 @@ public:
      * @param typeTok token containing variable type
      * @return pointer to type if found or NULL if not found
      */
-    const Type *findVariableType(const Scope *start, const Token *typeTok) const;
+    const Type* findVariableType(const Scope* start, const Token* typeTok) const;
 
     /**
      * @brief find a function
      * @param tok token of function call
      * @return pointer to function if found or NULL if not found
      */
-    const Function *findFunction(const Token *tok) const;
+    const Function* findFunction(const Token* tok) const;
 
     /** For unit testing only */
-    const Scope *findScopeByName(const std::string& name) const;
+    const Scope* findScopeByName(const std::string& name) const;
 
-    const Type* findType(const Token *startTok, const Scope *startScope, bool lookOutside = false) const;
-    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) const {
-        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope), lookOutside));
+    const Type* findType(const Token* startTok, const Scope* startScope, bool lookOutside = false) const;
+    Type* findType(const Token* startTok, Scope* startScope, bool lookOutside = false)
+    {
+        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope*>(startScope), lookOutside));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
-    Scope *findScope(const Token *tok, Scope *startScope) const {
+    Scope *findScope(const Token *tok, Scope *startScope) {
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
@@ -1449,7 +1453,7 @@ public:
     nonneg int sizeOfType(const Token *type) const;
 
     /** Set array dimensions when valueflow analysis is completed */
-    void setArrayDimensionsUsingValueFlow();
+    void setArrayDimensionsUsingValueFlow(); // cppcheck-suppress functionConst // has side effects
 
     void clangSetVariables(const std::vector<const Variable *> &variableList);
     void createSymbolDatabaseExprIds();
@@ -1469,12 +1473,12 @@ private:
     void createSymbolDatabaseNeedInitialization();
     void createSymbolDatabaseVariableSymbolTable();
     void createSymbolDatabaseSetScopePointers();
-    void createSymbolDatabaseSetFunctionPointers(bool firstPass);
+    void createSymbolDatabaseSetFunctionPointers(bool firstPass); // cppcheck-suppress functionConst // has side effects
     void createSymbolDatabaseSetVariablePointers();
     // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
-    void createSymbolDatabaseEnums();
+    void createSymbolDatabaseEnums(); // cppcheck-suppress functionConst // has side effects
     void createSymbolDatabaseEscapeFunctions();
     // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
@@ -1488,8 +1492,8 @@ private:
     bool isFunction(const Token *tok, const Scope* outerScope, const Token **funcStart, const Token **argStart, const Token** declEnd) const;
     const Type *findTypeInNested(const Token *startTok, const Scope *startScope) const;
     const Scope *findNamespace(const Token * tok, const Scope * scope) const;
-    Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
-    const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
+    static Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
+    static const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok);
 
     using MemberIdMap = std::map<unsigned int, unsigned int>;
     using VarIdMap = std::map<unsigned int, MemberIdMap>;
@@ -1505,8 +1509,8 @@ private:
     void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
     void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
 
-    const Tokenizer *mTokenizer;
-    const Settings *mSettings;
+    Tokenizer& mTokenizer;
+    const Settings &mSettings;
     ErrorLogger *mErrorLogger;
 
     /** variable symbol table */

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,11 +23,9 @@
 //---------------------------------------------------------------------------
 
 #include <functional>
-#include <set>
 #include <stack>
 #include <string>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 #include "config.h"
@@ -35,9 +33,9 @@
 #include "library.h"
 #include "smallvector.h"
 #include "symboldatabase.h"
+#include "token.h"
 
 class Settings;
-class Token;
 
 enum class ChildrenToVisit {
     none,
@@ -98,6 +96,18 @@ const Token* findAstNode(const Token* ast, const TFunc& pred)
     return result;
 }
 
+template<class TFunc>
+const Token* findParent(const Token* tok, const TFunc& pred)
+{
+    if (!tok)
+        return nullptr;
+    const Token* parent = tok->astParent();
+    while (parent && !pred(parent)) {
+        parent = parent->astParent();
+    }
+    return parent;
+}
+
 const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
@@ -143,6 +153,8 @@ bool astIsContainerOwned(const Token* tok);
 Library::Container::Action astContainerAction(const Token* tok, const Token** ftok = nullptr);
 Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok = nullptr);
 
+Library::Container::Yield astFunctionYield(const Token* tok, const Settings* settings, const Token** ftok = nullptr);
+
 /** Is given token a range-declaration in a range-based for loop */
 bool astIsRangeBasedForDecl(const Token* tok);
 
@@ -155,7 +167,7 @@ bool astIsRangeBasedForDecl(const Token* tok);
  * static const int     int
  * std::vector<T>       std::vector
  */
-std::string astCanonicalType(const Token *expr);
+std::string astCanonicalType(const Token *expr, bool pointedToType);
 
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
@@ -168,7 +180,7 @@ bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknow
 const Token* previousBeforeAstLeftmostLeaf(const Token* tok);
 Token* previousBeforeAstLeftmostLeaf(Token* tok);
 
-const Token * nextAfterAstRightmostLeaf(const Token * tok);
+CPPCHECKLIB const Token * nextAfterAstRightmostLeaf(const Token * tok);
 Token* nextAfterAstRightmostLeaf(Token* tok);
 
 Token* astParentSkipParens(Token* tok);
@@ -206,12 +218,12 @@ const Token *findNextTokenFromBreak(const Token *breakToken);
  * Extract for loop values: loopvar varid, init value, step value, last value (inclusive)
  */
 bool extractForLoopValues(const Token *forToken,
-                          nonneg int * const varid,
-                          bool * const knownInitValue,
-                          long long * const initValue,
-                          bool * const partialCond,
-                          long long * const stepValue,
-                          long long * const lastValue);
+                          nonneg int &varid,
+                          bool &knownInitValue,
+                          long long &initValue,
+                          bool &partialCond,
+                          long long &stepValue,
+                          long long &lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
 bool succeeds(const Token* tok1, const Token* tok2);
@@ -230,16 +242,18 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                                                 int depth = 20);
 const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 
-bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
+CPPCHECKLIB bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
 
 bool isStructuredBindingVariable(const Variable* var);
 
+const Token* isInLoopCondition(const Token* tok);
+
 /**
  * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
  */
-bool isUsedAsBool(const Token * const tok);
+CPPCHECKLIB bool isUsedAsBool(const Token * const tok);
 
 /**
  * Are two conditions opposite
@@ -256,7 +270,7 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
 
 bool isConstFunctionCall(const Token* ftok, const Library& library);
 
-bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp);
+bool isConstExpression(const Token *tok, const Library& library, bool cpp);
 
 bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess = false, bool checkReference = true);
 
@@ -265,10 +279,10 @@ bool isUniqueExpression(const Token* tok);
 bool isEscapeFunction(const Token* ftok, const Library* library);
 
 /** Is scope a return scope (scope will unconditionally return) */
-bool isReturnScope(const Token* const endToken,
-                   const Library* library = nullptr,
-                   const Token** unknownFunc = nullptr,
-                   bool functionScope = false);
+CPPCHECKLIB bool isReturnScope(const Token* const endToken,
+                               const Library* library = nullptr,
+                               const Token** unknownFunc = nullptr,
+                               bool functionScope = false);
 
 /** Is tok within a scope of the given type, nested within var's scope? */
 bool isWithinScope(const Token* tok,
@@ -300,10 +314,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int 
  * @param settings      program settings
  * @param inconclusive pointer to output variable which indicates that the answer of the question is inconclusive
  */
-bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive);
+CPPCHECKLIB bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive);
 
 /** Is variable changed in block of code? */
-bool isVariableChanged(const Token *start, const Token *end, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
+CPPCHECKLIB bool isVariableChanged(const Token *start, const Token *end, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 bool isVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
 bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth = 20);
@@ -313,7 +327,7 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp,
 bool isVariablesChanged(const Token* start,
                         const Token* end,
                         int indirect,
-                        std::vector<const Variable*> vars,
+                        const std::vector<const Variable*> &vars,
                         const Settings* settings,
                         bool cpp);
 
@@ -323,12 +337,12 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 const Token* findVariableChanged(const Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 Token* findVariableChanged(Token *start, const Token *end, int indirect, const nonneg int exprid, bool globalvar, const Settings *settings, bool cpp, int depth = 20);
 
-bool isExpressionChanged(const Token* expr,
-                         const Token* start,
-                         const Token* end,
-                         const Settings* settings,
-                         bool cpp,
-                         int depth = 20);
+CPPCHECKLIB bool isExpressionChanged(const Token* expr,
+                                     const Token* start,
+                                     const Token* end,
+                                     const Settings* settings,
+                                     bool cpp,
+                                     int depth = 20);
 
 bool isExpressionChangedAt(const Token* expr,
                            const Token* tok,
@@ -363,20 +377,22 @@ std::vector<const Token *> getArguments(const Token *ftok);
 
 int getArgumentPos(const Variable* var, const Function* f);
 
+const Token* getIteratorExpression(const Token* tok);
+
 /**
  * Are the arguments a pair of iterators/pointers?
  */
 bool isIteratorPair(std::vector<const Token*> args);
 
-const Token *findLambdaStartToken(const Token *last);
+CPPCHECKLIB const Token *findLambdaStartToken(const Token *last);
 
 /**
  * find lambda function end token
  * \param first The [ token
  * \return nullptr or the }
  */
-const Token *findLambdaEndToken(const Token *first);
-Token* findLambdaEndToken(Token* first);
+CPPCHECKLIB const Token *findLambdaEndToken(const Token *first);
+CPPCHECKLIB Token* findLambdaEndToken(Token* first);
 
 bool isLikelyStream(bool cpp, const Token *stream);
 
@@ -406,71 +422,9 @@ const Token* findAllocFuncCallToken(const Token *expr, const Library &library);
 
 bool isScopeBracket(const Token* tok);
 
-bool isNullOperand(const Token *expr);
+CPPCHECKLIB bool isNullOperand(const Token *expr);
 
 bool isGlobalData(const Token *expr, bool cpp);
-/**
- * Forward data flow analysis for checks
- *  - unused value
- *  - redundant assignment
- *  - valueflow analysis
- */
-class FwdAnalysis {
-public:
-    FwdAnalysis(bool cpp, const Library &library) : mCpp(cpp), mLibrary(library), mWhat(What::Reassign), mValueFlowKnown(true) {}
-
-    bool hasOperand(const Token *tok, const Token *lhs) const;
-
-    /**
-     * Check if "expr" is reassigned. The "expr" can be a tree (x.y[12]).
-     * @param expr Symbolic expression to perform forward analysis for
-     * @param startToken First token in forward analysis
-     * @param endToken Last token in forward analysis
-     * @return Token where expr is reassigned. If it's not reassigned then nullptr is returned.
-     */
-    const Token *reassign(const Token *expr, const Token *startToken, const Token *endToken);
-
-    /**
-     * Check if "expr" is used. The "expr" can be a tree (x.y[12]).
-     * @param expr Symbolic expression to perform forward analysis for
-     * @param startToken First token in forward analysis
-     * @param endToken Last token in forward analysis
-     * @return true if expr is used.
-     */
-    bool unusedValue(const Token *expr, const Token *startToken, const Token *endToken);
-
-    struct KnownAndToken {
-        bool known;
-        const Token *token;
-    };
-
-    /** Is there some possible alias for given expression */
-    bool possiblyAliased(const Token *expr, const Token *startToken) const;
-
-    std::set<nonneg int> getExprVarIds(const Token* expr, bool* localOut = nullptr, bool* unknownVarIdOut = nullptr) const;
-private:
-    static bool isEscapedAlias(const Token* expr);
-
-    /** Result of forward analysis */
-    struct Result {
-        enum class Type { NONE, READ, WRITE, BREAK, RETURN, BAILOUT } type;
-        explicit Result(Type type) : type(type), token(nullptr) {}
-        Result(Type type, const Token *token) : type(type), token(token) {}
-        const Token *token;
-    };
-
-    struct Result check(const Token *expr, const Token *startToken, const Token *endToken);
-    struct Result checkRecursive(const Token *expr, const Token *startToken, const Token *endToken, const std::set<nonneg int> &exprVarIds, bool local, bool inInnerClass, int depth=0);
-
-    // Is expression a l-value global data?
-    bool isGlobalData(const Token *expr) const;
-
-    const bool mCpp;
-    const Library &mLibrary;
-    enum class What { Reassign, UnusedValue, ValueFlow } mWhat;
-    std::vector<KnownAndToken> mValueFlow;
-    bool mValueFlowKnown;
-};
 
 bool isSizeOfEtc(const Token *tok);
 

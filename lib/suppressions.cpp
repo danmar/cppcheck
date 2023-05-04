@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -101,11 +101,11 @@ std::string Suppressions::parseXmlFile(const char *filename)
             else if (std::strcmp(e2->Name(), "fileName") == 0)
                 s.fileName = text;
             else if (std::strcmp(e2->Name(), "lineNumber") == 0)
-                s.lineNumber = std::atoi(text);
+                s.lineNumber = strToInt<int>(text);
             else if (std::strcmp(e2->Name(), "symbolName") == 0)
                 s.symbolName = text;
             else if (*text && std::strcmp(e2->Name(), "hash") == 0)
-                std::istringstream(text) >> s.hash;
+                s.hash = strToInt<std::size_t>(text);
             else
                 return "Unknown suppression element \"" + std::string(e2->Name()) + "\", expected id/fileName/lineNumber/symbolName/hash";
         }
@@ -123,8 +123,8 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
     std::vector<Suppression> suppressions;
 
     // If this function is called we assume that comment starts with "cppcheck-suppress[".
-    const std::string::size_type start_position = comment.find("[");
-    const std::string::size_type end_position = comment.find("]", start_position);
+    const std::string::size_type start_position = comment.find('[');
+    const std::string::size_type end_position = comment.find(']', start_position);
     if (end_position == std::string::npos) {
         if (errorMessage && errorMessage->empty())
             *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
@@ -134,7 +134,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
     // parse all suppressions
     for (std::string::size_type pos = start_position; pos < end_position;) {
         const std::string::size_type pos1 = pos + 1;
-        pos = comment.find(",", pos1);
+        pos = comment.find(',', pos1);
         const std::string::size_type pos2 = (pos < end_position) ? pos : end_position;
         if (pos1 == pos2)
             continue;
@@ -179,7 +179,7 @@ std::string Suppressions::addSuppressionLine(const std::string &line)
     Suppressions::Suppression suppression;
 
     // Strip any end of line comments
-    std::string::size_type endpos = std::min(line.find("#"), line.find("//"));
+    std::string::size_type endpos = std::min(line.find('#'), line.find("//"));
     if (endpos != std::string::npos) {
         while (endpos > 0 && std::isspace(line[endpos-1])) {
             endpos--;
@@ -268,9 +268,9 @@ std::string Suppressions::addSuppressions(const std::list<Suppression> &suppress
     return "";
 }
 
-void Suppressions::ErrorMessage::setFileName(const std::string &s)
+void Suppressions::ErrorMessage::setFileName(std::string s)
 {
-    mFileName = Path::simplifyPath(s);
+    mFileName = Path::simplifyPath(std::move(s));
 }
 
 bool Suppressions::Suppression::parseComment(std::string comment, std::string *errorMessage)
@@ -377,6 +377,13 @@ bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg)
             return true;
     }
     return false;
+}
+
+bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg)
+{
+    if (mSuppressions.empty())
+        return false;
+    return isSuppressed(errmsg.toSuppressionsErrorMessage());
 }
 
 bool Suppressions::isSuppressedLocal(const Suppressions::ErrorMessage &errmsg)

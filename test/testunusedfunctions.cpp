@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <sstream>
@@ -31,11 +31,9 @@ public:
     TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-
         TEST_CASE(incondition);
         TEST_CASE(return1);
         TEST_CASE(return2);
@@ -50,6 +48,8 @@ private:
         TEST_CASE(template5);
         TEST_CASE(template6); // #10475 crash
         TEST_CASE(template7); // #9766 crash
+        TEST_CASE(template8);
+        TEST_CASE(template9);
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -61,6 +61,7 @@ private:
         TEST_CASE(initializer_list);
         TEST_CASE(member_function_ternary);
         TEST_CASE(boost);
+        TEST_CASE(enumValues);
 
         TEST_CASE(multipleFiles);   // same function name in multiple files
 
@@ -69,25 +70,29 @@ private:
         TEST_CASE(ignore_declaration); // ignore declaration
 
         TEST_CASE(operatorOverload);
+
+        TEST_CASE(entrypointsWin);
+        TEST_CASE(entrypointsWinU);
+        TEST_CASE(entrypointsUnix);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], Settings::PlatformType platform = Settings::Native) {
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.platform(platform);
+        const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused functions..
-        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
-        checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
+        CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings1, this);
+        checkUnusedFunctions.parseTokens(tokenizer, "someFile.c", &settings1);
         // check() returns error if and only if errout is not empty.
-        if ((checkUnusedFunctions.check)(this, settings)) {
+        if ((checkUnusedFunctions.check)(this, settings1)) {
             ASSERT(!errout.str().empty());
         } else {
             ASSERT_EQUALS("", errout.str());
@@ -281,6 +286,50 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }
 
+    void template8() { // #11485
+        check("struct S {\n"
+              "    template<typename T>\n"
+              "    void tf(const T&) { }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) The function 'tf' is never used.\n", errout.str());
+
+        check("struct S {\n"
+              "    template<typename T>\n"
+              "    void tf(const T&) { }\n"
+              "};\n"
+              "int main() {\n"
+              "    C c;\n"
+              "    c.tf(1.5);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    template<typename T>\n"
+              "    void tf(const T&) { }\n"
+              "};\n"
+              "int main() {\n"
+              "    C c;\n"
+              "    c.tf<int>(1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template9() { // #7739
+        check("template<class T>\n"
+              "void f(T const& t) {}\n"
+              "template<class T>\n"
+              "void g(T const& t) {\n"
+              "    f(t);\n"
+              "}\n"
+              "template<>\n"
+              "void f<double>(double const& d) {}\n"
+              "int main() {\n"
+              "    g(2);\n"
+              "    g(3.14);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void throwIsNotAFunction() {
         check("struct A {void f() const throw () {}}; int main() {A a; a.f();}");
         ASSERT_EQUALS("", errout.str());
@@ -306,12 +355,6 @@ private:
 
     void unusedMain() {
         check("int main() { }");
-        ASSERT_EQUALS("", errout.str());
-
-        check("int _tmain() { }", Settings::Win32A);
-        ASSERT_EQUALS("", errout.str());
-
-        check("int WinMain() { }", Settings::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -442,6 +485,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void enumValues() { // #11486
+        check("enum E1 { Break1 };\n"
+              "struct S {\n"
+              "    enum class E { Break };\n"
+              "    void Break() {}\n"
+              "    void Break1() {}\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The function 'Break' is never used.\n"
+                      "[test.cpp:5]: (style) The function 'Break1' is never used.\n",
+                      errout.str());
+    }
+
     void multipleFiles() {
         Tokenizer tokenizer(&settings, this);
         CheckUnusedFunctions c(&tokenizer, &settings, nullptr);
@@ -550,6 +605,50 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void entrypointsWin() {
+        check("int WinMain() { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'WinMain' is never used.\n", errout.str());
+
+        check("int _tmain() { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
+
+        const Settings s = settingsBuilder(settings).library("windows.cfg").build();
+
+        check("int WinMain() { }", cppcheck::Platform::Type::Native, &s);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void entrypointsWinU() {
+        check("int wWinMain() { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'wWinMain' is never used.\n", errout.str());
+
+        check("int _tmain() { }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
+
+        const Settings s = settingsBuilder(settings).library("windows.cfg").build();
+
+        check("int wWinMain() { }", cppcheck::Platform::Type::Native, &s);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void entrypointsUnix() {
+        check("int _init() { }\n"
+              "int _fini() { }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function '_init' is never used.\n"
+                      "[test.cpp:2]: (style) The function '_fini' is never used.\n", errout.str());
+
+        const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
+
+        check("int _init() { }\n"
+              "int _fini() { }\n", cppcheck::Platform::Type::Native, &s);
+        ASSERT_EQUALS("", errout.str());
+    }
 };
 
 REGISTER_TEST(TestUnusedFunctions)

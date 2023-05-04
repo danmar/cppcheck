@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,9 @@
 #include "astutils.h"
 #include "symboldatabase.h"
 #include "token.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
-#include <memory>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -54,11 +53,11 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
         known = true;
         return std::make_pair(tok->values().front().intvalue, !tok->values().front().intvalue);
     }
-    auto it = std::find_if(tok->values().begin(), tok->values().end(), [](const ValueFlow::Value& v) {
+    auto it = std::find_if(tok->values().cbegin(), tok->values().cend(), [](const ValueFlow::Value& v) {
         return v.isIntValue();
     });
     // If all possible values are the same, then assume all paths have the same value
-    if (it != tok->values().end() && std::all_of(it, tok->values().end(), [&](const ValueFlow::Value& v) {
+    if (it != tok->values().cend() && std::all_of(it, tok->values().cend(), [&](const ValueFlow::Value& v) {
         if (v.isIntValue())
             return v.intvalue == it->intvalue;
         return true;
@@ -69,7 +68,7 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
     return std::make_pair(true, true);
 }
 
-PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
+PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f)
 {
     if (!tok)
         return Progress::Continue;
@@ -191,6 +190,6 @@ bool reaches(const Token * start, const Token * dest, const Library& library, Er
     if (!info.tok)
         return false;
     if (errorPath)
-        errorPath->insert(errorPath->end(), info.errorPath.begin(), info.errorPath.end());
+        errorPath->insert(errorPath->end(), info.errorPath.cbegin(), info.errorPath.cend());
     return true;
 }

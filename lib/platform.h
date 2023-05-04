@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,9 @@
 #include "config.h"
 
 #include <climits>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 /// @addtogroup Core
 /// @{
@@ -53,7 +55,6 @@ namespace cppcheck {
         }
     public:
         Platform();
-        virtual ~Platform() {}
 
         bool isIntValue(long long value) const {
             return value >= min_value(int_bit) && value <= max_value(int_bit);
@@ -99,7 +100,7 @@ namespace cppcheck {
 
         char defaultSign;  // unsigned:'u', signed:'s', unknown:'\0'
 
-        enum PlatformType {
+        enum Type {
             Unspecified, // No platform specified
             Native, // whatever system this code was compiled on
             Win32A,
@@ -107,22 +108,26 @@ namespace cppcheck {
             Win64,
             Unix32,
             Unix64,
-            PlatformFile
+            File
         };
 
         /** platform type */
-        PlatformType platformType;
+        Type type;
 
-        /** set the platform type for predefined platforms */
-        bool platform(PlatformType type);
+        /** set the platform type for predefined platforms - deprecated use set(const std::string&, std::string&) instead */
+        bool set(Type t);
+
+        /** set the platform type */
+        bool set(const std::string& platformstr, std::string& errstr, const std::vector<std::string>& paths = {}, bool verbose = false);
 
         /**
          * load platform file
          * @param exename application path
          * @param filename platform filename
+         * @param verbose log verbose information about the lookup
          * @return returns true if file was loaded successfully
          */
-        bool loadPlatformFile(const char exename[], const std::string &filename);
+        bool loadFromFile(const char exename[], const std::string &filename, bool verbose = false);
 
         /** load platform from xml document, primarily for testing */
         bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);
@@ -131,36 +136,36 @@ namespace cppcheck {
          * @brief Returns true if platform type is Windows
          * @return true if Windows platform type.
          */
-        bool isWindowsPlatform() const {
-            return platformType == Win32A ||
-                   platformType == Win32W ||
-                   platformType == Win64;
+        bool isWindows() const {
+            return type == Type::Win32A ||
+                   type == Type::Win32W ||
+                   type == Type::Win64;
         }
 
-        const char *platformString() const {
-            return platformString(platformType);
+        const char *toString() const {
+            return toString(type);
         }
 
-        static const char *platformString(PlatformType pt) {
+        static const char *toString(Type pt) {
             switch (pt) {
-            case Unspecified:
-                return "Unspecified";
-            case Native:
-                return "Native";
-            case Win32A:
+            case Type::Unspecified:
+                return "unspecified";
+            case Type::Native:
+                return "native";
+            case Type::Win32A:
                 return "win32A";
-            case Win32W:
+            case Type::Win32W:
                 return "win32W";
-            case Win64:
+            case Type::Win64:
                 return "win64";
-            case Unix32:
+            case Type::Unix32:
                 return "unix32";
-            case Unix64:
+            case Type::Unix64:
                 return "unix64";
-            case PlatformFile:
+            case Type::File:
                 return "platformFile";
             default:
-                return "unknown";
+                throw std::runtime_error("unknown platform");
             }
         }
 

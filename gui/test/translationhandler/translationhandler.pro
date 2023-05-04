@@ -4,7 +4,11 @@ DEPENDPATH += .
 INCLUDEPATH += .
 OBJECTS_DIR = ../../temp
 MOC_DIR = ../../temp
-QT += widgets
+
+QT -= gui
+QT += core
+QT += widgets # TODO: get rid of this - causes X server dependency
+QT += testlib
 
 include(../common.pri)
 

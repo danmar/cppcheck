@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,9 @@
 #include "checkclass.h"
 #include "errortypes.h"
 #include "library.h"
+#include "preprocessor.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
@@ -29,21 +30,16 @@
 #include <string>
 #include <vector>
 
-#include <tinyxml2.h>
-
 
 class TestClass : public TestFixture {
 public:
     TestClass() : TestFixture("TestClass") {}
 
 private:
-    Settings settings0;
-    Settings settings1;
+    Settings settings0 = settingsBuilder().severity(Severity::style).build();
+    Settings settings1 = settingsBuilder().severity(Severity::warning).build();
 
     void run() override {
-        settings0.severity.enable(Severity::style);
-        settings1.severity.enable(Severity::warning);
-
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -60,10 +56,8 @@ private:
                                    "    </access>\n"
                                    "  </container>\n"
                                    "</def>";
-            tinyxml2::XMLDocument doc;
-            doc.Parse(xmldata, sizeof(xmldata));
-            settings0.library.load(doc);
-            settings1.library.load(doc);
+            ASSERT(settings0.library.loadxmldata(xmldata, sizeof(xmldata)));
+            ASSERT(settings1.library.loadxmldata(xmldata, sizeof(xmldata)));
         }
 
 
@@ -197,6 +191,13 @@ private:
         TEST_CASE(const78); // ticket #10315
         TEST_CASE(const79); // ticket #9861
         TEST_CASE(const80); // ticket #11328
+        TEST_CASE(const81); // ticket #11330
+        TEST_CASE(const82); // ticket #11513
+        TEST_CASE(const83);
+        TEST_CASE(const84);
+        TEST_CASE(const85);
+        TEST_CASE(const86);
+
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -258,11 +259,12 @@ private:
     void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.severity.enable(Severity::warning);
+        const Settings settings = settingsBuilder().severity(Severity::warning).build();
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -365,8 +367,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings0);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -517,8 +521,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -678,8 +684,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings0);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -1125,8 +1133,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings0);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -1599,8 +1609,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -2558,11 +2570,14 @@ private:
         // Clear the error log
         errout.str("");
 
+        // TODO: subsequent tests depend on these changes - should use SettingsBuilder
         settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings0.severity.enable(Severity::warning);
 
+        Preprocessor preprocessor(settings0);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -2872,9 +2887,7 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::portability);
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
         checkNoMemset_(file, line, code, settings);
     }
 
@@ -2882,8 +2895,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -3136,8 +3151,7 @@ private:
                       errout.str());
 
         // #1655
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().library("std.cfg").build();
         checkNoMemset("void f() {\n"
                       "    char c[] = \"abc\";\n"
                       "    std::string s;\n"
@@ -3383,15 +3397,12 @@ private:
     }
 
     void memsetOnStdPodType() { // Ticket #5901
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
                                "  <podtype name=\"std::atomic_bool\"/>\n"
                                "</def>";
-        tinyxml2::XMLDocument doc;
-        doc.Parse(xmldata, sizeof(xmldata));
-        settings.library.load(doc);
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         checkNoMemset("class A {\n"
                       "    std::array<int, 10> ints;\n"
@@ -3515,8 +3526,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -3544,21 +3557,20 @@ private:
     }
 
 #define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkConst_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkConst_(const char* file, int line, const char code[], const Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
-        // Check..
-        if (!s)
-            s = &settings0;
-        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings = settingsBuilder(s ? *s : settings0).certainty(Certainty::inconclusive, inconclusive).build();
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(s, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, s, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         (checkClass.checkConst)();
     }
 
@@ -6203,6 +6215,189 @@ private:
                       errout.str());
     }
 
+    void const81() {
+        checkConst("struct A {\n" // #11330
+                   "    bool f() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    std::shared_ptr<A> a;\n"
+                   "    void g() {\n"
+                   "        if (a->f()) {}\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
+
+        checkConst("struct A {\n" // #11499
+                   "    void f() const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f(int) const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "  T* operator->();\n"
+                   "  const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "  P<A> p;\n"
+                   "  void g() { p->f(1); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:11]: (style, inconclusive) Technically the member function 'S::g' can be const.\n", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f(void*) const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "    P<T>& operator=(P) {\n"
+                   "        return *this;\n"
+                   "    }\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    std::vector<S> g() { p->f(nullptr); return {}; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:14]: (style, inconclusive) Technically the member function 'S::g' can be const.\n", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f();\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f() const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    void g() { p->f(); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n"
+                   "    void f(int&) const;\n"
+                   "};\n"
+                   "template<class T>\n"
+                   "struct P {\n"
+                   "    T* operator->();\n"
+                   "    const T* operator->() const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    P<A> p;\n"
+                   "    int i;\n"
+                   "    void g() { p->f(i); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const82() { // #11513
+        checkConst("struct S {\n"
+                   "    int i;\n"
+                   "    void h(bool) const;\n"
+                   "    void g() { h(i == 1); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
+
+        checkConst("struct S {\n"
+                   "    int i;\n"
+                   "    void h(int, int*) const;\n"
+                   "    void g() { int a; h(i, &a); }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                           "",
+                           errout.str());
+    }
+
+    void const83() {
+        checkConst("struct S {\n"
+                   "    int i1, i2;\n"
+                   "    void f(bool b);\n"
+                   "    void g(bool b, int j);\n"
+                   "};\n"
+                   "void S::f(bool b) {\n"
+                   "    int& r = b ? i1 : i2;\n"
+                   "    r = 5;\n"
+                   "}\n"
+                   "void S::g(bool b, int j) {\n"
+                   "    int& r = b ? j : i2;\n"
+                   "    r = 5;\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const84() {
+        checkConst("class S {};\n" // #11616
+                   "struct T {\n"
+                   "    T(const S*);\n"
+                   "    T(const S&);\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    const S s;\n"
+                   "    void f1() {\n"
+                   "        T t(&s);\n"
+                   "    }\n"
+                   "    void f2() {\n"
+                   "        T t(s);\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'C::f1' can be const.\n"
+                      "[test.cpp:11]: (style, inconclusive) Technically the member function 'C::f2' can be const.\n",
+                      errout.str());
+    }
+
+    void const85() { // #11618
+        checkConst("struct S {\n"
+                   "    int a[2], b[2];\n"
+                   "    void f() { f(a, b); }\n"
+                   "    static void f(const int p[2], int q[2]);\n"
+                   "};\n"
+                   "void S::f(const int p[2], int q[2]) {\n"
+                   "    q[0] = p[0];\n"
+                   "    q[1] = p[1];\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const86() { // #11621
+        checkConst("struct S { int* p; };\n"
+                   "struct T { int m; int* p; };\n"
+                   "struct U {\n"
+                   "    int i;\n"
+                   "    void f() { S s = { &i }; }\n"
+                   "    void g() { int* a[] = { &i }; }\n"
+                   "    void h() { T t = { 1, &i }; }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
@@ -7026,10 +7221,7 @@ private:
     }
 
     void qualifiedNameMember() { // #10872
-        Settings s;
-        s.severity.enable(Severity::style);
-        s.debugwarnings = true;
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
         checkConst("struct data {};\n"
                    "    struct S {\n"
                    "    std::vector<data> std;\n"
@@ -7049,8 +7241,10 @@ private:
         // Check..
         settings0.certainty.setEnabled(Certainty::inconclusive, true);
 
+        Preprocessor preprocessor(settings0);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7082,11 +7276,12 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.severity.enable(Severity::performance);
+        const Settings settings = settingsBuilder().severity(Severity::performance).build();
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7297,8 +7492,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings0);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings0, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7404,24 +7601,21 @@ private:
 
 
 #define checkVirtualFunctionCall(...) checkVirtualFunctionCall_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkVirtualFunctionCall_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkVirtualFunctionCall_(const char* file, int line, const char code[], bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
         // Check..
-        if (!s) {
-            static Settings settings_;
-            s = &settings_;
-            s->severity.enable(Severity::warning);
-        }
-        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings = settingsBuilder().severity(Severity::warning).certainty(Certainty::inconclusive, inconclusive).build();
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(s, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, s, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.checkVirtualFunctionCallInConstructor();
     }
 
@@ -7760,11 +7954,13 @@ private:
     void checkOverride_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.severity.enable(Severity::style);
+
+        const Settings settings = settingsBuilder().severity(Severity::style).build();
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7935,12 +8131,14 @@ private:
     void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
+
+        Settings settings = settingsBuilder().severity(Severity::warning).build();
         settings.safeChecks.classes = true;
-        settings.severity.enable(Severity::warning);
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -7960,8 +8158,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -8112,8 +8312,8 @@ private:
 
 
     void ctu(const std::vector<std::string> &code) {
-        Settings settings;
-        CheckClass check;
+        const Settings settings;
+        auto &check = getCheck<CheckClass>();
 
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
@@ -8157,8 +8357,10 @@ private:
         // Clear the error log
         errout.str("");
 
+        Preprocessor preprocessor(settings1);
+
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

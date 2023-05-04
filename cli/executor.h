@@ -22,10 +22,12 @@
 #include <cstddef>
 #include <list>
 #include <map>
+#include <mutex>
 #include <string>
 
 class Settings;
 class ErrorLogger;
+class ErrorMessage;
 
 /// @addtogroup CLI
 /// @{
@@ -44,10 +46,30 @@ public:
 
     virtual unsigned int check() = 0;
 
+    /**
+     * Information about how many files have been checked
+     *
+     * @param fileindex This many files have been checked.
+     * @param filecount This many files there are in total.
+     * @param sizedone The sum of sizes of the files checked.
+     * @param sizetotal The total sizes of the files.
+     */
+    void reportStatus(std::size_t fileindex, std::size_t filecount, std::size_t sizedone, std::size_t sizetotal);
+
 protected:
+    /**
+     * @brief Check if message is being suppressed and unique.
+     * @param msg the message to check
+     * @return true if message is not suppressed and unique
+     */
+    bool hasToLog(const ErrorMessage &msg);
+
     const std::map<std::string, std::size_t> &mFiles;
     Settings &mSettings;
     ErrorLogger &mErrorLogger;
+
+private:
+    std::mutex mErrorListSync;
     std::list<std::string> mErrorList;
 };
 

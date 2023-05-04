@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 #include "checkother.h"
 #include "errortypes.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <map>
@@ -35,13 +35,13 @@ public:
     TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
     void check(const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -54,18 +54,16 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for incomplete statements..
-        CheckOther checkOther(&tokenizer, &settings, this);
+        CheckOther checkOther(&tokenizer, &settings1, this);
         checkOther.checkIncompleteStatement();
     }
 
     void run() override {
-        settings.severity.enable(Severity::warning);
-
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);

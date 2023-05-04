@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,17 +33,37 @@
 
 #include "ui_resultsview.h"
 
+#include <QAbstractItemModel>
+#include <QApplication>
+#include <QByteArray>
 #include <QClipboard>
 #include <QDate>
+#include <QDateTime>
+#include <QDialog>
 #include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QIODevice>
+#include <QList>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPoint>
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
 #include <QPrinter>
+#include <QProgressBar>
 #include <QSettings>
+#include <QSplitter>
+#include <QStandardItem>
 #include <QStandardItemModel>
+#include <QTextDocument>
+#include <QTextEdit>
+#include <QTextStream>
 #include <QVariant>
+#include <QVariantMap>
+#include <Qt>
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
@@ -113,9 +133,9 @@ void ResultsView::clearRecheckFile(const QString &filename)
     mUI->mTree->clearRecheckFile(filename);
 }
 
-ShowTypes * ResultsView::getShowTypes() const
+const ShowTypes & ResultsView::getShowTypes() const
 {
-    return &mUI->mTree->mShowSeverities;
+    return mUI->mTree->mShowSeverities;
 }
 
 void ResultsView::progress(int value, const QString& description)
@@ -373,7 +393,7 @@ void ResultsView::readErrorsXml(const QString &filename)
 
 void ResultsView::updateDetails(const QModelIndex &index)
 {
-    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(mUI->mTree->model());
+    const QStandardItemModel *model = qobject_cast<const QStandardItemModel*>(mUI->mTree->model());
     QStandardItem *item = model->itemFromIndex(index);
 
     if (!item) {

@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.2.4, 6.3.2, 6.4.0]
+        qt_ver: [5.15.2, 6.2.4, 6.5.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -32,20 +32,12 @@ jobs:
         with:
           arch: x64 # no 32-bit Qt available
 
-      - name: Cache Qt ${{ matrix.qt_ver }}
-        id: cache-qt
-        uses: actions/cache@v1  # not v2!
-        with:
-          path: ../Qt
-          key: Windows-QtCache-${{ matrix.qt_ver }}-qtcharts
-
       - name: Install Qt ${{ matrix.qt_ver }}
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
-          aqtversion: '==2.0.6'
           version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          cache: true
 
       - name: Build GUI release (qmake)
         if: startsWith(matrix.qt_ver, '5')

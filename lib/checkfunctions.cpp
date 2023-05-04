@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,13 +24,16 @@
 
 #include "astutils.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include <iomanip>
+#include <list>
 #include <sstream>
 #include <unordered_map>
 #include <vector>
@@ -248,12 +251,12 @@ void CheckFunctions::checkIgnoredReturnValue()
             else if (Token::Match(tok, "[(<]") && tok->link())
                 tok = tok->link();
 
-            if (tok->varId() || !Token::Match(tok, "%name% (") || tok->isKeyword())
+            if (tok->varId() || tok->isKeyword() || tok->isStandardType() || !Token::Match(tok, "%name% ("))
                 continue;
 
             const Token *parent = tok->next()->astParent();
             while (Token::Match(parent, "%cop%")) {
-                if (Token::Match(parent, "<<|>>") && !parent->astParent())
+                if (Token::Match(parent, "<<|>>|*") && !parent->astParent())
                     break;
                 parent = parent->astParent();
             }
@@ -266,7 +269,7 @@ void CheckFunctions::checkIgnoredReturnValue()
             }
 
             if ((!tok->function() || !Token::Match(tok->function()->retDef, "void %name%")) &&
-                !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
+                tok->next()->astOperand1()) {
                 const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
                 const bool warn = (tok->function() && tok->function()->isAttributeNodiscard()) || // avoid duplicate warnings for resource-allocating functions
                                   (retvalTy == Library::UseRetValType::DEFAULT && mSettings->library.getAllocFuncInfo(tok) == nullptr);
@@ -562,8 +565,8 @@ void CheckFunctions::memsetInvalid2ndParam()
 
             if (printWarning && secondParamTok->isNumber()) { // Check if the second parameter is a literal and is out of range
                 const long long int value = MathLib::toLongNumber(secondParamTok->str());
-                const long long sCharMin = mSettings->signedCharMin();
-                const long long uCharMax = mSettings->unsignedCharMax();
+                const long long sCharMin = mSettings->platform.signedCharMin();
+                const long long uCharMax = mSettings->platform.unsignedCharMax();
                 if (value < sCharMin || value > uCharMax)
                     memsetValueOutOfRangeError(secondParamTok, secondParamTok->str());
             }
@@ -593,7 +596,7 @@ void CheckFunctions::memsetValueOutOfRangeError(const Token *tok, const std::str
 
 void CheckFunctions::checkLibraryMatchFunctions()
 {
-    if (!mSettings->checkLibrary || !mSettings->severity.isEnabled(Severity::information))
+    if (!mSettings->checkLibrary)
         return;
 
     bool insideNew = false;
@@ -634,6 +637,9 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         if (mSettings->library.podtype(tok->expressionString()))
+            continue;
+
+        if (mSettings->library.getTypeCheck("unusedvar", functionName) != Library::TypeCheck::def)
             continue;
 
         const Token* start = tok;
@@ -725,10 +731,10 @@ void CheckFunctions::useStandardLibrary()
 
         const auto& secondOp = condToken->str();
         const bool isLess = "<" == secondOp &&
-                            isConstExpression(condToken->astOperand2(), mSettings->library, true, mTokenizer->isCPP()) &&
+                            isConstExpression(condToken->astOperand2(), mSettings->library, mTokenizer->isCPP()) &&
                             condToken->astOperand1()->varId() == idxVarId;
         const bool isMore = ">" == secondOp &&
-                            isConstExpression(condToken->astOperand1(), mSettings->library, true, mTokenizer->isCPP()) &&
+                            isConstExpression(condToken->astOperand1(), mSettings->library, mTokenizer->isCPP()) &&
                             condToken->astOperand2()->varId() == idxVarId;
 
         if (!(isLess || isMore))

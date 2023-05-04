@@ -22,18 +22,19 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/
 CPPCHECK="$DIR"../../cppcheck
 CFG="$DIR"../../cfg/
 
+# TODO: remove missingInclude disabling when it no longer is implied by --enable=information
 # Cppcheck options
-CPPCHECK_OPT='--check-library --platform=unix64 --enable=information --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
+CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --error-exitcode=-1 --disable=missingInclude --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
 
 # Compiler settings
 CXX=g++
-CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security -Wno-deprecated-declarations'
+CXX_OPT='-fsyntax-only -w -std=c++2a'
 CC=gcc
-CC_OPT='-Wno-format -Wno-stringop-overread -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
+CC_OPT='-fsyntax-only -w -std=c11'
 
 function get_pkg_config_cflags {
     set +e
-    PKGCONFIG=$(pkg-config --cflags $1)
+    PKGCONFIG=$(pkg-config --cflags "$@")
     PKGCONFIG_RETURNCODE=$?
     set -e
     if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
@@ -60,9 +61,9 @@ function gnu_fn {
 # qt.cpp
 function qt_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        QTCONFIG=$(get_pkg_config_cflags Qt5Core)
+        QTCONFIG=$(get_pkg_config_cflags Qt5Core Qt5Test)
         if [ -n "$QTCONFIG" ]; then
-            QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core)
+            QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core Qt5Test)
             [[ $QTBUILDCONFIG =~ (^|[[:space:]])reduce_relocations($|[[:space:]]) ]] && QTCONFIG="${QTCONFIG} -fPIC"
             set +e
             echo -e "#include <QString>" | ${CXX} ${CXX_OPT} ${QTCONFIG} -x c++ -
@@ -194,7 +195,10 @@ function sqlite3_fn {
 
 # openmp.c
 function openmp_fn {
-    ${CC} ${CC_OPT} -fopenmp ${DIR}openmp.c
+    # MacOS compiler has no OpenMP by default
+    if ! command -v sw_vers; then
+      ${CC} ${CC_OPT} -fopenmp ${DIR}openmp.c
+    fi
 }
 
 # python.c
@@ -408,98 +412,101 @@ function cppunit_fn {
 
 function check_file {
     f=$(basename $1)
+    lib="${f%%.*}"
     case $f in
         boost.cpp)
             boost_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=boost ${DIR}boost.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         bsd.c)
             bsd_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=bsd ${DIR}bsd.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         cairo.c)
             cairo_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=cairo ${DIR}cairo.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         cppunit.cpp)
             cppunit_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=cppunit -f ${DIR}cppunit.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         gnu.c)
             gnu_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=posix,gnu ${DIR}gnu.c
+            # TODO: posix needs to specified first or it has a different mmap() config
+            # TODO: get rid of posix dependency
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=posix,$lib ${DIR}gnu.c
             ;;
         googletest.cpp)
             googletest_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=googletest ${DIR}googletest.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         gtk.c)
             gtk_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         kde.cpp)
             # TODO: "kde-4config" is no longer commonly available in recent distros
             #kde_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=kde ${DIR}kde.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         libcurl.c)
             libcurl_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=libcurl ${DIR}libcurl.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         libsigc++.cpp)
             libsigcpp_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=libsigc++ ${DIR}libsigc++.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         lua.c)
             lua_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=lua ${DIR}lua.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         opencv2.cpp)
             # TODO: "opencv.pc" is not commonly available in distros
             #opencv2_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         openmp.c)
             openmp_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=openmp ${DIR}openmp.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         openssl.c)
             openssl_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=openssl ${DIR}openssl.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         posix.c)
             posix_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=posix ${DIR}posix.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         python.c)
             python_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --library=python ${DIR}python.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         qt.cpp)
             qt_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=qt ${DIR}qt.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         sqlite3.c)
             sqlite3_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=sqlite3 ${DIR}sqlite3.c
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         std.c)
             std_c_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive ${DIR}std.c
+            ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}$f
             ;;
         std.cpp)
             std_cpp_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive ${DIR}std.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} ${DIR}$f
             ;;
         windows.cpp)
             windows_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32A --library=windows ${DIR}windows.cpp
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W --library=windows ${DIR}windows.cpp
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  --library=windows ${DIR}windows.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win32A --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win32W --library=$lib ${DIR}$f
+            ${CPPCHECK} ${CPPCHECK_OPT} --platform=win64  --library=$lib ${DIR}$f
             ;;
         wxwidgets.cpp)
             wxwidgets_fn
-            ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets,windows -f ${DIR}wxwidgets.cpp
+            ${CPPCHECK} ${CPPCHECK_OPT} --library=$lib ${DIR}$f
             ;;
         *)
           echo "Unhandled file $f"

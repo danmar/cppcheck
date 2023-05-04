@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <list>
 #include <map>
@@ -111,7 +111,7 @@ private:
     void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
 
     void bufferOverflow();
-    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value, const Certainty::CertaintyLevel& certainty);
+    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value, Certainty certainty);
 
     void arrayIndexThenCheck();
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);

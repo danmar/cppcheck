@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "valueflow.h"
 #include "templatesimplifier.h"
 #include "utils.h"
+#include "vfvalue.h"
 
 #include <cstdint>
 #include <cstddef>
@@ -132,7 +132,7 @@ struct TokenImpl {
     TokenDebug mDebug;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
-    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
+    bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint &value) const;
 
     TokenImpl()
         : mVarId(0),
@@ -442,10 +442,10 @@ public:
     }
     bool isUnaryPreOp() const;
 
-    unsigned int flags() const {
+    uint64_t flags() const {
         return mFlags;
     }
-    void flags(const unsigned int flags_) {
+    void flags(const uint64_t flags_) {
         mFlags = flags_;
     }
     bool isUnsigned() const {
@@ -559,7 +559,7 @@ public:
     void setCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint value) {
         mImpl->setCppcheckAttribute(type, value);
     }
-    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint *value) const {
+    bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const {
         return mImpl->getCppcheckAttribute(type, value);
     }
     bool hasCppcheckAttributes() const {
@@ -696,7 +696,10 @@ public:
     unsigned char bits() const {
         return mImpl->mBits;
     }
-    std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
+    const std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() const {
+        return mImpl->mTemplateSimplifierPointers;
+    }
+    std::set<TemplateSimplifier::TokenAndName*>* templateSimplifierPointers() {
         return mImpl->mTemplateSimplifierPointers;
     }
     void templateSimplifierPointer(TemplateSimplifier::TokenAndName* tokenAndName) {
@@ -830,10 +833,13 @@ public:
         mImpl->mColumn = c;
     }
 
-    Token *next() const {
+    Token* next() {
         return mNext;
     }
 
+    const Token* next() const {
+        return mNext;
+    }
 
     /**
      * Delete tokens between begin and end. E.g. if begin = 1
@@ -859,10 +865,13 @@ public:
         return insertToken(tokenStr, originalNameStr, true);
     }
 
-    Token *previous() const {
+    Token* previous() {
         return mPrevious;
     }
 
+    const Token* previous() const {
+        return mPrevious;
+    }
 
     nonneg int varId() const {
         return mImpl->mVarId;
@@ -1012,7 +1021,11 @@ public:
      *
      * @return The token where this token links to.
      */
-    Token *link() const {
+    const Token* link() const {
+        return mLink;
+    }
+
+    Token* link() {
         return mLink;
     }
 
@@ -1140,21 +1153,24 @@ public:
      * lists. Requires that Tokenizer::createLinks2() has been called before.
      * Returns 0, if there is no next argument.
      */
-    Token* nextArgument() const;
+    const Token* nextArgument() const;
+    Token *nextArgument() {
+        return const_cast<Token *>(const_cast<const Token *>(this)->nextArgument());
+    }
 
     /**
      * @return the first token of the next argument. Does only work on argument
      * lists. Should be used only before Tokenizer::createLinks2() was called.
      * Returns 0, if there is no next argument.
      */
-    Token* nextArgumentBeforeCreateLinks2() const;
+    const Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
      * @return the first token of the next template argument. Does only work on template argument
      * lists. Requires that Tokenizer::createLinks2() has been called before.
      * Returns 0, if there is no next argument.
      */
-    Token* nextTemplateArgument() const;
+    const Token* nextTemplateArgument() const;
 
     /**
      * Returns the closing bracket of opening '<'. Should only be used if link()
@@ -1452,7 +1468,6 @@ public:
 };
 
 Token* findTypeEnd(Token* tok);
-const Token* findTypeEnd(const Token* tok);
 Token* findLambdaEndScope(Token* tok);
 const Token* findLambdaEndScope(const Token* tok);
 

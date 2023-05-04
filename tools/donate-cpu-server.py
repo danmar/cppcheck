@@ -26,9 +26,12 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.32"
+SERVER_VERSION = "1.3.40"
 
-OLD_VERSION = '2.9'
+OLD_VERSION = '2.10'
+
+HEAD_MARKER = 'head results:'
+INFO_MARKER = 'info messages:'
 
 
 # Set up logging
@@ -49,7 +52,8 @@ logger.addHandler(handler_file)
 
 
 def print_ts(msg) -> None:
-    print('[{}] {}'.format(strDateTime(), msg))
+    dt = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    print('[{}] {}'.format(dt, msg))
 
 
 # Set up an exception hook for all uncaught exceptions so they can be logged
@@ -65,7 +69,7 @@ sys.excepthook = handle_uncaught_exception
 
 
 def strDateTime() -> str:
-    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+    return datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 
 
 def dateTimeFromStr(datestr: str) -> datetime.datetime:
@@ -73,16 +77,18 @@ def dateTimeFromStr(datestr: str) -> datetime.datetime:
 
 
 def overviewReport() -> str:
-    html = '<html><head><title>daca@home</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>daca@home</title></head><body>\n'
     html += '<h1>daca@home</h1>\n'
-    html += '<a href="crash.html">Crash report</a><br>\n'
+    html += '<a href="crash.html">Crash report</a> - <a href="crash.html?pkgs=1">packages.txt</a><br>\n'
     html += '<a href="timeout.html">Timeout report</a><br>\n'
     html += '<a href="stale.html">Stale report</a><br>\n'
     html += '<a href="diff.html">Diff report</a><br>\n'
     html += '<a href="head.html">HEAD report</a><br>\n'
+    html += '<a href="headinfo.html">HEAD (info) report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
-    html += '<a href="time_gt.html">Time report (regressed)</a><br>\n'
+    html += '<a href="time_gt.html">Time report (regressed)</a> - <a href="time_gt.html?pkgs=1">packages.txt</a><br>\n'
     html += '<a href="time_slow.html">Time report (slowest)</a><br>\n'
     html += '<br>\n'
     html += '--check-library:<br>\n'
@@ -99,6 +105,8 @@ def overviewReport() -> str:
     html += '<a href="head-simplifyTypedef">simplifyTypedef</a><br>\n'
     html += '<a href="head-simplifyUsingUnmatchedBodyEnd">simplifyUsingUnmatchedBodyEnd</a><br>\n'
     html += '<a href="head-simplifyUsing">simplifyUsing</a><br>\n'
+    html += '<a href="head-valueFlowMaxIterations">valueFlowMaxIterations</a><br>\n'
+    html += '<a href="head-templateInstantiation">templateInstantiation</a><br>\n'
     #html += '<a href="head-autoNoType">autoNoType</a><br>\n'
     #html += '<a href="head-valueFlowBailout">valueFlowBailout</a><br>\n'
     #html += '<a href="head-bailoutUninitVar">bailoutUninitVar</a><br>\n'
@@ -143,7 +151,8 @@ def fmt(a: str, b: str, c: str = None, d: str = None, e: str = None, link: bool 
 
 
 def latestReport(latestResults: list) -> str:
-    html = '<html><head><title>Latest daca@home results</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Latest daca@home results</title></head><body>\n'
     html += '<h1>Latest daca@home results</h1>\n'
     html += '<pre>\n<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', 'Diff', link=False) + '</b>\n'
 
@@ -184,7 +193,8 @@ def latestReport(latestResults: list) -> str:
 def crashReport(results_path: str, query_params: dict):
     pkgs = '' if query_params.get('pkgs') == '1' else None
 
-    html = '<html><head><title>Crash report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
@@ -221,10 +231,10 @@ def crashReport(results_path: str, query_params: dict):
                     if counts[1] == 'Crash!':
                         c_head = 'Crash'
                     html += fmt(package, datestr, c_version, c_head) + '\n'
-                    if package_url is not None:
-                        pkgs += '{}\n'.format(package_url)
                     if c_head != 'Crash':
                         break
+                    if package_url is not None:
+                        pkgs += '{}\n'.format(package_url)
                 elif line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
                     location_index = crash_line.rfind(' at ')
@@ -286,7 +296,8 @@ def crashReport(results_path: str, query_params: dict):
 
 
 def timeoutReport(results_path: str) -> str:
-    html = '<html><head><title>Timeout report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Timeout report</title></head><body>\n'
     html += '<h1>Timeout report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', OLD_VERSION, 'Head', link=False) + '</b>\n'
@@ -327,7 +338,8 @@ def timeoutReport(results_path: str) -> str:
 
 
 def staleReport(results_path: str) -> str:
-    html = '<html><head><title>Stale report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Stale report</title></head><body>\n'
     html += '<h1>Stale report</h1>\n'
     html += '<pre>\n'
     html += '<b>' + fmt('Package', 'Date       Time', link=False) + '</b>\n'
@@ -417,7 +429,8 @@ def diffReport(resultsPath: str) -> str:
                 outToday[messageId][0] += sums[OLD_VERSION]
                 outToday[messageId][1] += sums['head']
 
-    html = '<html><head><title>Diff report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>Diff report</title></head><body>\n'
     html += '<h1>Diff report</h1>\n'
     html += '<h2>Uploaded today</h2>'
     html += diffReportFromDict(outToday, 'today')
@@ -528,7 +541,7 @@ def diffMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-def headReportFromDict(out: dict, today: str) -> str:
+def summaryReportFromDict(out: dict, prefix: str, today: str) -> str:
     html = '<pre>\n'
     html += '<b>MessageID                                  Count</b>\n'
     sumTotal = 0
@@ -541,7 +554,7 @@ def headReportFromDict(out: dict, today: str) -> str:
             while len(line) < 48 - len(c):
                 line += ' '
             line += c + ' '
-        line = '<a href="head' + today + '-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
+        line = '<a href="' + prefix + today + '-' + messageId + '">' + messageId + '</a>' + line[line.find(' '):]
         html += line + '\n'
 
     # Sum
@@ -556,7 +569,7 @@ def headReportFromDict(out: dict, today: str) -> str:
     return html
 
 
-def headReport(resultsPath: str) -> str:
+def summaryReport(resultsPath: str, name: str, prefix: str, marker: str) -> str:
     out = {}
     outToday = {}
     today = strDateTime()[:10]
@@ -566,7 +579,7 @@ def headReport(resultsPath: str) -> str:
             continue
         uploadedToday = False
         firstLine = True
-        headResults = False
+        inResults = False
         for line in open(filename, 'rt'):
             if firstLine:
                 if line.startswith(today):
@@ -581,13 +594,13 @@ def headReport(resultsPath: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith('head results:'):
-                headResults = True
+            if line.startswith(marker):
+                inResults = True
                 continue
             if line.startswith('diff:'):
-                if headResults:
+                if inResults:
                     break
-            if not headResults:
+            if not inResults:
                 continue
             if not line.endswith(']'):
                 continue
@@ -610,17 +623,26 @@ def headReport(resultsPath: str) -> str:
                     outToday[messageId] = 0
                 outToday[messageId] += 1
 
-    html = '<html><head><title>HEAD report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>HEAD report</title></head><body>\n'
     html += '<h1>HEAD report</h1>\n'
     html += '<h2>Uploaded today</h2>'
-    html += headReportFromDict(outToday, 'today')
+    html += summaryReportFromDict(outToday, prefix, 'today')
     html += '<h2>All</h2>'
-    html += headReportFromDict(out, '')
+    html += summaryReportFromDict(out, prefix, '')
 
     return html
 
 
-def headMessageIdReport(resultPath: str, messageId: str, query_params: dict) -> str:
+def headReport(resultsPath: str) -> str:
+    return summaryReport(resultsPath, 'HEAD', 'head', HEAD_MARKER)
+
+
+def infoReport(resultsPath: str) -> str:
+    return summaryReport(resultsPath, 'HEAD (info)', 'headinfo', INFO_MARKER)
+
+
+def messageIdReport(resultPath: str, marker: str, messageId: str, query_params: dict) -> str:
     pkgs = '' if query_params.get('pkgs') == '1' else None
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
@@ -628,15 +650,15 @@ def headMessageIdReport(resultPath: str, messageId: str, query_params: dict) -> 
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         url = None
-        headResults = False
+        inResults = False
         for line in open(filename, 'rt'):
             if line.startswith('ftp://'):
                 url = line
-            elif line.startswith('head results:'):
-                headResults = True
-            elif not headResults:
+            elif line.startswith(marker):
+                inResults = True
+            elif not inResults:
                 continue
-            elif headResults and line.startswith('diff:'):
+            elif inResults and line.startswith('diff:'):
                 break
             elif line.endswith(e):
                 if url:
@@ -650,7 +672,15 @@ def headMessageIdReport(resultPath: str, messageId: str, query_params: dict) -> 
     return text
 
 
-def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
+def headMessageIdReport(resultPath: str, messageId: str, query_params: dict) -> str:
+    return messageIdReport(resultPath, HEAD_MARKER, messageId, query_params)
+
+
+def infoMessageIdReport(resultPath: str, messageId: str, query_params: dict) -> str:
+    return messageIdReport(resultPath, INFO_MARKER, messageId, query_params)
+
+
+def messageIdTodayReport(resultPath: str, messageId: str, marker: str) -> str:
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     today = strDateTime()[:10]
@@ -658,7 +688,7 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         url = None
-        headResults = False
+        inResults = False
         firstLine = True
         for line in open(filename, 'rt'):
             if firstLine:
@@ -667,11 +697,11 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
                     break
             if line.startswith('ftp://'):
                 url = line
-            elif line.startswith('head results:'):
-                headResults = True
-            elif not headResults:
+            elif line.startswith(marker):
+                inResults = True
+            elif not inResults:
                 continue
-            elif headResults and line.startswith('diff:'):
+            elif inResults and line.startswith('diff:'):
                 break
             elif line.endswith(e):
                 if url:
@@ -681,9 +711,25 @@ def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
     return text
 
 
-def timeReport(resultPath: str, show_gt: bool) -> str:
+def headMessageIdTodayReport(resultPath: str, messageId: str) -> str:
+    return messageIdTodayReport(resultPath, messageId, HEAD_MARKER)
+
+
+def infoMessageIdTodayReport(resultPath: str, messageId: str) -> str:
+    return messageIdTodayReport(resultPath, messageId, INFO_MARKER)
+
+
+# TODO: needs to dinicate that it returns 'tuple[str, str]' but that isn't supported until Python 3.9
+def timeReport(resultPath: str, show_gt: bool, query_params: dict):
+    # no need for package report support in "improved" report
+    pkgs = '' if show_gt and query_params and query_params.get('pkgs') == '1' else None
+    factor = float(query_params.get('factor')) if query_params and 'factor' in query_params else 2.0
+    if not show_gt:
+        factor = 1.0 / factor
+
     title = 'Time report ({})'.format('regressed' if show_gt else 'improved')
-    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>{}</title></head><body>\n'.format(title)
     html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
     column_width = [40, 10, 10, 10, 10, 10]
@@ -701,6 +747,7 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         datestr = None
+        package_url = None
         for line in open(filename, 'rt'):
             line = line.strip()
             if line.startswith('cppcheck: '):
@@ -713,6 +760,8 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
             if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                 datestr = line
                 continue
+            elif pkgs is not None and package_url is None and line.startswith('ftp://'):
+                package_url = line
             if not line.startswith('elapsed-time:'):
                 continue
             split_line = line.split()
@@ -721,20 +770,33 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
             if time_base < 0.0 or time_head < 0.0:
                 # ignore results with crashes / errors for the time report
                 break
+            if time_base == 0.0 and time_head == 0.0:
+                # no difference possible
+                break
             total_time_base += time_base
             total_time_head += time_head
+            if time_base == time_head:
+                # no difference
+                break
+            if time_base > 0.0 and time_head > 0.0:
+                time_factor = time_head / time_base
+            elif time_base == 0.0:
+                # the smallest possible value is 0.1 so treat that as an increase of 100%
+                # on top of the existing 100% (treating the base 0.0 as such).
+                time_factor = 1.0 + (time_head * 10)
+            else:
+                time_factor = 0.0
             suspicious_time_difference = False
-            if show_gt and time_base > 1 and time_base*2 < time_head:
+            if show_gt and time_factor > factor:
                 suspicious_time_difference = True
-            elif not show_gt and time_head > 1 and time_head*2 < time_base:
+            elif not show_gt and time_factor < factor:
                 suspicious_time_difference = True
             if suspicious_time_difference:
-                if time_base > 0.0:
-                    time_factor = time_head / time_base
-                else:
-                    time_factor = 0.0
                 pkg_name = filename[len(resultPath)+1:]
                 data[pkg_name] = (datestr, split_line[2], split_line[1], time_factor)
+
+                if package_url is not None:
+                    pkgs += '{}\n'.format(package_url)
             break
 
     sorted_data = sorted(data.items(), key=lambda kv: kv[1][3], reverse=show_gt)
@@ -745,10 +807,8 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
 
     html += '\n'
     html += '(listed above are all suspicious timings with a factor '
-    if show_gt:
-        html += '&gt;2.00'
-    else:
-        html += '&lt;=0.50'
+    html += '&gt;' if show_gt else '&lt;'
+    html += ' {}'.format(format(factor, '.2f'))
     html += ')\n'
     html += '\n'
     if total_time_base > 0.0:
@@ -766,12 +826,15 @@ def timeReport(resultPath: str, show_gt: bool) -> str:
     html += '</pre>\n'
     html += '</body></html>\n'
 
-    return html
+    if pkgs is not None:
+        return pkgs, 'text/plain'
+    return html, 'text/html'
 
 
 def timeReportSlow(resultPath: str) -> str:
     title = 'Time report (slowest)'
-    html = '<html><head><title>{}</title></head><body>\n'.format(title)
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>{}</title></head><body>\n'.format(title)
     html += '<h1>{}</h1>\n'.format(title)
     html += '<pre>\n'
     html += '<b>'
@@ -846,7 +909,8 @@ def check_library_report(result_path: str, message_id: str) -> str:
         m_column = 'Function'
 
     functions_shown_max = 5000
-    html = '<html><head><title>' + message_id + ' report</title></head><body>\n'
+    html = '<!DOCTYPE html>\n'
+    html += '<html><head><title>' + message_id + ' report</title></head><body>\n'
     html += '<h1>' + message_id + ' report</h1>\n'
     html += 'Top ' + str(functions_shown_max) + ' ' + metric + ' are shown.'
     html += '<pre>\n'
@@ -956,9 +1020,11 @@ class HttpClientThread(Thread):
         self.connection = connection
         self.cmd = cmd[:cmd.find('\r\n')]
         self.resultPath = resultPath
+        self.infoPath = os.path.join(self.resultPath, 'info_output')
         self.latestResults = latestResults
 
     # TODO: use a proper parser
+    @staticmethod
     def parse_req(cmd):
         req_parts = cmd.split(' ')
         if len(req_parts) != 3 or req_parts[0] != 'GET' or not req_parts[2].startswith('HTTP'):
@@ -970,7 +1036,7 @@ class HttpClientThread(Thread):
         try:
             cmd = self.cmd
             print_ts(cmd)
-            url, queryParams = HttpClientThread.parse_req(cmd)
+            url, queryParams = self.parse_req(cmd)
             if url is None:
                 print_ts('invalid request: {}'.format(cmd))
                 self.connection.close()
@@ -1004,38 +1070,49 @@ class HttpClientThread(Thread):
             elif url == '/head.html':
                 html = headReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
+            elif url == '/headinfo.html':
+                html = infoReport(self.infoPath)
+                httpGetResponse(self.connection, html, 'text/html')
             elif url.startswith('/headtoday-'):
                 messageId = url[len('/headtoday-'):]
                 text = headMessageIdTodayReport(self.resultPath, messageId)
+                httpGetResponse(self.connection, text, 'text/plain')
+            elif url.startswith('/headinfotoday-'):
+                messageId = url[len('/headinfotoday-'):]
+                text = infoMessageIdTodayReport(self.infoPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url.startswith('/head-'):
                 messageId = url[len('/head-'):]
                 text = headMessageIdReport(self.resultPath, messageId, queryParams)
                 httpGetResponse(self.connection, text, 'text/plain')
+            elif url.startswith('/headinfo-'):
+                messageId = url[len('/headinfo-'):]
+                text = infoMessageIdReport(self.infoPath, messageId, queryParams)
+                httpGetResponse(self.connection, text, 'text/plain')
             elif url == '/time_lt.html':
-                text = timeReport(self.resultPath, False)
-                httpGetResponse(self.connection, text, 'text/html')
+                text, mime = timeReport(self.resultPath, False, queryParams)
+                httpGetResponse(self.connection, text, mime)
             elif url == '/time_gt.html':
-                text = timeReport(self.resultPath, True)
-                httpGetResponse(self.connection, text, 'text/html')
+                text, mime = timeReport(self.resultPath, True, queryParams)
+                httpGetResponse(self.connection, text, mime)
             elif url == '/time_slow.html':
                 text = timeReportSlow(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == '/check_library_function_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
+                text = check_library_report(self.infoPath, message_id='checkLibraryFunction')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == '/check_library_noreturn_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryNoReturn')
+                text = check_library_report(self.infoPath, message_id='checkLibraryNoReturn')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == '/check_library_use_ignore_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryUseIgnore')
+                text = check_library_report(self.infoPath, message_id='checkLibraryUseIgnore')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == '/check_library_check_type_report.html':
-                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryCheckType')
+                text = check_library_report(self.infoPath, message_id='checkLibraryCheckType')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('/check_library-'):
                 function_name = url[len('/check_library-'):]
-                text = check_library_function_name(self.resultPath + '/' + 'info_output', function_name)
+                text = check_library_function_name(self.infoPath, function_name)
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + url
@@ -1057,8 +1134,8 @@ class HttpClientThread(Thread):
 
 def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, timeout=10):
     data = cmd[pos_nl+1:]
+    t = 0.0
     try:
-        t = 0.0
         while (len(data) < max_data_size) and (not check_done or not data.endswith('\nDONE')) and (timeout > 0 and t < timeout):
             bytes_received = connection.recv(1024)
             if bytes_received:
@@ -1077,10 +1154,10 @@ def read_data(connection, cmd, pos_nl, max_data_size, check_done, cmd_name, time
                 t += 0.2
         connection.close()
     except socket.error as e:
-        print_ts('Socket error occured ({}): {}'.format(cmd_name, e))
+        print_ts('Socket error occurred ({}): {}'.format(cmd_name, e))
         data = None
 
-    if (timeout > 0 and t >= timeout):
+    if timeout > 0 and t >= timeout:
         print_ts('Timeout occurred ({}).'.format(cmd_name))
         data = None
 

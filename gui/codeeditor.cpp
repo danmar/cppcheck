@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,24 @@
 
 #include "codeeditorstyle.h"
 
+#include <QChar>
+#include <QColor>
+#include <QFont>
+#include <QFontMetrics>
+#include <QKeySequence>
+#include <QLatin1Char>
+#include <QList>
 #include <QPainter>
+#include <QPaintEvent>
+#include <QRect>
+#include <QRectF>
+#include <QRegularExpressionMatchIterator>
 #include <QShortcut>
+#include <QTextBlock>
+#include <QTextCursor>
+#include <QTextEdit>
+#include <QTextFormat>
+#include <QtCore>
 
 class QTextDocument;
 
@@ -36,6 +52,7 @@ Highlighter::Highlighter(QTextDocument *parent,
     mKeywordFormat.setForeground(mWidgetStyle->keywordColor);
     mKeywordFormat.setFontWeight(mWidgetStyle->keywordWeight);
     QStringList keywordPatterns;
+    // TODO: use Keywords::getX()
     keywordPatterns << "alignas"
                     << "alignof"
                     << "asm"

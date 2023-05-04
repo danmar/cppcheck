@@ -20,8 +20,9 @@
 #define LIBRARYADDFUNCTIONDIALOG_H
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
 
-class QObject;
 class QWidget;
 namespace Ui {
     class LibraryAddFunctionDialog;

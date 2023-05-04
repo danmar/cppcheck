@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,11 @@
 #include "settings.h"
 #include "path.h"
 #include "summaries.h"
-#include "valueflow.h"
+#include "timer.h"
+#include "vfvalue.h"
 
 #include <fstream>
+#include <utility>
 
 #define PICOJSON_USE_INT64
 #include <picojson.h>
@@ -39,10 +41,12 @@ Settings::Settings()
     checkConfiguration(false),
     checkHeaders(true),
     checkLibrary(false),
+    checksMaxTime(0),
     checkUnusedTemplates(true),
     clang(false),
     clangExecutable("clang"),
     clangTidy(false),
+    clearIncludeCache(false),
     daca(false),
     debugnormal(false),
     debugSimplified(false),
@@ -55,7 +59,6 @@ Settings::Settings()
     force(false),
     inlineSuppressions(false),
     jobs(1),
-    jointSuppressionReport(false),
     loadAverage(0),
     maxConfigs(12),
     maxCtuDepth(2),
@@ -66,12 +69,16 @@ Settings::Settings()
     relativePaths(false),
     reportProgress(false),
     showtime(SHOWTIME_MODES::SHOWTIME_NONE),
+    templateMaxTime(0),
+    typedefMaxTime(0),
+    valueFlowMaxIterations(4),
     verbose(false),
     xml(false),
     xml_version(2)
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
+    setCheckLevelNormal();
 }
 
 void Settings::loadCppcheckCfg()
@@ -109,7 +116,7 @@ void Settings::loadCppcheckCfg()
     }
 }
 
-std::string Settings::addEnabled(const std::string &str)
+std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> &groups)
 {
     // Enable parameters may be comma separated...
     if (str.find(',') != std::string::npos) {
@@ -118,7 +125,7 @@ std::string Settings::addEnabled(const std::string &str)
         while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
                 return std::string("--enable parameter is empty");
-            const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));
+            std::string errmsg(parseEnabled(str.substr(prevPos, pos - prevPos), groups));
             if (!errmsg.empty())
                 return errmsg;
             ++pos;
@@ -126,11 +133,18 @@ std::string Settings::addEnabled(const std::string &str)
         }
         if (prevPos >= str.length())
             return std::string("--enable parameter is empty");
-        return addEnabled(str.substr(prevPos));
+        return parseEnabled(str.substr(prevPos), groups);
     }
 
+    auto& severity = std::get<0>(groups);
+    auto& checks = std::get<1>(groups);
+
     if (str == "all") {
-        severity.fill();
+        // "error" is always enabled and cannot be controlled - so exclude it from "all"
+        SimpleEnableGroup<Severity::SeverityType> newSeverity;
+        newSeverity.fill();
+        newSeverity.disable(Severity::SeverityType::error);
+        severity.enable(newSeverity);
         checks.enable(Checks::missingInclude);
         checks.enable(Checks::unusedFunction);
     } else if (str == "warning") {
@@ -143,7 +157,6 @@ std::string Settings::addEnabled(const std::string &str)
         severity.enable(Severity::portability);
     } else if (str == "information") {
         severity.enable(Severity::information);
-        checks.enable(Checks::missingInclude);
     } else if (str == "unusedFunction") {
         checks.enable(Checks::unusedFunction);
     } else if (str == "missingInclude") {
@@ -155,13 +168,46 @@ std::string Settings::addEnabled(const std::string &str)
     }
 #endif
     else {
+        // the actual option is prepending in the applyEnabled() call
         if (str.empty())
-            return std::string("cppcheck: --enable parameter is empty");
+            return " parameter is empty";
         else
-            return std::string("cppcheck: there is no --enable parameter with the name '" + str + "'");
+            return " parameter with the unknown name '" + str + "'";
     }
 
-    return std::string();
+    return "";
+}
+
+std::string Settings::addEnabled(const std::string &str)
+{
+    return applyEnabled(str, true);
+}
+
+std::string Settings::removeEnabled(const std::string &str)
+{
+    return applyEnabled(str, false);
+}
+
+std::string Settings::applyEnabled(const std::string &str, bool enable)
+{
+    std::tuple<SimpleEnableGroup<Severity::SeverityType>, SimpleEnableGroup<Checks>> groups;
+    std::string errmsg = parseEnabled(str, groups);
+    if (!errmsg.empty())
+        return (enable ? "--enable" : "--disable") + errmsg;
+
+    const auto s = std::get<0>(groups);
+    const auto c = std::get<1>(groups);
+    if (enable) {
+        severity.enable(s);
+        checks.enable(c);
+    }
+    else {
+        severity.disable(s);
+        checks.disable(c);
+    }
+    // FIXME: hack to make sure "error" is always enabled
+    severity.enable(Severity::SeverityType::error);
+    return errmsg;
 }
 
 bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) const
@@ -176,4 +222,19 @@ bool Settings::isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck) 
 void Settings::loadSummaries()
 {
     Summaries::loadReturn(buildDir, summaryReturn);
+}
+
+
+void Settings::setCheckLevelExhaustive()
+{
+    // Checking can take a little while. ~ 10 times slower than normal analysis is OK.
+    performanceValueFlowMaxIfCount = -1;
+    performanceValueFlowMaxSubFunctionArgs = 256;
+}
+
+void Settings::setCheckLevelNormal()
+{
+    // Checking should finish in reasonable time.
+    performanceValueFlowMaxSubFunctionArgs = 8;
+    performanceValueFlowMaxIfCount = 100;
 }

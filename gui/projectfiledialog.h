@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,12 @@
 #include "suppressions.h"
 
 #include <QDialog>
+#include <QList>
+#include <QObject>
 #include <QString>
 #include <QStringList>
 
 class QModelIndex;
-class QObject;
 class QWidget;
 namespace Ui {
     class ProjectFile;
@@ -266,6 +267,11 @@ protected slots:
      * @brief Edit suppression (double clicking on suppression)
      */
     void editSuppression(const QModelIndex &index);
+
+    /**
+     * @brief Browse for misra file
+     */
+    void browseMisraFile();
 
     /**
      * @brief Check for all VS configurations

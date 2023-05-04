@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "checkpostfixoperator.h"
 #include "errortypes.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <sstream> // IWYU pragma: keep
@@ -30,7 +30,7 @@ public:
     TestPostfixOperator() : TestFixture("TestPostfixOperator") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
 #define check(code) check_(code, __FILE__, __LINE__)
     void check_(const char code[], const char* file, int line) {
@@ -48,8 +48,6 @@ private:
     }
 
     void run() override {
-        settings.severity.enable(Severity::performance);
-
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
         TEST_CASE(testvolatile);

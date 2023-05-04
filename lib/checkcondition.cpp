@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,14 +29,13 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include "checkother.h" // comparisonNonZeroExpressionLessThanZero and testIfNonZeroExpressionIsPositive
 
 #include <algorithm>
 #include <limits>
 #include <list>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -364,15 +363,15 @@ void CheckCondition::comparison()
                 if ((expr1->str() == "&" && (num1 & num2) != num2) ||
                     (expr1->str() == "|" && (num1 | num2) != num2)) {
                     const std::string& op(tok->str());
-                    comparisonError(expr1, expr1->str(), num1, op, num2, op=="==" ? false : true);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, op != "==");
                 }
             } else if (expr1->str() == "&") {
                 const bool or_equal = Token::Match(tok, ">=|<=");
                 const std::string& op(tok->str());
                 if ((Token::Match(tok, ">=|<")) && (num1 < num2)) {
-                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? false : true);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, !or_equal);
                 } else if ((Token::Match(tok, "<=|>")) && (num1 <= num2)) {
-                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
+                    comparisonError(expr1, expr1->str(), num1, op, num2, or_equal);
                 }
             } else if (expr1->str() == "|") {
                 if ((expr1->astOperand1()->valueType()) &&
@@ -382,11 +381,11 @@ void CheckCondition::comparison()
                     if ((Token::Match(tok, ">=|<")) && (num1 >= num2)) {
                         //"(a | 0x07) >= 7U" is always true for unsigned a
                         //"(a | 0x07) < 7U" is always false for unsigned a
-                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? true : false);
+                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal);
                     } else if ((Token::Match(tok, "<=|>")) && (num1 > num2)) {
                         //"(a | 0x08) <= 7U" is always false for unsigned a
                         //"(a | 0x07) > 6U" is always true for unsigned a
-                        comparisonError(expr1, expr1->str(), num1, op, num2, or_equal ? false : true);
+                        comparisonError(expr1, expr1->str(), num1, op, num2, !or_equal);
                     }
                 }
             }
@@ -651,7 +650,7 @@ void CheckCondition::multiCondition2()
                       [&varsInCond](const Token *cond) {
             if (cond->variable()) {
                 const Variable *var = cond->variable();
-                if (std::find(varsInCond.begin(), varsInCond.end(), var) == varsInCond.end())
+                if (std::find(varsInCond.cbegin(), varsInCond.cend(), var) == varsInCond.cend())
                     varsInCond.push_back(var);
             }
             return ChildrenToVisit::op1_and_op2;
@@ -752,7 +751,7 @@ void CheckCondition::multiCondition2()
                         // Incomplete code
                         break;
                     }
-                    const bool changed = std::any_of(vars.begin(), vars.end(), [&](int varid) {
+                    const bool changed = std::any_of(vars.cbegin(), vars.cend(), [&](int varid) {
                         return isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP());
                     });
                     if (changed)
@@ -790,7 +789,7 @@ void CheckCondition::multiCondition2()
                         if (!function || !function->isConst())
                             break;
                     }
-                    if (Token::Match(tok->previous(), "[(,] %name% [,)]") && isParameterChanged(tok))
+                    if (Token::Match(tok->previous(), "[(,] *|& %name% [,)]") && isParameterChanged(tok))
                         break;
                 }
             }
@@ -1004,11 +1003,11 @@ static inline T getvalue(const int test, const T value1, const T value2)
     return 0;
 }
 
-static bool parseComparison(const Token *comp, bool *not1, std::string *op, std::string *value, const Token **expr, bool* inconclusive)
+static bool parseComparison(const Token *comp, bool &not1, std::string &op, std::string &value, const Token *&expr, bool &inconclusive)
 {
-    *not1 = false;
+    not1 = false;
     while (comp && comp->str() == "!") {
-        *not1 = !(*not1);
+        not1 = !(not1);
         comp = comp->astOperand1();
     }
 
@@ -1018,40 +1017,37 @@ static bool parseComparison(const Token *comp, bool *not1, std::string *op, std:
     const Token* op1 = comp->astOperand1();
     const Token* op2 = comp->astOperand2();
     if (!comp->isComparisonOp() || !op1 || !op2) {
-        *op = "!=";
-        *value = "0";
-        *expr = comp;
+        op = "!=";
+        value = "0";
+        expr = comp;
     } else if (op1->isLiteral()) {
         if (op1->isExpandedMacro())
             return false;
-        *op = invertOperatorForOperandSwap(comp->str());
+        op = invertOperatorForOperandSwap(comp->str());
         if (op1->enumerator() && op1->enumerator()->value_known)
-            *value = MathLib::toString(op1->enumerator()->value);
+            value = MathLib::toString(op1->enumerator()->value);
         else
-            *value = op1->str();
-        *expr = op2;
+            value = op1->str();
+        expr = op2;
     } else if (comp->astOperand2()->isLiteral()) {
         if (op2->isExpandedMacro())
             return false;
-        *op = comp->str();
+        op = comp->str();
         if (op2->enumerator() && op2->enumerator()->value_known)
-            *value = MathLib::toString(op2->enumerator()->value);
+            value = MathLib::toString(op2->enumerator()->value);
         else
-            *value = op2->str();
-        *expr = op1;
+            value = op2->str();
+        expr = op1;
     } else {
-        *op = "!=";
-        *value = "0";
-        *expr = comp;
+        op = "!=";
+        value = "0";
+        expr = comp;
     }
 
-    *inconclusive = *inconclusive || ((*value)[0] == '\'' && !(*op == "!=" || *op == "=="));
+    inconclusive = inconclusive || ((value)[0] == '\'' && !(op == "!=" || op == "=="));
 
     // Only float and int values are currently handled
-    if (!MathLib::isInt(*value) && !MathLib::isFloat(*value) && (*value)[0] != '\'')
-        return false;
-
-    return true;
+    return MathLib::isInt(value) || MathLib::isFloat(value) || (value[0] == '\'');
 }
 
 static std::string conditionString(bool not1, const Token *expr1, const std::string &op, const std::string &value1)
@@ -1076,7 +1072,7 @@ static std::string conditionString(const Token * tok)
         bool not_;
         std::string op, value;
         const Token *expr;
-        if (parseComparison(tok, &not_, &op, &value, &expr, &inconclusive) && expr->isName()) {
+        if (parseComparison(tok, not_, op, value, expr, inconclusive) && expr->isName()) {
             return conditionString(not_, expr, op, value);
         }
     }
@@ -1192,13 +1188,13 @@ void CheckCondition::checkIncorrectLogicOperator()
             bool not1;
             std::string op1, value1;
             const Token *expr1 = nullptr;
-            parseable &= (parseComparison(comp1, &not1, &op1, &value1, &expr1, &inconclusive));
+            parseable &= (parseComparison(comp1, not1, op1, value1, expr1, inconclusive));
 
             // Parse RHS
             bool not2;
             std::string op2, value2;
             const Token *expr2 = nullptr;
-            parseable &= (parseComparison(comp2, &not2, &op2, &value2, &expr2, &inconclusive));
+            parseable &= (parseComparison(comp2, not2, op2, value2, expr2, inconclusive));
 
             if (inconclusive && !printInconclusive)
                 continue;
@@ -1501,6 +1497,8 @@ void CheckCondition::alwaysTrueFalse()
                 (tok->astOperand1()->hasKnownIntValue() || tok->astOperand2()->hasKnownIntValue()))
                 continue;
             if (Token::simpleMatch(tok, ":"))
+                continue;
+            if (Token::Match(tok->astOperand1(), "%name% (") && Token::simpleMatch(tok->astParent(), "return"))
                 continue;
             if (tok->isComparisonOp() && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1()) &&
                 isSameExpression(mTokenizer->isCPP(),
@@ -1860,8 +1858,8 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    if (mSettings->platformType == cppcheck::Platform::PlatformType::Native ||
-        mSettings->platformType == cppcheck::Platform::PlatformType::Unspecified)
+    if (mSettings->platform.type == cppcheck::Platform::Type::Native ||
+        mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
         return;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1885,19 +1883,19 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                     bits = 1;
                     break;
                 case ValueType::Type::CHAR:
-                    bits = mSettings->char_bit;
+                    bits = mSettings->platform.char_bit;
                     break;
                 case ValueType::Type::SHORT:
-                    bits = mSettings->short_bit;
+                    bits = mSettings->platform.short_bit;
                     break;
                 case ValueType::Type::INT:
-                    bits = mSettings->int_bit;
+                    bits = mSettings->platform.int_bit;
                     break;
                 case ValueType::Type::LONG:
-                    bits = mSettings->long_bit;
+                    bits = mSettings->platform.long_bit;
                     break;
                 case ValueType::Type::LONGLONG:
-                    bits = mSettings->long_long_bit;
+                    bits = mSettings->platform.long_long_bit;
                     break;
                 default:
                     break;
@@ -1910,7 +1908,7 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                 long long typeMaxValue;
                 if (typeTok->valueType()->sign != ValueType::Sign::SIGNED)
                     typeMaxValue = unsignedTypeMaxValue;
-                else if (bits >= mSettings->int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
+                else if (bits >= mSettings->platform.int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
                     typeMaxValue = unsignedTypeMaxValue;
                 else
                     typeMaxValue = unsignedTypeMaxValue / 2;

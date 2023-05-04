@@ -58,7 +58,10 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # TODO: verify this regression still exists in clang-15
         if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
             # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
-            add_compile_options_safe(-mllvm -inline-deferral)
+            check_cxx_compiler_flag("-mllvm -inline-deferral" _has_mllvm_inline_deferral)
+            if (_has_mllvm_inline_deferral)
+                add_compile_options(-mllvm -inline-deferral)
+            endif()
         endif()
 
         # use force DWARF 4 debug format since not all tools might be able to handle DWARF 5 yet - e.g. valgrind on ubuntu 20.04
@@ -73,7 +76,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-documentation-unknown-command)
 
    # TODO: fix and enable these warnings - or move to suppression list below
-   add_compile_options_safe(-Wno-deprecated-copy-dtor)
    add_compile_options_safe(-Wno-inconsistent-missing-destructor-override) # caused by Qt moc code
    add_compile_options_safe(-Wno-unused-exception-parameter)
    add_compile_options_safe(-Wno-old-style-cast)
@@ -88,7 +90,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-double-promotion)
    add_compile_options_safe(-Wno-shadow-field)
    add_compile_options_safe(-Wno-shadow-uncaptured-local)
-   add_compile_options_safe(-Wno-unreachable-code)
    add_compile_options_safe(-Wno-implicit-float-conversion)
    add_compile_options_safe(-Wno-switch-enum)
    add_compile_options_safe(-Wno-float-conversion)
@@ -101,6 +102,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-tautological-type-limit-compare)
    add_compile_options(-Wno-disabled-macro-expansion)
    add_compile_options_safe(-Wno-bitwise-instead-of-logical)
+   add_compile_options_safe(-Wno-unsafe-buffer-usage)
 
    # warnings we are not interested in
    add_compile_options(-Wno-four-char-constants)
@@ -152,7 +154,7 @@ if (MSVC)
 
     # C/C++ - Language
     add_compile_options(/Zc:rvalueCast) # Enforce type conversion rules
-    add_compile_options(/std:c++14) # C++ Language Standard - ISO C++14 Standard
+    #add_compile_options(/std:c++14) # C++ Language Standard - ISO C++14 Standard
 
     # C/C++ - Browse Information
     # Enable Browse Information - No

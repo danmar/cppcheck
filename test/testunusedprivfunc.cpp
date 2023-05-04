@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
 #include <map>
@@ -36,11 +36,9 @@ public:
     TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);
@@ -92,11 +90,11 @@ private:
     }
 
 
-    void check(const char code[], Settings::PlatformType platform = Settings::Native) {
+    void check(const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.platform(platform);
+        const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -109,12 +107,12 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for unused private functions..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings1, this);
         checkClass.privateFunctions();
     }
 
@@ -621,7 +619,7 @@ private:
               "public:\n"
               "    Foo() { }\n"
               "    __property int x = {read=getx}\n"
-              "};", Settings::Win32A);
+              "};", cppcheck::Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -634,7 +632,7 @@ private:
               "    }\n"
               "public:\n"
               "    Foo() { }\n"
-              "};", Settings::Win32A);
+              "};", cppcheck::Platform::Type::Win32A);
         ASSERT_EQUALS("", errout.str());
     }
 

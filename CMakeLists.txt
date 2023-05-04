@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(Cppcheck)
 
+include(cmake/cxx11.cmake)
+use_cxx11()
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
@@ -13,13 +16,11 @@ include(cmake/findDependencies.cmake)
 include(cmake/compileroptions.cmake)
 include(cmake/compilerDefinitions.cmake)
 include(cmake/buildFiles.cmake)
-include(cmake/cxx11.cmake)
 include(cmake/printInfo.cmake)
 if(BUILD_GUI)
     include(cmake/qtCompat.cmake)
 endif()
 
-use_cxx11()
 
 file(GLOB addons "addons/*.py")
 file(GLOB cfgs "cfg/*.cfg")
@@ -79,6 +80,11 @@ add_custom_target(copy_addons ALL
         "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/addons"
     COMMENT "Copying addons files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
 
+add_custom_target(copy_platforms ALL
+    ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/platforms"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}/platforms"
+    COMMENT "Copying platforms files to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${CMAKE_CFG_INTDIR}")
+
 if(USE_BUNDLED_TINYXML2)
     message(STATUS "Using bundled version of tinyxml2")
     add_subdirectory(externals/tinyxml2)
@@ -89,7 +95,6 @@ add_subdirectory(cli)   # Client application
 add_subdirectory(test)  # Tests
 add_subdirectory(gui)   # Graphical application
 add_subdirectory(tools/triage)   # Triage tool
-add_subdirectory(oss-fuzz) # OSS-Fuzz clients
 add_subdirectory(tools)
 
 include(cmake/clang_tidy.cmake)

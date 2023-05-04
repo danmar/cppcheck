@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "errortypes.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 
 #include <sstream> // IWYU pragma: keep
 #include <string>
-
-struct InternalError;
 
 
 class TestVarID : public TestFixture {
@@ -35,6 +34,7 @@ public:
     TestVarID() : TestFixture("TestVarID") {}
 
 private:
+    Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).checkUnusedTemplates().platform(cppcheck::Platform::Type::Unix64).build();
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -97,6 +97,7 @@ private:
         TEST_CASE(varid63);
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
         TEST_CASE(varid65); // #10936
+        TEST_CASE(varid66);
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -136,6 +137,8 @@ private:
         TEST_CASE(varid_in_class21);    // #7788
         TEST_CASE(varid_in_class22);    // #10872
         TEST_CASE(varid_in_class23);    // #11293
+        TEST_CASE(varid_in_class24);
+        TEST_CASE(varid_in_class25);
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -176,11 +179,13 @@ private:
         TEST_CASE(varid_lambda_mutable);
         TEST_CASE(varid_trailing_return1); // #8889
         TEST_CASE(varid_trailing_return2); // #9066
+        TEST_CASE(varid_trailing_return3); // #11423
         TEST_CASE(varid_parameter_pack); // #9383
         TEST_CASE(varid_for_auto_cpp17);
         TEST_CASE(varid_not); // #9689 'not x'
         TEST_CASE(varid_declInIfCondition);
         TEST_CASE(varid_globalScope);
+        TEST_CASE(varid_function_pointer_args);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -230,16 +235,12 @@ private:
     }
 
 #define tokenize(...) tokenize_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenize_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
+    std::string tokenize_(const char* file, int line, const char code[], const char filename[] = "test.cpp", const Settings *s = nullptr) {
         errout.str("");
 
-        Settings settings;
-        settings.platform(Settings::Unix64);
-        settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPPLatest;
-        settings.checkUnusedTemplates = true;
+        const Settings *settings1 = s ? s : &settings;
 
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 
@@ -252,12 +253,6 @@ private:
 #define tokenizeExpr(...) tokenizeExpr_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenizeExpr_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
-
-        Settings settings;
-        settings.platform(Settings::Unix64);
-        settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPPLatest;
-        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -272,12 +267,6 @@ private:
 #define compareVaridsForVariable(...) compareVaridsForVariable_(__FILE__, __LINE__, __VA_ARGS__)
     std::string compareVaridsForVariable_(const char* file, int line, const char code[], const char varname[], const char filename[] = "test.cpp") {
         errout.str("");
-
-        Settings settings;
-        settings.platform(Settings::Unix64);
-        settings.standards.c   = Standards::C89;
-        settings.standards.cpp = Standards::CPP11;
-        settings.checkUnusedTemplates = true;
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -1204,6 +1193,25 @@ private:
         }
     }
 
+    void varid66() {
+        {
+            const char code[] = "std::string g();\n"
+                                "const std::string s(g() + \"abc\");\n";
+            const char expected[] = "1: std :: string g ( ) ;\n"
+                                    "2: const std :: string s@1 ( g ( ) + \"abc\" ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "enum E {};\n"
+                                "typedef E(*fp_t)();\n"
+                                "E f(fp_t fp);\n";
+            const char expected[] = "1: enum E { } ;\n"
+                                    "2:\n"
+                                    "3: E f ( E ( * fp@1 ) ( ) ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+    }
+
     void varid_for_1() {
         const char code[] = "void foo(int a, int b) {\n"
                             "  for (int a=1,b=2;;) {}\n"
@@ -1985,6 +1993,67 @@ private:
                                 "8: } ;\n";
 
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
+    void varid_in_class24() {
+        const char *code{}, *expected{};
+
+        code = "class A {\n"
+               "    Q_OBJECT\n"
+               "public:\n"
+               "    using QPtr = QPointer<A>;\n"
+               "};\n";
+        expected = "1: class A {\n"
+                   "2: Q_OBJECT\n"
+                   "3: public:\n"
+                   "4:\n"
+                   "5: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+
+        code = "class A {\n"
+               "    Q_OBJECT\n"
+               "    using QPtr = QPointer<A>;\n"
+               "};\n";
+        expected = "1: class A {\n"
+                   "2: Q_OBJECT\n"
+                   "3:\n"
+                   "4: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
+    void varid_in_class25() {
+        const Settings s = settingsBuilder(settings).library("std.cfg").build();
+
+        const char *code{}, *expected{};
+        code = "struct F {\n" // #11497
+               "    int i;\n"
+               "    void f(const std::vector<F>&v) {\n"
+               "        if (v.front().i) {}\n"
+               "    }\n"
+               "};\n";
+        expected = "1: struct F {\n"
+                   "2: int i@1 ;\n"
+                   "3: void f ( const std :: vector < F > & v@2 ) {\n"
+                   "4: if ( v@2 . front ( ) . i@3 ) { }\n"
+                   "5: }\n"
+                   "6: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp", &s));
+
+        code = "struct T { };\n" // 11533
+               "struct U { T t; };\n"
+               "std::vector<U*>* g();\n"
+               "void f() {\n"
+               "    std::vector<U*>* p = g();\n"
+               "    auto t = p->front()->t;\n"
+               "}\n";
+        expected = "1: struct T { } ;\n"
+                   "2: struct U { T t@1 ; } ;\n"
+                   "3: std :: vector < U * > * g ( ) ;\n"
+                   "4: void f ( ) {\n"
+                   "5: std :: vector < U * > * p@2 ; p@2 = g ( ) ;\n"
+                   "6: auto t@3 ; t@3 = p@2 . front ( ) . t@4 ;\n"
+                   "7: }\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp", &s));
     }
 
     void varid_namespace_1() { // #7272
@@ -2822,6 +2891,18 @@ private:
         ASSERT_EQUALS(exp1, tokenize(code1));
     }
 
+    void varid_trailing_return3() { // #11423
+        const char code[] = "void f(int a, int b) {\n"
+                            "    auto g = [](int& a, const int b) -> void {};\n"
+                            "    auto h = [&a, &b]() { std::swap(a, b); };\n"
+                            "}\n";
+        const char exp[] = "1: void f ( int a@1 , int b@2 ) {\n"
+                           "2: auto g@3 ; g@3 = [ ] ( int & a@4 , const int b@5 ) . void { } ;\n"
+                           "3: auto h@6 ; h@6 = [ & a@1 , & b@2 ] ( ) { std :: swap ( a@1 , b@2 ) ; } ;\n"
+                           "4: }\n";
+        ASSERT_EQUALS(exp, tokenize(code));
+    }
+
     void varid_parameter_pack() { // #9383
         const char code1[] = "template <typename... Rest>\n"
                              "void func(Rest... parameters) {\n"
@@ -2928,6 +3009,29 @@ private:
                             "8: memset ( :: Z :: b@3 . a , 123 , 5 ) ;\n"
                             "9: }\n";
         ASSERT_EQUALS(exp1, tokenize(code1));
+    }
+
+    void varid_function_pointer_args() {
+        const char code1[] = "void foo() {\n"
+                             "    char *text;\n"
+                             "    void (*cb)(char* text);\n"
+                             "}\n";
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: char * text@1 ;\n"
+                      "3: void ( * cb@2 ) ( char * ) ;\n"
+                      "4: }\n", tokenize(code1));
+
+        const char code2[] = "void foo() {\n"
+                             "    char *text;\n"
+                             "    void (*f)(int (*arg)(char* text));\n"
+                             "}\n";
+        ASSERT_EQUALS("1: void foo ( ) {\n"
+                      "2: char * text@1 ;\n"
+                      "3: void ( * f@2 ) ( int ( * arg ) ( char * ) ) ;\n"
+                      "4: }\n", tokenize(code2));
+
+        const char code3[] = "void f (void (*g) (int i, IN int n)) {}\n";
+        ASSERT_EQUALS("1: void f ( void ( * g@1 ) ( int , IN int ) ) { }\n", tokenize(code3));
     }
 
     void varidclass1() {

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,10 @@
 #include "checkexceptionsafety.h"
 #include "errortypes.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
+#include <list>
 #include <sstream> // IWYU pragma: keep
 
 class TestExceptionSafety : public TestFixture {
@@ -49,6 +50,7 @@ private:
         TEST_CASE(nothrowThrow);
         TEST_CASE(unhandledExceptionSpecification1); // #4800
         TEST_CASE(unhandledExceptionSpecification2);
+        TEST_CASE(unhandledExceptionSpecification3);
         TEST_CASE(nothrowAttributeThrow);
         TEST_CASE(nothrowAttributeThrow2); // #5703
         TEST_CASE(nothrowDeclspecThrow);
@@ -58,20 +60,19 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool inconclusive = false) {
+    void check_(const char* file, int line, const char code[], bool inconclusive = false, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        Settings settings1 = settingsBuilder(s ? *s : settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check char variable usage..
-        CheckExceptionSafety checkExceptionSafety(&tokenizer, &settings, this);
-        checkExceptionSafety.runChecks(&tokenizer, &settings, this);
+        runChecks<CheckExceptionSafety>(&tokenizer, &settings1, this);
     }
 
     void destructors() {
@@ -377,6 +378,28 @@ private:
               "{\n"
               "    f();\n"
               "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void unhandledExceptionSpecification3() {
+        const char code[] = "void f() const throw (std::runtime_error);\n"
+                            "int _init() {\n"
+                            "    f();\n"
+                            "}\n"
+                            "int _fini() {\n"
+                            "    f();\n"
+                            "}\n"
+                            "int main()\n"
+                            "{\n"
+                            "    f();\n"
+                            "}\n";
+
+        check(code, true);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n"
+                      "[test.cpp:6] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n", errout.str());
+
+        const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
+        check(code, true, &s);
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -20,9 +20,9 @@
 #define FILEVIEW_DIALOG_H
 
 #include <QDialog>
+#include <QObject>
 #include <QString>
 
-class QObject;
 class QWidget;
 class QTextEdit;
 namespace Ui {

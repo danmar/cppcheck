@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,10 @@
 #include "errortypes.h"
 #include "standards.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
-#include <string>
 
 
 class TestConstructors : public TestFixture {
@@ -34,22 +32,22 @@ public:
     TestConstructors() : TestFixture("TestConstructors") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check class constructors..
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, &settings1, this);
         checkClass.constructors();
     }
 
@@ -68,9 +66,6 @@ private:
     }
 
     void run() override {
-        settings.severity.enable(Severity::style);
-        settings.severity.enable(Severity::warning);
-
         TEST_CASE(simple1);
         TEST_CASE(simple2);
         TEST_CASE(simple3);
@@ -196,6 +191,7 @@ private:
         TEST_CASE(uninitVarArray7);
         TEST_CASE(uninitVarArray8);
         TEST_CASE(uninitVarArray9); // ticket #6957, #6959
+        TEST_CASE(uninitVarArray10);
         TEST_CASE(uninitVarArray2D);
         TEST_CASE(uninitVarArray3D);
         TEST_CASE(uninitVarCpp11Init1);
@@ -1497,27 +1493,31 @@ private:
     }
 
     void initvar_private_constructor() {
-        settings.standards.cpp = Standards::CPP11;
-        check("class Fred\n"
-              "{\n"
-              "private:\n"
-              "    int var;\n"
-              "    Fred();\n"
-              "};\n"
-              "Fred::Fred()\n"
-              "{ }");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
+        {
+            const Settings s = settingsBuilder(settings).cpp( Standards::CPP11).build();
+            check("class Fred\n"
+                  "{\n"
+                  "private:\n"
+                  "    int var;\n"
+                  "    Fred();\n"
+                  "};\n"
+                  "Fred::Fred()\n"
+                  "{ }", s);
+            ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
+        }
 
-        settings.standards.cpp = Standards::CPP03;
-        check("class Fred\n"
-              "{\n"
-              "private:\n"
-              "    int var;\n"
-              "    Fred();\n"
-              "};\n"
-              "Fred::Fred()\n"
-              "{ }");
-        ASSERT_EQUALS("", errout.str());
+        {
+            const Settings s = settingsBuilder(settings).cpp(Standards::CPP03).build();
+            check("class Fred\n"
+                  "{\n"
+                  "private:\n"
+                  "    int var;\n"
+                  "    Fred();\n"
+                  "};\n"
+                  "Fred::Fred()\n"
+                  "{ }", s);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void initvar_copy_constructor() { // ticket #1611
@@ -1951,8 +1951,8 @@ private:
     }
 
     void initvar_smartptr() { // #10237
-        Settings s;
-        s.libraries.emplace_back("std");
+        // TODO: test should probably not pass without library
+        const Settings s = settingsBuilder() /*.library("std.cfg")*/.build();
         check("struct S {\n"
               "    explicit S(const std::shared_ptr<S>& sp) {\n"
               "        set(*sp);\n"
@@ -1994,11 +1994,7 @@ private:
               "{ }", true);
         ASSERT_EQUALS("[test.cpp:13]: (warning, inconclusive) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='.\n", errout.str());
 
-        Settings s;
-        s.certainty.setEnabled(Certainty::inconclusive, true);
-        s.severity.enable(Severity::style);
-        s.severity.enable(Severity::warning);
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().certainty(Certainty::inconclusive).severity(Severity::style).severity(Severity::warning).library("std.cfg").build();
         check("struct S {\n"
               "    S& operator=(const S& s) { return *this; }\n"
               "    std::mutex m;\n"
@@ -3118,6 +3114,27 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'sRAIUnitDef::List' is not initialized in the constructor.\n", errout.str());
     }
 
+    void uninitVarArray10() { // #11650
+        const Settings s = settingsBuilder(settings).library("std.cfg").build();
+        check("struct T { int j; };\n"
+              "struct U { int k{}; };\n"
+              "struct S {\n"
+              "    std::array<int, 2> a;\n"
+              "    std::array<T, 2> b;\n"
+              "    std::array<std::size_t, 2> c;\n"
+              "    std::array<clock_t, 2> d;\n"
+              "    std::array<std::string, 2> e;\n"
+              "    std::array<U, 2> f;\n"
+              "S() {}\n"
+              "};\n", s);
+
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'S::a' is not initialized in the constructor.\n"
+                      "[test.cpp:10]: (warning) Member variable 'S::b' is not initialized in the constructor.\n"
+                      "[test.cpp:10]: (warning) Member variable 'S::c' is not initialized in the constructor.\n"
+                      "[test.cpp:10]: (warning) Member variable 'S::d' is not initialized in the constructor.\n",
+                      errout.str());
+    }
+
     void uninitVarArray2D() {
         check("class John\n"
               "{\n"
@@ -3525,19 +3542,23 @@ private:
     }
 
     void privateCtor1() {
-        settings.standards.cpp = Standards::CPP03;
-        check("class Foo {\n"
-              "    int foo;\n"
-              "    Foo() { }\n"
-              "};");
-        ASSERT_EQUALS("", errout.str());
+        {
+            const Settings s = settingsBuilder(settings).cpp(Standards::CPP03).build();
+            check("class Foo {\n"
+                  "    int foo;\n"
+                  "    Foo() { }\n"
+                  "};", s);
+            ASSERT_EQUALS("", errout.str());
+        }
 
-        settings.standards.cpp = Standards::CPP11;
-        check("class Foo {\n"
-              "    int foo;\n"
-              "    Foo() { }\n"
-              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Foo::foo' is not initialized in the constructor.\n", errout.str());
+        {
+            const Settings s = settingsBuilder(settings).cpp(Standards::CPP11).build();
+            check("class Foo {\n"
+                  "    int foo;\n"
+                  "    Foo() { }\n"
+                  "};", s);
+            ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Foo::foo' is not initialized in the constructor.\n", errout.str());
+        }
     }
 
     void privateCtor2() {
@@ -3588,8 +3609,8 @@ private:
     }
 
     void uninitVarInheritClassInit() {
-        Settings s;
-        s.libraries.emplace_back("vcl");
+        // TODO: test should probably not pass without library
+        const Settings s = settingsBuilder() /*.library("vcl.cfg")*/.build();
 
         check("class Fred: public TObject\n"
               "{\n"

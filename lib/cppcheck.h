@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,6 @@
 #include <cstddef>
 #include <fstream> // IWYU pragma: keep
 #include <functional>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
@@ -56,7 +55,7 @@ public:
      */
     CppCheck(ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
-             std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand);
+             std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand);
 
     /**
      * @brief Destructor.
@@ -113,20 +112,14 @@ public:
      */
     static const char * extraVersion();
 
-    virtual void reportStatus(unsigned int fileindex, unsigned int filecount, std::size_t sizedone, std::size_t sizetotal);
-
     /**
      * @brief Call all "getErrorMessages" in all registered Check classes.
      * Also print out XML header and footer.
      */
-    void getErrorMessages();
+    static void getErrorMessages(ErrorLogger &errorlogger);
 
     void tooManyConfigsError(const std::string &file, const int numberOfConfigurations);
     void purgedConfigurationMessage(const std::string &file, const std::string& configuration);
-
-    void dontSimplify() {
-        mSimplify = false;
-    }
 
     /** Analyse whole program, run this after all TUs has been scanned.
      * This is deprecated and the plan is to remove this when
@@ -145,9 +138,14 @@ public:
      * and if it's possible at all */
     bool isUnusedFunctionCheckEnabled() const;
 
+    /** Remove *.ctu-info files */
+    void removeCtuInfoFiles(const std::map<std::string, std::size_t>& files); // cppcheck-suppress functionConst // has side effects
+
 private:
+#ifdef HAVE_RULES
     /** Are there "simple" rules */
     bool hasRule(const std::string &tokenlist) const;
+#endif
 
     /** @brief There has been an internal error => Report information message */
     void internalError(const std::string &filename, const std::string &msg);
@@ -159,7 +157,7 @@ private:
      * @param fileStream stream the file content can be read from
      * @return number of errors found
      */
-    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream);
+    unsigned int checkFile(const std::string& filename, const std::string &cfgname, std::istream* fileStream = nullptr);
 
     /**
      * @brief Check raw tokens
@@ -184,12 +182,14 @@ private:
      */
     void executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files);
 
+#ifdef HAVE_RULES
     /**
      * @brief Execute rules, if any
      * @param tokenlist token list to use (normal / simple)
      * @param tokenizer tokenizer
      */
     void executeRules(const std::string &tokenlist, const Tokenizer &tokenizer);
+#endif
 
     /**
      * @brief Errors and warnings are directed here.
@@ -212,11 +212,6 @@ private:
 
     void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
-    /**
-     * Output information messages.
-     */
-    void reportInfo(const ErrorMessage &msg) override;
-
     ErrorLogger &mErrorLogger;
 
     /** @brief Current preprocessor configuration */
@@ -238,7 +233,7 @@ private:
     AnalyzerInformation mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
-    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> mExecuteCommand;
+    std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> mExecuteCommand;
 
     std::ofstream mPlistFile;
 };

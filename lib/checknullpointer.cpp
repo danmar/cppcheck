@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "valueflow.h"
 
 #include <algorithm>
 #include <cctype>
 #include <map>
-#include <memory>
 #include <set>
 #include <vector>
 
@@ -97,7 +97,7 @@ void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token
         const bool scan = library->formatstr_scan(&tok);
 
         bool percent = false;
-        for (std::string::const_iterator i = formatString.begin(); i != formatString.end(); ++i) {
+        for (std::string::const_iterator i = formatString.cbegin(); i != formatString.cend(); ++i) {
             if (*i == '%') {
                 percent = !percent;
             } else if (percent) {
@@ -170,7 +170,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         if (ftok && ftok->previous()) {
             std::list<const Token *> varlist;
             parseFunctionCall(*ftok->previous(), varlist, &settings->library);
-            if (std::find(varlist.begin(), varlist.end(), tok) != varlist.end()) {
+            if (std::find(varlist.cbegin(), varlist.cend(), tok) != varlist.cend()) {
                 return true;
             }
         }
@@ -597,7 +597,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (Check::FileInfo *fi1 : fileInfo) {
-        const MyFileInfo *fi = dynamic_cast<MyFileInfo*>(fi1);
+        const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
         if (!fi)
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {

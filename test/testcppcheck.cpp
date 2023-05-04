@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,9 @@
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <algorithm>
-#include <functional>
 #include <list>
 #include <string>
 
@@ -52,17 +51,17 @@ private:
     }
 
     void instancesSorted() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
+        for (std::list<Check *>::const_iterator i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
             std::list<Check *>::const_iterator j = i;
             ++j;
-            if (j != Check::instances().end()) {
+            if (j != Check::instances().cend()) {
                 ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
             }
         }
     }
 
     void classInfoFormat() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().begin(); i != Check::instances().end(); ++i) {
+        for (std::list<Check *>::const_iterator i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
             const std::string info = (*i)->classInfo();
             if (!info.empty()) {
                 ASSERT('\n' != info[0]);         // No \n in the beginning
@@ -75,16 +74,15 @@ private:
 
     void getErrorMessages() const {
         ErrorLogger2 errorLogger;
-        CppCheck cppCheck(errorLogger, true, nullptr);
-        cppCheck.getErrorMessages();
+        CppCheck::getErrorMessages(errorLogger);
         ASSERT(!errorLogger.id.empty());
 
         // Check if there are duplicate error ids in errorLogger.id
         std::string duplicate;
-        for (std::list<std::string>::iterator it = errorLogger.id.begin();
-             it != errorLogger.id.end();
+        for (std::list<std::string>::const_iterator it = errorLogger.id.cbegin();
+             it != errorLogger.id.cend();
              ++it) {
-            if (std::find(errorLogger.id.begin(), it, *it) != it) {
+            if (std::find(errorLogger.id.cbegin(), it, *it) != it) {
                 duplicate = "Duplicate ID: " + *it;
                 break;
             }

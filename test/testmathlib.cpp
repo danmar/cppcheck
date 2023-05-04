@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,13 @@
  */
 
 
+#include "errortypes.h"
 #include "mathlib.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <limits>
 #include <string>
 
-struct InternalError;
 
 
 class TestMathLib : public TestFixture {
@@ -595,26 +595,19 @@ private:
         ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1L"),       0.001);
         ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ll"),      0.001);
         ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1LL"),      0.001);
-        // TODO: need to succeed
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1u"),       0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1U"),       0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ul"),      0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1UL"),      0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ULL"),     0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ULL"),     0.001);
-
-        // TODO: need to fail
-        // invalid values
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1f"),       0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1F"),       0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.ff"),     0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.FF"),     0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.ll"),     0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0LL"),    0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0ff"),    0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0FF"),    0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0ll"),    0.001);
-        //ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1.0LL"),    0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1u"),       0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1U"),       0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ul"),      0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1UL"),      0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ULL"),     0.001);
+        // TODO: make these work with libc++
+#ifndef _LIBCPP_VERSION
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1i64"),     0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1I64"),     0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1ui64"),    0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1UI64"),    0.001);
+        ASSERT_EQUALS_DOUBLE(1.0,    MathLib::toDoubleNumber("1I64"),     0.001);
+#endif
 
         ASSERT_EQUALS_DOUBLE(0.0,    MathLib::toDoubleNumber("0E+0"),     0.000001);
         ASSERT_EQUALS_DOUBLE(0.0,    MathLib::toDoubleNumber("0E-0"),     0.000001);
@@ -661,6 +654,28 @@ private:
 #endif
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1 invalid"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1 invalid");
         ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("-1e-08.0"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: -1e-08.0");
+
+        // invalid suffices
+#ifdef _LIBCPP_VERSION
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1f"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1f");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1F"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1F");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.ff"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.ff");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.FF"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.FF");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0ff"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.0ff");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0FF"), InternalError, "Internal Error. MathLib::toDoubleNumber: conversion failed: 1.0FF");
+#else
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1f"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1f");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1F"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1F");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.ff"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.ff");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.FF"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.FF");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0ff"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0ff");
+        ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0FF"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0FF");
+#endif
+        // TODO: needs to fail
+        //ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.ll"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.ll");
+        //ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0LL"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
+        //ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0ll"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0ll");
+        //ASSERT_THROW_EQUALS(MathLib::toDoubleNumber("1.0LL"), InternalError, "Internal Error. MathLib::toDoubleNumber: input was not completely consumed: 1.0LL");
 
         // verify: string --> double --> string conversion
         ASSERT_EQUALS("1.0",  MathLib::toString(MathLib::toDoubleNumber("1.0f")));
@@ -986,6 +1001,7 @@ private:
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix(""));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("ux"));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("ulx"));
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("uu"));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("lx"));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("lux"));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("lll"));

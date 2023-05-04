@@ -29,37 +29,32 @@ jobs:
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 15
-          sudo apt-get install -y clang-tidy-15
-
-      - name: Cache Qt ${{ env.QT_VERSION }}
-        id: cache-qt
-        uses: actions/cache@v1  # not v2!
-        with:
-          path: ../Qt
-          key: Linux-QtCache-${{ env.QT_VERSION }}-qtcharts
+          sudo ./llvm.sh 16
+          sudo apt-get install -y clang-tidy-16
 
       - name: Install Qt ${{ env.QT_VERSION }}
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          cache: true
 
       - name: Verify clang-tidy configuration
         run: |
-          clang-tidy-15 --verify-config
+          clang-tidy-16 --verify-config
 
       - name: Prepare CMake
         run: |
           cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off
         env:
-          CC: clang-15
-          CXX: clang++-15
+          CC: clang-16
+          CXX: clang++-16
 
       - name: Prepare CMake dependencies
         run: |
           # make sure the precompiled headers exist
+          make -C cmake.output/cli cmake_pch.hxx.pch
+          make -C cmake.output/gui cmake_pch.hxx.pch
           make -C cmake.output/lib cmake_pch.hxx.pch
           make -C cmake.output/test cmake_pch.hxx.pch
           # make sure the auto-generated GUI sources exist

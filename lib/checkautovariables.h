@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,9 +77,6 @@ public:
     void checkVarLifetimeScope(const Token * start, const Token * end);
 
 private:
-    void errorReturnAddressToAutoVariable(const Token *tok);
-    void errorReturnAddressToAutoVariable(const Token *tok, const ValueFlow::Value *value);
-    void errorReturnPointerToLocalArray(const Token *tok);
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
@@ -90,7 +87,6 @@ private:
     void errorDanglingTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorReturnTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorInvalidDeallocation(const Token *tok, const ValueFlow::Value *val);
-    void errorReturnAddressOfFunctionParameter(const Token *tok, const std::string &varname);
     void errorUselessAssignmentArg(const Token *tok);
     void errorUselessAssignmentPtrArg(const Token *tok);
 
@@ -98,14 +94,11 @@ private:
         ErrorPath errorPath;
         CheckAutoVariables c(nullptr,settings,errorLogger);
         c.errorAutoVariableAssignment(nullptr, false);
-        c.errorReturnAddressToAutoVariable(nullptr);
-        c.errorReturnPointerToLocalArray(nullptr);
         c.errorReturnReference(nullptr, errorPath, false);
         c.errorDanglingReference(nullptr, nullptr, errorPath);
         c.errorReturnTempReference(nullptr, errorPath, false);
         c.errorDanglingTempReference(nullptr, errorPath, false);
         c.errorInvalidDeallocation(nullptr, nullptr);
-        c.errorReturnAddressOfFunctionParameter(nullptr, "parameter");
         c.errorUselessAssignmentArg(nullptr);
         c.errorUselessAssignmentPtrArg(nullptr);
         c.errorReturnDanglingLifetime(nullptr, nullptr);

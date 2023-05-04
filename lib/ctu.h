@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include "check.h"
 #include "errorlogger.h"
 #include "mathlib.h"
-#include "valueflow.h"
+#include "vfvalue.h"
 
 #include <list>
 #include <map>
@@ -83,6 +83,7 @@ namespace CTU {
             {}
             CallBase(const Tokenizer *tokenizer, const Token *callToken);
             virtual ~CallBase() {}
+            CallBase(const CallBase&) = default;
             std::string callId;
             int callArgNr{};
             std::string callFunctionName;

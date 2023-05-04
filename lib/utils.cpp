@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <cctype>
 #include <iterator>
-#include <memory>
 #include <stack>
 #include <utility>
 
@@ -41,10 +40,10 @@ int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
 
 bool isValidGlobPattern(const std::string& pattern)
 {
-    for (std::string::const_iterator i = pattern.begin(); i != pattern.end(); ++i) {
+    for (std::string::const_iterator i = pattern.cbegin(); i != pattern.cend(); ++i) {
         if (*i == '*' || *i == '?') {
             const std::string::const_iterator j = i + 1;
-            if (j != pattern.end() && (*j == '*' || *j == '?')) {
+            if (j != pattern.cend() && (*j == '*' || *j == '?')) {
                 return false;
             }
         }
@@ -56,7 +55,7 @@ bool matchglob(const std::string& pattern, const std::string& name)
 {
     const char* p = pattern.c_str();
     const char* n = name.c_str();
-    std::stack<std::pair<const char*, const char*>> backtrack;
+    std::stack<std::pair<const char*, const char*>, std::vector<std::pair<const char*, const char*>>> backtrack;
 
     for (;;) {
         bool matching = true;
@@ -126,8 +125,7 @@ void strTolower(std::string& str)
 {
     // This wrapper exists because Sun's CC does not allow a static_cast
     // from extern "C" int(*)(int) to int(*)(int).
-    static auto tolowerWrapper = [](int c) {
+    std::transform(str.cbegin(), str.cend(), str.begin(), [](int c) {
         return std::tolower(c);
-    };
-    std::transform(str.begin(), str.end(), str.begin(), tolowerWrapper);
+    });
 }

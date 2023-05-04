@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 
 #include <QFileDialog>
 #include <QMainWindow>
+#include <QObject>
+#include <QString>
 #include <QStringList>
 
 class ThreadHandler;
@@ -39,7 +41,6 @@ class QTimer;
 class QLineEdit;
 class ImportProject;
 class QCloseEvent;
-class QObject;
 class QNetworkAccessManager;
 class QNetworkReply;
 namespace Ui {
@@ -168,6 +169,9 @@ public slots:
     /** @brief Slot to save results */
     void save();
 
+    /** @brief Slot to generate compliance report */
+    void complianceReport();
+
     /** @brief Slot to create new project file */
     void newProjectFile();
 
@@ -248,7 +252,7 @@ private:
      * @brief Reanalyze selected files
      * @param files list of selected files
      */
-    void reAnalyzeSelected(QStringList files);
+    void reAnalyzeSelected(const QStringList& files);
 
     /**
      * @brief Analyze the project.

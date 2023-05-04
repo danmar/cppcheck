@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
  */
 
 #include "pathmatch.h"
-#include "testsuite.h"
+#include "fixture.h"
 
 #include <string>
 #include <vector>
@@ -25,18 +25,13 @@
 
 class TestPathMatch : public TestFixture {
 public:
-    TestPathMatch()
-        : TestFixture("TestPathMatch")
-        , emptyMatcher(std::vector<std::string>())
-        , srcMatcher(std::vector<std::string>(1, "src/"))
-        , fooCppMatcher(std::vector<std::string>(1, "foo.cpp"))
-        , srcFooCppMatcher(std::vector<std::string>(1, "src/foo.cpp")) {}
+    TestPathMatch() : TestFixture("TestPathMatch") {}
 
 private:
-    const PathMatch emptyMatcher;
-    const PathMatch srcMatcher;
-    const PathMatch fooCppMatcher;
-    const PathMatch srcFooCppMatcher;
+    const PathMatch emptyMatcher{std::vector<std::string>()};
+    const PathMatch srcMatcher{std::vector<std::string>(1, "src/")};
+    const PathMatch fooCppMatcher{std::vector<std::string>(1, "foo.cpp")};
+    const PathMatch srcFooCppMatcher{std::vector<std::string>(1, "src/foo.cpp")};
 
     void run() override {
         TEST_CASE(emptymaskemptyfile);

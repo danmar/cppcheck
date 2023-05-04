@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,9 @@
 #include "check.h"
 #include "errortypes.h"
 #include "mathlib.h"
+#include "preprocessor.h"
 #include "settings.h"
-#include "testsuite.h"
+#include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
 
@@ -34,10 +35,9 @@ public:
     TestGarbage() : TestFixture("TestGarbage") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().debugwarnings().build();
 
     void run() override {
-        settings.debugwarnings = true;
         settings.severity.fill();
         settings.certainty.fill();
 
@@ -252,6 +252,7 @@ private:
         TEST_CASE(garbageCode220); // #6832
         TEST_CASE(garbageCode221);
         TEST_CASE(garbageCode222); // #10763
+        TEST_CASE(garbageCode223); // #11639
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -286,13 +287,15 @@ private:
     std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
         errout.str("");
 
+        Preprocessor preprocessor(settings);
+
         // tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // call all "runChecks" in all registered Check classes
-        for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
+        for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
             (*it)->runChecks(&tokenizer, &settings, this);
         }
 
@@ -735,7 +738,8 @@ private:
     }
 
     void garbageCode65() { // #6741
-        ASSERT_THROW(checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref"), InternalError);
+        // TODO write some syntax error
+        checkCode("{ } { } typedef int u_array[]; typedef u_array &u_array_ref; (u_array_ref arg) { } u_array_ref");
     }
 
     void garbageCode66() { // #6742
@@ -1711,6 +1715,9 @@ private:
     }
     void garbageCode222() { // #10763
         ASSERT_THROW(checkCode("template<template<class>\n"), InternalError);  // don't crash
+    }
+    void garbageCode223() { // #11639
+        ASSERT_THROW(checkCode("struct{}*"), InternalError);  // don't crash
     }
 
     void syntaxErrorFirstToken() {

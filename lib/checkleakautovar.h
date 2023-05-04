@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,8 +55,9 @@ public:
             return status < 0;
         }
     };
+    enum Usage { USED, NORET };
     std::map<int, AllocInfo> alloctype;
-    std::map<int, std::string> possibleUsage;
+    std::map<int, std::pair<std::string, Usage>> possibleUsage;
     std::set<int> conditionalAlloc;
     std::set<int> referenced;
 
@@ -92,7 +93,7 @@ public:
     }
 
     /** set possible usage for all variables */
-    void possibleUsageAll(const std::string &functionName);
+    void possibleUsageAll(const std::pair<std::string, Usage>& functionUsage);
 
     void print();
 };
@@ -126,7 +127,7 @@ private:
 
     /** check for leaks in a function scope */
     bool checkScope(const Token * const startToken,
-                    VarInfo *varInfo,
+                    VarInfo &varInfo,
                     std::set<int> notzero,
                     nonneg int recursiveCount);
 
@@ -135,16 +136,16 @@ private:
      * @param varInfo Variable info
      * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
      */
-    const Token * checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo);
+    const Token * checkTokenInsideExpression(const Token * const tok, VarInfo &varInfo);
 
     /** parse function call */
-    void functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
+    void functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af);
 
     /** parse changes in allocation status */
-    void changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
+    void changeAllocStatus(VarInfo &varInfo, const VarInfo::AllocInfo& allocation, const Token* tok, const Token* arg);
 
     /** update allocation status if reallocation function */
-    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
+    void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok) const;
 
     /** return. either "return" or end of variable scope is seen */
     void ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope = false);
@@ -152,19 +153,19 @@ private:
     /** if variable is allocated then there is a leak */
     void leakIfAllocated(const Token *vartok, const VarInfo &varInfo);
 
-    void leakError(const Token* tok, const std::string &varname, int type);
-    void mismatchError(const Token* deallocTok, const Token* allocTok, const std::string &varname);
-    void deallocUseError(const Token *tok, const std::string &varname);
+    void leakError(const Token* tok, const std::string &varname, int type) const;
+    void mismatchError(const Token* deallocTok, const Token* allocTok, const std::string &varname) const;
+    void deallocUseError(const Token *tok, const std::string &varname) const;
     void deallocReturnError(const Token *tok, const Token *deallocTok, const std::string &varname);
     void doubleFreeError(const Token *tok, const Token *prevFreeTok, const std::string &varname, int type);
 
     /** message: user configuration is needed to complete analysis */
-    void configurationInfo(const Token* tok, const std::string &functionName);
+    void configurationInfo(const Token* tok, const std::pair<std::string, VarInfo::Usage>& functionUsage);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckLeakAutoVar c(nullptr, settings, errorLogger);
         c.deallocReturnError(nullptr, nullptr, "p");
-        c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis
+        c.configurationInfo(nullptr, { "f", VarInfo::USED });  // user configuration is needed to complete analysis
         c.doubleFreeError(nullptr, nullptr, "varname", 0);
     }
 

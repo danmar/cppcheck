@@ -22,6 +22,7 @@
 #include <QColor>
 #include <QFont>
 #include <QString>
+#include <Qt>
 
 const QString SETTINGS_STYLE_GROUP("EditorStyle");
 const QString SETTINGS_STYLE_TYPE("StyleType");
@@ -67,7 +68,6 @@ public:
         // cppcheck-suppress naming-varname - TODO: fix this
         QColor SymbFGColor, QColor SymbBGColor,
         const QFont::Weight& SymbWeight);
-    ~CodeEditorStyle() {}
 
     bool operator==(const CodeEditorStyle& rhs) const;
     bool operator!=(const CodeEditorStyle& rhs) const;

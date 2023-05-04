@@ -2,7 +2,7 @@
 // Test library configuration for opencv2.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=cairo --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/opencv2.cpp
+// $ cppcheck --check-library --library=opencv2 --enable=style,information --inconclusive --error-exitcode=1 --disable=missingInclude --inline-suppr test/cfg/opencv2.cpp
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

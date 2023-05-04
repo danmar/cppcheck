@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,8 +52,8 @@ ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     , hash(errmsg.hash)
     , symbolNames(QString::fromStdString(errmsg.symbolNames()))
 {
-    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.begin();
-         loc != errmsg.callStack.end();
+    for (std::list<ErrorMessage::FileLocation>::const_iterator loc = errmsg.callStack.cbegin();
+         loc != errmsg.callStack.cend();
          ++loc) {
         errorPath << QErrorPathItem(*loc);
     }
