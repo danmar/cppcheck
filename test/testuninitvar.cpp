@@ -3498,7 +3498,7 @@ private:
                         "    }\n"
                         "}",
                         "test.cpp");
-        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("void f() {\n"
                         "    int i, y;\n"
@@ -3509,7 +3509,7 @@ private:
                         "    }\n"
                         "}",
                         "test.cpp");
-        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("void f() {\n"
                         "    int i, y;\n"
@@ -5970,6 +5970,15 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #11673
+        valueFlowUninit("void f() {\n"
+                        "    bool b;\n"
+                        "    auto g = [&b]() {\n"
+                        "        b = true;\n"
+                        "    };\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #6619
         valueFlowUninit("void f() {\n"
                         "    int nok, i;\n"
@@ -5979,7 +5988,7 @@ private:
                         "    }\n"
                         "    printf(\"nok = %d\\n\", nok);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Uninitialized variable: nok\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: nok\n", errout.str());
 
         // #7475
         valueFlowUninit("struct S {\n"
