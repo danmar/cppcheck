@@ -25,6 +25,8 @@
 #include <utility>
 #include <vector>
 
+// TODO: print through a synchronized logger
+
 namespace {
     using dataElementType = std::pair<std::string, struct TimerResultsData>;
     bool more_second_sec(const dataElementType& lhs, const dataElementType& rhs)
@@ -121,6 +123,7 @@ void Timer::stop()
 
         if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
+            std::lock_guard<std::mutex> l(mCoutLock);
             std::cout << mStr << ": " << sec << "s" << std::endl;
         } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
@@ -133,3 +136,5 @@ void Timer::stop()
 
     mStopped = true;
 }
+
+std::mutex Timer::mCoutLock;

@@ -84,6 +84,7 @@ private:
     std::clock_t mStart = std::clock();
     const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
     bool mStopped{};
+    static std::mutex mCoutLock;
 };
 //---------------------------------------------------------------------------
 #endif // timerH
