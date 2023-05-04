@@ -56,22 +56,7 @@ public:
 
     struct CPPCHECKLIB Suppression {
         Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
-        Suppression(const Suppression &other) {
-            *this = other;
-        }
         Suppression(std::string id, std::string file, int line=NO_LINE) : errorId(std::move(id)), fileName(std::move(file)), lineNumber(line), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
-
-        Suppression & operator=(const Suppression &other) {
-            errorId = other.errorId;
-            fileName = other.fileName;
-            lineNumber = other.lineNumber;
-            symbolName = other.symbolName;
-            hash = other.hash;
-            thisAndNextLine = other.thisAndNextLine;
-            matched = other.matched;
-            checked = other.checked;
-            return *this;
-        }
 
         bool operator<(const Suppression &other) const {
             if (errorId != other.errorId)
