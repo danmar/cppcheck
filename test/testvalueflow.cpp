@@ -7191,7 +7191,7 @@ private:
         valueOfTok(code, "i");
 
         code = "void f() {\n" // #11701
-               "std::vector<int> v(500);\n"
+               "    std::vector<int> v(500);\n"
                "    for (int i = 0; i < 500; i++) {\n"
                "        if (i < 122)\n"
                "            v[i] = 255;\n"
