@@ -7997,14 +7997,13 @@ private:
         ASSERT_EQUALS("unsigned long long", typeOf("enum E : unsigned long long { }; void foo() { E e[3]; bar(e[0]); }", "[ 0"));
 
 #define CHECK_LIBRARY_FUNCTION_RETURN_TYPE(type) do { \
-        Settings sF; \
         const char xmldata[] = "<?xml version=\"1.0\"?>\n" \
                                "<def>\n" \
                                "<function name=\"g\">\n" \
                                "<returnValue type=\"" #type "\"/>\n" \
                                "</function>\n" \
                                "</def>";              \
-        ASSERT(sF.library.loadxmldata(xmldata, sizeof(xmldata))); \
+        const Settings sF = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build(); \
         ASSERT_EQUALS(#type, typeOf("void f() { auto x = g(); }", "x", "test.cpp", &sF)); \
 } while (false)
         // *INDENT-OFF*
