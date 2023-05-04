@@ -36,13 +36,10 @@ public:
     TestClass() : TestFixture("TestClass") {}
 
 private:
-    Settings settings0;
-    Settings settings1;
+    Settings settings0 = settingsBuilder().severity(Severity::style).build();
+    Settings settings1 = settingsBuilder().severity(Severity::warning).build();
 
     void run() override {
-        settings0.severity.enable(Severity::style);
-        settings1.severity.enable(Severity::warning);
-
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
@@ -262,8 +259,7 @@ private:
     void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.severity.enable(Severity::warning);
+        const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
         Preprocessor preprocessor(settings);
 
@@ -2574,6 +2570,7 @@ private:
         // Clear the error log
         errout.str("");
 
+        // TODO: subsequent tests depend on these changes - should use SettingsBuilder
         settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings0.severity.enable(Severity::warning);
 
@@ -2890,9 +2887,7 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::portability);
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
         checkNoMemset_(file, line, code, settings);
     }
 
@@ -3156,8 +3151,7 @@ private:
                       errout.str());
 
         // #1655
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().library("std.cfg").build();
         checkNoMemset("void f() {\n"
                       "    char c[] = \"abc\";\n"
                       "    std::string s;\n"
@@ -3564,23 +3558,20 @@ private:
     }
 
 #define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkConst_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkConst_(const char* file, int line, const char code[], const Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
-        // Check..
-        if (!s)
-            s = &settings0;
-        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings = settingsBuilder(s ? *s : settings0).certainty(Certainty::inconclusive, inconclusive).build();
 
-        Preprocessor preprocessor(*s);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(s, this, &preprocessor);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, s, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         (checkClass.checkConst)();
     }
 
@@ -7231,10 +7222,7 @@ private:
     }
 
     void qualifiedNameMember() { // #10872
-        Settings s;
-        s.severity.enable(Severity::style);
-        s.debugwarnings = true;
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
         checkConst("struct data {};\n"
                    "    struct S {\n"
                    "    std::vector<data> std;\n"
@@ -7289,8 +7277,7 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.severity.enable(Severity::performance);
+        const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
         Preprocessor preprocessor(settings);
 
@@ -7620,9 +7607,7 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings = settingsBuilder().severity(Severity::warning).certainty(Certainty::inconclusive, inconclusive).build();
 
         Preprocessor preprocessor(settings);
 
@@ -7970,8 +7955,8 @@ private:
     void checkOverride_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.severity.enable(Severity::style);
+
+        const Settings settings = settingsBuilder().severity(Severity::style).build();
 
         Preprocessor preprocessor(settings);
 
@@ -8147,9 +8132,9 @@ private:
     void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
+
+        Settings settings = settingsBuilder().severity(Severity::warning).build();
         settings.safeChecks.classes = true;
-        settings.severity.enable(Severity::warning);
 
         Preprocessor preprocessor(settings);
 
@@ -8328,7 +8313,7 @@ private:
 
 
     void ctu(const std::vector<std::string> &code) {
-        Settings settings;
+        const Settings settings;
         auto &check = getCheck<CheckClass>();
 
         // getFileInfo

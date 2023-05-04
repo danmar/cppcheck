@@ -7751,23 +7751,115 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
     });
 }
 
-static std::vector<Token*> findAllUsages(const Variable* var, Token* start) // cppcheck-suppress constParameterPointer // FP
+template<class Found, class Predicate>
+bool findTokenSkipDeadCodeImpl(const Library* library, Token* start, const Token* end, Predicate pred, Found found)
+{
+    for (Token* tok = start; precedes(tok, end); tok = tok->next()) {
+        if (pred(tok)) {
+            if (found(tok))
+                return true;
+        }
+        if (Token::simpleMatch(tok, "if (")) {
+            const Token* condTok = tok->next()->astOperand2();
+            if (!condTok)
+                continue;
+            if (!condTok->hasKnownIntValue())
+                continue;
+            if (!Token::simpleMatch(tok->linkAt(1), ") {"))
+                continue;
+            if (findTokenSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, found))
+                return true;
+            Token* thenStart = tok->linkAt(1)->next();
+            Token* elseStart = nullptr;
+            if (Token::simpleMatch(thenStart->link(), "} else {"))
+                elseStart = thenStart->link()->tokAt(2);
+
+            int r = condTok->values().front().intvalue;
+            if (r == 0) {
+                if (elseStart) {
+                    if (findTokenSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, found))
+                        return true;
+                    if (isReturnScope(elseStart->link(), library))
+                        return true;
+                    tok = elseStart->link();
+                } else {
+                    tok = thenStart->link();
+                }
+            } else {
+                if (findTokenSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, found))
+                    return true;
+                if (isReturnScope(thenStart->link(), library))
+                    return true;
+                tok = thenStart->link();
+            }
+        } else if (Token::Match(tok->astParent(), "&&|?|%oror%") && astIsLHS(tok) && tok->hasKnownIntValue()) {
+            int r = tok->values().front().intvalue;
+            Token* next = nullptr;
+            if ((r == 0 && Token::simpleMatch(tok->astParent(), "||")) ||
+                (r != 0 && Token::simpleMatch(tok->astParent(), "&&"))) {
+                next = nextAfterAstRightmostLeaf(tok->astParent());
+            } else if (Token::simpleMatch(tok->astParent(), "?")) {
+                Token* colon = tok->astParent()->astOperand2();
+                if (r == 0) {
+                    next = colon;
+                } else {
+                    if (findTokenSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found))
+                        return true;
+                    next = nextAfterAstRightmostLeaf(colon);
+                }
+            }
+            if (next)
+                tok = next;
+        } else if (Token::simpleMatch(tok, "} else {")) {
+            const Token* condTok = getCondTokFromEnd(tok);
+            if (!condTok)
+                continue;
+            if (!condTok->hasKnownIntValue())
+                continue;
+            if (isReturnScope(tok->link(), library))
+                return true;
+            int r = condTok->values().front().intvalue;
+            if (r != 0) {
+                tok = tok->linkAt(1);
+            }
+        } else if (Token::simpleMatch(tok, "[") && Token::Match(tok->link(), "] (|{")) {
+            Token* afterCapture = tok->link()->next();
+            if (Token::simpleMatch(afterCapture, "(") && afterCapture->link())
+                tok = afterCapture->link()->next();
+            else
+                tok = afterCapture;
+        }
+    }
+    return false;
+}
+
+template<class Predicate>
+std::vector<Token*> findTokensSkipDeadCode(const Library* library, Token* start, const Token* end, Predicate pred)
 {
     std::vector<Token*> result;
-    const Scope* scope = var->scope();
-    if (!scope)
-        return result;
-    Token* tok2 = Token::findmatch(start, "%varid%", scope->bodyEnd, var->declarationId());
-    while (tok2) {
-        result.push_back(tok2);
-        tok2 = Token::findmatch(tok2->next(), "%varid%", scope->bodyEnd, var->declarationId());
-    }
+    findTokenSkipDeadCodeImpl(library, start, end, pred, [&](Token* tok) {
+        result.push_back(tok);
+        return false;
+    });
     return result;
 }
 
-static Token* findStartToken(const Variable* var, Token* start)
+static std::vector<Token*> findAllUsages(const Variable* var,
+                                         Token* start, // cppcheck-suppress constParameterPointer // FP
+                                         const Library* library)
 {
-    std::vector<Token*> uses = findAllUsages(var, start);
+    // std::vector<Token*> result;
+    const Scope* scope = var->scope();
+    if (!scope)
+        return {};
+    return findTokensSkipDeadCode(library, start, scope->bodyEnd, [&](const Token* tok) {
+        return tok->varId() == var->declarationId();
+    });
+}
+
+static Token* findStartToken(const Variable* var, Token* start, const Library* library)
+{
+    std::vector<Token*> uses = findAllUsages(var, start, library);
     if (uses.empty())
         return start;
     Token* first = uses.front();
@@ -7823,7 +7915,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
 
         bool partial = false;
 
-        Token* start = findStartToken(var, tok->next());
+        Token* start = findStartToken(var, tok->next(), &settings->library);
 
         std::map<Token*, ValueFlow::Value> partialReads;
         if (const Scope* scope = var->typeScope()) {

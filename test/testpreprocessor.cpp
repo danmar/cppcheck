@@ -43,11 +43,7 @@ class ErrorLogger;
 
 class TestPreprocessor : public TestFixture {
 public:
-    TestPreprocessor()
-        : TestFixture("TestPreprocessor")
-        , preprocessor0(settings0, this) {
-        settings0.severity.enable(Severity::information);
-    }
+    TestPreprocessor() : TestFixture("TestPreprocessor") {}
 
     class OurPreprocessor : public Preprocessor {
     public:
@@ -62,7 +58,7 @@ public:
             simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI(), &outputList);
 
             if (errorLogger) {
-                Settings settings;
+                const Settings settings;
                 Preprocessor p(settings, errorLogger);
                 p.reportOutput(outputList, true);
             }
@@ -72,8 +68,8 @@ public:
     };
 
 private:
-    Settings settings0;
-    Preprocessor preprocessor0;
+    const Settings settings0 = settingsBuilder().severity(Severity::information).build();
+    Preprocessor preprocessor0{settings0, this};
 
     void run() override {
 
@@ -472,9 +468,6 @@ private:
     }
 
     void setPlatformInfo() {
-        Settings settings;
-        Preprocessor preprocessor(settings, this);
-
         // read code with simplecpp..
         const char filedata[] = "#if sizeof(long) == 4\n"
                                 "1\n"
@@ -486,14 +479,20 @@ private:
         simplecpp::TokenList tokens(istr, files, "test.c");
 
         // preprocess code with unix32 platform..
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix32);
-        preprocessor.setPlatformInfo(&tokens);
-        ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
+        {
+            const Settings settings = settingsBuilder().platform(cppcheck::Platform::Type::Unix32).build();
+            Preprocessor preprocessor(settings, this);
+            preprocessor.setPlatformInfo(&tokens);
+            ASSERT_EQUALS("\n1", preprocessor.getcode(tokens, "", files, false));
+        }
 
         // preprocess code with unix64 platform..
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
-        preprocessor.setPlatformInfo(&tokens);
-        ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
+        {
+            const Settings settings = settingsBuilder().platform(cppcheck::Platform::Type::Unix64).build();
+            Preprocessor preprocessor(settings, this);
+            preprocessor.setPlatformInfo(&tokens);
+            ASSERT_EQUALS("\n\n\n2", preprocessor.getcode(tokens, "", files, false));
+        }
     }
 
     void includeguard1() {
