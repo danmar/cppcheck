@@ -5355,7 +5355,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             const Scope * scope = tok->scope();
 
             // check if this function is a member function
-            if (scope && scope->functionOf && scope->functionOf->isClassOrStruct() && scope->function) {
+            if (scope && scope->functionOf && scope->functionOf->isClassOrStruct() && scope->function && func->nestedIn == scope->functionOf) {
                 // check if isConst mismatches
                 if (scope->function->isConst() != func->isConst()) {
                     if (scope->function->isConst()) {
