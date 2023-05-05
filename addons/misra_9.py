@@ -416,6 +416,13 @@ def misra_9_x(self, data, rule, rawTokens = None):
             if rule == 902 and not ed.isMisra92Compliant():
                 self.reportError(nameToken, 9, 2)
             if rule == 903 and not ed.isMisra93Compliant():
+                # Do not check when variable is pointer type
+                type_token = variable.nameToken
+                while type_token and type_token.isName:
+                    type_token = type_token.previous
+                if type_token and type_token.str == '*':
+                    continue
+
                 self.reportError(nameToken, 9, 3)
             if rule == 904 and not ed.isMisra94Compliant():
                 self.reportError(nameToken, 9, 4)
