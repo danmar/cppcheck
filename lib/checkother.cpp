@@ -1565,17 +1565,29 @@ void CheckOther::checkConstPointer()
             continue;
         pointers.emplace_back(var);
         const Token* const parent = tok->astParent();
-        bool deref = false;
+        enum Deref { NONE, DEREF, MEMBER } deref = NONE;
         if (parent && parent->isUnaryOp("*"))
-            deref = true;
+            deref = DEREF;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
-            deref = true;
+            deref = DEREF;
         else if (Token::Match(parent, "%op%") && Token::simpleMatch(parent->astParent(), "."))
-            deref = true;
+            deref = DEREF;
+        else if (Token::simpleMatch(parent, "."))
+            deref = MEMBER;
         else if (astIsRangeBasedForDecl(tok))
             continue;
-        if (deref) {
+        if (deref != NONE) {
             const Token* const gparent = parent->astParent();
+            if (deref == MEMBER) {
+                if (!gparent)
+                    continue;
+                if (parent->astOperand2()) {
+                    if (parent->astOperand2()->function() && parent->astOperand2()->function()->isConst())
+                        continue;
+                    if (mSettings->library.isFunctionConst(parent->astOperand2()))
+                        continue;
+                }
+            }
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
             int argn = -1;

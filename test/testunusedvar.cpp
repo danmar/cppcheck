@@ -37,7 +37,7 @@ public:
     TestUnusedVar() : TestFixture("TestUnusedVar") {}
 
 private:
-    Settings settings = settingsBuilder().severity(Severity::style).checkLibrary().library("std.cfg").build();
+    const Settings settings = settingsBuilder().severity(Severity::style).checkLibrary().library("std.cfg").build();
 
     void run() override {
         TEST_CASE(isRecordTypeWithoutSideEffects);
@@ -251,7 +251,7 @@ private:
 
 #define functionVariableUsage(...) functionVariableUsage_(__FILE__, __LINE__, __VA_ARGS__)
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr) {
+    void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -259,13 +259,15 @@ private:
         if (directives)
             preprocessor.setDirectives(*directives);
 
+        const Settings *settings1 = s ? s : &settings;
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
+        Tokenizer tokenizer(settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused variables..
-        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
+        CheckUnusedVar checkUnusedVar(&tokenizer, settings1, this);
         (checkUnusedVar.checkStructMemberUsage)();
     }
 
@@ -1787,8 +1789,8 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
 
-        const Settings settingsOld = settings;
-        settings.enforcedLang = Settings::C;
+        Settings s = settings;
+        s.enforcedLang = Settings::C;
         checkStructMemberUsage("struct A {\n" // #10852
                                "    struct B {\n"
                                "        int x;\n"
@@ -1797,7 +1799,7 @@ private:
                                "void f() {\n"
                                "    struct B* pb = &a.b;\n"
                                "    pb->x = 1;\n"
-                               "}\n");
+                               "}\n", nullptr, &s);
         ASSERT_EQUALS("", errout.str());
 
         checkStructMemberUsage("union U {\n"
@@ -1815,9 +1817,8 @@ private:
                                "    pb->x = 1;\n"
                                "    struct C* pc = &u.c;\n"
                                "    pc->s[0] = 1;\n"
-                               "}\n");
+                               "}\n", nullptr, &s);
         ASSERT_EQUALS("", errout.str());
-        settings = settingsOld;
     }
 
     void structmember20() { // #10737

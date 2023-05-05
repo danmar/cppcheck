@@ -30,6 +30,8 @@
 #include <sstream>
 #include <string>
 
+#include <tinyxml2.h>
+
 std::ostringstream errout;
 std::ostringstream output;
 
@@ -419,5 +421,15 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(cppcheck::P
     // TODO: exename is not yet set
     if (!settings.platform.set(platformStr, errstr, {fixture.exename}))
         throw std::runtime_error("platform '" + platformStr + "' not found");
+    return *this;
+}
+
+TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::libraryxml(const char xmldata[], std::size_t len)
+{
+    tinyxml2::XMLDocument doc;
+    if (tinyxml2::XML_SUCCESS != doc.Parse(xmldata, len))
+        throw std::runtime_error("loading XML data failed");
+    if (settings.library.load(doc).errorcode != Library::ErrorCode::OK)
+        throw std::runtime_error("loading library XML failed");
     return *this;
 }
