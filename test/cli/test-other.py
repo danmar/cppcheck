@@ -187,3 +187,24 @@ def test_execute_addon_failure_2(tmpdir):
     # /private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/pytest-of-runner/pytest-0/test_execute_addon_failure_20/test...er/pytest-0/test_execute_addon_failure_20/test.cpp.6323.dump'. sh: python5.x: command not found [internalError]\n\n^\n
     assert stderr.startswith('{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute \'python5.x '.format(test_file))
     assert stderr.endswith(' [internalError]\n\n^\n')
+
+
+# TODO: find a test case which always fails
+@pytest.mark.skip
+def test_internal_error(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+#include <cstdio>
+
+void f() {
+    double gc = 3333.3333;
+    char stat[80];
+    sprintf(stat,"'%2.1f'",gc);
+}
+                """)
+
+    args = [test_file]
+
+    _, _, stderr = cppcheck(args)
+    assert stderr == '{}:0:0: error: Bailing from out analysis: Checking file failed: converting \'1f\' to integer failed - not an integer [internalError]\n\n^\n'.format(test_file)
