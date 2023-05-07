@@ -17,6 +17,12 @@ struct misra_5_7_violation_t {
 };
 static misra_5_7_violation_t misra_5_7_use_type_2;
 
+// #11443 - FP
+static struct
+{ // no warning
+    uint16_t x;
+} misra_5_7_false_positive_2;
+
 // cppcheck-suppress misra-c2012-5.8
 static int misra_5_8_var1;
 // cppcheck-suppress misra-c2012-8.4
