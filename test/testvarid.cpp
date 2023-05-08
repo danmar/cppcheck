@@ -98,6 +98,7 @@ private:
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
         TEST_CASE(varid65); // #10936
         TEST_CASE(varid66);
+        TEST_CASE(varid67); // #11711 - NOT function pointer
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -895,10 +896,14 @@ private:
     void varid41() {
         const char code1[] = "union evt; void f(const evt & event);";
         ASSERT_EQUALS("1: union evt ; void f ( const evt & event@1 ) ;\n",
+                      tokenize(code1));
+        ASSERT_EQUALS("1: union evt ; void f ( const evt & event ) ;\n",
                       tokenize(code1, "test.c"));
 
         const char code2[] = "struct evt; void f(const evt & event);";
         ASSERT_EQUALS("1: struct evt ; void f ( const evt & event@1 ) ;\n",
+                      tokenize(code2));
+        ASSERT_EQUALS("1: struct evt ; void f ( const evt & event ) ;\n",
                       tokenize(code2, "test.c"));
     }
 
@@ -1210,6 +1215,14 @@ private:
                                     "3: E f ( E ( * fp@1 ) ( ) ) ;\n";
             ASSERT_EQUALS(expected, tokenize(code));
         }
+    }
+
+    void varid67() { // #11711
+        const char code1[] = "int *x;\n"
+                             "_Generic(*x, int: foo, default: bar)();";
+        const char expected1[] = "1: int * x@1 ;\n"
+                                 "2: _Generic ( * x@1 , int : foo , default : bar ) ( ) ;\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.c"));
     }
 
     void varid_for_1() {

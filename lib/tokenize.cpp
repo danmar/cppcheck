@@ -4095,8 +4095,16 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
                     return false;
             }
         } else if (Token::Match(tok2, "&|&&")) {
+            if (c)
+                return false;
             ref = !bracket;
-        } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link()->next(), "(|[")) {
+        } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link(), ") (|[")) {
+            for (const Token* tok3 = tok2->tokAt(2); Token::Match(tok3, "!!)"); tok3 = tok3->next()) {
+                if (Token::Match(tok3, "(|["))
+                    tok3 = tok3->link();
+                if (tok3->str() == ",")
+                    return false;
+            }
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( * %name% [") && Token::Match(tok2->linkAt(3), "] ) [;,]")) {
             bracket = true;
