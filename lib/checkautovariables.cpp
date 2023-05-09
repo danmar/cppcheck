@@ -311,7 +311,7 @@ bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inc
             const Token *lhs = tok;
             while (Token::Match(lhs->previous(), "%name%|.|*|]")) {
                 if (lhs->linkAt(-1))
-                    lhs = lhs->linkAt(-1)->previous();
+                    lhs = lhs->linkAt(-1);
                 else
                     lhs = lhs->previous();
             }
