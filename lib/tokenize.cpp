@@ -8830,7 +8830,7 @@ void Tokenizer::simplifyAttribute()
                 else if (Token::Match(attr, "[(,] packed [,)]") && Token::simpleMatch(tok->previous(), "}"))
                     tok->previous()->isAttributePacked(true);
 
-                else if (functok && Token::Match(attr, "( __visibility__ ( \"default\" ) )"))
+                else if (functok && Token::simpleMatch(attr, "( __visibility__ ( \"default\" ) )"))
                     functok->isAttributeExport(true);
             }
 
