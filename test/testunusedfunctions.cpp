@@ -37,6 +37,7 @@ private:
         TEST_CASE(incondition);
         TEST_CASE(return1);
         TEST_CASE(return2);
+        TEST_CASE(return3);
         TEST_CASE(callback1);
         TEST_CASE(callback2);
         TEST_CASE(else1);
@@ -120,6 +121,24 @@ private:
         check("char * foo()\n"
               "{\n"
               "    return *foo();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return3() {
+        check("typedef void (*VoidFunc)();\n" // #9602
+              "void sayHello() {\n"
+              "  printf(\"Hello World\\n\");\n"
+              "}\n"
+              "VoidFunc getEventHandler() {\n"
+              "  return sayHello;\n"
+              "}\n"
+              "void indirectHello() {\n"
+              "  VoidFunc handler = getEventHandler();\n"
+              "  handler();\n"
+              "}\n"
+              "int main() {\n"
+              "  indirectHello();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
