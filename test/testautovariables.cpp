@@ -772,6 +772,23 @@ private:
               "};\n"
               "Array arr;\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8174
+        check("struct S {};\n"
+              "void f() {\n"
+              "    S s;\n"
+              "    S* p = &s;\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Deallocation of an auto-variable (s) results in undefined behaviour.\n", errout.str());
+
+        check("void f(bool b, int* q) {\n"
+              "    int i;\n"
+              "    int* p = b ? &i : q;\n"
+              "    if (!b)\n"
+              "        free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_input() {
