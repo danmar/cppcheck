@@ -296,10 +296,10 @@ struct ForwardTraversal {
         return std::vector<ForwardTraversal> {};
     }
 
-    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false) const {
+    std::vector<ForwardTraversal> tryForkUpdateScope(Token* endBlock, bool isModified = false, int depth = 5) const {
         std::vector<ForwardTraversal> result = tryForkScope(endBlock, isModified);
         for (ForwardTraversal& ft : result)
-            ft.updateScope(endBlock);
+            ft.updateScope(endBlock, depth);
         return result;
     }
 
@@ -351,10 +351,10 @@ struct ForwardTraversal {
         return a;
     }
 
-    bool checkBranch(Branch& branch) const {
+    bool checkBranch(Branch& branch, int depth) const {
         Analyzer::Action a = analyzeScope(branch.endBlock);
         branch.action = a;
-        std::vector<ForwardTraversal> ft1 = tryForkUpdateScope(branch.endBlock, a.isModified());
+        std::vector<ForwardTraversal> ft1 = tryForkUpdateScope(branch.endBlock, a.isModified(), depth);
         const bool bail = hasGoto(branch.endBlock);
         if (!a.isModified() && !bail) {
             if (ft1.empty()) {
@@ -529,11 +529,11 @@ struct ForwardTraversal {
         return updateLoop(endToken, endBlock, condTok, initTok, stepTok, true);
     }
 
-    Progress updateScope(Token* endBlock) {
-        return updateRange(endBlock->link(), endBlock);
+    Progress updateScope(Token* endBlock, int depth = 5) {
+        return updateRange(endBlock->link(), endBlock, depth);
     }
 
-    Progress updateRange(Token* start, const Token* end, int depth = 20) {
+    Progress updateRange(Token* start, const Token* end, int depth = 5) {
         if (depth < 0)
             return Break(Analyzer::Terminate::Bail);
         std::size_t i = 0;
@@ -695,7 +695,7 @@ struct ForwardTraversal {
                             return Break();
                     } else if (!elseBranch.check) {
                         thenBranch.active = true;
-                        if (checkBranch(thenBranch))
+                        if (checkBranch(thenBranch, depth - 1))
                             bail = true;
                     }
                     // Traverse else block
@@ -708,7 +708,7 @@ struct ForwardTraversal {
                                 return Break();
                         } else if (!thenBranch.check) {
                             elseBranch.active = true;
-                            if (checkBranch(elseBranch))
+                            if (checkBranch(elseBranch, depth - 1))
                                 bail = true;
                         }
                         tok = endBlock->linkAt(2);
