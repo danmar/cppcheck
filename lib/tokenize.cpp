@@ -8701,10 +8701,10 @@ static Token* getTokenAfterAttributes(Token* tok, bool gccattr) {
     return after;
 }
 
-Token* Tokenizer::getAttributeFuncTok(Token* tok, bool gccattr) {
+Token* Tokenizer::getAttributeFuncTok(Token* tok, bool gccattr) const {
     if (!Token::Match(tok, "%name% ("))
         return nullptr;
-    Token* after = getTokenAfterAttributes(tok, gccattr);
+    Token* const after = getTokenAfterAttributes(tok, gccattr);
     if (!after)
         syntaxError(tok);
 
