@@ -467,6 +467,9 @@ private:
      */
     void simplifyAttribute();
 
+    /** Get function token for a attribute */
+    Token* getAttributeFuncTok(Token* tok, bool gccattr);
+
     /**
      * Remove \__cppcheck\__ ((?))
      */
