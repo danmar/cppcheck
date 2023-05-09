@@ -333,8 +333,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template9() { // #7739
-        check("template<class T>\n"
+    void template9() {
+        check("template<class T>\n" // #7739
               "void f(T const& t) {}\n"
               "template<class T>\n"
               "void g(T const& t) {\n"
@@ -346,6 +346,12 @@ private:
               "    g(2);\n"
               "    g(3.14);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T> T f(T);\n" // #9222
+              "template <typename T> T f(T i) { return i; }\n"
+              "template int f<int>(int);\n"
+              "int main() { return f(int(2)); }\n");
         ASSERT_EQUALS("", errout.str());
     }
 
