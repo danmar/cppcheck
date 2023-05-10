@@ -2332,7 +2332,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int*& p) {\n"
+        check("void f(int*& p) {\n" // #4400
               "    p = (int*)malloc(4);\n"
               "    p = (int*)malloc(4);\n"
               "}\n");
