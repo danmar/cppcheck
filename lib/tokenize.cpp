@@ -7539,7 +7539,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "[(,;{}] ( %name% (") &&
+        if (Token::Match(tok->previous(), "[(,;{}] ( %name% (") && !tok->next()->isKeyword() &&
             tok->link()->previous() == tok->linkAt(2)) {
             // We have "( func ( *something* ))", remove the outer
             // parentheses
