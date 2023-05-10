@@ -260,6 +260,7 @@ private:
         TEST_CASE(functionAttributeBefore2);
         TEST_CASE(functionAttributeBefore3);
         TEST_CASE(functionAttributeBefore4);
+        TEST_CASE(functionAttributeBefore5); // __declspec(dllexport)
         TEST_CASE(functionAttributeAfter1);
         TEST_CASE(functionAttributeAfter2);
         TEST_CASE(functionAttributeListBefore);
@@ -3691,8 +3692,9 @@ private:
                             "void __attribute__((__pure__)) __attribute__((__nothrow__)) __attribute__((__const__)) func2();\n"
                             "void __attribute__((nothrow)) __attribute__((pure)) __attribute__((const)) func3();\n"
                             "void __attribute__((__nothrow__)) __attribute__((__pure__)) __attribute__((__const__)) func4();\n"
-                            "void __attribute__((noreturn)) func5();";
-        const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ;";
+                            "void __attribute__((noreturn)) func5();\n"
+                            "void __attribute__((__visibility__(\"default\"))) func6();";
+        const char expected[] = "void func1 ( ) ; void func2 ( ) ; void func3 ( ) ; void func4 ( ) ; void func5 ( ) ; void func6 ( ) ;";
 
         errout.str("");
 
@@ -3709,12 +3711,14 @@ private:
         const Token * func3 = Token::findsimplematch(tokenizer.tokens(), "func3");
         const Token * func4 = Token::findsimplematch(tokenizer.tokens(), "func4");
         const Token * func5 = Token::findsimplematch(tokenizer.tokens(), "func5");
+        const Token * func6 = Token::findsimplematch(tokenizer.tokens(), "func6");
 
-        ASSERT(func1 && func1->isAttributePure() && func1->isAttributeNothrow() && func1->isAttributeConst());
-        ASSERT(func2 && func2->isAttributePure() && func2->isAttributeNothrow() && func2->isAttributeConst());
-        ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst());
-        ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
+        ASSERT(func1 && func1->isAttributePure() && func1->isAttributeNothrow() && func1->isAttributeConst() && !func1->isAttributeExport());
+        ASSERT(func2 && func2->isAttributePure() && func2->isAttributeNothrow() && func2->isAttributeConst() && !func2->isAttributeExport());
+        ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst() && !func3->isAttributeExport());
+        ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst() && !func4->isAttributeExport());
         ASSERT(func5 && func5->isAttributeNoreturn());
+        ASSERT(func6 && func6->isAttributeExport());
     }
 
     void functionAttributeBefore2() {
@@ -3763,6 +3767,25 @@ private:
 
         const Token* foo = Token::findsimplematch(tokenizer.tokens(), "foo");
         ASSERT(foo && foo->isAttributeConst());
+    }
+
+    void functionAttributeBefore5() { // __declspec(dllexport)
+        const char code[] = "void __declspec(dllexport) func1();\n";
+        const char expected[] = "void func1 ( ) ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+
+        // Expected result..
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token * func1 = Token::findsimplematch(tokenizer.tokens(), "func1");
+
+        ASSERT(func1 && func1->isAttributeExport());
     }
 
     void functionAttributeAfter1() {
