@@ -2326,11 +2326,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test1() { // 3809
-        check("void f(double*&p) {\n"
+    void test1() {
+        check("void f(double*&p) {\n" // 3809
               "    p = malloc(0x100);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int*& p) {\n"
+              "    p = (int*)malloc(4);\n"
+              "    p = (int*)malloc(4);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:3]: (error) Memory leak: p\n", errout.str());
     }
 
     void test2() { // 3899

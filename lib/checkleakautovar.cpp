@@ -245,10 +245,6 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
     if (!var->isArgument() && (!var->isLocal() || var->isStatic()))
         return false;
 
-    // Don't check reference variables
-    if (var->isReference())
-        return false;
-
     // non-pod variable
     if (isCpp) {
         // Possibly automatically deallocated memory
@@ -1077,7 +1073,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
             if (used && it->second.status == VarInfo::DEALLOC)
                 deallocReturnError(tok, it->second.allocTok, var->name());
 
-            else if (!used && !it->second.managed()) {
+            else if (!used && !it->second.managed() && !var->isReference()) {
                 const auto use = possibleUsage.find(varid);
                 if (use == possibleUsage.end()) {
                     leakError(tok, var->name(), it->second.type);
