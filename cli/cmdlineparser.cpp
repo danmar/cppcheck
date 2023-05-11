@@ -1052,10 +1052,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     }
 
 #if defined(_WIN64)
-    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform && !mSettings.quiet)
         printMessage("Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.");
 #elif defined(_WIN32)
-    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform && !mSettings.quiet)
         printMessage("Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.");
 #endif
 
