@@ -245,6 +245,10 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
     if (!var->isArgument() && (!var->isLocal() || var->isStatic()))
         return false;
 
+    // Don't check reference variables
+    if (var->isReference() && !var->isArgument())
+        return false;
+
     // non-pod variable
     if (isCpp) {
         // Possibly automatically deallocated memory
