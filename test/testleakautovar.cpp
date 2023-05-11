@@ -2337,6 +2337,21 @@ private:
               "    p = (int*)malloc(4);\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
+
+        check("void f() {\n"
+              "    int* p = (int*)malloc(4);\n"
+              "    int*& r = p;\n"
+              "    r = (int*)malloc(4);\n"
+              "}\n", /*cpp*/ true);
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", "", errout.str());
+
+        check("void f() {\n"
+              "    int* p = (int*)malloc(4);\n"
+              "    int*& r = p;\n"
+              "    free(r);\n"
+              "    p = (int*)malloc(4);\n"
+              "}\n", /*cpp*/ true);
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Memory leak: p\n", errout.str());
     }
 
     void test2() { // 3899
