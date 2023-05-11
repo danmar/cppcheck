@@ -5035,16 +5035,24 @@ private:
                "  return s == 0;\n" // <- known value
                "}";
         value = valueOfTok(code, "==");
-        TODO_ASSERT_EQUALS(true, false, value.isKnown());
-        TODO_ASSERT_EQUALS(1, 0, value.intvalue);
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
 
         code = "bool f() {\n"
                "  const int s = int();"
                "  return s == 0;\n" // <- known value
                "}";
         value = valueOfTok(code, "==");
-        TODO_ASSERT_EQUALS(true, false, value.isKnown());
-        TODO_ASSERT_EQUALS(1, 0, value.intvalue);
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  const int s{};"
+               "  return s == 0;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
 
         // calculation with known result
         code = "int f(int x) { a = x & 0; }"; // <- & is 0
