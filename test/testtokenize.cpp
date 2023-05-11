@@ -176,6 +176,7 @@ private:
         TEST_CASE(removeParentheses24);      // Ticket #7040
         TEST_CASE(removeParentheses25);      // daca@home - a=(b,c)
         TEST_CASE(removeParentheses26);      // Ticket #8875 a[0](0)
+        TEST_CASE(removeParentheses27);
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -1906,6 +1907,20 @@ private:
     void removeParentheses26() { // Ticket #8875 a[0](0)
         static char code[] = "a[0](0);";
         static const char exp[] = "a [ 0 ] ( 0 ) ;";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
+    void removeParentheses27() {
+        static char code[] = "struct S { int i; };\n"
+                             "void g(int, int);\n"
+                             "void f(S s, int j) {\n"
+                             "    g(j, (decltype(s.i))j * s.i);\n"
+                             "}\n";
+        static const char exp[] = "struct S { int i ; } ;\n"
+                                  "void g ( int , int ) ;\n"
+                                  "void f ( S s , int j ) {\n"
+                                  "g ( j , ( decltype ( s . i ) ) j * s . i ) ;\n"
+                                  "}";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
