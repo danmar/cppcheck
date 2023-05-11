@@ -830,6 +830,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const std::string showtimeMode = argv[i] + 11;
                 if (showtimeMode == "file")
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE;
+                else if (showtimeMode == "file-total")
+                    mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
                 else if (showtimeMode == "summary")
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
                 else if (showtimeMode == "top5")
@@ -837,7 +839,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (showtimeMode.empty())
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
-                    printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, summary, top5.");
+                    printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, file-total, summary, top5.");
                     return false;
                 }
             }
