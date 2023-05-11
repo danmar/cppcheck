@@ -3158,6 +3158,21 @@ private:
               "    a.fill(0);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a' can be declared as const array\n", errout.str());
+
+        // #11682
+        check("struct b {\n"
+              "    void mutate();\n"
+              "};\n"
+              "struct c {\n"
+              "    const b& get() const;\n"
+              "    b get();\n"
+              "};\n"
+              "struct d {\n"
+              "    void f(c& e) const {\n"
+              "        e.get().mutate();\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
