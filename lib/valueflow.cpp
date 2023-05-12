@@ -5814,7 +5814,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist,
             if (tok->str() != "=" && !(isInit = isVariableInit(tok)))
                 continue;
 
-            if (tok->astParent() && !(tok->astParent()->str() == ";" && astIsLHS(tok)))
+            if (tok->astParent() && !((tok->astParent()->str() == ";" && astIsLHS(tok)) || tok->astParent()->str() == "*"))
                 continue;
 
             // Lhs should be a variable

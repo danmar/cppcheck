@@ -5054,6 +5054,30 @@ private:
         ASSERT_EQUALS(true, value.isKnown());
         ASSERT_EQUALS(1, value.intvalue);
 
+        code = "bool f() {\n"
+               "  int* p{};\n"
+               "  return p == nullptr;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int* p{ nullptr };\n"
+               "  return p == nullptr;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int* p{ 0 };\n"
+               "  return p == nullptr;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
         // calculation with known result
         code = "int f(int x) { a = x & 0; }"; // <- & is 0
         value = valueOfTok(code, "&");
