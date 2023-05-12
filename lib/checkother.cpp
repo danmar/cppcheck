@@ -868,7 +868,7 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
             needsCheck = true;
     }
     return (needsCheck && !isExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings, true));
-};
+}
 
 //---------------------------------------------------------------------------
 // Check scope of variables..
