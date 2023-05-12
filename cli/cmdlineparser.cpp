@@ -826,6 +826,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const std::string showtimeMode = argv[i] + 11;
                 if (showtimeMode == "file")
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE;
+                else if (showtimeMode == "file-total")
+                    mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
                 else if (showtimeMode == "summary")
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
                 else if (showtimeMode == "top5")
@@ -833,7 +835,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (showtimeMode.empty())
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
-                    printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, summary, top5.");
+                    printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, file-total, summary, top5.");
                     return false;
                 }
             }
@@ -1048,10 +1050,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     }
 
 #if defined(_WIN64)
-    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform && !mSettings.quiet)
         printMessage("Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.");
 #elif defined(_WIN32)
-    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform && !mSettings.quiet)
         printMessage("Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.");
 #endif
 

@@ -6026,6 +6026,33 @@ private:
                         "    g(p);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct T {};\n" // #11075
+                        "struct S {\n"
+                        "    int n;\n"
+                        "    struct T t[10];\n"
+                        "};\n"
+                        "void f(struct S* s, char** tokens) {\n"
+                        "    struct T t[10];\n"
+                        "    int n = 0;\n"
+                        "    for (int i = 0; i < s->n; i++)\n"
+                        "        if (tokens[i])\n"
+                        "            t[n++] = s->t[i];\n"
+                        "    for (int i = 0; i < n; i++)\n"
+                        "        t[i];\n"
+                        "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("bool g();\n"
+                        "void f() {\n"
+                        "    int a[10];\n"
+                        "    int idx = 0;\n"
+                        "    if (g())\n"
+                        "        a[idx++] = 1;\n"
+                        "    for (int i = 0; i < idx; i++)\n"
+                        "        (void)a[i];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

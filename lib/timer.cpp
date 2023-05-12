@@ -40,7 +40,7 @@ namespace {
 
 void TimerResults::showResults(SHOWTIME_MODES mode) const
 {
-    if (mode == SHOWTIME_MODES::SHOWTIME_NONE)
+    if (mode == SHOWTIME_MODES::SHOWTIME_NONE || mode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
         return;
 
     std::cout << std::endl;
@@ -91,10 +91,13 @@ Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* tim
     : mStr(std::move(str))
     , mTimerResults(timerResults)
     , mShowTimeMode(showtimeMode)
-{
-    if (showtimeMode != SHOWTIME_MODES::SHOWTIME_NONE)
-        mStart = std::clock();
-}
+    , mStopped(showtimeMode == SHOWTIME_MODES::SHOWTIME_NONE || showtimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
+{}
+
+Timer::Timer(bool fileTotal, std::string filename)
+    : mStr(std::move(filename))
+    , mStopped(!fileTotal)
+{}
 
 Timer::~Timer()
 {
@@ -110,6 +113,9 @@ void Timer::stop()
         if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
             std::cout << mStr << ": " << sec << "s" << std::endl;
+        } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL) {
+            const double sec = (double)diff / CLOCKS_PER_SEC;
+            std::cout << "Check time: " << mStr << ": " << sec << "s" << std::endl;
         } else {
             if (mTimerResults)
                 mTimerResults->addResults(mStr, diff);

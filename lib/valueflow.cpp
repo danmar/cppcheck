@@ -1336,6 +1336,13 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         }
         // skip over enum
         tok = tok->linkAt(1);
+    } else if (Token::Match(tok, "%name% [{(] [)}]") && (tok->isStandardType() ||
+                                                         (tok->variable() && tok->variable()->nameToken() == tok &&
+                                                          (tok->variable()->isPointer() || (tok->variable()->valueType() && tok->variable()->valueType()->isIntegral()))))) {
+        ValueFlow::Value value(0);
+        if (!tok->isTemplateArg())
+            value.setKnown();
+        setTokenValue(tok->next(), std::move(value), settings, isInitList);
     }
     return tok->next();
 }
@@ -5759,7 +5766,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
 static bool isVariableInit(const Token *tok)
 {
     return (tok->str() == "(" || tok->str() == "{") &&
-           tok->isBinaryOp() &&
+           (tok->isBinaryOp() || (tok->astOperand1() && tok->link() == tok->next())) &&
            tok->astOperand1()->variable() &&
            tok->astOperand1()->variable()->nameToken() == tok->astOperand1() &&
            tok->astOperand1()->variable()->valueType() &&
@@ -5792,7 +5799,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist,
         std::unordered_map<nonneg int, std::unordered_set<nonneg int>> backAssigns;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             // Assignment
-            if (tok->str() != "=" && !isVariableInit(tok))
+            bool isInit = false;
+            if (tok->str() != "=" && !(isInit = isVariableInit(tok)))
                 continue;
 
             if (tok->astParent() && !(tok->astParent()->str() == ";" && astIsLHS(tok)))
@@ -5804,11 +5812,14 @@ static void valueFlowAfterAssign(TokenList *tokenlist,
             std::vector<const Variable*> vars = getLHSVariables(tok);
 
             // Rhs values..
-            if (!tok->astOperand2() || tok->astOperand2()->values().empty())
+            Token* rhs = tok->astOperand2();
+            if (!rhs && isInit)
+                rhs = tok;
+            if (!rhs || rhs->values().empty())
                 continue;
 
             std::list<ValueFlow::Value> values = truncateValues(
-                tok->astOperand2()->values(), tok->astOperand1()->valueType(), tok->astOperand2()->valueType(), settings);
+                rhs->values(), tok->astOperand1()->valueType(), rhs->valueType(), settings);
             // Remove known values
             std::set<ValueFlow::Value::ValueType> types;
             if (tok->astOperand1()->hasKnownValue()) {
@@ -5863,7 +5874,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist,
                 continue;
             const bool init = vars.size() == 1 && (vars.front()->nameToken() == tok->astOperand1() || tok->isSplittedVarDeclEq());
             valueFlowForwardAssign(
-                tok->astOperand2(), tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
+                rhs, tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
             // Back propagate symbolic values
             if (tok->astOperand1()->exprId() > 0) {
                 Token* start = nextAfterAstRightmostLeaf(tok);

@@ -516,6 +516,12 @@ public:
     void isAttributeNothrow(const bool value) {
         setFlag(fIsAttributeNothrow, value);
     }
+    bool isAttributeExport() const {
+        return getFlag(fIsAttributeExport);
+    }
+    void isAttributeExport(const bool value) {
+        setFlag(fIsAttributeExport, value);
+    }
     bool isAttributePacked() const {
         return getFlag(fIsAttributePacked);
     }
@@ -1256,46 +1262,47 @@ private:
     Token* mLink{};
 
     enum : uint64_t {
-        fIsUnsigned             = (1 << 0),
-        fIsSigned               = (1 << 1),
-        fIsPointerCompare       = (1 << 2),
-        fIsLong                 = (1 << 3),
-        fIsStandardType         = (1 << 4),
-        fIsExpandedMacro        = (1 << 5),
-        fIsCast                 = (1 << 6),
-        fIsAttributeConstructor = (1 << 7),  // __attribute__((constructor)) __attribute__((constructor(priority)))
-        fIsAttributeDestructor  = (1 << 8),  // __attribute__((destructor))  __attribute__((destructor(priority)))
-        fIsAttributeUnused      = (1 << 9),  // __attribute__((unused))
-        fIsAttributePure        = (1 << 10), // __attribute__((pure))
-        fIsAttributeConst       = (1 << 11), // __attribute__((const))
-        fIsAttributeNoreturn    = (1 << 12), // __attribute__((noreturn)), __declspec(noreturn)
-        fIsAttributeNothrow     = (1 << 13), // __attribute__((nothrow)), __declspec(nothrow)
-        fIsAttributeUsed        = (1 << 14), // __attribute__((used))
-        fIsAttributePacked      = (1 << 15), // __attribute__((packed))
-        fIsAttributeMaybeUnused = (1 << 16), // [[maybe_unsed]]
-        fIsControlFlowKeyword   = (1 << 17), // if/switch/while/...
-        fIsOperatorKeyword      = (1 << 18), // operator=, etc
-        fIsComplex              = (1 << 19), // complex/_Complex type
-        fIsEnumType             = (1 << 20), // enumeration type
-        fIsName                 = (1 << 21),
-        fIsLiteral              = (1 << 22),
-        fIsTemplateArg          = (1 << 23),
-        fIsAttributeNodiscard   = (1 << 24), // __attribute__ ((warn_unused_result)), [[nodiscard]]
-        fAtAddress              = (1 << 25), // @ 0x4000
-        fIncompleteVar          = (1 << 26),
-        fConstexpr              = (1 << 27),
-        fExternC                = (1 << 28),
-        fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
-        fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
-        fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
-        fIsInline               = (1ULL << 32), // Is this a inline type
-        fIsTemplate             = (1ULL << 33),
-        fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
-        fIsRemovedVoidParameter = (1ULL << 35), // A void function parameter has been removed
-        fIsIncompleteConstant   = (1ULL << 36),
-        fIsRestrict             = (1ULL << 37), // Is this a restrict pointer type
-        fIsSimplifiedTypedef    = (1ULL << 38),
-        fIsFinalType            = (1ULL << 39), // Is this a type with final specifier
+        fIsUnsigned             = (1ULL << 0),
+        fIsSigned               = (1ULL << 1),
+        fIsPointerCompare       = (1ULL << 2),
+        fIsLong                 = (1ULL << 3),
+        fIsStandardType         = (1ULL << 4),
+        fIsExpandedMacro        = (1ULL << 5),
+        fIsCast                 = (1ULL << 6),
+        fIsAttributeConstructor = (1ULL << 7),  // __attribute__((constructor)) __attribute__((constructor(priority)))
+        fIsAttributeDestructor  = (1ULL << 8),  // __attribute__((destructor))  __attribute__((destructor(priority)))
+        fIsAttributeUnused      = (1ULL << 9),  // __attribute__((unused))
+        fIsAttributePure        = (1ULL << 10), // __attribute__((pure))
+        fIsAttributeConst       = (1ULL << 11), // __attribute__((const))
+        fIsAttributeNoreturn    = (1ULL << 12), // __attribute__((noreturn)), __declspec(noreturn)
+        fIsAttributeNothrow     = (1ULL << 13), // __attribute__((nothrow)), __declspec(nothrow)
+        fIsAttributeUsed        = (1ULL << 14), // __attribute__((used))
+        fIsAttributePacked      = (1ULL << 15), // __attribute__((packed))
+        fIsAttributeExport      = (1ULL << 16), // __attribute__((__visibility__("default"))), __declspec(dllexport)
+        fIsAttributeMaybeUnused = (1ULL << 17), // [[maybe_unsed]]
+        fIsControlFlowKeyword   = (1ULL << 18), // if/switch/while/...
+        fIsOperatorKeyword      = (1ULL << 19), // operator=, etc
+        fIsComplex              = (1ULL << 20), // complex/_Complex type
+        fIsEnumType             = (1ULL << 21), // enumeration type
+        fIsName                 = (1ULL << 22),
+        fIsLiteral              = (1ULL << 23),
+        fIsTemplateArg          = (1ULL << 24),
+        fIsAttributeNodiscard   = (1ULL << 25), // __attribute__ ((warn_unused_result)), [[nodiscard]]
+        fAtAddress              = (1ULL << 26), // @ 0x4000
+        fIncompleteVar          = (1ULL << 27),
+        fConstexpr              = (1ULL << 28),
+        fExternC                = (1ULL << 29),
+        fIsSplitVarDeclComma    = (1ULL << 30), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
+        fIsSplitVarDeclEq       = (1ULL << 31), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsImplicitInt          = (1ULL << 32), // Is "int" token implicitly added?
+        fIsInline               = (1ULL << 33), // Is this a inline type
+        fIsTemplate             = (1ULL << 34),
+        fIsSimplifedScope       = (1ULL << 35), // scope added when simplifying e.g. if (int i = ...; ...)
+        fIsRemovedVoidParameter = (1ULL << 36), // A void function parameter has been removed
+        fIsIncompleteConstant   = (1ULL << 37),
+        fIsRestrict             = (1ULL << 38), // Is this a restrict pointer type
+        fIsSimplifiedTypedef    = (1ULL << 39),
+        fIsFinalType            = (1ULL << 40), // Is this a type with final specifier
     };
 
     Token::Type mTokType = eNone;

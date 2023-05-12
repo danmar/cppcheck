@@ -1362,6 +1362,8 @@ class MisraChecker:
         for scope in cfg.scopes:
             if scope.className is None:
                 continue
+            if scope.className.startswith('Anonymous'):
+                continue
             if scope.type not in ('Struct', 'Enum'):
                 continue
             used = False

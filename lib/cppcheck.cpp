@@ -635,6 +635,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     if (Settings::terminated())
         return mExitCode;
 
+    const Timer fileTotalTimer(mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL, filename);
+
     if (!mSettings.quiet) {
         std::string fixedpath = Path::simplifyPath(filename);
         fixedpath = Path::toNativeSeparators(fixedpath);

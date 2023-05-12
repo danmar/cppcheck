@@ -4088,8 +4088,16 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
                     return false;
             }
         } else if (Token::Match(tok2, "&|&&")) {
+            if (c)
+                return false;
             ref = !bracket;
-        } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link()->next(), "(|[")) {
+        } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link(), ") (|[")) {
+            for (const Token* tok3 = tok2->tokAt(2); Token::Match(tok3, "!!)"); tok3 = tok3->next()) {
+                if (Token::Match(tok3, "(|["))
+                    tok3 = tok3->link();
+                if (tok3->str() == ",")
+                    return false;
+            }
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( * %name% [") && Token::Match(tok2->linkAt(3), "] ) [;,]")) {
             bracket = true;
@@ -5787,6 +5795,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " isComplex=\"true\"";
         if (tok->isRestrict())
             out << " isRestrict=\"true\"";
+        if (tok->isAttributeExport())
+            out << " isAttributeExport=\"true\"";
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
@@ -7532,7 +7542,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "[(,;{}] ( %name% (") &&
+        if (Token::Match(tok->previous(), "[(,;{}] ( %name% (") && !tok->next()->isKeyword() &&
             tok->link()->previous() == tok->linkAt(2)) {
             // We have "( func ( *something* ))", remove the outer
             // parentheses
@@ -8673,20 +8683,65 @@ void Tokenizer::simplifyCallingConvention()
     }
 }
 
+static bool isAttribute(const Token* tok, bool gcc) {
+    return gcc ? Token::Match(tok, "__attribute__|__attribute (") : Token::Match(tok, "__declspec|_declspec (");
+}
+
+static Token* getTokenAfterAttributes(Token* tok, bool gccattr) {
+    Token* after = tok;
+    while (isAttribute(after, gccattr))
+        after = after->linkAt(1)->next();
+    return after;
+}
+
+Token* Tokenizer::getAttributeFuncTok(Token* tok, bool gccattr) const {
+    if (!Token::Match(tok, "%name% ("))
+        return nullptr;
+    Token* const after = getTokenAfterAttributes(tok, gccattr);
+    if (!after)
+        syntaxError(tok);
+
+    if (Token::Match(after, "%name%|*|&|(")) {
+        Token *ftok = after;
+        while (Token::Match(ftok, "%name%|::|<|*|& !!(")) {
+            if (ftok->str() == "<") {
+                ftok = ftok->findClosingBracket();
+                if (!ftok)
+                    break;
+            }
+            ftok = ftok->next();
+        }
+        if (Token::simpleMatch(ftok, "( *"))
+            ftok = ftok->tokAt(2);
+        if (Token::Match(ftok, "%name% (|)"))
+            return ftok;
+    } else if (Token::Match(after, "[;{=:]")) {
+        Token *prev = tok->previous();
+        while (Token::Match(prev, "%name%"))
+            prev = prev->previous();
+        if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->previous(), "%name% ("))
+            return prev->link()->previous();
+        else if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->tokAt(-2), "operator %op% (") && isCPP())
+            return prev->link()->tokAt(-2);
+        else if ((!prev || Token::Match(prev, "[;{}*]")) && Token::Match(tok->previous(), "%name%"))
+            return tok->previous();
+    }
+    return nullptr;
+}
+
 void Tokenizer::simplifyDeclspec()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::Match(tok, "__declspec|_declspec (") && tok->next()->link() && tok->next()->link()->next()) {
-            if (Token::Match(tok->tokAt(2), "noreturn|nothrow")) {
-                Token *tok1 = tok->next()->link()->next();
-                while (tok1 && !Token::Match(tok1, "%name%")) {
-                    tok1 = tok1->next();
-                }
-                if (tok1) {
+        while (isAttribute(tok, false)) {
+            Token *functok = getAttributeFuncTok(tok, false);
+            if (Token::Match(tok->tokAt(2), "noreturn|nothrow|dllexport")) {
+                if (functok) {
                     if (tok->strAt(2) == "noreturn")
-                        tok1->isAttributeNoreturn(true);
+                        functok->isAttributeNoreturn(true);
+                    else if (tok->strAt(2) == "nothrow")
+                        functok->isAttributeNothrow(true);
                     else
-                        tok1->isAttributeNothrow(true);
+                        functok->isAttributeExport(true);
                 }
             } else if (tok->strAt(2) == "property")
                 tok->next()->link()->insertToken("__property");
@@ -8706,39 +8761,8 @@ void Tokenizer::simplifyAttribute()
             if (mSettings->library.isFunctionConst(tok->str(), false))
                 tok->isAttributeConst(true);
         }
-        while (Token::Match(tok, "__attribute__|__attribute (")) {
-            Token *after = tok;
-            while (Token::Match(after, "__attribute__|__attribute ("))
-                after = after->linkAt(1)->next();
-            if (!after)
-                syntaxError(tok);
-
-            Token *functok = nullptr;
-            if (Token::Match(after, "%name%|*|&|(")) {
-                Token *ftok = after;
-                while (Token::Match(ftok, "%name%|::|<|*|& !!(")) {
-                    if (ftok->str() == "<") {
-                        ftok = ftok->findClosingBracket();
-                        if (!ftok)
-                            break;
-                    }
-                    ftok = ftok->next();
-                }
-                if (Token::simpleMatch(ftok, "( *"))
-                    ftok = ftok->tokAt(2);
-                if (Token::Match(ftok, "%name% (|)"))
-                    functok = ftok;
-            } else if (Token::Match(after, "[;{=:]")) {
-                Token *prev = tok->previous();
-                while (Token::Match(prev, "%name%"))
-                    prev = prev->previous();
-                if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->previous(), "%name% ("))
-                    functok = prev->link()->previous();
-                else if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->tokAt(-2), "operator %op% (") && isCPP())
-                    functok = prev->link()->tokAt(-2);
-                else if ((!prev || Token::Match(prev, "[;{}*]")) && Token::Match(tok->previous(), "%name%"))
-                    functok = tok->previous();
-            }
+        while (isAttribute(tok, true)) {
+            Token *functok = getAttributeFuncTok(tok, true);
 
             for (Token *attr = tok->tokAt(2); attr->str() != ")"; attr = attr->next()) {
                 if (Token::Match(attr, "%name% ("))
@@ -8758,6 +8782,7 @@ void Tokenizer::simplifyAttribute()
 
                 else if (Token::Match(attr, "[(,] unused|__unused__|used|__used__ [,)]")) {
                     Token *vartok = nullptr;
+                    Token *after = getTokenAfterAttributes(tok, true);
 
                     // check if after variable name
                     if (Token::Match(after, ";|=")) {
@@ -8797,6 +8822,9 @@ void Tokenizer::simplifyAttribute()
 
                 else if (Token::Match(attr, "[(,] packed [,)]") && Token::simpleMatch(tok->previous(), "}"))
                     tok->previous()->isAttributePacked(true);
+
+                else if (functok && Token::simpleMatch(attr, "( __visibility__ ( \"default\" ) )"))
+                    functok->isAttributeExport(true);
             }
 
             Token::eraseTokens(tok, tok->linkAt(1)->next());
