@@ -2056,7 +2056,7 @@ private:
                        "    delete a;\n"
                        "    return i;\n"
                        "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized : a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: a\n", errout.str());
     }
 
     // class / struct..
