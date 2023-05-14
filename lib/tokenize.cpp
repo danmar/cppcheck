@@ -935,6 +935,18 @@ namespace {
                     return true;
                 if (Token::Match(tok->previous(), "public|protected|private"))
                     return true;
+                if (Token::Match(tok->previous(), ", %name% :")) {
+                    bool isGeneric = false;
+                    for (; tok; tok = tok->previous()) {
+                        if (Token::Match(tok, ")|]"))
+                            tok = tok->link();
+                        else if (Token::Match(tok, "[;{}(]")) {
+                            isGeneric = Token::simpleMatch(tok->previous(), "_Generic (");
+                            break;
+                        }
+                    }
+                    return isGeneric;
+                }
                 return false;
             }
             if (Token::Match(tok->previous(), "%name%") && !tok->previous()->isKeyword())

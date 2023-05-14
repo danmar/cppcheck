@@ -69,6 +69,7 @@ private:
         TEST_CASE(carray2);
         TEST_CASE(cdonotreplace1);
         TEST_CASE(cppfp1);
+        TEST_CASE(Generic1);
 
         TEST_CASE(simplifyTypedef1);
         TEST_CASE(simplifyTypedef2);
@@ -461,6 +462,12 @@ private:
                             "typedef fp t;\n"
                             "void foo(t p);";
         ASSERT_EQUALS("void foo ( void ( * p ) ( void ) ) ;", tok(code));
+    }
+
+    void Generic1() {
+        const char code[] = "typedef void func(void);\n"
+                            "_Generic((x), func: 1, default: 2);";
+        ASSERT_EQUALS("_Generic ( x , void ( ) : 1 , default : 2 ) ;", tok(code));
     }
 
     void simplifyTypedef1() {
