@@ -176,6 +176,7 @@ private:
         TEST_CASE(removeParentheses24);      // Ticket #7040
         TEST_CASE(removeParentheses25);      // daca@home - a=(b,c)
         TEST_CASE(removeParentheses26);      // Ticket #8875 a[0](0)
+        TEST_CASE(removeParentheses27);
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
@@ -1909,6 +1910,20 @@ private:
         ASSERT_EQUALS(exp, tokenizeAndStringify(code));
     }
 
+    void removeParentheses27() {
+        static char code[] = "struct S { int i; };\n"
+                             "void g(int, int);\n"
+                             "void f(S s, int j) {\n"
+                             "    g(j, (decltype(s.i))j * s.i);\n"
+                             "}\n";
+        static const char exp[] = "struct S { int i ; } ;\n"
+                                  "void g ( int , int ) ;\n"
+                                  "void f ( S s , int j ) {\n"
+                                  "g ( j , ( decltype ( s . i ) ) j * s . i ) ;\n"
+                                  "}";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code));
+    }
+
     void tokenize_double() {
         const char code[] = "void f() {\n"
                             "    double a = 4.2;\n"
@@ -3584,7 +3599,7 @@ private:
         ASSERT_EQUALS("unsigned int ( * f ) ( ) ;", tokenizeAndStringify("unsigned int (*f)();"));
         ASSERT_EQUALS("unsigned int * ( * f ) ( ) ;", tokenizeAndStringify("unsigned int * (*f)();"));
         ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", tokenizeAndStringify("void (*f[2])();"));
-        TODO_ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", "void ( * f ) ( void ) [ 2 ] ;", tokenizeAndStringify("typedef void func_t(void); func_t *f[2];"));
+        ASSERT_EQUALS("void ( * f [ 2 ] ) ( void ) ;", tokenizeAndStringify("typedef void func_t(void); func_t *f[2];"));
     }
 
     void simplifyFunctionPointers2() {

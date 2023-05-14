@@ -695,6 +695,15 @@ namespace {
                     mRangeAfterVar.second = mEndToken;
                     return;
                 }
+                if (Token::Match(type, "%name% (") && Token::simpleMatch(type->linkAt(1), ") ;") && !type->isStandardType()) {
+                    mNameToken = type;
+                    mEndToken = type->linkAt(1)->next();
+                    mRangeType.first = start;
+                    mRangeType.second = type;
+                    mRangeAfterVar.first = mNameToken->next();
+                    mRangeAfterVar.second = mEndToken;
+                    return;
+                }
             }
             // TODO: handle all typedefs
             if ((false))
@@ -708,6 +717,15 @@ namespace {
 
         bool isUsed() const {
             return mUsed;
+        }
+
+        bool isInvalidConstFunctionType(const std::map<std::string, TypedefSimplifier>& m) const {
+            if (!Token::Match(mTypedefToken, "typedef const %name% %name% ;"))
+                return false;
+            const auto it = m.find(mTypedefToken->strAt(2));
+            if (it == m.end())
+                return false;
+            return Token::Match(it->second.mNameToken, "%name% (");
         }
 
         bool fail() const {
@@ -823,6 +841,15 @@ namespace {
             Token *after = tok3;
             while (Token::Match(after, "%name%|*|&|&&|::"))
                 after = after->next();
+            if (Token::Match(mNameToken, "%name% (") && Token::simpleMatch(tok3->next(), "*")) {
+                while (Token::Match(after, "(|["))
+                    after = after->link()->next();
+                if (after) {
+                    tok3->insertToken("(");
+                    after->previous()->insertToken(")");
+                    Token::createMutualLinks(tok3->next(), after->previous());
+                }
+            }
 
             bool useAfterVarRange = true;
             if (Token::simpleMatch(mRangeAfterVar.first, "[")) {
@@ -920,6 +947,8 @@ namespace {
                 return true;
             if (Token::Match(tok->previous(), "; %name% ;"))
                 return false;
+            if (Token::Match(tok->previous(), "<|, %name% * ,|>"))
+                return true;
             for (const Token* after = tok->next(); after; after = after->next()) {
                 if (Token::Match(after, "%name%|::|&|*|&&"))
                     continue;
@@ -1014,6 +1043,9 @@ void Tokenizer::simplifyTypedef()
         if (indentlevel == 0 && tok->str() == "typedef") {
             TypedefSimplifier ts(tok, typeNum);
             if (!ts.fail() && numberOfTypedefs[ts.name()] == 1) {
+                if (mSettings->severity.isEnabled(Severity::portability) && ts.isInvalidConstFunctionType(typedefs))
+                    reportError(tok->next(), Severity::portability, "invalidConstFunctionType",
+                                "It is unspecified behavior to const qualify a function type.");
                 typedefs.emplace(ts.name(), ts);
                 if (!ts.isStructEtc())
                     tok = ts.endToken();
@@ -7549,7 +7581,7 @@ bool Tokenizer::simplifyRedundantParentheses()
             ret = true;
         }
 
-        if (Token::Match(tok->previous(), "[(,;{}] ( %name% (") &&
+        if (Token::Match(tok->previous(), "[(,;{}] ( %name% (") && !tok->next()->isKeyword() &&
             tok->link()->previous() == tok->linkAt(2)) {
             // We have "( func ( *something* ))", remove the outer
             // parentheses
