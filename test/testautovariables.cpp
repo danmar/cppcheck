@@ -617,6 +617,18 @@ private:
               "    pcb->root0 = 0;\n"  // <- conditional reassign => error
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        check("struct S { int *p; };\n"
+              "void g(struct S* s) {\n"
+              "    int a[10];\n"
+              "    s->p = a;\n"
+              "    a[0] = 0;\n"
+              "}\n"
+              "void f() {\n"
+              "    struct S s;\n"
+              "    g(&s);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testinvaliddealloc() {

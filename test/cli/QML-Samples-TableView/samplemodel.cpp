@@ -4,9 +4,7 @@
 #include <QRandomGenerator>
 
 SampleModel::SampleModel(QObject *parent) : QAbstractListModel(parent)
-{
-
-}
+{}
 
 int SampleModel::rowCount(const QModelIndex &parent) const
 {

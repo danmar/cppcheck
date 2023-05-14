@@ -329,7 +329,7 @@ void CheckOther::cstyleCastError(const Token *tok)
                 "C-style pointer casting detected. C++ offers four different kinds of casts as replacements: "
                 "static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to "
                 "any of those automatically, thus it is considered safer if the programmer explicitly states "
-                "which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts.", CWE398, Certainty::normal);
+                "which kind of cast is expected.", CWE398, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -868,7 +868,7 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
             needsCheck = true;
     }
     return (needsCheck && !isExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings, true));
-};
+}
 
 //---------------------------------------------------------------------------
 // Check scope of variables..

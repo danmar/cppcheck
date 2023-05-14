@@ -4778,17 +4778,6 @@ private:
                               "    ref[0] = 123;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
-
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    Foo foo;\n"
-                              "    Foo &ref = foo;\n"
-                              "    ref[0] = 123;\n"
-                              "}",
-                              "test.c");
-        TODO_ASSERT_EQUALS("[test.c:5]: (style) Variable 'foo' is assigned a value that is never used.\n",
-                           "",
-                           errout.str());
     }
 
     void localvaralias10() { // ticket 2004

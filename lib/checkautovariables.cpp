@@ -310,8 +310,12 @@ bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inc
         }
         if (Token::simpleMatch(tok, "=")) {
             const Token *lhs = tok;
-            while (Token::Match(lhs->previous(), "%name%|.|*"))
-                lhs = lhs->previous();
+            while (Token::Match(lhs->previous(), "%name%|.|*|]")) {
+                if (lhs->linkAt(-1))
+                    lhs = lhs->linkAt(-1);
+                else
+                    lhs = lhs->previous();
+            }
             const Token *e = expr;
             while (e->str() != "=" && lhs->str() == e->str()) {
                 e = e->next();
