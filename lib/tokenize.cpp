@@ -8006,6 +8006,8 @@ static bool isNonMacro(const Token* tok)
         return true;
     if (tok->str().compare(0, 2, "__") == 0) // attribute/annotation
         return true;
+    if (Token::simpleMatch(tok, "alignas ("))
+        return true;
     return false;
 }
 
