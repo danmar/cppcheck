@@ -6337,6 +6337,13 @@ private:
                               "    });\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f() {\n" // #8433
+                              "    float a;\n"
+                              "    auto lambda = []() {};\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: a\n", errout.str());
     }
 
 
