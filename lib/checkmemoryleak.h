@@ -177,9 +177,6 @@ public:
         checkMemoryLeak.checkReallocUsage();
     }
 
-    /** @brief Unit testing : testing the white list */
-    static bool test_white_list(const std::string &funcname, const Settings *settings, bool cpp);
-
     /**
      * Checking for a memory leak caused by improper realloc usage.
      */

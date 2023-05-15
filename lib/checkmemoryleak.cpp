@@ -439,12 +439,6 @@ static bool ifvar(const Token *tok, nonneg int varid, const std::string &comp, c
     return (vartok && vartok->varId() == varid);
 }
 
-bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, const Settings *settings, bool cpp)
-{
-    return ((call_func_white_list.find(funcname)!=call_func_white_list.end()) || settings->library.isLeakIgnore(funcname) || (cpp && funcname == "delete"));
-}
-
-
 //---------------------------------------------------------------------------
 // Check for memory leaks due to improper realloc() usage.
 //   Below, "a" may be set to null without being freed if realloc() cannot
@@ -642,10 +636,8 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                 }
 
                 // Function call .. possible deallocation
-                else if (Token::Match(tok->previous(), "[{};] %name% (")) {
-                    if (!CheckMemoryLeakInFunction::test_white_list(tok->str(), mSettings, mTokenizer->isCPP())) {
-                        return;
-                    }
+                else if (Token::Match(tok->previous(), "[{};] %name% (") && !mSettings->library.isLeakIgnore(tok->str())) {
+                    return;
                 }
             }
         }
@@ -761,7 +753,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
     auto deallocInFunction = [this](const Token* tok, int structid) -> bool {
         // Calling non-function / function that doesn't deallocate?
-        if (CheckMemoryLeakInFunction::test_white_list(tok->str(), mSettings, mTokenizer->isCPP()))
+        if (mSettings->library.isLeakIgnore(tok->str()))
             return false;
 
         // Check if the struct is used..
@@ -1008,7 +1000,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
             continue;
         if (!tok->isKeyword() && mSettings->library.isNotLibraryFunction(tok))
             continue;
-        if (!CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP()))
+        if (!mSettings->library.isLeakIgnore(functionName))
             continue;
 
         const std::vector<const Token *> args = getArguments(tok);
