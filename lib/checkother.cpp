@@ -2323,7 +2323,7 @@ void CheckOther::checkInvalidFree()
 
             // If a variable that was previously assigned a newly-allocated memory location is
             // added or subtracted from when used to free the memory, report an error.
-            else if (Token::Match(tok, "free|g_free|delete ( %any% +|-") ||
+            else if ((Token::Match(tok, "%name% ( %any% +|-") && mSettings->library.getDeallocFuncInfo(tok)) ||
                      Token::Match(tok, "delete [ ] ( %any% +|-") ||
                      Token::Match(tok, "delete %any% +|- %any%")) {
 

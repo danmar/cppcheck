@@ -1736,7 +1736,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
 
         // check for deallocating memory
         const Token *var;
-        if (Token::Match(tok, "free ( %var%"))
+        if (Token::Match(tok, "%name% ( %var%") && mSettings->library.getDeallocFuncInfo(tok))
             var = tok->tokAt(2);
         else if (Token::Match(tok, "delete [ ] %var%"))
             var = tok->tokAt(3);
