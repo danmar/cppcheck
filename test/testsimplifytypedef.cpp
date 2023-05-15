@@ -42,7 +42,7 @@ public:
 private:
     // If there are unused templates, keep those
     const Settings settings0 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
-    const Settings settings1 = settingsBuilder().checkUnusedTemplates().build();
+    const Settings settings1 = settingsBuilder().severity(Severity::portability).checkUnusedTemplates().build();
     const Settings settings2 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
 
     void run() override {
@@ -57,6 +57,9 @@ private:
         TEST_CASE(cstruct3);
         TEST_CASE(cstruct3);
         TEST_CASE(cstruct4);
+        TEST_CASE(cfunction1);
+        TEST_CASE(cfunction2);
+        TEST_CASE(cfunction3);
         TEST_CASE(cfp1);
         TEST_CASE(cfp2);
         TEST_CASE(cfp4);
@@ -66,6 +69,7 @@ private:
         TEST_CASE(carray2);
         TEST_CASE(cdonotreplace1);
         TEST_CASE(cppfp1);
+        TEST_CASE(Generic1);
 
         TEST_CASE(simplifyTypedef1);
         TEST_CASE(simplifyTypedef2);
@@ -382,6 +386,26 @@ private:
         ASSERT_EQUALS("struct s { int a ; int b ; } ; struct s x { } ;", simplifyTypedefC(code));
     }
 
+    void cfunction1() {
+        const char code[] = "typedef int callback(int);\n"
+                            "callback* cb;";
+        ASSERT_EQUALS("int ( * cb ) ( int ) ;", simplifyTypedefC(code));
+    }
+
+    void cfunction2() {
+        const char code[] = "typedef int callback(int);\n"
+                            "typedef callback* callbackPtr;\n"
+                            "callbackPtr cb;";
+        ASSERT_EQUALS("int ( * cb ) ( int ) ;", simplifyTypedefC(code));
+    }
+
+    void cfunction3() {
+        const char code[] = "typedef int f(int);\n"
+                            "typedef const f cf;\n";
+        simplifyTypedefC(code);
+        ASSERT_EQUALS("[file.c:2]: (portability) It is unspecified behavior to const qualify a function type.\n", errout.str());
+    }
+
     void cfp1() {
         const char code[] = "typedef void (*fp)(void * p);\n"
                             "fp x;";
@@ -438,6 +462,12 @@ private:
                             "typedef fp t;\n"
                             "void foo(t p);";
         ASSERT_EQUALS("void foo ( void ( * p ) ( void ) ) ;", tok(code));
+    }
+
+    void Generic1() {
+        const char code[] = "typedef void func(void);\n"
+                            "_Generic((x), func: 1, default: 2);";
+        ASSERT_EQUALS("_Generic ( x , void ( ) : 1 , default : 2 ) ;", tok(code));
     }
 
     void simplifyTypedef1() {
@@ -3532,7 +3562,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const char expected[] = "; C f1 ( ) ; "
+            const char expected[] = "C f1 ( ) ; "
                                     "C ( * f2 ) ( ) ; "
                                     "C ( & f3 ) ( ) ; "
                                     "C ( * f4 ) ( ) ; "
@@ -3561,7 +3591,7 @@ private:
 
             // The expected result..
             // C const -> const C
-            const char expected[] = "; const C f1 ( ) ; "
+            const char expected[] = "const C f1 ( ) ; "
                                     "const C ( * f2 ) ( ) ; "
                                     "const C ( & f3 ) ( ) ; "
                                     "const C ( * f4 ) ( ) ; "
@@ -3589,7 +3619,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const char expected[] = "; const C f1 ( ) ; "
+            const char expected[] = "const C f1 ( ) ; "
                                     "const C ( * f2 ) ( ) ; "
                                     "const C ( & f3 ) ( ) ; "
                                     "const C ( * f4 ) ( ) ; "
@@ -3617,7 +3647,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const char expected[] = "; C * f1 ( ) ; "
+            const char expected[] = "C * f1 ( ) ; "
                                     "C * ( * f2 ) ( ) ; "
                                     "C * ( & f3 ) ( ) ; "
                                     "C * ( * f4 ) ( ) ; "
@@ -3645,7 +3675,7 @@ private:
                                 "func7 f7;";
 
             // The expected result..
-            const char expected[] = "; const C * f1 ( ) ; "
+            const char expected[] = "const C * f1 ( ) ; "
                                     "const C * ( * f2 ) ( ) ; "
                                     "const C * ( & f3 ) ( ) ; "
                                     "const C * ( * f4 ) ( ) ; "
@@ -3674,7 +3704,7 @@ private:
 
             // The expected result..
             // C const -> const C
-            const char expected[] = "; const C * f1 ( ) ; "
+            const char expected[] = "const C * f1 ( ) ; "
                                     "const C * ( * f2 ) ( ) ; "
                                     "const C * ( & f3 ) ( ) ; "
                                     "const C * ( * f4 ) ( ) ; "

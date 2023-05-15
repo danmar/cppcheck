@@ -2048,6 +2048,15 @@ private:
                        "    A* a = new A{};\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int f() {\n" // #10596
+                       "    int* a = new int;\n"
+                       "    int i{};\n"
+                       "    i += *a;\n"
+                       "    delete a;\n"
+                       "    return i;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: a\n", errout.str());
     }
 
     // class / struct..
