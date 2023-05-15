@@ -41,7 +41,7 @@ protected:
     TestSingleExecutorBase(const char * const name, bool useFS) : TestFixture(name), useFS(useFS) {}
 
 private:
-    Settings settings
+    Settings settings;
     bool useFS;
 
     std::string fprefix() const
