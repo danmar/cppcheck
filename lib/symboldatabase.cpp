@@ -5144,12 +5144,12 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
 }
 
 static bool hasEmptyCaptureList(const Token* tok) {
-  if (!Token::simpleMatch(tok, "{"))
-      return false;
-  const Token* listTok = tok->astParent();
-  if (Token::simpleMatch(listTok, "("))
-      listTok = listTok->astParent();
-  return Token::Match(listTok, "[ ]");
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    const Token* listTok = tok->astParent();
+    if (Token::simpleMatch(listTok, "("))
+        listTok = listTok->astParent();
+    return Token::Match(listTok, "[ ]");
 }
 
 bool Scope::hasInlineOrLambdaFunction() const
