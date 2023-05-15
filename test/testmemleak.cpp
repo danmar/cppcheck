@@ -2228,8 +2228,8 @@ private:
         ASSERT_EQUALS("[test.c:7]: (error) Memory leak: abc.a\n", errout.str());
     }
 
-    void lambdaInForLoop() { // #9793
-        check(
+    void lambdaInForLoop() {
+        check( // #9793
             "struct S { int * p{nullptr}; };\n"
             "int main()\n"
             "{\n"
@@ -2242,6 +2242,16 @@ private:
             "    return 0;\n"
             "}", true);
         ASSERT_EQUALS("", errout.str());
+
+        check(
+            "struct S { int* p; };\n"
+            "void f() {\n"
+            "    auto g = []() {\n"
+            "      S s;\n"
+            "      s.p = new int;\n"
+            "    };\n"
+            "}\n", true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s.p\n", errout.str());
     }
 };
 
