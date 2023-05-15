@@ -1613,7 +1613,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                 exprs[tok->str()].push_back(tok);
                 tok->exprId(id++);
 
-                if (id == std::numeric_limits<nonneg int>::max()) {
+                if (id == std::numeric_limits<nonneg int>::max() / 4) {
                     throw InternalError(nullptr, "Ran out of expression ids.", InternalError::INTERNAL);
                 }
             } else if (isCPP() && Token::simpleMatch(tok, "this")) {
@@ -1640,6 +1640,27 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                     tok2->exprId(cid);
                 }
             }
+        }
+        // Mark expressions that are unique
+        std::unordered_map<nonneg int, Token*> exprMap;
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->exprId() == 0)
+                continue;
+            auto p = exprMap.emplace(tok->exprId(), tok);
+            // Already exists so set it to null
+            if (!p.second) {
+                p.first->second = nullptr;
+            }
+        }
+        for(const auto& p:exprMap) {
+            if (!p.second)
+                continue;
+            if(p.second->variable()) {
+                const Variable* var = p.second->variable();
+                if(var->nameToken() != p.second)
+                    continue;
+            }
+            p.second->setUniqueExprId();
         }
     }
 }
