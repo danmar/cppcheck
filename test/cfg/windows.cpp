@@ -258,7 +258,7 @@ void validCode()
         CloseHandle(event);
     }
 
-    // cppcheck-suppress unassignedVariable
+    // cppcheck-suppress unusedAllocatedMemory
     void *pMem1 = _malloca(1);
     _freea(pMem1);
     // Memory from _alloca must not be freed
@@ -435,7 +435,7 @@ void bufferAccessOutOfBounds()
 
 void mismatchAllocDealloc()
 {
-    // cppcheck-suppress unassignedVariable
+    // cppcheck-suppress unusedAllocatedMemory
     char * pChar = _aligned_malloc(100, 2);
     // cppcheck-suppress mismatchAllocDealloc
     free(pChar);
