@@ -435,7 +435,6 @@ void bufferAccessOutOfBounds()
 
 void mismatchAllocDealloc()
 {
-    // cppcheck-suppress unusedAllocatedMemory
     char * pChar = _aligned_malloc(100, 2);
     // cppcheck-suppress mismatchAllocDealloc
     free(pChar);
