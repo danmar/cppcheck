@@ -648,6 +648,7 @@ void uninitvar_clearerr(void)
 
 void uninitvar_fclose(void)
 {
+    // cppcheck-suppress unassignedVariable
     FILE *fp;
     // cppcheck-suppress uninitvar
     fclose(fp);

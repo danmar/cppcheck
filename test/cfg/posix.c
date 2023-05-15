@@ -1287,6 +1287,7 @@ void dl(const char* libname, const char* func)
     void* sym = dlsym(lib, funcname);
     // cppcheck-suppress ignoredReturnValue
     dlsym(lib, "foo");
+    // cppcheck-suppress unassignedVariable
     void* uninit;
     // cppcheck-suppress uninitvar
     dlclose(uninit);

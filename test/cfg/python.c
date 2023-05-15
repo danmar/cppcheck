@@ -25,8 +25,10 @@ void validCode(PyObject * pPyObjArg)
     Py_CLEAR(pPyObjNULL);
     (void)PyErr_NewException("text", NULL, NULL);
 
+    // cppcheck-suppress unusedAllocatedMemory
     char * pBuf1 = PyMem_Malloc(5);
     PyMem_Free(pBuf1);
+    // cppcheck-suppress unusedAllocatedMemory
     int * pIntBuf1 = PyMem_New(int, 10);
     PyMem_Free(pIntBuf1);
 }
