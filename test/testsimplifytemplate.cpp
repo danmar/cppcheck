@@ -37,10 +37,14 @@ public:
     TestSimplifyTemplate() : TestFixture("TestSimplifyTemplate") {}
 
 private:
-    // If there are unused templates, keep those
-    const Settings settings = settingsBuilder().severity(Severity::portability).checkUnusedTemplates().build();
+    Settings settings;
 
     void run() override {
+        settings.severity.enable(Severity::portability);
+
+        // If there are unused templates, keep those
+        settings.checkUnusedTemplates = true;
+
         TEST_CASE(template1);
         TEST_CASE(template2);
         TEST_CASE(template3);
@@ -309,9 +313,9 @@ private:
     std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, cppcheck::Platform::Type type = cppcheck::Platform::Type::Native) {
         errout.str("");
 
-        Settings settings1 = settingsBuilder(settings).debugwarnings(debugwarnings).build();
-        PLATFORM(settings1.platform, type);
-        Tokenizer tokenizer(&settings1, this);
+        settings.debugwarnings = debugwarnings;
+        PLATFORM(settings.platform, type);
+        Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);

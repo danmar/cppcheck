@@ -43,7 +43,11 @@ class ErrorLogger;
 
 class TestPreprocessor : public TestFixture {
 public:
-    TestPreprocessor() : TestFixture("TestPreprocessor") {}
+    TestPreprocessor()
+        : TestFixture("TestPreprocessor")
+        , preprocessor0(settings0, this) {
+        settings0.severity.enable(Severity::information);
+    }
 
     class OurPreprocessor : public Preprocessor {
     public:
@@ -68,8 +72,8 @@ public:
     };
 
 private:
-    Settings settings0 = settingsBuilder().severity(Severity::information).build();
-    Preprocessor preprocessor0{settings0, this};
+    Settings settings0;
+    Preprocessor preprocessor0;
 
     void run() override {
 

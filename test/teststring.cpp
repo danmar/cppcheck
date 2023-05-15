@@ -32,9 +32,12 @@ public:
     TestString() : TestFixture("TestString") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).build();
+    Settings settings;
 
     void run() override {
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::style);
+
         TEST_CASE(stringLiteralWrite);
 
         TEST_CASE(alwaysTrueFalseStringCompare);

@@ -30,7 +30,7 @@ public:
     TestPostfixOperator() : TestFixture("TestPostfixOperator") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::performance).build();
+    Settings settings;
 
 #define check(code) check_(code, __FILE__, __LINE__)
     void check_(const char code[], const char* file, int line) {
@@ -48,6 +48,8 @@ private:
     }
 
     void run() override {
+        settings.severity.enable(Severity::performance);
+
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
         TEST_CASE(testvolatile);

@@ -30,7 +30,7 @@ public:
     TestTokenList() : TestFixture("TestTokenList") {}
 
 private:
-    const Settings settings;
+    Settings settings;
 
     void run() override {
         TEST_CASE(testaddtoken1);
@@ -40,18 +40,17 @@ private:
     }
 
     // inspired by #5895
-    void testaddtoken1() const {
+    void testaddtoken1() {
         const std::string code = "0x89504e470d0a1a0a";
         TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
         ASSERT_EQUALS("0x89504e470d0a1a0a", tokenlist.front()->str());
     }
 
-    void testaddtoken2() const {
+    void testaddtoken2() {
         const std::string code = "0xF0000000";
-        Settings settings1;
-        settings1.platform.int_bit = 32;
-        TokenList tokenlist(&settings1);
+        settings.platform.int_bit = 32;
+        TokenList tokenlist(&settings);
         tokenlist.addtoken(code, 1, 1, false);
         ASSERT_EQUALS("0xF0000000", tokenlist.front()->str());
     }
@@ -69,7 +68,7 @@ private:
         ASSERT(Token::simpleMatch(tokenlist.front(), "a + + 1 ; 1 + + b ;"));
     }
 
-    void isKeyword() const {
+    void isKeyword() {
 
         const char code[] = "for a int delete true";
 

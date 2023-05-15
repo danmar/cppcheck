@@ -41,7 +41,7 @@ public:
     TestLibrary() : TestFixture("TestLibrary") {}
 
 private:
-    const Settings settings;
+    Settings settings;
 
     void run() override {
         TEST_CASE(isCompliantValidationExpression);

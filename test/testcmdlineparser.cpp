@@ -37,8 +37,9 @@
 
 class TestCmdlineParser : public TestFixture {
 public:
-    TestCmdlineParser() : TestFixture("TestCmdlineParser")
-    {
+    TestCmdlineParser()
+        : TestFixture("TestCmdlineParser")
+        , defParser(settings, settings.nomsg, settings.nofail) {
 #if defined(_WIN64) || defined(_WIN32)
         CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
 #endif
@@ -52,7 +53,7 @@ public:
 
 private:
     Settings settings; // TODO: reset after each test
-    CmdLineParser defParser{settings, settings.nomsg, settings.nofail}; // TODO: reset after each test
+    CmdLineParser defParser; // TODO: reset after each test
 
     void run() override {
         TEST_CASE(nooptions);

@@ -31,11 +31,11 @@
 
 class TestErrorLogger : public TestFixture {
 public:
-    TestErrorLogger() : TestFixture("TestErrorLogger") {}
+    TestErrorLogger() : TestFixture("TestErrorLogger"), fooCpp5("foo.cpp", 5, 1), barCpp8("bar.cpp", 8, 1) {}
 
 private:
-    const ErrorMessage::FileLocation fooCpp5{"foo.cpp", 5, 1};
-    const ErrorMessage::FileLocation barCpp8{"bar.cpp", 8, 1};
+    const ErrorMessage::FileLocation fooCpp5;
+    const ErrorMessage::FileLocation barCpp8;
 
     void run() override {
         TEST_CASE(PatternSearchReplace);

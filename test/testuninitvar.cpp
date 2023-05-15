@@ -35,9 +35,11 @@ public:
     TestUninitVar() : TestFixture("TestUninitVar") {}
 
 private:
-    Settings settings = settingsBuilder().library("std.cfg").build();
+    Settings settings;
 
     void run() override {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_warn_once); // only write 1 warning at a time
         TEST_CASE(uninitvar_decl);      // handling various types in C and C++ files
@@ -109,15 +111,14 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).debugwarnings(debugwarnings).build();
-
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        settings.debugwarnings = debugwarnings;
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
         // Check for redundant code..
-        CheckUninitVar checkuninitvar(&tokenizer, &settings1, this);
+        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
         checkuninitvar.check();
 
         settings.debugwarnings = false;

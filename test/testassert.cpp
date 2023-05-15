@@ -32,7 +32,7 @@ public:
     TestAssert() : TestFixture("TestAssert") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::warning).build();
+    Settings settings;
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const char *filename = "test.cpp") {
@@ -49,6 +49,8 @@ private:
     }
 
     void run() override {
+        settings.severity.enable(Severity::warning);
+
         TEST_CASE(assignmentInAssert);
         TEST_CASE(functionCallInAssert);
         TEST_CASE(memberFunctionCallInAssert);

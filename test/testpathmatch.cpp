@@ -25,13 +25,18 @@
 
 class TestPathMatch : public TestFixture {
 public:
-    TestPathMatch() : TestFixture("TestPathMatch") {}
+    TestPathMatch()
+        : TestFixture("TestPathMatch")
+        , emptyMatcher(std::vector<std::string>())
+        , srcMatcher(std::vector<std::string>(1, "src/"))
+        , fooCppMatcher(std::vector<std::string>(1, "foo.cpp"))
+        , srcFooCppMatcher(std::vector<std::string>(1, "src/foo.cpp")) {}
 
 private:
-    const PathMatch emptyMatcher{std::vector<std::string>()};
-    const PathMatch srcMatcher{std::vector<std::string>(1, "src/")};
-    const PathMatch fooCppMatcher{std::vector<std::string>(1, "foo.cpp")};
-    const PathMatch srcFooCppMatcher{std::vector<std::string>(1, "src/foo.cpp")};
+    const PathMatch emptyMatcher;
+    const PathMatch srcMatcher;
+    const PathMatch fooCppMatcher;
+    const PathMatch srcFooCppMatcher;
 
     void run() override {
         TEST_CASE(emptymaskemptyfile);

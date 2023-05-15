@@ -63,14 +63,16 @@ class TestSymbolDatabase;
 
 class TestSymbolDatabase : public TestFixture {
 public:
-    TestSymbolDatabase() : TestFixture("TestSymbolDatabase") {}
+    TestSymbolDatabase()
+        : TestFixture("TestSymbolDatabase")
+        ,vartok(nullptr)
+        ,typetok(nullptr) {}
 
 private:
-    const Token* vartok{nullptr};
-    const Token* typetok{nullptr};
-    // If there are unused templates, keep those
-    Settings settings1 = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
-    Settings settings2 = settingsBuilder().checkUnusedTemplates().build();
+    const Token* vartok;
+    const Token* typetok;
+    Settings settings1;
+    Settings settings2;
 
     void reset() {
         vartok = nullptr;
@@ -115,7 +117,12 @@ private:
     }
 
     void run() override {
+        LOAD_LIB_2(settings1.library, "std.cfg");
         PLATFORM(settings2.platform, cppcheck::Platform::Type::Unspecified);
+
+        // If there are unused templates, keep those
+        settings1.checkUnusedTemplates = true;
+        settings2.checkUnusedTemplates = true;
 
         TEST_CASE(array);
         TEST_CASE(array_ptr);
@@ -2304,15 +2311,17 @@ private:
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder(settings1).debugwarnings(debug).build();
+        settings1.debugwarnings = debug;
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // force symbol database creation
         tokenizer.createSymbolDatabase();
+
+        settings1.debugwarnings = false;
     }
 
     void functionArgs1() {

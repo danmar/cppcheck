@@ -30,9 +30,11 @@ public:
     Test64BitPortability() : TestFixture("Test64BitPortability") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::portability).library("std.cfg").build();
+    Settings settings;
 
     void run() override {
+        settings.severity.enable(Severity::portability);
+
         TEST_CASE(novardecl);
         TEST_CASE(functionpar);
         TEST_CASE(structmember);
@@ -49,6 +51,7 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
+        LOAD_LIB_2(settings.library, "std.cfg");
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 

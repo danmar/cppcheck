@@ -19,7 +19,6 @@
 #ifndef helpersH
 #define helpersH
 
-#include "settings.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
@@ -28,12 +27,13 @@
 
 class Token;
 class Preprocessor;
+class Settings;
 class Suppressions;
 
 class givenACodeSampleToTokenize {
 private:
     Tokenizer tokenizer;
-    const Settings settings;
+    static const Settings settings;
 
 public:
     explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)

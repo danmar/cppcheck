@@ -2654,7 +2654,7 @@ public:
     TestLeakAutoVarRecursiveCountLimit() : TestFixture("TestLeakAutoVarRecursiveCountLimit") {}
 
 private:
-    const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
+    Settings settings;
 
     void checkP(const char code[], bool cpp = false) {
         // Clear the error buffer..
@@ -2675,11 +2675,15 @@ private:
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
+        settings.checkLibrary = true;
+
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
     }
 
@@ -2710,7 +2714,7 @@ public:
     TestLeakAutoVarStrcpy() : TestFixture("TestLeakAutoVarStrcpy") {}
 
 private:
-    const Settings settings = settingsBuilder().library("std.cfg").checkLibrary().build();
+    Settings settings;
 
     void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
@@ -2721,11 +2725,15 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
+        settings.checkLibrary = true;
+
         // Check for leaks..
         runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
     void run() override {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(returnedValue); // #9298
         TEST_CASE(deallocuse2);
         TEST_CASE(fclose_false_positive); // #9575
@@ -2770,7 +2778,7 @@ public:
     TestLeakAutoVarWindows() : TestFixture("TestLeakAutoVarWindows") {}
 
 private:
-    const Settings settings = settingsBuilder().library("windows.cfg").build();
+    Settings settings;
 
     void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
@@ -2786,6 +2794,8 @@ private:
     }
 
     void run() override {
+        LOAD_LIB_2(settings.library, "windows.cfg");
+
         TEST_CASE(heapDoubleFree);
     }
 

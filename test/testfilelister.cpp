@@ -29,7 +29,8 @@
 
 class TestFileLister : public TestFixture {
 public:
-    TestFileLister() : TestFixture("TestFileLister") {}
+    TestFileLister()
+        : TestFixture("TestFileLister") {}
 
 private:
     void run() override {

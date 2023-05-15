@@ -32,22 +32,22 @@ public:
     TestConstructors() : TestFixture("TestConstructors") {}
 
 private:
-    Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
+    Settings settings;
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check class constructors..
-        CheckClass checkClass(&tokenizer, &settings1, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.constructors();
     }
 
@@ -66,6 +66,9 @@ private:
     }
 
     void run() override {
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::warning);
+
         TEST_CASE(simple1);
         TEST_CASE(simple2);
         TEST_CASE(simple3);
@@ -1947,8 +1950,9 @@ private:
     }
 
     void initvar_smartptr() { // #10237
-        // TODO: test should probably not pass without library
-        const Settings s = settingsBuilder() /*.library("std.cfg")*/.build();
+        Settings s;
+        // TODO: test shuld probably not pass without library
+        //LOAD_LIB_2(s.library, "std.cfg");
         check("struct S {\n"
               "    explicit S(const std::shared_ptr<S>& sp) {\n"
               "        set(*sp);\n"
@@ -1990,7 +1994,11 @@ private:
               "{ }", true);
         ASSERT_EQUALS("[test.cpp:13]: (warning, inconclusive) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='.\n", errout.str());
 
-        const Settings s = settingsBuilder().certainty(Certainty::inconclusive).severity(Severity::style).severity(Severity::warning).library("std.cfg").build();
+        Settings s;
+        s.certainty.setEnabled(Certainty::inconclusive, true);
+        s.severity.enable(Severity::style);
+        s.severity.enable(Severity::warning);
+        LOAD_LIB_2(s.library, "std.cfg");
         check("struct S {\n"
               "    S& operator=(const S& s) { return *this; }\n"
               "    std::mutex m;\n"
@@ -3602,8 +3610,10 @@ private:
     }
 
     void uninitVarInheritClassInit() {
+        Settings s;
         // TODO: test should probably not pass without library
-        const Settings s = settingsBuilder() /*.library("vcl.cfg")*/.build();
+        //LOAD_LIB_2(s.library, "vcl.cfg");
+        //s.libraries.emplace_back("vcl");
 
         check("class Fred: public TObject\n"
               "{\n"

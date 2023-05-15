@@ -42,22 +42,22 @@ public:
     TestBufferOverrun() : TestFixture("TestBufferOverrun") {}
 
 private:
-    Settings settings0 = settingsBuilder().library("std.cfg").severity(Severity::warning).severity(Severity::style).severity(Severity::portability).build();
+    Settings settings0;
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
+        settings0.certainty.enable(Certainty::inconclusive);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings0, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -77,14 +77,14 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings = settings0;
-        settings.severity.enable(Severity::style);
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::portability);
-        settings.severity.enable(Severity::performance);
-        settings.standards.c = Standards::CLatest;
-        settings.standards.cpp = Standards::CPPLatest;
-        settings.certainty.enable(Certainty::inconclusive);
+        Settings* settings = &settings0;
+        settings->severity.enable(Severity::style);
+        settings->severity.enable(Severity::warning);
+        settings->severity.enable(Severity::portability);
+        settings->severity.enable(Severity::performance);
+        settings->standards.c = Standards::CLatest;
+        settings->standards.cpp = Standards::CPPLatest;
+        settings->certainty.enable(Certainty::inconclusive);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -97,15 +97,21 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, settings, this);
     }
 
     void run() override {
+        LOAD_LIB_2(settings0.library, "std.cfg");
+
+        settings0.severity.enable(Severity::warning);
+        settings0.severity.enable(Severity::style);
+        settings0.severity.enable(Severity::portability);
+
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
         TEST_CASE(noerr3);
@@ -3350,7 +3356,6 @@ private:
 
     void buffer_overrun_errorpath() {
         setMultiline();
-        const Settings settingsOld = settings0;
         settings0.templateLocation = "{file}:{line}:note:{info}";
 
         check("void f() {\n"
@@ -3360,10 +3365,6 @@ private:
         ASSERT_EQUALS("test.cpp:3:error:Buffer is accessed out of bounds: p\n"
                       "test.cpp:2:note:Assign p, buffer with size 10\n"
                       "test.cpp:3:note:Buffer overrun\n", errout.str());
-
-        // TODO: need to reset this but it breaks other tests
-        (void)settingsOld;
-        //settings0 = settingsOld;
     }
 
     void buffer_overrun_bailoutIfSwitch() {
@@ -5525,7 +5526,9 @@ private:
 
     void checkPipeParameterSize() { // #3521
 
-        const Settings settings = settingsBuilder().library("posix.cfg").build();
+        Settings settings;
+        LOAD_LIB_2(settings.library, "posix.cfg");
+        settings.libraries.emplace_back("posix");
 
         check("void f(){\n"
               "int pipefd[1];\n" // <--  array of two integers is needed

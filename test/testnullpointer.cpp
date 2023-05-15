@@ -41,9 +41,12 @@ public:
     TestNullPointer() : TestFixture("TestNullPointer") {}
 
 private:
-    const Settings settings = settingsBuilder().library("std.cfg").severity(Severity::warning).build();
+    Settings settings;
 
     void run() override {
+        LOAD_LIB_2(settings.library, "std.cfg");
+        settings.severity.enable(Severity::warning);
+
         TEST_CASE(nullpointerAfterLoop);
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -181,22 +184,22 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(&tokenizer, &settings1, this);
+        runChecks<CheckNullPointer>(&tokenizer, &settings, this);
     }
 
     void checkP(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
+        settings.certainty.setEnabled(Certainty::inconclusive, false);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -209,12 +212,12 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(&tokenizer, &settings1, this);
+        runChecks<CheckNullPointer>(&tokenizer, &settings, this);
     }
 
 
@@ -4062,7 +4065,7 @@ private:
     }
 
     void functioncalllibrary() {
-        const Settings settings1;
+        Settings settings1;
         Tokenizer tokenizer(&settings1,this);
         std::istringstream code("void f() { int a,b,c; x(a,b,c); }");
         ASSERT_EQUALS(true, tokenizer.tokenize(code, "test.c"));

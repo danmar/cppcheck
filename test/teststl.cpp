@@ -35,9 +35,14 @@ public:
     TestStl() : TestFixture("TestStl") {}
 
 private:
-    Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).severity(Severity::performance).library("std.cfg").build();
+    Settings settings;
 
     void run() override {
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::performance);
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(outOfBounds);
         TEST_CASE(outOfBoundsSymbolic);
         TEST_CASE(outOfBoundsIndexExpression);
@@ -180,15 +185,17 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).cpp(cppstandard).build();
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        settings.standards.cpp = cppstandard;
+
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
 
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        runChecks<CheckStl>(&tokenizer, &settings1, this);
+        runChecks<CheckStl>(&tokenizer, &settings, this);
     }
 
     void check_(const char* file, int line, const std::string& code, const bool inconclusive = false) {

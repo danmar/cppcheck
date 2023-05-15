@@ -35,13 +35,13 @@ public:
     TestIncompleteStatement() : TestFixture("TestIncompleteStatement") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::warning).build();
+    Settings settings;
 
     void check(const char code[], bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -54,16 +54,18 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for incomplete statements..
-        CheckOther checkOther(&tokenizer, &settings1, this);
+        CheckOther checkOther(&tokenizer, &settings, this);
         checkOther.checkIncompleteStatement();
     }
 
     void run() override {
+        settings.severity.enable(Severity::warning);
+
         TEST_CASE(test1);
         TEST_CASE(test2);
         TEST_CASE(test3);
