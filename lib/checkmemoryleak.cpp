@@ -636,7 +636,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                 }
 
                 // Function call .. possible deallocation
-                else if (Token::Match(tok->previous(), "[{};] %name% (") && !mSettings->library.isLeakIgnore(tok->str())) {
+                else if (Token::Match(tok->previous(), "[{};] %name% (") && !tok->isKeyword() && !mSettings->library.isLeakIgnore(tok->str())) {
                     return;
                 }
             }
@@ -753,7 +753,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
     auto deallocInFunction = [this](const Token* tok, int structid) -> bool {
         // Calling non-function / function that doesn't deallocate?
-        if (mSettings->library.isLeakIgnore(tok->str()))
+        if (tok->isKeyword() || mSettings->library.isLeakIgnore(tok->str()))
             return false;
 
         // Check if the struct is used..
@@ -990,17 +990,12 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 
         const std::string& functionName = tok->str();
         if ((mTokenizer->isCPP() && functionName == "delete") ||
-            functionName == "free" ||
-            functionName == "fclose" ||
-            functionName == "realloc" ||
             functionName == "return")
             continue;
 
         if (Token::simpleMatch(tok->next()->astParent(), "(")) // passed to another function
             continue;
-        if (!tok->isKeyword() && mSettings->library.isNotLibraryFunction(tok))
-            continue;
-        if (!mSettings->library.isLeakIgnore(functionName))
+        if (!tok->isKeyword() && (mSettings->library.isNotLibraryFunction(tok) || !mSettings->library.isLeakIgnore(functionName)))
             continue;
 
         const std::vector<const Token *> args = getArguments(tok);
