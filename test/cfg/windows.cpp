@@ -344,7 +344,7 @@ void validCode()
     SecureZeroMemory(byteBuf, sizeof(byteBuf));
     RtlFillMemory(byteBuf, sizeof(byteBuf), 0xff);
 
-    // cppcheck-suppress [LocalAllocCalled, unassignedVariable]
+    // cppcheck-suppress [LocalAllocCalled, unusedAllocatedMemory]
     HLOCAL pLocalAlloc = LocalAlloc(1, 2);
     LocalFree(pLocalAlloc);
 
@@ -358,7 +358,7 @@ void validCode()
     __noop(1, "test", NULL);
     __nop();
 
-    // cppcheck-suppress unassignedVariable
+    // cppcheck-suppress unusedAllocatedMemory
     void * pAlloc1 = _aligned_malloc(100, 2);
     _aligned_free(pAlloc1);
 
@@ -440,6 +440,7 @@ void mismatchAllocDealloc()
     // cppcheck-suppress mismatchAllocDealloc
     free(pChar);
 
+    // cppcheck-suppress unusedAllocatedMemory
     pChar = _malloca(32);
     // cppcheck-suppress mismatchAllocDealloc
     _aligned_free(pChar);
