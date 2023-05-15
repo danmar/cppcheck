@@ -2252,6 +2252,25 @@ private:
             "    };\n"
             "}\n", true);
         ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s.p\n", errout.str());
+
+        check(
+            "struct S { int* p; };\n"
+            "void f() {\n"
+            "    S s;\n"
+            "    s.p = new int;\n"
+            "    auto g = [&]() {\n"
+            "        delete s.p;\n"
+            "    };\n"
+            "    g();\n"
+            "}\n"
+            "void h() {\n"
+            "    S s;\n"
+            "    s.p = new int;\n"
+            "    [&]() {\n"
+            "        delete s.p;\n"
+            "    }();\n"
+            "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

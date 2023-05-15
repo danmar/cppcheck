@@ -720,8 +720,6 @@ void CheckMemoryLeakStructMember::check()
             continue;
         if (var->typeEndToken()->isStandardType())
             continue;
-        if (var->scope()->hasInlineOrLambdaFunction())
-            continue;
         checkStructVariable(var);
     }
 }
