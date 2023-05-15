@@ -39,7 +39,7 @@ public:
     TestProcessExecutor() : TestFixture("TestProcessExecutor") {}
 
 private:
-    Settings settings = settingsBuilder().library("std.cfg").build();
+    Settings settings;
 
     static std::string fprefix()
     {
@@ -85,6 +85,8 @@ private:
 
     void run() override {
 #if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
         TEST_CASE(many_threads_showtime);

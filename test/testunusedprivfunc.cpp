@@ -36,7 +36,7 @@ public:
     TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::style).build();
+    Settings settings = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
         TEST_CASE(test1);
@@ -94,7 +94,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).platform(platform).build();
+        PLATFORM(settings.platform, platform);
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -107,12 +107,12 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
-        Tokenizer tokenizer(&settings1, this);
+        Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for unused private functions..
-        CheckClass checkClass(&tokenizer, &settings1, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.privateFunctions();
     }
 

@@ -77,8 +77,14 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings = settingsBuilder(settings0).severity(Severity::style).severity(Severity::warning).severity(Severity::portability).severity(Severity::performance)
-                                  .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
+        Settings settings = settings0;
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::warning);
+        settings.severity.enable(Severity::portability);
+        settings.severity.enable(Severity::performance);
+        settings.standards.c = Standards::CLatest;
+        settings.standards.cpp = Standards::CPPLatest;
+        settings.certainty.enable(Certainty::inconclusive);
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);

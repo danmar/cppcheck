@@ -119,6 +119,8 @@ private:
         // Check for redundant code..
         CheckUninitVar checkuninitvar(&tokenizer, &settings1, this);
         checkuninitvar.check();
+
+        settings.debugwarnings = false;
     }
 
     void uninitvar1() {
@@ -830,7 +832,6 @@ private:
                        "}", "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
-        const Settings settingsOld = settings;
         // Ticket #6701 - Variable name is a POD type according to cfg
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def format=\"1\">"
@@ -842,7 +843,6 @@ private:
                        "  _tm.dostuff();\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
-        settings = settingsOld;
 
         // Ticket #7822 - Array type
         checkUninitVar("A *f() {\n"
@@ -4358,7 +4358,6 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         {
-            const Settings settingsOld = settings;
             const char argDirectionsTestXmlData[] = "<?xml version=\"1.0\"?>\n"
                                                     "<def>\n"
                                                     "  <function name=\"uninitvar_funcArgInTest\">\n"
@@ -4386,7 +4385,6 @@ private:
                            "    x = ab;\n"
                            "}\n", "test.c");
             ASSERT_EQUALS("", errout.str());
-            settings = settingsOld;
         }
 
         checkUninitVar("struct AB { int a; int b; };\n"
@@ -5218,14 +5216,14 @@ private:
         errout.str("");
 
         // Tokenize..
-        const Settings s = settingsBuilder(settings).debugwarnings(false).build();
+        settings.debugwarnings = false;
 
-        Tokenizer tokenizer(&s, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
         // Check for redundant code..
-        CheckUninitVar checkuninitvar(&tokenizer, &s, this);
+        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
         (checkuninitvar.valueFlowUninit)();
     }
 

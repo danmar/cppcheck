@@ -262,7 +262,6 @@ private:
               "}", "test.c");
         ASSERT_EQUALS("[test.c:3]: (warning) Obsolete function 'alloca' called. In C99 and later it is recommended to use a variable length array instead.\n", errout.str());
 
-        const Settings settingsOld = settings;
         settings.standards.c = Standards::C89;
         settings.standards.cpp = Standards::CPP03;
         check("void f()\n"
@@ -282,7 +281,8 @@ private:
               "    char *x = alloca(10);\n"
               "}", "test.c");
         ASSERT_EQUALS("", errout.str());
-        settings = settingsOld;
+        settings.standards.c = Standards::C11;
+        settings.standards.cpp = Standards::CPP11;
     }
 
     // ticket #3121
@@ -1291,7 +1291,8 @@ private:
     }
 
     void checkIgnoredReturnValue() {
-        Settings settings2 = settingsBuilder().severity(Severity::warning).build();
+        Settings settings2;
+        settings2.severity.enable(Severity::warning);
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp,foo::mystrcmp\">\n"
@@ -1443,7 +1444,8 @@ private:
     }
 
     void checkIgnoredErrorCode() {
-        Settings settings2 = settingsBuilder().severity(Severity::style).build();
+        Settings settings2;
+        settings2.addEnabled("style");
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def version=\"2\">\n"
                                "  <function name=\"mystrcmp\">\n"

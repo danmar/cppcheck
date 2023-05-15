@@ -87,7 +87,6 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        // TODO: using dedicated Settings (i.e. copying it) object causes major slowdown
         settings1.severity.clear();
         settings1.severity.enable(Severity::warning);
         settings1.severity.enable(Severity::style);

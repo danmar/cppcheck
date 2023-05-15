@@ -259,7 +259,7 @@ private:
     void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        const Settings settings = settingsBuilder().severity(Severity::warning).build();
+        Settings settings = settingsBuilder().severity(Severity::warning).build();
 
         Preprocessor preprocessor(settings);
 
@@ -2570,7 +2570,6 @@ private:
         // Clear the error log
         errout.str("");
 
-        // TODO: subsequent tests depend on these changes - should use SettingsBuilder
         settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings0.severity.enable(Severity::warning);
 
@@ -2887,7 +2886,7 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
+        Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
         checkNoMemset_(file, line, code, settings);
     }
 
@@ -3151,7 +3150,7 @@ private:
                       errout.str());
 
         // #1655
-        const Settings s = settingsBuilder().library("std.cfg").build();
+        Settings s = settingsBuilder().library("std.cfg").build();
         checkNoMemset("void f() {\n"
                       "    char c[] = \"abc\";\n"
                       "    std::string s;\n"
@@ -3558,20 +3557,23 @@ private:
     }
 
 #define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkConst_(const char* file, int line, const char code[], const Settings *s = nullptr, bool inconclusive = true) {
+    void checkConst_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
-        const Settings settings = settingsBuilder(s ? *s : settings0).certainty(Certainty::inconclusive, inconclusive).build();
+        // Check..
+        if (!s)
+            s = &settings0;
+        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
-        Preprocessor preprocessor(settings);
+        Preprocessor preprocessor(*s);
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
+        Tokenizer tokenizer(s, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, &settings, this);
+        CheckClass checkClass(&tokenizer, s, this);
         (checkClass.checkConst)();
     }
 
@@ -7222,7 +7224,7 @@ private:
     }
 
     void qualifiedNameMember() { // #10872
-        const Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
+        Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
         checkConst("struct data {};\n"
                    "    struct S {\n"
                    "    std::vector<data> std;\n"
@@ -7277,7 +7279,7 @@ private:
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder().severity(Severity::performance).build();
+        Settings settings = settingsBuilder().severity(Severity::performance).build();
 
         Preprocessor preprocessor(settings);
 
@@ -7607,7 +7609,9 @@ private:
         errout.str("");
 
         // Check..
-        const Settings settings = settingsBuilder().severity(Severity::warning).certainty(Certainty::inconclusive, inconclusive).build();
+        Settings settings;
+        settings.severity.enable(Severity::warning);
+        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
 
         Preprocessor preprocessor(settings);
 
@@ -7956,7 +7960,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        const Settings settings = settingsBuilder().severity(Severity::style).build();
+        Settings settings = settingsBuilder().severity(Severity::style).build();
 
         Preprocessor preprocessor(settings);
 

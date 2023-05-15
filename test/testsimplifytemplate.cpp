@@ -309,7 +309,8 @@ private:
     std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, cppcheck::Platform::Type type = cppcheck::Platform::Type::Native) {
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).debugwarnings(debugwarnings).platform(type).build();
+        Settings settings1 = settingsBuilder(settings).debugwarnings(debugwarnings).build();
+        PLATFORM(settings1.platform, type);
         Tokenizer tokenizer(&settings1, this);
 
         std::istringstream istr(code);

@@ -240,19 +240,19 @@ private:
         runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
     }
 
-    void check_(const char* file, int line, const char code[], const Settings & s) {
+    void check_(const char* file, int line, const char code[], Settings & settings_) {
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings0 = settingsBuilder(s).checkLibrary().build();
-
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings_, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
+        settings_.checkLibrary = true;
+
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings0, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings_, this);
     }
 
     void assign1() {
@@ -469,7 +469,7 @@ private:
     }
 
     void assign23() {
-        const Settings settingsOld = settings;
+        Settings s = settings;
         LOAD_LIB_2(settings.library, "posix.cfg");
         settings.libraries.emplace_back("posix");
         check("void f() {\n"
@@ -504,7 +504,7 @@ private:
                       "[test.cpp:17]: (error) Resource leak: n13\n"
                       "[test.cpp:17]: (error) Resource leak: n14\n",
                       errout.str());
-        settings = settingsOld;
+        settings = s;
     }
 
     void assign24() {
@@ -1874,7 +1874,10 @@ private:
     }
 
     void ifelse24() { // #1733
-        const Settings s = settingsBuilder().library("std.cfg").library("posix.cfg").build();
+        Settings s;
+        LOAD_LIB_2(s.library, "std.cfg");
+        LOAD_LIB_2(s.library, "posix.cfg");
+        s.libraries.emplace_back("posix");
 
         check("void f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"

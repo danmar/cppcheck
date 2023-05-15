@@ -35,9 +35,10 @@ public:
     TestGarbage() : TestFixture("TestGarbage") {}
 
 private:
-    Settings settings = settingsBuilder().debugwarnings().build();
+    Settings settings;
 
     void run() override {
+        settings.debugwarnings = true;
         settings.severity.fill();
         settings.certainty.fill();
 

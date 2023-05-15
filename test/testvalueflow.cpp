@@ -485,7 +485,7 @@ private:
     }
 
     void bailout(const char code[]) {
-        const Settings s = settingsBuilder().debugwarnings().build();
+        settings.debugwarnings = true;
         errout.str("");
 
         std::vector<std::string> files(1, "test.cpp");
@@ -497,9 +497,11 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
-        Tokenizer tokenizer(&s, this);
+        Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
+
+        settings.debugwarnings = false;
     }
 
 #define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)

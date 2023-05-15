@@ -41,7 +41,7 @@ protected:
     TestSingleExecutorBase(const char * const name, bool useFS) : TestFixture(name), useFS(useFS) {}
 
 private:
-    Settings settings = settingsBuilder().library("std.cfg").build();
+    Settings settings
     bool useFS;
 
     std::string fprefix() const
@@ -113,6 +113,8 @@ private:
     }
 
     void run() override {
+        LOAD_LIB_2(settings.library, "std.cfg");
+
         TEST_CASE(many_files);
         TEST_CASE(many_files_showtime);
         TEST_CASE(many_files_plist);

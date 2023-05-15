@@ -1493,7 +1493,6 @@ private:
     }
 
     void initvar_private_constructor() {
-        const Settings settingsOld = settings;
         settings.standards.cpp = Standards::CPP11;
         check("class Fred\n"
               "{\n"
@@ -1515,7 +1514,6 @@ private:
               "Fred::Fred()\n"
               "{ }");
         ASSERT_EQUALS("", errout.str());
-        settings = settingsOld;
     }
 
     void initvar_copy_constructor() { // ticket #1611
@@ -3113,7 +3111,8 @@ private:
     }
 
     void uninitVarArray10() { // #11650
-        const Settings s = settingsBuilder(settings).library("std.cfg").build();
+        Settings s(settings);
+        LOAD_LIB_2(s.library, "std.cfg");
         check("struct T { int j; };\n"
               "struct U { int k{}; };\n"
               "struct S {\n"
