@@ -31,7 +31,7 @@ public:
     TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::style).build();
+    Settings settings = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
         TEST_CASE(incondition);
@@ -78,11 +78,11 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const Settings *s = nullptr) {
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
+        const Settings settings1 = settingsBuilder(settings).platform(platform).build();
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
@@ -637,13 +637,16 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        const Settings s = settingsBuilder(settings).library("windows.cfg").build();
+        const Settings settingsOld = settings;
+        LOAD_LIB_2(settings.library, "windows.cfg");
 
-        check("int WinMain() { }", cppcheck::Platform::Type::Native, &s);
+        check("int WinMain() { }");
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
+        check("int _tmain() { }");
         ASSERT_EQUALS("", errout.str());
+
+        settings = settingsOld;
     }
 
     void entrypointsWinU() {
@@ -653,13 +656,16 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        const Settings s = settingsBuilder(settings).library("windows.cfg").build();
+        const Settings settingsOld = settings;
+        LOAD_LIB_2(settings.library, "windows.cfg");
 
-        check("int wWinMain() { }", cppcheck::Platform::Type::Native, &s);
+        check("int wWinMain() { }");
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
+        check("int _tmain() { }");
         ASSERT_EQUALS("", errout.str());
+
+        settings = settingsOld;
     }
 
     void entrypointsUnix() {
@@ -668,11 +674,14 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_init' is never used.\n"
                       "[test.cpp:2]: (style) The function '_fini' is never used.\n", errout.str());
 
-        const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
+        const Settings settingsOld = settings;
+        LOAD_LIB_2(settings.library, "gnu.cfg");
 
         check("int _init() { }\n"
-              "int _fini() { }\n", cppcheck::Platform::Type::Native, &s);
+              "int _fini() { }\n");
         ASSERT_EQUALS("", errout.str());
+
+        settings = settingsOld;
     }
 };
 

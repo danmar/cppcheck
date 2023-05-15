@@ -6160,6 +6160,7 @@ private:
     }
 
     void duplicateExpression3() {
+        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mystrcmp\">\n"
@@ -6168,7 +6169,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"

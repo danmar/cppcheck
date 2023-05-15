@@ -3532,6 +3532,7 @@ private:
     }
 
     void buffer_overrun_readSizeFromCfg() {
+        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
@@ -3543,7 +3544,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
         check("void f() {\n"
@@ -4084,6 +4085,7 @@ private:
     // extracttests.disable
 
     void minsize_argvalue() {
+        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mymemset\">\n"
@@ -4095,7 +4097,8 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).severity(Severity::warning).build();
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        settings.severity.enable(Severity::warning);
         settings.platform.sizeof_wchar_t = 4;
 
         check("void f() {\n"
@@ -4221,6 +4224,7 @@ private:
     }
 
     void minsize_sizeof() {
+        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mystrncpy\">\n"
@@ -4233,7 +4237,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void f() {\n"
               "    char c[7];\n"
@@ -4281,6 +4285,7 @@ private:
     }
 
     void minsize_strlen() {
+        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mysprintf\">\n"
@@ -4294,7 +4299,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         // formatstr..
         check("void f() {\n"
@@ -4394,6 +4399,7 @@ private:
     }
 
     void minsize_mul() {
+        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"myfread\">\n"
@@ -4405,7 +4411,7 @@ private:
                                "    <arg nr=\"4\"/>\n"
                                "  </function>\n"
                                "</def>";
-        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
 
         check("void f() {\n"
               "    char c[5];\n"

@@ -310,11 +310,9 @@ private:
     }
 
 #define testValueOfX(...) testValueOfX_(__FILE__, __LINE__, __VA_ARGS__)
-    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, int value, const Settings *s = nullptr) {
-        const Settings *settings1 = s ? s : &settings;
-
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, int value) {
         // Tokenize..
-        Tokenizer tokenizer(settings1, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -3868,22 +3866,22 @@ private:
     void valueFlowRightShift() {
         const char *code;
         /* Set some temporary fixed values to simplify testing */
-        Settings s = settings;
-        s.platform.int_bit = 32;
-        s.platform.long_bit = 64;
-        s.platform.long_long_bit = MathLib::bigint_bits * 2;
+        const Settings settingsTmp = settings;
+        settings.platform.int_bit = 32;
+        settings.platform.long_bit = 64;
+        settings.platform.long_long_bit = MathLib::bigint_bits * 2;
 
         code = "int f(int a) {\n"
                "  int x = (a & 0xff) >> 16;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code,3U,0,&s));
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
 
         code = "int f(unsigned int a) {\n"
                "  int x = (a % 123) >> 16;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code,3U,0,&s));
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
 
         code = "int f(int y) {\n"
                "  int x = (y & 0xFFFFFFF) >> 31;\n"
@@ -3895,55 +3893,57 @@ private:
                "  int x = (y & 0xFFFFFFF) >> 32;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
 
         code = "int f(short y) {\n"
                "  int x = (y & 0xFFFFFF) >> 31;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
 
         code = "int f(short y) {\n"
                "  int x = (y & 0xFFFFFF) >> 32;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
 
         code = "int f(long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 63;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
 
         code = "int f(long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 64;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
 
         code = "int f(long long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 63;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
 
         code = "int f(long long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 64;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
 
         code = "int f(long long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 121;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
 
         code = "int f(long long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 128;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+
+        settings = settingsTmp;
     }
 
     void valueFlowFwdAnalysis() {
