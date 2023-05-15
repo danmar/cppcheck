@@ -876,7 +876,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
                 }
 
                 // Deallocating the struct..
-                else if (Token::Match(tok3, "free|kfree ( %varid% )", structid)) {
+                else if (Token::Match(tok3, "%name% ( %varid% )", structid) && mSettings->library.getDeallocFuncInfo(tok3)) {
                     if (indentlevel2 == 0)
                         memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), Malloc);
                     break;
@@ -910,7 +910,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
                             --indentlevel4;
                             if (indentlevel4 == 0)
                                 break;
-                        } else if (Token::Match(tok4, "free|kfree ( %var% . %varid% )", structmemberid)) {
+                        } else if (Token::Match(tok4, "%name% ( %var% . %varid% )", structmemberid) && mSettings->library.getDeallocFuncInfo(tok4)) {
                             break;
                         }
                     }
