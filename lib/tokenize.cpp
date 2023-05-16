@@ -4127,7 +4127,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
                     return false;
             }
         } else if (Token::Match(tok2, "&|&&")) {
-            ref = c || !bracket;
+            ref = !bracket;
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link(), ") (|[")) {
             for (const Token* tok3 = tok2->tokAt(2); Token::Match(tok3, "!!)"); tok3 = tok3->next()) {
                 if (Token::Match(tok3, "(|["))
@@ -4181,7 +4181,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
 
         // In executable scopes, references must be assigned
         // Catching by reference is an exception
-        if (cpp && executableScope && ref && !isLambdaArg) {
+        if (executableScope && ref && !isLambdaArg) {
             if (Token::Match(tok2, "(|=|{|:"))
                 ;   // reference is assigned => ok
             else if (tok2->str() != ")" || tok2->link()->strAt(-1) != "catch")
@@ -4200,10 +4200,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
             return false;
     }
 
-    const bool decl = (typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
-    if (c && ref && decl)
-        throw tok2;
-    return decl;
+    return (typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
 }
 
 
@@ -4656,6 +4653,8 @@ void Tokenizer::setVarIdPass1()
                     decl = false;
 
                 if (decl) {
+                    if (isC() && Token::Match(prev2->previous(), "&|&&"))
+                        syntaxErrorC(prev2, prev2->tokAt(-2)->str() + prev2->tokAt(-1)->str() + " " + prev2->str());
                     variableMap.addVariable(prev2->str(), scopeStack.size() <= 1);
 
                     if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=,]")) {
