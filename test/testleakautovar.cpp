@@ -368,7 +368,7 @@ private:
               "    char * &ref = p;\n"
               "    p = malloc(10);\n"
               "    free(ref);\n"
-              "}");
+              "}", true);
         TODO_ASSERT_EQUALS("", "[test.c:6]: (error) Memory leak: p\n", errout.str());
     }
 
