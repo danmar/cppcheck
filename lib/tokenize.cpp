@@ -4128,7 +4128,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
             }
         } else if (Token::Match(tok2, "&|&&")) {
             if (c)
-                return false;
+                throw tok2;
             ref = !bracket;
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link(), ") (|[")) {
             for (const Token* tok3 = tok2->tokAt(2); Token::Match(tok3, "!!)"); tok3 = tok3->next()) {
