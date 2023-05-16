@@ -4654,7 +4654,7 @@ void Tokenizer::setVarIdPass1()
 
                 if (decl) {
                     if (isC() && Token::Match(prev2->previous(), "&|&&"))
-                        syntaxErrorC(prev2, prev2->tokAt(-2)->str() + prev2->tokAt(-1)->str() + " " + prev2->str());
+                        syntaxErrorC(prev2, prev2->strAt(-2) + prev2->strAt(-1) + " " + prev2->str());
                     variableMap.addVariable(prev2->str(), scopeStack.size() <= 1);
 
                     if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=,]")) {
