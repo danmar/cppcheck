@@ -897,16 +897,12 @@ private:
         const char code1[] = "union evt; void f(const evt & event);";
         ASSERT_EQUALS("1: union evt ; void f ( const evt & event@1 ) ;\n",
                       tokenize(code1));
-        ASSERT_THROW("1: union evt ; void f ( const evt & event ) ;\n",
-                     tokenize(code1, "test.c"),
-                     InternalError);
+        ASSERT_THROW(tokenize(code1, "test.c"), InternalError);
 
         const char code2[] = "struct evt; void f(const evt & event);";
         ASSERT_EQUALS("1: struct evt ; void f ( const evt & event@1 ) ;\n",
                       tokenize(code2));
-        ASSERT_THROW("1: struct evt ; void f ( const evt & event ) ;\n",
-                     tokenize(code2, "test.c"),
-                     InternalError);
+        ASSERT_THROW(tokenize(code2, "test.c"), InternalError);
     }
 
     void varid42() {
