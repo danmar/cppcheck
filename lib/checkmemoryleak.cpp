@@ -699,7 +699,7 @@ void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::
 }
 
 
-void CheckMemoryLeakStructMember::check()
+void CheckMemoryLeakStructMember::check() const
 {
     if (mSettings->clang)
         return;
