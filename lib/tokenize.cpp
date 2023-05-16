@@ -4127,9 +4127,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
                     return false;
             }
         } else if (Token::Match(tok2, "&|&&")) {
-            if (c)
-                throw tok2;
-            ref = !bracket;
+            ref = c || !bracket;
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link(), ") (|[")) {
             for (const Token* tok3 = tok2->tokAt(2); Token::Match(tok3, "!!)"); tok3 = tok3->next()) {
                 if (Token::Match(tok3, "(|["))
@@ -4183,7 +4181,7 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
 
         // In executable scopes, references must be assigned
         // Catching by reference is an exception
-        if (executableScope && ref && !isLambdaArg) {
+        if (cpp && executableScope && ref && !isLambdaArg) {
             if (Token::Match(tok2, "(|=|{|:"))
                 ;   // reference is assigned => ok
             else if (tok2->str() != ")" || tok2->link()->strAt(-1) != "catch")
@@ -4202,7 +4200,10 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
             return false;
     }
 
-    return (typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
+    const bool decl = (typeCount >= 2 && tok2 && Token::Match(tok2->tokAt(-2), "!!:: %type%"));
+    if (c && ref && decl)
+        throw tok2;
+    return decl;
 }
 
 
