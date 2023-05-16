@@ -2345,7 +2345,7 @@ private:
         check("void f() {\n"
               "    char *&p = x();\n"
               "    p = malloc(10);\n"
-              "};");
+              "};", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
