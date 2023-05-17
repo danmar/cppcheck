@@ -11059,6 +11059,12 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Overlapping read/write of union is undefined behavior\n", errout.str());
 
+        check("void foo() {\n" // #11013
+              "    union { struct { uint8_t a; uint8_t b; }; uint16_t c; } u;\n"
+              "    u.a = u.b = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // memcpy
         check("void foo() {\n"
               "    char a[10];\n"
