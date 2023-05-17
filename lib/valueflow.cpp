@@ -1343,11 +1343,17 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         if (!tok->isTemplateArg())
             value.setKnown();
         setTokenValue(tok->next(), std::move(value), settings, isInitList);
-    } else if (Token::Match(tok, "%name% = { }") && tok->variable() &&
+    } else if (Token::Match(tok, "%name% = {") && tok->variable() &&
                (tok->variable()->isPointer() || (tok->variable()->valueType() && tok->variable()->valueType()->isIntegral()))) {
-        ValueFlow::Value value(0);
-        value.setKnown();
-        setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+        if (Token::simpleMatch(tok->tokAt(3), "}")) {
+            ValueFlow::Value value(0);
+            value.setKnown();
+            setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+        } else if (tok->tokAt(2)->astOperand1() && tok->tokAt(2)->astOperand1()->hasKnownIntValue()) {
+            ValueFlow::Value value(tok->tokAt(2)->astOperand1()->getKnownIntValue());
+            value.setKnown();
+            setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+        }
     }
     return tok->next();
 }
