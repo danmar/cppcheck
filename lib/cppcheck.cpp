@@ -544,7 +544,11 @@ unsigned int CppCheck::check(const std::string &path)
             Tokenizer tokenizer(&mSettings, this);
             tokenizer.list.appendFileIfNew(path);
             clangimport::parseClangAstDump(&tokenizer, ast);
-            ValueFlow::setValues(&tokenizer.list, const_cast<SymbolDatabase *>(tokenizer.getSymbolDatabase()), this, &mSettings);
+            ValueFlow::setValues(&tokenizer.list,
+                                 const_cast<SymbolDatabase*>(tokenizer.getSymbolDatabase()),
+                                 this,
+                                 &mSettings,
+                                 &s_timerResults);
             if (mSettings.debugnormal)
                 tokenizer.printDebugOutput(1);
             checkNormalTokens(tokenizer);
@@ -583,14 +587,13 @@ unsigned int CppCheck::check(const std::string &path)
         return mExitCode;
     }
 
-    std::ifstream fin(path);
-    return checkFile(Path::simplifyPath(path), emptyString, fin);
+    return checkFile(Path::simplifyPath(path), emptyString);
 }
 
 unsigned int CppCheck::check(const std::string &path, const std::string &content)
 {
     std::istringstream iss(content);
-    return checkFile(Path::simplifyPath(path), emptyString, iss);
+    return checkFile(Path::simplifyPath(path), emptyString, &iss);
 }
 
 unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
@@ -615,22 +618,27 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
         temp.mSettings.includePaths.insert(temp.mSettings.includePaths.end(), fs.systemIncludePaths.cbegin(), fs.systemIncludePaths.cend());
         return temp.check(Path::simplifyPath(fs.filename));
     }
-    std::ifstream fin(fs.filename);
-    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg, fin);
+    const unsigned int returnValue = temp.checkFile(Path::simplifyPath(fs.filename), fs.cfg);
     mSettings.nomsg.addSuppressions(temp.mSettings.nomsg.getSuppressions());
     return returnValue;
 }
 
-unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
+static simplecpp::TokenList createTokenList(const std::string& filename, std::vector<std::string>& files, simplecpp::OutputList* outputList, std::istream* fileStream)
+{
+    if (fileStream)
+        return {*fileStream, files, filename, outputList};
+
+    return {filename, files, outputList};
+}
+
+unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream* fileStream)
 {
     mExitCode = 0;
 
-    // only show debug warnings for accepted C/C++ source files
-    if (!Path::acceptFile(filename))
-        mSettings.debugwarnings = false;
-
     if (Settings::terminated())
         return mExitCode;
+
+    const Timer fileTotalTimer(mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL, filename);
 
     if (!mSettings.quiet) {
         std::string fixedpath = Path::simplifyPath(filename);
@@ -667,43 +675,36 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
         simplecpp::OutputList outputList;
         std::vector<std::string> files;
-        simplecpp::TokenList tokens1(fileStream, files, filename, &outputList);
+        simplecpp::TokenList tokens1 = createTokenList(filename, files, &outputList, fileStream);
 
         // If there is a syntax error, report it and stop
-        for (const simplecpp::Output &output : outputList) {
-            bool err;
-            switch (output.type) {
-            case simplecpp::Output::ERROR:
-            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-            case simplecpp::Output::SYNTAX_ERROR:
-            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-                err = true;
-                break;
-            case simplecpp::Output::WARNING:
-            case simplecpp::Output::MISSING_HEADER:
-            case simplecpp::Output::PORTABILITY_BACKSLASH:
-                err = false;
-                break;
-            }
+        const auto output_it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
+            return Preprocessor::hasErrors(output);
+        });
+        if (output_it != outputList.cend()) {
+            const simplecpp::Output &output = *output_it;
+            std::string file = Path::fromNativeSeparators(output.location.file());
+            if (mSettings.relativePaths)
+                file = Path::getRelativePath(file, mSettings.basePaths);
 
-            if (err) {
-                std::string file = Path::fromNativeSeparators(output.location.file());
-                if (mSettings.relativePaths)
-                    file = Path::getRelativePath(file, mSettings.basePaths);
+            const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
+            std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-                const ErrorMessage::FileLocation loc1(file, output.location.line, output.location.col);
-                std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+            ErrorMessage errmsg(callstack,
+                                "",
+                                Severity::error,
+                                output.msg,
+                                "syntaxError",
+                                Certainty::normal);
+            reportErr(errmsg);
+            return mExitCode;
+        }
 
-                ErrorMessage errmsg(callstack,
-                                    "",
-                                    Severity::error,
-                                    output.msg,
-                                    "syntaxError",
-                                    Certainty::normal);
-                reportErr(errmsg);
-                return mExitCode;
-            }
+        if (mSettings.library.markupFile(filename)) {
+            Tokenizer tokenizer(&mSettings, this, &preprocessor);
+            tokenizer.createTokens(std::move(tokens1));
+            checkUnusedFunctions.getFileInfo(&tokenizer, &mSettings);
+            return EXIT_SUCCESS;
         }
 
         if (!preprocessor.loadFiles(tokens1, files))
@@ -800,11 +801,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             return 0;
         }
 
+#ifdef HAVE_RULES
         // Run define rules on raw code
-        const auto it = std::find_if(mSettings.rules.cbegin(), mSettings.rules.cend(), [](const Settings::Rule& rule) {
+        const auto rules_it = std::find_if(mSettings.rules.cbegin(), mSettings.rules.cend(), [](const Settings::Rule& rule) {
             return rule.tokenlist == "define";
         });
-        if (it != mSettings.rules.cend()) {
+        if (rules_it != mSettings.rules.cend()) {
             std::string code;
             const std::list<Directive> &directives = preprocessor.getDirectives();
             for (const Directive &dir : directives) {
@@ -816,6 +818,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             tokenizer2.list.createTokens(istr2);
             executeRules("define", tokenizer2);
         }
+#endif
 
         if (!mSettings.force && configurations.size() > mSettings.maxConfigs) {
             if (mSettings.severity.isEnabled(Severity::information)) {
@@ -938,10 +941,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (!mSettings.buildDir.empty())
                     checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), &mSettings);
 
+#ifdef HAVE_RULES
                 // handling of "simple" rules has been removed.
-                // cppcheck-suppress knownConditionTrueFalse
                 if (mSimplify && hasRule("simple"))
                     throw InternalError(nullptr, "Handling of \"simple\" rules has been removed in Cppcheck. Use --addon instead.");
+#endif
 
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
@@ -1060,8 +1064,12 @@ void CppCheck::internalError(const std::string &filename, const std::string &msg
 //---------------------------------------------------------------------------
 void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 {
+#ifdef HAVE_RULES
     // Execute rules for "raw" code
     executeRules("raw", tokenizer);
+#else
+    (void)tokenizer;
+#endif
 }
 
 //---------------------------------------------------------------------------
@@ -1133,26 +1141,20 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
         }
     }
 
+#ifdef HAVE_RULES
     executeRules("normal", tokenizer);
+#endif
 }
 
 //---------------------------------------------------------------------------
 
+#ifdef HAVE_RULES
 bool CppCheck::hasRule(const std::string &tokenlist) const
 {
-#ifdef HAVE_RULES
-    for (const Settings::Rule &rule : mSettings.rules) {
-        if (rule.tokenlist == tokenlist)
-            return true;
-    }
-#else
-    (void)tokenlist;
-#endif
-    return false;
+    return std::any_of(mSettings.rules.cbegin(), mSettings.rules.cend(), [&](const Settings::Rule& rule) {
+        return rule.tokenlist == tokenlist;
+    });
 }
-
-
-#ifdef HAVE_RULES
 
 static const char * pcreErrorCodeToString(const int pcreExecRet)
 {
@@ -1283,15 +1285,8 @@ static const char * pcreErrorCodeToString(const int pcreExecRet)
     return "";
 }
 
-#endif // HAVE_RULES
-
-
 void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &tokenizer)
 {
-    (void)tokenlist;
-    (void)tokenizer;
-
-#ifdef HAVE_RULES
     // There is no rule to execute
     if (!hasRule(tokenlist))
         return;
@@ -1414,8 +1409,8 @@ void CppCheck::executeRules(const std::string &tokenlist, const Tokenizer &token
         }
 #endif
     }
-#endif
 }
+#endif
 
 void CppCheck::executeAddons(const std::string& dumpFile)
 {
@@ -1615,14 +1610,8 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     // TODO: only convert if necessary
     const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
 
-    if (mUseGlobalSuppressions) {
-        if (mSettings.nomsg.isSuppressed(errorMessage)) {
-            return;
-        }
-    } else {
-        if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
-            return;
-        }
+    if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
+        return;
     }
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
@@ -1812,7 +1801,7 @@ void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<s
                 ctuFileInfo.loadFromXml(e);
                 continue;
             }
-            for (Check *check : Check::instances()) {
+            for (const Check *check : Check::instances()) {
                 if (checkClassAttr == check->name())
                     fileInfoList.push_back(check->loadFileInfoFromXml(e));
             }

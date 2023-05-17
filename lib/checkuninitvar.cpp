@@ -565,7 +565,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         // = { .. }
-        else if (Token::simpleMatch(tok, "= {")) {
+        else if (Token::simpleMatch(tok, "= {") || (Token::Match(tok, "%name% {") && tok->variable() && tok == tok->variable()->nameToken())) {
             // end token
             const Token *end = tok->next()->link();
 
@@ -657,7 +657,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         // Unknown or unhandled inner scope
-        else if (Token::simpleMatch(tok, ") {") || (Token::Match(tok, "%name% {") && tok->str() != "try")) {
+        else if (Token::simpleMatch(tok, ") {") || (Token::Match(tok, "%name% {") && tok->str() != "try" && !(tok->variable() && tok == tok->variable()->nameToken()))) {
             if (tok->str() == "struct" || tok->str() == "union") {
                 tok = tok->linkAt(1);
                 continue;

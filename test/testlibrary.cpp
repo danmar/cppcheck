@@ -41,7 +41,7 @@ public:
     TestLibrary() : TestFixture("TestLibrary") {}
 
 private:
-    Settings settings;
+    const Settings settings;
 
     void run() override {
         TEST_CASE(isCompliantValidationExpression);
@@ -71,6 +71,12 @@ private:
         TEST_CASE(loadLibErrors);
     }
 
+    static bool loadxmldata(Library &lib, const char xmldata[], std::size_t len)
+    {
+        tinyxml2::XMLDocument doc;
+        return (tinyxml2::XML_SUCCESS == doc.Parse(xmldata, len)) && (lib.load(doc).errorcode == Library::ErrorCode::OK);
+    }
+
     void isCompliantValidationExpression() const {
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("-1"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1"));
@@ -97,7 +103,7 @@ private:
         // Reading an empty library file is considered to be OK
         const char xmldata[] = "<?xml version=\"1.0\"?>\n<def/>";
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT(library.functions.empty());
     }
 
@@ -115,7 +121,7 @@ private:
         tokenList.front()->next()->astOperand1(tokenList.front());
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT_EQUALS(library.functions.size(), 1U);
         ASSERT(library.functions.at("foo").argumentChecks.empty());
         ASSERT(library.isnotnoreturn(tokenList.front()));
@@ -130,7 +136,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         {
             TokenList tokenList(nullptr);
             std::istringstream istr("fred.foo(123);"); // <- wrong scope, not library function
@@ -162,7 +168,7 @@ private:
         tokenList.createAst();
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT(library.isNotLibraryFunction(tokenList.front()));
     }
 
@@ -176,7 +182,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
             TokenList tokenList(nullptr);
@@ -231,7 +237,7 @@ private:
         tokenList.front()->next()->varId(1);
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT(library.isNotLibraryFunction(tokenList.front()->next()));
     }
 
@@ -248,7 +254,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[1].notuninit);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[2].notnull);
         ASSERT_EQUALS(true, library.functions["foo"].argumentChecks[3].formatstr);
@@ -267,7 +273,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[-1].notuninit);
     }
 
@@ -281,7 +287,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT_EQUALS(0, library.functions["foo"].argumentChecks[-1].notuninit);
 
         TokenList tokenList(nullptr);
@@ -307,7 +313,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         TokenList tokenList(nullptr);
         std::istringstream istr("foo(a,b,c,d);");
@@ -339,7 +345,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         TokenList tokenList(nullptr);
         std::istringstream istr("foo(a,b,c,d,e,f,g,h,i,j,k);");
@@ -481,7 +487,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         TokenList tokenList(nullptr);
         std::istringstream istr("foo(a,b,c,d,e);");
@@ -540,7 +546,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT_EQUALS(library.functions.size(), 2U);
         ASSERT(library.functions.at("Foo::foo").argumentChecks.empty());
         ASSERT(library.functions.at("bar").argumentChecks.empty());
@@ -569,7 +575,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT_EQUALS(library.functions.size(), 1U);
 
         {
@@ -596,7 +602,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         {
             Tokenizer tokenizer(&settings, nullptr);
@@ -625,7 +631,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         TokenList tokenList(nullptr);
         std::istringstream istr("a(); b();");
@@ -659,7 +665,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT(library.functions.empty());
 
         const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
@@ -686,8 +692,8 @@ private:
                                 "</def>";
 
         Library library;
-        ASSERT_EQUALS(true, library.loadxmldata(xmldata1, sizeof(xmldata1)));
-        ASSERT_EQUALS(true, library.loadxmldata(xmldata2, sizeof(xmldata2)));
+        ASSERT_EQUALS(true, loadxmldata(library, xmldata1, sizeof(xmldata1)));
+        ASSERT_EQUALS(true, loadxmldata(library, xmldata2, sizeof(xmldata2)));
 
         ASSERT_EQUALS(library.deallocId("free"), library.allocId("malloc"));
         ASSERT_EQUALS(library.deallocId("free"), library.allocId("foo"));
@@ -702,7 +708,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT(library.functions.empty());
 
         const Library::AllocFunc* af = library.getAllocFuncInfo("CreateX");
@@ -721,7 +727,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         ASSERT(library.functions.empty());
 
         ASSERT(Library::isresource(library.allocId("CreateX")));
@@ -738,7 +744,7 @@ private:
                                    "  <podtype name=\"s16\" sign=\"s\" size=\"2\"/>\n"
                                    "</def>";
             Library library;
-            ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+            ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
             // s8
             {
                 const struct Library::PodType * const type = library.podtype("s8");
@@ -816,7 +822,7 @@ private:
                                "</def>";
 
         Library library;
-        ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+        ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
 
         Library::Container& A = library.containers["A"];
         Library::Container& B = library.containers["B"];
@@ -931,14 +937,14 @@ private:
                                    "<def>\n"
                                    "</def>";
             Library library;
-            ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+            ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         }
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                    "<def format=\"1\">\n"
                                    "</def>";
             Library library;
-            ASSERT(library.loadxmldata(xmldata, sizeof(xmldata)));
+            ASSERT(loadxmldata(library, xmldata, sizeof(xmldata)));
         }
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"

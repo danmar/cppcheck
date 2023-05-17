@@ -61,12 +61,6 @@ public:
     void fill() {
         mFlags = 0xFFFFFFFF;
     }
-    void setEnabledAll(bool enabled) {
-        if (enabled)
-            fill();
-        else
-            clear();
-    }
     bool isEnabled(T flag) const {
         return (mFlags & (1U << (uint32_t)flag)) != 0;
     }
@@ -291,10 +285,12 @@ public:
         Severity::SeverityType severity;
     };
 
+#ifdef HAVE_RULES
     /**
      * @brief Extra rules
      */
     std::list<Rule> rules;
+#endif
 
     /** Do not only check how interface is used. Also check that interface is safe. */
     class CPPCHECKLIB SafeChecks {

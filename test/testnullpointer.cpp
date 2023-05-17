@@ -41,12 +41,9 @@ public:
     TestNullPointer() : TestFixture("TestNullPointer") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").severity(Severity::warning).build();
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-        settings.severity.enable(Severity::warning);
-
         TEST_CASE(nullpointerAfterLoop);
         TEST_CASE(nullpointer1);
         TEST_CASE(nullpointer2);
@@ -143,6 +140,8 @@ private:
         TEST_CASE(nullpointer97); // #11229
         TEST_CASE(nullpointer98); // #11458
         TEST_CASE(nullpointer99); // #10602
+        TEST_CASE(nullpointer100);        // #11636
+        TEST_CASE(nullpointer101);        // #11382
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -182,22 +181,22 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(&tokenizer, &settings, this);
+        runChecks<CheckNullPointer>(&tokenizer, &settings1, this);
     }
 
     void checkP(const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, false);
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, false).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
@@ -210,12 +209,12 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenizer..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(&tokenizer, &settings, this);
+        runChecks<CheckNullPointer>(&tokenizer, &settings1, this);
     }
 
 
@@ -2830,6 +2829,29 @@ private:
         ASSERT_EQUALS("[test.cpp:14]: (error) Null pointer dereference: buf\n", errout.str());
     }
 
+    void nullpointer100() // #11636
+    {
+        check("const char* type_of(double) { return \"unknown\"; }\n"
+              "void f() {\n"
+              "    double tmp = 0.0;\n"
+              "    const char* t = type_of(tmp);\n"
+              "    std::cout << t;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer101() // #11382
+    {
+        check("struct Base { virtual ~Base(); };\n"
+              "struct Derived : Base {};\n"
+              "bool is_valid(const Derived&);\n"
+              "void f(const Base* base) {\n"
+              "    const Derived* derived = dynamic_cast<const Derived*>(base);\n"
+              "    if (derived && !is_valid(*derived) || base == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -3541,6 +3563,18 @@ private:
               "  *ptr++ = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #11635
+        check("void f(char *cons, int rlen, int pos) {\n"
+              "    int i;\n"
+              "    char* cp1;\n"
+              "    for (cp1 = &cons[pos], i = 1; i < rlen; cp1--)\n"
+              "        if (*cp1 == '*')\n"
+              "            continue;\n"
+              "        else\n"
+              "            i++;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerDelete() {
@@ -4028,7 +4062,7 @@ private:
     }
 
     void functioncalllibrary() {
-        Settings settings1;
+        const Settings settings1;
         Tokenizer tokenizer(&settings1,this);
         std::istringstream code("void f() { int a,b,c; x(a,b,c); }");
         ASSERT_EQUALS(true, tokenizer.tokenize(code, "test.c"));

@@ -230,15 +230,19 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                 if (path_is_directory) {
                     if (recursive && !ignored.match(new_path)) {
                         std::string err = addFiles2(files, new_path, extra, recursive, ignored);
-                        if (!err.empty())
+                        if (!err.empty()) {
+                            closedir(dir);
                             return err;
+                        }
                     }
                 } else {
                     if (Path::acceptFile(new_path, extra) && !ignored.match(new_path)) {
                         if (stat(new_path.c_str(), &file_stat) != -1)
                             files[new_path] = file_stat.st_size;
-                        else
+                        else {
+                            closedir(dir);
                             return "Can't stat " + new_path + " errno: " + std::to_string(errno);
+                        }
                     }
                 }
             }

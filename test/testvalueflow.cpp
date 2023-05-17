@@ -46,7 +46,7 @@ public:
     TestValueFlow() : TestFixture("TestValueFlow") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
         // strcpy, abort cfg
@@ -56,7 +56,6 @@ private:
                            "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
                            "</def>";
         ASSERT_EQUALS(true, settings.library.loadxmldata(cfg, sizeof(cfg)));
-        LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);
@@ -311,9 +310,11 @@ private:
     }
 
 #define testValueOfX(...) testValueOfX_(__FILE__, __LINE__, __VA_ARGS__)
-    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, int value) {
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, int value, const Settings *s = nullptr) {
+        const Settings *settings1 = s ? s : &settings;
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
@@ -486,7 +487,7 @@ private:
     }
 
     void bailout(const char code[]) {
-        settings.debugwarnings = true;
+        const Settings s = settingsBuilder().debugwarnings().build();
         errout.str("");
 
         std::vector<std::string> files(1, "test.cpp");
@@ -498,11 +499,9 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&s, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
-
-        settings.debugwarnings = false;
     }
 
 #define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)
@@ -3869,22 +3868,22 @@ private:
     void valueFlowRightShift() {
         const char *code;
         /* Set some temporary fixed values to simplify testing */
-        const Settings settingsTmp = settings;
-        settings.platform.int_bit = 32;
-        settings.platform.long_bit = 64;
-        settings.platform.long_long_bit = MathLib::bigint_bits * 2;
+        Settings s = settings;
+        s.platform.int_bit = 32;
+        s.platform.long_bit = 64;
+        s.platform.long_long_bit = MathLib::bigint_bits * 2;
 
         code = "int f(int a) {\n"
                "  int x = (a & 0xff) >> 16;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0,&s));
 
         code = "int f(unsigned int a) {\n"
                "  int x = (a % 123) >> 16;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code,3U,0));
+        ASSERT_EQUALS(true, testValueOfX(code,3U,0,&s));
 
         code = "int f(int y) {\n"
                "  int x = (y & 0xFFFFFFF) >> 31;\n"
@@ -3896,57 +3895,55 @@ private:
                "  int x = (y & 0xFFFFFFF) >> 32;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
 
         code = "int f(short y) {\n"
                "  int x = (y & 0xFFFFFF) >> 31;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0,&s));
 
         code = "int f(short y) {\n"
                "  int x = (y & 0xFFFFFF) >> 32;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
 
         code = "int f(long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 63;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0,&s));
 
         code = "int f(long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 64;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
 
         code = "int f(long long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 63;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 3u, 0,&s));
 
         code = "int f(long long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 64;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
 
         code = "int f(long long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 121;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
 
         code = "int f(long long y) {\n"
                "  int x = (y & 0xFFFFFF) >> 128;\n"
                "  return x;\n"
                "}";
-        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0));
-
-        settings = settingsTmp;
+        ASSERT_EQUALS(false, testValueOfX(code, 3u, 0,&s));
     }
 
     void valueFlowFwdAnalysis() {
@@ -5038,16 +5035,80 @@ private:
                "  return s == 0;\n" // <- known value
                "}";
         value = valueOfTok(code, "==");
-        TODO_ASSERT_EQUALS(true, false, value.isKnown());
-        TODO_ASSERT_EQUALS(1, 0, value.intvalue);
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
 
         code = "bool f() {\n"
                "  const int s = int();"
                "  return s == 0;\n" // <- known value
                "}";
         value = valueOfTok(code, "==");
-        TODO_ASSERT_EQUALS(true, false, value.isKnown());
-        TODO_ASSERT_EQUALS(1, 0, value.intvalue);
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  const int s{};"
+               "  return s == 0;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int* p{};\n"
+               "  return p == nullptr;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int* p{ nullptr };\n"
+               "  return p == nullptr;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int* p{ 0 };\n"
+               "  return p == nullptr;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int* p = {};\n"
+               "  return p == nullptr;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int i = {};\n"
+               "  return i == 0;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int* p = { 0 };\n"
+               "  return p == nullptr;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
+
+        code = "bool f() {\n"
+               "  int i = { 1 };\n"
+               "  return i == 1;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        ASSERT_EQUALS(true, value.isKnown());
+        ASSERT_EQUALS(1, value.intvalue);
 
         // calculation with known result
         code = "int f(int x) { a = x & 0; }"; // <- & is 0
@@ -5448,7 +5509,7 @@ private:
                "    }\n"
                "}\n";
         values = tokenValues(code, "i ++", ValueFlow::Value::ValueType::UNINIT);
-        TODO_ASSERT_EQUALS(0, 1, values.size());
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {
@@ -6572,8 +6633,7 @@ private:
     void valueFlowSafeFunctionParameterValues() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
+        Settings s = settingsBuilder().library("std.cfg").build();
         s.safeChecks.classes = s.safeChecks.externalFunctions = s.safeChecks.internalFunctions = true;
 
         code = "short f(short x) {\n"
@@ -6624,8 +6684,7 @@ private:
     void valueFlowUnknownFunctionReturn() {
         const char *code;
         std::list<ValueFlow::Value> values;
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
+        Settings s = settingsBuilder().library("std.cfg").build();
         s.checkUnknownFunctionReturn.insert("rand");
 
         code = "x = rand();";
@@ -7191,6 +7250,23 @@ private:
                "        t = 1;\n"
                "        if (n < j)\n"
                "            n = j;\n"
+               "    }\n"
+               "}\n";
+        valueOfTok(code, "i");
+
+        code = "void f() {\n" // #11701
+               "    std::vector<int> v(500);\n"
+               "    for (int i = 0; i < 500; i++) {\n"
+               "        if (i < 122)\n"
+               "            v[i] = 255;\n"
+               "        else if (i == 122)\n"
+               "            v[i] = 220;\n"
+               "        else if (i < 386)\n"
+               "            v[i] = 196;\n"
+               "        else if (i == 386)\n"
+               "            v[i] = 118;\n"
+               "        else\n"
+               "            v[i] = 0;\n"
                "    }\n"
                "}\n";
         valueOfTok(code, "i");

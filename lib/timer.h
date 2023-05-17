@@ -28,8 +28,9 @@
 #include <string>
 
 enum class SHOWTIME_MODES {
-    SHOWTIME_NONE = 0,
+    SHOWTIME_NONE,
     SHOWTIME_FILE,
+    SHOWTIME_FILE_TOTAL,
     SHOWTIME_SUMMARY,
     SHOWTIME_TOP5
 };
@@ -70,6 +71,7 @@ private:
 class CPPCHECKLIB Timer {
 public:
     Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
+    Timer(bool fileTotal, std::string filename);
     ~Timer();
 
     Timer(const Timer&) = delete;

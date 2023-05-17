@@ -179,7 +179,7 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, const Sett
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
             suppr.thisAndNextLine = thisAndNextLine;
-            suppressions.addSuppression(suppr);
+            suppressions.addSuppression(std::move(suppr));
         }
     }
 }
@@ -627,23 +627,29 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     return dui;
 }
 
-static bool hasErrors(const simplecpp::OutputList &outputList)
+bool Preprocessor::hasErrors(const simplecpp::Output &output)
 {
-    for (simplecpp::OutputList::const_iterator it = outputList.cbegin(); it != outputList.cend(); ++it) {
-        switch (it->type) {
-        case simplecpp::Output::ERROR:
-        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-        case simplecpp::Output::SYNTAX_ERROR:
-        case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-        case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-            return true;
-        case simplecpp::Output::WARNING:
-        case simplecpp::Output::MISSING_HEADER:
-        case simplecpp::Output::PORTABILITY_BACKSLASH:
-            break;
-        }
+    switch (output.type) {
+    case simplecpp::Output::ERROR:
+    case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+    case simplecpp::Output::SYNTAX_ERROR:
+    case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+    case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
+        return true;
+    case simplecpp::Output::WARNING:
+    case simplecpp::Output::MISSING_HEADER:
+    case simplecpp::Output::PORTABILITY_BACKSLASH:
+        break;
     }
     return false;
+}
+
+bool Preprocessor::hasErrors(const simplecpp::OutputList &outputList)
+{
+    const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output) {
+        return hasErrors(output);
+    });
+    return it != outputList.cend();
 }
 
 void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool throwError)
@@ -651,19 +657,11 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
     const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
     reportOutput(outputList, showerror);
     if (throwError) {
-        for (const simplecpp::Output& output : outputList) {
-            switch (output.type) {
-            case simplecpp::Output::ERROR:
-            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-            case simplecpp::Output::SYNTAX_ERROR:
-            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-                throw output;
-            case simplecpp::Output::WARNING:
-            case simplecpp::Output::MISSING_HEADER:
-            case simplecpp::Output::PORTABILITY_BACKSLASH:
-                break;
-            }
+        const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
+            return hasErrors(output);
+        });
+        if (it != outputList.cend()) {
+            throw *it;
         }
     }
 }
@@ -750,36 +748,6 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
     }
 
     return ret.str();
-}
-
-std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression)
-{
-    simplecpp::OutputList outputList;
-    std::vector<std::string> files;
-
-    std::istringstream istr(filedata);
-    simplecpp::TokenList tokens1(istr, files, Path::simplifyPath(filename), &outputList);
-    if (inlineSuppression)
-        inlineSuppressions(tokens1, *inlineSuppression);
-    tokens1.removeComments();
-    removeComments();
-    setDirectives(tokens1);
-
-    reportOutput(outputList, true);
-
-    if (hasErrors(outputList))
-        return "";
-
-    std::string ret;
-    try {
-        ret = getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
-        // Since "files" is a local variable the tracking info must be cleared..
-        mMacroUsage.clear();
-        mIfCond.clear();
-    } catch (const simplecpp::Output &) {
-        ret.clear();
-    }
-    return ret;
 }
 
 void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)

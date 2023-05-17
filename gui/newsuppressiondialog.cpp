@@ -24,7 +24,6 @@
 
 #include "ui_newsuppressiondialog.h"
 
-#include <functional>
 #include <string>
 
 #include <QComboBox>

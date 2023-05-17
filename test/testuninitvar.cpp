@@ -35,11 +35,9 @@ public:
     TestUninitVar() : TestFixture("TestUninitVar") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().library("std.cfg").build();
 
     void run() override {
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(uninitvar1);
         TEST_CASE(uninitvar_warn_once); // only write 1 warning at a time
         TEST_CASE(uninitvar_decl);      // handling various types in C and C++ files
@@ -107,21 +105,20 @@ private:
     }
 
 #define checkUninitVar(...) checkUninitVar_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkUninitVar_(const char* file, int line, const char code[], const char fname[] = "test.cpp", bool debugwarnings = false) {
+    void checkUninitVar_(const char* file, int line, const char code[], const char fname[] = "test.cpp", bool debugwarnings = false, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
+        const Settings settings1 = settingsBuilder(s ? *s : settings).debugwarnings(debugwarnings).build();
+
         // Tokenize..
-        settings.debugwarnings = debugwarnings;
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
         // Check for redundant code..
-        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
+        CheckUninitVar checkuninitvar(&tokenizer, &settings1, this);
         checkuninitvar.check();
-
-        settings.debugwarnings = false;
     }
 
     void uninitvar1() {
@@ -833,17 +830,19 @@ private:
                        "}", "test.cpp", false);
         ASSERT_EQUALS("", errout.str());
 
-        // Ticket #6701 - Variable name is a POD type according to cfg
-        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                               "<def format=\"1\">"
-                               "  <podtype name=\"_tm\"/>"
-                               "</def>";
-        ASSERT_EQUALS(true, settings.library.loadxmldata(xmldata, sizeof(xmldata)));
-        checkUninitVar("void f() {\n"
-                       "  Fred _tm;\n"
-                       "  _tm.dostuff();\n"
-                       "}");
-        ASSERT_EQUALS("", errout.str());
+        {
+            // Ticket #6701 - Variable name is a POD type according to cfg
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"1\">"
+                                   "  <podtype name=\"_tm\"/>"
+                                   "</def>";
+            const Settings s = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
+            checkUninitVar("void f() {\n"
+                           "  Fred _tm;\n"
+                           "  _tm.dostuff();\n"
+                           "}", "test.cpp", false, &s);
+            ASSERT_EQUALS("", errout.str());
+        }
 
         // Ticket #7822 - Array type
         checkUninitVar("A *f() {\n"
@@ -2057,6 +2056,15 @@ private:
                        "    delete p;\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+
+        checkUninitVar("int f() {\n" // #10596
+                       "    int* a = new int;\n"
+                       "    int i{};\n"
+                       "    i += *a;\n"
+                       "    delete a;\n"
+                       "    return i;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: a\n", errout.str());
     }
 
     // class / struct..
@@ -3507,7 +3515,7 @@ private:
                         "    }\n"
                         "}",
                         "test.cpp");
-        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("void f() {\n"
                         "    int i, y;\n"
@@ -3518,7 +3526,7 @@ private:
                         "    }\n"
                         "}",
                         "test.cpp");
-        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("void f() {\n"
                         "    int i, y;\n"
@@ -4367,15 +4375,14 @@ private:
                                                     "    <arg nr=\"1\" direction=\"out\"/>\n"
                                                     "  </function>\n"
                                                     "</def>";
-
-            ASSERT_EQUALS(true, settings.library.loadxmldata(argDirectionsTestXmlData, sizeof(argDirectionsTestXmlData) / sizeof(argDirectionsTestXmlData[0])));
+            const Settings s = settingsBuilder(settings).libraryxml(argDirectionsTestXmlData, sizeof(argDirectionsTestXmlData)).build();
 
             checkUninitVar("struct AB { int a; };\n"
                            "void f(void) {\n"
                            "    struct AB ab;\n"
                            "    uninitvar_funcArgInTest(&ab);\n"
                            "    x = ab;\n"
-                           "}\n", "test.c");
+                           "}\n", "test.c", false, &s);
             ASSERT_EQUALS("[test.c:5]: (error) Uninitialized struct member: ab.a\n", errout.str());
 
             checkUninitVar("struct AB { int a; };\n"
@@ -4383,7 +4390,7 @@ private:
                            "    struct AB ab;\n"
                            "    uninitvar_funcArgOutTest(&ab);\n"
                            "    x = ab;\n"
-                           "}\n", "test.c");
+                           "}\n", "test.c", false, &s);
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -5147,8 +5154,7 @@ private:
     }
 
     void uninitvar_configuration() {
-        const auto oldSettings = settings;
-        settings.checkLibrary = true;
+        const Settings s = settingsBuilder(settings).checkLibrary().build();
 
         checkUninitVar("int f() {\n"
                        "    int i, j;\n"
@@ -5156,10 +5162,8 @@ private:
                        "        i = 0;\n"
                        "        return i;\n"
                        "    } while (0);\n"
-                       "}\n");
+                       "}\n", "test.cpp", false, &s);
         ASSERT_EQUALS("", errout.str());
-
-        settings = oldSettings;
     }
 
     void checkExpr() {
@@ -5216,14 +5220,14 @@ private:
         errout.str("");
 
         // Tokenize..
-        settings.debugwarnings = false;
+        const Settings s = settingsBuilder(settings).debugwarnings(false).build();
 
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&s, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, fname), file, line);
 
         // Check for redundant code..
-        CheckUninitVar checkuninitvar(&tokenizer, &settings, this);
+        CheckUninitVar checkuninitvar(&tokenizer, &s, this);
         (checkuninitvar.valueFlowUninit)();
     }
 
@@ -5977,6 +5981,15 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #11673
+        valueFlowUninit("void f() {\n"
+                        "    bool b;\n"
+                        "    auto g = [&b]() {\n"
+                        "        b = true;\n"
+                        "    };\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #6619
         valueFlowUninit("void f() {\n"
                         "    int nok, i;\n"
@@ -5986,7 +5999,7 @@ private:
                         "    }\n"
                         "    printf(\"nok = %d\\n\", nok);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Uninitialized variable: nok\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: nok\n", errout.str());
 
         // #7475
         valueFlowUninit("struct S {\n"
@@ -5997,6 +6010,66 @@ private:
                         "    printf(\"%d\", s.a);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: s.a\n", errout.str());
+
+        valueFlowUninit("void f(char* src) {\n" // #11608
+                        "    char envar[64], *cp, c;\n"
+                        "    for (src += 2, cp = envar; (c = *src) != '\\0'; src++)\n"
+                        "        *cp++ = c;\n"
+                        "    if (cp != envar)\n"
+                        "        if ((cp = getenv(envar)) != NULL) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11459
+        valueFlowUninit("struct S {\n"
+                        "    enum E { N = 3 };\n"
+                        "    static const int A[N];\n"
+                        "    static void f();\n"
+                        "};\n"
+                        "const int S::A[N] = { 0, 1, 2 };\n"
+                        "void S::f() {\n"
+                        "    int tmp[N];\n"
+                        "    for (int i = 0; i < N; i++)\n"
+                        "        tmp[i] = 0;\n"
+                        "    if (tmp[0]) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11055
+        valueFlowUninit("void g(int*);\n"
+                        "void f(bool b) {\n"
+                        "    int i;\n"
+                        "    int* p = b ? &i : nullptr;\n"
+                        "    g(p);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct T {};\n" // #11075
+                        "struct S {\n"
+                        "    int n;\n"
+                        "    struct T t[10];\n"
+                        "};\n"
+                        "void f(struct S* s, char** tokens) {\n"
+                        "    struct T t[10];\n"
+                        "    int n = 0;\n"
+                        "    for (int i = 0; i < s->n; i++)\n"
+                        "        if (tokens[i])\n"
+                        "            t[n++] = s->t[i];\n"
+                        "    for (int i = 0; i < n; i++)\n"
+                        "        t[i];\n"
+                        "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("bool g();\n"
+                        "void f() {\n"
+                        "    int a[10];\n"
+                        "    int idx = 0;\n"
+                        "    if (g())\n"
+                        "        a[idx++] = 1;\n"
+                        "    for (int i = 0; i < idx; i++)\n"
+                        "        (void)a[i];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

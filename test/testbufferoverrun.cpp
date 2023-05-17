@@ -42,22 +42,22 @@ public:
     TestBufferOverrun() : TestFixture("TestBufferOverrun") {}
 
 private:
-    Settings settings0;
+    Settings settings0 = settingsBuilder().library("std.cfg").severity(Severity::warning).severity(Severity::style).severity(Severity::portability).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
-        settings0.certainty.enable(Certainty::inconclusive);
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings0, this);
+        Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings0, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -77,14 +77,8 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings* settings = &settings0;
-        settings->severity.enable(Severity::style);
-        settings->severity.enable(Severity::warning);
-        settings->severity.enable(Severity::portability);
-        settings->severity.enable(Severity::performance);
-        settings->standards.c = Standards::CLatest;
-        settings->standards.cpp = Standards::CPPLatest;
-        settings->certainty.enable(Certainty::inconclusive);
+        const Settings settings = settingsBuilder(settings0).severity(Severity::style).severity(Severity::warning).severity(Severity::portability).severity(Severity::performance)
+                                  .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
@@ -97,21 +91,15 @@ private:
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenizer..
-        Tokenizer tokenizer(settings, this);
+        Tokenizer tokenizer(&settings, this);
         tokenizer.createTokens(std::move(tokens2));
         tokenizer.simplifyTokens1("");
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, settings, this);
+        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
     }
 
     void run() override {
-        LOAD_LIB_2(settings0.library, "std.cfg");
-
-        settings0.severity.enable(Severity::warning);
-        settings0.severity.enable(Severity::style);
-        settings0.severity.enable(Severity::portability);
-
         TEST_CASE(noerr1);
         TEST_CASE(noerr2);
         TEST_CASE(noerr3);
@@ -199,6 +187,7 @@ private:
         TEST_CASE(array_index_negative6);    // #11349
         TEST_CASE(array_index_negative7);    // #5685
         TEST_CASE(array_index_negative8);    // #11651
+        TEST_CASE(array_index_negative9);
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -2288,6 +2277,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    // #8075
+    void array_index_negative9()
+    {
+        check("int g(int i) {\n"
+              "    if (i < 10)\n"
+              "        return -1;\n"
+              "    return 0;\n"
+              "}\n"
+              "void f() {\n"
+              "    int a[] = { 1, 2, 3 };\n"
+              "    printf(\"%d\\n\", a[g(4)]);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Array 'a[3]' accessed at index -1, which is out of bounds.\n", errout.str());
+    }
+
     void array_index_for_decr() {
         check("void f()\n"
               "{\n"
@@ -3340,6 +3344,7 @@ private:
 
     void buffer_overrun_errorpath() {
         setMultiline();
+        const Settings settingsOld = settings0;
         settings0.templateLocation = "{file}:{line}:note:{info}";
 
         check("void f() {\n"
@@ -3349,6 +3354,10 @@ private:
         ASSERT_EQUALS("test.cpp:3:error:Buffer is accessed out of bounds: p\n"
                       "test.cpp:2:note:Assign p, buffer with size 10\n"
                       "test.cpp:3:note:Buffer overrun\n", errout.str());
+
+        // TODO: need to reset this but it breaks other tests
+        (void)settingsOld;
+        //settings0 = settingsOld;
     }
 
     void buffer_overrun_bailoutIfSwitch() {
@@ -3523,7 +3532,6 @@ private:
     }
 
     void buffer_overrun_readSizeFromCfg() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
@@ -3535,7 +3543,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
         check("void f() {\n"
@@ -4076,7 +4084,6 @@ private:
     // extracttests.disable
 
     void minsize_argvalue() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mymemset\">\n"
@@ -4088,8 +4095,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
-        settings.severity.enable(Severity::warning);
+        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).severity(Severity::warning).build();
         settings.platform.sizeof_wchar_t = 4;
 
         check("void f() {\n"
@@ -4215,7 +4221,6 @@ private:
     }
 
     void minsize_sizeof() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mystrncpy\">\n"
@@ -4228,7 +4233,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
               "    char c[7];\n"
@@ -4276,7 +4281,6 @@ private:
     }
 
     void minsize_strlen() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mysprintf\">\n"
@@ -4290,7 +4294,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // formatstr..
         check("void f() {\n"
@@ -4390,7 +4394,6 @@ private:
     }
 
     void minsize_mul() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"myfread\">\n"
@@ -4402,7 +4405,7 @@ private:
                                "    <arg nr=\"4\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
               "    char c[5];\n"
@@ -5510,9 +5513,7 @@ private:
 
     void checkPipeParameterSize() { // #3521
 
-        Settings settings;
-        LOAD_LIB_2(settings.library, "posix.cfg");
-        settings.libraries.emplace_back("posix");
+        const Settings settings = settingsBuilder().library("posix.cfg").build();
 
         check("void f(){\n"
               "int pipefd[1];\n" // <--  array of two integers is needed

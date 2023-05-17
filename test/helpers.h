@@ -19,25 +19,21 @@
 #ifndef helpersH
 #define helpersH
 
-#include "color.h"
-#include "errorlogger.h"
 #include "settings.h"
-#include "suppressions.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <fstream> // IWYU pragma: keep
-#include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
-
 class Token;
+class Preprocessor;
+class Suppressions;
 
 class givenACodeSampleToTokenize {
 private:
     Tokenizer tokenizer;
-    static const Settings settings;
+    const Settings settings;
 
 public:
     explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
@@ -49,27 +45,15 @@ public:
             tokenizer.tokenize(iss, cpp ? "test.cpp" : "test.c");
     }
 
+    Token* tokens() {
+        return tokenizer.tokens();
+    }
+
     const Token* tokens() const {
         return tokenizer.tokens();
     }
 };
 
-
-class SimpleSuppressor : public ErrorLogger {
-public:
-    SimpleSuppressor(Settings &settings, ErrorLogger *next)
-        : settings(settings), next(next) {}
-    void reportOut(const std::string &outmsg, Color /*c*/ = Color::Reset) override {
-        next->reportOut(outmsg);
-    }
-    void reportErr(const ErrorMessage &msg) override {
-        if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg))
-            next->reportErr(msg);
-    }
-private:
-    Settings &settings;
-    ErrorLogger *next;
-};
 
 class ScopedFile {
 public:
@@ -90,6 +74,22 @@ private:
     const std::string mName;
     const std::string mPath;
     const std::string mFullPath;
+};
+
+class PreprocessorHelper
+{
+public:
+    /**
+     * Get preprocessed code for a given configuration
+     *
+     * Note: for testing only.
+     *
+     * @param filedata file data including preprocessing 'if', 'define', etc
+     * @param cfg configuration to read out
+     * @param filename name of source file
+     * @param inlineSuppression the inline suppressions
+     */
+    static std::string getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression = nullptr);
 };
 
 #endif // helpersH
