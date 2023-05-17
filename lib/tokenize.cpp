@@ -8627,6 +8627,7 @@ void Tokenizer::simplifyStructDecl()
                     after = after->next();
                     start->deleteThis();
                 }
+                tok = start;
                 if (!after)
                     break; // see #4869 segmentation fault in Tokenizer::simplifyStructDecl (invalid code)
                 after->insertToken(type->str());
