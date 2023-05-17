@@ -3342,7 +3342,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
-    
+
     void buffer_overrun_36() { // #11708
         check("void f(double d) {\n"
               "    char a[80];\n"
