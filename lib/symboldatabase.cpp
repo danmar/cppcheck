@@ -5155,7 +5155,7 @@ static bool hasEmptyCaptureList(const Token* tok) {
     const Token* listTok = tok->astParent();
     if (Token::simpleMatch(listTok, "("))
         listTok = listTok->astParent();
-    return Token::Match(listTok, "[ ]");
+    return Token::simpleMatch(listTok, "[ ]");
 }
 
 bool Scope::hasInlineOrLambdaFunction() const
