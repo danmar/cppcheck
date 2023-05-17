@@ -1737,7 +1737,7 @@ private:
 
         TEST_CASE(customAllocation);
 
-        TEST_CASE(lambdaInForLoop); // #9793
+        TEST_CASE(lambdaInScope); // #9793
     }
 
     void err() {
@@ -2228,7 +2228,7 @@ private:
         ASSERT_EQUALS("[test.c:7]: (error) Memory leak: abc.a\n", errout.str());
     }
 
-    void lambdaInForLoop() {
+    void lambdaInScope() {
         check( // #9793
             "struct S { int * p{nullptr}; };\n"
             "int main()\n"
