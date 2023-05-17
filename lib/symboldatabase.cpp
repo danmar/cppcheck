@@ -141,7 +141,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         return endInitList.top().second == scope;
     };
 
-    auto addLambda = [&](const Token* tok, const Token* lambdaEndToken) -> const Token* {
+    auto addLambda = [this, &scope](const Token* tok, const Token* lambdaEndToken) -> const Token* {
         const Token* lambdaStartToken = lambdaEndToken->link();
         const Token* argStart = lambdaStartToken->astParent();
         const Token* funcStart = Token::simpleMatch(argStart, "[") ? argStart : argStart->astParent();
