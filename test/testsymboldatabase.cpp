@@ -467,6 +467,7 @@ private:
         TEST_CASE(lambda); // #5867
         TEST_CASE(lambda2); // #7473
         TEST_CASE(lambda3);
+        TEST_CASE(lambda4);
 
         TEST_CASE(circularDependencies); // #6298
 
@@ -7686,7 +7687,6 @@ private:
         ASSERT_EQUALS(Scope::eLambda, scope->type);
     }
 
-
     void lambda3() {
         GET_SYMBOL_DB("void func() {\n"
                       "    auto f = []() mutable {}\n"
@@ -7699,6 +7699,28 @@ private:
         ASSERT_EQUALS(Scope::eFunction, scope->type);
         ++scope;
         ASSERT_EQUALS(Scope::eLambda, scope->type);
+    }
+
+    void lambda4() { // #11719
+        GET_SYMBOL_DB("struct S { int* p; };\n"
+                      "auto g = []() {\n"
+                      "    S s;\n"
+                      "    s.p = new int;\n"
+                      "};\n");
+
+        ASSERT(db && db->scopeList.size() == 3);
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
+        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ++scope;
+        ASSERT_EQUALS(Scope::eStruct, scope->type);
+        ++scope;
+        ASSERT_EQUALS(Scope::eLambda, scope->type);
+        ASSERT_EQUALS(1, scope->varlist.size());
+        const Variable& s = scope->varlist.front();
+        ASSERT_EQUALS(s.name(), "s");
+        ASSERT(s.type());
+        --scope;
+        ASSERT_EQUALS(s.type()->classScope, &*scope);
     }
 
     // #6298 "stack overflow in Scope::findFunctionInBase (endless recursion)"

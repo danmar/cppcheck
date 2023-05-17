@@ -141,6 +141,16 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         return endInitList.top().second == scope;
     };
 
+    auto addLambda = [&](const Token* tok, const Token* lambdaEndToken) -> const Token* {
+        const Token* lambdaStartToken = lambdaEndToken->link();
+        const Token* argStart = lambdaStartToken->astParent();
+        const Token* funcStart = Token::simpleMatch(argStart, "[") ? argStart : argStart->astParent();
+        const Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
+        if (!function)
+            mTokenizer.syntaxError(tok);
+        return lambdaStartToken;
+    };
+
     // Store current access in each scope (depends on evaluation progress)
     std::map<const Scope*, AccessControl> access;
 
@@ -674,6 +684,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     tok = declEnd;
                     continue;
                 }
+            } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
+                tok = addLambda(tok, lambdaEndToken);
             }
         } else if (scope->isExecutable()) {
             if (tok->isKeyword() && Token::Match(tok, "else|try|do {")) {
@@ -712,13 +724,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 endInitList.emplace(tok->next()->link(), scope);
                 tok = tok->next();
             } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
-                const Token *lambdaStartToken = lambdaEndToken->link();
-                const Token * argStart = lambdaStartToken->astParent();
-                const Token * funcStart = Token::simpleMatch(argStart, "[") ? argStart : argStart->astParent();
-                const Function * function = addGlobalFunction(scope, tok, argStart, funcStart);
-                if (!function)
-                    mTokenizer.syntaxError(tok);
-                tok = lambdaStartToken;
+                tok = addLambda(tok, lambdaEndToken);
             } else if (tok->str() == "{") {
                 if (inInitList()) {
                     endInitList.emplace(tok->link(), scope);
