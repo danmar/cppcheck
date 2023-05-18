@@ -2339,7 +2339,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             }
             return true;
         }
-        
+
         const Token *lpar = funcTok->next();
         if (Token::simpleMatch(lpar, "( ) ("))
             lpar = lpar->tokAt(2);
