@@ -277,7 +277,7 @@ public:
         checkMemoryLeak.check();
     }
 
-    void check();
+    void check() const;
 
 private:
 
