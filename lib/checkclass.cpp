@@ -2314,20 +2314,32 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
             memberAccessed = true;
         }
-        bool mayModifyArgs = true;
+
         if (const Function* f = funcTok->function()) { // TODO: improve (we bail out if there is any possible modification of any argument)
             const std::vector<const Token*> args = getArguments(funcTok);
             const auto argMax = std::min<nonneg int>(args.size(), f->argCount());
-            mayModifyArgs = false;
+
             for (nonneg int argIndex = 0; argIndex < argMax; ++argIndex) {
                 const Variable* const argVar = f->getArgumentVar(argIndex);
-                if (!argVar || ((argVar->isArrayOrPointer() || argVar->isReference()) && !argVar->isConst())) {
-                    mayModifyArgs = true;
-                    break;
+                if (!argVar || ((argVar->isArrayOrPointer() || argVar->isReference()) && !argVar->isConst())) { // argument might be modified
+                    const Token* arg = args[argIndex];
+                    // member function
+                    if (Token::Match(arg->previous(), "%name% (") && arg->previous()->function() && !arg->previous()->function()->isConst())
+                        return false;
+                    // Member variable given as parameter
+                    const Token* varTok = previousBeforeAstLeftmostLeaf(arg);
+                    if (!varTok || !(varTok = varTok->next()))
+                        return false;
+                    if ((varTok->isName() && isMemberVar(scope, varTok)) || (varTok->isUnaryOp("&") && (varTok = varTok->astOperand1()) && isMemberVar(scope, varTok))) {
+                        const Variable* var = varTok->variable();
+                        if (!var || (!var->isMutable() && !var->isConst()))
+                            return false; // TODO: Only bailout if function takes argument as non-const reference
+                    }
                 }
             }
+            return true;
         }
-        // Member variable given as parameter
+        
         const Token *lpar = funcTok->next();
         if (Token::simpleMatch(lpar, "( ) ("))
             lpar = lpar->tokAt(2);
@@ -2336,7 +2348,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 tok = tok->link();
             else if ((tok->isName() && isMemberVar(scope, tok)) || (tok->isUnaryOp("&") && (tok = tok->astOperand1()) && isMemberVar(scope, tok))) {
                 const Variable* var = tok->variable();
-                if ((!var || (!var->isMutable() && !var->isConst())) && mayModifyArgs)
+                if (!var || (!var->isMutable() && !var->isConst()))
                     return false; // TODO: Only bailout if function takes argument as non-const reference
             }
         }

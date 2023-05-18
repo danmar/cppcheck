@@ -197,6 +197,7 @@ private:
         TEST_CASE(const84);
         TEST_CASE(const85);
         TEST_CASE(const86);
+        TEST_CASE(const87);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6331,9 +6332,8 @@ private:
                    "    void h(int, int*) const;\n"
                    "    void g() { int a; h(i, &a); }\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
     }
 
     void const83() {
@@ -6395,6 +6395,39 @@ private:
                    "    void g() { int* a[] = { &i }; }\n"
                    "    void h() { T t = { 1, &i }; }\n"
                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const87() {
+        checkConst("struct Tokenizer {\n" // #11720
+                   "        bool isCPP() const {\n"
+                   "        return cpp;\n"
+                   "    }\n"
+                   "    bool cpp;\n"
+                   "};\n"
+                   "struct Check {\n"
+                   "    const Tokenizer* const mTokenizer;\n"
+                   "    const int* const mSettings;\n"
+                   "};\n"
+                   "struct CheckA : Check {\n"
+                   "    static bool test(const std::string& funcname, const int* settings, bool cpp);\n"
+                   "};\n"
+                   "struct CheckB : Check {\n"
+                   "    bool f(const std::string& s);\n"
+                   "};\n"
+                   "bool CheckA::test(const std::string& funcname, const int* settings, bool cpp) {\n"
+                   "    return !funcname.empty() && settings && cpp;\n"
+                   "}\n"
+                   "bool CheckB::f(const std::string& s) {\n"
+                   "    return CheckA::test(s, mSettings, mTokenizer->isCPP());\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:20] -> [test.cpp:15]: (style, inconclusive) Technically the member function 'CheckB::f' can be const.\n", errout.str());
+
+        checkConst("void g(int&);\n"
+                   "struct S {\n"
+                   "    struct { int i; } a[1];\n"
+                   "    void f() { g(a[0].i); }\n"
+                   "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
