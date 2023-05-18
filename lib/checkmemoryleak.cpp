@@ -742,7 +742,7 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
     return alloc;
 }
 
-void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
+void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const variable) const
 {
     if (!variable)
         return;
