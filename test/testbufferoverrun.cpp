@@ -234,6 +234,7 @@ private:
         TEST_CASE(buffer_overrun_33); //#2019
         TEST_CASE(buffer_overrun_34); //#11035
         TEST_CASE(buffer_overrun_35); //#2304
+        TEST_CASE(buffer_overrun_36);
         TEST_CASE(buffer_overrun_errorpath);
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
@@ -3338,6 +3339,14 @@ private:
               "    s = (S*)malloc(sizeof(S) + 10);\n"
               "    sprintf((char*)s->buf, \"abc\");\n"
               "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void buffer_overrun_36() { // #11708
+        check("void f(double d) {\n"
+              "    char a[80];\n"
+              "    sprintf(a, \"%2.1f\", d);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
