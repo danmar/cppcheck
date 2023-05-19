@@ -1147,16 +1147,18 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     return false;
 }
 
-const Library::Container* Library::detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator) const
+const Library::Container* Library::detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator, bool withoutStd) const
 {
     for (const std::pair<const std::string, Library::Container> & c : containers) {
         const Container& container = c.second;
         if (container.startPattern.empty())
             continue;
 
+        const auto offset = withoutStd ? std::min<std::size_t>(container.startPattern2.size(), 7) : 0;
+
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
-            if (!Token::Match(typeStart, container.startPattern2.c_str()))
+            if (!Token::Match(typeStart, container.startPattern2.c_str() + offset))
                 continue;
 
             if (isIterator)
@@ -1168,7 +1170,7 @@ const Library::Container* Library::detectContainerInternal(const Token* typeStar
             if (!tok->link())
                 continue;
 
-            const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str());
+            const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str() + offset);
 
             if (detect != ContainerOnly && matchedStartPattern && Token::Match(tok->link(), container.itEndPattern.c_str())) {
                 if (isIterator)
@@ -1196,10 +1198,10 @@ const Library::Container* Library::detectIterator(const Token* typeStart) const
     return detectContainerInternal(typeStart, IteratorOnly);
 }
 
-const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator) const
+const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator, bool withoutStd) const
 {
     bool res;
-    const Library::Container* c = detectContainerInternal(typeStart, Both, &res);
+    const Library::Container* c = detectContainerInternal(typeStart, Both, &res, withoutStd);
     if (c && isIterator)
         *isIterator = res;
     return c;

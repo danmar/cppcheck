@@ -9403,14 +9403,6 @@ static const std::set<std::string> stdTypes = {
     "fpos", "streamoff", "streampos", "streamsize"
 };
 
-static const std::set<std::string> stdTemplates = {
-    "array", "basic_string", "bitset", "deque", "list", "map", "multimap",
-    "priority_queue", "queue", "set", "multiset", "stack", "vector", "pair",
-    "iterator", "iterator_traits",
-    "unordered_map", "unordered_multimap", "unordered_set", "unordered_multiset",
-    "tuple", "function"
-};
-
 
 // Add std:: in front of std classes, when using namespace std; was given
 void Tokenizer::simplifyNamespaceStd()
@@ -9440,7 +9432,7 @@ void Tokenizer::simplifyNamespaceStd()
                 }
                 if (userFunctions.find(tok->str()) == userFunctions.end() && mSettings->library.matchArguments(tok, "std::" + tok->str()))
                     insert = true;
-            } else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
+            } else if (Token::Match(tok, "%name% <") && mSettings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true))
                 insert = true;
             else if (tok->isName() && !tok->varId() && !Token::Match(tok->next(), "(|<") && stdTypes.find(tok->str()) != stdTypes.end())
                 insert = true;

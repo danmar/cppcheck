@@ -290,7 +290,7 @@ public:
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart) const;
     const Container* detectIterator(const Token* typeStart) const;
-    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
+    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr, bool withoutStd = false) const;
 
     class ArgumentChecks {
     public:
@@ -655,7 +655,7 @@ private:
     }
 
     enum DetectContainer { ContainerOnly, IteratorOnly, Both };
-    const Library::Container* detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator = nullptr) const;
+    const Library::Container* detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator = nullptr, bool withoutStd = false) const;
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
