@@ -6025,7 +6025,7 @@ private:
                    "    int i{};\n"
                    "    S f() { return S(&i); }\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", errout.str());
 
         checkConst("struct S {\n"
                    "    const int* mp{};\n"
@@ -6427,6 +6427,54 @@ private:
                    "struct S {\n"
                    "    struct { int i; } a[1];\n"
                    "    void f() { g(a[0].i); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int& g() const { return i; }\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void h(int, const int&);\n"
+                   "struct T {\n"
+                   "    S s;\n"
+                   "    int j;\n"
+                   "    void f() { h(j, s.g()); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style, inconclusive) Technically the member function 'T::f' can be const.\n", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int& g() { return i; }\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void h(int, int&);\n"
+                   "struct T {\n"
+                   "    S s;\n"
+                   "    int j;\n"
+                   "    void f() { h(j, s.g()); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int& g() const { return i; }\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void h(int, const int*);\n"
+                   "struct T {\n"
+                   "    S s;\n"
+                   "    int j;\n"
+                   "    void f() { h(j, &s.g()); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style, inconclusive) Technically the member function 'T::f' can be const.\n", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int& g() { return i; }\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void h(int, int*);\n"
+                   "struct T {\n"
+                   "    S s;\n"
+                   "    int j;\n"
+                   "    void f() { h(j, &s.g()); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
