@@ -935,6 +935,18 @@ namespace {
                     return true;
                 if (Token::Match(tok->previous(), "public|protected|private"))
                     return true;
+                if (Token::Match(tok->previous(), ", %name% :")) {
+                    bool isGeneric = false;
+                    for (; tok; tok = tok->previous()) {
+                        if (Token::Match(tok, ")|]"))
+                            tok = tok->link();
+                        else if (Token::Match(tok, "[;{}(]")) {
+                            isGeneric = Token::simpleMatch(tok->previous(), "_Generic (");
+                            break;
+                        }
+                    }
+                    return isGeneric;
+                }
                 return false;
             }
             if (Token::Match(tok->previous(), "%name%") && !tok->previous()->isKeyword())
@@ -8005,6 +8017,8 @@ static bool isNonMacro(const Token* tok)
     if (cAlternativeTokens.count(tok->str()) > 0)
         return true;
     if (tok->str().compare(0, 2, "__") == 0) // attribute/annotation
+        return true;
+    if (Token::simpleMatch(tok, "alignas ("))
         return true;
     return false;
 }
