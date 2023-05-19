@@ -46,7 +46,7 @@ public:
 private:
     // If there are unused templates, keep those
     const Settings settings0 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
-    const Settings settings1 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
+    const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").checkUnusedTemplates().build();
     const Settings settings2 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
     const Settings settings_windows = settingsBuilder().library("windows.cfg").checkUnusedTemplates().build();
 

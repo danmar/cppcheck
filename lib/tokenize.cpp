@@ -9410,25 +9410,6 @@ static const std::set<std::string> stdTemplates = {
     "unordered_map", "unordered_multimap", "unordered_set", "unordered_multiset",
     "tuple", "function"
 };
-static const std::set<std::string> stdFunctions = {
-    "getline",
-    "for_each", "find", "find_if", "find_end", "find_first_of",
-    "adjacent_find", "count", "count_if", "mismatch", "equal", "search", "search_n",
-    "copy", "copy_backward", "swap", "swap_ranges", "iter_swap", "transform", "replace",
-    "replace_if", "replace_copy", "replace_copy_if", "fill", "fill_n", "generate", "generate_n", "remove",
-    "remove_if", "remove_copy", "remove_copy_if",
-    "unique", "unique_copy", "reverse", "reverse_copy",
-    "rotate", "rotate_copy", "random_shuffle", "partition", "stable_partition",
-    "sort", "stable_sort", "partial_sort", "partial_sort_copy", "nth_element",
-    "lower_bound", "upper_bound", "equal_range", "binary_search", "merge", "inplace_merge", "includes",
-    "set_union", "set_intersection", "set_difference",
-    "set_symmetric_difference", "push_heap", "pop_heap", "make_heap", "sort_heap",
-    "min", "max", "min_element", "max_element", "lexicographical_compare", "next_permutation", "prev_permutation",
-    "advance", "back_inserter", "distance", "front_inserter", "inserter",
-    "make_pair", "make_shared", "make_tuple",
-    "begin", "cbegin", "rbegin", "crbegin",
-    "end", "cend", "rend", "crend"
-};
 
 
 // Add std:: in front of std classes, when using namespace std; was given
@@ -9457,7 +9438,7 @@ void Tokenizer::simplifyNamespaceStd()
                     if (start != tok && start->isName() && (!start->previous() || Token::Match(start->previous(), "[;{}]")))
                         userFunctions.insert(tok->str());
                 }
-                if (userFunctions.find(tok->str()) == userFunctions.end() && stdFunctions.find(tok->str()) != stdFunctions.end())
+                if (userFunctions.find(tok->str()) == userFunctions.end() && mSettings->library.matchArguments(tok, "std::" + tok->str()))
                     insert = true;
             } else if (Token::Match(tok, "%name% <") && stdTemplates.find(tok->str()) != stdTemplates.end())
                 insert = true;
