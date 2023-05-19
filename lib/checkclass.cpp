@@ -221,13 +221,15 @@ void CheckClass::constructors()
                 if (!usage.assign && !usage.init)
                     continue;
                 const Scope* varScope1 = var.nameToken()->scope();
+                while (varScope1->type == Scope::ScopeType::eStruct)
+                    varScope1 = varScope1->nestedIn;
                 if (varScope1->type == Scope::ScopeType::eUnion) {
                     for (Usage &usage2 : usageList) {
                         const Variable& var2 = *usage2.var;
                         if (usage2.assign || usage2.init || var2.isStatic())
                             continue;
                         const Scope* varScope2 = var2.nameToken()->scope();
-                        if (varScope2->type == Scope::ScopeType::eStruct)
+                        while (varScope2->type == Scope::ScopeType::eStruct)
                             varScope2 = varScope2->nestedIn;
                         if (varScope1 == varScope2)
                             usage2.assign = true;
