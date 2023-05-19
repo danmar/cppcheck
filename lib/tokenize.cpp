@@ -8667,7 +8667,7 @@ void Tokenizer::simplifyStructDecl()
         else {
             // unnamed anonymous struct/union so possibly remove it
             bool done = false;
-            while (!done && Token::Match(tok, "struct|union {") && Token::Match(tok->linkAt(1), "} ;")) {
+            while (!done && Token::Match(tok, "struct|union {") && Token::simpleMatch(tok->linkAt(1), "} ;")) {
                 done = true;
 
                 // is this a class/struct/union scope?
