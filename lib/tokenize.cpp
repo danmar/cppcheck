@@ -9379,31 +9379,6 @@ void Tokenizer::simplifyBitfields()
     }
 }
 
-
-// Types and objects in std namespace that are neither functions nor templates
-static const std::set<std::string> stdTypes = {
-    "string", "wstring", "u16string", "u32string",
-    "iostream", "ostream", "ofstream", "ostringstream",
-    "istream", "ifstream", "istringstream", "fstream", "stringstream",
-    "wstringstream", "wistringstream", "wostringstream", "wstringbuf",
-    "stringbuf", "streambuf", "ios", "filebuf", "ios_base",
-    "exception", "bad_exception", "bad_alloc",
-    "logic_error", "domain_error", "invalid_argument_", "length_error",
-    "out_of_range", "runtime_error", "range_error", "overflow_error", "underflow_error",
-    "locale",
-    "cout", "cerr", "clog", "cin",
-    "wcerr", "wcin", "wclog", "wcout",
-    "endl", "ends", "flush",
-    "boolalpha", "noboolalpha", "showbase", "noshowbase",
-    "showpoint", "noshowpoint", "showpos", "noshowpos",
-    "skipws", "noskipws", "unitbuf", "nounitbuf", "uppercase", "nouppercase",
-    "dec", "hex", "oct",
-    "fixed", "scientific",
-    "internal", "left", "right",
-    "fpos", "streamoff", "streampos", "streamsize"
-};
-
-
 // Add std:: in front of std classes, when using namespace std; was given
 void Tokenizer::simplifyNamespaceStd()
 {
@@ -9419,39 +9394,40 @@ void Tokenizer::simplifyNamespaceStd()
         if (Token::Match(tok, "enum class|struct| %name%| :|{")) { // Don't replace within enum definitions
             skipEnumBody(&tok);
         }
-        if (!Token::Match(tok->previous(), ".|::|namespace")) {
-            if (Token::Match(tok, "%name% (")) {
-                if (isFunctionHead(tok->next(), "{"))
+        if (!tok->isName() || tok->isKeyword() || tok->isStandardType() || tok->varId())
+            continue;
+        if (Token::Match(tok->previous(), ".|::|namespace"))
+            continue;
+        if (Token::simpleMatch(tok->next(), "(")) {
+            if (isFunctionHead(tok->next(), "{"))
+                userFunctions.insert(tok->str());
+            else if (isFunctionHead(tok->next(), ";")) {
+                const Token *start = tok;
+                while (Token::Match(start->previous(), "%type%|*|&"))
+                    start = start->previous();
+                if (start != tok && start->isName() && (!start->previous() || Token::Match(start->previous(), "[;{}]")))
                     userFunctions.insert(tok->str());
-                else if (isFunctionHead(tok->next(), ";")) {
-                    const Token *start = tok;
-                    while (Token::Match(start->previous(), "%type%|*|&"))
-                        start = start->previous();
-                    if (start != tok && start->isName() && (!start->previous() || Token::Match(start->previous(), "[;{}]")))
-                        userFunctions.insert(tok->str());
-                }
-                if (userFunctions.find(tok->str()) == userFunctions.end() && mSettings->library.matchArguments(tok, "std::" + tok->str()))
-                    insert = true;
-            } else if (Token::Match(tok, "%name% <") && mSettings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true))
+            }
+            if (userFunctions.find(tok->str()) == userFunctions.end() && mSettings->library.matchArguments(tok, "std::" + tok->str()))
                 insert = true;
-            else if (tok->isName() && !tok->varId() && !Token::Match(tok->next(), "(|<") && stdTypes.find(tok->str()) != stdTypes.end())
-                insert = true;
-        }
+        } else if (Token::simpleMatch(tok->next(), "<") &&
+                   (mSettings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true) || mSettings->library.detectSmartPointer(tok, /*withoutStd*/ true)))
+            insert = true;
+        else if (mSettings->library.hasAnyTypeCheck("std::" + tok->str()) ||
+                 mSettings->library.podtype("std::" + tok->str()) ||
+                 mSettings->library.detectContainerOrIterator(tok, nullptr, /*withoutStd*/ true))
+            insert = true;
 
         if (insert) {
             tok->previous()->insertToken("std");
             tok->previous()->linenr(tok->linenr()); // For stylistic reasons we put the std:: in the same line as the following token
             tok->previous()->fileIndex(tok->fileIndex());
             tok->previous()->insertToken("::");
-        } else if (isCPP11 && Token::Match(tok, "!!:: tr1 ::"))
-            tok->next()->str("std");
+        }
     }
 
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (isCPP11 && Token::simpleMatch(tok, "std :: tr1 ::"))
-            Token::eraseTokens(tok, tok->tokAt(3));
-
-        else if (Token::simpleMatch(tok, "using namespace std ;")) {
+        if (Token::simpleMatch(tok, "using namespace std ;")) {
             Token::eraseTokens(tok, tok->tokAt(4));
             tok->deleteThis();
         }

@@ -1154,7 +1154,7 @@ const Library::Container* Library::detectContainerInternal(const Token* typeStar
         if (container.startPattern.empty())
             continue;
 
-        const auto offset = withoutStd ? std::min<std::size_t>(container.startPattern2.size(), 7) : 0;
+        const auto offset = (withoutStd && container.startPattern2.find("std :: ") == 0) ? 7 : 0;
 
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
@@ -1628,9 +1628,9 @@ bool Library::isSmartPointer(const Token* tok) const
     return detectSmartPointer(tok);
 }
 
-const Library::SmartPointer* Library::detectSmartPointer(const Token* tok) const
+const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool withoutStd) const
 {
-    std::string typestr;
+    std::string typestr = withoutStd ? "std::" : "";
     while (Token::Match(tok, "%name%|::")) {
         typestr += tok->str();
         tok = tok->next();
@@ -1665,6 +1665,13 @@ Library::TypeCheck Library::getTypeCheck(std::string check,  std::string typeNam
 {
     auto it = mTypeChecks.find(std::pair<std::string, std::string>(std::move(check), std::move(typeName)));
     return it == mTypeChecks.end() ? TypeCheck::def : it->second;
+}
+
+bool Library::hasAnyTypeCheck(const std::string& typeName) const
+{
+    return std::any_of(mTypeChecks.begin(), mTypeChecks.end(), [&](const std::pair<std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
+        return tc.first.second == typeName;
+    });
 }
 
 std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,

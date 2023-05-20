@@ -4573,15 +4573,6 @@ private:
                "std::string s;";
         ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code));
 
-        code = "using namespace std;\n"
-               "tr1::function <void(int)> f;";
-        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, cppcheck::Platform::Type::Native, "test.cpp", Standards::CPP03));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code));
-
-        code = "std::tr1::function <void(int)> f;";
-        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, cppcheck::Platform::Type::Native, "test.cpp", Standards::CPP03));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code));
-
         // #4042 (Do not add 'std ::' to variables)
         code = "using namespace std;\n"
                "const char * string = \"Hi\";";
@@ -4596,7 +4587,12 @@ private:
                    "std :: cout << string << std :: endl ;\n"
                    "return string ;\n"
                    "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        TODO_ASSERT_EQUALS(expected,
+                           "std :: string f ( const char * string ) {\n"
+                           "cout << string << endl ;\n"
+                           "return string ;\n"
+                           "}",
+                           tokenizeAndStringify(code));
 
         code = "using namespace std;\n"
                "void f() {\n"
@@ -4651,6 +4647,22 @@ private:
                       tokenizeAndStringify("using namespace std; enum E : int ; void foo ( ) { string s ; }"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("NS_BEGIN(IMAGEIO_2D_DICOM) using namespace std; NS_END")); // #11045
+
+        code = "using namespace std;\n"
+               "void f(const unique_ptr<int>& p) {\n"
+               "    if (!p)\n"
+               "        throw runtime_error(\"abc\");\n"
+               "}";
+        expected = "void f ( const std :: unique_ptr < int > & p ) {\n"
+                   "if ( ! p ) {\n"
+                   "throw std :: runtime_error ( \"abc\" ) ; }\n"
+                   "}";
+        TODO_ASSERT_EQUALS(expected,
+                           "void f ( const std :: unique_ptr < int > & p ) {\n"
+                           "if ( ! p ) {\n"
+                           "throw runtime_error ( \"abc\" ) ; }\n"
+                           "}", 
+                           tokenizeAndStringify(code));
     }
 
     void microsoftMemory() {

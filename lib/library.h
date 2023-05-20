@@ -485,7 +485,7 @@ public:
 
     std::unordered_map<std::string, SmartPointer> smartPointers;
     bool isSmartPointer(const Token *tok) const;
-    const SmartPointer* detectSmartPointer(const Token* tok) const;
+    const SmartPointer* detectSmartPointer(const Token* tok, bool withoutStd = false) const;
 
     struct PodType {
         unsigned int size;
@@ -560,6 +560,7 @@ public:
                            checkFiniteLifetime, // (unusedvar) object has side effects, but immediate destruction is wrong
     };
     TypeCheck getTypeCheck(std::string check, std::string typeName) const;
+    bool hasAnyTypeCheck(const std::string& typeName) const;
 
 private:
     // load a <function> xml node
