@@ -6316,6 +6316,16 @@ private:
                    "    void g() { p->f(i); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n" // #11501
+                   "    enum E { E1 };\n"
+                   "    virtual void f(E) const = 0;\n"
+                   "};\n"
+                   "struct F {\n"
+                   "    A* a;\n"
+                   "    void g() { a->f(A::E1); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'F::g' can be const.\n", errout.str());
     }
 
     void const82() { // #11513
