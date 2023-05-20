@@ -2042,6 +2042,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("using namespace std;\n" // #10971
+              "struct S { int i = 3; };\n"
+              "unique_ptr<S> g() {\n"
+              "    auto tp = make_unique<S>();\n"
+              "    return tp;\n"
+              "}\n"
+              "void f() {\n"
+              "    const S& s = *g();\n"
+              "    (void)s.i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (error) Using reference to dangling temporary.\n", errout.str());
     }
 
     void testglobalnamespace() {

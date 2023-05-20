@@ -1367,6 +1367,14 @@ private:
               "    delete i;\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("using namespace std;\n" // #9708
+              "void f() {\n"
+              "    int* i = new int;\n"
+              "    unique_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
     }
 
     void doublefree9() {
