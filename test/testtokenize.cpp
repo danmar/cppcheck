@@ -4661,7 +4661,7 @@ private:
                            "void f ( const std :: unique_ptr < int > & p ) {\n"
                            "if ( ! p ) {\n"
                            "throw runtime_error ( \"abc\" ) ; }\n"
-                           "}", 
+                           "}",
                            tokenizeAndStringify(code));
     }
 
