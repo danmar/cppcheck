@@ -9385,8 +9385,6 @@ void Tokenizer::simplifyNamespaceStd()
     if (!isCPP())
         return;
 
-    const bool isCPP11  = mSettings->standards.cpp == Standards::CPP11;
-
     std::set<std::string> userFunctions;
 
     for (Token* tok = Token::findsimplematch(list.front(), "using namespace std ;"); tok; tok = tok->next()) {
