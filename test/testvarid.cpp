@@ -187,6 +187,7 @@ private:
         TEST_CASE(varid_declInIfCondition);
         TEST_CASE(varid_globalScope);
         TEST_CASE(varid_function_pointer_args);
+        TEST_CASE(varid_alignas);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -3043,6 +3044,14 @@ private:
 
         const char code3[] = "void f (void (*g) (int i, IN int n)) {}\n";
         ASSERT_EQUALS("1: void f ( void ( * g@1 ) ( int , IN int ) ) { }\n", tokenize(code3));
+    }
+
+    void varid_alignas() {
+        const char code[] = "extern alignas(16) int x;\n"
+                            "alignas(16) int x;";
+        const char expected[] = "1: extern alignas ( 16 ) int x@1 ;\n"
+                                "2: alignas ( 16 ) int x@2 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varidclass1() {

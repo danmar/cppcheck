@@ -160,6 +160,7 @@ private:
         TEST_CASE(variableVolatile);
         TEST_CASE(variableConstexpr);
         TEST_CASE(isVariableDecltype);
+        TEST_CASE(isVariableAlignas);
 
         TEST_CASE(VariableValueType1);
         TEST_CASE(VariableValueType2);
@@ -1473,6 +1474,15 @@ private:
         ASSERT_EQUALS("c", c->name());
         ASSERT(c->valueType());
         ASSERT_EQUALS("signed int *", c->valueType()->str());
+    }
+
+    void isVariableAlignas() {
+        GET_SYMBOL_DB_C("extern alignas(16) int x;\n"
+                        "alignas(16) int x;\n");
+        ASSERT(db);
+        ASSERT_EQUALS(2, db->scopeList.front().varlist.size());
+        const Variable *x1 = Token::findsimplematch(tokenizer.tokens(), "x")->variable();
+        ASSERT(x1 && Token::simpleMatch(x1->typeStartToken(), "alignas ( 16 ) int x ;"));
     }
 
     void memberVar1() {
