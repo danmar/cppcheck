@@ -837,7 +837,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
         // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
-        if (Token::Match(tok, "free|g_free|kfree|vfree ( %var% )") ||
+        if ((Token::Match(tok, "%name% ( %var% )") && mSettings->library.getDeallocFuncInfo(tok)) ||
             (mTokenizer->isCPP() && (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")))) {
             nonneg int varid = 0;
             if (tok->str() != "delete") {

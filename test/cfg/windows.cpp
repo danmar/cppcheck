@@ -258,6 +258,7 @@ void validCode()
         CloseHandle(event);
     }
 
+    // cppcheck-suppress unusedAllocatedMemory
     void *pMem1 = _malloca(1);
     _freea(pMem1);
     // Memory from _alloca must not be freed
@@ -343,7 +344,7 @@ void validCode()
     SecureZeroMemory(byteBuf, sizeof(byteBuf));
     RtlFillMemory(byteBuf, sizeof(byteBuf), 0xff);
 
-    // cppcheck-suppress LocalAllocCalled
+    // cppcheck-suppress [LocalAllocCalled, unusedAllocatedMemory]
     HLOCAL pLocalAlloc = LocalAlloc(1, 2);
     LocalFree(pLocalAlloc);
 
@@ -357,6 +358,7 @@ void validCode()
     __noop(1, "test", NULL);
     __nop();
 
+    // cppcheck-suppress unusedAllocatedMemory
     void * pAlloc1 = _aligned_malloc(100, 2);
     _aligned_free(pAlloc1);
 
@@ -437,6 +439,7 @@ void mismatchAllocDealloc()
     // cppcheck-suppress mismatchAllocDealloc
     free(pChar);
 
+    // cppcheck-suppress unusedAllocatedMemory
     pChar = _malloca(32);
     // cppcheck-suppress mismatchAllocDealloc
     _aligned_free(pChar);
@@ -751,6 +754,7 @@ void invalidFunctionArg()
 
 void uninitvar()
 {
+    // cppcheck-suppress unassignedVariable
     HANDLE hSemaphore;
     // cppcheck-suppress uninitvar
     CloseHandle(hSemaphore);
@@ -765,12 +769,14 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     lstrcat(buf, buf2);
 
+    // cppcheck-suppress unassignedVariable
     HANDLE hMutex1, hMutex2;
     // cppcheck-suppress uninitvar
     ReleaseMutex(hMutex1);
     // cppcheck-suppress uninitvar
     CloseHandle(hMutex2);
 
+    // cppcheck-suppress unassignedVariable
     HANDLE hEvent1, hEvent2, hEvent3, hEvent4;
     // cppcheck-suppress uninitvar
     PulseEvent(hEvent1);
