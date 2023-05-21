@@ -368,8 +368,8 @@ private:
               "    char * &ref = p;\n"
               "    p = malloc(10);\n"
               "    free(ref);\n"
-              "}");
-        TODO_ASSERT_EQUALS("", "[test.c:6]: (error) Memory leak: p\n", errout.str());
+              "}", /*cpp*/ true);
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Memory leak: p\n", errout.str());
     }
 
     void assign14() {
@@ -2329,7 +2329,7 @@ private:
     void test1() { // 3809
         check("void f(double*&p) {\n"
               "    p = malloc(0x100);\n"
-              "}");
+              "}", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2345,7 +2345,7 @@ private:
         check("void f() {\n"
               "    char *&p = x();\n"
               "    p = malloc(10);\n"
-              "};");
+              "};", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 

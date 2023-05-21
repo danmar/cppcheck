@@ -4139,8 +4139,6 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
                     return false;
             }
         } else if (Token::Match(tok2, "&|&&")) {
-            if (c)
-                return false;
             ref = !bracket;
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link(), ") (|[")) {
             for (const Token* tok3 = tok2->tokAt(2); Token::Match(tok3, "!!)"); tok3 = tok3->next()) {
@@ -4667,6 +4665,8 @@ void Tokenizer::setVarIdPass1()
                     decl = false;
 
                 if (decl) {
+                    if (isC() && Token::Match(prev2->previous(), "&|&&"))
+                        syntaxErrorC(prev2, prev2->strAt(-2) + prev2->strAt(-1) + " " + prev2->str());
                     variableMap.addVariable(prev2->str(), scopeStack.size() <= 1);
 
                     if (Token::simpleMatch(tok->previous(), "for (") && Token::Match(prev2, "%name% [=,]")) {
