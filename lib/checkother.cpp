@@ -1537,6 +1537,16 @@ void CheckOther::checkConstVariable()
     }
 }
 
+static const Token* getVariableChangedStart(const Variable* p)
+{
+    if (p->isArgument())
+        return p->scope()->bodyStart;
+    const Token* start = p->nameToken()->next();
+    if (start->isSplittedVarDeclEq() && start)
+        start = start->tokAt(3);
+    return start;
+}
+
 void CheckOther::checkConstPointer()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -1619,6 +1629,8 @@ void CheckOther::checkConstPointer()
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
+            else if (Token::simpleMatch(parent, "="))
+                continue;
             else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                 if (ftok->function() && !parent->isCast()) {
                     const Variable* argVar = ftok->function()->getArgumentVar(argn);
@@ -1638,7 +1650,7 @@ void CheckOther::checkConstPointer()
                 continue;
         }
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
-            const Token *start = (p->isArgument()) ? p->scope()->bodyStart : p->nameToken()->next();
+            const Token *start = getVariableChangedStart(p);
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
                 continue;
