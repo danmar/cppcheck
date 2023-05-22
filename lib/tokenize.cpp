@@ -2812,7 +2812,7 @@ static unsigned int tokDistance(const Token* tok1, const Token* tok2) {
         tok = tok->next();
     }
     return dist;
-};
+}
 
 bool Tokenizer::simplifyUsing()
 {
