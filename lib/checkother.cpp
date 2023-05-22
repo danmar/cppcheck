@@ -1629,7 +1629,7 @@ void CheckOther::checkConstPointer()
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
-            else if (Token::simpleMatch(parent, "="))
+            else if (Token::simpleMatch(parent, "=") && parent->astOperand1() == tok)
                 continue;
             else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                 if (ftok->function() && !parent->isCast()) {
