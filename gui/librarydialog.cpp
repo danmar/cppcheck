@@ -275,7 +275,7 @@ void LibraryDialog::sortFunctions(bool sort)
         mUi->functions->sortItems();
     } else {
         mIgnoreChanges = true;
-        CppcheckLibraryData::Function *selfunction = currentFunction();
+        const CppcheckLibraryData::Function* selfunction = currentFunction();
         mUi->functions->clear();
         for (CppcheckLibraryData::Function &function : mData.functions) {
             mUi->functions->addItem(new FunctionListItem(mUi->functions,

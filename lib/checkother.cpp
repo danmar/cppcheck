@@ -1542,7 +1542,7 @@ static const Token* getVariableChangedStart(const Variable* p)
     if (p->isArgument())
         return p->scope()->bodyStart;
     const Token* start = p->nameToken()->next();
-    if (start->isSplittedVarDeclEq() && start)
+    if (start->isSplittedVarDeclEq())
         start = start->tokAt(3);
     return start;
 }
