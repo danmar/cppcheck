@@ -791,26 +791,26 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                         Settings::Rule rule;
 
-                        tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
+                        const tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
                         if (tokenlist)
                             rule.tokenlist = tokenlist->GetText();
 
-                        tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
+                        const tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
                         if (pattern) {
                             rule.pattern = pattern->GetText();
                         }
 
                         tinyxml2::XMLElement *message = node->FirstChildElement("message");
                         if (message) {
-                            tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
+                            const tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
                             if (severity)
                                 rule.severity = Severity::fromString(severity->GetText());
 
-                            tinyxml2::XMLElement *id = message->FirstChildElement("id");
+                            const tinyxml2::XMLElement *id = message->FirstChildElement("id");
                             if (id)
                                 rule.id = id->GetText();
 
-                            tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
+                            const tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
                             if (summary)
                                 rule.summary = summary->GetText() ? summary->GetText() : "";
                         }
