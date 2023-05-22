@@ -65,6 +65,7 @@ private:
         TEST_CASE(cfp4);
         TEST_CASE(cfp5);
         TEST_CASE(cfp6);
+        TEST_CASE(cfp7);
         TEST_CASE(carray1);
         TEST_CASE(carray2);
         TEST_CASE(cdonotreplace1);
@@ -436,6 +437,12 @@ private:
         const char code[] = "typedef void (*fp)(void);\n"
                             "fp a[10];";
         ASSERT_EQUALS("void ( * a [ 10 ] ) ( void ) ;", simplifyTypedef(code));
+    }
+
+    void cfp7() {
+        const char code[] = "typedef uint32_t ((*f)(uint32_t n));\n" // #11725
+                            "uint32_t g();\n";
+        ASSERT_EQUALS("uint32_t g ( ) ;", simplifyTypedef(code));
     }
 
     void carray1() {
