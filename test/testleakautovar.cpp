@@ -2131,15 +2131,13 @@ private:
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) { free(f); }};\n"
               "}", true);
-        TODO_ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
 
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) {}};\n"
               "}", true);
-        TODO_ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
 
         check("class C;\n"
               "void f() {\n"

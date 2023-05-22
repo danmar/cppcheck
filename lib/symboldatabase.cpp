@@ -5149,6 +5149,15 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
     return nullptr;
 }
 
+static bool hasEmptyCaptureList(const Token* tok) {
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    const Token* listTok = tok->astParent();
+    if (Token::simpleMatch(listTok, "("))
+        listTok = listTok->astParent();
+    return Token::simpleMatch(listTok, "[ ]");
+}
+
 bool Scope::hasInlineOrLambdaFunction() const
 {
     return std::any_of(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
@@ -5156,7 +5165,7 @@ bool Scope::hasInlineOrLambdaFunction() const
         if (s->type == Scope::eUnconditional && Token::simpleMatch(s->bodyStart->previous(), ") {"))
             return true;
         // Lambda function
-        if (s->type == Scope::eLambda)
+        if (s->type == Scope::eLambda && !hasEmptyCaptureList(s->bodyStart))
             return true;
         if (s->hasInlineOrLambdaFunction())
             return true;
