@@ -2323,7 +2323,7 @@ void CheckOther::checkInvalidFree()
 
             // If a variable that was previously assigned a newly-allocated memory location is
             // added or subtracted from when used to free the memory, report an error.
-            else if (Token::Match(tok, "free|g_free|delete ( %any% +|-") ||
+            else if ((Token::Match(tok, "%name% ( %any% +|-") && mSettings->library.getDeallocFuncInfo(tok)) ||
                      Token::Match(tok, "delete [ ] ( %any% +|-") ||
                      Token::Match(tok, "delete %any% +|- %any%")) {
 
@@ -3841,6 +3841,12 @@ void CheckOther::checkOverlappingWrite()
                     if (!rhs->isBinaryOp() || rhs->astOperand1()->variable() != lhsvar)
                         return ChildrenToVisit::none;
                     if (lhsmember->str() == rhs->astOperand2()->str())
+                        return ChildrenToVisit::none;
+                    const Variable* rhsmembervar = rhs->astOperand2()->variable();
+                    const Scope* varscope1 = lhsmember->variable() ? lhsmember->variable()->typeStartToken()->scope() : nullptr;
+                    const Scope* varscope2 = rhsmembervar ? rhsmembervar->typeStartToken()->scope() : nullptr;
+                    if (varscope1 && varscope1 == varscope2 && varscope1 != lhsvar->typeScope())
+                        // lhsmember and rhsmember are declared in same anonymous scope inside union
                         return ChildrenToVisit::none;
                     errorToken = rhs->astOperand2();
                     return ChildrenToVisit::done;

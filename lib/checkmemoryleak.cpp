@@ -720,8 +720,6 @@ void CheckMemoryLeakStructMember::check() const
             continue;
         if (var->typeEndToken()->isStandardType())
             continue;
-        if (var->scope()->hasInlineOrLambdaFunction())
-            continue;
         checkStructVariable(var);
     }
 }
@@ -876,7 +874,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
                 }
 
                 // Deallocating the struct..
-                else if (Token::Match(tok3, "free|kfree ( %varid% )", structid)) {
+                else if (Token::Match(tok3, "%name% ( %varid% )", structid) && mSettings->library.getDeallocFuncInfo(tok3)) {
                     if (indentlevel2 == 0)
                         memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), Malloc);
                     break;
@@ -910,7 +908,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
                             --indentlevel4;
                             if (indentlevel4 == 0)
                                 break;
-                        } else if (Token::Match(tok4, "free|kfree ( %var% . %varid% )", structmemberid)) {
+                        } else if (Token::Match(tok4, "%name% ( %var% . %varid% )", structmemberid) && mSettings->library.getDeallocFuncInfo(tok4)) {
                             break;
                         }
                     }
@@ -921,7 +919,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
                 }
 
                 // Returning from function..
-                else if (tok3->str() == "return") {
+                else if ((tok3->scope()->type != Scope::ScopeType::eLambda || tok3->scope() == variable->scope()) && tok3->str() == "return") {
                     // Returning from function without deallocating struct member?
                     if (!Token::Match(tok3, "return %varid% ;", structid) &&
                         !Token::Match(tok3, "return & %varid%", structid) &&

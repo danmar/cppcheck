@@ -198,6 +198,7 @@ private:
         TEST_CASE(const85);
         TEST_CASE(const86);
         TEST_CASE(const87);
+        TEST_CASE(const88);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6487,6 +6488,20 @@ private:
                    "    void f() { h(j, &s.g()); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+    void const88() { // #11626
+        checkConst("struct S {\n"
+                   "    bool f() { return static_cast<bool>(p); }\n"
+                   "    const int* g() { return const_cast<const int*>(p); }\n"
+                   "    const int* h() { return (const int*)p; }\n"
+                   "    char* j() { return reinterpret_cast<char*>(p); }\n"
+                   "    char* k() { return (char*)p; }\n"
+                   "    int* p;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:3]: (style, inconclusive) Technically the member function 'S::g' can be const.\n"
+                      "[test.cpp:4]: (style, inconclusive) Technically the member function 'S::h' can be const.\n",
+                      errout.str());
     }
 
     void const_handleDefaultParameters() {

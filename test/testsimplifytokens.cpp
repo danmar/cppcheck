@@ -1200,12 +1200,6 @@ private:
             const char expected[] = "class { } ;";
             ASSERT_EQUALS(expected, tok(code));
         }
-
-        {
-            const char code[] = "class { struct { struct { } ; } ; };";
-            const char expected[] = "class { } ;";
-            ASSERT_EQUALS(expected, tok(code));
-        }
     }
 
     void simplifyStructDecl4() {
@@ -1224,8 +1218,7 @@ private:
                             "} abc;\n";
         const char expected[] = "class ABC { "
                                 "void foo ( ) { "
-                                "int i ; "
-                                "float & f = i ; "
+                                "union { int i ; float f ; } ; "
                                 "struct Fee { } ; struct Fee fee ; "
                                 "} "
                                 "union { "

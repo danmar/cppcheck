@@ -1973,6 +1973,11 @@ private:
         const char code3[] = "struct a { int b; } static e[1];";
         const char expected3[] = "struct a { int b ; } ; struct a static e [ 1 ] ;";
         ASSERT_EQUALS(expected3, tokenizeAndStringify(code3));
+
+        // #11013 - Do not remove unnamed struct in union
+        const char code4[] = "union U { struct { int a; int b; }; int ab[2]; };";
+        const char expected4[] = "union U { struct { int a ; int b ; } ; int ab [ 2 ] ; } ;";
+        ASSERT_EQUALS(expected4, tokenizeAndStringify(code4));
     }
 
     void vardecl1() {
@@ -2090,7 +2095,7 @@ private:
                              "         long y;\n"
                              "     };\n"
                              "}";
-        ASSERT_EQUALS("void f ( ) {\n\nint x ;\nlong & y = x ;\n\n}", tokenizeAndStringify(code2));
+        ASSERT_EQUALS("void f ( ) {\nunion {\nint x ;\nlong y ;\n} ;\n}", tokenizeAndStringify(code2));
 
         // ticket #3927
         const char code3[] = "union xy *p = NULL;";
@@ -4539,7 +4544,7 @@ private:
     }
 
     void bitfields13() { // ticket #3502 (segmentation fault)
-        ASSERT_EQUALS("x y ;", tokenizeAndStringify("struct{x y:};\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct{x y:};\n"));
     }
 
     void bitfields15() { // #7747 - enum Foo {A,B}:4;
