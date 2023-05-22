@@ -161,6 +161,7 @@ private:
         TEST_CASE(localvaralias18); // ticket #9234 - iterator
         TEST_CASE(localvaralias19); // ticket #9828
         TEST_CASE(localvaralias20); // ticket #10966
+        TEST_CASE(localvaralias21);
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -4924,6 +4925,18 @@ private:
                            "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
                            "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
                            errout.str());
+    }
+
+    void localvaralias21() { // #11728
+        functionVariableUsage("void f(int i) {\n"
+                              "    bool b = true;\n"
+                              "    bool* p = &b;\n"
+                              "    int j{};\n"
+                              "    if (i)\n"
+                              "        b = false;\n"
+                              "    if (*p) {}\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarasm() {
