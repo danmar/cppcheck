@@ -1300,8 +1300,6 @@ void ImportProject::selectOneVsConfig(cppcheck::Platform::Type platform)
             remove = true;
         else if ((platform == cppcheck::Platform::Type::Win32A || platform == cppcheck::Platform::Type::Win32W) && fs.platformType == cppcheck::Platform::Type::Win64)
             remove = true;
-        else if (fs.platformType != cppcheck::Platform::Type::Win64 && platform == cppcheck::Platform::Type::Win64)
-            remove = true;
         else if (filenames.find(fs.filename) != filenames.end())
             remove = true;
         if (remove) {
