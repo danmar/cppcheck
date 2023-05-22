@@ -440,9 +440,10 @@ private:
     }
 
     void cfp7() {
-        const char code[] = "typedef uint32_t ((*f)(uint32_t n));\n" // #11725
-                            "uint32_t g();\n";
-        ASSERT_EQUALS("uint32_t g ( ) ;", simplifyTypedef(code));
+        const char code[] = "typedef uint32_t ((*fp)(uint32_t n));\n" // #11725
+                            "uint32_t g();\n"
+                            "fp f;\n";
+        ASSERT_EQUALS("uint32_t g ( ) ; uint32_t ( * f ) ( uint32_t n ) ;", simplifyTypedef(code));
     }
 
     void carray1() {
