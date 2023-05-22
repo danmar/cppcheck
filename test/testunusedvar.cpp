@@ -4788,15 +4788,6 @@ private:
                               "    *x = 0;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
-
-        functionVariableUsage("void foo(Foo &foo)\n"
-                              "{\n"
-                              "    Foo &ref = foo;\n"
-                              "    int *x = &ref.x;\n"
-                              "    *x = 0;\n"
-                              "}",
-                              "test.c");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias11() { // #4423 - iterator
@@ -6337,6 +6328,13 @@ private:
                               "    });\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f() {\n" // #8433
+                              "    float a;\n"
+                              "    auto lambda = []() {};\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: a\n", errout.str());
     }
 
 
