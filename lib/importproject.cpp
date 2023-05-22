@@ -1311,6 +1311,30 @@ void ImportProject::selectOneVsConfig(cppcheck::Platform::Type platform)
     }
 }
 
+void ImportProject::selectVsConfigurations(cppcheck::Platform::Type platform, const std::vector<std::string> &configurations)
+{
+    for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+        if (it->cfg.empty()) {
+            ++it;
+            continue;
+        }
+        const ImportProject::FileSettings &fs = *it;
+        auto config = fs.cfg.substr(0, fs.cfg.find('|'));
+        bool remove = false;
+        if (std::find(configurations.begin(), configurations.end(), config) == configurations.end())
+            remove = true;
+        if (platform == cppcheck::Platform::Type::Win64 && fs.platformType != platform)
+            remove = true;
+        else if ((platform == cppcheck::Platform::Type::Win32A || platform == cppcheck::Platform::Type::Win32W) && fs.platformType == cppcheck::Platform::Type::Win64)
+            remove = true;
+        if (remove) {
+            it = fileSettings.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 std::list<std::string> ImportProject::getVSConfigs()
 {
     return std::list<std::string>(mAllVSConfigs.cbegin(), mAllVSConfigs.cend());
