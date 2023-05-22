@@ -6488,6 +6488,7 @@ private:
                    "    void f() { h(j, &s.g()); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
 
     void const88() { // #11626
         checkConst("struct S {\n"
