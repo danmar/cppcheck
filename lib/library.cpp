@@ -1154,7 +1154,7 @@ const Library::Container* Library::detectContainerInternal(const Token* typeStar
         if (container.startPattern.empty())
             continue;
 
-        const auto offset = (withoutStd && container.startPattern2.find("std :: ") == 0) ? 7 : 0;
+        const int offset = (withoutStd && container.startPattern2.find("std :: ") == 0) ? 7 : 0;
 
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
