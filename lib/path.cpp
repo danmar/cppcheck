@@ -40,7 +40,7 @@
 #include <strings.h>
 #endif
 #if defined(__APPLE__)
-#include <strings.h>
+#include <mach-o/dyld.h>
 #endif
 
 
