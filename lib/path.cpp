@@ -39,6 +39,9 @@
 #if defined(__CYGWIN__)
 #include <strings.h>
 #endif
+#if defined(__APPLE__)
+#include <strings.h>
+#endif
 
 
 /** Is the filesystem case insensitive? */
@@ -139,6 +142,9 @@ std::string Path::getCurrentExecutablePath()
     bool success{};
 #ifdef _WIN32
     success = (GetModuleFileNameA(nullptr, buf, sizeof(buf)) < sizeof(buf));
+#elif defined(__APPLE__)
+    uint32_t size = sizeof(buf);
+    success = (_NSGetExecutablePath(buf, &size) == 0);
 #else
     const char* procPath =
 #ifdef __SVR4 // Solaris
