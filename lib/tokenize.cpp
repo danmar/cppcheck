@@ -695,7 +695,7 @@ namespace {
                     mRangeAfterVar.second = mEndToken;
                     return;
                 }
-                if (Token::Match(type, "%name% (") && Token::simpleMatch(type->linkAt(1), ") ;") && !type->isStandardType()) {
+                if (Token::Match(type, "%name% ( !!(") && Token::simpleMatch(type->linkAt(1), ") ;") && !type->isStandardType()) {
                     mNameToken = type;
                     mEndToken = type->linkAt(1)->next();
                     mRangeType.first = start;
@@ -892,7 +892,7 @@ namespace {
             if (!after)
                 throw InternalError(tok, "Failed to simplify typedef. Is the code valid?");
 
-            Token* const tok4 = useAfterVarRange ? insertTokens(after->previous(), mRangeAfterVar)->next() : tok3->next();
+            const Token* const tok4 = useAfterVarRange ? insertTokens(after->previous(), mRangeAfterVar)->next() : tok3->next();
 
             tok->deleteThis();
 
@@ -2812,7 +2812,7 @@ static unsigned int tokDistance(const Token* tok1, const Token* tok2) {
         tok = tok->next();
     }
     return dist;
-};
+}
 
 bool Tokenizer::simplifyUsing()
 {
@@ -4287,7 +4287,7 @@ void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
                                          std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers)
 {
     // end of scope
-    Token* const endToken = startToken->link();
+    const Token* const endToken = startToken->link();
 
     // determine class name
     std::string className;

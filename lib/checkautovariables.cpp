@@ -475,7 +475,7 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
     const Variable* var = tokvalue->variable();
     if (!var->isLocal())
         return false;
-    Function* f = Scope::nestedInFunction(tok->scope());
+    const Function* f = Scope::nestedInFunction(tok->scope());
     if (!f)
         return false;
     const Token* parent = tokvalue->astParent();

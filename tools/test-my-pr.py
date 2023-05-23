@@ -7,6 +7,7 @@
 
 import donate_cpu_lib as lib
 import argparse
+import glob
 import os
 import sys
 import random
@@ -28,6 +29,7 @@ if __name__ == "__main__":
     package_group = parser.add_mutually_exclusive_group()
     package_group.add_argument('-p', default=256, type=int, help='Count of packages to check')
     package_group.add_argument('--packages', nargs='+', help='Check specific packages and then stop.')
+    package_group.add_argument('--packages-path', default=None, type=str, help='Check packages in path.')
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
 
     language_group = parser.add_mutually_exclusive_group()
@@ -102,7 +104,13 @@ if __name__ == "__main__":
         print('Failed to compile your version of Cppcheck')
         sys.exit(1)
 
-    if args.packages:
+    if args.packages_path:
+        # You can download packages using daca2-download.py
+        args.packages = glob.glob(os.path.join(args.packages_path, '*.tar.xz'))
+        args.p = len(args.packages)
+        packages_idxs = list(range(args.p))
+        random.shuffle(packages_idxs)
+    elif args.packages:
         args.p = len(args.packages)
         packages_idxs = []
     else:
@@ -124,10 +132,13 @@ if __name__ == "__main__":
         else:
             package = lib.get_package(packages_idxs.pop())
 
-        tgz = lib.download_package(work_path, package, None)
-        if tgz is None:
-            print("No package downloaded")
-            continue
+        if package.startswith('ftp://') or package.startswith('http://'):
+            tgz = lib.download_package(work_path, package, None)
+            if tgz is None:
+                print("No package downloaded")
+                continue
+        else:
+            tgz = package
 
         source_path, source_found = lib.unpack_package(work_path, tgz, c_only=args.c_only, cpp_only=args.cpp_only)
         if not source_found:
