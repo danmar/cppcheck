@@ -142,11 +142,11 @@ std::string Path::getCurrentExecutablePath()
 #else
     const char* procPath =
 #ifdef __SVR4 // Solaris
-    "/proc/self/path/a.out";
+        "/proc/self/path/a.out";
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
-    "/proc/curproc/file";
+        "/proc/curproc/file";
 #else // Linux
-    "/proc/self/exe";
+        "/proc/self/exe";
 #endif
     success = (readlink(procPath, buf, sizeof(buf)) != -1);
 #endif
