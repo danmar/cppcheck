@@ -3264,6 +3264,19 @@ private:
               "    return { {}, {} };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11729
+        check("struct T {\n"
+              "    void add(int* i) {\n"
+              "        v.push_back(i);\n"
+              "    }\n"
+              "    void f() {\n"
+              "        static int val = 1;\n"
+              "        add(&val);\n"
+              "    }\n"
+              "    std::vector<int*> v;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {

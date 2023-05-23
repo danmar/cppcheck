@@ -614,7 +614,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
                     if (!nextTok)
                         nextTok = tok->next();
-                    if (var && !var->isLocal() && !var->isArgument() &&
+                    if (var && !var->isLocal() && !var->isArgument() && !(val.tokvalue && val.tokvalue->variable() && val.tokvalue->variable()->isStatic()) &&
                         !isVariableChanged(nextTok,
                                            tok->scope()->bodyEnd,
                                            var->declarationId(),
