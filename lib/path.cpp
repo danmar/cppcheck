@@ -28,16 +28,18 @@
 #include <fstream>
 #include <utility>
 
+#include <simplecpp.h>
+
 #ifndef _WIN32
 #include <unistd.h>
 #else
 #include <direct.h>
+#include <windows.h>
 #endif
 #if defined(__CYGWIN__)
 #include <strings.h>
 #endif
 
-#include <simplecpp.h>
 
 /** Is the filesystem case insensitive? */
 static bool caseInsensitiveFilesystem()
@@ -129,6 +131,18 @@ std::string Path::getCurrentPath()
         return std::string(currentPath);
 
     return "";
+}
+
+std::string Path::getCurrentExecutablePath()
+{
+    char buf[4096] = {};
+    bool success{};
+#ifdef _WIN32
+    success = (GetModuleFileNameA(nullptr, buf, sizeof(buf) < sizeof(buf)));
+#else
+    success = (readlink("/proc/self/exe", buf, sizeof(buf)) != -1);
+#endif
+    return success ? std::string(buf) : std::string();
 }
 
 bool Path::isAbsolute(const std::string& path)
