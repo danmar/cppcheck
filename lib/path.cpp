@@ -138,9 +138,17 @@ std::string Path::getCurrentExecutablePath()
     char buf[4096] = {};
     bool success{};
 #ifdef _WIN32
-    success = (GetModuleFileNameA(nullptr, buf, sizeof(buf) < sizeof(buf)));
+    success = (GetModuleFileNameA(nullptr, buf, sizeof(buf)) < sizeof(buf));
 #else
-    success = (readlink("/proc/self/exe", buf, sizeof(buf)) != -1);
+    const char* procPath =
+#ifdef __SVR4 // Solaris
+    "/proc/self/path/a.out";
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+    "/proc/curproc/file";
+#else // Linux
+    "/proc/self/exe";
+#endif
+    success = (readlink(procPath, buf, sizeof(buf)) != -1);
 #endif
     return success ? std::string(buf) : std::string();
 }
