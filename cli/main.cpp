@@ -58,7 +58,6 @@
 
 
 #include "cppcheckexecutor.h"
-#include "path.h"
 
 #ifdef NDEBUG
 #include "errortypes.h"
@@ -82,9 +81,6 @@ int main(int argc, char* argv[])
 #if defined(_MSC_VER) && defined(_DEBUG)
     _CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) | _CRTDBG_LEAK_CHECK_DF);
 #endif
-
-    std::string exepath = Path::getCurrentExecutablePath(argv[0]);
-    argv[0] = &exepath[0];
 
     CppCheckExecutor exec;
 

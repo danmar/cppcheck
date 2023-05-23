@@ -149,15 +149,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool def = false;
     bool maxconfigs = false;
 
-    mSettings.exename = argv[0];
-#ifdef __linux__
-    // Executing cppcheck in PATH. argv[0] does not contain the path.
-    if (mSettings.exename.find_first_of("/\\") == std::string::npos) {
-        char buf[PATH_MAX] = {0};
-        if (FileLister::fileExists("/proc/self/exe") && readlink("/proc/self/exe", buf, sizeof(buf)-1) > 0)
-            mSettings.exename = buf;
-    }
-#endif
+    mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
