@@ -264,8 +264,7 @@ char* nullPointer_fgets(char *buffer, int n, FILE *stream)
 
 void memleak_aligned_alloc(void)
 {
-    // cppcheck-suppress unusedAllocatedMemory
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unusedAllocatedMemory, unreadVariable, constVariablePointer]
     char * alignedBuf = aligned_alloc(8, 16);
     // cppcheck-suppress memleak
 }
@@ -358,7 +357,7 @@ void arrayIndexOutOfBounds()
 
 void resourceLeak_tmpfile(void)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable, constVariablePointer]
     FILE * fp = tmpfile();
     // cppcheck-suppress resourceLeak
 }
@@ -4184,6 +4183,7 @@ void uninitvar_tolower(int character)
 
     // cppcheck-suppress unassignedVariable
     int c2;
+    // cppcheck-suppress constVariablePointer
     int *pc=&c2;
     // cppcheck-suppress uninitvar
     (void)tolower(*pc);
@@ -4191,6 +4191,7 @@ void uninitvar_tolower(int character)
     // No warning is expected
     (void)tolower(character);
 
+    // cppcheck-suppress constVariablePointer
     int *pChar = &character;
     // No warning is expected
     (void)tolower(*pChar);
@@ -4204,6 +4205,7 @@ void uninitvar_toupper(int character)
 
     // cppcheck-suppress unassignedVariable
     int c2;
+    // cppcheck-suppress constVariablePointer
     int *pc=&c2;
     // cppcheck-suppress uninitvar
     (void)toupper(*pc);
@@ -4211,6 +4213,7 @@ void uninitvar_toupper(int character)
     // No warning is expected
     (void)toupper(character);
 
+    // cppcheck-suppress constVariablePointer
     int *pChar = &character;
     // No warning is expected
     (void)toupper(*pChar);
