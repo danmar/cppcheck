@@ -136,7 +136,7 @@ std::string Path::getCurrentPath()
     return "";
 }
 
-std::string Path::getCurrentExecutablePath()
+std::string Path::getCurrentExecutablePath(const char* fallback)
 {
     char buf[4096] = {};
     bool success{};
@@ -156,7 +156,7 @@ std::string Path::getCurrentExecutablePath()
 #endif
     success = (readlink(procPath, buf, sizeof(buf)) != -1);
 #endif
-    return success ? std::string(buf) : std::string();
+    return success ? std::string(buf) : std::string(fallback);
 }
 
 bool Path::isAbsolute(const std::string& path)

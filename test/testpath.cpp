@@ -74,7 +74,7 @@ private:
     }
 
     void getCurrentExecutablePath() const {
-        ASSERT_EQUALS(false, Path::getCurrentExecutablePath().empty());
+        ASSERT_EQUALS(false, Path::getCurrentExecutablePath("").empty());
     }
 
     void isAbsolute() const {
