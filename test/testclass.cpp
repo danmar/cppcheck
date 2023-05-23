@@ -6488,6 +6488,31 @@ private:
                    "    void f() { h(j, &s.g()); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("void j(int** x);\n"
+                   "void k(int* const* y);\n"
+                   "struct S {\n"
+                   "    int* p;\n"
+                   "    int** q;\n"
+                   "    int* const* r;\n"
+                   "    void f1() { j(&p); }\n"
+                   "    void f2() { j(q); }\n"
+                   "    void g1() { k(&p); }\n"
+                   "    void g2() { k(q); }\n"
+                   "    void g3() { k(r); }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("f2, g1, g2, g3 can be const", "", errout.str());
+
+        checkConst("void m(int*& r);\n"
+                   "void n(int* const& s);\n"
+                   "struct T {\n"
+                   "    int i;\n"
+                   "    int* p;\n"
+                   "    void f1() { m(p); }\n"
+                   "    void f2() { n(&i); }\n"
+                   "    void f3() { n(p); }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("f3 can be const", "", errout.str());
     }
 
     void const88() { // #11626
