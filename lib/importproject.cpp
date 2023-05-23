@@ -1319,7 +1319,7 @@ void ImportProject::selectVsConfigurations(cppcheck::Platform::Type platform, co
             continue;
         }
         const ImportProject::FileSettings &fs = *it;
-        auto config = fs.cfg.substr(0, fs.cfg.find('|'));
+        const auto config = fs.cfg.substr(0, fs.cfg.find('|'));
         bool remove = false;
         if (std::find(configurations.begin(), configurations.end(), config) == configurations.end())
             remove = true;
