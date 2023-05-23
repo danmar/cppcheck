@@ -1123,6 +1123,10 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         // (type &)x
         else if (valueExpr->astParent()->isCast() && valueExpr->astParent()->isUnaryOp("(") && Token::simpleMatch(valueExpr->astParent()->link()->previous(), "& )"))
             valueExpr = valueExpr->astParent();
+        // designated initializers: {.x | { ... , .x
+        else if (Token::simpleMatch(valueExpr->astParent(), ".") &&
+                 Token::Match(valueExpr->astParent()->previous(), ",|{"))
+            valueExpr = valueExpr->astParent();
         else
             break;
     }
