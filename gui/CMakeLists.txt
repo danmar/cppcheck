@@ -9,13 +9,10 @@ CheckOptions:
   - { key: HeaderFileExtensions,          value: 'x' }
 ")
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_definitions(-DQT_NO_DEBUG)
-        add_definitions(-DQT_NO_DEBUG_OUTPUT)
-        add_definitions(-DQT_NO_WARNING_OUTPUT)
-    else()
-        add_definitions(-DQT_DEBUG)
-    endif()
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_DEBUG>)
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_DEBUG_OUTPUT>)
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_WARNING_OUTPUT>)
+    add_compile_definitions($<$<CONFIG:Debug>:-DQT_DEBUG>)
 
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
