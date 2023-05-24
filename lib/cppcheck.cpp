@@ -316,7 +316,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &file,
                                 const std::string &premiumArgs,
-                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> &executeCommand, const std::string& exename)
+                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> &executeCommand)
 {
     const std::string redirect = "2>&1";
 
@@ -371,7 +371,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     while (std::getline(istr, line)) {
         if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{') {
             result.erase(result.find_last_not_of('\n') + 1, std::string::npos); // Remove trailing newlines
-            throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result + " exename: " + exename);
+            throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result);
         }
     }
 
@@ -1448,7 +1448,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             continue;
 
         const std::string results =
-            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand, mSettings.exename);
+            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
         std::istringstream istr(results);
         std::string line;
 
