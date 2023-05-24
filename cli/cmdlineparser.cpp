@@ -149,11 +149,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool def = false;
     bool maxconfigs = false;
 
-#ifdef __CYGWIN__
-    mSettings.exename = argv[0];
-#else
     mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
-#endif
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
