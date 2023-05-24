@@ -475,9 +475,6 @@ private:
      */
     void simplifyCppcheckAttribute();
 
-    /** Remove alignas */
-    void removeAlignas();
-
     /** Simplify c++20 spaceship operator */
     void simplifySpaceshipOperator();
 
