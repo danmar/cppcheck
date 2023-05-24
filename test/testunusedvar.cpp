@@ -71,6 +71,7 @@ private:
         TEST_CASE(structmember21); // #4759
         TEST_CASE(structmember22); // #11016
         TEST_CASE(structmember23);
+        TEST_CASE(structmember_macro);
         TEST_CASE(classmember);
 
         TEST_CASE(localvar1);
@@ -271,6 +272,31 @@ private:
         CheckUnusedVar checkUnusedVar(&tokenizer, settings1, this);
         (checkUnusedVar.checkStructMemberUsage)();
     }
+
+    void checkStructMemberUsageP(const char code[]) {
+        // Raw tokens..
+        std::vector<std::string> files(1, "test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        Preprocessor preprocessor(settings);
+        preprocessor.setDirectives(tokens1);
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.simplifyTokens1("");
+
+        // Check for unused variables..
+        CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
+        (checkUnusedVar.checkStructMemberUsage)();
+    }
+
 
     void checkFunctionVariableUsageP(const char code[], const char* filename = "test.cpp") {
         // Raw tokens..
@@ -1875,6 +1901,12 @@ private:
                                "    std::map<int, N::S> m = { { 0, { \"abc\" } } };\n"
                                "    return m[0].s;\n"
                                "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember_macro() {
+        checkStructMemberUsageP("#define S(n) struct n { int a, b, c; };\n"
+                                "S(unused);\n");
         ASSERT_EQUALS("", errout.str());
     }
 
