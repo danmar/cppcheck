@@ -858,6 +858,8 @@ namespace {
                     // Function return type => replace array with "*"
                     for (const Token* a = mRangeAfterVar.first; Token::simpleMatch(a, "["); a = a->link()->next())
                         tok3->insertToken("*");
+                } else if (Token::Match(after->previous(), "%name% ( * %name% ) [")) {
+                    after = after->linkAt(4)->next();
                 } else {
                     Token* prev = after->previous();
                     if (prev->isName() && prev != tok3)
