@@ -58,6 +58,10 @@ CheckOptions:
         target_compile_definitions(cppcheck-gui PRIVATE CPPCHECKLIB_IMPORT TINYXML2_IMPORT)
         target_link_libraries(cppcheck-gui cppcheck-core)
     endif()
+    if(MSVC)
+        # compilation will fail as e.g. QList::realloc would be replaced by MSVC's macro definition
+        target_compile_definitions(cppcheck-gui PRIVATE $<$<CONFIG:Debug>:DISABLE_CRTDBG_MAP_ALLOC>)
+    endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # Q_UNUSED() in generated code
         target_compile_options_safe(cppcheck-gui -Wno-extra-semi-stmt)
