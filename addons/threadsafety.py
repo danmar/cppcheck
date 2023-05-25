@@ -303,10 +303,10 @@ def checkstatic(data):    # noqa: D103
                     reportError(
                         var.typeStartToken,
                         'warning',
-
                         'Local constant static '
-                        + type + "'" + var.nameToken.str + "'",
-                        'dangerous if it is initialized in parallel threads',
+                        + vartype + "'" + var.nameToken.str
+                        + "', dangerous if it is initialized"
+                        + ' in parallel threads',
                         'threadsafety-const')
             else:
                 reportError(var.typeStartToken, 'warning',
