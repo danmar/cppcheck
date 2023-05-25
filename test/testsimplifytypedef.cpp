@@ -452,10 +452,17 @@ private:
     }
 
     void carray3() {
-        const char code[] = "typedef int a[256];\n" // #11689
-                            "typedef a b[256];\n"
-                            "b* p;\n";
+        const char* code{};
+        code = "typedef int a[256];\n" // #11689
+               "typedef a b[256];\n"
+               "b* p;\n";
         ASSERT_EQUALS("int ( * p ) [ 256 ] [ 256 ] ;", simplifyTypedef(code));
+
+        code = "typedef int a[1];\n"
+               "typedef a b[2];\n"
+               "typedef b c[3];\n"
+               "c* p;\n";
+        ASSERT_EQUALS("int ( * p ) [ 3 ] [ 2 ] [ 1 ] ;", simplifyTypedef(code));
     }
 
     void cdonotreplace1() {
