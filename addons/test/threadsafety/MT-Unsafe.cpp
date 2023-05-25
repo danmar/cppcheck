@@ -30,8 +30,8 @@
 
 void threadsafety_static()
 {
+    // cppcheck-suppress threadsafety-threadsafety
     static unsigned int nCount = 0;
-    // warning: Local static variable: nCount [threadsafety-threadsafety]
 
     nCount++;
     printf("%d\n", nCount);
@@ -40,8 +40,8 @@ void threadsafety_static()
 void threadsafety_call()
 {
     time_t now = time(nullptr);
+    // cppcheck-suppress threadsafety-unsafe-call
     printf("%s\n", ctime(&now));
-    // warning: ctime is MT-unsafe [threadsafety-unsafe-call]
 }
 
 // cppcheck --addon=threadsafety
