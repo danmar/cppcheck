@@ -1758,6 +1758,9 @@ bool CppCheck::analyseWholeProgram()
 
 void CppCheck::analyseWholeProgram(const std::string &buildDir, const std::map<std::string, std::size_t> &files)
 {
+    // delete errors of previous run
+    mErrorList.clear();
+
     executeAddonsWholeProgram(files);
     if (buildDir.empty()) {
         removeCtuInfoFiles(files);
