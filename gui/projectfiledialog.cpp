@@ -755,7 +755,10 @@ void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &su
 {
     Suppressions::Suppression sup = suppression;
 
-    if (sup.fileName.find('*') == std::string::npos) {
+    if (sup.fileName.empty()) {
+        // Empty file name, replace by wildcard
+        sup.fileName = "*";
+    } else if (sup.fileName.find('*') == std::string::npos) {
         // File name does not contain wildcard, enforce absolute path (dir is ignored if fileName already is absolute)
         QFileInfo inf(QFileInfo(mProjectFile->getFilename()).absoluteDir(), QString::fromStdString(sup.fileName));
         if (inf.exists()) {
