@@ -1900,8 +1900,8 @@ void CheckStl::string_c_str()
 
     // Find all functions that take std::string as argument
     struct StrArg {
-        nonneg int n;
-        std::string argtype;
+        nonneg int n; // cppcheck-suppress unusedStructMember // FP used through iterator/pair
+        std::string argtype; // cppcheck-suppress unusedStructMember
     };
     std::multimap<const Function*, StrArg> c_strFuncParam;
     if (printPerformance) {
