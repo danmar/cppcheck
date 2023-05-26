@@ -47,5 +47,5 @@ jobs:
           cd %GITHUB_WORKSPACE%\addons\test
           ..\..\cppcheck.exe --dump -DDUMMY --suppress=uninitvar --inline-suppr misra\misra-test.c --std=c89 --platform=unix64
           python3 ..\misra.py -verify misra\misra-test.c.dump
-          ..\..\cppcheck.exe --addon=misra --inline-suppr --enable=information --error-exitcode=1 misra\misra-ctu-1-test.c misra\misra-ctu-2-test.c
+          ..\..\cppcheck.exe --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 misra\misra-ctu-1-test.c misra\misra-ctu-2-test.c
 
