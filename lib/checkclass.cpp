@@ -741,7 +741,7 @@ bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *sco
     return false;
 }
 
-void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const
 {
     if (!func.functionScope)
         return;

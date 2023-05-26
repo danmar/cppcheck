@@ -827,7 +827,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
     return false;
 }
 
-const Token *CheckUninitVar::checkExpr(const Token *tok, const Variable& var, const Alloc alloc, bool known, bool *bailout)
+const Token* CheckUninitVar::checkExpr(const Token* tok, const Variable& var, const Alloc alloc, bool known, bool* bailout) const
 {
     if (!tok)
         return nullptr;
