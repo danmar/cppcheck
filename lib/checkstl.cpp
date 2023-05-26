@@ -1899,15 +1899,19 @@ void CheckStl::string_c_str()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Find all functions that take std::string as argument
-    std::multimap<const Function*, int> c_strFuncParam;
+    struct StrArg {
+        nonneg int n;
+        std::string argtype;
+    };
+    std::multimap<const Function*, StrArg> c_strFuncParam;
     if (printPerformance) {
         for (const Scope &scope : symbolDatabase->scopeList) {
             for (const Function &func : scope.functionList) {
-                int numpar = 0;
+                nonneg int numpar = 0;
                 for (const Variable &var : func.argumentList) {
                     numpar++;
-                    if (var.isStlStringType() && (!var.isReference() || var.isConst()))
-                        c_strFuncParam.insert(std::make_pair(&func, numpar));
+                    if ((var.isStlStringType() || var.isStlStringViewType()) && (!var.isReference() || var.isConst()))
+                        c_strFuncParam.insert(std::make_pair(&func, StrArg{ numpar, var.getTypeName() }));
                 }
             }
         }
@@ -1959,20 +1963,20 @@ void CheckStl::string_c_str()
                         string_c_strAssignment(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
-                const std::pair<std::multimap<const Function*, int>::const_iterator, std::multimap<const Function*, int>::const_iterator> range = c_strFuncParam.equal_range(tok->function());
-                for (std::multimap<const Function*, int>::const_iterator i = range.first; i != range.second; ++i) {
-                    if (i->second == 0)
+                const auto range = c_strFuncParam.equal_range(tok->function());
+                for (std::multimap<const Function*, StrArg>::const_iterator i = range.first; i != range.second; ++i) {
+                    if (i->second.n == 0)
                         continue;
 
                     const Token* tok2 = tok->tokAt(2);
                     int j;
-                    for (j = 0; tok2 && j < i->second-1; j++)
+                    for (j = 0; tok2 && j < i->second.n - 1; j++)
                         tok2 = tok2->nextArgument();
                     if (tok2)
                         tok2 = tok2->nextArgument();
                     else
                         break;
-                    if (!tok2 && j == i->second-1)
+                    if (!tok2 && j == i->second.n - 1)
                         tok2 = tok->next()->link();
                     else if (tok2)
                         tok2 = tok2->previous();
@@ -1980,11 +1984,11 @@ void CheckStl::string_c_str()
                         break;
                     if (tok2 && Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         if (isString(tok2->tokAt(-4)->astOperand1())) {
-                            string_c_strParam(tok, i->second);
+                            string_c_strParam(tok, i->second.n, i->second.argtype);
                         } else if (Token::Match(tok2->tokAt(-9), "%name% . str ( )")) { // Check ss.str().c_str() as parameter
                             const Variable* ssVar = tok2->tokAt(-9)->variable();
                             if (ssVar && ssVar->isStlType(stl_string_stream))
-                                string_c_strParam(tok, i->second);
+                                string_c_strParam(tok, i->second.n, i->second.argtype);
                         }
                     }
                 }
@@ -2103,11 +2107,11 @@ void CheckStl::string_c_strReturn(const Token* tok)
                 "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.", CWE704, Certainty::normal);
 }
 
-void CheckStl::string_c_strParam(const Token* tok, nonneg int number)
+void CheckStl::string_c_strParam(const Token* tok, nonneg int number, const std::string& argtype)
 {
     std::ostringstream oss;
-    oss << "Passing the result of c_str() to a function that takes std::string as argument no. " << number << " is slow and redundant.\n"
-        "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly passing the string.";
+    oss << "Passing the result of c_str() to a function that takes " << argtype << " as argument no. " << number << " is slow and redundant.\n"
+        "The conversion from const char* as returned by c_str() to " << argtype << " creates an unnecessary string copy or length calculation. Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrParam", oss.str(), CWE704, Certainty::normal);
 }
 

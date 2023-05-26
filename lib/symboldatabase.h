@@ -594,6 +594,8 @@ public:
         return getFlag(fIsStlString);
     }
 
+    bool isStlStringViewType() const;
+
     bool isSmartPointer() const {
         return getFlag(fIsSmartPointer);
     }
