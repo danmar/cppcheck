@@ -1443,6 +1443,9 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (scope.bodyStart->fileIndex() != 0 || scope.className.empty())
             continue;
 
+        if (scope.classDef->isExpandedMacro())
+            continue;
+
         // Packed struct => possibly used by lowlevel code. Struct members might be required by hardware.
         if (scope.bodyEnd->isAttributePacked())
             continue;
