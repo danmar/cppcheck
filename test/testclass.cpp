@@ -198,6 +198,7 @@ private:
         TEST_CASE(const85);
         TEST_CASE(const86);
         TEST_CASE(const87);
+        TEST_CASE(const89);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6412,6 +6413,29 @@ private:
                       "[test.cpp:3]: (style, inconclusive) Technically the member function 'S::g' can be const.\n"
                       "[test.cpp:4]: (style, inconclusive) Technically the member function 'S::h' can be const.\n",
                       errout.str());
+    }
+
+    void const89() { // #11654
+        checkConst("struct S {\n"
+                   "    void f(bool b);\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void S::f(bool b) {\n"
+                   "    if (i && b)\n"
+                   "        f(false);\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n", errout.str());
+
+        checkConst("struct S {\n"
+                   "    void f(int& r);\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void S::f(int& r) {\n"
+                   "    r = 0;\n"
+                   "    if (i)\n"
+                   "        f(i);\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {

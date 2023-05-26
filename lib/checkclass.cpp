@@ -741,7 +741,7 @@ bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *sco
     return false;
 }
 
-void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const
 {
     if (!func.functionScope)
         return;
@@ -2310,9 +2310,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
         return nullptr;
     };
 
-    auto checkFuncCall = [this, &memberAccessed](const Token* funcTok, const Scope* scope) {
+    auto checkFuncCall = [this, &memberAccessed](const Token* funcTok, const Scope* scope, const Function* func) {
         if (isMemberFunc(scope, funcTok) && (funcTok->strAt(-1) != "." || Token::simpleMatch(funcTok->tokAt(-2), "this ."))) {
-            if (!isConstMemberFunc(scope, funcTok))
+            if (!isConstMemberFunc(scope, funcTok) && func != funcTok->function())
                 return false;
             memberAccessed = true;
         }
@@ -2490,7 +2490,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
 
             tok1 = jumpBackToken?jumpBackToken:end; // Jump back to first [ to check inside, or jump to end of expression
-            if (tok1 == end && Token::Match(end->previous(), ". %name% ( !!)") && !checkFuncCall(tok1, scope)) // function call on member
+            if (tok1 == end && Token::Match(end->previous(), ". %name% ( !!)") && !checkFuncCall(tok1, scope, func)) // function call on member
                 return false;
         }
 
@@ -2509,7 +2509,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
 
         // function/constructor call, return init list
         else if (const Token* funcTok = getFuncTok(tok1)) {
-            if (!checkFuncCall(funcTok, scope))
+            if (!checkFuncCall(funcTok, scope, func))
                 return false;
         } else if (Token::simpleMatch(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
             return false;
