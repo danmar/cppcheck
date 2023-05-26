@@ -6431,9 +6431,9 @@ private:
                    "    int i;\n"
                    "};\n"
                    "void S::f(int& r) {\n"
-                   "  r = 0;\n"
-                   "  if (i)\n"
-                   "    f(i);\n"
+                   "    r = 0;\n"
+                   "    if (i)\n"
+                   "        f(i);\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
     }
