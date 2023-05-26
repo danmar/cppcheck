@@ -23,6 +23,7 @@ jobs:
           - platform: 'x86_64'
             packages: |
               gcc-g++
+              python3
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
