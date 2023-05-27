@@ -2335,6 +2335,11 @@ const Type* Variable::iteratorType() const
     return nullptr;
 }
 
+bool Variable::isStlStringViewType() const
+{
+    return getFlag(fIsStlType) && valueType() && valueType()->container && valueType()->container->stdStringLike && valueType()->container->view;
+}
+
 std::string Variable::getTypeName() const
 {
     std::string ret;
