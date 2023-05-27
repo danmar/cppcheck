@@ -2328,8 +2328,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     const Token* arg = args[argIndex];
                     // Member variable given as parameter
                     const Token* varTok = previousBeforeAstLeftmostLeaf(arg);
-                    if (!varTok || !(varTok = varTok->next()))
+                    if (!varTok)
                         return false;
+                    varTok = varTok->next();
                     if ((varTok->isName() && isMemberVar(scope, varTok)) || (varTok->isUnaryOp("&") && (varTok = varTok->astOperand1()) && isMemberVar(scope, varTok))) {
                         const Variable* var = varTok->variable();
                         if (!var || (!var->isMutable() && !var->isConst()))
