@@ -195,7 +195,7 @@ public:
      * \param only_k_r_fpar Only simplify K&R function parameters
      */
     void simplifyVarDecl(const bool only_k_r_fpar);
-    void simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar);
+    void simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar); // cppcheck-suppress functionConst // has side effects
 
     /**
      * Simplify variable initialization
@@ -474,9 +474,6 @@ private:
      * Remove \__cppcheck\__ ((?))
      */
     void simplifyCppcheckAttribute();
-
-    /** Remove alignas */
-    void removeAlignas();
 
     /** Simplify c++20 spaceship operator */
     void simplifySpaceshipOperator();

@@ -858,6 +858,8 @@ namespace {
                     // Function return type => replace array with "*"
                     for (const Token* a = mRangeAfterVar.first; Token::simpleMatch(a, "["); a = a->link()->next())
                         tok3->insertToken("*");
+                } else if (Token::Match(after->previous(), "%name% ( * %name% ) [")) {
+                    after = after->linkAt(4)->next();
                 } else {
                     Token* prev = after->previous();
                     if (prev->isName() && prev != tok3)
@@ -4094,6 +4096,10 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
     bool ref = false;
     while (tok2) {
         if (tok2->isName()) {
+            if (Token::simpleMatch(tok2, "alignas (")) {
+                tok2 = tok2->linkAt(1)->next();
+                continue;
+            }
             if (cpp && Token::Match(tok2, "namespace|public|private|protected"))
                 return false;
             if (cpp && Token::simpleMatch(tok2, "decltype (")) {
@@ -5364,8 +5370,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Remove extra "template" tokens that are not used by cppcheck
     removeExtraTemplateKeywords();
 
-    removeAlignas();
-
     simplifySpaceshipOperator();
 
     // Bail out if code is garbage
@@ -5402,7 +5406,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // simplify namespace aliases
     simplifyNamespaceAliases();
 
-    // Remove [[attribute]] and alignas(?)
+    // Remove [[attribute]]
     simplifyCPPAttribute();
 
     // remove __attribute__((?))
@@ -8958,17 +8962,6 @@ void Tokenizer::simplifyCPPAttribute()
         }
         Token::eraseTokens(tok, skipCPPOrAlignAttribute(tok)->next());
         tok->deleteThis();
-    }
-}
-
-void Tokenizer::removeAlignas()
-{
-    if (!isCPP() || mSettings->standards.cpp < Standards::CPP11)
-        return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] alignas (") && Token::Match(tok->linkAt(2), ") %name%"))
-            Token::eraseTokens(tok, tok->linkAt(2)->next());
     }
 }
 

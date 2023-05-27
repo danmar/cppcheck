@@ -105,6 +105,12 @@ public:
     static std::string getCurrentPath();
 
     /**
+     * @brief Returns the absolute path to the current executable
+     * @return absolute path to the current executable
+     */
+    static std::string getCurrentExecutablePath(const char* fallback);
+
+    /**
      * @brief Check if given path is absolute
      * @param path Path to check
      * @return true if given path is absolute

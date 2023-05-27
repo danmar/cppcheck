@@ -827,7 +827,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
     return false;
 }
 
-const Token *CheckUninitVar::checkExpr(const Token *tok, const Variable& var, const Alloc alloc, bool known, bool *bailout)
+const Token* CheckUninitVar::checkExpr(const Token* tok, const Variable& var, const Alloc alloc, bool known, bool* bailout) const
 {
     if (!tok)
         return nullptr;
@@ -1122,6 +1122,10 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
             valueExpr = valueExpr->astParent()->astParent();
         // (type &)x
         else if (valueExpr->astParent()->isCast() && valueExpr->astParent()->isUnaryOp("(") && Token::simpleMatch(valueExpr->astParent()->link()->previous(), "& )"))
+            valueExpr = valueExpr->astParent();
+        // designated initializers: {.x | { ... , .x
+        else if (Token::simpleMatch(valueExpr->astParent(), ".") &&
+                 Token::Match(valueExpr->astParent()->previous(), ",|{"))
             valueExpr = valueExpr->astParent();
         else
             break;
