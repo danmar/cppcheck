@@ -329,26 +329,15 @@ def check_MTunsafe(data, srcfile, quiet=False):
     for cfg in data.iterconfigurations():
         if not quiet:
             print('Checking %s, config %s...' % (srcfile, cfg.name))
-        safe_ranges = []
-        safe = -1
-
-        # check end of source beyond last directive
-        if len(cfg.tokenlist) > 0:
-            unsafe = int(cfg.tokenlist[-1].linenr)
-            if unsafe > safe > 0:
-                safe_ranges.append((safe, unsafe))
 
         # go through all tokens
         for token in cfg.tokenlist:
             if token.str in id_MTunsafe:
-                if not any(lower <= int(token.linenr) <= upper
-                           for (lower, upper) in safe_ranges):
-                    cppcheckdata.reportError(token, 'warning',
-                                             token.str + ' is MT-unsafe',
-                                             'threadsafety',
-                                             'unsafe-call')
-                    MTsafe = False
-            token = token.next
+                cppcheckdata.reportError(token, 'warning',
+                                         token.str + ' is MT-unsafe',
+                                         'threadsafety',
+                                         'unsafe-call')
+                MTsafe = False
 
     return MTsafe
 
