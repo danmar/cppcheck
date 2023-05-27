@@ -1911,7 +1911,7 @@ void CheckStl::string_c_str()
                 for (const Variable &var : func.argumentList) {
                     numpar++;
                     if ((var.isStlStringType() || var.isStlStringViewType()) && (!var.isReference() || var.isConst()))
-                        c_strFuncParam.insert(std::make_pair(&func, StrArg{ numpar, var.getTypeName() }));
+                        c_strFuncParam.emplace(&func, StrArg{ numpar, var.getTypeName() });
                 }
             }
         }
