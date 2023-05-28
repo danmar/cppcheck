@@ -36,31 +36,10 @@ public:
     TestClass() : TestFixture("TestClass") {}
 
 private:
-    Settings settings0 = settingsBuilder().severity(Severity::style).build();
-    Settings settings1 = settingsBuilder().severity(Severity::warning).build();
+    Settings settings0 = settingsBuilder().severity(Severity::style).library("std.cfg").build();
+    Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
 
     void run() override {
-        // Load std.cfg configuration
-        {
-            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                                   "<def>\n"
-                                   "  <memory>\n"
-                                   "    <alloc init=\"false\">malloc</alloc>\n"
-                                   "    <dealloc>free</dealloc>\n"
-                                   "  </memory>\n"
-                                   "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
-                                   "  <container id=\"stdVector\" startPattern=\"std :: vector &lt;\" itEndPattern=\"&gt; :: const_iterator\">\n"
-                                   "    <access>\n"
-                                   "      <function name=\"begin\" yields=\"start-iterator\"/>\n"
-                                   "      <function name=\"end\" yields=\"end-iterator\"/>\n"
-                                   "    </access>\n"
-                                   "  </container>\n"
-                                   "</def>";
-            ASSERT(settings0.library.loadxmldata(xmldata, sizeof(xmldata)));
-            ASSERT(settings1.library.loadxmldata(xmldata, sizeof(xmldata)));
-        }
-
-
         TEST_CASE(virtualDestructor1);      // Base class not found => no error
         TEST_CASE(virtualDestructor2);      // Base class doesn't have a destructor
         TEST_CASE(virtualDestructor3);      // Base class has a destructor, but it's not virtual
@@ -6528,6 +6507,13 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
                       "[test.cpp:3]: (style, inconclusive) Technically the member function 'S::g' can be const.\n"
                       "[test.cpp:4]: (style, inconclusive) Technically the member function 'S::h' can be const.\n",
+                      errout.str());
+
+        checkConst("struct S {\n"
+                   "    bool f() { return p.get() != nullptr; }\n"
+                   "    std::shared_ptr<int> p;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n",
                       errout.str());
     }
 

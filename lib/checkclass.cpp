@@ -2472,8 +2472,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     ;
                 else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
                     ;
-                }
-                else if (hasOverloadedMemberAccess(end, var->typeScope())) {
+                } else if (var->isSmartPointer() && Token::simpleMatch(tok1->next(), ".") && tok1->next()->originalName().empty() && mSettings->library.isFunctionConst(end)) {
+                    ;
+                } else if (hasOverloadedMemberAccess(end, var->typeScope())) {
                     ;
                 } else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
                     return false;
