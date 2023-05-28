@@ -68,6 +68,7 @@ private:
         TEST_CASE(testautovar16); // ticket #8114
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
+        TEST_CASE(testautovar_array3);
         TEST_CASE(testautovar_normal); // "normal" token list that does not remove casts etc
         TEST_CASE(testautovar_ptrptr); // ticket #6956
         TEST_CASE(testautovar_return1);
@@ -515,6 +516,14 @@ private:
               "    arr[0]=&num;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+    }
+
+    void testautovar_array3() {
+        check("int main(int argc, char* argv[]) {\n" // #11732
+              "    std::string a = \"abc\";\n"
+              "    argv[0] = &a[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_normal() {
