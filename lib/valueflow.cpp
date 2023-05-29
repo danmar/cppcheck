@@ -3132,10 +3132,18 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     bool dependOnThis;
     bool uniqueExprId;
 
-    ExpressionAnalyzer() : SingleValueFlowAnalyzer(), expr(nullptr), local(true), unknown(false), dependOnThis(false), uniqueExprId(false) {}
+    ExpressionAnalyzer()
+        : SingleValueFlowAnalyzer(), expr(nullptr), local(true), unknown(false), dependOnThis(false), uniqueExprId(false)
+    {}
 
     ExpressionAnalyzer(const Token* e, ValueFlow::Value val, const TokenList* t, const Settings* s)
-        : SingleValueFlowAnalyzer(std::move(val), t, s), expr(e), local(true), unknown(false), dependOnThis(false), uniqueExprId(false) {
+        : SingleValueFlowAnalyzer(std::move(val), t, s),
+        expr(e),
+        local(true),
+        unknown(false),
+        dependOnThis(false),
+        uniqueExprId(false)
+    {
 
         assert(e && e->exprId() != 0 && "Not a valid expression");
         dependOnThis = exprDependsOnThis(expr);
@@ -3144,7 +3152,8 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
             dependOnThis |= exprDependsOnThis(value.tokvalue);
             setupExprVarIds(value.tokvalue);
         }
-        uniqueExprId = expr->isUniqueExprId() && (Token::Match(expr, "%cop%") || !isVariableChanged(expr, 0, s, t->isCPP()));
+        uniqueExprId =
+            expr->isUniqueExprId() && (Token::Match(expr, "%cop%") || !isVariableChanged(expr, 0, s, t->isCPP()));
     }
 
     static bool nonLocal(const Variable* var, bool deref) {

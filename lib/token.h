@@ -901,14 +901,16 @@ public:
         mImpl->mExprId = id;
     }
 
-    void setUniqueExprId() {
+    void setUniqueExprId()
+    {
         assert(mImpl->mExprId > 0);
         mImpl->mExprId |= 1 << efIsUnique;
     }
 
-    bool isUniqueExprId() const {
+    bool isUniqueExprId() const
+    {
         if (mImpl->mExprId > 0) {
-            return (mImpl->mExprId & (1 << efIsUnique))!= 0;
+            return (mImpl->mExprId & (1 << efIsUnique)) != 0;
         } else {
             return false;
         }
@@ -1341,7 +1343,7 @@ private:
     };
 
     enum : uint64_t {
-        efMaxSize = sizeof(nonneg int)*8,
+        efMaxSize = sizeof(nonneg int) * 8,
         efIsUnique = efMaxSize - 2,
     };
 

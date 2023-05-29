@@ -1658,12 +1658,12 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                 p.first->second = nullptr;
             }
         }
-        for(const auto& p:exprMap) {
+        for (const auto& p : exprMap) {
             if (!p.second)
                 continue;
-            if(p.second->variable()) {
+            if (p.second->variable()) {
                 const Variable* var = p.second->variable();
-                if(var->nameToken() != p.second)
+                if (var->nameToken() != p.second)
                     continue;
             }
             p.second->setUniqueExprId();
