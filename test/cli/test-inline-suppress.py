@@ -83,6 +83,15 @@ def test_build_dir():
         assert ret == 0, stdout
         assert len(stderr) == 0
 
+def test_build_dir_unused_template():
+    with tempfile.TemporaryDirectory() as tempdir:
+        args = f'--cppcheck-build-dir={tempdir} --enable=all --inline-suppr proj-inline-suppress/template.cpp'.split()
+
+        ret, stdout, stderr = cppcheck(args)
+        assert ret == 0, stdout
+        assert len(stderr) == 0
+
+
 def test_suppress_unmatched_inline_suppression(): # 11172
     ret, stdout, stderr = cppcheck(['--enable=all', '--suppress=unmatchedSuppression', '--inline-suppr', 'proj-inline-suppress/2.c'])
     assert ret == 0, stdout

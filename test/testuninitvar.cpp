@@ -94,6 +94,7 @@ private:
         TEST_CASE(uninitvar_ipa);
         TEST_CASE(uninitvar_memberfunction);
         TEST_CASE(uninitvar_nonmember); // crash in ycmd test
+        TEST_CASE(uninitvarDesignatedInitializers);
 
         TEST_CASE(isVariableUsageDeref); // *p
         TEST_CASE(isVariableUsageDerefValueflow); // *p
@@ -2048,6 +2049,14 @@ private:
                        "    A* a = new A{};\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #1175
+        checkUninitVar("void f() {\n"
+                       "    int* p = new int;\n"
+                       "    *((int*)*p) = 42;\n"
+                       "    delete p;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
 
         checkUninitVar("int f() {\n" // #10596
                        "    int* a = new int;\n"
@@ -6953,6 +6962,24 @@ private:
                         "  foo->bar = 3;\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: foo\n", errout.str());
+    }
+
+    void uninitvarDesignatedInitializers() {
+        checkUninitVar("struct a { int b; };\n"
+                       "int main() {\n"
+                       "  char *b;\n"
+                       "  extern int f(struct a *);\n"
+                       "  return f(&(struct a){.b = 0});\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct a { int b, c; };\n"
+                       "int main() {\n"
+                       "  char *c;\n"
+                       "  extern int f(struct a *);\n"
+                       "  return f(&(struct a){.b = 0, .c = 0});\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isVariableUsageDeref() {

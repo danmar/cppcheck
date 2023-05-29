@@ -13,14 +13,14 @@ static MISRA_5_6_VIOLATION misra_5_6_x;
 
 // cppcheck-suppress misra-c2012-5.7
 struct misra_5_7_violation_t {
-    int x;
+    int x;  // cppcheck-suppress unusedStructMember
 };
 static misra_5_7_violation_t misra_5_7_use_type_2;
 
 // #11443 - FP
 static struct
 { // no warning
-    uint16_t x;
+    uint16_t x;  // cppcheck-suppress unusedStructMember
 } misra_5_7_false_positive_2;
 
 // cppcheck-suppress misra-c2012-5.8
@@ -28,7 +28,7 @@ static int misra_5_8_var1;
 // cppcheck-suppress misra-c2012-8.4
 // cppcheck-suppress misra-c2012-5.8
 void misra_5_8_f(void) {
-    // cppcheck-suppress misra-c2012-5.8
+    // cppcheck-suppress [misra-c2012-5.8, unusedVariable]
     char misra_5_8_var2;
 }
 
