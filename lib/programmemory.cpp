@@ -40,8 +40,6 @@
 #include <utility>
 #include <vector>
 
-#include <iostream>
-
 nonneg int ExprIdToken::getExpressionId() const {
     return tok ? tok->exprId() : exprid;
 }
