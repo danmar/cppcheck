@@ -3199,8 +3199,8 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     bool invalid() const override {
-        if (skipUniqueExprIds())
-            return uniqueExprId;
+        if (skipUniqueExprIds() && uniqueExprId)
+            return true;
         return unknown;
     }
 
