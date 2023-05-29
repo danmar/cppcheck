@@ -2050,6 +2050,14 @@ private:
                        "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #1175
+        checkUninitVar("void f() {\n"
+                       "    int* p = new int;\n"
+                       "    *((int*)*p) = 42;\n"
+                       "    delete p;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+
         checkUninitVar("int f() {\n" // #10596
                        "    int* a = new int;\n"
                        "    int i{};\n"
