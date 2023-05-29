@@ -903,12 +903,12 @@ public:
 
     void setUniqueExprId() {
         assert(mImpl->mExprId > 0);
-        mImpl->mExprId |= 1 << (sizeof(mImpl->mExprId) - 2);
+        mImpl->mExprId |= 1 << (sizeof(mImpl->mExprId)*8 - 2);
     }
 
     bool isUniqueExprId() const {
         if (mImpl->mExprId > 0) {
-            return (mImpl->mExprId & (1 << (sizeof(mImpl->mExprId) - 2)))!= 0;
+            return (mImpl->mExprId & (1 << (sizeof(mImpl->mExprId)*8 - 2)))!= 0;
         } else {
             return false;
         }
