@@ -847,10 +847,10 @@ void Preprocessor::dump(std::ostream &out) const
         for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
             out << "    <macro"
                 << " name=\"" << macroUsage.macroName << "\""
-                << " file=\"" << macroUsage.macroLocation.file() << "\""
+                << " file=\"" << ErrorLogger::toxml(macroUsage.macroLocation.file()) << "\""
                 << " line=\"" << macroUsage.macroLocation.line << "\""
                 << " column=\"" << macroUsage.macroLocation.col << "\""
-                << " usefile=\"" << macroUsage.useLocation.file() << "\""
+                << " usefile=\"" << ErrorLogger::toxml(macroUsage.useLocation.file()) << "\""
                 << " useline=\"" << macroUsage.useLocation.line << "\""
                 << " usecolumn=\"" << macroUsage.useLocation.col << "\""
                 << " is-known-value=\"" << (macroUsage.macroValueKnown ? "true" : "false") << "\""
