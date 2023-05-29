@@ -36,6 +36,7 @@
 #include <istream>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <numeric>
 #include <string_view>
 #include <unordered_map>
@@ -1795,7 +1796,6 @@ void uninitvar_fread(void)
 
 void uninitvar_free(void)
 {
-    // cppcheck-suppress unassignedVariable
     void *block;
     // cppcheck-suppress uninitvar
     std::free(block);
@@ -4704,4 +4704,13 @@ void beginEnd()
     std::cend(arr);
     //cppcheck-suppress ignoredReturnValue
     std::crend(arr);
+}
+
+void smartPtr_get()
+{
+    std::unique_ptr<int> p;
+    //cppcheck-suppress ignoredReturnValue
+    p.get();
+    //cppcheck-suppress nullPointer
+    *p = 1;
 }

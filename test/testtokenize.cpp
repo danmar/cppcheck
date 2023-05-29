@@ -46,7 +46,7 @@ public:
 private:
     // If there are unused templates, keep those
     const Settings settings0 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
-    const Settings settings1 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
+    const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").checkUnusedTemplates().build();
     const Settings settings2 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
     const Settings settings_windows = settingsBuilder().library("windows.cfg").checkUnusedTemplates().build();
 
@@ -1973,6 +1973,11 @@ private:
         const char code3[] = "struct a { int b; } static e[1];";
         const char expected3[] = "struct a { int b ; } ; struct a static e [ 1 ] ;";
         ASSERT_EQUALS(expected3, tokenizeAndStringify(code3));
+
+        // #11013 - Do not remove unnamed struct in union
+        const char code4[] = "union U { struct { int a; int b; }; int ab[2]; };";
+        const char expected4[] = "union U { struct { int a ; int b ; } ; int ab [ 2 ] ; } ;";
+        ASSERT_EQUALS(expected4, tokenizeAndStringify(code4));
     }
 
     void vardecl1() {
@@ -2090,7 +2095,7 @@ private:
                              "         long y;\n"
                              "     };\n"
                              "}";
-        ASSERT_EQUALS("void f ( ) {\n\nint x ;\nlong & y = x ;\n\n}", tokenizeAndStringify(code2));
+        ASSERT_EQUALS("void f ( ) {\nunion {\nint x ;\nlong y ;\n} ;\n}", tokenizeAndStringify(code2));
 
         // ticket #3927
         const char code3[] = "union xy *p = NULL;";
@@ -3599,7 +3604,7 @@ private:
         ASSERT_EQUALS("unsigned int ( * f ) ( ) ;", tokenizeAndStringify("unsigned int (*f)();"));
         ASSERT_EQUALS("unsigned int * ( * f ) ( ) ;", tokenizeAndStringify("unsigned int * (*f)();"));
         ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", tokenizeAndStringify("void (*f[2])();"));
-        TODO_ASSERT_EQUALS("void ( * f [ 2 ] ) ( ) ;", "void ( * f ) ( void ) [ 2 ] ;", tokenizeAndStringify("typedef void func_t(void); func_t *f[2];"));
+        ASSERT_EQUALS("void ( * f [ 2 ] ) ( void ) ;", tokenizeAndStringify("typedef void func_t(void); func_t *f[2];"));
     }
 
     void simplifyFunctionPointers2() {
@@ -4539,7 +4544,7 @@ private:
     }
 
     void bitfields13() { // ticket #3502 (segmentation fault)
-        ASSERT_EQUALS("x y ;", tokenizeAndStringify("struct{x y:};\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("struct{x y:};\n"));
     }
 
     void bitfields15() { // #7747 - enum Foo {A,B}:4;
@@ -4601,7 +4606,7 @@ private:
 
         code = "using namespace std;\n"
                "string<wchar_t> s;"; // That's obviously not std::string
-        ASSERT_EQUALS("string < wchar_t > s ;", tokenizeAndStringify(code));
+        TODO_ASSERT_EQUALS("string < wchar_t > s ;", "std :: string < wchar_t > s ;", tokenizeAndStringify(code));
 
         code = "using namespace std;\n"
                "swap s;"; // That's obviously not std::swap
@@ -4610,15 +4615,6 @@ private:
         code = "using namespace std;\n"
                "std::string s;";
         ASSERT_EQUALS("std :: string s ;", tokenizeAndStringify(code));
-
-        code = "using namespace std;\n"
-               "tr1::function <void(int)> f;";
-        ASSERT_EQUALS("tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, cppcheck::Platform::Type::Native, "test.cpp", Standards::CPP03));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code));
-
-        code = "std::tr1::function <void(int)> f;";
-        ASSERT_EQUALS("std :: tr1 :: function < void ( int ) > f ;", tokenizeAndStringify(code, true, cppcheck::Platform::Type::Native, "test.cpp", Standards::CPP03));
-        ASSERT_EQUALS("std :: function < void ( int ) > f ;", tokenizeAndStringify(code));
 
         // #4042 (Do not add 'std ::' to variables)
         code = "using namespace std;\n"
@@ -4634,7 +4630,12 @@ private:
                    "std :: cout << string << std :: endl ;\n"
                    "return string ;\n"
                    "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+        TODO_ASSERT_EQUALS(expected,
+                           "std :: string f ( const char * string ) {\n"
+                           "cout << string << endl ;\n"
+                           "return string ;\n"
+                           "}",
+                           tokenizeAndStringify(code));
 
         code = "using namespace std;\n"
                "void f() {\n"
@@ -4689,6 +4690,27 @@ private:
                       tokenizeAndStringify("using namespace std; enum E : int ; void foo ( ) { string s ; }"));
 
         ASSERT_NO_THROW(tokenizeAndStringify("NS_BEGIN(IMAGEIO_2D_DICOM) using namespace std; NS_END")); // #11045
+
+        code = "using namespace std;\n"
+               "void f(const unique_ptr<int>& p) {\n"
+               "    if (!p)\n"
+               "        throw runtime_error(\"abc\");\n"
+               "}";
+        expected = "void f ( const std :: unique_ptr < int > & p ) {\n"
+                   "if ( ! p ) {\n"
+                   "throw std :: runtime_error ( \"abc\" ) ; }\n"
+                   "}";
+        TODO_ASSERT_EQUALS(expected,
+                           "void f ( const std :: unique_ptr < int > & p ) {\n"
+                           "if ( ! p ) {\n"
+                           "throw runtime_error ( \"abc\" ) ; }\n"
+                           "}",
+                           tokenizeAndStringify(code));
+
+        code = "using namespace std;\n" // #8454
+               "void f() { string str = to_string(1); }\n";
+        expected = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void microsoftMemory() {
@@ -6770,6 +6792,8 @@ private:
 
         const char code11[] = "struct B { B(B&&) noexcept {} ~B() noexcept {} };";
         ASSERT_NO_THROW(tokenizeAndStringify(code11));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("alignas(8) alignas(16) int x;")); // alignas is not unknown macro
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

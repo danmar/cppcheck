@@ -368,8 +368,8 @@ private:
               "    char * &ref = p;\n"
               "    p = malloc(10);\n"
               "    free(ref);\n"
-              "}");
-        TODO_ASSERT_EQUALS("", "[test.c:6]: (error) Memory leak: p\n", errout.str());
+              "}", /*cpp*/ true);
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Memory leak: p\n", errout.str());
     }
 
     void assign14() {
@@ -1367,6 +1367,14 @@ private:
               "    delete i;\n"
               "}\n", true);
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("using namespace std;\n" // #9708
+              "void f() {\n"
+              "    int* i = new int;\n"
+              "    unique_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
     }
 
     void doublefree9() {
@@ -2131,15 +2139,13 @@ private:
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) { free(f); }};\n"
               "}", true);
-        TODO_ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
 
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) {}};\n"
               "}", true);
-        TODO_ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
 
         check("class C;\n"
               "void f() {\n"
@@ -2326,11 +2332,32 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void test1() { // 3809
-        check("void f(double*&p) {\n"
+    void test1() {
+        check("void f(double*&p) {\n" // 3809
               "    p = malloc(0x100);\n"
-              "}");
+              "}", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int*& p) {\n" // #4400
+              "    p = (int*)malloc(4);\n"
+              "    p = (int*)malloc(4);\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
+
+        check("void f() {\n"
+              "    int* p = (int*)malloc(4);\n"
+              "    int*& r = p;\n"
+              "    r = (int*)malloc(4);\n"
+              "}\n", /*cpp*/ true);
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: p\n", "", errout.str());
+
+        check("void f() {\n"
+              "    int* p = (int*)malloc(4);\n"
+              "    int*& r = p;\n"
+              "    free(r);\n"
+              "    p = (int*)malloc(4);\n"
+              "}\n", /*cpp*/ true);
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Memory leak: p\n", errout.str());
     }
 
     void test2() { // 3899
@@ -2345,7 +2372,7 @@ private:
         check("void f() {\n"
               "    char *&p = x();\n"
               "    p = malloc(10);\n"
-              "};");
+              "};", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 

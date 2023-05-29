@@ -293,7 +293,7 @@ void Variables::read(nonneg int varid, const Token* tok)
 
 void Variables::readAliases(nonneg int varid, const Token* tok)
 {
-    VariableUsage *usage = find(varid);
+    const VariableUsage *usage = find(varid);
 
     if (usage) {
         for (nonneg int const aliases : usage->_aliases) {
@@ -837,7 +837,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             }
         }
         // Freeing memory (not considered "using" the pointer if it was also allocated in this function)
-        if (Token::Match(tok, "free|g_free|kfree|vfree ( %var% )") ||
+        if ((Token::Match(tok, "%name% ( %var% )") && mSettings->library.getDeallocFuncInfo(tok)) ||
             (mTokenizer->isCPP() && (Token::Match(tok, "delete %var% ;") || Token::Match(tok, "delete [ ] %var% ;")))) {
             nonneg int varid = 0;
             if (tok->str() != "delete") {
@@ -1441,6 +1441,9 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         if (scope.bodyStart->fileIndex() != 0 || scope.className.empty())
+            continue;
+
+        if (scope.classDef->isExpandedMacro())
             continue;
 
         // Packed struct => possibly used by lowlevel code. Struct members might be required by hardware.

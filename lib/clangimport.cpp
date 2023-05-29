@@ -1149,10 +1149,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == NamespaceDecl) {
         if (children.empty())
             return nullptr;
-        Token *defToken = addtoken(tokenList, "namespace");
+        const Token *defToken = addtoken(tokenList, "namespace");
         const std::string &s = mExtTokens[mExtTokens.size() - 2];
-        Token *nameToken = (s.compare(0,4,"col:")==0 || s.compare(0,5,"line:")==0) ?
-                           addtoken(tokenList, mExtTokens.back()) : nullptr;
+        const Token* nameToken = (s.compare(0, 4, "col:") == 0 || s.compare(0, 5, "line:") == 0) ?
+                                 addtoken(tokenList, mExtTokens.back()) : nullptr;
         Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children, defToken);
         if (nameToken)
             scope->className = nameToken->str();

@@ -187,6 +187,7 @@ private:
         TEST_CASE(varid_declInIfCondition);
         TEST_CASE(varid_globalScope);
         TEST_CASE(varid_function_pointer_args);
+        TEST_CASE(varid_alignas);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -897,14 +898,12 @@ private:
         const char code1[] = "union evt; void f(const evt & event);";
         ASSERT_EQUALS("1: union evt ; void f ( const evt & event@1 ) ;\n",
                       tokenize(code1));
-        ASSERT_EQUALS("1: union evt ; void f ( const evt & event ) ;\n",
-                      tokenize(code1, "test.c"));
+        ASSERT_THROW(tokenize(code1, "test.c"), InternalError);
 
         const char code2[] = "struct evt; void f(const evt & event);";
         ASSERT_EQUALS("1: struct evt ; void f ( const evt & event@1 ) ;\n",
                       tokenize(code2));
-        ASSERT_EQUALS("1: struct evt ; void f ( const evt & event ) ;\n",
-                      tokenize(code2, "test.c"));
+        ASSERT_THROW(tokenize(code2, "test.c"), InternalError);
     }
 
     void varid42() {
@@ -3045,6 +3044,14 @@ private:
 
         const char code3[] = "void f (void (*g) (int i, IN int n)) {}\n";
         ASSERT_EQUALS("1: void f ( void ( * g@1 ) ( int , IN int ) ) { }\n", tokenize(code3));
+    }
+
+    void varid_alignas() {
+        const char code[] = "extern alignas(16) int x;\n"
+                            "alignas(16) int x;";
+        const char expected[] = "1: extern alignas ( 16 ) int x@1 ;\n"
+                                "2: alignas ( 16 ) int x@2 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
     }
 
     void varidclass1() {

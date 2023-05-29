@@ -90,6 +90,7 @@ public:
     ImportProject& operator=(const ImportProject&) = default;
 
     void selectOneVsConfig(cppcheck::Platform::Type platform);
+    void selectVsConfigurations(cppcheck::Platform::Type platform, const std::vector<std::string> &configurations);
 
     std::list<std::string> getVSConfigs();
 

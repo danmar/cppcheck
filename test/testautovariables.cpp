@@ -68,6 +68,7 @@ private:
         TEST_CASE(testautovar16); // ticket #8114
         TEST_CASE(testautovar_array1);
         TEST_CASE(testautovar_array2);
+        TEST_CASE(testautovar_array3);
         TEST_CASE(testautovar_normal); // "normal" token list that does not remove casts etc
         TEST_CASE(testautovar_ptrptr); // ticket #6956
         TEST_CASE(testautovar_return1);
@@ -517,6 +518,14 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
+    void testautovar_array3() {
+        check("int main(int argc, char* argv[]) {\n" // #11732
+              "    std::string a = \"abc\";\n"
+              "    argv[0] = &a[0];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void testautovar_normal() {
         check("void f(XmDestinationCallbackStruct *ds)\n"
               "{\n"
@@ -617,6 +626,18 @@ private:
               "    pcb->root0 = 0;\n"  // <- conditional reassign => error
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        check("struct S { int *p; };\n"
+              "void g(struct S* s) {\n"
+              "    int a[10];\n"
+              "    s->p = a;\n"
+              "    a[0] = 0;\n"
+              "}\n"
+              "void f() {\n"
+              "    struct S s;\n"
+              "    g(&s);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testinvaliddealloc() {
@@ -771,6 +792,23 @@ private:
               "    std::array<long, 256>* m_Arr{};\n"
               "};\n"
               "Array arr;\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8174
+        check("struct S {};\n"
+              "void f() {\n"
+              "    S s;\n"
+              "    S* p = &s;\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Deallocation of an auto-variable (s) results in undefined behaviour.\n", errout.str());
+
+        check("void f(bool b, int* q) {\n"
+              "    int i;\n"
+              "    int* p = b ? &i : q;\n"
+              "    if (!b)\n"
+              "        free(p);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2042,6 +2080,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("using namespace std;\n" // #10971
+              "struct S { int i = 3; };\n"
+              "unique_ptr<S> g() {\n"
+              "    auto tp = make_unique<S>();\n"
+              "    return tp;\n"
+              "}\n"
+              "void f() {\n"
+              "    const S& s = *g();\n"
+              "    (void)s.i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (error) Using reference to dangling temporary.\n", errout.str());
     }
 
     void testglobalnamespace() {
@@ -2931,7 +2981,7 @@ private:
               "    return ptr.get();\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning object that points to local variable 'ptr' that will be invalid when returning.\n",
+            "[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning pointer to local variable 'ptr' that will be invalid when returning.\n",
             errout.str());
     }
     void danglingLifetime() {
@@ -3251,6 +3301,19 @@ private:
               "Matrix<T, 2, 2> O() {\n"
               "    return { {}, {} };\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11729
+        check("struct T {\n"
+              "    void add(int* i) {\n"
+              "        v.push_back(i);\n"
+              "    }\n"
+              "    void f() {\n"
+              "        static int val = 1;\n"
+              "        add(&val);\n"
+              "    }\n"
+              "    std::vector<int*> v;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

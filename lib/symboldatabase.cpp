@@ -141,6 +141,16 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
         return endInitList.top().second == scope;
     };
 
+    auto addLambda = [this, &scope](const Token* tok, const Token* lambdaEndToken) -> const Token* {
+        const Token* lambdaStartToken = lambdaEndToken->link();
+        const Token* argStart = lambdaStartToken->astParent();
+        const Token* funcStart = Token::simpleMatch(argStart, "[") ? argStart : argStart->astParent();
+        const Function* function = addGlobalFunction(scope, tok, argStart, funcStart);
+        if (!function)
+            mTokenizer.syntaxError(tok);
+        return lambdaStartToken;
+    };
+
     // Store current access in each scope (depends on evaluation progress)
     std::map<const Scope*, AccessControl> access;
 
@@ -674,6 +684,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     tok = declEnd;
                     continue;
                 }
+            } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
+                tok = addLambda(tok, lambdaEndToken);
             }
         } else if (scope->isExecutable()) {
             if (tok->isKeyword() && Token::Match(tok, "else|try|do {")) {
@@ -712,13 +724,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 endInitList.emplace(tok->next()->link(), scope);
                 tok = tok->next();
             } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
-                const Token *lambdaStartToken = lambdaEndToken->link();
-                const Token * argStart = lambdaStartToken->astParent();
-                const Token * funcStart = Token::simpleMatch(argStart, "[") ? argStart : argStart->astParent();
-                const Function * function = addGlobalFunction(scope, tok, argStart, funcStart);
-                if (!function)
-                    mTokenizer.syntaxError(tok);
-                tok = lambdaStartToken;
+                tok = addLambda(tok, lambdaEndToken);
             } else if (tok->str() == "{") {
                 if (inInitList()) {
                     endInitList.emplace(tok->link(), scope);
@@ -2324,6 +2330,11 @@ const Type* Variable::iteratorType() const
         return mValueType->containerTypeToken->type();
 
     return nullptr;
+}
+
+bool Variable::isStlStringViewType() const
+{
+    return getFlag(fIsStlType) && valueType() && valueType()->container && valueType()->container->stdStringLike && valueType()->container->view;
 }
 
 std::string Variable::getTypeName() const
@@ -4708,6 +4719,9 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
     const Token* localTypeTok = skipScopeIdentifiers(tok);
     const Token* localVarTok = nullptr;
 
+    while (Token::simpleMatch(localTypeTok, "alignas (") && Token::Match(localTypeTok->linkAt(1), ") %name%"))
+        localTypeTok = localTypeTok->linkAt(1)->next();
+
     if (Token::Match(localTypeTok, "%type% <")) {
         if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
             return false;
@@ -5096,6 +5110,15 @@ const Type* SymbolDatabase::findVariableType(const Scope *start, const Token *ty
     return nullptr;
 }
 
+static bool hasEmptyCaptureList(const Token* tok) {
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    const Token* listTok = tok->astParent();
+    if (Token::simpleMatch(listTok, "("))
+        listTok = listTok->astParent();
+    return Token::simpleMatch(listTok, "[ ]");
+}
+
 bool Scope::hasInlineOrLambdaFunction() const
 {
     return std::any_of(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
@@ -5103,7 +5126,7 @@ bool Scope::hasInlineOrLambdaFunction() const
         if (s->type == Scope::eUnconditional && Token::simpleMatch(s->bodyStart->previous(), ") {"))
             return true;
         // Lambda function
-        if (s->type == Scope::eLambda)
+        if (s->type == Scope::eLambda && !hasEmptyCaptureList(s->bodyStart))
             return true;
         if (s->hasInlineOrLambdaFunction())
             return true;

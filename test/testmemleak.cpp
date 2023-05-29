@@ -1737,7 +1737,7 @@ private:
 
         TEST_CASE(customAllocation);
 
-        TEST_CASE(lambdaInForLoop); // #9793
+        TEST_CASE(lambdaInScope); // #9793
     }
 
     void err() {
@@ -2228,8 +2228,8 @@ private:
         ASSERT_EQUALS("[test.c:7]: (error) Memory leak: abc.a\n", errout.str());
     }
 
-    void lambdaInForLoop() { // #9793
-        check(
+    void lambdaInScope() {
+        check( // #9793
             "struct S { int * p{nullptr}; };\n"
             "int main()\n"
             "{\n"
@@ -2241,6 +2241,35 @@ private:
             "    delete[] s.p;\n"
             "    return 0;\n"
             "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check(
+            "struct S { int* p; };\n"
+            "void f() {\n"
+            "    auto g = []() {\n"
+            "      S s;\n"
+            "      s.p = new int;\n"
+            "    };\n"
+            "}\n", true);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: s.p\n", errout.str());
+
+        check(
+            "struct S { int* p; };\n"
+            "void f() {\n"
+            "    S s;\n"
+            "    s.p = new int;\n"
+            "    auto g = [&]() {\n"
+            "        delete s.p;\n"
+            "    };\n"
+            "    g();\n"
+            "}\n"
+            "void h() {\n"
+            "    S s;\n"
+            "    s.p = new int;\n"
+            "    [&]() {\n"
+            "        delete s.p;\n"
+            "    }();\n"
+            "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 };

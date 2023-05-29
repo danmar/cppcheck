@@ -494,7 +494,12 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
 
         if (!mProjectFile->getAnalyzeAllVsConfigs()) {
             const cppcheck::Platform::Type platform = (cppcheck::Platform::Type) mSettings->value(SETTINGS_CHECKED_PLATFORM, 0).toInt();
-            p.selectOneVsConfig(platform);
+            std::vector<std::string> configurations;
+            const QStringList configs = mProjectFile->getVsConfigurations();
+            std::transform(configs.cbegin(), configs.cend(), std::back_inserter(configurations), [](const QString& e) {
+                return e.toStdString();
+            });
+            p.selectVsConfigurations(platform, configurations);
         }
     } else {
         enableProjectActions(false);

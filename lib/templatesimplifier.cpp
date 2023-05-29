@@ -1320,7 +1320,7 @@ void TemplateSimplifier::simplifyTemplateAliases()
 
             // copy template-id from declaration to after instantiation
             Token * dst = aliasUsage.token()->next()->findClosingBracket();
-            Token * end = TokenList::copyTokens(dst, aliasDeclaration.aliasStartToken(), aliasDeclaration.aliasEndToken()->previous(), false)->next();
+            const Token* end = TokenList::copyTokens(dst, aliasDeclaration.aliasStartToken(), aliasDeclaration.aliasEndToken()->previous(), false)->next();
 
             // replace parameters
             for (Token *tok1 = dst->next(); tok1 != end; tok1 = tok1->next()) {
@@ -3740,7 +3740,7 @@ void TemplateSimplifier::simplifyTemplates(
         for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
             if (!Token::Match(tok, ")|>|>> requires %name%|("))
                 continue;
-            Token *end = skipRequires(tok->next());
+            const Token* end = skipRequires(tok->next());
             if (end)
                 Token::eraseTokens(tok, end);
         }

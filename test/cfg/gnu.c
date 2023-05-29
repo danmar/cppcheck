@@ -205,6 +205,7 @@ void uninitvar_timercmp(struct timeval t)
 
 void nullPointer_timercmp(struct timeval t)
 {
+    // cppcheck-suppress constVariablePointer
     struct timeval *p=0;
     // cppcheck-suppress nullPointer
     (void)timercmp(&t, p, <);
@@ -417,11 +418,11 @@ void bufferAccessOutOfBounds()
 
 void leakReturnValNotUsed()
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable, constVariablePointer]
     char* ptr = (char*)strdupa("test");
     // cppcheck-suppress ignoredReturnValue
     strdupa("test");
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable, constVariablePointer]
     char* ptr2 = (char*)strndupa("test", 1);
     // cppcheck-suppress ignoredReturnValue
     strndupa("test", 1);

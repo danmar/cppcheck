@@ -150,7 +150,8 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
 
             if (digits_string.find('.') != std::string::npos) {
                 const std::string endStr = digits_string.substr(digits_string.find('.') + 1);
-                const int maxLen = std::max(std::abs(strToInt<int>(endStr)), 1);
+                // NOLINTNEXTLINE(cert-err34-c) - intentional use
+                const int maxLen = std::max(std::abs(std::atoi(endStr.c_str())), 1);
 
                 if (formatString[i] == 's') {
                     // For strings, the length after the dot "%.2s" will limit

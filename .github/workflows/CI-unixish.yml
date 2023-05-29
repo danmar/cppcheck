@@ -380,7 +380,7 @@ jobs:
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
-          ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
+          ./cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
           pushd addons/test
           # We'll force C89 standard to enable an additional verification for
           # rules 5.4 and 5.5 which have standard-dependent options.
@@ -393,7 +393,7 @@ jobs:
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
-          ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
+          ../../cppcheck --addon=misra --enable=style --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
           ../../cppcheck --dump misc-test.cpp 
           python3 ../misc.py -verify misc-test.cpp.dump
           ../../cppcheck --dump naming_test.c 

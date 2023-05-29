@@ -1343,6 +1343,17 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         if (!tok->isTemplateArg())
             value.setKnown();
         setTokenValue(tok->next(), std::move(value), settings, isInitList);
+    } else if (Token::Match(tok, "%name% = {") && tok->variable() &&
+               (tok->variable()->isPointer() || (tok->variable()->valueType() && tok->variable()->valueType()->isIntegral()))) {
+        if (Token::simpleMatch(tok->tokAt(3), "}")) {
+            ValueFlow::Value value(0);
+            value.setKnown();
+            setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+        } else if (tok->tokAt(2)->astOperand1() && tok->tokAt(2)->astOperand1()->hasKnownIntValue()) {
+            ValueFlow::Value value(tok->tokAt(2)->astOperand1()->getKnownIntValue());
+            value.setKnown();
+            setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+        }
     }
     return tok->next();
 }
@@ -5803,7 +5814,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist,
             if (tok->str() != "=" && !(isInit = isVariableInit(tok)))
                 continue;
 
-            if (tok->astParent() && !(tok->astParent()->str() == ";" && astIsLHS(tok)))
+            if (tok->astParent() && !((tok->astParent()->str() == ";" && astIsLHS(tok)) || tok->astParent()->str() == "*"))
                 continue;
 
             // Lhs should be a variable
@@ -6252,7 +6263,7 @@ struct ConditionHandler {
                 continue;
             }
             if (Token::Match(tok->astParent(), "==|!=")) {
-                Token* sibling = tok->astSibling();
+                const Token* sibling = tok->astSibling();
                 if (sibling->hasKnownIntValue() && (astIsBool(tok) || astIsBool(sibling))) {
                     const bool value = sibling->values().front().intvalue;
                     if (inverted)
@@ -7330,8 +7341,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist,
     });
     if (!r) {
         std::string fname = "<unknown>";
-        Function* f = functionScope->function;
-        if (f)
+        if (const Function* f = functionScope->function)
             fname = f->name();
         if (settings.debugwarnings)
             bailout(tokenlist, errorLogger, functionScope->bodyStart, "Too many argument passed to " + fname);

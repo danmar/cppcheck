@@ -3632,6 +3632,25 @@ private:
                       "[test.cpp:13]: (style) Parameter 's' can be declared as pointer to const\n"
                       "[test.cpp:19]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
+
+        check("struct S {\n" // #11573
+              "    const char* g() const {\n"
+              "        return m;\n"
+              "    }\n"
+              "    const char* m;\n"
+              "};\n"
+              "struct T { std::vector<S*> v; };\n"
+              "void f(T* t, const char* n) {\n"
+              "    for (const auto* p : t->v)\n"
+              "        if (strcmp(p->g(), n) == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Parameter 't' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void f(int*& p, int* q) {\n"
+              "    p = q;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -7440,7 +7459,7 @@ private:
               "  if (*p < 0) continue;\n"
               "  if ((*p > 0)) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n", errout.str());
 
         check("void f() {\n"
               "  int val = 0;\n"
@@ -7449,7 +7468,9 @@ private:
               "  if ((*p > 0)) {}\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison '*p < 0' is always false.\n"
-                           "[test.cpp:2] -> [test.cpp:4]: (style) The comparison '*p > 0' is always false.\n", "", errout.str());
+                           "[test.cpp:2] -> [test.cpp:4]: (style) The comparison '*p > 0' is always false.\n",
+                           "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n",
+                           errout.str());
 
         check("void f() {\n"
               "  int val = 0;\n"
@@ -9747,7 +9768,7 @@ private:
         check("void f(char **ptr) {\n"
               "    int *x = &(*ptr)[10];\n"
               "}\n", nullptr, true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' can be declared as pointer to const\n", errout.str());
 
         // function calls
         check("void f(Mutex *mut) {\n"
@@ -10887,7 +10908,9 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n",
+            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n"
+            "[test.cpp:4]: (style) Variable 'xp' can be declared as pointer to const\n"
+            "[test.cpp:5]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("bool f() {\n"
@@ -10908,7 +10931,9 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n",
+            "[test.cpp:1] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n"
+            "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
+            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("struct A {int data;};\n"
@@ -10920,7 +10945,9 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n",
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n"
+            "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
+            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("bool f(int * xp, int* yp) {\n"
@@ -10945,7 +10972,9 @@ private:
               "    int* yp = &x[1];\n"
               "    return xp > yp;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'xp' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Variable 'yp' can be declared as pointer to const\n",
+                      errout.str());
 
         check("bool f(const int * xp, const int* yp) {\n"
               "    return xp > yp;\n"
@@ -10975,7 +11004,9 @@ private:
               "    int* yp = &y->data;\n"
               "    return xp > yp;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
+                      "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S { int i; };\n" // #11576
               "int f(S s) {\n"
@@ -11058,6 +11089,12 @@ private:
               "    u.i = u.f;\n" // <- error
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Overlapping read/write of union is undefined behavior\n", errout.str());
+
+        check("void foo() {\n" // #11013
+              "    union { struct { uint8_t a; uint8_t b; }; uint16_t c; } u;\n"
+              "    u.a = u.b = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         // memcpy
         check("void foo() {\n"

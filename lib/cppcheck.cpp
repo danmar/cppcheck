@@ -1486,6 +1486,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             errmsg.severity = Severity::fromString(severity);
             if (errmsg.severity == Severity::SeverityType::none)
                 continue;
+            if (!mSettings.severity.isEnabled(errmsg.severity))
+                continue;
             errmsg.file0 = ((files.size() == 1) ? files[0] : "");
 
             reportErr(errmsg);
