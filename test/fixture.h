@@ -176,6 +176,8 @@ protected:
 
         SettingsBuilder& library(const char lib[]);
 
+        SettingsBuilder& libraryxml(const char xmldata[], std::size_t len);
+
         SettingsBuilder& platform(cppcheck::Platform::Type type);
 
         SettingsBuilder& checkConfiguration() {

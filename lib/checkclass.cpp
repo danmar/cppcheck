@@ -221,13 +221,15 @@ void CheckClass::constructors()
                 if (!usage.assign && !usage.init)
                     continue;
                 const Scope* varScope1 = var.nameToken()->scope();
+                while (varScope1->type == Scope::ScopeType::eStruct)
+                    varScope1 = varScope1->nestedIn;
                 if (varScope1->type == Scope::ScopeType::eUnion) {
                     for (Usage &usage2 : usageList) {
                         const Variable& var2 = *usage2.var;
                         if (usage2.assign || usage2.init || var2.isStatic())
                             continue;
                         const Scope* varScope2 = var2.nameToken()->scope();
-                        if (varScope2->type == Scope::ScopeType::eStruct)
+                        while (varScope2->type == Scope::ScopeType::eStruct)
                             varScope2 = varScope2->nestedIn;
                         if (varScope1 == varScope2)
                             usage2.assign = true;
@@ -1736,7 +1738,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
 
         // check for deallocating memory
         const Token *var;
-        if (Token::Match(tok, "free ( %var%"))
+        if (Token::Match(tok, "%name% ( %var%") && mSettings->library.getDeallocFuncInfo(tok))
             var = tok->tokAt(2);
         else if (Token::Match(tok, "delete [ ] %var%"))
             var = tok->tokAt(3);
@@ -2362,7 +2364,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             }
 
             // non const pointer cast
-            if (tok1->valueType() && tok1->valueType()->pointer > 0 && tok1->astParent() && tok1->astParent()->isCast() && !Token::simpleMatch(tok1->astParent(), "( const"))
+            if (tok1->valueType() && tok1->valueType()->pointer > 0 && tok1->astParent() && tok1->astParent()->isCast() &&
+                !(tok1->astParent()->valueType() &&
+                  (tok1->astParent()->valueType()->pointer == 0 || tok1->astParent()->valueType()->isConst(tok1->astParent()->valueType()->pointer))))
                 return false;
 
             const Token* lhs = tok1->previous();

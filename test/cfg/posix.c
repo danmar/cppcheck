@@ -985,8 +985,7 @@ void memleak_getaddrinfo()
 
 void memleak_mmap(int fd)
 {
-    // cppcheck-suppress unusedAllocatedMemory
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unusedAllocatedMemory, unreadVariable, constVariablePointer]
     void *addr = mmap(NULL, 255, PROT_NONE, MAP_PRIVATE, fd, 0);
     // cppcheck-suppress memleak
 }
@@ -1040,7 +1039,7 @@ int munmap_no_double_free(int tofd, // #11396
 
 void resourceLeak_fdopen(int fd)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable, constVariablePointer]
     FILE *f = fdopen(fd, "r");
     // cppcheck-suppress resourceLeak
 }
@@ -1065,14 +1064,14 @@ int no_resourceLeak_mkstemp_02(char *template)
 
 void resourceLeak_fdopendir(int fd)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable, constVariablePointer]
     DIR* leak1 = fdopendir(fd);
     // cppcheck-suppress resourceLeak
 }
 
 void resourceLeak_opendir(void)
 {
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [unreadVariable, constVariablePointer]
     DIR* leak1 = opendir("abc");
     // cppcheck-suppress resourceLeak
 }
@@ -1187,9 +1186,7 @@ void uninitvar(int fd)
     regcomp(&reg, pattern, cflags2);
     regerror(0, &reg, 0, 0);
 #ifndef __CYGWIN__
-    // cppcheck-suppress uninitvar
-    // cppcheck-suppress unreadVariable
-    // cppcheck-suppress ecvtCalled
+    // cppcheck-suppress [uninitvar, unreadVariable, ecvtCalled, constVariablePointer]
     char *buffer = ecvt(d, 11, &decimal, &sign);
 #endif
     // cppcheck-suppress gcvtCalled
@@ -1282,11 +1279,11 @@ void dl(const char* libname, const char* func)
     // cppcheck-suppress resourceLeak
     lib = dlopen(libname, RTLD_LAZY);
     const char* funcname;
-    // cppcheck-suppress uninitvar
-    // cppcheck-suppress unreadVariable
+    // cppcheck-suppress [uninitvar, unreadVariable, constVariablePointer]
     void* sym = dlsym(lib, funcname);
     // cppcheck-suppress ignoredReturnValue
     dlsym(lib, "foo");
+    // cppcheck-suppress unassignedVariable
     void* uninit;
     // cppcheck-suppress uninitvar
     dlclose(uninit);

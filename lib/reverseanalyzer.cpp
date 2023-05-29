@@ -162,7 +162,7 @@ struct ReverseTraversal {
                 parent = parent->astParent();
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
-            Token* condTok = parent->astOperand1();
+            const Token* condTok = parent->astOperand1();
             if (!condTok)
                 continue;
             bool checkThen, checkElse;

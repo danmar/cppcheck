@@ -31,12 +31,13 @@ public:
     TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {}
 
 private:
-    Settings settings = settingsBuilder().severity(Severity::style).build();
+    const Settings settings = settingsBuilder().severity(Severity::style).build();
 
     void run() override {
         TEST_CASE(incondition);
         TEST_CASE(return1);
         TEST_CASE(return2);
+        TEST_CASE(return3);
         TEST_CASE(callback1);
         TEST_CASE(callback2);
         TEST_CASE(else1);
@@ -77,11 +78,11 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native) {
+    void check_(const char* file, int line, const char code[], cppcheck::Platform::Type platform = cppcheck::Platform::Type::Native, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings1 = settingsBuilder(settings).platform(platform).build();
+        const Settings settings1 = settingsBuilder(s ? *s : settings).platform(platform).build();
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
@@ -120,6 +121,24 @@ private:
         check("char * foo()\n"
               "{\n"
               "    return *foo();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return3() {
+        check("typedef void (*VoidFunc)();\n" // #9602
+              "void sayHello() {\n"
+              "  printf(\"Hello World\\n\");\n"
+              "}\n"
+              "VoidFunc getEventHandler() {\n"
+              "  return sayHello;\n"
+              "}\n"
+              "void indirectHello() {\n"
+              "  VoidFunc handler = getEventHandler();\n"
+              "  handler();\n"
+              "}\n"
+              "int main() {\n"
+              "  indirectHello();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
@@ -314,8 +333,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void template9() { // #7739
-        check("template<class T>\n"
+    void template9() {
+        check("template<class T>\n" // #7739
               "void f(T const& t) {}\n"
               "template<class T>\n"
               "void g(T const& t) {\n"
@@ -327,6 +346,12 @@ private:
               "    g(2);\n"
               "    g(3.14);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T> T f(T);\n" // #9222
+              "template <typename T> T f(T i) { return i; }\n"
+              "template int f<int>(int);\n"
+              "int main() { return f(int(2)); }\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -612,16 +637,13 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        const Settings settingsOld = settings;
-        LOAD_LIB_2(settings.library, "windows.cfg");
+        const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int WinMain() { }");
+        check("int WinMain() { }", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }");
+        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
-
-        settings = settingsOld;
     }
 
     void entrypointsWinU() {
@@ -631,16 +653,13 @@ private:
         check("int _tmain() { }");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_tmain' is never used.\n", errout.str());
 
-        const Settings settingsOld = settings;
-        LOAD_LIB_2(settings.library, "windows.cfg");
+        const Settings s = settingsBuilder(settings).library("windows.cfg").build();
 
-        check("int wWinMain() { }");
+        check("int wWinMain() { }", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
 
-        check("int _tmain() { }");
+        check("int _tmain() { }", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
-
-        settings = settingsOld;
     }
 
     void entrypointsUnix() {
@@ -649,14 +668,11 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) The function '_init' is never used.\n"
                       "[test.cpp:2]: (style) The function '_fini' is never used.\n", errout.str());
 
-        const Settings settingsOld = settings;
-        LOAD_LIB_2(settings.library, "gnu.cfg");
+        const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
 
         check("int _init() { }\n"
-              "int _fini() { }\n");
+              "int _fini() { }\n", cppcheck::Platform::Type::Native, &s);
         ASSERT_EQUALS("", errout.str());
-
-        settings = settingsOld;
     }
 };
 

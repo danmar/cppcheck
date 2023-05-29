@@ -329,7 +329,7 @@ void CheckOther::cstyleCastError(const Token *tok)
                 "C-style pointer casting detected. C++ offers four different kinds of casts as replacements: "
                 "static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to "
                 "any of those automatically, thus it is considered safer if the programmer explicitly states "
-                "which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts.", CWE398, Certainty::normal);
+                "which kind of cast is expected.", CWE398, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -868,7 +868,7 @@ static bool isSimpleExpr(const Token* tok, const Variable* var, const Settings* 
             needsCheck = true;
     }
     return (needsCheck && !isExpressionChanged(tok, tok->astParent(), var->scope()->bodyEnd, settings, true));
-};
+}
 
 //---------------------------------------------------------------------------
 // Check scope of variables..
@@ -1537,6 +1537,16 @@ void CheckOther::checkConstVariable()
     }
 }
 
+static const Token* getVariableChangedStart(const Variable* p)
+{
+    if (p->isArgument())
+        return p->scope()->bodyStart;
+    const Token* start = p->nameToken()->next();
+    if (start->isSplittedVarDeclEq())
+        start = start->tokAt(3);
+    return start;
+}
+
 void CheckOther::checkConstPointer()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -1565,17 +1575,29 @@ void CheckOther::checkConstPointer()
             continue;
         pointers.emplace_back(var);
         const Token* const parent = tok->astParent();
-        bool deref = false;
+        enum Deref { NONE, DEREF, MEMBER } deref = NONE;
         if (parent && parent->isUnaryOp("*"))
-            deref = true;
+            deref = DEREF;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
-            deref = true;
+            deref = DEREF;
         else if (Token::Match(parent, "%op%") && Token::simpleMatch(parent->astParent(), "."))
-            deref = true;
+            deref = DEREF;
+        else if (Token::simpleMatch(parent, "."))
+            deref = MEMBER;
         else if (astIsRangeBasedForDecl(tok))
             continue;
-        if (deref) {
+        if (deref != NONE) {
             const Token* const gparent = parent->astParent();
+            if (deref == MEMBER) {
+                if (!gparent)
+                    continue;
+                if (parent->astOperand2()) {
+                    if (parent->astOperand2()->function() && parent->astOperand2()->function()->isConst())
+                        continue;
+                    if (mSettings->library.isFunctionConst(parent->astOperand2()))
+                        continue;
+                }
+            }
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
             int argn = -1;
@@ -1607,6 +1629,8 @@ void CheckOther::checkConstPointer()
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
+            else if (Token::simpleMatch(parent, "=") && parent->astOperand1() == tok)
+                continue;
             else if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                 if (ftok->function() && !parent->isCast()) {
                     const Variable* argVar = ftok->function()->getArgumentVar(argn);
@@ -1626,7 +1650,7 @@ void CheckOther::checkConstPointer()
                 continue;
         }
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), p) == nonConstPointers.cend()) {
-            const Token *start = (p->isArgument()) ? p->scope()->bodyStart : p->nameToken()->next();
+            const Token *start = getVariableChangedStart(p);
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
                 continue;
@@ -2311,7 +2335,7 @@ void CheckOther::checkInvalidFree()
 
             // If a variable that was previously assigned a newly-allocated memory location is
             // added or subtracted from when used to free the memory, report an error.
-            else if (Token::Match(tok, "free|g_free|delete ( %any% +|-") ||
+            else if ((Token::Match(tok, "%name% ( %any% +|-") && mSettings->library.getDeallocFuncInfo(tok)) ||
                      Token::Match(tok, "delete [ ] ( %any% +|-") ||
                      Token::Match(tok, "delete %any% +|- %any%")) {
 
@@ -3829,6 +3853,12 @@ void CheckOther::checkOverlappingWrite()
                     if (!rhs->isBinaryOp() || rhs->astOperand1()->variable() != lhsvar)
                         return ChildrenToVisit::none;
                     if (lhsmember->str() == rhs->astOperand2()->str())
+                        return ChildrenToVisit::none;
+                    const Variable* rhsmembervar = rhs->astOperand2()->variable();
+                    const Scope* varscope1 = lhsmember->variable() ? lhsmember->variable()->typeStartToken()->scope() : nullptr;
+                    const Scope* varscope2 = rhsmembervar ? rhsmembervar->typeStartToken()->scope() : nullptr;
+                    if (varscope1 && varscope1 == varscope2 && varscope1 != lhsvar->typeScope())
+                        // lhsmember and rhsmember are declared in same anonymous scope inside union
                         return ChildrenToVisit::none;
                     errorToken = rhs->astOperand2();
                     return ChildrenToVisit::done;

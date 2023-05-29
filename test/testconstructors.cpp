@@ -32,7 +32,7 @@ public:
     TestConstructors() : TestFixture("TestConstructors") {}
 
 private:
-    Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
+    const Settings settings = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
     void check_(const char* file, int line, const char code[], bool inconclusive = false) {
@@ -1485,6 +1485,22 @@ private:
               "\n"
               "class C : public S {\n"
               "public:\n"
+              "    C() { flag1 = flag2 = 0; tick = 0; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    union {\n"
+              "        unsigned short       all;\n"
+              "        struct {\n"
+              "            unsigned char    flag1;\n"
+              "            unsigned char    flag2;\n"
+              "        };\n"
+              "    };\n"
+              "};\n"
+              "\n"
+              "class C : public S {\n"
+              "public:\n"
               "    C() {}\n"
               "};");
         ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'S::all' is not initialized in the constructor. Maybe it should be initialized directly in the class S?\n"
@@ -1493,29 +1509,31 @@ private:
     }
 
     void initvar_private_constructor() {
-        const Settings settingsOld = settings;
-        settings.standards.cpp = Standards::CPP11;
-        check("class Fred\n"
-              "{\n"
-              "private:\n"
-              "    int var;\n"
-              "    Fred();\n"
-              "};\n"
-              "Fred::Fred()\n"
-              "{ }");
-        ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
+        {
+            const Settings s = settingsBuilder(settings).cpp( Standards::CPP11).build();
+            check("class Fred\n"
+                  "{\n"
+                  "private:\n"
+                  "    int var;\n"
+                  "    Fred();\n"
+                  "};\n"
+                  "Fred::Fred()\n"
+                  "{ }", s);
+            ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'Fred::var' is not initialized in the constructor.\n", errout.str());
+        }
 
-        settings.standards.cpp = Standards::CPP03;
-        check("class Fred\n"
-              "{\n"
-              "private:\n"
-              "    int var;\n"
-              "    Fred();\n"
-              "};\n"
-              "Fred::Fred()\n"
-              "{ }");
-        ASSERT_EQUALS("", errout.str());
-        settings = settingsOld;
+        {
+            const Settings s = settingsBuilder(settings).cpp(Standards::CPP03).build();
+            check("class Fred\n"
+                  "{\n"
+                  "private:\n"
+                  "    int var;\n"
+                  "    Fred();\n"
+                  "};\n"
+                  "Fred::Fred()\n"
+                  "{ }", s);
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void initvar_copy_constructor() { // ticket #1611
@@ -3540,19 +3558,23 @@ private:
     }
 
     void privateCtor1() {
-        settings.standards.cpp = Standards::CPP03;
-        check("class Foo {\n"
-              "    int foo;\n"
-              "    Foo() { }\n"
-              "};");
-        ASSERT_EQUALS("", errout.str());
+        {
+            const Settings s = settingsBuilder(settings).cpp(Standards::CPP03).build();
+            check("class Foo {\n"
+                  "    int foo;\n"
+                  "    Foo() { }\n"
+                  "};", s);
+            ASSERT_EQUALS("", errout.str());
+        }
 
-        settings.standards.cpp = Standards::CPP11;
-        check("class Foo {\n"
-              "    int foo;\n"
-              "    Foo() { }\n"
-              "};");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Foo::foo' is not initialized in the constructor.\n", errout.str());
+        {
+            const Settings s = settingsBuilder(settings).cpp(Standards::CPP11).build();
+            check("class Foo {\n"
+                  "    int foo;\n"
+                  "    Foo() { }\n"
+                  "};", s);
+            ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Foo::foo' is not initialized in the constructor.\n", errout.str());
+        }
     }
 
     void privateCtor2() {

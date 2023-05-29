@@ -1795,7 +1795,6 @@ void uninitvar_fread(void)
 
 void uninitvar_free(void)
 {
-    // cppcheck-suppress unassignedVariable
     void *block;
     // cppcheck-suppress uninitvar
     std::free(block);

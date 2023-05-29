@@ -412,7 +412,7 @@ void MainWindow::resultsContextMenu(const QPoint& pos)
         return;
     QMenu submenu;
     submenu.addAction("Copy");
-    QAction* menuItem = submenu.exec(ui->results->mapToGlobal(pos));
+    const QAction* menuItem = submenu.exec(ui->results->mapToGlobal(pos));
     if (menuItem && menuItem->text().contains("Copy"))
     {
         QString text;

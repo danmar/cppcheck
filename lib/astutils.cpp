@@ -2632,7 +2632,7 @@ bool isVariableChanged(const Token *start, const Token *end, int indirect, const
 
 const Token* findExpression(const Token* start, const nonneg int exprid)
 {
-    Function * f = Scope::nestedInFunction(start->scope());
+    const Function* f = Scope::nestedInFunction(start->scope());
     if (!f)
         return nullptr;
     const Scope* scope = f->functionScope;

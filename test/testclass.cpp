@@ -197,6 +197,7 @@ private:
         TEST_CASE(const84);
         TEST_CASE(const85);
         TEST_CASE(const86);
+        TEST_CASE(const87);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -3397,13 +3398,12 @@ private:
     }
 
     void memsetOnStdPodType() { // Ticket #5901
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
                                "  <podtype name=\"std::atomic_bool\"/>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         checkNoMemset("class A {\n"
                       "    std::array<int, 10> ints;\n"
@@ -6397,6 +6397,21 @@ private:
                    "    void h() { T t = { 1, &i }; }\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const87() { // #11626
+        checkConst("struct S {\n"
+                   "    bool f() { return static_cast<bool>(p); }\n"
+                   "    const int* g() { return const_cast<const int*>(p); }\n"
+                   "    const int* h() { return (const int*)p; }\n"
+                   "    char* j() { return reinterpret_cast<char*>(p); }\n"
+                   "    char* k() { return (char*)p; }\n"
+                   "    int* p;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:3]: (style, inconclusive) Technically the member function 'S::g' can be const.\n"
+                      "[test.cpp:4]: (style, inconclusive) Technically the member function 'S::h' can be const.\n",
+                      errout.str());
     }
 
     void const_handleDefaultParameters() {

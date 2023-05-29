@@ -234,6 +234,7 @@ private:
         TEST_CASE(buffer_overrun_33); //#2019
         TEST_CASE(buffer_overrun_34); //#11035
         TEST_CASE(buffer_overrun_35); //#2304
+        TEST_CASE(buffer_overrun_36);
         TEST_CASE(buffer_overrun_errorpath);
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
@@ -3342,6 +3343,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void buffer_overrun_36() { // #11708
+        check("void f(double d) {\n"
+              "    char a[80];\n"
+              "    sprintf(a, \"%2.1f\", d);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void buffer_overrun_errorpath() {
         setMultiline();
         const Settings settingsOld = settings0;
@@ -3532,7 +3541,6 @@ private:
     }
 
     void buffer_overrun_readSizeFromCfg() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"u8\" sign=\"u\" size=\"1\"/>\n"
@@ -3544,7 +3552,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Attempt to get size from Cfg files, no false positives if size is not specified
         check("void f() {\n"
@@ -4085,7 +4093,6 @@ private:
     // extracttests.disable
 
     void minsize_argvalue() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mymemset\">\n"
@@ -4097,8 +4104,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
-        settings.severity.enable(Severity::warning);
+        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).severity(Severity::warning).build();
         settings.platform.sizeof_wchar_t = 4;
 
         check("void f() {\n"
@@ -4224,7 +4230,6 @@ private:
     }
 
     void minsize_sizeof() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mystrncpy\">\n"
@@ -4237,7 +4242,7 @@ private:
                                "    <arg nr=\"3\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
               "    char c[7];\n"
@@ -4285,7 +4290,6 @@ private:
     }
 
     void minsize_strlen() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mysprintf\">\n"
@@ -4299,7 +4303,7 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         // formatstr..
         check("void f() {\n"
@@ -4399,7 +4403,6 @@ private:
     }
 
     void minsize_mul() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"myfread\">\n"
@@ -4411,7 +4414,7 @@ private:
                                "    <arg nr=\"4\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void f() {\n"
               "    char c[5];\n"

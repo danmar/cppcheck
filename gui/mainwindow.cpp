@@ -684,8 +684,8 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
             formatAndSetTitle(dir);
         }
     }
-
-    setPath(SETTINGS_LAST_CHECK_PATH, mCurrentDirectory);
+    if (!mCurrentDirectory.isEmpty())
+        setPath(SETTINGS_LAST_CHECK_PATH, mCurrentDirectory);
 
     return selected;
 }

@@ -225,19 +225,19 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool cpp = false) {
+    void check_(const char* file, int line, const char code[], bool cpp = false, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
+        const Settings settings1 = settingsBuilder(s ? *s : settings).checkLibrary().build();
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
-        settings.checkLibrary = true;
-
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(&tokenizer, &settings1, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings & s) {
@@ -368,8 +368,8 @@ private:
               "    char * &ref = p;\n"
               "    p = malloc(10);\n"
               "    free(ref);\n"
-              "}");
-        TODO_ASSERT_EQUALS("", "[test.c:6]: (error) Memory leak: p\n", errout.str());
+              "}", /*cpp*/ true);
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (error) Memory leak: p\n", errout.str());
     }
 
     void assign14() {
@@ -469,9 +469,7 @@ private:
     }
 
     void assign23() {
-        const Settings settingsOld = settings;
-        LOAD_LIB_2(settings.library, "posix.cfg");
-        settings.libraries.emplace_back("posix");
+        const Settings s = settingsBuilder(settings).library("posix.cfg").build();
         check("void f() {\n"
               "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
               "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
@@ -488,7 +486,7 @@ private:
               "    ((*&n12)) = open(\"xx.log\", O_RDONLY);\n"
               "    *(&(*&n13)) = open(\"xx.log\", O_RDONLY);\n"
               "    ((*&(*&n14))) = open(\"xx.log\", O_RDONLY);\n"
-              "}\n", true);
+              "}\n", true, &s);
         ASSERT_EQUALS("[test.cpp:17]: (error) Resource leak: n1\n"
                       "[test.cpp:17]: (error) Resource leak: n2\n"
                       "[test.cpp:17]: (error) Resource leak: n3\n"
@@ -504,7 +502,6 @@ private:
                       "[test.cpp:17]: (error) Resource leak: n13\n"
                       "[test.cpp:17]: (error) Resource leak: n14\n",
                       errout.str());
-        settings = settingsOld;
     }
 
     void assign24() {
@@ -2134,15 +2131,13 @@ private:
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) { free(f); }};\n"
               "}", true);
-        TODO_ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
 
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) {}};\n"
               "}", true);
-        TODO_ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
 
         check("class C;\n"
               "void f() {\n"
@@ -2332,7 +2327,7 @@ private:
     void test1() { // 3809
         check("void f(double*&p) {\n"
               "    p = malloc(0x100);\n"
-              "}");
+              "}", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2348,7 +2343,7 @@ private:
         check("void f() {\n"
               "    char *&p = x();\n"
               "    p = malloc(10);\n"
-              "};");
+              "};", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2625,8 +2620,6 @@ private:
     }
 
     void functionCallLeakIgnoreConfig() { // #7923
-        Settings settingsLeakIgnore = settings;
-
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def format=\"2\">\n"
                                "  <function name=\"SomeClass::someMethod\">\n"
@@ -2635,7 +2628,7 @@ private:
                                "    <arg nr=\"1\" direction=\"in\"/>\n"
                                "  </function>\n"
                                "</def>\n";
-        ASSERT(settingsLeakIgnore.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settingsLeakIgnore = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
