@@ -29,6 +29,7 @@ unsafe_types = set()
 
 
 def dprint(level, fmt, varlist=()):
+    """Print messages for someone debugging this script. This wraps print()."""
     if debug < level:
         return
     if varlist:
@@ -38,6 +39,7 @@ def dprint(level, fmt, varlist=()):
 
 
 def vprint(level, fmt, varlist=()):
+    """Print messages for someone running this script. This wraps print()."""
     if verbose < level:
         return
     if varlist:
@@ -47,6 +49,7 @@ def vprint(level, fmt, varlist=()):
 
 
 def man_search(manpage):
+    """Search one manpage for tokens  in the attributes table."""
     vprint(1, '-- %s --' % (manpage))
 
     try:
@@ -125,6 +128,34 @@ def man_search(manpage):
     return  # list(unsafe_types), list(unsafe_apis)
 
 
+def do_man_page(manpage):
+    """Wrap man_search(), with logging."""
+    dprint(1, 'do_man_page(%s)' % (manpage))
+    man_search(manpage)
+    if unsafe_types:
+        dprint(1, '%d new types in %s' % (len(unsafe_types), manpage))
+    else:
+        dprint(1, 'No new types in %s' % (manpage))
+
+    if unsafe_apis:
+        dprint(1, '%d unsafe_apis in %s' % (len(unsafe_apis), manpage))
+    else:
+        dprint(1, 'No new apis in %s' % (manpage))
+
+
+def do_man_dir(directory):
+    """Recursively process a directory of man-pages."""
+    dprint(1, 'do_man_dir(%s)' % (directory))
+    if os.path.isfile(directory):
+        return do_man_page(directory)
+
+    for path, directories, files in os.walk(directory):
+        for file in files:
+            dprint(2, 'calling do_man_page(%s)' % (
+                os.path.join(path, file)))
+            do_man_page(os.path.join(path, file))
+
+
 manpages = set()
 for arg in sys.argv[1:]:
     if arg.startswith('-'):
@@ -140,34 +171,6 @@ for arg in sys.argv[1:]:
             dprint(0, 'skipping arg - not readable')
 
 dprint(2, 'manpages: %s' % manpages)
-
-unsafe = set()
-
-
-def do_man_page(manpage):
-    dprint(1, 'do_man_page(%s)' % (manpage))
-    man_search(manpage)
-    if unsafe_types:
-        dprint(1, '%d new types in %s' % (len(unsafe_types), manpage))
-    else:
-        dprint(1, 'No new types in %s' % (manpage))
-
-    if unsafe_apis:
-        dprint(1, '%d unsafe_apis in %s' % (len(unsafe_apis), manpage))
-    else:
-        dprint(1, 'No new apis in %s' % (manpage))
-
-
-def do_man_dir(directory):
-    dprint(1, 'do_man_dir(%s)' % (directory))
-    if os.path.isfile(directory):
-        return do_man_page(directory)
-
-    for path, directories, files in os.walk(directory):
-        for file in files:
-            dprint(2, 'calling do_man_page(%s)' % (
-                os.path.join(path, file)))
-            do_man_page(os.path.join(path, file))
 
 
 for manpage in manpages:
