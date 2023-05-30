@@ -163,7 +163,7 @@ static bool isLocalContainerBuffer(const Token* tok)
 
     const Library::Container::Yield yield = astContainerYield(tok);
 
-    return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;  
+    return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
 }
 
 // Verification that we really take the address of a local variable
