@@ -166,26 +166,6 @@ static bool isLocalContainerBuffer(const Token* tok)
     return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
 }
 
-// Verification that we really take the address of a local variable
-static bool checkRvalueExpression(const Token * const vartok)
-{
-    const Variable * const var = vartok->variable();
-    if (var == nullptr)
-        return false;
-
-    if (Token::Match(vartok->previous(), "& %name% [") && var->isPointer())
-        return false;
-
-    const Token * const next = vartok->next();
-    // &a.b[0]
-    if (Token::Match(vartok, "%name% . %var% [") && !var->isPointer()) {
-        const Variable *var2 = next->next()->variable();
-        return var2 && !var2->isPointer();
-    }
-
-    return ((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
-}
-
 static bool isAddressOfLocalVariable(const Token *expr)
 {
     if (!expr)
@@ -226,6 +206,10 @@ static bool variableIsUsedInScope(const Token* start, nonneg int varId, const Sc
     return false;
 }
 
+static bool isAutoVariableRHS(const Token* tok) {
+    return isAddressOfLocalVariable(tok) || isAutoVarArray(tok) || isLocalContainerBuffer(tok);
+}
+
 void CheckAutoVariables::assignFunctionArg()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
@@ -255,10 +239,6 @@ void CheckAutoVariables::assignFunctionArg()
     }
 }
 
-static bool isAutoVariableRHS(const Token* tok) {
-    return isAddressOfLocalVariable(tok) || isAutoVarArray(tok) || isLocalContainerBuffer(tok);
-}
-
 void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
@@ -271,27 +251,17 @@ void CheckAutoVariables::autoVariables()
                 continue;
             }
             // Critical assignment
-            if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
-                if (checkRvalueExpression(tok->tokAt(4)))
-                    checkAutoVariableAssignment(tok->next(), false);
-            } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAddressOfLocalVariable(tok->tokAt(3)->astOperand2())) {
+            if (Token::Match(tok, "[;{}] %var% =") && isRefPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(2)->astOperand2())) {
                 checkAutoVariableAssignment(tok->next(), false);
-            } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAddressOfLocalVariable(tok->tokAt(4)->astOperand2())) {
+            } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAutoVariableRHS(tok->tokAt(3)->astOperand2())) {
                 checkAutoVariableAssignment(tok->next(), false);
-            } else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;")) {
-                // TODO: check if the parameter is only changed temporarily (#2969)
-                if (printInconclusive && isPtrArg(tok->next())) {
-                    if (isAutoVarArray(tok->tokAt(5)))
-                        checkAutoVariableAssignment(tok->next(), true);
-                }
+            } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(4)->astOperand2())) {
+                const Token* lhs = tok->tokAt(3);
+                // TODO: check for overloaded operator=, library types
+                const bool isInconclusive = !lhs->valueType() || !lhs->valueType()->pointer || (mTokenizer->isCPP() && !lhs->valueType()->isPrimitive());
+                if (!isInconclusive || printInconclusive)
+                    checkAutoVariableAssignment(tok->next(), isInconclusive);
                 tok = tok->tokAt(5);
-            } else if (Token::Match(tok, "[;{}] * %var% = %var% ;")) {
-                const Variable * var1 = tok->tokAt(2)->variable();
-                if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-3), "%type% * *")) {
-                    if (isAutoVarArray(tok->tokAt(4)))
-                        checkAutoVariableAssignment(tok->next(), false);
-                }
-                tok = tok->tokAt(4);
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
                        (isPtrArg(tok->next()) || isArrayArg(tok->next(), mSettings)) &&
                        isAutoVariableRHS(tok->linkAt(2)->next()->astOperand2())) {

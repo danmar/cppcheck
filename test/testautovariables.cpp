@@ -243,7 +243,7 @@ private:
               "    char a;\n"
               "    ab->a = &a;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar6() { // ticket #2931
@@ -544,7 +544,7 @@ private:
               "    XPoint DropPoint;\n"
               "    ds->location_data = (XtPointer *)&DropPoint;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testautovar_ptrptr() { // #6596
@@ -628,7 +628,7 @@ private:
               "  if (condition) return;\n" // <- not reassigned => error
               "  pcb->root0 = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void foo(cb* pcb) {\n"
               "  int root0;\n"
@@ -637,7 +637,7 @@ private:
               "  if (condition)\n"
               "    pcb->root0 = 0;\n"  // <- conditional reassign => error
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("struct S { int *p; };\n"
               "void g(struct S* s) {\n"
@@ -649,7 +649,7 @@ private:
               "    struct S s;\n"
               "    g(&s);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void testinvaliddealloc() {
@@ -4281,7 +4281,7 @@ private:
               "  f(bar);\n"
               "}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:12]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("class Foo {};\n"
               "struct Bar {\n"
