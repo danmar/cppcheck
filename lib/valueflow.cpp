@@ -942,7 +942,7 @@ static void setTokenValue(Token* tok,
                     if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
                         value2.bound != ValueFlow::Value::Bound::Point)
                         result.invertBound();
-                    setTokenValue(parent, result, settings);
+                    setTokenValue(parent, result, settings, isInitList);
                 }
             }
         }
