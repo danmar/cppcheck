@@ -143,6 +143,29 @@ static bool isAutoVarArray(const Token *tok)
     return false;
 }
 
+static bool isLocalContainerBuffer(const Token* tok)
+{
+    if (!tok)
+        return false;
+    
+    // x+y
+    if (tok->str() == "+")
+        return isLocalContainerBuffer(tok->astOperand1()) || isLocalContainerBuffer(tok->astOperand2());
+    
+    if (tok->str() != "(" || !Token::simpleMatch(tok->astOperand1(), "."))
+        return false;
+    
+    tok = tok->astOperand1()->astOperand1();
+    
+    const Variable* var = tok->variable();
+    if (!var || !var->isLocal() || var->isStatic())
+        return false;
+    
+    const Library::Container::Yield yield = astContainerYield(tok);
+    
+    return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;  
+}
+
 // Verification that we really take the address of a local variable
 static bool checkRvalueExpression(const Token * const vartok)
 {
@@ -232,6 +255,10 @@ void CheckAutoVariables::assignFunctionArg()
     }
 }
 
+static bool isAutoVariableRHS(const Token* tok) {
+    return isAddressOfLocalVariable(tok) || isAutoVarArray(tok) || isLocalContainerBuffer(tok);
+}
+
 void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
@@ -266,7 +293,8 @@ void CheckAutoVariables::autoVariables()
                 }
                 tok = tok->tokAt(4);
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
-                       (isPtrArg(tok->next()) || isArrayArg(tok->next(), mSettings)) && isAddressOfLocalVariable(tok->linkAt(2)->next()->astOperand2())) {
+                       (isPtrArg(tok->next()) || isArrayArg(tok->next(), mSettings)) &&
+                       isAutoVariableRHS(tok->linkAt(2)->next()->astOperand2())) {
                 errorAutoVariableAssignment(tok->next(), false);
             }
             // Invalid pointer deallocation
