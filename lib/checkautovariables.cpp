@@ -147,22 +147,22 @@ static bool isLocalContainerBuffer(const Token* tok)
 {
     if (!tok)
         return false;
-    
+
     // x+y
     if (tok->str() == "+")
         return isLocalContainerBuffer(tok->astOperand1()) || isLocalContainerBuffer(tok->astOperand2());
-    
+
     if (tok->str() != "(" || !Token::simpleMatch(tok->astOperand1(), "."))
         return false;
-    
+
     tok = tok->astOperand1()->astOperand1();
-    
+
     const Variable* var = tok->variable();
     if (!var || !var->isLocal() || var->isStatic())
         return false;
-    
+
     const Library::Container::Yield yield = astContainerYield(tok);
-    
+
     return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;  
 }
 
