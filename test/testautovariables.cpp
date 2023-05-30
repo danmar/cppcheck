@@ -793,6 +793,23 @@ private:
               "};\n"
               "Array arr;\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8174
+        check("struct S {};\n"
+              "void f() {\n"
+              "    S s;\n"
+              "    S* p = &s;\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Deallocation of an auto-variable (s) results in undefined behaviour.\n", errout.str());
+
+        check("void f(bool b, int* q) {\n"
+              "    int i;\n"
+              "    int* p = b ? &i : q;\n"
+              "    if (!b)\n"
+              "        free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_input() {
@@ -2063,6 +2080,18 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("using namespace std;\n" // #10971
+              "struct S { int i = 3; };\n"
+              "unique_ptr<S> g() {\n"
+              "    auto tp = make_unique<S>();\n"
+              "    return tp;\n"
+              "}\n"
+              "void f() {\n"
+              "    const S& s = *g();\n"
+              "    (void)s.i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (error) Using reference to dangling temporary.\n", errout.str());
     }
 
     void testglobalnamespace() {
@@ -2952,7 +2981,7 @@ private:
               "    return ptr.get();\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning object that points to local variable 'ptr' that will be invalid when returning.\n",
+            "[test.cpp:4] -> [test.cpp:3] -> [test.cpp:4]: (error) Returning pointer to local variable 'ptr' that will be invalid when returning.\n",
             errout.str());
     }
     void danglingLifetime() {
@@ -3272,6 +3301,19 @@ private:
               "Matrix<T, 2, 2> O() {\n"
               "    return { {}, {} };\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11729
+        check("struct T {\n"
+              "    void add(int* i) {\n"
+              "        v.push_back(i);\n"
+              "    }\n"
+              "    void f() {\n"
+              "        static int val = 1;\n"
+              "        add(&val);\n"
+              "    }\n"
+              "    std::vector<int*> v;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

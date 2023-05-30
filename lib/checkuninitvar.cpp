@@ -827,7 +827,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
     return false;
 }
 
-const Token *CheckUninitVar::checkExpr(const Token *tok, const Variable& var, const Alloc alloc, bool known, bool *bailout)
+const Token* CheckUninitVar::checkExpr(const Token* tok, const Variable& var, const Alloc alloc, bool known, bool* bailout) const
 {
     if (!tok)
         return nullptr;
@@ -1123,6 +1123,10 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         // (type &)x
         else if (valueExpr->astParent()->isCast() && valueExpr->astParent()->isUnaryOp("(") && Token::simpleMatch(valueExpr->astParent()->link()->previous(), "& )"))
             valueExpr = valueExpr->astParent();
+        // designated initializers: {.x | { ... , .x
+        else if (Token::simpleMatch(valueExpr->astParent(), ".") &&
+                 Token::Match(valueExpr->astParent()->previous(), ",|{"))
+            valueExpr = valueExpr->astParent();
         else
             break;
     }
@@ -1240,7 +1244,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
                 tok = tok->astParent();
         }
         if (Token::simpleMatch(tok->astParent(), "=")) {
-            if (astIsLhs(tok))
+            if (astIsLhs(tok) && (alloc == ARRAY || !derefValue || !derefValue->astOperand1() || !derefValue->astOperand1()->isCast()))
                 return nullptr;
             if (alloc != NO_ALLOC && astIsRhs(valueExpr))
                 return nullptr;

@@ -68,18 +68,6 @@
 #include <string>
 #endif
 
-#ifdef _WIN32
-#include <windows.h>
-
-static char exename[1024] = {0};
-#endif
-
-#if defined(__APPLE__)
-#include <mach-o/dyld.h>
-
-static char exename[1024] = {0};
-#endif
-
 /**
  * Main function of cppcheck
  *
@@ -95,15 +83,7 @@ int main(int argc, char* argv[])
 #endif
 
     CppCheckExecutor exec;
-#ifdef _WIN32
-    GetModuleFileNameA(nullptr, exename, sizeof(exename)/sizeof(exename[0])-1);
-    argv[0] = exename;
-#endif
-#if defined(__APPLE__)
-    uint32_t size = sizeof(exename);
-    _NSGetExecutablePath(exename, &size);
-    argv[0] = exename;
-#endif
+
 // *INDENT-OFF*
 #ifdef NDEBUG
     try {

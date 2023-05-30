@@ -305,9 +305,10 @@ void CheckAutoVariables::autoVariables()
                     errorInvalidDeallocation(tok, nullptr);
                 else if (tok->variable() && tok->variable()->isPointer()) {
                     for (const ValueFlow::Value &v : tok->values()) {
-                        if (!(v.isTokValue()))
+                        if (v.isImpossible())
                             continue;
-                        if (isArrayVar(v.tokvalue) || ((v.tokvalue->tokType() == Token::eString) && !v.isImpossible())) {
+                        if ((v.isTokValue() && (isArrayVar(v.tokvalue) || ((v.tokvalue->tokType() == Token::eString)))) ||
+                            (v.isLocalLifetimeValue() && v.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)) {
                             errorInvalidDeallocation(tok, &v);
                             break;
                         }
@@ -503,7 +504,7 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
     const Variable* var = tokvalue->variable();
     if (!var->isLocal())
         return false;
-    Function* f = Scope::nestedInFunction(tok->scope());
+    const Function* f = Scope::nestedInFunction(tok->scope());
     if (!f)
         return false;
     const Token* parent = tokvalue->astParent();
@@ -642,7 +643,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
                     if (!nextTok)
                         nextTok = tok->next();
-                    if (var && !var->isLocal() && !var->isArgument() &&
+                    if (var && !var->isLocal() && !var->isArgument() && !(val.tokvalue && val.tokvalue->variable() && val.tokvalue->variable()->isStatic()) &&
                         !isVariableChanged(nextTok,
                                            tok->scope()->bodyEnd,
                                            var->declarationId(),

@@ -120,7 +120,7 @@ struct ReverseTraversal {
         return continueB;
     }
 
-    Analyzer::Action analyzeRecursive(const Token* start) {
+    Analyzer::Action analyzeRecursive(const Token* start) const {
         Analyzer::Action result = Analyzer::Action::None;
         visitAstNodes(start, [&](const Token* tok) {
             result |= analyzer->analyze(tok, Analyzer::Direction::Reverse);
@@ -162,7 +162,7 @@ struct ReverseTraversal {
                 parent = parent->astParent();
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
-            Token* condTok = parent->astOperand1();
+            const Token* condTok = parent->astOperand1();
             if (!condTok)
                 continue;
             bool checkThen, checkElse;

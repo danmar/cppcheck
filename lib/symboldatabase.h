@@ -594,6 +594,8 @@ public:
         return getFlag(fIsStlString);
     }
 
+    bool isStlStringViewType() const;
+
     bool isSmartPointer() const {
         return getFlag(fIsSmartPointer);
     }
@@ -1479,7 +1481,7 @@ private:
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
     void createSymbolDatabaseEnums(); // cppcheck-suppress functionConst // has side effects
-    void createSymbolDatabaseEscapeFunctions();
+    void createSymbolDatabaseEscapeFunctions(); // cppcheck-suppress functionConst // has side effects
     // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
 

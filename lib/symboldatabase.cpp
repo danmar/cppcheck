@@ -2335,6 +2335,11 @@ const Type* Variable::iteratorType() const
     return nullptr;
 }
 
+bool Variable::isStlStringViewType() const
+{
+    return getFlag(fIsStlType) && valueType() && valueType()->container && valueType()->container->stdStringLike && valueType()->container->view;
+}
+
 std::string Variable::getTypeName() const
 {
     std::string ret;
@@ -4760,6 +4765,9 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
 
     const Token* localTypeTok = skipScopeIdentifiers(tok);
     const Token* localVarTok = nullptr;
+
+    while (Token::simpleMatch(localTypeTok, "alignas (") && Token::Match(localTypeTok->linkAt(1), ") %name%"))
+        localTypeTok = localTypeTok->linkAt(1)->next();
 
     if (Token::Match(localTypeTok, "%type% <")) {
         if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <"))
