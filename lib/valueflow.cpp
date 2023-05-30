@@ -1363,7 +1363,7 @@ static void valueFlowNumber(TokenList *tokenlist, const Settings* settings)
     bool isInitList = false;
     const Token* endInit{};
     for (Token *tok = tokenlist->front(); tok;) {
-        if (!isInitList && tok->str() == "{" && Token::simpleMatch(tok->astOperand1(), ",")) {
+        if (!isInitList && tok->str() == "{" && (Token::simpleMatch(tok->astOperand1(), ",") || Token::simpleMatch(tok->astOperand2(), ","))) {
             isInitList = true;
             endInit = tok->link();
         }
