@@ -107,8 +107,9 @@ Library::Error Library::load(const char exename[], const char path[])
         cfgfolders.emplace_back(FILESDIR "/cfg");
 #endif
         if (exename) {
-            const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(exename)));
+            const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(Path::getCurrentExecutablePath(exename))));
             cfgfolders.push_back(exepath + "cfg");
+            cfgfolders.push_back(exepath + "../cfg");
             cfgfolders.push_back(exepath);
         }
 
@@ -1147,16 +1148,18 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     return false;
 }
 
-const Library::Container* Library::detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator) const
+const Library::Container* Library::detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator, bool withoutStd) const
 {
     for (const std::pair<const std::string, Library::Container> & c : containers) {
         const Container& container = c.second;
         if (container.startPattern.empty())
             continue;
 
+        const int offset = (withoutStd && container.startPattern2.find("std :: ") == 0) ? 7 : 0;
+
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
-            if (!Token::Match(typeStart, container.startPattern2.c_str()))
+            if (!Token::Match(typeStart, container.startPattern2.c_str() + offset))
                 continue;
 
             if (isIterator)
@@ -1168,7 +1171,7 @@ const Library::Container* Library::detectContainerInternal(const Token* typeStar
             if (!tok->link())
                 continue;
 
-            const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str());
+            const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str() + offset);
 
             if (detect != ContainerOnly && matchedStartPattern && Token::Match(tok->link(), container.itEndPattern.c_str())) {
                 if (isIterator)
@@ -1196,10 +1199,10 @@ const Library::Container* Library::detectIterator(const Token* typeStart) const
     return detectContainerInternal(typeStart, IteratorOnly);
 }
 
-const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator) const
+const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator, bool withoutStd) const
 {
     bool res;
-    const Library::Container* c = detectContainerInternal(typeStart, Both, &res);
+    const Library::Container* c = detectContainerInternal(typeStart, Both, &res, withoutStd);
     if (c && isIterator)
         *isIterator = res;
     return c;
@@ -1626,9 +1629,9 @@ bool Library::isSmartPointer(const Token* tok) const
     return detectSmartPointer(tok);
 }
 
-const Library::SmartPointer* Library::detectSmartPointer(const Token* tok) const
+const Library::SmartPointer* Library::detectSmartPointer(const Token* tok, bool withoutStd) const
 {
-    std::string typestr;
+    std::string typestr = withoutStd ? "std::" : "";
     while (Token::Match(tok, "%name%|::")) {
         typestr += tok->str();
         tok = tok->next();
@@ -1663,6 +1666,13 @@ Library::TypeCheck Library::getTypeCheck(std::string check,  std::string typeNam
 {
     auto it = mTypeChecks.find(std::pair<std::string, std::string>(std::move(check), std::move(typeName)));
     return it == mTypeChecks.end() ? TypeCheck::def : it->second;
+}
+
+bool Library::hasAnyTypeCheck(const std::string& typeName) const
+{
+    return std::any_of(mTypeChecks.begin(), mTypeChecks.end(), [&](const std::pair<std::pair<std::string, std::string>, Library::TypeCheck>& tc) {
+        return tc.first.second == typeName;
+    });
 }
 
 std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,

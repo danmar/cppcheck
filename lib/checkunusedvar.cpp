@@ -293,7 +293,7 @@ void Variables::read(nonneg int varid, const Token* tok)
 
 void Variables::readAliases(nonneg int varid, const Token* tok)
 {
-    VariableUsage *usage = find(varid);
+    const VariableUsage *usage = find(varid);
 
     if (usage) {
         for (nonneg int const aliases : usage->_aliases) {
@@ -1441,6 +1441,9 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         if (scope.bodyStart->fileIndex() != 0 || scope.className.empty())
+            continue;
+
+        if (scope.classDef->isExpandedMacro())
             continue;
 
         // Packed struct => possibly used by lowlevel code. Struct members might be required by hardware.

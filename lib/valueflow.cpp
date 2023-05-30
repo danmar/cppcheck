@@ -6276,7 +6276,7 @@ struct ConditionHandler {
                 continue;
             }
             if (Token::Match(tok->astParent(), "==|!=")) {
-                Token* sibling = tok->astSibling();
+                const Token* sibling = tok->astSibling();
                 if (sibling->hasKnownIntValue() && (astIsBool(tok) || astIsBool(sibling))) {
                     const bool value = sibling->values().front().intvalue;
                     if (inverted)
@@ -7354,8 +7354,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist,
     });
     if (!r) {
         std::string fname = "<unknown>";
-        Function* f = functionScope->function;
-        if (f)
+        if (const Function* f = functionScope->function)
             fname = f->name();
         if (settings.debugwarnings)
             bailout(tokenlist, errorLogger, functionScope->bodyStart, "Too many argument passed to " + fname);

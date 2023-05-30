@@ -1741,6 +1741,16 @@ private:
 
         check("template<class T> typename std::enable_if<std::is_same<T, int>{}>::type f(T) {}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "     [[noreturn]] void f();\n"
+              "     int g() { this->f(); }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { [[noreturn]] void f(); };\n"
+              "int g(S& s) { s.f(); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // NRVO check

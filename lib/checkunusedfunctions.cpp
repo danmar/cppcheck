@@ -454,7 +454,7 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
     }
 
     for (std::map<std::string, Location>::const_iterator decl = decls.cbegin(); decl != decls.cend(); ++decl) {
-        const std::string &functionName = decl->first;
+        const std::string &functionName = stripTemplateParameters(decl->first);
 
         if (settings.library.isentrypoint(functionName))
             continue;
