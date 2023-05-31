@@ -1641,6 +1641,10 @@ void CheckOther::checkConstPointer()
                     }
                 }
             }
+            else if (Token::simpleMatch(parent, "(")) {
+                if (parent->isCast() && parent->valueType() && var->valueType() && parent->valueType()->isConst(var->valueType()->pointer))
+                    continue;
+            }
         }
         nonConstPointers.emplace_back(var);
     }

@@ -434,7 +434,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         projectFile->setPlatform(mUI->mComboBoxPlatform->currentText());
     else {
         const int i = mUI->mComboBoxPlatform->currentIndex();
-        if (i < numberOfBuiltinPlatforms)
+        if (i>=0 && i < numberOfBuiltinPlatforms)
             projectFile->setPlatform(cppcheck::Platform::toString(builtinPlatforms[i]));
         else
             projectFile->setPlatform(QString());

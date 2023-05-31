@@ -3189,6 +3189,22 @@ private:
               "        g(i);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' can be declared as pointer to const\n", errout.str());
+
+        check("struct A {\n" // #11225
+              "    A();\n"
+              "    virtual ~A();\n"
+              "};\n"
+              "struct B : A {};\n"
+              "void f(A* a) {\n"
+              "    const B* b = dynamic_cast<const B*>(a);\n"
+              "}\n"
+              "void g(A* a) {\n"
+              "    const B* b = (const B*)a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style) C-style pointer casting\n"
+                      "[test.cpp:6]: (style) Parameter 'a' can be declared as pointer to const\n"
+                      "[test.cpp:9]: (style) Parameter 'a' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void constParameterCallback() {
