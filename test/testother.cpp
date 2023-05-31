@@ -3173,6 +3173,15 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct B { virtual void f() const {} };\n" // #11528
+              "struct D : B {};\n"
+              "void g(B* b) {\n"
+              "    D* d = dynamic_cast<D*>(b);\n"
+              "    if (d)\n"
+              "        d->f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n", errout.str());
     }
 
     void constParameterCallback() {
