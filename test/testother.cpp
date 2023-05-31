@@ -3182,6 +3182,13 @@ private:
               "        d->f();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n", errout.str());
+
+        check("void g(const int*);\n"
+              "void f(const std::vector<int*>&v) {\n"
+              "    for (int* i : v)\n"
+              "        g(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' can be declared as pointer to const\n", errout.str());
     }
 
     void constParameterCallback() {
