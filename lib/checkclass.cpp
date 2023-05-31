@@ -2391,7 +2391,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (lhs->str() == "&") {
                 const Token* const top = lhs->astTop();
                 if (top->isAssignmentOp()) {
-                    if (Token::simpleMatch(top->astOperand2(), "{")) // TODO: check usage in init list
+                    if (Token::simpleMatch(top->astOperand2(), "{") && !top->astOperand2()->previous()->function()) // TODO: check usage in init list
                         return false;
                     else if (top->previous()->variable()) {
                         if (top->previous()->variable()->typeStartToken()->strAt(-1) != "const" && top->previous()->variable()->isPointer())
