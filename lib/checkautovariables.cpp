@@ -247,7 +247,7 @@ static bool hasOverloadedAssignment(const Token* tok, bool c, bool& inconclusive
     if (const ValueType* vt = tok->valueType()) {
         if (vt->pointer && !Token::simpleMatch(tok->astParent(), "*"))
             return false;
-        if  (vt->container&& vt->container->stdStringLike)
+        if  (vt->container && vt->container->stdStringLike)
             return true;
         if (vt->typeScope)
             return std::any_of(vt->typeScope->functionList.begin(), vt->typeScope->functionList.end(), [](const Function& f) { // TODO: compare argument type
