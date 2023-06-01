@@ -4202,6 +4202,18 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (performance) Passing the result of c_str() to a function that takes std::string_view as argument no. 1 is slow and redundant.\n",
                       errout.str());
+
+        check("std::string_view f(const std::string& s) {\n"
+              "    std::string_view sv = s.c_str();\n"
+              "    return sv;\n"
+              "}\n"
+              "std::string_view g(const std::string& s) {\n"
+              "    std::string_view sv{ s.c_str() };\n"
+              "    return sv;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Assigning the result of c_str() to a std::string_view is slow and redundant.\n"
+                      "[test.cpp:6]: (performance) Constructing a std::string_view from the result of c_str() is slow and redundant.\n",
+                      errout.str());
     }
 
     void uselessCalls() {

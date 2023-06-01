@@ -143,7 +143,8 @@ static bool isAutoVarArray(const Token *tok)
     return false;
 }
 
-static bool isLocalContainerBuffer(const Token* tok)
+// Verification that we really take the address of a local variable
+static bool checkRvalueExpression(const Token * const vartok)
 {
     if (!tok)
         return false;
@@ -237,6 +238,10 @@ void CheckAutoVariables::assignFunctionArg()
             }
         }
     }
+}
+
+static bool isAutoVariableRHS(const Token* tok) {
+    return isAddressOfLocalVariable(tok) || isAutoVarArray(tok) || isLocalContainerBuffer(tok);
 }
 
 void CheckAutoVariables::autoVariables()
