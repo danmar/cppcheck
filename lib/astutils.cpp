@@ -2948,7 +2948,24 @@ const Token *findLambdaStartToken(const Token *last)
 template<class T>
 T* findLambdaEndTokenGeneric(T* first)
 {
+    auto maybeLambda = [](T* tok) -> bool {
+        while (Token::Match(tok, "*|%name%|::|>")) {
+            if (tok->link())
+                tok = tok->link()->previous();
+            else {
+                if (tok->str() == ">")
+                    return true;
+                if (tok->str() == "new")
+                    return false;
+                tok = tok->previous();
+            }
+        }
+        return true;
+    };
+
     if (!first || first->str() != "[")
+        return nullptr;
+    if (!maybeLambda(first->previous()))
         return nullptr;
     if (!Token::Match(first->link(), "] (|{"))
         return nullptr;

@@ -48,14 +48,15 @@ private:
         TEST_CASE(isUsedAsBool);
     }
 
-#define findLambdaEndToken(code) findLambdaEndToken_(code, __FILE__, __LINE__)
-    bool findLambdaEndToken_(const char code[], const char* file, int line) {
+#define findLambdaEndToken(...) findLambdaEndToken_(__FILE__, __LINE__, __VA_ARGS__)
+    bool findLambdaEndToken_(const char* file, int line, const char code[], const char pattern[] = nullptr, bool checkNext = true) {
         const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-        const Token * const tokEnd = (::findLambdaEndToken)(tokenizer.tokens());
-        return tokEnd && tokEnd->next() == nullptr;
+        const Token* const tokStart = pattern ? Token::findsimplematch(tokenizer.tokens(), pattern, strlen(pattern)) : tokenizer.tokens();
+        const Token * const tokEnd = (::findLambdaEndToken)(tokStart);
+        return tokEnd && (!checkNext || tokEnd->next() == nullptr);
     }
 
     void findLambdaEndTokenTest() {
@@ -80,6 +81,10 @@ private:
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) mutable -> const * int { return x; }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const ** int { return x; }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * const* int { return x; }"));
+        ASSERT_EQUALS(false, findLambdaEndToken("int** a[] { new int*[2] { new int, new int} }", "[ ]"));
+        ASSERT_EQUALS(false, findLambdaEndToken("int** a[] { new int*[2] { new int, new int} }", "[ 2"));
+        ASSERT_EQUALS(false, findLambdaEndToken("shared_ptr<Type *[]> sp{ new Type *[2] {new Type, new Type}, Deleter<Type>{ 2 } };", "[ 2"));
+        ASSERT_EQUALS(true, findLambdaEndToken("int i = 5 * []{ return 7; }();", "[", /*checkNext*/ false));
     }
 
 #define findLambdaStartToken(code) findLambdaStartToken_(code, __FILE__, __LINE__)
