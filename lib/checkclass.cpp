@@ -2108,12 +2108,12 @@ void CheckClass::checkConst()
             if (!scope->definedType->derivedFrom.empty() && func.isImplicitlyVirtual(true))
                 continue;
 
-            bool memberAccessed = false;
+            enum class MemberAccess memberAccessed = MemberAccess::NONE;
             // if nothing non-const was found. write error..
             if (!checkConstFunc(scope, &func, memberAccessed))
                 continue;
 
-            const bool suggestStatic = !memberAccessed && !func.isOperator();
+            const bool suggestStatic = memberAccessed != MemberAccess::MEMBER && !func.isOperator();
             if ((returnsPtrOrRef || func.isConst()) && !suggestStatic)
                 continue;
 
@@ -2293,7 +2293,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 
 const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map", "std :: map|unordered_map <" }; // start pattern
 
-bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
+bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const
 {
     if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
         return false;
@@ -2312,9 +2312,10 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
 
     auto checkFuncCall = [this, &memberAccessed](const Token* funcTok, const Scope* scope, const Function* func) {
         if (isMemberFunc(scope, funcTok) && (funcTok->strAt(-1) != "." || Token::simpleMatch(funcTok->tokAt(-2), "this ."))) {
-            if (!isConstMemberFunc(scope, funcTok) && func != funcTok->function())
+            const bool isSelf = func == funcTok->function();
+            if (!isConstMemberFunc(scope, funcTok) && !isSelf)
                 return false;
-            memberAccessed = true;
+            memberAccessed = isSelf ? MemberAccess::SELF : MemberAccess::MEMBER;
         }
 
         if (const Function* f = funcTok->function()) { // check known function
@@ -2361,7 +2362,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
     // it can be a const function..
     for (const Token *tok1 = func->functionScope->bodyStart; tok1 && tok1 != func->functionScope->bodyEnd; tok1 = tok1->next()) {
         if (tok1->isName() && isMemberVar(scope, tok1)) {
-            memberAccessed = true;
+            memberAccessed = MemberAccess::MEMBER;
             const Variable* v = tok1->variable();
             if (v && v->isMutable())
                 continue;
