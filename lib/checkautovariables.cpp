@@ -239,6 +239,26 @@ void CheckAutoVariables::assignFunctionArg()
     }
 }
 
+static bool hasOverloadedAssignment(const Token* tok, bool c, bool& inconclusive)
+{
+    inconclusive = false;
+    if (c)
+        return false;
+    if (const ValueType* vt = tok->valueType()) {
+        if (vt->pointer && !Token::simpleMatch(tok->astParent(), "*"))
+            return false;
+        if  (vt->container&& vt->container->stdStringLike)
+            return true;
+        if (vt->typeScope)
+            return std::any_of(vt->typeScope->functionList.begin(), vt->typeScope->functionList.end(), [](const Function& f) { // TODO: compare argument type
+                return f.name() == "operator=";
+            });
+        return false;
+    }
+    inconclusive = true;
+    return true;
+}
+
 void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
@@ -254,13 +274,16 @@ void CheckAutoVariables::autoVariables()
             if (Token::Match(tok, "[;{}] %var% =") && isRefPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(2)->astOperand2())) {
                 checkAutoVariableAssignment(tok->next(), false);
             } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAutoVariableRHS(tok->tokAt(3)->astOperand2())) {
-                checkAutoVariableAssignment(tok->next(), false);
+                const Token* lhs = tok->tokAt(2);
+                bool inconclusive = false;
+                if (!hasOverloadedAssignment(lhs, mTokenizer->isC(), inconclusive) || (printInconclusive && inconclusive))
+                    checkAutoVariableAssignment(tok->next(), inconclusive);
+                tok = tok->tokAt(4);
             } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(4)->astOperand2())) {
                 const Token* lhs = tok->tokAt(3);
-                // TODO: check for overloaded operator=, library types
-                const bool isInconclusive = !lhs->valueType() || !lhs->valueType()->pointer || (mTokenizer->isCPP() && !lhs->valueType()->isPrimitive());
-                if (!isInconclusive || printInconclusive)
-                    checkAutoVariableAssignment(tok->next(), isInconclusive);
+                bool inconclusive = false;
+                if (!hasOverloadedAssignment(lhs, mTokenizer->isC(), inconclusive) || (printInconclusive && inconclusive))
+                    checkAutoVariableAssignment(tok->next(), inconclusive);
                 tok = tok->tokAt(5);
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
                        (isPtrArg(tok->next()) || isArrayArg(tok->next(), mSettings)) &&

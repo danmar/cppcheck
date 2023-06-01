@@ -550,9 +550,7 @@ private:
               "    char a[] = \"abc\";\n"
               "    *s = &a[0];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n"
-                      "[test.cpp:12]: (error) Address of local auto-variable assigned to a function parameter.\n",
-                      errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testautovar_normal() {
@@ -4298,7 +4296,7 @@ private:
               "  f(bar);\n"
               "}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:12]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:12]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("class Foo {};\n"
               "struct Bar {\n"
@@ -4314,7 +4312,7 @@ private:
               "  }\n"
               "  f(bar);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("class Foo {};\n" // #10750
               "struct Bar {\n"
@@ -4330,7 +4328,7 @@ private:
               "  }\n"
               "  f(bar);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void f(std::string_view text);\n" // #11508
               "void g() {\n"
