@@ -536,6 +536,23 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (error) Address of local auto-variable assigned to a function parameter.\n"
                       "[test.cpp:7]: (error) Address of local auto-variable assigned to a function parameter.\n",
                       errout.str());
+
+        check("struct String {\n"
+              "    String & operator=(const char* c) { m = c; return *this; }\n"
+              "    std::string m;\n"
+              "};\n"
+              "struct T { String s; };\n"
+              "void f(T* t) {\n"
+              "    char a[] = \"abc\";\n"
+              "    t->s = &a[0];\n"
+              "}\n"
+              "void g(std::string* s) {\n"
+              "    char a[] = \"abc\";\n"
+              "    *s = &a[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n"
+                      "[test.cpp:12]: (error) Address of local auto-variable assigned to a function parameter.\n",
+                      errout.str());
     }
 
     void testautovar_normal() {
@@ -4297,7 +4314,7 @@ private:
               "  }\n"
               "  f(bar);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:11]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:11]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("class Foo {};\n" // #10750
               "struct Bar {\n"
@@ -4313,7 +4330,7 @@ private:
               "  }\n"
               "  f(bar);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error, inconclusive) Address of local auto-variable assigned to a function parameter.\n", errout.str());
 
         check("void f(std::string_view text);\n" // #11508
               "void g() {\n"
