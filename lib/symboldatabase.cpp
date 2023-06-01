@@ -1584,7 +1584,13 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             inConstExpr = tok->next()->link();
         }
     }
-    for (const Scope * scope : functionScopes) {
+
+    auto exprScopes = functionScopes; // functions + global lambdas
+    std::copy_if(scopeList.front().nestedList.begin(), scopeList.front().nestedList.end(), std::back_inserter(exprScopes), [](const Scope* scope) {
+        return scope && scope->type == Scope::eLambda;
+    });
+
+    for (const Scope * scope : exprScopes) {
         nonneg int thisId = 0;
         std::unordered_map<std::string, std::vector<Token*>> exprs;
 
