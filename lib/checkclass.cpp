@@ -2315,7 +2315,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
             const bool isSelf = func == funcTok->function();
             if (!isConstMemberFunc(scope, funcTok) && !isSelf)
                 return false;
-            memberAccessed = isSelf ? MemberAccess::SELF : MemberAccess::MEMBER;
+            memberAccessed = (isSelf && memberAccessed != MemberAccess::MEMBER) ? MemberAccess::SELF : MemberAccess::MEMBER;
         }
 
         if (const Function* f = funcTok->function()) { // check known function
@@ -2477,7 +2477,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                     ;
                 } else if (hasOverloadedMemberAccess(end, var->typeScope())) {
                     ;
-                } else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
+                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end)))
                     return false;
             }
 
