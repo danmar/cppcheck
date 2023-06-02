@@ -2101,6 +2101,12 @@ private:
               "    }\n"
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "    int* a = new int[i] {};\n"
+              "    delete[] a;\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerDeleter() {
