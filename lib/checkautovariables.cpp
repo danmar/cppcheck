@@ -206,10 +206,6 @@ static bool variableIsUsedInScope(const Token* start, nonneg int varId, const Sc
     return false;
 }
 
-static bool isAutoVariableRHS(const Token* tok) {
-    return isAddressOfLocalVariable(tok) || isAutoVarArray(tok) || isLocalContainerBuffer(tok);
-}
-
 void CheckAutoVariables::assignFunctionArg()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
@@ -237,6 +233,10 @@ void CheckAutoVariables::assignFunctionArg()
             }
         }
     }
+}
+
+static bool isAutoVariableRHS(const Token* tok) {
+    return isAddressOfLocalVariable(tok) || isAutoVarArray(tok) || isLocalContainerBuffer(tok);
 }
 
 static bool hasOverloadedAssignment(const Token* tok, bool c, bool& inconclusive)
