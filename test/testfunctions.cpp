@@ -1823,7 +1823,7 @@ private:
         check("void f() {\n"
               "    lib_func();"
               "}", "test.cpp", &s);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (information) --check-library: There is no matching configuration for function lib_func()\n", errout.str());
 
         check("void f(void* v) {\n"
               "    lib_func(v);"
