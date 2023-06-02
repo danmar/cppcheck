@@ -4634,10 +4634,11 @@ void stdspan()
     // cppcheck-suppress unreadVariable
     std::span spn2 = spn;
 
+    //cppcheck-suppress ignoredReturnValue
     spn.begin();
+    //cppcheck-suppress ignoredReturnValue
     spn.end();
     spn.rbegin();
-    spn.end();
 
     spn.front();
     spn.back();
