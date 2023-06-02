@@ -4638,15 +4638,20 @@ void stdspan()
     spn.begin();
     //cppcheck-suppress ignoredReturnValue
     spn.end();
+    //cppcheck-suppress ignoredReturnValue
     spn.rbegin();
 
+    //cppcheck-suppress ignoredReturnValue
     spn.front();
+    //cppcheck-suppress ignoredReturnValue
     spn.back();
     //cppcheck-suppress constStatement
     spn[0];
     spn.data();
+    //cppcheck-suppress ignoredReturnValue
     spn.size();
     spn.size_bytes();
+    //cppcheck-suppress ignoredReturnValue
     spn.empty();
     //cppcheck-suppress ignoredReturnValue
     spn.first(2);
