@@ -538,7 +538,7 @@ private:
                       errout.str());
 
         check("struct String {\n"
-              "    String & operator=(const char* c) { m = c; return *this; }\n"
+              "    String& operator=(const char* c) { m = c; return *this; }\n"
               "    std::string m;\n"
               "};\n"
               "struct T { String s; };\n"
