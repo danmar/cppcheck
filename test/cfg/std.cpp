@@ -4489,6 +4489,7 @@ void getline()
     in.close();
 }
 
+// cppcheck-suppress passedByValue
 void stream_write(std::ofstream& s, std::vector<char> v) {
     if (v.empty()) {}
     s.write(v.data(), v.size());
@@ -4647,9 +4648,11 @@ void stdspan()
     spn.back();
     //cppcheck-suppress constStatement
     spn[0];
+    //cppcheck-suppress ignoredReturnValue
     spn.data();
     //cppcheck-suppress ignoredReturnValue
     spn.size();
+    //cppcheck-suppress ignoredReturnValue
     spn.size_bytes();
     //cppcheck-suppress ignoredReturnValue
     spn.empty();
