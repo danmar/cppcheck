@@ -6539,8 +6539,8 @@ private:
                       errout.str());
     }
 
-    void const89() { // #11654
-        checkConst("struct S {\n"
+    void const89() {
+        checkConst("struct S {\n" // #11654
                    "    void f(bool b);\n"
                    "    int i;\n"
                    "};\n"
@@ -6560,6 +6560,23 @@ private:
                    "        f(i);\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #11744
+                   "    S* p;\n"
+                   "    int f() {\n"
+                   "        if (p)\n"
+                   "            return 1 + p->f();\n"
+                   "        return 1;\n"
+                   "    }\n"
+                   "    int g(int i) {\n"
+                   "        if (i > 0)\n"
+                   "            return i + g(i - 1);\n"
+                   "        return 0;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:8]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
     }
 
     void const90() { // #11637
