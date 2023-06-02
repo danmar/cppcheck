@@ -88,7 +88,8 @@ TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_ru.ts \
                 cppcheck_sr.ts \
                 cppcheck_sv.ts \
-                cppcheck_zh_CN.ts
+                cppcheck_zh_CN.ts \
+                cppcheck_zh_TW.ts
 
 # Windows-specific options
 CONFIG += embed_manifest_exe
