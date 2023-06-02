@@ -125,6 +125,7 @@ private:
         TEST_CASE(doublefree11);
         TEST_CASE(doublefree12); // #10502
         TEST_CASE(doublefree13); // #11008
+        TEST_CASE(doublefree14); // #9708
 
         // exit
         TEST_CASE(exit1);
@@ -1451,6 +1452,27 @@ private:
               "        return;\n"
               "    free(buf.ptr);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree14() { // #9708
+        check("using namespace std;\n"
+              " \n"
+              "int main()\n"
+              "{\n"
+              "    int *i = new int;\n"
+              "    unique_ptr<int> x(i);\n"
+              "    delete i;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7]: (error) Memory pointed to by 'i' is freed twice.\n", errout.str());
+
+        check("using namespace std;\n"
+              " \n"
+              "int main()\n"
+              "{\n"
+              "    int *i = new int;\n"
+              "    unique_ptr<int> x(i);\n"
+              "}", true);
         ASSERT_EQUALS("", errout.str());
     }
 
