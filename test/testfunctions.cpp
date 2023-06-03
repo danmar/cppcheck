@@ -2002,7 +2002,7 @@ private:
               "    p->h(i);\n"
               "    p.reset(nullptr);\n"
               "}\n", "test.cpp", &s);
-        ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n",,
+        ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n",
                       errout.str());
     }
 
