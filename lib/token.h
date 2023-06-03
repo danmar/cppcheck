@@ -911,9 +911,8 @@ public:
     {
         if (mImpl->mExprId > 0) {
             return (mImpl->mExprId & (1 << efIsUnique)) != 0;
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
