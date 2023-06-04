@@ -1360,11 +1360,9 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 {
     if (Token::simpleMatch(ftok->astParent(), ".")) {
         using Yield = Library::Container::Yield;
-        using Action = Library::Container::Action;
         const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
-        if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
-            yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
-            ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(ftok->astParent()->astOperand1()) == Action::NO_ACTION))
+        if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::SIZE || yield == Yield::EMPTY ||
+            (yield == Yield::ITEM && astContainerAction(ftok->astParent()->astOperand1()) == Library::Container::Action::NO_ACTION))
             return Library::UseRetValType::DEFAULT;
     }
     if (isNotLibraryFunction(ftok))
