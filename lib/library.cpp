@@ -1358,6 +1358,12 @@ const Library::NonOverlappingData* Library::getNonOverlappingData(const Token *f
 
 Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 {
+    if (Token::simpleMatch(ftok->astParent(), ".")) {
+        using Yield = Library::Container::Yield;
+        const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+        if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::SIZE || yield == Yield::ITEM)
+            return Library::UseRetValType::DEFAULT;
+    }
     if (isNotLibraryFunction(ftok))
         return Library::UseRetValType::NONE;
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
