@@ -1925,9 +1925,7 @@ private:
               "    auto x = std::vector<int>(1);\n"
               "    x.push_back(1);\n"
               "}\n", "test.cpp", &s);
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:7]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
-                           errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    auto p(std::make_shared<std::vector<int>>());\n"
