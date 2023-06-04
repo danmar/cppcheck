@@ -80,6 +80,7 @@
               <File Id='cppcheck_sr.qm' Name='cppcheck_sr.qm' Source='$(var.TranslationsDir)\cppcheck_sr.qm' />
               <File Id='cppcheck_sv.qm' Name='cppcheck_sv.qm' Source='$(var.TranslationsDir)\cppcheck_sv.qm' />
               <File Id='cppcheck_zh_CN.qm' Name='cppcheck_zh_CN.qm' Source='$(var.TranslationsDir)\cppcheck_zh_CN.qm' />
+              <File Id='cppcheck_zh_TW.qm' Name='cppcheck_zh_TW.qm' Source='$(var.TranslationsDir)\cppcheck_zh_TW.qm' />
             </Component>
           </Directory>
           <Directory Id='CfgsFolder' Name='cfg'>
