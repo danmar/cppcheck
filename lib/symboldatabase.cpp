@@ -3016,10 +3016,10 @@ bool Function::returnsConst(const Function* function, bool unknown)
     });
 }
 
-bool Function::returnsReference(const Function* function, bool unknown)
+bool Function::returnsReference(const Function* function, bool unknown, bool includeRValueRef)
 {
-    return checkReturns(function, unknown, false, [](UNUSED const Token* defStart, const Token* defEnd) {
-        return Token::simpleMatch(defEnd->previous(), "&");
+    return checkReturns(function, unknown, false, [includeRValueRef](UNUSED const Token* defStart, const Token* defEnd) {
+        return includeRValueRef ? Token::Match(defEnd->previous(), "&|&&") : Token::simpleMatch(defEnd->previous(), "&");
     });
 }
 
