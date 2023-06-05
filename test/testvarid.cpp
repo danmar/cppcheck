@@ -3772,8 +3772,8 @@ private:
 
         const char expected[] = "1: struct S { std :: unique_ptr < int > u ; } ;\n"
                                 "2: auto f ; f = [ ] ( const S & s ) . std :: unique_ptr < int > {\n"
-                                "3: if (@5 auto p@4 =@6 s@3 .@7 u@5 .@8 get (@9 ) ) {\n"
-                                "4: return std ::@10 make_unique < int > (@11 *@12 p@4 ) ; }\n"
+                                "3: if (@5 auto p@4 =@1073741830 s@3 .@1073741831 u@5 .@1073741832 get (@1073741833 ) ) {\n"
+                                "4: return std ::@1073741834 make_unique < int > (@1073741835 *@1073741836 p@4 ) ; }\n"
                                 "5: return nullptr ;\n"
                                 "6: } ;\n";
 
