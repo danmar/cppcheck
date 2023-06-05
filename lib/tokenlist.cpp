@@ -779,7 +779,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             prev = prev->link()->previous();
         if (Token::simpleMatch(tok->link(),"} [")) {
             tok = tok->next();
-        } else if (state.cpp && iscpp11init(tok)) {
+        } else if ((state.cpp && iscpp11init(tok)) || Token::simpleMatch(tok->previous(), "] {")) {
             Token *const end = tok->link();
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
                 if (Token::Match(tok, "{ . %name% =|{")) {
@@ -849,6 +849,17 @@ static void compileScope(Token *&tok, AST_state& state)
 
 static bool isPrefixUnary(const Token* tok, bool cpp)
 {
+    if (Token::simpleMatch(tok->previous(), "* [") && Token::simpleMatch(tok->link(), "] {")) {
+        for (const Token* prev = tok->previous(); Token::Match(prev, "%name%|::|*|&|>|>>"); prev = prev->previous()) {
+            if (Token::Match(prev, ">|>>")) {
+                if (!prev->link())
+                    break;
+                prev = prev->link();
+            }
+            if (prev->str() == "new")
+                return false;
+        }
+    }
     if (!tok->previous()
         || ((Token::Match(tok->previous(), "(|[|{|%op%|;|?|:|,|.|return|::") || (cpp && tok->strAt(-1) == "throw"))
             && (tok->previous()->tokType() != Token::eIncDecOp || tok->tokType() == Token::eIncDecOp)))
@@ -944,8 +955,18 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             }
 
             Token* const tok2 = tok;
-            if (tok->strAt(1) != "]")
+            if (tok->strAt(1) != "]") {
                 compileBinOp(tok, state, compileExpression);
+                if (Token::Match(tok2->previous(), "%type%|* [") && Token::Match(tok, "] { !!}")) {
+                    tok = tok->next();
+                    Token* const tok3 = tok;
+                    compileBinOp(tok, state, compileExpression);
+                    if (tok != tok3->link())
+                        throw InternalError(tok, "Syntax error in {..}", InternalError::AST);
+                    tok = tok->next();
+                    continue;
+                }
+            }
             else
                 compileUnaryOp(tok, state, compileExpression);
             tok = tok2->link()->next();
@@ -1072,7 +1093,7 @@ static void compilePrecedence3(Token *&tok, AST_state& state)
                 state.op.push(tok->next());
                 tok = tok->link()->next();
                 compileBinOp(tok, state, compilePrecedence2);
-            } else if (tok && (tok->str() == "[" || tok->str() == "(" || tok->str() == "{"))
+            } else if (Token::Match(tok, "(|{|["))
                 compilePrecedence2(tok, state);
             else if (innertype && Token::simpleMatch(tok, ") [")) {
                 tok = tok->next();
