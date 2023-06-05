@@ -484,6 +484,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                 return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, yieldName);
                         }
 
+                        const char* const returnType = functionNode->Attribute("returnType");
+                        if (returnType)
+                            container.functions[functionName].returnType = returnType;
+
                         container.functions[functionName].action = action;
                         container.functions[functionName].yield = yield;
                     }
@@ -905,6 +909,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, yieldName);
             }
             func.containerYield = yield;
+
+            const char* const returnType = functionnode->Attribute("returnType");
+            if (returnType)
+                func.returnType = returnType;
         } else
             unknown_elements.insert(functionnodename);
     }
@@ -1385,6 +1393,11 @@ const std::string& Library::returnValue(const Token *ftok) const
 
 const std::string& Library::returnValueType(const Token *ftok) const
 {
+    if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
+        const Token* contTok = ftok->astParent()->astOperand1();
+        if (contTok->valueType() && contTok->valueType()->container)
+            return contTok->valueType()->container->getReturnType(ftok->str());
+    }
     if (isNotLibraryFunction(ftok))
         return emptyString;
     const std::map<std::string, std::string>::const_iterator it = mReturnValueType.find(getFunctionName(ftok));
@@ -1479,6 +1492,12 @@ bool Library::isFunctionConst(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isConst())
         return true;
+    if (Token::simpleMatch(ftok->astParent(), ".")) {
+        using Yield = Library::Container::Yield;
+        const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+        if (yield == Yield::EMPTY || yield == Yield::SIZE || yield == Yield::BUFFER_NT)
+            return true;
+    }
     if (isNotLibraryFunction(ftok))
         return false;
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
@@ -1489,6 +1508,11 @@ bool Library::isnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return true;
+    if (Token::simpleMatch(ftok->astParent(), ".")) {
+        if (astContainerAction(ftok->astParent()->astOperand1()) != Library::Container::Action::NO_ACTION ||
+            astContainerYield(ftok->astParent()->astOperand1()) != Library::Container::Yield::NO_YIELD)
+            return false;
+    }
     if (isNotLibraryFunction(ftok))
         return false;
     const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
