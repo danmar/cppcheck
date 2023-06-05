@@ -1806,7 +1806,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
 
     // regular function?
     else if (Token::Match(tok, "%name% (") && !isReservedName(tok->str()) && tok->previous() &&
-             (Token::Match(tok->previous(), "%name%|>|&|*|::|~") || // Either a return type or scope qualifier in front of tok
+             (Token::Match(tok->previous(), "%name%|>|&|&&|*|::|~") || // Either a return type or scope qualifier in front of tok
               outerScope->isClassOrStructOrUnion())) { // or a ctor/dtor
         const Token* tok1 = tok->previous();
         const Token* tok2 = tok->next()->link()->next();
@@ -1847,7 +1847,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         // done if constructor or destructor
         if (!Token::Match(tok1, "{|}|;|public:|protected:|private:") && tok1) {
             // skip over pointers and references
-            while (Token::Match(tok1, "%type%|*|&") && !endsWith(tok1->str(), ':') && (!isReservedName(tok1->str()) || tok1->str() == "const"))
+            while (Token::Match(tok1, "%type%|*|&|&&") && !endsWith(tok1->str(), ':') && (!isReservedName(tok1->str()) || tok1->str() == "const"))
                 tok1 = tok1->previous();
 
             // skip over decltype
