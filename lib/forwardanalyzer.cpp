@@ -894,8 +894,6 @@ struct ForwardTraversal {
 
 Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
-    if (a->invalid())
-        return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
     ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
     return Analyzer::Result{ ft.actions, ft.terminate };
@@ -905,8 +903,6 @@ Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>&
 {
     if (Settings::terminated())
         throw TerminateException();
-    if (a->invalid())
-        return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
     ForwardTraversal ft{a, settings};
     ft.updateRecursive(start);
     return Analyzer::Result{ ft.actions, ft.terminate };

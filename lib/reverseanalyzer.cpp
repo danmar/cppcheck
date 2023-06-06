@@ -390,8 +390,6 @@ struct ReverseTraversal {
 
 void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
-    if (a->invalid())
-        return;
     ReverseTraversal rt{a, settings};
     rt.traverse(start, end);
 }

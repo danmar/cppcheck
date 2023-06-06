@@ -181,9 +181,6 @@ struct Analyzer {
     virtual void assume(const Token* tok, bool state, unsigned int flags = 0) = 0;
     /// Return analyzer for expression at token
     virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = emptyString) const = 0;
-    virtual bool invalid() const {
-        return false;
-    }
     virtual ~Analyzer() {}
     Analyzer(const Analyzer&) = default;
 protected:

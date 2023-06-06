@@ -901,20 +901,6 @@ public:
         mImpl->mExprId = id;
     }
 
-    void setUniqueExprId()
-    {
-        assert(mImpl->mExprId > 0);
-        mImpl->mExprId |= 1 << efIsUnique;
-    }
-
-    bool isUniqueExprId() const
-    {
-        if (mImpl->mExprId > 0) {
-            return (mImpl->mExprId & (1 << efIsUnique)) != 0;
-        }
-        return false;
-    }
-
     /**
      * For debugging purposes, prints token and all tokens
      * followed by it.
@@ -1339,11 +1325,6 @@ private:
         fIsRestrict             = (1ULL << 38), // Is this a restrict pointer type
         fIsSimplifiedTypedef    = (1ULL << 39),
         fIsFinalType            = (1ULL << 40), // Is this a type with final specifier
-    };
-
-    enum : uint64_t {
-        efMaxSize = sizeof(nonneg int) * 8,
-        efIsUnique = efMaxSize - 2,
     };
 
     Token::Type mTokType;

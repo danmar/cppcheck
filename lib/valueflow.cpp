@@ -2438,6 +2438,10 @@ struct ValueFlowAnalyzer : Analyzer {
         return false;
     }
 
+    virtual bool invalid() const {
+        return false;
+    }
+
     bool isCPP() const {
         return tokenlist->isCPP();
     }
@@ -3130,20 +3134,11 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     bool local;
     bool unknown;
     bool dependOnThis;
-    bool uniqueExprId;
 
-    ExpressionAnalyzer()
-        : SingleValueFlowAnalyzer(), expr(nullptr), local(true), unknown(false), dependOnThis(false), uniqueExprId(false)
-    {}
+    ExpressionAnalyzer() : SingleValueFlowAnalyzer(), expr(nullptr), local(true), unknown(false), dependOnThis(false) {}
 
     ExpressionAnalyzer(const Token* e, ValueFlow::Value val, const TokenList* t, const Settings* s)
-        : SingleValueFlowAnalyzer(std::move(val), t, s),
-        expr(e),
-        local(true),
-        unknown(false),
-        dependOnThis(false),
-        uniqueExprId(false)
-    {
+        : SingleValueFlowAnalyzer(std::move(val), t, s), expr(e), local(true), unknown(false), dependOnThis(false) {
 
         assert(e && e->exprId() != 0 && "Not a valid expression");
         dependOnThis = exprDependsOnThis(expr);
@@ -3152,8 +3147,6 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
             dependOnThis |= exprDependsOnThis(value.tokvalue);
             setupExprVarIds(value.tokvalue);
         }
-        uniqueExprId =
-            expr->isUniqueExprId() && (Token::Match(expr, "%cop%") || !isVariableChanged(expr, 0, s, t->isCPP()));
     }
 
     static bool nonLocal(const Variable* var, bool deref) {
@@ -3203,13 +3196,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         });
     }
 
-    virtual bool skipUniqueExprIds() const {
-        return true;
-    }
-
     bool invalid() const override {
-        if (skipUniqueExprIds() && uniqueExprId)
-            return true;
         return unknown;
     }
 
@@ -3244,10 +3231,6 @@ struct SameExpressionAnalyzer : ExpressionAnalyzer {
         : ExpressionAnalyzer(e, std::move(val), t, s)
     {}
 
-    bool skipUniqueExprIds() const override {
-        return false;
-    }
-
     bool match(const Token* tok) const override
     {
         return isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
@@ -3262,10 +3245,6 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
     OppositeExpressionAnalyzer(bool pIsNot, const Token* e, ValueFlow::Value val, const TokenList* t, const Settings* s)
         : ExpressionAnalyzer(e, std::move(val), t, s), isNot(pIsNot)
     {}
-
-    bool skipUniqueExprIds() const override {
-        return false;
-    }
 
     bool match(const Token* tok) const override {
         return isOppositeCond(isNot, isCPP(), expr, tok, getSettings()->library, true, true);
