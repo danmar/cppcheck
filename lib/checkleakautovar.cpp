@@ -357,7 +357,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 const Token* top = varTok;
                 while (top->astParent()) {
                     top = top->astParent();
-                    if (!Token::Match(top, "(|*|&|.z"))
+                    if (!Token::Match(top, "(|*|&|."))
                         break;
                 }
                 if (top->str() == "=" && succeeds(top, varTok))
