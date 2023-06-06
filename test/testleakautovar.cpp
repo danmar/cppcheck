@@ -831,6 +831,12 @@ private:
               "    p[0] = 10;\n"
               "}\n");
         ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
+
+        check("int f(int* p) {\n"
+              "    free(p);\n"
+              "    return p[1];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:2] -> [test.c:3]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout.str());
     }
 
     void doublefree1() {  // #3895
