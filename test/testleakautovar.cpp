@@ -111,6 +111,7 @@ private:
         TEST_CASE(deallocuse7); // #6467, #6469, #6473
         TEST_CASE(deallocuse8); // #1765
         TEST_CASE(deallocuse9); // #9781
+        TEST_CASE(deallocuse10);
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -822,6 +823,14 @@ private:
               "    return g(new int(3));\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void deallocuse10() {
+        check("void f(char* p) {\n"
+              "    free(p);\n"
+              "    p[0] = 10;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:3]: (error) Dereferencing 'p' after it is deallocated / released\n", errout.str());
     }
 
     void doublefree1() {  // #3895
