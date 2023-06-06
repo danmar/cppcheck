@@ -32,6 +32,13 @@ jobs:
         with:
           arch: x64 # no 32-bit Qt available
 
+      - name: Build Cppcheck with msbuild
+        run: |
+          mkdir b1 || exit /b !errorlevel!
+          cd b1 || exit /b !errorlevel!
+          cmake -G "Visual Studio 17 2022" .. || exit /b !errorlevel!
+          msbuild cli\cppcheck.vcxproj /p:configuration=Debug || exit /b !errorlevel!
+
       - name: Install Qt ${{ matrix.qt_ver }}
         uses: jurplel/install-qt-action@v3
         with:
