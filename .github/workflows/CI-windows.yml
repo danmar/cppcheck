@@ -39,8 +39,7 @@ jobs:
           cd b1 || exit /b !errorlevel!
           cmake -G "Visual Studio 17 2022" .. || exit /b !errorlevel!
           msbuild cli\cppcheck.vcxproj /p:configuration=Debug || exit /b !errorlevel!
-          cd ..
-          dir /s cppcheck.exe
+          bin\debug\cppcheck -D_GNUC ..\cli\main.cpp || exit /b !errorlevel!
 
       - name: Install Qt ${{ matrix.qt_ver }}
         uses: jurplel/install-qt-action@v3
