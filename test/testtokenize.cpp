@@ -6166,6 +6166,7 @@ private:
         ASSERT_EQUALS("intnewdelete", testAst("delete new int;")); // #11039
         ASSERT_EQUALS("intnewdelete", testAst("void f() { delete new int; }"));
         ASSERT_EQUALS("pint3[new1+=", testAst("p = (new int[3]) + 1;")); // #11327
+        ASSERT_EQUALS("aType2[T1T2,{new=", testAst("a = new Type *[2] {T1, T2};")); // #11745
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));

@@ -28,6 +28,7 @@ int valid_code_do_crypt(char *outfile)
     FILE *out;
 
     ctx = EVP_CIPHER_CTX_new();
+    // cppcheck-suppress checkLibraryFunction
     EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
 
     if (!EVP_EncryptUpdate(ctx, outbuf, &outlen, intext, strlen(intext))) {

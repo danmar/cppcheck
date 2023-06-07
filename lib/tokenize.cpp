@@ -3080,15 +3080,15 @@ bool Tokenizer::simplifyUsing()
                     tok1->deletePrevious();
                     break;
                 } else {
-                    const std::string::size_type idx = fullScope.rfind(' ');
+                    const std::string::size_type idx = fullScope.rfind("::");
 
                     if (idx == std::string::npos)
                         break;
 
-                    if (tok1->strAt(-2) == fullScope.substr(idx + 1)) {
+                    if (tok1->strAt(-2) == fullScope.substr(idx + 3)) {
                         tok1->deletePrevious();
                         tok1->deletePrevious();
-                        fullScope.resize(idx - 3);
+                        fullScope.resize(idx - 1);
                     } else
                         break;
                 }

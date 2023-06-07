@@ -2630,6 +2630,27 @@ private:
                                "    delete p;\n"
                                "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+
+        checkVirtualDestructor("using namespace std;\n"
+                               "struct A\n"
+                               "{\n"
+                               "    A()  { cout << \"A is constructing\\n\"; }\n"
+                               "    ~A() { cout << \"A is destructing\\n\"; }\n"
+                               "};\n"
+                               " \n"
+                               "struct Base {};\n"
+                               " \n"
+                               "struct Derived : Base\n"
+                               "{\n"
+                               "    A a;\n"
+                               "};\n"
+                               " \n"
+                               "int main(void)\n"
+                               "{\n"
+                               "    Base* p = new Derived();\n"
+                               "    delete p;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor3() {
@@ -6518,8 +6539,8 @@ private:
                       errout.str());
     }
 
-    void const89() { // #11654
-        checkConst("struct S {\n"
+    void const89() {
+        checkConst("struct S {\n" // #11654
                    "    void f(bool b);\n"
                    "    int i;\n"
                    "};\n"
@@ -6539,6 +6560,23 @@ private:
                    "        f(i);\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #11744
+                   "    S* p;\n"
+                   "    int f() {\n"
+                   "        if (p)\n"
+                   "            return 1 + p->f();\n"
+                   "        return 1;\n"
+                   "    }\n"
+                   "    int g(int i) {\n"
+                   "        if (i > 0)\n"
+                   "            return i + g(i - 1);\n"
+                   "        return 0;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:8]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
     }
 
     void const90() { // #11637

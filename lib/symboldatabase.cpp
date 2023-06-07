@@ -1584,7 +1584,13 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
             inConstExpr = tok->next()->link();
         }
     }
-    for (const Scope * scope : functionScopes) {
+
+    auto exprScopes = functionScopes; // functions + global lambdas
+    std::copy_if(scopeList.front().nestedList.begin(), scopeList.front().nestedList.end(), std::back_inserter(exprScopes), [](const Scope* scope) {
+        return scope && scope->type == Scope::eLambda;
+    });
+
+    for (const Scope * scope : exprScopes) {
         nonneg int thisId = 0;
         std::unordered_map<std::string, std::vector<Token*>> exprs;
 
@@ -1619,7 +1625,7 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                 exprs[tok->str()].push_back(tok);
                 tok->exprId(id++);
 
-                if (id == std::numeric_limits<nonneg int>::max()) {
+                if (id == std::numeric_limits<nonneg int>::max() / 4) {
                     throw InternalError(nullptr, "Ran out of expression ids.", InternalError::INTERNAL);
                 }
             } else if (isCPP() && Token::simpleMatch(tok, "this")) {
@@ -1646,6 +1652,27 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
                     tok2->exprId(cid);
                 }
             }
+        }
+        // Mark expressions that are unique
+        std::unordered_map<nonneg int, Token*> exprMap;
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->exprId() == 0)
+                continue;
+            auto p = exprMap.emplace(tok->exprId(), tok);
+            // Already exists so set it to null
+            if (!p.second) {
+                p.first->second = nullptr;
+            }
+        }
+        for (const auto& p : exprMap) {
+            if (!p.second)
+                continue;
+            if (p.second->variable()) {
+                const Variable* var = p.second->variable();
+                if (var->nameToken() != p.second)
+                    continue;
+            }
+            p.second->setUniqueExprId();
         }
     }
 }
@@ -2175,8 +2202,11 @@ void Variable::evaluate(const Settings* settings)
 {
     // Is there initialization in variable declaration
     const Token *initTok = mNameToken ? mNameToken->next() : nullptr;
-    while (initTok && initTok->str() == "[")
+    while (Token::Match(initTok, "[|(")) {
         initTok = initTok->link()->next();
+        if (Token::simpleMatch(initTok, ")"))
+            initTok = initTok->next();
+    }
     if (Token::Match(initTok, "=|{") || (initTok && initTok->isSplittedVarDeclEq()))
         setFlag(fIsInit, true);
 

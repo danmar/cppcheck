@@ -105,6 +105,7 @@ private:
         TEST_CASE(varScope31);      // #11099
         TEST_CASE(varScope32);      // #11441
         TEST_CASE(varScope33);
+        TEST_CASE(varScope34);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1612,6 +1613,19 @@ private:
                       "[test.cpp:31]: (style) The scope of the variable 'i' can be reduced.\n"
                       "[test.cpp:37]: (style) The scope of the variable 'k' can be reduced.\n",
                       errout.str());
+    }
+
+    void varScope34() { // #11742
+        check("void f() {\n"
+              "    bool b = false;\n"
+              "    int i = 1;\n"
+              "    for (int k = 0; k < 20; ++k) {\n"
+              "        b = !b;\n"
+              "        if (b)\n"
+              "            i++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
@@ -3173,6 +3187,22 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct B { virtual void f() const {} };\n" // #11528
+              "struct D : B {};\n"
+              "void g(B* b) {\n"
+              "    D* d = dynamic_cast<D*>(b);\n"
+              "    if (d)\n"
+              "        d->f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n", errout.str());
+
+        check("void g(const int*);\n"
+              "void f(const std::vector<int*>&v) {\n"
+              "    for (int* i : v)\n"
+              "        g(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' can be declared as pointer to const\n", errout.str());
 
         check("struct A {\n" // #11225
               "    A();\n"
