@@ -498,6 +498,11 @@
                       <ref name="CONTAINER-YIELDS"/>
                     </attribute>
                   </optional>
+                  <optional>
+                    <attribute name="returnType">
+                      <data type="string"/>
+                    </attribute>
+                  </optional>
                   <empty/>
                 </element>
               </zeroOrMore>
