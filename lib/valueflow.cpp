@@ -4504,7 +4504,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                 LifetimeStore{ const_cast<Token*>(args[iArg - 1]), "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Address }.byRef(
                     tok->next(), tokenlist, errorLogger, settings);
             }
-        }        
+        }
     }
 }
 
