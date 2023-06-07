@@ -4424,6 +4424,12 @@ private:
               "    std::cout << s;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'buff' that is out of scope.\n", errout.str());
+
+        check("char* f(char* dst) {\n"
+              "    const char* src = \"abc\";\n"
+              "    return strcpy(dst, src);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void splitNamespaceAuto() { // #10473

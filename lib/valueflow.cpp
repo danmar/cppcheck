@@ -4501,8 +4501,10 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             }
             std::vector<const Token*> args = getArguments(tok);
             if (iArg > 0 && iArg <= args.size()) {
-                LifetimeStore{ const_cast<Token*>(args[iArg - 1]), "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Address }.byRef(
-                    tok->next(), tokenlist, errorLogger, settings);
+                const Token* varTok = args[iArg - 1];
+                if (varTok->variable() && varTok->variable()->isLocal())
+                    LifetimeStore{ varTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Address }.byRef(
+                        tok->next(), tokenlist, errorLogger, settings);
             }
         }
     }
