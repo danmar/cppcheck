@@ -9,13 +9,10 @@ CheckOptions:
   - { key: HeaderFileExtensions,          value: 'x' }
 ")
 
-    if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        add_definitions(-DQT_NO_DEBUG)
-        add_definitions(-DQT_NO_DEBUG_OUTPUT)
-        add_definitions(-DQT_NO_WARNING_OUTPUT)
-    else()
-        add_definitions(-DQT_DEBUG)
-    endif()
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_DEBUG>)
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_DEBUG_OUTPUT>)
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_WARNING_OUTPUT>)
+    add_compile_definitions($<$<CONFIG:Debug>:-DQT_DEBUG>)
 
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
@@ -60,6 +57,10 @@ CheckOptions:
     if (BUILD_CORE_DLL)
         target_compile_definitions(cppcheck-gui PRIVATE CPPCHECKLIB_IMPORT TINYXML2_IMPORT)
         target_link_libraries(cppcheck-gui cppcheck-core)
+    endif()
+    if(MSVC)
+        # compilation will fail as e.g. QList::realloc would be replaced by MSVC's macro definition
+        target_compile_definitions(cppcheck-gui PRIVATE $<$<CONFIG:Debug>:DISABLE_CRTDBG_MAP_ALLOC>)
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # Q_UNUSED() in generated code

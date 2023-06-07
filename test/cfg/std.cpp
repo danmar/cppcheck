@@ -4740,3 +4740,10 @@ void smartPtr_release()
     //cppcheck-suppress nullPointer
     *p = 1;
 }
+
+void std_vector_data_arithmetic()
+{
+	std::vector<char> buf;
+	buf.resize(1);
+	memcpy(buf.data() + 0, "", 1);
+}
