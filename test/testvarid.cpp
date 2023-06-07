@@ -3749,14 +3749,15 @@ private:
             "    return x + y + a.y + b.y;\n"
             "}\n");
 
-        const char expected[] = "1: struct A {\n"
-                                "2: int x ; int y ;\n"
-                                "3: } ;\n"
-                                "4: int f ( A a , A b ) {\n"
-                                "5: int x@5 ; x@5 =@9 a@3 .@10 x@6 +@11 b@4 .@12 x@7 ;\n"
-                                "6: int y@8 ; y@8 =@13 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
-                                "7: return x@5 +@17 y@8 +@18 a@3 .@19 y@9 +@20 b@4 .@21 y@10 ;\n"
-                                "8: }\n";
+        const char expected[] =
+            "1: struct A {\n"
+            "2: int x ; int y ;\n"
+            "3: } ;\n"
+            "4: int f ( A a , A b ) {\n"
+            "5: int x@5 ; x@5 =@9 a@3 .@10 x@6 +@11 b@4 .@12 x@7 ;\n"
+            "6: int y@8 ; y@8 =@1073741837 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
+            "7: return x@5 +@1073741841 y@8 +@1073741842 a@3 .@1073741843 y@9 +@1073741844 b@4 .@1073741845 y@10 ;\n"
+            "8: }\n";
 
         ASSERT_EQUALS(expected, actual);
     }
@@ -3772,8 +3773,8 @@ private:
 
         const char expected[] = "1: struct S { std :: unique_ptr < int > u ; } ;\n"
                                 "2: auto f ; f = [ ] ( const S & s ) . std :: unique_ptr < int > {\n"
-                                "3: if (@5 auto p@4 =@6 s@3 .@7 u@5 .@8 get (@9 ) ) {\n"
-                                "4: return std ::@10 make_unique < int > (@11 *@12 p@4 ) ; }\n"
+                                "3: if (@5 auto p@4 =@1073741830 s@3 .@1073741831 u@5 .@1073741832 get (@1073741833 ) ) {\n"
+                                "4: return std ::@1073741834 make_unique < int > (@1073741835 *@1073741836 p@4 ) ; }\n"
                                 "5: return nullptr ;\n"
                                 "6: } ;\n";
 
