@@ -2531,7 +2531,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
                 return false;
             }
         }
-        if (settings && settings->library.isFunctionConst(ftok) || (astIsSmartPointer(tok) && ftok->str() == "get")) // TODO: replace with action/yield?
+        if ((settings && settings->library.isFunctionConst(ftok)) || (astIsSmartPointer(tok) && ftok->str() == "get")) // TODO: replace with action/yield?
             return false;
 
         const Function * fun = ftok->function();
