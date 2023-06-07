@@ -1459,7 +1459,7 @@ std::pair<const Token *, const Token *> Token::findExpressionStartEndTokens() co
             }
         }
         if (Token::Match(end,"(|[|{") &&
-            !(Token::Match(end, "( %type%") && !end->astOperand2())) {
+            !(Token::Match(end, "( ::| %type%") && !end->astOperand2())) {
             end = end->link();
             break;
         }
