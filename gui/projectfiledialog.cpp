@@ -753,34 +753,8 @@ void ProjectFileDialog::setLibraries(const QStringList &libraries)
 
 void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &suppression)
 {
-    QString suppression_name;
-    static const char sep = QDir::separator().toLatin1();
-    bool found_relative = false;
-
-    // Replace relative file path in the suppression with the absolute one
-    if ((suppression.fileName.find('*') == std::string::npos) &&
-        (suppression.fileName.find(sep) == std::string::npos)) {
-        QFileInfo inf(mProjectFile->getFilename());
-        QString rootpath = inf.absolutePath();
-        if (QFile::exists(QString{"%1%2%3"}.arg(rootpath,
-                                                QDir::separator(),
-                                                QString::fromStdString(suppression.fileName)))) {
-            Suppressions::Suppression sup = suppression;
-            sup.fileName = rootpath.toLatin1().constData();
-            sup.fileName += sep;
-            sup.fileName += suppression.fileName;
-            mSuppressions += sup;
-            suppression_name = QString::fromStdString(sup.getText());
-            found_relative = true;
-        }
-    }
-
-    if (!found_relative) {
-        mSuppressions += suppression;
-        suppression_name = QString::fromStdString(suppression.getText());
-    }
-
-    mUI->mListSuppressions->addItem(suppression_name);
+    mSuppressions += suppression;
+    mUI->mListSuppressions->addItem(QString::fromStdString(suppression.getText()));
 }
 
 void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
