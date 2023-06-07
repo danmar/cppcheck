@@ -4724,6 +4724,14 @@ void smartPtr_get()
     *p = 1;
 }
 
+void smartPtr_get2(std::vector<std::unique_ptr<int>>& v) 
+{
+    for (auto& u : v) {
+        int* p = u.get();
+        *p = 0;
+    }
+}
+
 void smartPtr_reset()
 {
     std::unique_ptr<int> p(new int());
