@@ -249,8 +249,8 @@ public:
             NO_YIELD
         };
         struct Function {
-            Action action = Action::NO_ACTION;
-            Yield yield = Yield::NO_YIELD;
+            Action action;
+            Yield yield;
             std::string returnType;
         };
         struct RangeItemRecordTypeItem {
