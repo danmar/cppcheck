@@ -232,6 +232,7 @@ private:
         TEST_CASE(decltype2);
 
         TEST_CASE(exprid1);
+        TEST_CASE(exprid2);
 
         TEST_CASE(structuredBindings);
     }
@@ -3756,6 +3757,25 @@ private:
                                 "6: int y@8 ; y@8 =@13 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
                                 "7: return x@5 +@17 y@8 +@18 a@3 .@19 y@9 +@20 b@4 .@21 y@10 ;\n"
                                 "8: }\n";
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void exprid2() {
+        const std::string actual = tokenizeExpr( // #11739
+            "struct S { std::unique_ptr<int> u; };\n"
+            "auto f = [](const S& s) -> std::unique_ptr<int> {\n"
+            "    if (auto p = s.u.get())\n"
+            "        return std::make_unique<int>(*p);\n"
+            "    return nullptr;\n"
+            "};\n");
+
+        const char expected[] = "1: struct S { std :: unique_ptr < int > u ; } ;\n"
+                                "2: auto f ; f = [ ] ( const S & s ) . std :: unique_ptr < int > {\n"
+                                "3: if (@5 auto p@4 =@6 s@3 .@7 u@5 .@8 get (@9 ) ) {\n"
+                                "4: return std ::@10 make_unique < int > (@11 *@12 p@4 ) ; }\n"
+                                "5: return nullptr ;\n"
+                                "6: } ;\n";
 
         ASSERT_EQUALS(expected, actual);
     }

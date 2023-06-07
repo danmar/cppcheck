@@ -4489,6 +4489,7 @@ void getline()
     in.close();
 }
 
+// cppcheck-suppress passedByValue
 void stream_write(std::ofstream& s, std::vector<char> v) {
     if (v.empty()) {}
     s.write(v.data(), v.size());
@@ -4634,18 +4635,26 @@ void stdspan()
     // cppcheck-suppress unreadVariable
     std::span spn2 = spn;
 
+    //cppcheck-suppress ignoredReturnValue
     spn.begin();
+    //cppcheck-suppress ignoredReturnValue
     spn.end();
+    //cppcheck-suppress ignoredReturnValue
     spn.rbegin();
-    spn.end();
 
+    //cppcheck-suppress ignoredReturnValue
     spn.front();
+    //cppcheck-suppress ignoredReturnValue
     spn.back();
     //cppcheck-suppress constStatement
     spn[0];
+    //cppcheck-suppress ignoredReturnValue
     spn.data();
+    //cppcheck-suppress ignoredReturnValue
     spn.size();
+    //cppcheck-suppress ignoredReturnValue
     spn.size_bytes();
+    //cppcheck-suppress ignoredReturnValue
     spn.empty();
     //cppcheck-suppress ignoredReturnValue
     spn.first(2);
@@ -4713,4 +4722,28 @@ void smartPtr_get()
     p.get();
     //cppcheck-suppress nullPointer
     *p = 1;
+}
+
+void smartPtr_reset()
+{
+    std::unique_ptr<int> p(new int());
+    p.reset(nullptr);
+    //cppcheck-suppress nullPointer
+    *p = 1;
+}
+
+void smartPtr_release()
+{
+    std::unique_ptr<int> p{ new int() };
+    //cppcheck-suppress ignoredReturnValue
+    p.release();
+    //cppcheck-suppress nullPointer
+    *p = 1;
+}
+
+void std_vector_data_arithmetic()
+{
+	std::vector<char> buf;
+	buf.resize(1);
+	memcpy(buf.data() + 0, "", 1);
 }

@@ -1823,7 +1823,7 @@ private:
         check("void f() {\n"
               "    lib_func();"
               "}", "test.cpp", &s);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (information) --check-library: There is no matching configuration for function lib_func()\n", errout.str());
 
         check("void f(void* v) {\n"
               "    lib_func(v);"
@@ -2002,10 +2002,8 @@ private:
               "    p->h(i);\n"
               "    p.reset(nullptr);\n"
               "}\n", "test.cpp", &s);
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n",
-                           "[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n"
-                           "[test.cpp:6]: (information) --check-library: There is no matching configuration for function std::shared_ptr::reset()\n",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n",
+                      errout.str());
     }
 
     void checkUseStandardLibrary1() {

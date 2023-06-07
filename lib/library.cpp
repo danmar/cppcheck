@@ -1250,7 +1250,7 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName)
     const int callargs = numberOfArgumentsWithoutAst(ftok);
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
     if (it == functions.cend())
-        return (callargs == 0);
+        return false;
     int args = 0;
     int firstOptionalArg = -1;
     for (const std::pair<const int, Library::ArgumentChecks> & argCheck : it->second.argumentChecks) {

@@ -48,6 +48,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     // Add our available languages
     // Keep this list sorted
     addTranslation("Chinese (Simplified)", "cppcheck_zh_CN");
+    addTranslation("Chinese (Traditional)", "cppcheck_zh_TW");
     addTranslation("Dutch", "cppcheck_nl");
     addTranslation("English", "cppcheck_en");
     addTranslation("Finnish", "cppcheck_fi");
