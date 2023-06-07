@@ -3188,6 +3188,22 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct B { virtual void f() const {} };\n" // #11528
+              "struct D : B {};\n"
+              "void g(B* b) {\n"
+              "    D* d = dynamic_cast<D*>(b);\n"
+              "    if (d)\n"
+              "        d->f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n", errout.str());
+
+        check("void g(const int*);\n"
+              "void f(const std::vector<int*>&v) {\n"
+              "    for (int* i : v)\n"
+              "        g(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' can be declared as pointer to const\n", errout.str());
+
         check("struct A {\n" // #11225
               "    A();\n"
               "    virtual ~A();\n"
