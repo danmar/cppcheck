@@ -6532,7 +6532,7 @@ private:
                       errout.str());
 
         checkConst("struct S {\n"
-                   "    bool f() { return p.get() != nullptr; }\n"
+                   "    bool f() { return p != nullptr; }\n"
                    "    std::shared_ptr<int> p;\n"
                    "};\n");
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n",

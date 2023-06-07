@@ -139,6 +139,7 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesArray);
         TEST_CASE(test_isVariableDeclarationIdentifiesPointerArray);
         TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers);
+        TEST_CASE(test_isVariableDeclarationIdentifiesArrayOfFunctionPointers);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerVariable);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedArrayVariable);
@@ -875,6 +876,22 @@ private:
         ASSERT(true == v.isPointerToArray());
         ASSERT(false == v.isPointerArray());
         ASSERT(false == v.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesArrayOfFunctionPointers() {
+        reset();
+        GET_SYMBOL_DB("int (*a[])(int) = { g };"); // #11596
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("a", vartok->str());
+        ASSERT_EQUALS("int", typetok->str());
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        ASSERT(false == v.isPointer());
+        ASSERT(true == v.isArray());
+        ASSERT(false == v.isPointerToArray());
+        ASSERT(true == v.isPointerArray());
+        ASSERT(false == v.isReference());
+        ASSERT(true == v.isInit());
     }
 
     void isVariableDeclarationIdentifiesTemplatedPointerVariable() {

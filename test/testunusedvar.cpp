@@ -141,6 +141,7 @@ private:
         TEST_CASE(localvar66); // #11143
         TEST_CASE(localvar67); // #9946
         TEST_CASE(localvar68);
+        TEST_CASE(localvar69);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -3771,6 +3772,16 @@ private:
 
         checkFunctionVariableUsageP("#define X0 int (*x)(int) = 0\n"
                                     "void f() { X0; }\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar69() {
+        functionVariableUsage("int g();\n" // #11063
+                              "int h(int);\n"
+                              "int f() {\n"
+                              "    int i = g();\n"
+                              "    return (::h)(i);\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
