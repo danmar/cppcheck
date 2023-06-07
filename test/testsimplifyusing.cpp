@@ -71,6 +71,7 @@ private:
         TEST_CASE(simplifyUsing24);
         TEST_CASE(simplifyUsing25);
         TEST_CASE(simplifyUsing26); // #11090
+        TEST_CASE(simplifyUsing27);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -653,6 +654,24 @@ private:
                                 "using namespace M ; "
                                 "} "
                                 "struct M :: F<A> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyUsing27() { // #11670
+        const char code[] = "namespace N {\n"
+                            "    template <class T>\n"
+                            "    struct S {\n"
+                            "        using iterator = T*;\n"
+                            "        iterator begin();\n"
+                            "    };\n"
+                            "}\n"
+                            "using I = N::S<int>;\n"
+                            "void f() {\n"
+                            "    I::iterator iter;\n"
+                            "}\n";
+        const char expected[] = "namespace N { struct S<int> ; } "
+                                "void f ( ) { int * iter ; } "
+                                "struct N :: S<int> { int * begin ( ) ; } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

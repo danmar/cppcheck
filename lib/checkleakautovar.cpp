@@ -417,7 +417,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 changeAllocStatusIfRealloc(alloctype, fTok, varTok);
             } else if (mTokenizer->isCPP() && Token::Match(varTok->tokAt(2), "new !!(")) {
                 const Token* tok2 = varTok->tokAt(2)->astOperand1();
-                const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
+                const bool arrayNew = (tok2 && (tok2->str() == "[" || (Token::Match(tok2, "(|{") && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
                 VarInfo::AllocInfo& varAlloc = alloctype[varTok->varId()];
                 varAlloc.type = arrayNew ? NEW_ARRAY : NEW;
                 varAlloc.status = VarInfo::ALLOC;
