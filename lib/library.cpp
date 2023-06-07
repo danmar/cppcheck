@@ -1375,7 +1375,7 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
                 (yield == Yield::ITEM && astContainerAction(ftok->astParent()->astOperand1()) == Library::Container::Action::NO_ACTION) ||
                 (yield == Yield::ITERATOR && astContainerAction(ftok->astParent()->astOperand1()) == Library::Container::Action::NO_ACTION))
                 return Library::UseRetValType::DEFAULT;
-            }
+        }
         return Library::UseRetValType::NONE;
     }
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
@@ -1396,9 +1396,9 @@ const std::string& Library::returnValueType(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
-              const Token* contTok = ftok->astParent()->astOperand1();
-              if (contTok->valueType() && contTok->valueType()->container)
-                  return contTok->valueType()->container->getReturnType(ftok->str());
+            const Token* contTok = ftok->astParent()->astOperand1();
+            if (contTok->valueType() && contTok->valueType()->container)
+                return contTok->valueType()->container->getReturnType(ftok->str());
         }
         return emptyString;
     }
@@ -1516,7 +1516,7 @@ bool Library::isnoreturn(const Token *ftok) const
             if (astContainerAction(ftok->astParent()->astOperand1()) != Library::Container::Action::NO_ACTION ||
                 astContainerYield(ftok->astParent()->astOperand1()) != Library::Container::Yield::NO_YIELD)
                 return false;
-            }
+        }
         return false;
     }
     const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
