@@ -1366,17 +1366,18 @@ const Library::NonOverlappingData* Library::getNonOverlappingData(const Token *f
 
 Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 {
-    if (Token::simpleMatch(ftok->astParent(), ".")) {
-        using Yield = Library::Container::Yield;
-        const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
-        if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
-            yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
-            (yield == Yield::ITEM && astContainerAction(ftok->astParent()->astOperand1()) == Library::Container::Action::NO_ACTION) ||
-            (yield == Yield::ITERATOR && astContainerAction(ftok->astParent()->astOperand1()) == Library::Container::Action::NO_ACTION))
-            return Library::UseRetValType::DEFAULT;
-    }
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            using Yield = Library::Container::Yield;
+            const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+            if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
+                yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
+                (yield == Yield::ITEM && astContainerAction(ftok->astParent()->astOperand1()) == Library::Container::Action::NO_ACTION) ||
+                (yield == Yield::ITERATOR && astContainerAction(ftok->astParent()->astOperand1()) == Library::Container::Action::NO_ACTION))
+                return Library::UseRetValType::DEFAULT;
+            }
         return Library::UseRetValType::NONE;
+    }
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     if (it != functions.cend())
         return it->second.useretval;
@@ -1393,13 +1394,14 @@ const std::string& Library::returnValue(const Token *ftok) const
 
 const std::string& Library::returnValueType(const Token *ftok) const
 {
-    if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
-        const Token* contTok = ftok->astParent()->astOperand1();
-        if (contTok->valueType() && contTok->valueType()->container)
-            return contTok->valueType()->container->getReturnType(ftok->str());
-    }
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
+              const Token* contTok = ftok->astParent()->astOperand1();
+              if (contTok->valueType() && contTok->valueType()->container)
+                  return contTok->valueType()->container->getReturnType(ftok->str());
+        }
         return emptyString;
+    }
     const std::map<std::string, std::string>::const_iterator it = mReturnValueType.find(getFunctionName(ftok));
     return it != mReturnValueType.cend() ? it->second : emptyString;
 }
@@ -1492,14 +1494,15 @@ bool Library::isFunctionConst(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isConst())
         return true;
-    if (Token::simpleMatch(ftok->astParent(), ".")) {
-        using Yield = Library::Container::Yield;
-        const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
-        if (yield == Yield::EMPTY || yield == Yield::SIZE || yield == Yield::BUFFER_NT)
-            return true;
-    }
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            using Yield = Library::Container::Yield;
+            const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+            if (yield == Yield::EMPTY || yield == Yield::SIZE || yield == Yield::BUFFER_NT)
+                return true;
+        }
         return false;
+    }
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     return (it != functions.cend() && it->second.isconst);
 }
@@ -1508,13 +1511,14 @@ bool Library::isnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return true;
-    if (Token::simpleMatch(ftok->astParent(), ".")) {
-        if (astContainerAction(ftok->astParent()->astOperand1()) != Library::Container::Action::NO_ACTION ||
-            astContainerYield(ftok->astParent()->astOperand1()) != Library::Container::Yield::NO_YIELD)
-            return false;
-    }
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            if (astContainerAction(ftok->astParent()->astOperand1()) != Library::Container::Action::NO_ACTION ||
+                astContainerYield(ftok->astParent()->astOperand1()) != Library::Container::Yield::NO_YIELD)
+                return false;
+            }
         return false;
+    }
     const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
     if (it == mNoReturn.end())
         return false;
