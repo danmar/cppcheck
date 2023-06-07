@@ -4714,3 +4714,11 @@ void smartPtr_get()
     //cppcheck-suppress nullPointer
     *p = 1;
 }
+
+void smartPtr_get2(std::vector<std::unique_ptr<int>>& v) 
+{
+    for (auto& u : v) {
+        int* p = u.get();
+        *p = 0;
+    }
+}
