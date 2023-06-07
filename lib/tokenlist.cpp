@@ -885,7 +885,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
     while (tok) {
         if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
             compileUnaryOp(tok, state, compileScope);
-        } else if (tok->str() == "...") {
+        } else if (Token::Match(tok->previous(), "!!) ...")) {
             state.op.push(tok);
             tok = tok->next();
             break;
