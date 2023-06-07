@@ -4731,7 +4731,6 @@ void smartPtr_get2(std::vector<std::unique_ptr<int>>& v)
         *p = 0;
     }
 }
-}
 
 void smartPtr_reset()
 {
