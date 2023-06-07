@@ -64,6 +64,26 @@ For release builds it is recommended that you use:
 
 Using cmake you can generate project files for Visual Studio,XCode,etc.
 
+#### Building a specific configuration
+
+For single-configuration generators (like "Unix Makefiles") you can generate and build a specific configuration (e.g. "RelWithDebInfo") using:
+
+```shell
+mkdir build_RelWithDebInfo
+cd build_RelWithDebInfo
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake --build . --config RelWithDebInfo
+```
+
+For multi-configuration generators (like "Visual Studio 17 2022") the same is achieved using:
+
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build . --config RelWithDebInfo
+```
+
 ### qmake
 
 You can use the gui/gui.pro file to build the GUI.
