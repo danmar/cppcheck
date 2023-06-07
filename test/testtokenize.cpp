@@ -6465,6 +6465,24 @@ private:
 
         ASSERT_EQUALS("xfts(=", testAst("; auto x = f(ts...);"));
 
+        ASSERT_EQUALS("da((new= ifd(", testAst("template <typename a, typename... b>\n" // #10199
+                                               "void c(b... e) {\n"
+                                               "    a d = new a((e)...);\n"
+                                               "    if (d) {}\n"
+                                               "}\n"));
+
+        ASSERT_EQUALS("ad*astdforward::e((new= ifd(", testAst("struct a {};\n" // #11103
+                                                              "template <class... b> void c(b... e) {\n"
+                                                              "    a* d = new a(std::forward<b>(e)...);\n"
+                                                              "    if (d) {}\n"
+                                                              "}\n"));
+
+        ASSERT_EQUALS("stddir::Args...&&, dir\"abc\"+= dirconcatstdforward::args((+return",
+                      testAst("template <typename ...Args> std::string concat(std::string dir, Args&& ...args) {\n" // #10492
+                              "    dir += \"abc\";\n"
+                              "    return dir + concat(std::forward<Args>(args)...);\n"
+                              "}\n"));
+
         // #11369
         ASSERT_NO_THROW(tokenizeAndStringify("int a;\n"
                                              "template <class> auto b() -> decltype(a) {\n"
