@@ -8166,11 +8166,12 @@ private:
             vector.startPattern2 = "Vector !!::";
             vector.type_templateArgNo = 0;
             vector.arrayLike_indexOp = true;
-            using Action = Library::Container::Action;
-            using Yield = Library::Container::Yield;
-            vector.functions["front"] = Library::Container::Function{ Action::NO_ACTION, Yield::ITEM, "" };
-            vector.functions["data"] = Library::Container::Function{ Action::NO_ACTION, Yield::BUFFER, "" };
-            vector.functions["begin"] = Library::Container::Function{ Action::NO_ACTION, Yield::START_ITERATOR, "" };
+            vector.functions["front"] =
+                Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::ITEM};
+            vector.functions["data"] =
+                Library::Container::Function{Library::Container::Action::NO_ACTION, Library::Container::Yield::BUFFER};
+            vector.functions["begin"] = Library::Container::Function{Library::Container::Action::NO_ACTION,
+                                                                     Library::Container::Yield::START_ITERATOR};
             set.library.containers["Vector"] = vector;
             Library::Container string;
             string.startPattern = "test :: string";
