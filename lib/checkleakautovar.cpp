@@ -326,6 +326,9 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (!Token::Match(tok, "[;{},]") || Token::Match(tok->next(), "[;{},]"))
             continue;
 
+        if (Token::Match(tok, "[;{},] %var% ["))
+            continue;
+
         tok = tok->next();
         if (!tok || tok == endToken)
             break;
@@ -1067,7 +1070,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     tok2 = tok3->tokAt(4);
                 else
                     continue;
-                if (Token::Match(tok2, "[});,+]")) {
+                if (Token::Match(tok2, "[});,+[]")) {
                     used = true;
                     break;
                 }
