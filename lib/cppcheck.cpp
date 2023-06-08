@@ -960,14 +960,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             } catch (const InternalError &e) {
                 std::list<ErrorMessage::FileLocation> locationList;
                 if (e.token) {
-                    ErrorMessage::FileLocation loc(e.token, &tokenizer.list);
-                    locationList.push_back(std::move(loc));
+                    locationList.emplace_back(e.token, &tokenizer.list);
                 } else {
-                    ErrorMessage::FileLocation loc2(filename, 0, 0);
-                    locationList.push_back(std::move(loc2));
+                    locationList.emplace_back(filename, 0, 0);
                     if (filename != tokenizer.list.getSourceFilePath()) {
-                        ErrorMessage::FileLocation loc(tokenizer.list.getSourceFilePath(), 0, 0);
-                        locationList.push_back(std::move(loc));
+                        locationList.emplace_back(tokenizer.list.getSourceFilePath(), 0, 0);
                     }
                 }
                 ErrorMessage errmsg(std::move(locationList),
@@ -1038,25 +1035,19 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
 void CppCheck::internalError(const std::string &filename, const std::string &msg)
 {
-    const std::string fixedpath = Path::toNativeSeparators(filename);
-    const std::string fullmsg("Bailing out from checking " + fixedpath + " since there was an internal error: " + msg);
+    const std::string fullmsg("Bailing out from checking since there was an internal error: " + msg);
 
-    if (mSettings.severity.isEnabled(Severity::information)) {
-        const ErrorMessage::FileLocation loc1(filename, 0, 0);
-        std::list<ErrorMessage::FileLocation> callstack(1, loc1);
+    const ErrorMessage::FileLocation loc1(filename, 0, 0);
+    std::list<ErrorMessage::FileLocation> callstack(1, loc1);
 
-        ErrorMessage errmsg(callstack,
-                            emptyString,
-                            Severity::information,
-                            fullmsg,
-                            "internalError",
-                            Certainty::normal);
+    ErrorMessage errmsg(callstack,
+                        emptyString,
+                        Severity::error,
+                        fullmsg,
+                        "internalError",
+                        Certainty::normal);
 
-        mErrorLogger.reportErr(errmsg);
-    } else {
-        // Report on stdout
-        mErrorLogger.reportOut(fullmsg);
-    }
+    mErrorLogger.reportErr(errmsg);
 }
 
 //---------------------------------------------------------------------------
