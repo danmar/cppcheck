@@ -4711,6 +4711,17 @@ private:
                "void f() { string str = to_string(1); }\n";
         expected = "void f ( ) { std :: string str ; str = std :: to_string ( 1 ) ; }";
         ASSERT_EQUALS(expected, tokenizeAndStringify(code));
+
+        code = "using namespace std;\n"
+               "vector<int>&& f(vector<int>& v) {\n"
+               "    v.push_back(1);\n"
+               "    return move(v);\n"
+               "}\n";
+        expected = "std :: vector < int > && f ( std :: vector < int > & v ) {\n"
+                   "v . push_back ( 1 ) ;\n"
+                   "return std :: move ( v ) ;\n"
+                   "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void microsoftMemory() {

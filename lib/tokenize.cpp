@@ -9439,7 +9439,7 @@ void Tokenizer::simplifyNamespaceStd()
                 const Token *start = tok;
                 while (Token::Match(start->previous(), "%type%|*|&"))
                     start = start->previous();
-                if (start != tok && start->isName() && (!start->previous() || Token::Match(start->previous(), "[;{}]")))
+                if (start != tok && start->isName() && !start->isKeyword() && (!start->previous() || Token::Match(start->previous(), "[;{}]")))
                     userFunctions.insert(tok->str());
             }
             if (userFunctions.find(tok->str()) == userFunctions.end() && mSettings->library.matchArguments(tok, "std::" + tok->str()))

@@ -390,6 +390,7 @@ private:
 
         TEST_CASE(isFunction1); // UNKNOWN_MACRO(a,b) { .. }
         TEST_CASE(isFunction2);
+        TEST_CASE(isFunction3);
 
         TEST_CASE(findFunction1);
         TEST_CASE(findFunction2); // mismatch: parameter passed by address => reference argument
@@ -5837,6 +5838,18 @@ private:
         ASSERT(db->findScopeByName("set_cur_cpu_spec") != nullptr);
         ASSERT(db->findScopeByName("setup_cpu_spec") != nullptr);
         ASSERT(db->findScopeByName("PTRRELOC") == nullptr);
+    }
+
+    void isFunction3() {
+        GET_SYMBOL_DB("std::vector<int>&& f(std::vector<int>& v) {\n"
+                      "    v.push_back(1);\n"
+                      "    return std::move(v);\n"
+                      "}");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(2, db->scopeList.size());
+        const Token* ret = Token::findsimplematch(tokenizer.tokens(), "return");
+        ASSERT(ret != nullptr);
+        ASSERT(ret->scope() && ret->scope()->type == Scope::eFunction);
     }
 
 
