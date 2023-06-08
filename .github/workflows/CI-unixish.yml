@@ -378,8 +378,8 @@ jobs:
       # TODO: move to scriptcheck.yml so these are tested with all Python versions?
       - name: Test addons
         run: |
-          ./cppcheck --addon=threadsafety addons/test/threadsafety
-          ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety addons/test/threadsafety
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety --std=c++03 addons/test/threadsafety
           ./cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
           pushd addons/test
           # We'll force C89 standard to enable an additional verification for
