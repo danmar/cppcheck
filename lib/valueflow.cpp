@@ -4490,6 +4490,23 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         // Assume constructing the valueType
         valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
+    } else {
+        const std::string& retVal = settings->library.returnValue(tok);
+        if (retVal.compare(0, 3, "arg") == 0) {
+            std::size_t iArg{};
+            try {
+                iArg = strToInt<std::size_t>(retVal.substr(3));
+            } catch (...) {
+                return;
+            }
+            std::vector<const Token*> args = getArguments(tok);
+            if (iArg > 0 && iArg <= args.size()) {
+                const Token* varTok = args[iArg - 1];
+                if (varTok->variable() && varTok->variable()->isLocal())
+                    LifetimeStore{ varTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Address }.byRef(
+                    tok->next(), tokenlist, errorLogger, settings);
+            }
+        }
     }
 }
 
