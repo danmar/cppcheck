@@ -193,6 +193,7 @@ private:
         TEST_CASE(return7); // #9343 return (uint8_t*)x
         TEST_CASE(return8);
         TEST_CASE(return9);
+        TEST_CASE(return10);
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -2373,6 +2374,15 @@ private:
               "    return x + sizeof (struct alloc);\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void return10() {
+        check("char f() {\n" // #11758
+              "    char* p = (char*)malloc(1);\n"
+              "    p[0] = 'x';\n"
+              "    return p[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.c:4]: (error) Memory leak: p\n", errout.str());
     }
 
     void test1() {
