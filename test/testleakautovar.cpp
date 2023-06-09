@@ -112,6 +112,7 @@ private:
         TEST_CASE(deallocuse8); // #1765
         TEST_CASE(deallocuse9); // #9781
         TEST_CASE(deallocuse10);
+        TEST_CASE(deallocuse11); // #8302
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -838,6 +839,22 @@ private:
               "    return p[1];\n"
               "}\n");
         ASSERT_EQUALS("[test.c:2] -> [test.c:3]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout.str());
+    }
+
+    void deallocuse11() { // #8302
+        check("int f() {\n"
+              "  int *array = new int[42];\n"
+              "  delete [] array;\n"
+              "  return array[1];" // <<
+              "}");
+        TODO_ASSERT_EQUALS("[test.c:3] -> [test.c:4]: (error) Returning/dereferencing 'array' after it is deallocated / released\n", "", errout.str());
+
+        check("int f() {\n"
+              "  int *array = (int*)malloc(40);\n"
+              "  free(array);\n"
+              "  return array[1];" // <<
+              "}");
+        ASSERT_EQUALS("[test.c:3] -> [test.c:4]: (error) Returning/dereferencing 'array' after it is deallocated / released\n", errout.str());
     }
 
     void doublefree1() {  // #3895
