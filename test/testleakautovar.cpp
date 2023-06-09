@@ -2383,6 +2383,14 @@ private:
               "    return p[0];\n"
               "}");
         ASSERT_EQUALS("[test.c:4]: (error) Memory leak: p\n", errout.str());
+
+        check("struct S { int f(); };\n" // #11746
+              "int g() {\n"
+              "    S* s = new S;\n"
+              "    delete s;\n"
+              "    return s->f();\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) Returning/dereferencing 's' after it is deallocated / released\n", errout.str());
     }
 
     void test1() {
