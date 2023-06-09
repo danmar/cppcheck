@@ -8924,7 +8924,7 @@ static void valueFlowDynamicBufferSize(const TokenList* tokenlist, const SymbolD
             const Token* bracTok = nullptr, *typeTok = nullptr;
             if (newTok->astOperand1()->str() == "[")
                 bracTok = newTok->astOperand1();
-            else if (newTok->astOperand1()->str() == "(") {
+            else if (Token::Match(newTok->astOperand1(), "(|{")) {
                 if (newTok->astOperand1()->astOperand1() && newTok->astOperand1()->astOperand1()->str() == "[")
                     bracTok = newTok->astOperand1()->astOperand1();
                 else

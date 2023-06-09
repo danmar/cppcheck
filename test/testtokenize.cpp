@@ -6169,6 +6169,8 @@ private:
         ASSERT_EQUALS("aType2[T1T2,{new=", testAst("a = new Type *[2] {T1, T2};")); // #11745
         ASSERT_EQUALS("pSthis(new=", testAst("p = new S*(this);")); // #10809
         ASSERT_EQUALS("pint0{new=", testAst("p = new int*{ 0 };"));
+        ASSERT_EQUALS("pint5[{new=", testAst("p = new int* [5]{};"));
+        ASSERT_EQUALS("pint5[0{new=", testAst("p = new int* [5]{ 0 };"));
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
