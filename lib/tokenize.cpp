@@ -5247,7 +5247,8 @@ void Tokenizer::createLinks2()
             }
         } else if (token->str() == "<" &&
                    ((token->previous() && (token->previous()->isTemplate() ||
-                                           (token->previous()->isName() && !token->previous()->varId()))) ||
+                                           (token->previous()->isName() && !token->previous()->varId()) ||
+                                           token->strAt(-1) == "]")) ||
                     Token::Match(token->next(), ">|>>"))) {
             type.push(token);
             if (token->previous()->str() == "template")
