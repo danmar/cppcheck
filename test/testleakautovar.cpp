@@ -2391,6 +2391,13 @@ private:
               "    return s->f();\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (error) Returning/dereferencing 's' after it is deallocated / released\n", errout.str());
+
+        check("int f() {\n"
+              "    int* p = new int(3);\n"
+              "    delete p;\n"
+              "    return *p;\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout.str());
     }
 
     void test1() {

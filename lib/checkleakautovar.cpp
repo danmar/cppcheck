@@ -1068,13 +1068,15 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     tok2 = tok3->next();
                 else if (Token::Match(tok3, "& %varid% . %name%", varid))
                     tok2 = tok3->tokAt(4);
+                else if (Token::simpleMatch(tok3, "*"))
+                    tok2 = tok3;
                 else
                     continue;
                 if (Token::Match(tok2, "[});,+]")) {
                     used = PtrUsage::PTR;
                     break;
                 }
-                if (Token::Match(tok2, "[|.")) {
+                if (Token::Match(tok2, "[|.|*")) {
                     used = PtrUsage::DEREF;
                     break;
                 }
