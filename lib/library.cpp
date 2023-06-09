@@ -1368,11 +1368,12 @@ Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 {
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".")) {
+            const Token* contTok = ftok->astParent()->astOperand1();
             using Yield = Library::Container::Yield;
-            const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+            const Yield yield = astContainerYield(contTok);
             if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
                 yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
-                ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(ftok->astParent()->astOperand1()) == Library::Container::Action::NO_ACTION))
+                ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(contTok) == Library::Container::Action::NO_ACTION))
                 return Library::UseRetValType::DEFAULT;
         }
         return Library::UseRetValType::NONE;
@@ -1512,8 +1513,9 @@ bool Library::isnoreturn(const Token *ftok) const
         return true;
     if (isNotLibraryFunction(ftok)) {
         if (Token::simpleMatch(ftok->astParent(), ".")) {
-            if (astContainerAction(ftok->astParent()->astOperand1()) != Library::Container::Action::NO_ACTION ||
-                astContainerYield(ftok->astParent()->astOperand1()) != Library::Container::Yield::NO_YIELD)
+            const Token* contTok = ftok->astParent()->astOperand1();
+            if (astContainerAction(contTok) != Library::Container::Action::NO_ACTION ||
+                astContainerYield(contTok) != Library::Container::Yield::NO_YIELD)
                 return false;
         }
         return false;
