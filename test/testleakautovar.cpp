@@ -846,8 +846,8 @@ private:
               "  int *array = new int[42];\n"
               "  delete [] array;\n"
               "  return array[1];" // <<
-              "}");
-        TODO_ASSERT_EQUALS("[test.c:3] -> [test.c:4]: (error) Returning/dereferencing 'array' after it is deallocated / released\n", "", errout.str());
+              "}", true);
+        ASSERT_EQUALS("[test.c:3] -> [test.c:4]: (error) Returning/dereferencing 'array' after it is deallocated / released\n", errout.str());
 
         check("int f() {\n"
               "  int *array = (int*)malloc(40);\n"
