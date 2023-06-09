@@ -560,9 +560,9 @@ static bool iscpp11init_impl(const Token * const tok)
         return true;
     if (nameToken->str() == ">" && nameToken->link())
         nameToken = nameToken->link()->previous();
-    if (nameToken->str() == "]") {
-        const Token* newTok = nameToken->link()->previous();
-        while (Token::Match(newTok, "%type%|::") && !newTok->isKeyword())
+    if (Token::Match(nameToken, "]|*")) {
+        const Token* newTok = nameToken->link() ? nameToken->link()->previous() : nameToken->previous();
+        while (Token::Match(newTok, "%type%|::|*") && !newTok->isKeyword())
             newTok = newTok->previous();
         if (Token::simpleMatch(newTok, "new"))
             return true;
@@ -880,8 +880,10 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
 {
     auto doCompileScope = [&](const Token* tok) -> bool {
         const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
-        if (isStartOfCpp11Init) {
+        if (isStartOfCpp11Init || Token::simpleMatch(tok, "(")) {
             tok = tok->previous();
+            while (Token::simpleMatch(tok, "*"))
+                tok = tok->previous();
             while (tok && Token::Match(tok->previous(), ":: %type%"))
                 tok = tok->tokAt(-2);
             if (tok && !tok->isKeyword())
@@ -891,8 +893,11 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
         return !findLambdaEndTokenWithoutAST(tok);
     };
 
-    if (doCompileScope(tok))
+    bool isNew = true;
+    if (doCompileScope(tok)) {
         compileScope(tok, state);
+        isNew = false;
+    }
     while (tok) {
         if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
             compileUnaryOp(tok, state, compileScope);
@@ -977,7 +982,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             const std::size_t oldOpSize = state.op.size();
             compileExpression(tok, state);
             tok = tok2;
-            if ((oldOpSize > 0 && Token::simpleMatch(tok->previous(), "} ("))
+            if ((oldOpSize > 0 && (isNew || Token::simpleMatch(tok->previous(), "} (")))
                 || (tok->previous() && tok->previous()->isName() && !Token::Match(tok->previous(), "return|case") && (!state.cpp || !Token::Match(tok->previous(), "throw|delete")))
                 || (tok->strAt(-1) == "]" && (!state.cpp || !Token::Match(tok->linkAt(-1)->previous(), "new|delete")))
                 || (tok->strAt(-1) == ">" && tok->linkAt(-1))
