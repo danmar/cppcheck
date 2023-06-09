@@ -838,7 +838,7 @@ private:
               "    free(p);\n"
               "    return p[1];\n"
               "}\n");
-        ASSERT_EQUALS("[test.c:2] -> [test.c:3]: (error) Returning/dereferencing 'p' after it is deallocated / released\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning/dereferencing 'array' after it is deallocated / released\n", errout.str());
     }
 
     void deallocuse11() { // #8302
