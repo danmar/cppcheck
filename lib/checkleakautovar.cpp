@@ -1051,7 +1051,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
             // don't warn if we leave an inner scope
             if (isEndOfScope && var->scope() && tok != var->scope()->bodyEnd)
                 continue;
-            bool used = false;
+            enum class PtrUsage { NONE, DEREF, PTR } used = PtrUsage::NONE;
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
                     break;
@@ -1068,19 +1068,25 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     tok2 = tok3->next();
                 else if (Token::Match(tok3, "& %varid% . %name%", varid))
                     tok2 = tok3->tokAt(4);
+                else if (Token::simpleMatch(tok3, "*"))
+                    tok2 = tok3;
                 else
                     continue;
-                if (Token::Match(tok2, "[});,+[]")) {
-                    used = true;
+                if (Token::Match(tok2, "[});,+]")) {
+                    used = PtrUsage::PTR;
+                    break;
+                }
+                if (Token::Match(tok2, "[|.|*")) {
+                    used = PtrUsage::DEREF;
                     break;
                 }
             }
 
             // return deallocated pointer
-            if (used && it->second.status == VarInfo::DEALLOC)
+            if (used != PtrUsage::NONE && it->second.status == VarInfo::DEALLOC)
                 deallocReturnError(tok, it->second.allocTok, var->name());
 
-            else if (!used && !it->second.managed() && !var->isReference()) {
+            else if (used != PtrUsage::PTR && !it->second.managed() && !var->isReference()) {
                 const auto use = possibleUsage.find(varid);
                 if (use == possibleUsage.end()) {
                     leakError(tok, var->name(), it->second.type);
