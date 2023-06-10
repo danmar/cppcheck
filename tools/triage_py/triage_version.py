@@ -154,7 +154,7 @@ for entry in versions:
         else:
             # TODO: re-add inconclusive: {callstack}: ({severity}{inconclusive:, inconclusive}) {message
             cmd.append('--template={callstack}: ({severity}) {message} [{id}]')
-    # TODO: how to pass addtional options?
+    # TODO: how to pass additional options?
     if args.perf:
         cmd.append('--error-exitcode=0')
     cmd.append(input_file)
