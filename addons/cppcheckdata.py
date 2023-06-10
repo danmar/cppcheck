@@ -15,7 +15,7 @@ import subprocess
 try:
     import pathlib
 except ImportError:
-    message = "Failed to load pathlib. Upgrade python to 3.x or install pathlib with 'pip install pathlib'."
+    message = "Failed to load pathlib. Upgrade Python to 3.x or install pathlib with 'pip install pathlib'."
     error_id = 'pythonError'
     if '--cli' in sys.argv:
         msg = { 'file': '',
@@ -222,8 +222,8 @@ class Token:
         isSigned           Is this token a signed type
         isExpandedMacro    Is this token a expanded macro token
         isRemovedVoidParameter  Has void parameter been removed?
-        isSplittedVarDeclComma  Is this a comma changed to semicolon in a splitted variable declaration ('int a,b;' => 'int a; int b;')
-        isSplittedVarDeclEq     Is this a '=' changed to semicolon in a splitted variable declaration ('int a=5;' => 'int a; a=5;')
+        isSplittedVarDeclComma  Is this a comma changed to semicolon in a split variable declaration ('int a,b;' => 'int a; int b;')
+        isSplittedVarDeclEq     Is this a '=' changed to semicolon in a split variable declaration ('int a=5;' => 'int a; a=5;')
         isImplicitInt      Is this token an implicit "int"?
         varId              varId for token, each variable has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
