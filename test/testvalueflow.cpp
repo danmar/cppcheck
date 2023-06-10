@@ -5292,6 +5292,18 @@ private:
                "}";
         ASSERT_EQUALS(0U, tokenValues(code, "x )").size());
 
+        // initialization
+        code = "int foo() {\n"
+               "  int x;\n"
+               "  *((int *)(&x)) = 12;"
+               "  a = x + 1;\n"
+               "}";
+        values = tokenValues(code, "x +");
+        ASSERT_EQUALS(true, values.empty());
+        // ASSERT_EQUALS(1U, values.size());
+        // ASSERT(values.front().isIntValue());
+        // ASSERT_EQUALS(12, values.front().intvalue);
+
         // #8036
         code = "void foo() {\n"
                "    int x;\n"
