@@ -1750,11 +1750,13 @@ void TokenList::validateAst() const
             continue;
         }
 
+        if (const Token* lambdaEnd = findLambdaEndToken(tok)) { // skip lambda captures
+            tok = tok->link();
+            continue;
+        }
+
         // Check binary operators
         if (Token::Match(tok, "%or%|%oror%|%assign%|%comp%")) {
-            // Skip lambda captures
-            if (Token::Match(tok, "= ,|]"))
-                continue;
             // Skip pure virtual functions
             if (Token::simpleMatch(tok->previous(), ") = 0"))
                 continue;

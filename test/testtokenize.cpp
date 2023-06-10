@@ -3489,6 +3489,20 @@ private:
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
+
+        { // #11275
+            const char code[] = "void f() {\n"
+                                "    []<typename T>() {};\n"
+                                "}\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< T");
+            const Token* tok2 = Token::findsimplematch(tok1, "> (");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
     }
 
     void simplifyString() {
@@ -7268,6 +7282,12 @@ private:
                                              "void c() {\n"
                                              "  a bar;\n"
                                              "  (decltype(bar.b)::value_type){};\n"
+                                             "}\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct S { char c{}; };\n" // #11400
+                                             "void takesFunc(auto f) {}\n"
+                                             "int main() { \n"
+                                             "    takesFunc([func = [](S s) { return s.c; }] {});\n"
                                              "}\n"));
     }
     void checkIfCppCast() {
