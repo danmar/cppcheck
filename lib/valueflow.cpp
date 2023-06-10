@@ -7924,10 +7924,24 @@ static Token* findStartToken(const Variable* var, Token* start, const Library* l
     Token* first = uses.front();
     if (Token::findmatch(start, "goto|asm|setjmp|longjmp", first))
         return start;
-    const Scope* scope = first->scope();
-    // If there is only one usage or the first usage is in the same scope
-    if (uses.size() == 1 || scope == var->scope())
+    // If there is only one usage
+    if (uses.size() == 1)
         return first->previous();
+    const Scope* scope = first->scope();
+    // If first usage is in variable scope
+    if (scope == var->scope()) {
+        bool isLoopExpression = false;
+        for (const Token* parent = first; parent; parent = parent->astParent()) {
+            if (Token::simpleMatch(parent->astParent(), ";") &&
+                Token::simpleMatch(parent->astParent()->astParent(), ";") &&
+                Token::simpleMatch(parent->astParent()->astParent()->astParent(), "(") &&
+                Token::simpleMatch(parent->astParent()->astParent()->astParent()->astOperand1(), "for (") &&
+                parent == parent->astParent()->astParent()->astParent()->astOperand2()->astOperand2()->astOperand2()) {
+                isLoopExpression = true;
+            }
+        }
+        return isLoopExpression ? start : first->previous();
+    }
     // If all uses are in the same scope
     if (std::all_of(uses.begin() + 1, uses.end(), [&](const Token* tok) {
         return tok->scope() == scope;
