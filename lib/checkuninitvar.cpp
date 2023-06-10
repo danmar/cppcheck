@@ -420,7 +420,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
 
         // track values of other variables..
         if (Token::Match(tok->previous(), "[;{}] %var% =")) {
-            if (tok->next()->astOperand2()->hasKnownIntValue())
+            if (tok->next()->astOperand2() && tok->next()->astOperand2()->hasKnownIntValue())
                 variableValue[tok->varId()] = VariableValue(tok->next()->astOperand2()->getKnownIntValue());
             else if (Token::Match(tok->previous(), "[;{}] %var% = - %name% ;"))
                 variableValue[tok->varId()] = !VariableValue(0);
