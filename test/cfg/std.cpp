@@ -4724,7 +4724,7 @@ void smartPtr_get()
     *p = 1;
 }
 
-void smartPtr_get2(std::vector<std::unique_ptr<int>>& v) 
+void smartPtr_get2(std::vector<std::unique_ptr<int>>& v)
 {
     for (auto& u : v) {
         int* p = u.get();
@@ -4751,7 +4751,7 @@ void smartPtr_release()
 
 void std_vector_data_arithmetic()
 {
-	std::vector<char> buf;
-	buf.resize(1);
-	memcpy(buf.data() + 0, "", 1);
+    std::vector<char> buf;
+    buf.resize(1);
+    memcpy(buf.data() + 0, "", 1);
 }
