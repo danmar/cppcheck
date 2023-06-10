@@ -4743,6 +4743,20 @@ private:
                        "    char* q = (s).p;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // if with flag
+        checkUninitVar("struct AB { int a; int b; };\n"
+                       "int f(int x) {\n"
+                       "  struct AB ab;\n"
+                       "  int flag = 0;\n"
+                       "  if (x == 0) {\n"
+                       "    flag = dostuff(&ab);\n"
+                       "  }\n"
+                       "  if (flag) {\n"
+                       "    a = ab.a;\n"
+                       "  }\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {

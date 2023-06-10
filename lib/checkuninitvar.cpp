@@ -418,9 +418,15 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             continue;
         }
 
-        // assignment with nonzero constant..
-        if (Token::Match(tok->previous(), "[;{}] %var% = - %name% ;"))
-            variableValue[tok->varId()] = !VariableValue(0);
+        // track values of other variables..
+        if (Token::Match(tok->previous(), "[;{}] %var% =")) {
+            if (tok->next()->astOperand2()->hasKnownIntValue())
+                variableValue[tok->varId()] = VariableValue(tok->next()->astOperand2()->getKnownIntValue());
+            else if (Token::Match(tok->previous(), "[;{}] %var% = - %name% ;"))
+                variableValue[tok->varId()] = !VariableValue(0);
+            else
+                variableValue.erase(tok->varId());
+        }
 
         // Inner scope..
         else if (Token::simpleMatch(tok, "if (")) {
