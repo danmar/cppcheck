@@ -12,10 +12,10 @@ To learn more about bisecting please refer to https://git-scm.com/docs/git-bisec
 
 `hash-good` the latest known good commit hash or tag<br/>
 `hash-bad` the earliest known bad commit hash or tag<br/>
-`cppcheck-options` the options for the Cppcheck invokatio<br/>
-`expected` (optional) a string that is expected in the output. Will be used instead of the exitcode
+`cppcheck-options` the options for the Cppcheck invocation<br/>
+`expected` (optional) a string that is expected in the output; when provided it will be used instead of the exitcode
 
-If possible use `main` as the function to test stuff with since it won't emit an `unusedFunction` warning.
+If possible use `main` as the function to test with, since it won't emit an `unusedFunction` warning.
 
 ## Bisecting result regressions
 
@@ -33,7 +33,7 @@ If a crash occurs it is treated as a _bad_ commit.
 
 ### False positive
 
-Provide a code sample which will trigger a single(!) false postive only. Trying to bisect multiple issues at the same time will most likely result in an incorrect result (see below).
+Provide a code sample which will trigger a single(!) false positive only. Trying to bisect multiple issues at the same time will most likely result in an incorrect result (see below).
 
 ```cpp
 // cppcheck-suppress unusedFunction
@@ -87,7 +87,7 @@ Provide the expected error ID (`unreadVariable`) as the `expected` parameter.
 
 It is also possible to bisect for a regression in scan time.
 
-This is done by determinaing the time it took for the "good" commit to finish and setting a timeout twice that size for the calls to determine the "bad" commit.
+This is done by determining the time it took for the "good" commit to finish and setting a timeout twice that size for the calls to determine the "bad" commit.
 
 To bisect these kinds of regressions you currently need to adjust the `bisect.sh` script and set the `hang` variable to appropriate value:<br/>
 `1` - find the commit which started the hang<br/>
@@ -100,15 +100,15 @@ As we are currently using the process exitcode to pass the elapsed time to the s
 In case the run-time before the regression was very short (<= 1 second) you might need to adjust the `elapsed_time` variable in `bisect.sh` to a higher value to avoid potential false positives.
 This might also be necessary to determine one of multiple regressions in the commit range. 
 
-After the bisect finished you should take a look at the output and make sure the elpased time of the repective commit looks as expected.
+After the bisect finished you should take a look at the output and make sure the elpased time of the respective commit looks as expected.
 
 ### daca@home notes
 
 We use daca@home to track differences in scan time. An overview of regressions in scan time can be found at http://cppcheck1.osuosl.org:8000/time_gt.html.
 
-If the overall scan time regressed you need to specify the whole folder.
+If the overall scan time regressed, then you need to specify the whole folder.
 
-If a timeout (potential hang) was introduced you can simply specify the file from `error: Internal error: Child process crashed with signal 15 [cppcheckError]`.
+If a timeout (potential hang) was introduced, then you can simply specify the file from `error: Internal error: Child process crashed with signal 15 [cppcheckError]`.
 
 ## Notes
 
