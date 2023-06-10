@@ -7924,6 +7924,14 @@ static Token* findStartToken(const Variable* var, Token* start, const Library* l
     Token* first = uses.front();
     if (Token::findmatch(start, "goto|asm|setjmp|longjmp", first))
         return start;
+    if (first != var->nameToken()) {
+        // if this is lhs in assignment then set first to the first token in LHS expression
+        Token* temp = first;
+        while (Token::Match(temp->astParent(), "[&*(]") && precedes(temp->astParent(), temp))
+            temp = temp->astParent();
+        if (Token::simpleMatch(temp->astParent(), "=") && precedes(temp, temp->astParent()))
+            first = temp;
+    }
     // If there is only one usage
     if (uses.size() == 1)
         return first->previous();
