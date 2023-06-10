@@ -2880,6 +2880,14 @@ private:
               "    delete[] z;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'z[5]' accessed at index 7, which is out of bounds.\n", errout.str());
+
+        check("void h() {\n"
+              "    int** z = new int* [5]{ 0 };\n"
+              "    for (int n = 0; n < 8; ++n)\n"
+              "        z[n] = nullptr;\n"
+              "    delete[] z;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'z[5]' accessed at index 7, which is out of bounds.\n", errout.str());
     }
 
     void buffer_overrun_2_struct() {
