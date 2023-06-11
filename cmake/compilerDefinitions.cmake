@@ -22,7 +22,7 @@ if (CPPCHK_GLIBCXX_DEBUG AND UNIX AND CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if (HAVE_RULES)
-    add_definitions(-DHAVE_RULES -DTIXML_USE_STL)
+    add_definitions(-DHAVE_RULES)
 endif()
 
 if (Boost_FOUND)
