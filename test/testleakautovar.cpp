@@ -113,6 +113,7 @@ private:
         TEST_CASE(deallocuse9); // #9781
         TEST_CASE(deallocuse10);
         TEST_CASE(deallocuse11); // #8302
+        TEST_CASE(deallocuse12);
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -856,6 +857,17 @@ private:
               "  return array[1];" // <<
               "}");
         ASSERT_EQUALS("[test.c:3] -> [test.c:4]: (error) Returning/dereferencing 'array' after it is deallocated / released\n", errout.str());
+    }
+
+    void deallocuse12() {
+        check("struct foo { int x; }\n"
+              "void f1(struct foo *f) {\n"
+              "  free(f);\n"
+              "}\n"
+              "void f2(struct foo *f, int *out) {\n"
+              "  *out = f->x;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895

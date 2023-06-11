@@ -1068,7 +1068,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     tok2 = tok3->next();
                 else if (Token::Match(tok3, "& %varid% . %name%", varid))
                     tok2 = tok3->tokAt(4);
-                else if (Token::simpleMatch(tok3, "*"))
+                else if (Token::simpleMatch(tok3, "*") && tok3->next()->varId() == varid)
                     tok2 = tok3;
                 else
                     continue;
