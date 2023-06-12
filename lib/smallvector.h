@@ -45,7 +45,7 @@ struct TaggedAllocator : std::allocator<T>
     template<class U>
     // cppcheck-suppress noExplicitConstructor
     // NOLINTNEXTLINE(google-explicit-constructor)
-    TaggedAllocator(const TaggedAllocator<U, N> ) {}
+    TaggedAllocator(const TaggedAllocator<U, N> /*unused*/) {}
 
     template<class U>
     struct rebind
