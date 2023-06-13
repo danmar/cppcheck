@@ -2059,6 +2059,8 @@ void TemplateSimplifier::expandTemplate(
                     Token * const beforeTypeToken = mTokenList.back();
                     bool pointerType = false;
                     const bool isVariadicTemplateArg = templateDeclaration.isVariadic() && itype + 1 == typeParametersInDeclaration.size();
+                    if (isVariadicTemplateArg && mTypesUsedInTemplateInstantiation.size() > 1 && !Token::simpleMatch(tok3->next(), "..."))
+                        continue;
                     if (isVariadicTemplateArg && Token::Match(tok3, "%name% ... %name%"))
                         tok3 = tok3->tokAt(2);
                     const std::string endStr(isVariadicTemplateArg ? ">" : ",>");
