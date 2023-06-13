@@ -3846,13 +3846,17 @@ void TemplateSimplifier::simplifyTemplates(
         mTemplateDeclarations.sort([&](const TokenAndName& x, const TokenAndName& y) {
             if (x.fullName() != y.fullName() && !x.isFunction() && !y.isFunction())
                 return x.fullName() < y.fullName();
-            std::vector<const Token *> xargs;
+            std::vector<const Token*> xargs;
             getFunctionArguments(x.nameToken(), xargs);
-            std::vector<const Token *> yargs;
+            std::vector<const Token*> yargs;
             getFunctionArguments(y.nameToken(), yargs);
             if (xargs.size() != yargs.size())
                 return xargs.size() < yargs.size();
-            return std::lexicographical_compare(xargs.begin(), xargs.end(), yargs.begin(), yargs.end(), [&](const Token* xarg, const Token* yarg) {
+            return std::lexicographical_compare(xargs.begin(),
+                                                xargs.end(),
+                                                yargs.begin(),
+                                                yargs.end(),
+                                                [&](const Token* xarg, const Token* yarg) {
                 if (xarg != yarg)
                     return score(xarg) < score(yarg);
                 return false;
