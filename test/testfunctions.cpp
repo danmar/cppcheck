@@ -2002,6 +2002,11 @@ private:
               "}\n", "test.cpp", &s);
         ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: There is no matching configuration for function T::h()\n",
                       errout.str());
+
+        check("struct S : std::vector<int> {\n"
+              "    void f(int i) { push_back(i); }\n"
+              "};\n", "test.cpp", &s);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkUseStandardLibrary1() {
