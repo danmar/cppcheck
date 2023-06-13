@@ -1461,7 +1461,7 @@ def get_files(args):
     """Return dump_files, ctu_info_files"""
     all_files = args.dumpfile
     if args.file_list:
-        with open(args.file_list, 'rt', encoding="UTF-8") as f:
+        with open(args.file_list, 'rt') as f:
             for line in f.readlines():
                 all_files.append(line.rstrip())
     dump_files = []
@@ -1630,7 +1630,7 @@ def reportError(location, severity, message, addon, errorId, extra=''):
 def reportSummary(dumpfile, summary_type, summary_data):
     # dumpfile ends with ".dump"
     ctu_info_file = dumpfile[:-4] + "ctu-info"
-    with open(ctu_info_file, 'at', encoding="UTF-8") as f:
+    with open(ctu_info_file, 'at') as f:
         msg = {'summary': summary_type, 'data': summary_data}
         f.write(json.dumps(msg) + '\n')
 
