@@ -3017,6 +3017,77 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
                 Certainty::normal);
 }
 
+void CheckClass::uselessOverrideError(const Function *funcInBase, const Function *funcInDerived)
+{
+    const std::string functionName = funcInDerived ? ((funcInDerived->isDestructor() ? "~" : "") + funcInDerived->name()) : "";
+    const std::string funcType = (funcInDerived && funcInDerived->isDestructor()) ? "destructor" : "function";
+
+    ErrorPath errorPath;
+    if (funcInBase && funcInDerived) {
+        errorPath.emplace_back(funcInBase->tokenDef, "Virtual " + funcType + " in base class");
+        errorPath.emplace_back(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class");
+    }
+
+    reportError(errorPath, Severity::style, "uselessOverride",
+                "$symbol:" + functionName + "\n"
+                "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but just delegates back to the base class.",
+                CWE(0U) /* Unknown CWE! */,
+                Certainty::normal);
+}
+
+static const Function* getSingleFunctionCall(const Scope* scope) {
+    const Token* const start = scope->bodyStart->next();
+    const Token* const end = Token::findsimplematch(start, ";", 1, scope->bodyEnd);
+    if (!end || end->next() != scope->bodyEnd)
+        return nullptr;
+    const Token* ftok = start;
+    if (ftok->str() == "return")
+        ftok = ftok->astOperand1();
+    else {
+        while (Token::Match(ftok, "%name%|::"))
+            ftok = ftok->next();
+    }
+    if (Token::simpleMatch(ftok, "("))
+        return ftok->previous()->function();
+    return nullptr;
+}
+
+void CheckClass::checkUselessOverride()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    for (const Scope* classScope : mSymbolDatabase->classAndStructScopes) {
+        if (!classScope->definedType || classScope->definedType->derivedFrom.size() != 1)
+            continue;
+        for (const Function& func : classScope->functionList) {
+            if (!func.functionScope)
+                continue;
+            const Function* baseFunc = func.getOverriddenFunction();
+            if (!baseFunc || baseFunc->isPure())
+                continue;
+            if (const Function* call = getSingleFunctionCall(func.functionScope)) {
+                if (call != baseFunc)
+                    continue;
+                const Token* callArg = call->arg->next();
+                const Token* baseArg = baseFunc->arg->next();
+                bool argsEqual = true;
+                while (callArg != call->arg->link()) {
+                    if (callArg->str() != baseArg->str()) {
+                        argsEqual = false;
+                        break;
+                    }
+                    callArg = callArg->next();
+                    baseArg = baseArg->next();
+                }
+                if (!argsEqual)
+                    continue;
+                uselessOverrideError(baseFunc, &func);
+            }
+        }
+    }
+}
+
 void CheckClass::checkThisUseAfterFree()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
