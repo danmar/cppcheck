@@ -3824,6 +3824,41 @@ void TemplateSimplifier::simplifyTemplates(
         if (mSettings.debugtemplate)
             printOut("### Template Simplifier pass " + std::to_string(passCount + 1) + " ###");
 
+        auto score = [&](const Token* arg) {
+            int i = 0;
+            for (const Token* tok = arg; tok; tok = tok->next()) {
+                if (tok->str() == ",")
+                    return i;
+                else if (tok->link() && Token::Match(tok, "(|{|["))
+                    tok = tok->link();
+                else if (tok->str() == "<") {
+                    const Token* temp = tok->findClosingBracket();
+                    if (temp)
+                        tok = temp;
+                } else if (Token::Match(tok, ")|;"))
+                    return i;
+                else if (Token::simpleMatch(tok, "const"))
+                    i--;
+            }
+            return 0;
+        };
+        // Sort so const parameters come first in the list
+        mTemplateDeclarations.sort([&](const TokenAndName& x, const TokenAndName& y) {
+            if (x.fullName() != y.fullName() && !x.isFunction() && !y.isFunction())
+                return x.fullName() < y.fullName();
+            std::vector<const Token *> xargs;
+            getFunctionArguments(x.nameToken(), xargs);
+            std::vector<const Token *> yargs;
+            getFunctionArguments(y.nameToken(), yargs);
+            if (xargs.size() != yargs.size())
+                return xargs.size() < yargs.size();
+            return std::lexicographical_compare(xargs.begin(), xargs.end(), yargs.begin(), yargs.end(), [&](const Token* xarg, const Token* yarg) {
+                if (xarg != yarg)
+                    return score(xarg) < score(yarg);
+                return false;
+            });
+        });
+
         std::set<std::string> expandedtemplates;
 
         for (std::list<TokenAndName>::const_reverse_iterator iter1 = mTemplateDeclarations.crbegin(); iter1 != mTemplateDeclarations.crend(); ++iter1) {

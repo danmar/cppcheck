@@ -216,6 +216,7 @@ private:
         TEST_CASE(template175); // #10908
         TEST_CASE(template176); // #11146
         TEST_CASE(template177);
+        TEST_CASE(template178); // #11721
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1142,9 +1143,6 @@ private:
                                 "C<A> ca ; "
                                 "return 0 ; "
                                 "} "
-                                "struct B<A> { "
-                                "void f3 ( B<A> & other ) { } "
-                                "} ; "
                                 "int f1<B<A>> ( int x , B<A> * ) { "
                                 "int id ; id = f2<B<A>> ( ) ; "
                                 "return id ; "
@@ -1152,12 +1150,15 @@ private:
                                 "int f2<B<A>> ( ) { "
                                 "return D<B<A>> :: f ( ) ; "
                                 "} "
+                                "struct E<void*> { } ; "
                                 "struct D<B<A>> { "
                                 "static int f ( ) { "
                                 "return C<B<A>> :: f ( ) ; "
                                 "} "
                                 "} ; "
-                                "struct C<A> { } ; struct E<void*> { "
+                                "struct C<A> { } ; "
+                                "struct B<A> { "
+                                "void f3 ( B<A> & other ) { } "
                                 "} ;";
         ASSERT_EQUALS(expected, tok(code));
     }
@@ -4063,11 +4064,11 @@ private:
                              "    f<T>(0);\n"
                              "}\n";
         const char exp2[] = "template < typename T > void f ( ) ; "
-                            "void f<int> ( int ) ; "
                             "void f<char> ( int ) ; "
+                            "void f<int> ( int ) ; "
                             "void g ( ) { f<int> ( ) ; f<char> ( 1 ) ; } "
-                            "void f<int> ( ) { f<int> ( 0 ) ; } "
-                            "void f<char> ( int ) { }";
+                            "void f<char> ( int ) { } "
+                            "void f<int> ( ) { f<int> ( 0 ) ; }";
         ASSERT_EQUALS(exp2, tok(code2));
     }
 
@@ -4362,21 +4363,6 @@ private:
                             "CImgList<last<float>> c13 ; "
                             "CImgList<last<double>> c14 ; "
                             "CImgList<last<longdouble>> c15 ; "
-                            "struct CImgList<last<bool>> { last<bool> t ; } ; "
-                            "struct CImgList<last<signedchar>> { last<signedchar> t ; } ; "
-                            "struct CImgList<last<unsignedchar>> { last<unsignedchar> t ; } ; "
-                            "struct CImgList<last<char>> { last<char> t ; } ; "
-                            "struct CImgList<last<unsignedshort>> { last<unsignedshort> t ; } ; "
-                            "struct CImgList<last<short>> { last<short> t ; } ; "
-                            "struct CImgList<last<unsignedint>> { last<unsignedint> t ; } ; "
-                            "struct CImgList<last<int>> { last<int> t ; } ; "
-                            "struct CImgList<last<unsignedlong>> { last<unsignedlong> t ; } ; "
-                            "struct CImgList<last<long>> { last<long> t ; } ; "
-                            "struct CImgList<last<unsignedlonglong>> { last<unsignedlonglong> t ; } ; "
-                            "struct CImgList<last<longlong>> { last<longlong> t ; } ; "
-                            "struct CImgList<last<float>> { last<float> t ; } ; "
-                            "struct CImgList<last<double>> { last<double> t ; } ; "
-                            "struct CImgList<last<longdouble>> { last<longdouble> t ; } ; "
                             "struct last<bool> { bool t ; } ; "
                             "struct last<signedchar> { signed char t ; } ; "
                             "struct last<unsignedchar> { unsigned char t ; } ; "
@@ -4391,7 +4377,22 @@ private:
                             "struct last<longlong> { long long t ; } ; "
                             "struct last<float> { float t ; } ; "
                             "struct last<double> { double t ; } ; "
-                            "struct last<longdouble> { long double t ; } ;";
+                            "struct last<longdouble> { long double t ; } ; "
+                            "struct CImgList<last<bool>> { last<bool> t ; } ; "
+                            "struct CImgList<last<signedchar>> { last<signedchar> t ; } ; "
+                            "struct CImgList<last<unsignedchar>> { last<unsignedchar> t ; } ; "
+                            "struct CImgList<last<char>> { last<char> t ; } ; "
+                            "struct CImgList<last<unsignedshort>> { last<unsignedshort> t ; } ; "
+                            "struct CImgList<last<short>> { last<short> t ; } ; "
+                            "struct CImgList<last<unsignedint>> { last<unsignedint> t ; } ; "
+                            "struct CImgList<last<int>> { last<int> t ; } ; "
+                            "struct CImgList<last<unsignedlong>> { last<unsignedlong> t ; } ; "
+                            "struct CImgList<last<long>> { last<long> t ; } ; "
+                            "struct CImgList<last<unsignedlonglong>> { last<unsignedlonglong> t ; } ; "
+                            "struct CImgList<last<longlong>> { last<longlong> t ; } ; "
+                            "struct CImgList<last<float>> { last<float> t ; } ; "
+                            "struct CImgList<last<double>> { last<double> t ; } ; "
+                            "struct CImgList<last<longdouble>> { last<longdouble> t ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 
@@ -4514,6 +4515,29 @@ private:
         const char exp[] = "class C<UTF8<>,MemoryPoolAllocator<>> ; "
                            "C<UTF8<>,MemoryPoolAllocator<>> c ; "
                            "class C<UTF8<>,MemoryPoolAllocator<>> { xyz < UTF8 < > , MemoryPoolAllocator < > > x ; } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template178() {
+        const char code[] = "struct a {\n"
+                            "    template <class T>\n"
+                            "    void mutate();\n"
+                            "};\n"
+                            "struct b {};\n"
+                            "template <class T>\n"
+                            "void f(a& x) {\n"
+                            "    x.mutate<T>();\n"
+                            "}\n"
+                            "template <class T>\n"
+                            "void f(const b&)\n"
+                            "{}\n"
+                            "void g(a& c) { f<int>(c); }\n";
+        const char exp[] = "struct a { template < class T > void mutate ( ) ; } ; "
+"struct b { } ; "
+"void f<int> ( a & x ) ; "
+"template < class T > void f ( const b & ) { } "
+"void g ( a & c ) { f<int> ( c ) ; } "
+"void f<int> ( a & x ) { x . mutate < int > ( ) ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
