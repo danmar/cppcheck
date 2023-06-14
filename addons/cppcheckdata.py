@@ -310,6 +310,7 @@ class Token:
     isAssignmentOp = False
     isComparisonOp = False
     isLogicalOp = False
+    isCast = False
     isUnsigned = False
     isSigned = False
     isExpandedMacro = False
@@ -317,6 +318,9 @@ class Token:
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
     isImplicitInt = False
+    isComplex = False
+    isRestrict = False
+    isAttributeExport = False
     exprId = None
     varId = None
     variableId = None
@@ -428,10 +432,11 @@ class Token:
     def __repr__(self):
         attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
                 "isNumber", "isInt", "isFloat", "isString", "strlen",
-                "isChar", "isBoolean", "isOp", "isArithmeticalOp", "isComparisonOp",
-                "isLogicalOp", "isExpandedMacro", "isSplittedVarDeclComma",
-                "isSplittedVarDeclEq", "isImplicitInt", "linkId", "varId",
-                "variableId", "functionId", "valuesId", "valueType",
+                "isChar", "isBoolean", "isOp", "isArithmeticalOp", "isAssignmentOp", 
+                "isComparisonOp", "isLogicalOp", "isCast", "externLang", "isExpandedMacro", 
+                "isRemovedVoidParameter", "isSplittedVarDeclComma", "isSplittedVarDeclEq", 
+                "isImplicitInt", "isComplex", "isRestrict", "isAttributeExport", "linkId", 
+                "varId", "variableId", "functionId", "valuesId", "valueType",
                 "typeScopeId", "astParentId", "astOperand1Id", "file",
                 "linenr", "column"]
         return "{}({})".format(
@@ -588,7 +593,7 @@ class Scope:
 
     def __repr__(self):
         attrs = ["Id", "className", "functionId", "bodyStartId", "bodyEndId",
-                 "nestedInId", "nestedIn", "type", "isExecutable", "functions"]
+                 "nestedInId", "nestedIn", "type", "definedType", "isExecutable", "functions"]
         return "{}({})".format(
             "Scope",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -664,8 +669,9 @@ class Function:
         self.argumentId = {}
 
     def __repr__(self):
-        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "isVirtual", "access",
-                 "isImplicitlyVirtual", "hasVirtualSpecifier", "isInlineKeyword", "isStatic", "argumentId"]
+        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "hasVirtualSpecifier", 
+                 "isImplicitlyVirtual", "access", "isInlineKeyword", "isStatic", 
+                 "isAttributeNoreturn", "overriddenFunction", "nestedIn", "argumentId"]
         return "{}({})".format(
             "Function",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -887,8 +893,8 @@ class Value:
         self.symbolic = IdMap.get(self._symbolicId)
 
     def __repr__(self):
-        attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",
-                    "condition", "valueKind", "uninit"]
+        attrs = ["intvalue", "tokvalue", "floatvalue", "movedValue", "uninit", 
+                 "bufferSize", "containerSize", "condition", "valueKind"]
         return "{}({})".format(
             "Value",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
