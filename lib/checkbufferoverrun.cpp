@@ -561,9 +561,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
         });
     }
     else if (bufTok->tokType() == Token::Type::eString) {
-        dim = bufTok->str().size() - 1; // plus terminating 0 minus two "
-        if (bufTok->valueType()->type == ValueType::Type::WCHAR_T)
-            --dim; // minus L
+        dim = Token::getStrLength(bufTok) + 1;
     }
     else
         return ValueFlow::Value(-1);
