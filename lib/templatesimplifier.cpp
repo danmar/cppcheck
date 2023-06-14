@@ -3827,7 +3827,7 @@ void TemplateSimplifier::simplifyTemplates(
         // Keep track of the order the names appear so sort can preserve that order
         std::unordered_map<std::string, int> nameOrdinal;
         int ordinal = 0;
-        for(const auto& decl:mTemplateDeclarations) {
+        for (const auto& decl : mTemplateDeclarations) {
             nameOrdinal.insert(std::make_pair(decl.fullName(), ordinal++));
         }
 
