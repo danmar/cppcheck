@@ -3824,6 +3824,13 @@ void TemplateSimplifier::simplifyTemplates(
         if (mSettings.debugtemplate)
             printOut("### Template Simplifier pass " + std::to_string(passCount + 1) + " ###");
 
+        // Keep track of the order the names appear so sort can preserve that order
+        std::unordered_map<std::string, int> nameOrdinal;
+        int ordinal = 0;
+        for(const auto& decl:mTemplateDeclarations) {
+            nameOrdinal[decl.fullName()] = ordinal++;
+        }
+
         auto score = [&](const Token* arg) {
             int i = 0;
             for (const Token* tok = arg; tok; tok = tok->next()) {
@@ -3845,7 +3852,7 @@ void TemplateSimplifier::simplifyTemplates(
         // Sort so const parameters come first in the list
         mTemplateDeclarations.sort([&](const TokenAndName& x, const TokenAndName& y) {
             if (x.fullName() != y.fullName())
-                return x.fullName() < y.fullName();
+                return nameOrdinal.at(x.fullName()) < nameOrdinal.at(y.fullName());
             if (x.isFunction() && y.isFunction()) {
                 std::vector<const Token*> xargs;
                 getFunctionArguments(x.nameToken(), xargs);
