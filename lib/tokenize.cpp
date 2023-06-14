@@ -4085,6 +4085,7 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
 
 static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap, bool executableScope, bool cpp, bool c)
 {
+    const Token* const tok1 = *tok;
     Token* tok2 = *tok;
     if (!tok2->isName())
         return false;
@@ -4209,12 +4210,14 @@ static bool setVarIdParseDeclaration(Token** tok, const VariableMap& variableMap
 
     // Check if array declaration is valid (#2638)
     // invalid declaration: AAA a[4] = 0;
-    if (typeCount >= 2 && executableScope && tok2 && tok2->str() == "[") {
-        const Token *tok3 = tok2->link()->next();
+    if (typeCount >= 2 && executableScope && Token::Match(tok2, ")| [")) {
+        const Token *tok3 = tok2->str() == ")" ? tok2->next() : tok2;
         while (tok3 && tok3->str() == "[") {
             tok3 = tok3->link()->next();
         }
         if (Token::Match(tok3, "= %num%"))
+            return false;
+        if (bracket && Token::Match(tok1->previous(), "[(,]") && Token::Match(tok3, "[,)]"))
             return false;
     }
 
