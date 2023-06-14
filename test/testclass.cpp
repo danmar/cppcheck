@@ -228,7 +228,7 @@ private:
 
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
-        
+
         TEST_CASE(uselessOverride);
 
         TEST_CASE(thisUseAfterFree);
@@ -8346,16 +8346,16 @@ private:
 
     void uselessOverride() {
         checkUselessOverride("struct B { virtual int f() { return 5; } };\n" // #11757
-                             "struct D : B {\m"
+                             "struct D : B {\n"
                              "    int f() override { return B::f(); }\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
 
         checkUselessOverride("struct B { virtual void f(); };\n"
-                             "struct D : B {\m"
+                             "struct D : B {\n"
                              "    void f() override { B::f(); }\n"
                              "};");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
 
         checkUselessOverride("struct B { virtual int f() = 0; };\n"
                              "int B::f() { return 5; }\n"
