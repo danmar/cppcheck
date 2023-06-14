@@ -3828,7 +3828,7 @@ void TemplateSimplifier::simplifyTemplates(
         std::unordered_map<std::string, int> nameOrdinal;
         int ordinal = 0;
         for(const auto& decl:mTemplateDeclarations) {
-            nameOrdinal[decl.fullName()] = ordinal++;
+            nameOrdinal.insert(std::make_pair(decl.fullName(), ordinal++));
         }
 
         auto score = [&](const Token* arg) {
