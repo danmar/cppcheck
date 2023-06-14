@@ -169,7 +169,7 @@ static int write_vcxproj(const std::string &proj_name, const std::function<void(
     std::string outstr;
 
     {
-        // treat as binary to prevent inplicit line ending conversions
+        // treat as binary to prevent implicit line ending conversions
         std::ifstream in(proj_name, std::ios::binary);
         if (!in.is_open()) {
             std::cerr << "Could not open " << proj_name << std::endl;
@@ -214,7 +214,7 @@ static int write_vcxproj(const std::string &proj_name, const std::function<void(
             outstr.resize(pos+1, '\0');
     }
 
-    // treat as binary to prevent inplicit line ending conversions
+    // treat as binary to prevent implicit line ending conversions
     std::ofstream out(proj_name, std::ios::binary|std::ios::trunc);
     out << outstr;
 

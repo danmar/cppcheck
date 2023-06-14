@@ -181,7 +181,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
-        // the first charcater is the color
+        // the first character is the color
         const Color c = static_cast<Color>(buf[0]);
         mErrorLogger.reportOut(buf + 1, c);
     } else if (type == PipeWriter::REPORT_ERROR) {

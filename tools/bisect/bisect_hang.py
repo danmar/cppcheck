@@ -69,10 +69,10 @@ if not elapsed_time:
     sys.exit(round(run_time + .5))  # return the time
 
 if run_res is None:
-    sys.exit(EC_SKIP)  # error occured
+    sys.exit(EC_SKIP)  # error occurred
 
 if not run_res:
-    sys.exit(EC_BAD if not invert else EC_GOOD)  # timeout occured
+    sys.exit(EC_BAD if not invert else EC_GOOD)  # timeout occurred
 
 print('run_time: {}'.format(run_time))
 
