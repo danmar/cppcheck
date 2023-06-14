@@ -3035,7 +3035,7 @@ void CheckClass::uselessOverrideError(const Function *funcInBase, const Function
                 Certainty::normal);
 }
 
-static const Function* getSingleFunctionCall(const Scope* scope) {
+static const Token* getSingleFunctionCall(const Scope* scope) {
     const Token* const start = scope->bodyStart->next();
     const Token* const end = Token::findsimplematch(start, ";", 1, scope->bodyEnd);
     if (!end || end->next() != scope->bodyEnd)
@@ -3047,8 +3047,8 @@ static const Function* getSingleFunctionCall(const Scope* scope) {
         while (Token::Match(ftok, "%name%|::"))
             ftok = ftok->next();
     }
-    if (Token::simpleMatch(ftok, "("))
-        return ftok->previous()->function();
+    if (Token::simpleMatch(ftok, "(") && ftok->previous()->function())
+        return ftok->previous();
     return nullptr;
 }
 
@@ -3066,21 +3066,14 @@ void CheckClass::checkUselessOverride()
             const Function* baseFunc = func.getOverriddenFunction();
             if (!baseFunc || baseFunc->isPure())
                 continue;
-            if (const Function* call = getSingleFunctionCall(func.functionScope)) {
-                if (call != baseFunc)
+            if (const Token* const call = getSingleFunctionCall(func.functionScope)) {
+                if (call->function() != baseFunc)
                     continue;
-                const Token* callArg = call->arg->next();
-                const Token* baseArg = baseFunc->arg->next();
-                bool argsEqual = true;
-                while (callArg != call->arg->link()) {
-                    if (callArg->str() != baseArg->str()) {
-                        argsEqual = false;
-                        break;
-                    }
-                    callArg = callArg->next();
-                    baseArg = baseArg->next();
-                }
-                if (!argsEqual)
+                std::vector<const Token*> funcArgs = getArguments(func.tokenDef);
+                std::vector<const Token*> callArgs = getArguments(call);
+                if (!std::equal(funcArgs.begin(), funcArgs.end(), callArgs.begin(), [](const Token* t1, const Token* t2) {
+                    return t1->str() == t2->str();
+                }))
                     continue;
                 uselessOverrideError(baseFunc, &func);
             }
