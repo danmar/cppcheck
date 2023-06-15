@@ -728,7 +728,7 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
 
 static const Token* getFunctionToken(const Token* nameToken)
 {
-    const Token *functionToken = nullptr;
+    const Token* functionToken = nullptr;
 
     if (nameToken->strAt(1) == "(")
         functionToken = nameToken->tokAt(1);
@@ -746,13 +746,13 @@ static const Token* getFunctionToken(const Token* nameToken)
     return functionToken;
 }
 
-static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
+static void getFunctionArguments(const Token* nameToken, std::vector<const Token*>& args)
 {
-    const Token *functionToken = getFunctionToken(nameToken);
+    const Token* functionToken = getFunctionToken(nameToken);
     if (!functionToken)
         return;
-    
-    const Token *argToken = functionToken->next();
+
+    const Token* argToken = functionToken->next();
 
     if (argToken->str() == ")")
         return;
@@ -765,14 +765,13 @@ static void getFunctionArguments(const Token *nameToken, std::vector<const Token
 
 static bool isConstMethod(const Token* nameToken)
 {
-    const Token *functionToken = getFunctionToken(nameToken);
+    const Token* functionToken = getFunctionToken(nameToken);
     if (!functionToken)
         return false;
     const Token* endToken = functionToken->link();
     if (!endToken)
         return false;
     return Token::simpleMatch(endToken, ") const");
-    
 }
 
 static bool areAllParamsTypes(const std::vector<const Token *> &params)
