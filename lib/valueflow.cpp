@@ -2544,7 +2544,7 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 
     virtual Action isModified(const Token* tok) const {
-        Action read = Action::Read;
+        const Action read = Action::Read;
         const ValueFlow::Value* value = getValue(tok);
         if (value) {
             // Moving a moved value won't change the moved value
