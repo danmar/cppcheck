@@ -6944,6 +6944,13 @@ private:
                                                  "};\n"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If Q_SLOTS is a macro then please configure it.");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("class C : public QObject {\n"
+                                                 "    struct S { static void g() {} };\n"
+                                                 "private slots:\n"
+                                                 "    void f() { S::g(); }\n"
+                                                 "};\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If slots is a macro then please configure it.");
     }
 
 
