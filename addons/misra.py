@@ -468,7 +468,11 @@ def getEssentialTypeCategory(expr):
         return "enum<" + expr.valueType.typeScope.className + ">"
     vartok = expr
     while simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
-        vartok = vartok.astOperand1
+        if simpleMatch(vartok.astOperand1, '.'):
+            vartok = vartok.astOperand1.astOperand2
+        else:
+            vartok = vartok.astOperand1
+
     if vartok and vartok.variable:
         typeToken = vartok.variable.typeStartToken
         while typeToken and typeToken.isName:

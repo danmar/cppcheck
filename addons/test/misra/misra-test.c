@@ -713,6 +713,18 @@ static void misra_10_4(u32 x, s32 y) {
   if ('0' == buf[x]) // no-warning
   {
   }
+
+  // #11756
+  typedef struct
+  {
+    char buf[10]; 
+  } struct_with_buf;
+
+  const struct_with_buf sa = {0};
+
+  if (sa.buf[0] == '\0') // no-warning
+  {
+  }
 }
 
 static void misra_10_5(uint16_t x) {
