@@ -726,20 +726,33 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
         mTemplateInstantiations.emplace_back(std::move(instantiation));
 }
 
-static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
+static const Token* getFunctionToken(const Token* nameToken)
 {
-    const Token *argToken;
+    const Token *functionToken = nullptr;
 
     if (nameToken->strAt(1) == "(")
-        argToken = nameToken->tokAt(2);
+        functionToken = nameToken->tokAt(1);
     else if (nameToken->strAt(1) == "<") {
         const Token *end = nameToken->next()->findClosingBracket();
         if (end)
-            argToken = end->tokAt(2);
+            functionToken = end->tokAt(1);
         else
-            return;
+            return nullptr;
     } else
+        return nullptr;
+
+    if (!Token::simpleMatch(functionToken, "("))
+        return nullptr;
+    return functionToken;
+}
+
+static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
+{
+    const Token *functionToken = getFunctionToken(nameToken);
+    if (!functionToken)
         return;
+    
+    const Token *argToken = functionToken->next();
 
     if (argToken->str() == ")")
         return;
@@ -748,6 +761,18 @@ static void getFunctionArguments(const Token *nameToken, std::vector<const Token
 
     while ((argToken = argToken->nextArgumentBeforeCreateLinks2()))
         args.push_back(argToken);
+}
+
+static bool isConstMethod(const Token* nameToken)
+{
+    const Token *functionToken = getFunctionToken(nameToken);
+    if (!functionToken)
+        return false;
+    const Token* endToken = functionToken->link();
+    if (!endToken)
+        return false;
+    return Token::simpleMatch(endToken, ") const");
+    
 }
 
 static bool areAllParamsTypes(const std::vector<const Token *> &params)
@@ -3860,6 +3885,8 @@ void TemplateSimplifier::simplifyTemplates(
                 getFunctionArguments(y.nameToken(), yargs);
                 if (xargs.size() != yargs.size())
                     return xargs.size() < yargs.size();
+                if (isConstMethod(x.nameToken()) != isConstMethod(y.nameToken()))
+                    return isConstMethod(x.nameToken());
                 return std::lexicographical_compare(xargs.begin(),
                                                     xargs.end(),
                                                     yargs.begin(),
