@@ -225,7 +225,6 @@ void bufferAccessOutOfBounds(void)
     strncat_s(a,5,"1",2);
     // cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,10,"1",2);
-    // cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,5,"1",5);
     fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
