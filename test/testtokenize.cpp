@@ -6936,6 +6936,14 @@ private:
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("class C : public QObject {\n" // #11770
+                                                 "    struct S { static void g() {} };\n"
+                                                 "private Q_SLOTS:\n"
+                                                 "    void f() { S::g(); }\n"
+                                                 "};\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If Q_SLOTS is a macro then please configure it.");
     }
 
 
