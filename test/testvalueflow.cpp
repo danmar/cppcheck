@@ -5295,7 +5295,7 @@ private:
         // initialization
         code = "int foo() {\n"
                "  int x;\n"
-               "  *((int *)(&x)) = 12;"
+               "  *((int *)(&x)) = 12;\n"
                "  a = x + 1;\n"
                "}";
         values = tokenValues(code, "x +");
@@ -5303,6 +5303,18 @@ private:
         // ASSERT_EQUALS(1U, values.size());
         // ASSERT(values.front().isIntValue());
         // ASSERT_EQUALS(12, values.front().intvalue);
+
+        code = "struct AB { int a; };\n" // 11767
+               "void fp(void) {\n"
+               "    struct AB ab;\n"
+               "    *((int*)(&(ab.a))) = 1;\n"
+               "    x = ab.a + 1;\n" // <- not uninitialized
+               "}\n";
+        values = tokenValues(code, "ab . a +");
+        ASSERT_EQUALS(0, values.size());
+        // ASSERT_EQUALS(1U, values.size());
+        // ASSERT(values.front().isIntValue());
+        // ASSERT_EQUALS(1, values.front().intvalue);
 
         // #8036
         code = "void foo() {\n"
