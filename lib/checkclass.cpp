@@ -3158,6 +3158,9 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         if (classScope->isAnonymous())
             continue;
 
+        if (classScope->classDef && Token::simpleMatch(classScope->classDef->previous(), ">"))
+            continue;
+
         // the full definition must be compared
         const bool fullDefinition = std::all_of(classScope->functionList.cbegin(),
                                                 classScope->functionList.cend(),
