@@ -975,7 +975,15 @@ std::string Library::getFunctionName(const Token *ftok, bool &error) const
                 continue;
             const std::vector<Type::BaseInfo> &derivedFrom = scope->definedType->derivedFrom;
             for (const Type::BaseInfo & baseInfo : derivedFrom) {
-                const std::string name(baseInfo.name + "::" + ftok->str());
+                std::string name;
+                const Token* tok = baseInfo.nameTok; // baseInfo.name still contains template parameters, but is missing namespaces
+                if (tok->str() == "::")
+                    tok = tok->next();
+                while (Token::Match(tok, "%name%|::")) {
+                    name += tok->str();
+                    tok = tok->next();
+                }
+                name += "::" + ftok->str();
                 if (functions.find(name) != functions.end() && matchArguments(ftok, name))
                     return name;
             }
