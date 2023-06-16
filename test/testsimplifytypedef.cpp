@@ -3358,13 +3358,13 @@ private:
                "void g() {\n"
                "    sizeof(t);\n"
                "}\n";
-        ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code));
+        ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
 
         code = "typedef t[3];\n"
                "void g() {\n"
                "    sizeof(t);\n"
                "}\n";
-        ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code));
+        ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
     }
 
     void simplifyTypedefFunction1() {
