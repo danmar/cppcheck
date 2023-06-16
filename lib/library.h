@@ -338,6 +338,7 @@ public:
         bool formatstr_secure{};
         Container::Action containerAction = Container::Action::NO_ACTION;
         Container::Yield containerYield = Container::Yield::NO_YIELD;
+        std::string returnType;
     };
 
     const Function *getFunction(const Token *ftok) const;
