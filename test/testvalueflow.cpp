@@ -7074,7 +7074,7 @@ private:
         valueOfTok(code, "c");
 
         code = "class T {\n"
-               "private slots:\n"
+               "private:\n"
                "    void f() { D& r = dynamic_cast<D&>(*m); }\n"
                "    void g() { m.reset(new D); }\n"
                "private:\n"

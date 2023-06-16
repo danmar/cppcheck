@@ -2859,7 +2859,7 @@ private:
 
     void symboldatabase2() {
         check("class foo {\n"
-              "public slots :\n"
+              "public:\n"
               "foo() { }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
