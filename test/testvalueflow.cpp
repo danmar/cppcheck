@@ -5553,7 +5553,7 @@ private:
                "  if (id_st->id > 0) {}\n"
                "}\n";
         values = tokenValues(code, ". id", ValueFlow::Value::ValueType::UNINIT);
-        ASSERT_EQUALS(123, values.size());
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {
