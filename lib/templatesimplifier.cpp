@@ -728,22 +728,16 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
 
 static const Token* getFunctionToken(const Token* nameToken)
 {
-    const Token* functionToken = nullptr;
+    if (Token::Match(nameToken, "%name% ("))
+        return nameToken->next();
 
-    if (nameToken->strAt(1) == "(")
-        functionToken = nameToken->tokAt(1);
-    else if (nameToken->strAt(1) == "<") {
-        const Token *end = nameToken->next()->findClosingBracket();
-        if (end)
-            functionToken = end->tokAt(1);
-        else
-            return nullptr;
-    } else
-        return nullptr;
+    if (Token::Match(nameToken, "%name% <")) {
+        const Token* end = nameToken->next()->findClosingBracket();
+        if (Token::simpleMatch(end, "> ("))
+            return end->next();
+    }
 
-    if (!Token::simpleMatch(functionToken, "("))
-        return nullptr;
-    return functionToken;
+    return nullptr;
 }
 
 static void getFunctionArguments(const Token* nameToken, std::vector<const Token*>& args)
@@ -769,8 +763,6 @@ static bool isConstMethod(const Token* nameToken)
     if (!functionToken)
         return false;
     const Token* endToken = functionToken->link();
-    if (!endToken)
-        return false;
     return Token::simpleMatch(endToken, ") const");
 }
 
@@ -3852,7 +3844,7 @@ void TemplateSimplifier::simplifyTemplates(
         std::unordered_map<std::string, int> nameOrdinal;
         int ordinal = 0;
         for (const auto& decl : mTemplateDeclarations) {
-            nameOrdinal.insert(std::make_pair(decl.fullName(), ordinal++));
+            nameOrdinal.emplace(decl.fullName(), ordinal++);
         }
 
         auto score = [&](const Token* arg) {
