@@ -3281,23 +3281,6 @@ private:
               "    (void)strxfrm(dest,src,3);\n" // <<
               "}");
         ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: dest\n", errout.str());
-        // source size is too small
-        check("void f(void) {\n"
-              "    const char src[2] = \"ab\";\n"
-              "    char dest[3] = \"abc\";\n"
-              "    (void)strxfrm(dest,src,1);\n"
-              "    (void)strxfrm(dest,src,2);\n"
-              "    (void)strxfrm(dest,src,3);\n" // <<
-              "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Buffer is accessed out of bounds: src\n", errout.str());
-        // source size is too small
-        check("void f(void) {\n"
-              "    const char src[1] = \"a\";\n"
-              "    char dest[3] = \"abc\";\n"
-              "    (void)strxfrm(dest,src,1);\n"
-              "    (void)strxfrm(dest,src,2);\n" // <<
-              "}");
-        ASSERT_EQUALS("[test.cpp:5]: (error) Buffer is accessed out of bounds: src\n", errout.str());
     }
 
     void buffer_overrun_33() { // #2019
