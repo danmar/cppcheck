@@ -665,14 +665,14 @@ namespace {
             }
 
             for (Token* type = start; Token::Match(type, "%name%|*|&"); type = type->next()) {
-                if (Token::Match(type, "%name% ;") && !type->isStandardType()) {
+                if (type != start && Token::Match(type, "%name% ;") && !type->isStandardType()) {
                     mRangeType.first = start;
                     mRangeType.second = type;
                     mNameToken = type;
                     mEndToken = mNameToken->next();
                     return;
                 }
-                if (Token::Match(type, "%name% [")) {
+                if (type != start && Token::Match(type, "%name% [")) {
                     Token* end = type->linkAt(1);
                     while (Token::simpleMatch(end, "] ["))
                         end = end->linkAt(1);
