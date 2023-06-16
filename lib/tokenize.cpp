@@ -672,7 +672,7 @@ namespace {
                     mEndToken = mNameToken->next();
                     return;
                 }
-                if (/*type != start && */Token::Match(type, "%name% [")) {
+                if (type != start && Token::Match(type, "%name% [")) {
                     Token* end = type->linkAt(1);
                     while (Token::simpleMatch(end, "] ["))
                         end = end->linkAt(1);
