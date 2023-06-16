@@ -7444,8 +7444,11 @@ Token * Tokenizer::initVar(Token * tok)
 void Tokenizer::elseif()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "else if"))
+        if (!Token::Match(tok, "else %name%"))
             continue;
+        
+        if (tok->strAt(1) != "if")
+            unknownMacroError(tok->next());
 
         for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
             if (Token::Match(tok2, "(|{|["))

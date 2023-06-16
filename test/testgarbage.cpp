@@ -548,11 +548,10 @@ private:
 
     void garbageCode23() {
         //garbage code : don't crash (#3481)
-        checkCode("{\n"
+        ASSERT_THROW(checkCode("{\n"
                   "    if (1) = x\n"
                   "    else abort s[2]\n"
-                  "}");
-        ASSERT_EQUALS("", errout.str());
+                  "}"), InternalError);
     }
 
     void garbageCode24() {
