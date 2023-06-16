@@ -5955,6 +5955,7 @@ private:
         ASSERT_EQUALS("x00throw:?return", testAst("return x ? 0 : throw 0;")); // #9768
         ASSERT_EQUALS("val0<1throwval:?return", testAst("return val < 0 ? throw 1 : val;")); // #8526
         ASSERT_EQUALS("ix0<00throw:?=", testAst("int i = x < 0 ? 0 : throw 0;"));
+        ASSERT_EQUALS("pa[pb[<1-pa[pb[>:?return", testAst("return p[a] < p[b] ? -1 : p[a] > p[b];"));
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
