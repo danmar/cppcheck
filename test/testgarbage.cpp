@@ -549,9 +549,9 @@ private:
     void garbageCode23() {
         //garbage code : don't crash (#3481)
         ASSERT_THROW(checkCode("{\n"
-                  "    if (1) = x\n"
-                  "    else abort s[2]\n"
-                  "}"), InternalError);
+                               "    if (1) = x\n"
+                               "    else abort s[2]\n"
+                               "}"), InternalError);
     }
 
     void garbageCode24() {
