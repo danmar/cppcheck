@@ -76,6 +76,7 @@ class Directive:
         print(directive.str)
     @endcode
     """
+    #preprocessor.cpp/Preprocessor::dump
 
     str = None
     file = None
@@ -96,7 +97,15 @@ class Directive:
 class MacroUsage:
     """
     Tracks preprocessor macro usage
+
+    Attributes:
+        name         Name of the macro
+        usefile
+        useline
+        usecolumn
+        isKnownValue
     """
+    #preprocessor.cpp/Preprocessor::dump
 
     name = None  # Macro name
     file = None
@@ -112,9 +121,10 @@ class MacroUsage:
         self.usefile = element.get('usefile')
         self.useline = element.get('useline')
         self.usecolumn = element.get('usecolumn')
+        self.isKnownValue = element.get('is-known-value', 'false') == 'true'
 
     def __repr__(self):
-        attrs = ["name", "file", "linenr", "column", "usefile", "useline", "usecolumn"]
+        attrs = ["name", "file", "linenr", "column", "usefile", "useline", "usecolumn", "isKnownValue"]
         return "{}({})".format(
             "MacroUsage",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -124,7 +134,12 @@ class MacroUsage:
 class PreprocessorIfCondition:
     """
     Information about #if/#elif conditions
+
+    Attributes:
+        E
+        result
     """
+    #preprocessor.cpp/Preprocessor::dump
 
     file = None
     linenr = None
@@ -144,11 +159,22 @@ class PreprocessorIfCondition:
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
 
-
 class ValueType:
     """
     ValueType class. Contains (promoted) type information for each node in the AST.
+
+    Attributes:
+        type             nonstd/pod/record/smart-pointer/container/iterator/void/bool/char/short/wchar_t/int/long/long long/unknown int/float/double/long double
+        sign             signed/unsigned
+        bits
+        pointer
+        constness
+        reference
+        typeScopeId
+        originalTypeName bool/const char */long/char */size_t/int/double/std::string/..
+
     """
+    #symboldatabase.cpp/ValueType::dump
 
     type = None
     sign = None
@@ -163,14 +189,17 @@ class ValueType:
         self.type = element.get('valueType-type')
         self.sign = element.get('valueType-sign')
         self.bits = int(element.get('valueType-bits', 0))
+        self.pointer = int(element.get('valueType-pointer', 0))
+        self.constness = int(element.get('valueType-constness', 0))
+        self.reference = element.get('valueType-reference')
         self.typeScopeId = element.get('valueType-typeScope')
         self.originalTypeName = element.get('valueType-originalTypeName')
-        self.constness = int(element.get('valueType-constness', 0))
-        self.pointer = int(element.get('valueType-pointer', 0))
+        #valueType-containerId TODO add
+
 
     def __repr__(self):
         attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
-                 "constness", "pointer"]
+                  "constness", "pointer"]
         return "{}({})".format(
             "ValueType",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -206,36 +235,44 @@ class Token:
                            corresponding '}', ']' and ')'. For templates, the '<' is linked to
                            the corresponding '>'.
         scope              Scope information for this token. See the Scope class.
+        type               Type information: name/op/number/string/..
         isName             Is this token a symbol name
+        isUnsigned         Is this token a unsigned type
+        isSigned           Is this token a signed type
         isNumber           Is this token a number, for example 123, 12.34
         isInt              Is this token a int value such as 1234
         isFloat            Is this token a float value such as 12.34
         isString           Is this token a string literal such as "hello"
         strlen             string length for string literal
         isChar             Is this token a char literal such as 'x'
+        isBoolean          Is this token a boolean
         isOp               Is this token a operator
         isArithmeticalOp   Is this token a arithmetic operator
         isAssignmentOp     Is this token a assignment operator
         isComparisonOp     Is this token a comparison operator
         isLogicalOp        Is this token a logical operator: && ||
-        isUnsigned         Is this token a unsigned type
-        isSigned           Is this token a signed type
+        isCast
+        externLang
         isExpandedMacro    Is this token a expanded macro token
         isRemovedVoidParameter  Has void parameter been removed?
         isSplittedVarDeclComma  Is this a comma changed to semicolon in a split variable declaration ('int a,b;' => 'int a; int b;')
         isSplittedVarDeclEq     Is this a '=' changed to semicolon in a split variable declaration ('int a=5;' => 'int a; a=5;')
         isImplicitInt      Is this token an implicit "int"?
+        isComplex
+        isRestrict
+        isAttributeExport
         varId              varId for token, each variable has a unique non-zero id
+        exprId             exprId for token, each expression has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
         function           If this token points at a function call, this attribute has the Function
                            information. See the Function class.
         values             Possible/Known values of token
-        impossible_values  Impossible values of token
-        valueType          type information
         typeScope          type scope (token->type()->classScope)
         astParent          ast parent
         astOperand1        ast operand1
         astOperand2        ast operand2
+        orriginalName      orriginal name of the token
+        valueType          type information: container/..
         file               file name
         linenr             line number
         column             column
@@ -250,6 +287,7 @@ class Token:
       print(code)
     @endcode
     """
+    #tokenize.cpp/Tokenizer::dump
 
     Id = None
     str = None
@@ -266,11 +304,13 @@ class Token:
     isString = False
     strlen = None
     isChar = False
+    isBoolean = False
     isOp = False
     isArithmeticalOp = False
     isAssignmentOp = False
     isComparisonOp = False
     isLogicalOp = False
+    isCast = False
     isUnsigned = False
     isSigned = False
     isExpandedMacro = False
@@ -278,6 +318,9 @@ class Token:
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
     isImplicitInt = False
+    isComplex = False
+    isRestrict = False
+    isAttributeExport = False
     exprId = None
     varId = None
     variableId = None
@@ -328,6 +371,8 @@ class Token:
             self.strlen = int(element.get('strlen'))
         elif type == 'char':
             self.isChar = True
+        elif type == 'boolean':
+            self.isBoolean = True
         elif type == 'op':
             self.isOp = True
             if element.get('isArithmeticalOp'):
@@ -338,6 +383,9 @@ class Token:
                 self.isComparisonOp = True
             elif element.get('isLogicalOp'):
                 self.isLogicalOp = True
+        if element.get('isCast'):
+            self.isCast = True
+        self.externLang = element.get('externLang')
         if element.get('isExpandedMacro'):
             self.isExpandedMacro = True
         if element.get('isRemovedVoidParameter'):
@@ -348,6 +396,12 @@ class Token:
             self.isSplittedVarDeclEq = True
         if element.get('isImplicitInt'):
             self.isImplicitInt = True
+        if element.get('isComplex'):
+            self.isComplex = True
+        if element.get('isRestrict'):
+            self.isRestrict = True
+        if element.get('isAttributeExport'):
+            self.isAttributeExport = True
         self.linkId = element.get('link')
         self.link = None
         if element.get('varId'):
@@ -360,10 +414,6 @@ class Token:
         self.function = None
         self.valuesId = element.get('values')
         self.values = None
-        if element.get('valueType-type'):
-            self.valueType = ValueType(element)
-        else:
-            self.valueType = None
         self.typeScopeId = element.get('type-scope')
         self.typeScope = None
         self.astParentId = element.get('astParent')
@@ -372,15 +422,21 @@ class Token:
         self.astOperand1 = None
         self.astOperand2Id = element.get('astOperand2')
         self.astOperand2 = None
+        self.originalName = element.get('originalName')
+        if element.get('valueType-type'):
+            self.valueType = ValueType(element)
+        else:
+            self.valueType = None
         _load_location(self, element)
 
     def __repr__(self):
         attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
                 "isNumber", "isInt", "isFloat", "isString", "strlen",
-                "isChar", "isOp", "isArithmeticalOp", "isComparisonOp",
-                "isLogicalOp", "isExpandedMacro", "isSplittedVarDeclComma",
-                "isSplittedVarDeclEq", "isImplicitInt", "linkId", "varId",
-                "variableId", "functionId", "valuesId", "valueType",
+                "isChar", "isBoolean", "isOp", "isArithmeticalOp", "isAssignmentOp", 
+                "isComparisonOp", "isLogicalOp", "isCast", "externLang", "isExpandedMacro", 
+                "isRemovedVoidParameter", "isSplittedVarDeclComma", "isSplittedVarDeclEq", 
+                "isImplicitInt", "isComplex", "isRestrict", "isAttributeExport", "linkId", 
+                "varId", "variableId", "functionId", "valuesId", "valueType",
                 "typeScopeId", "astParentId", "astOperand1Id", "file",
                 "linenr", "column"]
         return "{}({})".format(
@@ -492,8 +548,13 @@ class Scope:
                        For a class scope, this is the class name.
         function       If this scope belongs at a function call, this attribute
                        has the Function information. See the Function class.
-        type           Type of scope: Global, Function, Class, If, While
+        functions      if this is a Class type, it may have functions defined
+        nestedIn
+        type           Type of scope: Function, If/Else/For/While/Switch/Global/Enum/Struct/Namespace/Class/Constructor/Destructor
+        isExecutable   True when the type is: Function/If/Else/For/While/Do/Switch/Try/Catch/Unconditional/Lambda
+        definedType
     """
+    #symboldatabase.cpp/SymbolDatabase::printXml
 
     Id = None
     bodyStartId = None
@@ -515,6 +576,7 @@ class Scope:
         self.className = element.get('className')
         self.functionId = element.get('function')
         self.function = None
+        self.functions = []
         self.bodyStartId = element.get('bodyStart')
         self.bodyStart = None
         self.bodyEndId = element.get('bodyEnd')
@@ -522,14 +584,16 @@ class Scope:
         self.nestedInId = element.get('nestedIn')
         self.nestedIn = None
         self.type = element.get('type')
+        self.definedType = element.get('definedType')
         self.isExecutable = (self.type in ('Function', 'If', 'Else', 'For', 'While', 'Do',
                                            'Switch', 'Try', 'Catch', 'Unconditional', 'Lambda'))
+
         self.varlistId = list()
         self.varlist = list()
 
     def __repr__(self):
         attrs = ["Id", "className", "functionId", "bodyStartId", "bodyEndId",
-                 "nestedInId", "nestedIn", "type", "isExecutable"]
+                 "nestedInId", "nestedIn", "type", "definedType", "isExecutable", "functions"]
         return "{}({})".format(
             "Scope",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -553,14 +617,20 @@ class Function:
     https://cppcheck.sourceforge.io/devinfo/doxyoutput/classFunction.html
 
     Attributes
-        argument                Argument list
+        argument                Argument list (dict of argument number and variable)
         token                   Token in function implementation
         tokenDef                Token in function definition
-        isVirtual               Is this function is virtual
+        name
+        type                    Constructor/CopyConstructor/MoveConstructor/OperatorEqual/Destructor/Function/Lambda/Unknown
+        hasVirtualSpecifier     Is this function is virtual
         isImplicitlyVirtual     Is this function is virtual this in the base classes
+        access                  Public/Protected/Private
         isInlineKeyword         Is inline keyword used
-        isStatic                Is this function static?
+        isStatic                Is this function static
+        isAttributeNoreturn
+        overriddenFunction
     """
+    #symboldatabase.cpp/SymbolDatabase::printXml
 
     Id = None
     argument = None
@@ -571,10 +641,13 @@ class Function:
     tokenDefId = None
     name = None
     type = None
-    isVirtual = None
+    access = None
     isImplicitlyVirtual = None
+    hasVirtualSpecifier = None
     isInlineKeyword = None
     isStatic = None
+    isAttributeNoreturn = None
+    overriddenFunction = None
     nestedIn = None
 
     def __init__(self, element, nestedIn):
@@ -583,18 +656,22 @@ class Function:
         self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
         self.type = element.get('type')
+        self.hasVirtualSpecifier = element.get('hasVirtualSpecifier', 'false') == 'true'
         self.isImplicitlyVirtual = element.get('isImplicitlyVirtual', 'false') == 'true'
-        self.isVirtual = element.get('isVirtual', 'false') == 'true'
+        self.access = element.get('access')
         self.isInlineKeyword = element.get('isInlineKeyword', 'false') == 'true'
         self.isStatic = element.get('isStatic', 'false') == 'true'
+        self.isAttributeNoreturn = element.get('isAttributeNoreturn', 'false') == 'true'
+        self.overriddenFunction = element.get('overriddenFunction', 'false') == 'true'
         self.nestedIn = nestedIn
 
         self.argument = {}
         self.argumentId = {}
 
     def __repr__(self):
-        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "isVirtual",
-                 "isImplicitlyVirtual", "isInlineKeyword", "isStatic", "argumentId"]
+        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "hasVirtualSpecifier", 
+                 "isImplicitlyVirtual", "access", "isInlineKeyword", "isStatic", 
+                 "isAttributeNoreturn", "overriddenFunction", "nestedIn", "argumentId"]
         return "{}({})".format(
             "Function",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -607,6 +684,10 @@ class Function:
         self.tokenDef = IdMap[self.tokenDefId]
 
 
+#todo add class Types:
+    #symboldatabase.cpp/SymbolDatabase::printXml
+
+
 class Variable:
     """
     Information about a variable
@@ -617,20 +698,22 @@ class Variable:
         nameToken       Name token in variable declaration
         typeStartToken  Start token of variable declaration
         typeEndToken    End token of variable declaration
-        access          Global/Local/Namespace/Public/Protected/Public/Throw/Argument
+        access          Global/Local/Namespace/Public/Protected/Public/Throw/Argument/Unknown
         scope           Variable scope
+        constness       Variable constness (same encoding as ValueType::constness)
         isArgument      Is this variable a function argument?
+        isGlobal        Is this variable a global variable?
+        isLocal         Is this variable a local variable?
         isArray         Is this variable an array?
         isClass         Is this variable a class or struct?
         isConst         Is this variable a const variable?
-        isGlobal        Is this variable a global variable?
         isExtern        Is this variable an extern variable?
-        isLocal         Is this variable a local variable?
         isPointer       Is this variable a pointer
         isReference     Is this variable a reference
         isStatic        Is this variable static?
-        constness       Variable constness (same encoding as ValueType::constness)
+        isVolatile      Is this variable volatile?
     """
+    #symboldatabase.cpp/SymbolDatabase::printXml
 
     Id = None
     nameTokenId = None
@@ -652,6 +735,7 @@ class Variable:
     isPointer = False
     isReference = False
     isStatic = False
+    isVolatile = False
     constness = 0
 
     def __init__(self, element):
@@ -663,25 +747,26 @@ class Variable:
         self.typeEndTokenId = element.get('typeEndToken')
         self.typeEndToken = None
         self.access = element.get('access')
+        self.isArgument = (self.access and self.access == 'Argument')
+        self.isGlobal = (self.access and self.access == 'Global')
+        self.isLocal = (self.access and self.access == 'Local')
         self.scopeId = element.get('scope')
         self.scope = None
-        self.isArgument = (self.access and self.access == 'Argument')
+        self.constness = int(element.get('constness',0))
         self.isArray = element.get('isArray') == 'true'
         self.isClass = element.get('isClass') == 'true'
         self.isConst = element.get('isConst') == 'true'
-        self.isGlobal = (self.access and self.access == 'Global')
         self.isExtern = element.get('isExtern') == 'true'
-        self.isLocal = (self.access and self.access == 'Local')
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
-        self.constness = int(element.get('constness',0))
+        self.isVolatile = element.get('isVolatile') == 'true'
 
     def __repr__(self):
         attrs = ["Id", "nameTokenId", "typeStartTokenId", "typeEndTokenId",
                  "access", "scopeId", "isArgument", "isArray", "isClass",
                  "isConst", "isGlobal", "isExtern", "isLocal", "isPointer",
-                 "isReference", "isStatic", "constness", ]
+                 "isReference", "isStatic", "isVolatile", "constness"]
         return "{}({})".format(
             "Variable",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -693,11 +778,32 @@ class Variable:
         self.typeEndToken = IdMap[self.typeEndTokenId]
         self.scope = IdMap[self.scopeId]
 
+class Container:
+    """
+    Container class -- information about containers
+
+    Attributes:
+        array-like-index-op true/false
+        stdStringLike       true/false
+    """
+    #tokenizer.cpp/tokenizer::dump
+    Id = None
+
+    def __init__(self, element):
+        self.Id = element.get('id')
+        self.arrayLikeIndexOp = element.get('array-like-index-op') == 'true'
+        self.stdStringLike = element.get('std-string-like') == 'true'
 
 class TypedefInfo:
     """
     TypedefInfo class -- information about typedefs
+
+    Attributes:
+        name   name of the typedef
+        used   0/1
     """
+    #tokenizer.cpp/tokenizer::dump
+
     name = None
     used = None
     file = None
@@ -717,11 +823,19 @@ class Value:
         intvalue         integer value
         tokvalue         token value
         floatvalue       float value
+        movedValue
+        uninit
         containerSize    container size
+        bufferSize       buffer size
+        lifetimeScope    Local/Argument/SubFunction/ThisPointer/ThisValue
+        lifetimeKind     Object/SubObject/Lambda/Iterator/Address
+        symbolicDelta
         condition        condition where this Value comes from
-        valueKind        'known' or 'possible'
-        inconclusive     Is value inconclusive?
+        bound            Upper/Lower/Point
+        valueKind        known/possible/impossible/inconclusive
+        path             0/1/2/3/..
     """
+    #token.cpp/token::printValueFlow
 
     intvalue = None
     tokvalue = None
@@ -729,7 +843,6 @@ class Value:
     containerSize = None
     condition = None
     valueKind = None
-    inconclusive = False
 
     def isKnown(self):
         return self.valueKind and self.valueKind == 'known'
@@ -740,12 +853,18 @@ class Value:
     def isImpossible(self):
         return self.valueKind and self.valueKind == 'impossible'
 
+    def isInconclusive(self):
+        return self.valueKind and self.valueKind == 'inconclusive'
+
     def __init__(self, element):
         self.intvalue = element.get('intvalue')
         if self.intvalue:
             self.intvalue = int(self.intvalue)
         self._tokvalueId = element.get('tokvalue')
         self.floatvalue = element.get('floatvalue')
+        self.movedvalue = element.get('movedvalue')
+        self.uninit = element.get('uninit')
+        self.bufferSize = element.get('buffer-size')
         self.containerSize = element.get('container-size')
         self.iteratorStart = element.get('iterator-start')
         self.iteratorEnd = element.get('iterator-end')
@@ -754,9 +873,8 @@ class Value:
         self.lifetimeKind = element.get('lifetime-kind')
         self._symbolicId = element.get('symbolic')
         self.symbolicDelta = element.get('symbolic-delta')
-        self.condition = element.get('condition-line')
         self.bound = element.get('bound')
-        self.path = element.get('path')
+        self.condition = element.get('condition-line')
         if self.condition:
             self.condition = int(self.condition)
         if element.get('known'):
@@ -765,8 +883,9 @@ class Value:
             self.valueKind = 'possible'
         elif element.get('impossible'):
             self.valueKind = 'impossible'
-        if element.get('inconclusive'):
-            self.inconclusive = True
+        elif element.get('inconclusive'):
+            self.valueKind = 'inconclusive'
+        self.path = element.get('path')
 
     def setId(self, IdMap):
         self.tokvalue = IdMap.get(self._tokvalueId)
@@ -774,8 +893,8 @@ class Value:
         self.symbolic = IdMap.get(self._symbolicId)
 
     def __repr__(self):
-        attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",
-                    "condition", "valueKind", "inconclusive"]
+        attrs = ["intvalue", "tokvalue", "floatvalue", "movedValue", "uninit", 
+                 "bufferSize", "containerSize", "condition", "valueKind"]
         return "{}({})".format(
             "Value",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -861,6 +980,7 @@ class Configuration:
         preprocessor_if_conditions  List of preprocessor if conditions that was evaluated during preprocessing
         tokenlist     List of Token items
         scopes        List of Scope items
+        containers    List of Container items
         functions     List of Function items
         variables     List of Variable items
         valueflow     List of ValueFlow values
@@ -873,6 +993,7 @@ class Configuration:
     preprocessor_if_conditions = []
     tokenlist = []
     scopes = []
+    containers = []
     functions = []
     variables = []
     typedefInfo = []
@@ -887,6 +1008,7 @@ class Configuration:
         self.preprocessor_if_conditions = []
         self.tokenlist = []
         self.scopes = []
+        self.containers = []
         self.functions = []
         self.variables = []
         self.typedefInfo = []
@@ -909,6 +1031,8 @@ class Configuration:
             IdMap[token.Id] = token
         for scope in self.scopes:
             IdMap[scope.Id] = scope
+        for container in self.containers:
+            IdMap[container.Id] = container
         for function in self.functions:
             IdMap[function.Id] = function
         for variable in self.variables:
@@ -921,6 +1045,8 @@ class Configuration:
             token.setId(IdMap)
         for scope in self.scopes:
             scope.setId(IdMap)
+        #for container in self.containers:
+        #    container.setId(IdMap)
         for function in self.functions:
             function.setId(IdMap)
         for variable in self.variables:
@@ -942,7 +1068,7 @@ class Platform:
     This class contains type sizes
 
     Attributes:
-        name          Name of the platform
+        name          Name of the platform: unspecified/native/win32A/win32W/win64/unix32/unix64/platformFile
         char_bit      CHAR_BIT value
         short_bit     SHORT_BIT value
         int_bit       INT_BIT value
@@ -1056,7 +1182,7 @@ class CppcheckData:
         self.rawTokens = []
         self.platform = None
         self.suppressions = []
-        self.files = []
+        self.files = [] # source files for elements occurred in this configuration
 
         platform_done = False
         rawtokens_done = False
@@ -1136,7 +1262,6 @@ class CppcheckData:
                                            'line': int(node.get('line')),
                                            'column': int(node.get('column')),
                                            'message': node.get('message')})
-
             # Parse standards
             elif node.tag == "standards" and event == 'start':
                 continue
@@ -1150,7 +1275,6 @@ class CppcheckData:
             # Parse directives list
             elif node.tag == 'directive' and event == 'start':
                 cfg.directives.append(Directive(node))
-
             # Parse macro usage
             elif node.tag == 'macro' and event == 'start':
                 cfg.macro_usage.append(MacroUsage(node))
@@ -1204,11 +1328,21 @@ class CppcheckData:
                     else:
                         cfg_arguments.append(var)
 
+            # Parse containers
+            elif node.tag == 'containers' and event == 'start':
+                continue
+            elif node.tag == 'container' and event == 'start':
+                cfg.containers.append(Container(node))
+
             # Parse typedef info
             elif node.tag == 'typedef-info':
                 iter_typedef_info = (event == 'start')
             elif iter_typedef_info and node.tag == 'info' and event == 'start':
                 cfg.typedefInfo.append(TypedefInfo(node))
+
+            # Parse template-token
+            #elif node.tag == 'TokenAndName' and event == 'start': #todo add processing of containers
+            #    cfg.containers.append(Container(node))
 
             # Parse valueflows (list of values)
             elif node.tag == 'valueflow' and event == 'start':
@@ -1344,7 +1478,6 @@ def get_files(args):
         else:
             dump_files.append(f)
     return dump_files, ctu_info_files
-
 
 def simpleMatch(token, pattern):
     for p in pattern.split(' '):
@@ -1526,4 +1659,3 @@ def cmd_output(cmd):
         if p.returncode == 1 and len(comm[1]) > 2:
             out = comm[1]
         return out.decode(encoding='utf-8', errors='ignore')
-
