@@ -294,6 +294,8 @@ void CheckAutoVariables::autoVariables()
             else if ((Token::Match(tok, "%name% ( %var%|%str% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
                      (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var%|%str% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%|%str%");
+                if (Token::simpleMatch(tok->astParent(), "."))
+                    continue;
                 if (isArrayVar(tok) || tok->tokType() == Token::eString)
                     errorInvalidDeallocation(tok, nullptr);
                 else if (tok->variable() && tok->variable()->isPointer()) {
