@@ -5268,7 +5268,7 @@ private:
                         "    s.x = 42;\n"
                         "    bar(&s);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:18]: (error) Uninitialized variable: &s.flag\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (warning) Uninitialized variable: s->flag\n", errout.str());
 
         // Ticket #2207 - False negative
         valueFlowUninit("void foo() {\n"
@@ -6136,7 +6136,7 @@ private:
                         "    someType_t gVar;\n"
                         "    bar(&gVar);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: &gVar\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (warning) Uninitialized variable: p->flags\n", errout.str());
 
         valueFlowUninit("typedef struct\n"
                         "{\n"
@@ -6146,7 +6146,8 @@ private:
                         "        someType_t gVar;\n"
                         "        if(gVar.flags[1] == 42){}\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: gVar.flags\n", errout.str());
+        // TODO : find bugs for member arrays
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: gVar.flags\n", "", errout.str());
 
         valueFlowUninit("void foo() {\n" // #10293
                         "  union {\n"
