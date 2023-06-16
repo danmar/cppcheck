@@ -6936,7 +6936,7 @@ private:
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
-        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f(int i) {\n"
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f(int i) {\n" // #11770
                                                  "    if (i == 0) {}\n"
                                                  "    else if (i == 1) {}\n"
                                                  "    else\n"

@@ -7446,7 +7446,7 @@ void Tokenizer::elseif()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "else %name%"))
             continue;
-        
+
         if (tok->strAt(1) != "if")
             unknownMacroError(tok->next());
 
