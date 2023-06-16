@@ -77,9 +77,9 @@ public:
 
 private:
     const std::string mStr;
-    TimerResultsIntf* mTimerResults;
-    std::clock_t mStart{};
-    const SHOWTIME_MODES mShowTimeMode;
+    TimerResultsIntf* mTimerResults{};
+    std::clock_t mStart = std::clock();
+    const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
     bool mStopped{};
 };
 //---------------------------------------------------------------------------

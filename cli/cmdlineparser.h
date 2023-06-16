@@ -144,6 +144,8 @@ private:
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;
     Settings &mSettings;
+    Suppressions &mSuppressions;
+    Suppressions &mSuppressionsNoFail;
     bool mShowHelp{};
     bool mShowVersion{};
     bool mShowErrorMessages{};

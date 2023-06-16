@@ -116,6 +116,8 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>& se
 
 CmdLineParser::CmdLineParser(Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail)
     : mSettings(settings)
+    , mSuppressions(suppressions)
+    , mSuppressionsNoFail(suppressionsNoFail)
 {}
 
 void CmdLineParser::printMessage(const std::string &message)
