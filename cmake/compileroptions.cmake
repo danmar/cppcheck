@@ -131,30 +131,24 @@ if (MSVC)
     # No Whole Program Optimization
 
     # C/C++ - Optimization
-    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-        add_compile_options(/O2) # Optimization - Maximum Optimization (Favor Speed)
-        add_compile_options(/Ob2) # Inline Function Expansion - Any Suitable
-        add_compile_options(/Oi) # Enable Intrinsic Functions
-        add_compile_options(/Ot) # Favor fast code
-        add_compile_options(/Oy) # Omit Frame Pointers
-    else()
-        add_compile_options(/Od) # Optimization - Disabled
-    endif()
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/O2>) # Optimization - Maximum Optimization (Favor Speed)
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/Ob2>) # Inline Function Expansion - Any Suitable
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/Oi>) # Enable Intrinsic Functions
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/Ot>) # Favor fast code
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/Oy>) # Omit Frame Pointers
+    add_compile_options($<$<CONFIG:Debug>:/Od>) # Optimization - Disabled
 
     # C/C++ - Code Generation
-    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-        add_compile_options(/GF) # Enable String Pooling
-        add_compile_options(/MD) # Runtime Library - Multi-threaded DLL
-        add_compile_options(/GS-) # Disable Security Check
-        add_compile_options(/Gy) # Enable Function-Level Linking
-    else()
-        add_compile_options(/MDd) # Runtime Library - Multi-threaded Debug DLL
-        add_compile_options(/GS) # Enable Security Check
-    endif()
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/GF>) # Enable String Pooling
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/MD>) # Runtime Library - Multi-threaded DLL
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/GS->) # Disable Security Check
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:/Gy>) # Enable Function-Level Linking
+    add_compile_options($<$<CONFIG:Debug>:/MDd>) # Runtime Library - Multi-threaded Debug DLL
+    add_compile_options($<$<CONFIG:Debug>:/GS>) # Enable Security Check
 
     # C/C++ - Language
     add_compile_options(/Zc:rvalueCast) # Enforce type conversion rules
-    add_compile_options(/std:c++14) # C++ Language Standard - ISO C++14 Standard
+    #add_compile_options(/std:c++14) # C++ Language Standard - ISO C++14 Standard
 
     # C/C++ - Browse Information
     # Enable Browse Information - No
@@ -179,9 +173,8 @@ if (MSVC)
     add_compile_options(/Zc:throwingNew /Zc:__cplusplus) # Additional Options
 
     # Linker - General
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_link_options(/INCREMENTAL) # Enable Incremental Linking - Yes
-    endif()
+    add_link_options($<$<CONFIG:Debug>:/INCREMENTAL>) # Enable Incremental Linking - Yes
+
     add_link_options(/NOLOGO) # SUppress Startup Banner - Yes
     # Ignore Import Library - Yes
 
@@ -198,9 +191,7 @@ if (MSVC)
     add_link_options(/OPT:ICF) # Enable COMDAT Folding - Yes
 
     # Linker - Advanced
-    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-        add_link_options(/RELEASE) # Set Checksum - Yes
-    endif()
+    add_link_options($<$<NOT:$<CONFIG:Debug>>:/RELEASE>) # Set Checksum - Yes
 endif()
 
 # TODO: check if this can be enabled again - also done in Makefile

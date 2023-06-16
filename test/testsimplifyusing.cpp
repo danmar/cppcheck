@@ -24,8 +24,13 @@
 #include "token.h"
 #include "tokenize.h"
 
+#include <simplecpp.h>
+
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
+#include <vector>
 
 
 class TestSimplifyUsing : public TestFixture {
@@ -34,19 +39,12 @@ public:
 
 
 private:
-    Settings settings0;
-    Settings settings1;
-    Settings settings2;
+    // If there are unused templates, keep those
+    const Settings settings0 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
+    const Settings settings1 = settingsBuilder().checkUnusedTemplates().build();
+    const Settings settings2 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
 
     void run() override {
-        settings0.severity.enable(Severity::style);
-        settings2.severity.enable(Severity::style);
-
-        // If there are unused templates, keep those
-        settings0.checkUnusedTemplates = true;
-        settings1.checkUnusedTemplates = true;
-        settings2.checkUnusedTemplates = true;
-
         TEST_CASE(simplifyUsing1);
         TEST_CASE(simplifyUsing2);
         TEST_CASE(simplifyUsing3);
@@ -73,6 +71,7 @@ private:
         TEST_CASE(simplifyUsing24);
         TEST_CASE(simplifyUsing25);
         TEST_CASE(simplifyUsing26); // #11090
+        TEST_CASE(simplifyUsing27);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -92,19 +91,31 @@ private:
         TEST_CASE(simplifyUsing10172);
         TEST_CASE(simplifyUsing10173);
         TEST_CASE(simplifyUsing10335);
+        TEST_CASE(simplifyUsing10720);
 
         TEST_CASE(scopeInfo1);
         TEST_CASE(scopeInfo2);
     }
 
 #define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true) {
+    std::string tok_(const char* file, int line, const char code[], cppcheck::Platform::Type type = cppcheck::Platform::Type::Native, bool debugwarnings = true, bool preprocess = false) {
         errout.str("");
 
-        settings0.certainty.enable(Certainty::inconclusive);
-        settings0.debugwarnings = debugwarnings;
-        PLATFORM(settings0.platform, type);
-        Tokenizer tokenizer(&settings0, this);
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive).debugwarnings(debugwarnings).platform(type).build();
+
+        Tokenizer tokenizer(&settings, this);
+
+        if (preprocess) {
+            std::vector<std::string> files{ "test.cpp" };
+            std::istringstream istr(code);
+            const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+            simplecpp::TokenList tokens2(files);
+            std::map<std::string, simplecpp::TokenList*> filedata;
+            simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+            tokenizer.createTokens(std::move(tokens2));
+        }
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -643,6 +654,24 @@ private:
                                 "using namespace M ; "
                                 "} "
                                 "struct M :: F<A> { } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyUsing27() { // #11670
+        const char code[] = "namespace N {\n"
+                            "    template <class T>\n"
+                            "    struct S {\n"
+                            "        using iterator = T*;\n"
+                            "        iterator begin();\n"
+                            "    };\n"
+                            "}\n"
+                            "using I = N::S<int>;\n"
+                            "void f() {\n"
+                            "    I::iterator iter;\n"
+                            "}\n";
+        const char expected[] = "namespace N { struct S<int> ; } "
+                                "void f ( ) { int * iter ; } "
+                                "struct N :: S<int> { int * begin ( ) ; } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -1344,6 +1373,17 @@ private:
                             "enum E : uint8_t { E0 };";
         const char exp[]  = "enum E : unsigned char { E0 } ;";
         ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void simplifyUsing10720() {
+        const char code[] = "template <typename... Ts>\n"
+                            "struct S {};\n"
+                            "#define STAMP(thiz, prev) using thiz = S<prev, prev, prev, prev, prev, prev, prev, prev, prev, prev>;\n"
+                            "STAMP(A, int);\n"
+                            "STAMP(B, A);\n"
+                            "STAMP(C, B);\n";
+        tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
+        ASSERT_EQUALS(errout.str().compare(0, 64, "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"), 0);
     }
 
     void scopeInfo1() {

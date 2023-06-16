@@ -22,7 +22,10 @@
 #include <string>
 #include <vector>
 
+#include "utils.h"
+
 class Settings;
+class Suppressions;
 
 /// @addtogroup CLI
 /// @{
@@ -42,8 +45,10 @@ public:
      * The constructor.
      * @param settings Settings instance that will be modified according to
      * options user has given.
+     * @param suppressions Suppressions instance that keeps the suppressions
+     * @param suppressionsNoFail Suppressions instance that keeps the "do not fail" suppressions
      */
-    explicit CmdLineParser(Settings &settings);
+    CmdLineParser(Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail);
 
     /**
      * Parse given command line.
@@ -117,6 +122,24 @@ protected:
 
 private:
     bool isCppcheckPremium() const;
+
+    // TODO: get rid of is_signed
+    template<typename T>
+    static bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool is_signed = false)
+    {
+        T tmp;
+        std::string err;
+        if (!strToInt(arg + offset, tmp, &err)) {
+            printError("argument to '" + std::string(arg, offset) + "' is not valid - " + err + ".");
+            return false;
+        }
+        if (is_signed && tmp < 0) {
+            printError("argument to '" + std::string(arg, offset) + "' needs to be a positive integer.");
+            return false;
+        }
+        num = tmp;
+        return true;
+    }
 
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;

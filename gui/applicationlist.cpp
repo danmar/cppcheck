@@ -24,6 +24,7 @@
 #include <QFileInfo>
 #include <QSettings>
 #include <QStringList>
+#include <QVariant>
 
 ApplicationList::ApplicationList(QObject *parent) :
     QObject(parent)

@@ -12,10 +12,15 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:22.10"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.04"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
+
+    # TODO: is this actually applied to the guest?
+    env:
+      # TODO: figure out why there are cache misses with PCH enabled
+      CCACHE_SLOPPINESS: pch_defines,time_macros
 
     container:
       image: ${{ matrix.image }}
@@ -66,7 +71,7 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
           cmake --build . -- -j$(nproc)
 
       - name: CMake build
@@ -74,7 +79,7 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
           cmake --build . -- -j$(nproc)
 
       - name: Run CMake test

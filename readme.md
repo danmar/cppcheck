@@ -1,8 +1,8 @@
 # **Cppcheck** 
 
-|GitHub Actions|OSS-Fuzz|Coverity Scan Build Status|License|
-|:-:|:--:|:--:|:--:|
-|[![Github Action Status](https://github.com/danmar/cppcheck/workflows/CI/badge.svg)](https://github.com/danmar/cppcheck/actions?query=workflow%3ACI)|[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0) 
+OSS-Fuzz|Coverity Scan Build Status|License|
+|:--:|:--:|:--:|
+[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0) 
 
 ## About the name
 
@@ -63,6 +63,26 @@ For release builds it is recommended that you use:
 -DUSE_MATCHCOMPILER=ON
 
 Using cmake you can generate project files for Visual Studio,XCode,etc.
+
+#### Building a specific configuration
+
+For single-configuration generators (like "Unix Makefiles") you can generate and build a specific configuration (e.g. "RelWithDebInfo") using:
+
+```shell
+mkdir build_RelWithDebInfo
+cd build_RelWithDebInfo
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+cmake --build . --config RelWithDebInfo
+```
+
+For multi-configuration generators (like "Visual Studio 17 2022") the same is achieved using:
+
+```shell
+mkdir build
+cd build
+cmake ..
+cmake --build . --config RelWithDebInfo
+```
 
 ### qmake
 
@@ -234,10 +254,14 @@ mv cppcheck cppcheck.exe
 
 ## Packages
 
-You can install Cppcheck with yum/apt/brew/etc.
+Besides building yourself on the platform of your choice there are also several ways to obtain pre-built packages.<br/>
+*Note:* The non-Windows packages are not maintained by the Cppcheck team but by the respective packagers instead.
 
-The official rpms are built with these files:
-https://src.fedoraproject.org/rpms/cppcheck/tree/master
+- (Windows) An official Windows installer is available via the official Cppcheck SourceForge page: https://cppcheck.sourceforge.io/.
+- (Linux/Unix) Many major distros offer Cppcheck packages via their integrated package managers (`yum`, `apt`, `pacman`, etc.). See https://pkgs.org/search/?q=cppcheck for an overview.
+- (Linux/Unix) Unless you are using a "rolling" distro, it is likely that they are not carrying the latest version. There are several external (mainly unsupported) repositories like AUR (ArchLinux), PPA (ubuntu), EPEL (CentOS/Fedora) etc. which provide up-to-date packages. 
+- (Linux/Unix) The Canonical Snapcraft package is unmaintained and contains a very old version. Please refrain from using it! See https://trac.cppcheck.net/ticket/11641 for more details.
+- (MacOS) A package is available via Homebrew (`brew`). See https://formulae.brew.sh/formula/cppcheck#default.
 
 ## Webpage
 

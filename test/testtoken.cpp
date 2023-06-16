@@ -17,6 +17,7 @@
  */
 
 #include "settings.h"
+#include "errortypes.h"
 #include "fixture.h"
 #include "helpers.h"
 #include "token.h"
@@ -28,8 +29,6 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
-
-struct InternalError;
 
 
 class TestToken : public TestFixture {
@@ -136,7 +135,7 @@ private:
 
 #define MatchCheck(...) MatchCheck_(__FILE__, __LINE__, __VA_ARGS__)
     bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern, unsigned int varid = 0) {
-        static const Settings settings;
+        const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(";" + code + ";");
         try {
@@ -396,7 +395,7 @@ private:
 
     void getStrSize() const {
         Token tok;
-        Settings settings;
+        const Settings settings;
 
         tok.str("\"\"");
         ASSERT_EQUALS(sizeof(""), Token::getStrSize(&tok, &settings));

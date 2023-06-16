@@ -317,9 +317,10 @@ private:
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok) const;
-    bool isMemberFunc(const Scope *scope, const Token *tok) const;
-    bool isConstMemberFunc(const Scope *scope, const Token *tok) const;
-    bool checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const;
+    static bool isMemberFunc(const Scope *scope, const Token *tok);
+    static bool isConstMemberFunc(const Scope *scope, const Token *tok);
+    enum class MemberAccess { NONE, SELF, MEMBER };
+    bool checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const;
 
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
@@ -392,7 +393,7 @@ private:
      * @param scope pointer to variable Scope
      * @param usage reference to usage vector
      */
-    void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage);
+    void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const;
 
     /**
      * @brief gives a list of tokens where virtual functions are called directly or indirectly
@@ -410,7 +411,7 @@ private:
      * @param callToken token where pure virtual function is called directly or indirectly
      * @param[in,out] pureFuncStack list to append the stack
      */
-    void getFirstVirtualFunctionCallStack(
+    static void getFirstVirtualFunctionCallStack(
         std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap,
         const Token *callToken,
         std::list<const Token *> & pureFuncStack);

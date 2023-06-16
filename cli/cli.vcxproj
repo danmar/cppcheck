@@ -435,6 +435,7 @@
     <ClInclude Include="executor.h" />
     <ClInclude Include="filelister.h" />
     <ClInclude Include="processexecutor.h" />
+    <ClInclude Include="singleexecutor.h" />
     <ClInclude Include="stacktrace.h" />
     <ClInclude Include="threadexecutor.h" />
   </ItemGroup>
@@ -461,6 +462,7 @@
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="processexecutor.cpp" />
+    <ClCompile Include="singleexecutor.cpp" />
     <ClCompile Include="stacktrace.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
   </ItemGroup>

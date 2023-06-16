@@ -36,34 +36,10 @@ public:
     TestClass() : TestFixture("TestClass") {}
 
 private:
-    Settings settings0;
-    Settings settings1;
+    Settings settings0 = settingsBuilder().severity(Severity::style).library("std.cfg").build();
+    Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
 
     void run() override {
-        settings0.severity.enable(Severity::style);
-        settings1.severity.enable(Severity::warning);
-
-        // Load std.cfg configuration
-        {
-            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-                                   "<def>\n"
-                                   "  <memory>\n"
-                                   "    <alloc init=\"false\">malloc</alloc>\n"
-                                   "    <dealloc>free</dealloc>\n"
-                                   "  </memory>\n"
-                                   "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
-                                   "  <container id=\"stdVector\" startPattern=\"std :: vector &lt;\" itEndPattern=\"&gt; :: const_iterator\">\n"
-                                   "    <access>\n"
-                                   "      <function name=\"begin\" yields=\"start-iterator\"/>\n"
-                                   "      <function name=\"end\" yields=\"end-iterator\"/>\n"
-                                   "    </access>\n"
-                                   "  </container>\n"
-                                   "</def>";
-            ASSERT(settings0.library.loadxmldata(xmldata, sizeof(xmldata)));
-            ASSERT(settings1.library.loadxmldata(xmldata, sizeof(xmldata)));
-        }
-
-
         TEST_CASE(virtualDestructor1);      // Base class not found => no error
         TEST_CASE(virtualDestructor2);      // Base class doesn't have a destructor
         TEST_CASE(virtualDestructor3);      // Base class has a destructor, but it's not virtual
@@ -197,6 +173,13 @@ private:
         TEST_CASE(const81); // ticket #11330
         TEST_CASE(const82); // ticket #11513
         TEST_CASE(const83);
+        TEST_CASE(const84);
+        TEST_CASE(const85);
+        TEST_CASE(const86);
+        TEST_CASE(const87);
+        TEST_CASE(const88);
+        TEST_CASE(const89);
+        TEST_CASE(const90);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -259,10 +242,9 @@ private:
     void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.severity.enable(Severity::warning);
+        const Settings settings = settingsBuilder().severity(Severity::warning).build();
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -368,7 +350,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -522,7 +504,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -685,7 +667,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -1134,7 +1116,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -1610,7 +1592,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -2571,10 +2553,11 @@ private:
         // Clear the error log
         errout.str("");
 
+        // TODO: subsequent tests depend on these changes - should use SettingsBuilder
         settings0.certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings0.severity.enable(Severity::warning);
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -2647,6 +2630,27 @@ private:
                                "    delete p;\n"
                                "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
+
+        checkVirtualDestructor("using namespace std;\n"
+                               "struct A\n"
+                               "{\n"
+                               "    A()  { cout << \"A is constructing\\n\"; }\n"
+                               "    ~A() { cout << \"A is destructing\\n\"; }\n"
+                               "};\n"
+                               " \n"
+                               "struct Base {};\n"
+                               " \n"
+                               "struct Derived : Base\n"
+                               "{\n"
+                               "    A a;\n"
+                               "};\n"
+                               " \n"
+                               "int main(void)\n"
+                               "{\n"
+                               "    Base* p = new Derived();\n"
+                               "    delete p;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor3() {
@@ -2887,17 +2891,15 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::portability);
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
         checkNoMemset_(file, line, code, settings);
     }
 
-    void checkNoMemset_(const char* file, int line, const char code[], Settings &settings) {
+    void checkNoMemset_(const char* file, int line, const char code[], const Settings &settings) {
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -3153,8 +3155,7 @@ private:
                       errout.str());
 
         // #1655
-        Settings s;
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().library("std.cfg").build();
         checkNoMemset("void f() {\n"
                       "    char c[] = \"abc\";\n"
                       "    std::string s;\n"
@@ -3400,13 +3401,12 @@ private:
     }
 
     void memsetOnStdPodType() { // Ticket #5901
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"std::uint8_t\" sign=\"u\" size=\"1\"/>\n"
                                "  <podtype name=\"std::atomic_bool\"/>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         checkNoMemset("class A {\n"
                       "    std::array<int, 10> ints;\n"
@@ -3530,7 +3530,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -3561,23 +3561,20 @@ private:
     }
 
 #define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkConst_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
+    void checkConst_(const char* file, int line, const char code[], const Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
-        // Check..
-        if (!s)
-            s = &settings0;
-        s->certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings = settingsBuilder(s ? *s : settings0).certainty(Certainty::inconclusive, inconclusive).build();
 
-        Preprocessor preprocessor(*s, s->nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
-        Tokenizer tokenizer(s, this, &preprocessor);
+        Tokenizer tokenizer(&settings, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckClass checkClass(&tokenizer, s, this);
+        CheckClass checkClass(&tokenizer, &settings, this);
         (checkClass.checkConst)();
     }
 
@@ -6031,7 +6028,7 @@ private:
                    "    int i{};\n"
                    "    S f() { return S(&i); }\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", errout.str());
 
         checkConst("struct S {\n"
                    "    const int* mp{};\n"
@@ -6322,6 +6319,16 @@ private:
                    "    void g() { p->f(i); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct A {\n" // #11501
+                   "    enum E { E1 };\n"
+                   "    virtual void f(E) const = 0;\n"
+                   "};\n"
+                   "struct F {\n"
+                   "    A* a;\n"
+                   "    void g() { a->f(A::E1); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'F::g' can be const.\n", errout.str());
     }
 
     void const82() { // #11513
@@ -6338,9 +6345,8 @@ private:
                    "    void h(int, int*) const;\n"
                    "    void g() { int a; h(i, &a); }\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'S::g' can be const.\n",
+                      errout.str());
     }
 
     void const83() {
@@ -6358,6 +6364,235 @@ private:
                    "    r = 5;\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const84() {
+        checkConst("class S {};\n" // #11616
+                   "struct T {\n"
+                   "    T(const S*);\n"
+                   "    T(const S&);\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    const S s;\n"
+                   "    void f1() {\n"
+                   "        T t(&s);\n"
+                   "    }\n"
+                   "    void f2() {\n"
+                   "        T t(s);\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'C::f1' can be const.\n"
+                      "[test.cpp:11]: (style, inconclusive) Technically the member function 'C::f2' can be const.\n",
+                      errout.str());
+    }
+
+    void const85() { // #11618
+        checkConst("struct S {\n"
+                   "    int a[2], b[2];\n"
+                   "    void f() { f(a, b); }\n"
+                   "    static void f(const int p[2], int q[2]);\n"
+                   "};\n"
+                   "void S::f(const int p[2], int q[2]) {\n"
+                   "    q[0] = p[0];\n"
+                   "    q[1] = p[1];\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const86() { // #11621
+        checkConst("struct S { int* p; };\n"
+                   "struct T { int m; int* p; };\n"
+                   "struct U {\n"
+                   "    int i;\n"
+                   "    void f() { S s = { &i }; }\n"
+                   "    void g() { int* a[] = { &i }; }\n"
+                   "    void h() { T t = { 1, &i }; }\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const87() {
+        checkConst("struct Tokenizer {\n" // #11720
+                   "        bool isCPP() const {\n"
+                   "        return cpp;\n"
+                   "    }\n"
+                   "    bool cpp;\n"
+                   "};\n"
+                   "struct Check {\n"
+                   "    const Tokenizer* const mTokenizer;\n"
+                   "    const int* const mSettings;\n"
+                   "};\n"
+                   "struct CheckA : Check {\n"
+                   "    static bool test(const std::string& funcname, const int* settings, bool cpp);\n"
+                   "};\n"
+                   "struct CheckB : Check {\n"
+                   "    bool f(const std::string& s);\n"
+                   "};\n"
+                   "bool CheckA::test(const std::string& funcname, const int* settings, bool cpp) {\n"
+                   "    return !funcname.empty() && settings && cpp;\n"
+                   "}\n"
+                   "bool CheckB::f(const std::string& s) {\n"
+                   "    return CheckA::test(s, mSettings, mTokenizer->isCPP());\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:20] -> [test.cpp:15]: (style, inconclusive) Technically the member function 'CheckB::f' can be const.\n", errout.str());
+
+        checkConst("void g(int&);\n"
+                   "struct S {\n"
+                   "    struct { int i; } a[1];\n"
+                   "    void f() { g(a[0].i); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int& g() const { return i; }\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void h(int, const int&);\n"
+                   "struct T {\n"
+                   "    S s;\n"
+                   "    int j;\n"
+                   "    void f() { h(j, s.g()); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style, inconclusive) Technically the member function 'T::f' can be const.\n", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int& g() { return i; }\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void h(int, int&);\n"
+                   "struct T {\n"
+                   "    S s;\n"
+                   "    int j;\n"
+                   "    void f() { h(j, s.g()); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int& g() const { return i; }\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void h(int, const int*);\n"
+                   "struct T {\n"
+                   "    S s;\n"
+                   "    int j;\n"
+                   "    void f() { h(j, &s.g()); }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:9]: (style, inconclusive) Technically the member function 'T::f' can be const.\n", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int& g() { return i; }\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void h(int, int*);\n"
+                   "struct T {\n"
+                   "    S s;\n"
+                   "    int j;\n"
+                   "    void f() { h(j, &s.g()); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("void j(int** x);\n"
+                   "void k(int* const* y);\n"
+                   "struct S {\n"
+                   "    int* p;\n"
+                   "    int** q;\n"
+                   "    int* const* r;\n"
+                   "    void f1() { j(&p); }\n"
+                   "    void f2() { j(q); }\n"
+                   "    void g1() { k(&p); }\n"
+                   "    void g2() { k(q); }\n"
+                   "    void g3() { k(r); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("void m(int*& r);\n"
+                   "void n(int* const& s);\n"
+                   "struct T {\n"
+                   "    int i;\n"
+                   "    int* p;\n"
+                   "    void f1() { m(p); }\n"
+                   "    void f2() { n(&i); }\n"
+                   "    void f3() { n(p); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const88() { // #11626
+        checkConst("struct S {\n"
+                   "    bool f() { return static_cast<bool>(p); }\n"
+                   "    const int* g() { return const_cast<const int*>(p); }\n"
+                   "    const int* h() { return (const int*)p; }\n"
+                   "    char* j() { return reinterpret_cast<char*>(p); }\n"
+                   "    char* k() { return (char*)p; }\n"
+                   "    int* p;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:3]: (style, inconclusive) Technically the member function 'S::g' can be const.\n"
+                      "[test.cpp:4]: (style, inconclusive) Technically the member function 'S::h' can be const.\n",
+                      errout.str());
+
+        checkConst("struct S {\n"
+                   "    bool f() { return p != nullptr; }\n"
+                   "    std::shared_ptr<int> p;\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n",
+                      errout.str());
+    }
+
+    void const89() {
+        checkConst("struct S {\n" // #11654
+                   "    void f(bool b);\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void S::f(bool b) {\n"
+                   "    if (i && b)\n"
+                   "        f(false);\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:2]: (style, inconclusive) Technically the member function 'S::f' can be const.\n", errout.str());
+
+        checkConst("struct S {\n"
+                   "    void f(int& r);\n"
+                   "    int i;\n"
+                   "};\n"
+                   "void S::f(int& r) {\n"
+                   "    r = 0;\n"
+                   "    if (i)\n"
+                   "        f(i);\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #11744
+                   "    S* p;\n"
+                   "    int f() {\n"
+                   "        if (p)\n"
+                   "            return 1 + p->f();\n"
+                   "        return 1;\n"
+                   "    }\n"
+                   "    int g(int i) {\n"
+                   "        if (i > 0)\n"
+                   "            return i + g(i - 1);\n"
+                   "        return 0;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n"
+                      "[test.cpp:8]: (performance, inconclusive) Technically the member function 'S::g' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
+    }
+
+    void const90() { // #11637
+        checkConst("class S {};\n"
+                   "struct C {\n"
+                   "    C(const S*);\n"
+                   "    C(const S&);\n"
+                   "};\n"
+                   "class T {\n"
+                   "    S s;\n"
+                   "    void f1() { C c = C{ &s }; }\n"
+                   "    void f2() { C c = C{ s }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'T::f1' can be const.\n"
+                      "[test.cpp:9]: (style, inconclusive) Technically the member function 'T::f2' can be const.\n",
+                      errout.str());
     }
 
     void const_handleDefaultParameters() {
@@ -7183,10 +7418,7 @@ private:
     }
 
     void qualifiedNameMember() { // #10872
-        Settings s;
-        s.severity.enable(Severity::style);
-        s.debugwarnings = true;
-        LOAD_LIB_2(s.library, "std.cfg");
+        const Settings s = settingsBuilder().severity(Severity::style).debugwarnings().library("std.cfg").build();
         checkConst("struct data {};\n"
                    "    struct S {\n"
                    "    std::vector<data> std;\n"
@@ -7206,7 +7438,7 @@ private:
         // Check..
         settings0.certainty.setEnabled(Certainty::inconclusive, true);
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -7241,10 +7473,9 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.severity.enable(Severity::performance);
+        const Settings settings = settingsBuilder().severity(Severity::performance).build();
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -7458,7 +7689,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings0, settings0.nomsg, nullptr);
+        Preprocessor preprocessor(settings0);
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this, &preprocessor);
@@ -7572,11 +7803,9 @@ private:
         errout.str("");
 
         // Check..
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        const Settings settings = settingsBuilder().severity(Severity::warning).certainty(Certainty::inconclusive, inconclusive).build();
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -7922,10 +8151,10 @@ private:
     void checkOverride_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.severity.enable(Severity::style);
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        const Settings settings = settingsBuilder().severity(Severity::style).build();
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -8099,11 +8328,11 @@ private:
     void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
-        Settings settings;
-        settings.safeChecks.classes = true;
-        settings.severity.enable(Severity::warning);
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Settings settings = settingsBuilder().severity(Severity::warning).build();
+        settings.safeChecks.classes = true;
+
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -8126,7 +8355,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);
@@ -8280,7 +8509,7 @@ private:
 
 
     void ctu(const std::vector<std::string> &code) {
-        Settings settings;
+        const Settings settings;
         auto &check = getCheck<CheckClass>();
 
         // getFileInfo
@@ -8317,6 +8546,12 @@ private:
 
         ctu({"class A::C { C() { std::cout << 0; } };", "class B::C { C() { std::cout << 1; } };"});
         ASSERT_EQUALS("", errout.str());
+
+        // 11435 - template specialisations
+        const std::string header = "template<typename T1, typename T2> struct Test {};\n";
+        ctu({header + "template<typename T1> struct Test<T1, int> {};\n",
+             header + "template<typename T1> struct Test<T1, double> {};\n"});
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -8325,7 +8560,7 @@ private:
         // Clear the error log
         errout.str("");
 
-        Preprocessor preprocessor(settings1, settings1.nomsg, nullptr);
+        Preprocessor preprocessor(settings1);
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this, &preprocessor);

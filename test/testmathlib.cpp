@@ -17,13 +17,13 @@
  */
 
 
+#include "errortypes.h"
 #include "mathlib.h"
 #include "fixture.h"
 
 #include <limits>
 #include <string>
 
-struct InternalError;
 
 
 class TestMathLib : public TestFixture {
@@ -960,6 +960,14 @@ private:
         ASSERT_EQUALS(true, MathLib::isIntHex("-0x0ULL"));
         ASSERT_EQUALS(true, MathLib::isIntHex("+0x0LLU"));
         ASSERT_EQUALS(true, MathLib::isIntHex("-0x0LLU"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0Z"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0Z"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0ZU"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0ZU"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0UZ"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0UZ"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("+0x0Uz"));
+        ASSERT_EQUALS(true, MathLib::isIntHex("-0x0Uz"));
 
         // negative testing
         ASSERT_EQUALS(false, MathLib::isIntHex("+0x"));
@@ -972,10 +980,6 @@ private:
         ASSERT_EQUALS(false, MathLib::isIntHex("  "));
         ASSERT_EQUALS(false, MathLib::isIntHex(" "));
         ASSERT_EQUALS(false, MathLib::isIntHex("0"));
-        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0Z"));
-        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0Z"));
-        ASSERT_EQUALS(false, MathLib::isIntHex("+0x0Uz"));
-        ASSERT_EQUALS(false, MathLib::isIntHex("-0x0Uz"));
         ASSERT_EQUALS(false, MathLib::isIntHex("+0x0Lz"));
         ASSERT_EQUALS(false, MathLib::isIntHex("-0x0Lz"));
         ASSERT_EQUALS(false, MathLib::isIntHex("+0x0LUz"));
@@ -1018,12 +1022,19 @@ private:
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("u"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("ul"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("ull"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("uz"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("l"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("lu"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("ll"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("llu"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("llU"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("LLU"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("z"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("Z"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("zu"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("UZ"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("ZU"));
+
         // Microsoft extensions:
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("i64"));
         ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("I64"));
@@ -1033,6 +1044,10 @@ private:
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("I64", false));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("ui64", false));
         ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("UI64", false));
+
+        // User defined suffix literals
+        ASSERT_EQUALS(false, MathLib::isValidIntegerSuffix("_"));
+        ASSERT_EQUALS(true, MathLib::isValidIntegerSuffix("_MyUserDefinedLiteral"));
     }
 
     void ispositive() const {
@@ -1057,6 +1072,13 @@ private:
         ASSERT_EQUALS(true,  MathLib::isFloat("0.f"));
         ASSERT_EQUALS(true,  MathLib::isFloat("0.f"));
         ASSERT_EQUALS(true,  MathLib::isFloat("0xA.Fp-10"));
+
+        // User defined suffix literals
+        ASSERT_EQUALS(false, MathLib::isFloat("0_"));
+        ASSERT_EQUALS(false, MathLib::isFloat("0._"));
+        ASSERT_EQUALS(false, MathLib::isFloat("0.1_"));
+        ASSERT_EQUALS(true, MathLib::isFloat("0.0_MyUserDefinedLiteral"));
+        ASSERT_EQUALS(true, MathLib::isFloat("0._MyUserDefinedLiteral"));
     }
 
     void isDecimalFloat() const {
@@ -1164,6 +1186,13 @@ private:
         ASSERT_EQUALS(true, MathLib::isDecimalFloat("1.0E+1"));
         ASSERT_EQUALS(true, MathLib::isDecimalFloat("1.0E-1"));
         ASSERT_EQUALS(true, MathLib::isDecimalFloat("-1.0E+1"));
+
+        // User defined suffix literals
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("0_"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat(".1_"));
+        ASSERT_EQUALS(false, MathLib::isDecimalFloat("0.1_"));
+        ASSERT_EQUALS(true, MathLib::isDecimalFloat("0.0_MyUserDefinedLiteral"));
+        ASSERT_EQUALS(true, MathLib::isDecimalFloat(".1_MyUserDefinedLiteral"));
     }
 
     void naninf() const {
@@ -1198,6 +1227,14 @@ private:
         ASSERT_EQUALS(false, MathLib::isDec("+x"));
         ASSERT_EQUALS(false, MathLib::isDec("x"));
         ASSERT_EQUALS(false, MathLib::isDec(""));
+
+        // User defined suffix literals
+        ASSERT_EQUALS(false, MathLib::isDec("0_"));
+        ASSERT_EQUALS(false, MathLib::isDec("+0_"));
+        ASSERT_EQUALS(false, MathLib::isDec("-1_"));
+        ASSERT_EQUALS(true, MathLib::isDec("0_MyUserDefinedLiteral"));
+        ASSERT_EQUALS(true, MathLib::isDec("+1_MyUserDefinedLiteral"));
+        ASSERT_EQUALS(true, MathLib::isDec("-1_MyUserDefinedLiteral"));
     }
 
     void isNullValue() const {

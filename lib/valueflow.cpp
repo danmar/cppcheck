@@ -97,6 +97,7 @@
 #include "sourcelocation.h"
 #include "standards.h"
 #include "symboldatabase.h"
+#include "timer.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
@@ -106,6 +107,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <chrono>
 #include <climits>
 #include <cstdint>
 #include <cstdlib>
@@ -503,7 +505,7 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
         return false;
     if (value.isIteratorValue() && !Token::Match(parent, "+|-"))
         return false;
-    if (value.isTokValue() && (!parent->isComparisonOp() || value.tokvalue->tokType() != Token::eString))
+    if (value.isTokValue() && (!parent->isComparisonOp() || !Token::Match(value.tokvalue, "{|%str%")))
         return false;
     return true;
 }
@@ -604,6 +606,7 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
 static void setTokenValue(Token* tok,
                           ValueFlow::Value value,
                           const Settings* settings,
+                          bool isInitList = false,
                           SourceLocation loc = SourceLocation::current())
 {
     // Skip setting values that are too big since its ambiguous
@@ -627,7 +630,7 @@ static void setTokenValue(Token* tok,
     if (!parent)
         return;
 
-    if (Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
+    if (!isInitList && Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
         const Token* callParent = findParent(parent, [](const Token* p) {
             return !Token::simpleMatch(p, ",");
         });
@@ -886,6 +889,35 @@ static void setTokenValue(Token* tok,
                         result.intvalue = calculate(parent->str(), intValue1(), intValue2(), &error);
                         if (error)
                             continue;
+                    } else if (value1.isTokValue() && value2.isTokValue() &&
+                               (astIsContainer(parent->astOperand1()) || astIsContainer(parent->astOperand2()))) {
+                        const Token* tok1 = value1.tokvalue;
+                        const Token* tok2 = value2.tokvalue;
+                        bool equal = false;
+                        if (Token::Match(tok1, "%str%") && Token::Match(tok2, "%str%")) {
+                            equal = tok1->str() == tok2->str();
+                        } else if (Token::simpleMatch(tok1, "{") && Token::simpleMatch(tok2, "{")) {
+                            std::vector<const Token*> args1 = getArguments(tok1);
+                            std::vector<const Token*> args2 = getArguments(tok2);
+                            if (args1.size() == args2.size()) {
+                                if (!std::all_of(args1.begin(), args1.end(), std::mem_fn(&Token::hasKnownIntValue)))
+                                    continue;
+                                if (!std::all_of(args2.begin(), args2.end(), std::mem_fn(&Token::hasKnownIntValue)))
+                                    continue;
+                                equal = std::equal(args1.begin(),
+                                                   args1.end(),
+                                                   args2.begin(),
+                                                   [&](const Token* atok, const Token* btok) {
+                                    return atok->values().front().intvalue ==
+                                    btok->values().front().intvalue;
+                                });
+                            } else {
+                                equal = false;
+                            }
+                        } else {
+                            continue;
+                        }
+                        result.intvalue = parent->str() == "==" ? equal : !equal;
                     } else {
                         continue;
                     }
@@ -910,7 +942,7 @@ static void setTokenValue(Token* tok,
                     if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
                         value2.bound != ValueFlow::Value::Bound::Point)
                         result.invertBound();
-                    setTokenValue(parent, result, settings);
+                    setTokenValue(parent, result, settings, isInitList);
                 }
             }
         }
@@ -1108,7 +1140,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 static bool getMinMaxValues(const ValueType* vt, const cppcheck::Platform& platform, MathLib::bigint& minValue, MathLib::bigint& maxValue);
 
 // Handle various constants..
-static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp)
+static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp, bool isInitList = false)
 {
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
         try {
@@ -1122,7 +1154,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             ValueFlow::Value value(signedValue);
             if (!tok->isTemplateArg())
                 value.setKnown();
-            setTokenValue(tok, std::move(value), settings);
+            setTokenValue(tok, std::move(value), settings, isInitList);
         } catch (const std::exception & /*e*/) {
             // Bad character literal
         }
@@ -1132,17 +1164,17 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         value.floatValue = MathLib::toDoubleNumber(tok->str());
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
+        setTokenValue(tok, std::move(value), settings, isInitList);
     } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
+        setTokenValue(tok, std::move(value), settings, isInitList);
     } else if (tok->str() == "NULL" || (cpp && tok->str() == "nullptr")) {
         ValueFlow::Value value(0);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings);
+        setTokenValue(tok, std::move(value), settings, isInitList);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         if (tok->next()->astOperand2() && !tok->next()->astOperand2()->isLiteral() && tok->next()->astOperand2()->valueType() &&
             (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
@@ -1304,14 +1336,40 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         }
         // skip over enum
         tok = tok->linkAt(1);
+    } else if (Token::Match(tok, "%name% [{(] [)}]") && (tok->isStandardType() ||
+                                                         (tok->variable() && tok->variable()->nameToken() == tok &&
+                                                          (tok->variable()->isPointer() || (tok->variable()->valueType() && tok->variable()->valueType()->isIntegral()))))) {
+        ValueFlow::Value value(0);
+        if (!tok->isTemplateArg())
+            value.setKnown();
+        setTokenValue(tok->next(), std::move(value), settings, isInitList);
+    } else if (Token::Match(tok, "%name% = {") && tok->variable() &&
+               (tok->variable()->isPointer() || (tok->variable()->valueType() && tok->variable()->valueType()->isIntegral()))) {
+        if (Token::simpleMatch(tok->tokAt(3), "}")) {
+            ValueFlow::Value value(0);
+            value.setKnown();
+            setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+        } else if (tok->tokAt(2)->astOperand1() && tok->tokAt(2)->astOperand1()->hasKnownIntValue()) {
+            ValueFlow::Value value(tok->tokAt(2)->astOperand1()->getKnownIntValue());
+            value.setKnown();
+            setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+        }
     }
     return tok->next();
 }
 
 static void valueFlowNumber(TokenList *tokenlist, const Settings* settings)
 {
+    bool isInitList = false;
+    const Token* endInit{};
     for (Token *tok = tokenlist->front(); tok;) {
-        tok = valueFlowSetConstantValue(tok, settings, tokenlist->isCPP());
+        if (!isInitList && tok->str() == "{" && (Token::simpleMatch(tok->astOperand1(), ",") || Token::simpleMatch(tok->astOperand2(), ","))) {
+            isInitList = true;
+            endInit = tok->link();
+        }
+        tok = valueFlowSetConstantValue(tok, settings, tokenlist->isCPP(), isInitList);
+        if (isInitList && tok == endInit)
+            isInitList = false;
     }
 
     if (tokenlist->isCPP()) {
@@ -1893,7 +1951,7 @@ static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings *
 
         for (Enumerator & enumerator : scope.enumeratorList) {
             if (enumerator.start) {
-                Token *rhs = enumerator.start->previous()->astOperand2();
+                Token* rhs = const_cast<Token*>(enumerator.start->previous()->astOperand2());
                 ValueFlow::valueFlowConstantFoldAST(rhs, settings);
                 if (rhs && rhs->hasKnownIntValue()) {
                     enumerator.value = rhs->values().front().intvalue;
@@ -1999,7 +2057,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
                                          ValueFlow::Value value,
-                                         TokenList* const tokenlist,
+                                         const TokenList* const tokenlist,
                                          const Settings* settings,
                                          SourceLocation loc = SourceLocation::current())
 {
@@ -2015,7 +2073,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
                                          std::list<ValueFlow::Value> values,
-                                         TokenList* const tokenlist,
+                                         const TokenList* const tokenlist,
                                          const Settings* settings,
                                          SourceLocation loc = SourceLocation::current())
 {
@@ -2044,7 +2102,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
 static Analyzer::Result valueFlowForwardRecursive(Token* top,
                                                   const Token* exprTok,
                                                   std::list<ValueFlow::Value> values,
-                                                  TokenList* const tokenlist,
+                                                  const TokenList* const tokenlist,
                                                   const Settings* settings,
                                                   SourceLocation loc = SourceLocation::current())
 {
@@ -2062,7 +2120,7 @@ static void valueFlowReverse(Token* tok,
                              const Token* const endToken,
                              const Token* const varToken,
                              std::list<ValueFlow::Value> values,
-                             TokenList* tokenlist,
+                             const TokenList* tokenlist,
                              const Settings* settings,
                              SourceLocation loc = SourceLocation::current())
 {
@@ -2074,7 +2132,7 @@ static void valueFlowReverse(Token* tok,
 }
 
 // Deprecated
-static void valueFlowReverse(TokenList* tokenlist,
+static void valueFlowReverse(const TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
@@ -2210,6 +2268,7 @@ class SelectValueFromVarIdMapRange {
         using value_type = const ValueFlow::Value;
         using pointer = value_type *;
         using reference = value_type &;
+        using difference_type = std::ptrdiff_t;
 
         explicit Iterator(const M::const_iterator & it)
             : mIt(it) {}
@@ -2268,21 +2327,19 @@ static bool isAliasOf(const Variable * var, const Token *tok, nonneg int varid, 
     if (var && !var->isPointer())
         return false;
     // Search through non value aliases
-    for (const ValueFlow::Value &val : values) {
+    return std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& val) {
         if (!val.isNonValue())
-            continue;
+            return false;
         if (val.isInconclusive())
-            continue;
+            return false;
         if (val.isLifetimeValue() && !val.isLocalLifetimeValue())
-            continue;
+            return false;
         if (val.isLifetimeValue() && val.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
-            continue;
+            return false;
         if (!Token::Match(val.tokvalue, ".|&|*|%var%"))
-            continue;
-        if (astHasVar(val.tokvalue, tok->varId()))
-            return true;
-    }
-    return false;
+            return false;
+        return astHasVar(val.tokvalue, tok->varId());
+    });
 }
 
 static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, const Settings* settings, int depth = 20);
@@ -2378,10 +2435,6 @@ struct ValueFlowAnalyzer : Analyzer {
         return false;
     }
     virtual bool isVariable() const {
-        return false;
-    }
-
-    virtual bool invalid() const {
         return false;
     }
 
@@ -2491,7 +2544,7 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 
     virtual Action isModified(const Token* tok) const {
-        Action read = Action::Read;
+        const Action read = Action::Read;
         const ValueFlow::Value* value = getValue(tok);
         if (value) {
             // Moving a moved value won't change the moved value
@@ -3090,6 +3143,8 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
             dependOnThis |= exprDependsOnThis(value.tokvalue);
             setupExprVarIds(value.tokvalue);
         }
+        uniqueExprId =
+            expr->isUniqueExprId() && (Token::Match(expr, "%cop%") || !isVariableChanged(expr, 0, s, t->isCPP()));
     }
 
     static bool nonLocal(const Variable* var, bool deref) {
@@ -3139,7 +3194,13 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         });
     }
 
+    virtual bool skipUniqueExprIds() const {
+        return true;
+    }
+
     bool invalid() const override {
+        if (skipUniqueExprIds() && uniqueExprId)
+            return true;
         return unknown;
     }
 
@@ -3174,6 +3235,10 @@ struct SameExpressionAnalyzer : ExpressionAnalyzer {
         : ExpressionAnalyzer(e, std::move(val), t, s)
     {}
 
+    bool skipUniqueExprIds() const override {
+        return false;
+    }
+
     bool match(const Token* tok) const override
     {
         return isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
@@ -3188,6 +3253,10 @@ struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
     OppositeExpressionAnalyzer(bool pIsNot, const Token* e, ValueFlow::Value val, const TokenList* t, const Settings* s)
         : ExpressionAnalyzer(e, std::move(val), t, s), isNot(pIsNot)
     {}
+
+    bool skipUniqueExprIds() const override {
+        return false;
+    }
 
     bool match(const Token* tok) const override {
         return isOppositeCond(isNot, isCPP(), expr, tok, getSettings()->library, true, true);
@@ -3922,7 +3991,7 @@ struct LifetimeStore {
         }
     }
 
-    static LifetimeStore fromFunctionArg(const Function * f, Token *tok, const Variable *var, TokenList *tokenlist, const Settings* settings, ErrorLogger *errorLogger) {
+    static LifetimeStore fromFunctionArg(const Function * f, const Token *tok, const Variable *var, TokenList *tokenlist, const Settings* settings, ErrorLogger *errorLogger) {
         if (!var)
             return LifetimeStore{};
         if (!var->isArgument())
@@ -4407,6 +4476,23 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         // Assume constructing the valueType
         valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
+    } else {
+        const std::string& retVal = settings->library.returnValue(tok);
+        if (retVal.compare(0, 3, "arg") == 0) {
+            std::size_t iArg{};
+            try {
+                iArg = strToInt<std::size_t>(retVal.substr(3));
+            } catch (...) {
+                return;
+            }
+            std::vector<const Token*> args = getArguments(tok);
+            if (iArg > 0 && iArg <= args.size()) {
+                const Token* varTok = args[iArg - 1];
+                if (varTok->variable() && varTok->variable()->isLocal())
+                    LifetimeStore{ varTok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Address }.byRef(
+                    tok->next(), tokenlist, errorLogger, settings);
+            }
+        }
     }
 }
 
@@ -4486,10 +4572,15 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
         std::vector<const Token*> args = getArguments(tok);
         if (scope->numConstructors == 0) {
             auto it = scope->varlist.cbegin();
-            LifetimeStore::forEach(args,
-                                   "Passed to constructor of '" + t->name() + "'.",
-                                   ValueFlow::Value::LifetimeKind::SubObject,
-                                   [&](const LifetimeStore& ls) {
+            LifetimeStore::forEach(
+                args,
+                "Passed to constructor of '" + t->name() + "'.",
+                ValueFlow::Value::LifetimeKind::SubObject,
+                [&](const LifetimeStore& ls) {
+                // Skip static variable
+                it = std::find_if(it, scope->varlist.cend(), [](const Variable& var) {
+                    return !var.isStatic();
+                });
                 if (it == scope->varlist.cend())
                     return;
                 const Variable& var = *it;
@@ -4802,8 +4893,15 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
         // container lifetimes
         else if (astIsContainer(tok)) {
             Token * parent = astParentSkipParens(tok);
-            if (!Token::Match(parent, ". %name% (") &&
-                !Token::simpleMatch(parent, "("))
+            if (!parent)
+                continue;
+            if (!Token::Match(parent, ". %name% (") && !Token::Match(parent->previous(), "%name% ("))
+                continue;
+
+            // Skip if its a free function that doesnt yield an iterator to the container
+            if (Token::Match(parent->previous(), "%name% (") &&
+                !contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR},
+                          astFunctionYield(parent->previous(), settings)))
                 continue;
 
             ValueFlow::Value master;
@@ -4813,12 +4911,14 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             if (astIsIterator(parent->tokAt(2))) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
-            } else if (astIsIterator(parent)) {
+            } else if (astIsIterator(parent) && Token::Match(parent->previous(), "%name% (") &&
+                       contains({Library::Container::Yield::START_ITERATOR, Library::Container::Yield::END_ITERATOR},
+                                astFunctionYield(parent->previous(), settings))) {
                 master.errorPath.emplace_back(parent, "Iterator to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Iterator;
-            }
-            else if ((astIsPointer(parent->tokAt(2)) && !isContainerOfPointers(tok->valueType()->containerTypeToken, settings)) ||
-                     Token::Match(parent->next(), "data|c_str")) {
+            } else if ((astIsPointer(parent->tokAt(2)) &&
+                        !isContainerOfPointers(tok->valueType()->containerTypeToken, settings)) ||
+                       Token::Match(parent->next(), "data|c_str")) {
                 master.errorPath.emplace_back(parent->tokAt(2), "Pointer to container is created here.");
                 master.lifetimeKind = ValueFlow::Value::LifetimeKind::Object;
             } else {
@@ -4975,7 +5075,7 @@ static const Token * findEndOfFunctionCallForParameter(const Token * parameterTo
     return nextAfterAstRightmostLeaf(parent);
 }
 
-static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowAfterMove(TokenList* tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
 {
     if (!tokenlist->isCPP() || settings->standards.cpp < Standards::CPP11)
         return;
@@ -5114,7 +5214,7 @@ static const Scope* getLoopScope(const Token* tok)
 }
 
 //
-static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings &settings)
+static void valueFlowConditionExpressions(TokenList *tokenlist, const SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings &settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
         if (const Token* incompleteTok = findIncompleteVar(scope->bodyStart, scope->bodyEnd)) {
@@ -5125,10 +5225,10 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             }
         }
 
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "if ("))
                 continue;
-            const Token * parenTok = tok->next();
+            Token* parenTok = tok->next();
             if (!Token::simpleMatch(parenTok->link(), ") {"))
                 continue;
             Token * blockTok = parenTok->link()->tokAt(1);
@@ -5191,7 +5291,6 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                     }
                 }
             }
-
         }
     }
 }
@@ -5245,7 +5344,7 @@ static std::set<nonneg int> getVarIds(const Token* tok)
     return result;
 }
 
-static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowSymbolic(const TokenList* tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -5338,7 +5437,7 @@ static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 
 
 static ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
-static void valueFlowSymbolicOperators(SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowSymbolicOperators(const SymbolDatabase* symboldatabase, const Settings* settings)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -5449,7 +5548,7 @@ struct SymbolicInferModel : InferModel {
     }
 };
 
-static void valueFlowSymbolicInfer(SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowSymbolicInfer(const SymbolDatabase* symboldatabase, const Settings* settings)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -5707,7 +5806,7 @@ static std::list<ValueFlow::Value> truncateValues(std::list<ValueFlow::Value> va
 static bool isVariableInit(const Token *tok)
 {
     return (tok->str() == "(" || tok->str() == "{") &&
-           tok->isBinaryOp() &&
+           (tok->isBinaryOp() || (tok->astOperand1() && tok->link() == tok->next())) &&
            tok->astOperand1()->variable() &&
            tok->astOperand1()->variable()->nameToken() == tok->astOperand1() &&
            tok->astOperand1()->variable()->valueType() &&
@@ -5728,16 +5827,23 @@ static bool intersects(const C1& c1, const C2& c2)
     return false;
 }
 
-static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowAfterAssign(TokenList *tokenlist,
+                                 const SymbolDatabase* symboldatabase,
+                                 ErrorLogger *errorLogger,
+                                 const Settings *settings,
+                                 const std::set<const Scope*>& skippedFunctions)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
+        if (skippedFunctions.count(scope))
+            continue;
         std::unordered_map<nonneg int, std::unordered_set<nonneg int>> backAssigns;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             // Assignment
-            if (tok->str() != "=" && !isVariableInit(tok))
+            bool isInit = false;
+            if (tok->str() != "=" && !(isInit = isVariableInit(tok)))
                 continue;
 
-            if (tok->astParent() && !(tok->astParent()->str() == ";" && astIsLHS(tok)))
+            if (tok->astParent() && !((tok->astParent()->str() == ";" && astIsLHS(tok)) || tok->astParent()->str() == "*"))
                 continue;
 
             // Lhs should be a variable
@@ -5746,11 +5852,14 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             std::vector<const Variable*> vars = getLHSVariables(tok);
 
             // Rhs values..
-            if (!tok->astOperand2() || tok->astOperand2()->values().empty())
+            Token* rhs = tok->astOperand2();
+            if (!rhs && isInit)
+                rhs = tok;
+            if (!rhs || rhs->values().empty())
                 continue;
 
             std::list<ValueFlow::Value> values = truncateValues(
-                tok->astOperand2()->values(), tok->astOperand1()->valueType(), tok->astOperand2()->valueType(), settings);
+                rhs->values(), tok->astOperand1()->valueType(), rhs->valueType(), settings);
             // Remove known values
             std::set<ValueFlow::Value::ValueType> types;
             if (tok->astOperand1()->hasKnownValue()) {
@@ -5805,7 +5914,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 continue;
             const bool init = vars.size() == 1 && (vars.front()->nameToken() == tok->astOperand1() || tok->isSplittedVarDeclEq());
             valueFlowForwardAssign(
-                tok->astOperand2(), tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
+                rhs, tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
             // Back propagate symbolic values
             if (tok->astOperand1()->exprId() > 0) {
                 Token* start = nextAfterAstRightmostLeaf(tok);
@@ -5856,7 +5965,7 @@ static std::vector<const Variable*> getVariables(const Token* tok)
 }
 
 static void valueFlowAfterSwap(TokenList* tokenlist,
-                               SymbolDatabase* symboldatabase,
+                               const SymbolDatabase* symboldatabase,
                                ErrorLogger* errorLogger,
                                const Settings* settings)
 {
@@ -6027,12 +6136,15 @@ struct ConditionHandler {
         return valueFlowReverse(start, endToken, exprTok, values, tokenlist, settings, loc);
     }
 
-    void traverseCondition(TokenList* tokenlist,
-                           SymbolDatabase* symboldatabase,
+    void traverseCondition(const TokenList* tokenlist,
+                           const SymbolDatabase* symboldatabase,
                            const Settings* settings,
+                           const std::set<const Scope*>& skippedFunctions,
                            const std::function<void(const Condition& cond, Token* tok, const Scope* scope)>& f) const
     {
         for (const Scope *scope : symboldatabase->functionScopes) {
+            if (skippedFunctions.count(scope))
+                continue;
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "if|while|for ("))
                     continue;
@@ -6063,10 +6175,11 @@ struct ConditionHandler {
     }
 
     void beforeCondition(TokenList* tokenlist,
-                         SymbolDatabase* symboldatabase,
+                         const SymbolDatabase* symboldatabase,
                          ErrorLogger* errorLogger,
-                         const Settings* settings) const {
-        traverseCondition(tokenlist, symboldatabase, settings, [&](const Condition& cond, Token* tok, const Scope*) {
+                         const Settings* settings,
+                         const std::set<const Scope*>& skippedFunctions) const {
+        traverseCondition(tokenlist, symboldatabase, settings, skippedFunctions, [&](const Condition& cond, Token* tok, const Scope*) {
             if (cond.vartok->exprId() == 0)
                 return;
 
@@ -6074,7 +6187,7 @@ struct ConditionHandler {
             if (tok->hasKnownIntValue())
                 return;
 
-            const Token* top = tok->astTop();
+            Token* top = tok->astTop();
 
             if (Token::Match(top, "%assign%"))
                 return;
@@ -6179,7 +6292,7 @@ struct ConditionHandler {
                 continue;
             }
             if (Token::Match(tok->astParent(), "==|!=")) {
-                Token* sibling = tok->astSibling();
+                const Token* sibling = tok->astSibling();
                 if (sibling->hasKnownIntValue() && (astIsBool(tok) || astIsBool(sibling))) {
                     const bool value = sibling->values().front().intvalue;
                     if (inverted)
@@ -6210,11 +6323,12 @@ struct ConditionHandler {
     }
 
     void afterCondition(TokenList* tokenlist,
-                        SymbolDatabase* symboldatabase,
+                        const SymbolDatabase* symboldatabase,
                         ErrorLogger* errorLogger,
-                        const Settings* settings) const {
-        traverseCondition(tokenlist, symboldatabase, settings, [&](const Condition& cond, Token* condTok, const Scope* scope) {
-            const Token* top = condTok->astTop();
+                        const Settings* settings,
+                        const std::set<const Scope*>& skippedFunctions) const {
+        traverseCondition(tokenlist, symboldatabase, settings, skippedFunctions, [&](const Condition& cond, Token* condTok, const Scope* scope) {
+            Token* top = condTok->astTop();
 
             const MathLib::bigint path = cond.getPath();
             const bool allowKnown = path == 0;
@@ -6543,10 +6657,11 @@ static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
                                TokenList* tokenlist,
                                SymbolDatabase* symboldatabase,
                                ErrorLogger* errorLogger,
-                               const Settings* settings)
+                               const Settings* settings,
+                               const std::set<const Scope*>& skippedFunctions)
 {
-    handler->beforeCondition(tokenlist, symboldatabase, errorLogger, settings);
-    handler->afterCondition(tokenlist, symboldatabase, errorLogger, settings);
+    handler->beforeCondition(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
+    handler->afterCondition(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions);
 }
 
 struct SimpleConditionHandler : ConditionHandler {
@@ -6705,8 +6820,6 @@ static void valueFlowInferCondition(TokenList* tokenlist,
             if (result.size() != 1)
                 continue;
             ValueFlow::Value value = result.front();
-            value.intvalue = 1;
-            value.bound = ValueFlow::Value::Bound::Point;
             setTokenValue(tok, std::move(value), settings);
         }
     }
@@ -6937,7 +7050,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
     }
 }
 
-static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, TokenList* tokenlist, const Settings* settings)
+static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const MathLib::bigint num, const TokenList* tokenlist, const Settings* settings)
 {
     const Token *vartok = nullptr;
     for (const Token *tok = fortok; tok; tok = tok->next()) {
@@ -6965,7 +7078,7 @@ static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const
     }
 }
 
-static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowForLoop(TokenList *tokenlist, const SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope &scope : symboldatabase->scopeList) {
         if (scope.type != Scope::eFor)
@@ -7009,6 +7122,8 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
                 for (const auto& p : mem1) {
                     if (!p.second.isIntValue())
                         continue;
+                    if (p.second.isImpossible())
+                        continue;
                     if (p.first.tok->varId() == 0)
                         continue;
                     valueFlowForLoopSimplify(bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
@@ -7016,12 +7131,16 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
                 for (const auto& p : mem2) {
                     if (!p.second.isIntValue())
                         continue;
+                    if (p.second.isImpossible())
+                        continue;
                     if (p.first.tok->varId() == 0)
                         continue;
                     valueFlowForLoopSimplify(bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
                 }
                 for (const auto& p : memAfter) {
                     if (!p.second.isIntValue())
+                        continue;
+                    if (p.second.isImpossible())
                         continue;
                     if (p.first.tok->varId() == 0)
                         continue;
@@ -7178,7 +7297,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
 };
 
 template<class Key, class F>
-bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& vars, F f)
+bool productParams(const Settings* settings, const std::unordered_map<Key, std::list<ValueFlow::Value>>& vars, F f)
 {
     using Args = std::vector<std::unordered_map<Key, ValueFlow::Value>>;
     Args args(1);
@@ -7188,9 +7307,15 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
             continue;
         args.back()[p.first] = p.second.front();
     }
+    bool bail = false;
+    int max = 8;
+    if (settings)
+        max = settings->performanceValueFlowMaxSubFunctionArgs;
     for (const auto& p:vars) {
-        if (args.size() > 256)
-            return false;
+        if (args.size() > max) {
+            bail = true;
+            break;
+        }
         if (p.second.empty())
             continue;
         std::for_each(std::next(p.second.begin()), p.second.end(), [&](const ValueFlow::Value& value) {
@@ -7213,6 +7338,11 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
         });
     }
 
+    if (args.size() > max) {
+        bail = true;
+        args.resize(max);
+    }
+
     for (const auto& arg:args) {
         if (arg.empty())
             continue;
@@ -7224,7 +7354,7 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
             continue;
         f(arg);
     }
-    return true;
+    return !bail;
 }
 
 static void valueFlowInjectParameter(TokenList* tokenlist,
@@ -7234,21 +7364,20 @@ static void valueFlowInjectParameter(TokenList* tokenlist,
                                      const Scope* functionScope,
                                      const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
 {
-    const bool r = productParams(vars, [&](const std::unordered_map<const Variable*, ValueFlow::Value>& arg) {
+    const bool r = productParams(&settings, vars, [&](const std::unordered_map<const Variable*, ValueFlow::Value>& arg) {
         MultiValueFlowAnalyzer a(arg, tokenlist, &settings, symboldatabase);
         valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, settings);
     });
     if (!r) {
         std::string fname = "<unknown>";
-        Function* f = functionScope->function;
-        if (f)
+        if (const Function* f = functionScope->function)
             fname = f->name();
         if (settings.debugwarnings)
             bailout(tokenlist, errorLogger, functionScope->bodyStart, "Too many argument passed to " + fname);
     }
 }
 
-static void valueFlowInjectParameter(TokenList* tokenlist,
+static void valueFlowInjectParameter(const TokenList* tokenlist,
                                      const Settings* settings,
                                      const Variable* arg,
                                      const Scope* functionScope,
@@ -7271,7 +7400,7 @@ static void valueFlowInjectParameter(TokenList* tokenlist,
                      settings);
 }
 
-static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowSwitchVariable(TokenList *tokenlist, const SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope &scope : symboldatabase->scopeList) {
         if (scope.type != Scope::ScopeType::eSwitch)
@@ -7365,7 +7494,7 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     }
     if (returnValue.find("arg") != std::string::npos && argValues.empty())
         return;
-    productParams(argValues, [&](const std::unordered_map<nonneg int, ValueFlow::Value>& arg) {
+    productParams(settings, argValues, [&](const std::unordered_map<nonneg int, ValueFlow::Value>& arg) {
         ValueFlow::Value value = evaluateLibraryFunction(arg, returnValue, settings);
         if (value.isUninitValue())
             return;
@@ -7414,7 +7543,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
         const Function* function = scope->function;
         if (!function)
             continue;
-        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
                 continue;
 
@@ -7489,7 +7618,7 @@ static void valueFlowSubFunction(TokenList* tokenlist, SymbolDatabase* symboldat
     }
 }
 
-static void valueFlowFunctionDefaultParameter(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowFunctionDefaultParameter(const TokenList* tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
 {
     if (!tokenlist->isCPP())
         return;
@@ -7517,9 +7646,45 @@ static void valueFlowFunctionDefaultParameter(TokenList* tokenlist, SymbolDataba
     }
 }
 
-static bool isKnown(const Token * tok)
+static const ValueFlow::Value* getKnownValueFromToken(const Token* tok)
 {
-    return tok && tok->hasKnownIntValue();
+    if (!tok)
+        return nullptr;
+    auto it = std::find_if(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+        return (v.isIntValue() || v.isContainerSizeValue() || v.isFloatValue()) && v.isKnown();
+    });
+    if (it == tok->values().end())
+        return nullptr;
+    return std::addressof(*it);
+}
+
+static const ValueFlow::Value* getKnownValueFromTokens(const std::vector<const Token*>& toks)
+{
+    if (toks.empty())
+        return nullptr;
+    const ValueFlow::Value* result = getKnownValueFromToken(toks.front());
+    if (!result)
+        return nullptr;
+    if (!std::all_of(std::next(toks.begin()), toks.end(), [&](const Token* tok) {
+        return std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+            return v.equalValue(*result) && v.valueKind == result->valueKind;
+        });
+    }))
+        return nullptr;
+    return result;
+}
+
+static void setFunctionReturnValue(const Function* f, Token* tok, ValueFlow::Value v, const Settings* settings)
+{
+    if (f->hasVirtualSpecifier()) {
+        if (v.isImpossible())
+            return;
+        v.setPossible();
+    } else if (!v.isImpossible()) {
+        v.setKnown();
+    }
+    v.errorPath.emplace_back(tok, "Calling function '" + f->name() + "' returns " + v.toString());
+    setTokenValue(tok, std::move(v), settings);
 }
 
 static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogger, const Settings* settings)
@@ -7542,34 +7707,20 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         if (tok->hasKnownValue())
             continue;
 
-        // Arguments..
-        std::vector<MathLib::bigint> parvalues;
-        if (tok->astOperand2()) {
-            const Token *partok = tok->astOperand2();
-            while (partok && partok->str() == "," && isKnown(partok->astOperand2()))
-                partok = partok->astOperand1();
-            if (!isKnown(partok))
-                continue;
-            parvalues.push_back(partok->values().front().intvalue);
-            partok = partok->astParent();
-            while (partok && partok->str() == ",") {
-                parvalues.push_back(partok->astOperand2()->values().front().intvalue);
-                partok = partok->astParent();
-            }
-            if (partok != tok)
-                continue;
-        }
+        std::vector<const Token*> returns = Function::findReturns(function);
+        if (returns.empty())
+            continue;
 
-        // Get scope and args of function
-        const Scope * const functionScope = function->functionScope;
-        if (!functionScope || !Token::simpleMatch(functionScope->bodyStart, "{ return")) {
-            if (functionScope && settings->debugwarnings && Token::findsimplematch(functionScope->bodyStart, "return", functionScope->bodyEnd))
-                bailout(tokenlist, errorLogger, tok, "function return; nontrivial function body");
+        if (const ValueFlow::Value* v = getKnownValueFromTokens(returns)) {
+            setFunctionReturnValue(function, tok, *v, settings);
             continue;
         }
 
+        // Arguments..
+        std::vector<const Token*> arguments = getArguments(tok);
+
         ProgramMemory programMemory;
-        for (std::size_t i = 0; i < parvalues.size(); ++i) {
+        for (std::size_t i = 0; i < arguments.size(); ++i) {
             const Variable * const arg = function->getArgumentVar(i);
             if (!arg) {
                 if (settings->debugwarnings)
@@ -7577,25 +7728,18 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 programMemory.clear();
                 break;
             }
-            programMemory.setIntValue(arg->nameToken(), parvalues[i]);
+            const ValueFlow::Value* v = getKnownValueFromToken(arguments[i]);
+            if (!v)
+                continue;
+            programMemory.setValue(arg->nameToken(), *v);
         }
-        if (programMemory.empty() && !parvalues.empty())
+        if (programMemory.empty() && !arguments.empty())
             continue;
-
-        // Determine return value of subfunction..
-        MathLib::bigint result = 0;
-        bool error = false;
-        execute(functionScope->bodyStart->next()->astOperand1(),
-                programMemory,
-                &result,
-                &error);
-        if (!error) {
-            ValueFlow::Value v(result);
-            if (function->hasVirtualSpecifier())
-                v.setPossible();
-            else
-                v.setKnown();
-            setTokenValue(tok, std::move(v), settings);
+        std::vector<ValueFlow::Value> values = execute(function->functionScope, programMemory, settings);
+        for (const ValueFlow::Value& v : values) {
+            if (v.isUninitValue())
+                continue;
+            setFunctionReturnValue(function, tok, v, settings);
         }
     }
 }
@@ -7644,6 +7788,166 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
     });
 }
 
+template<class Found, class Predicate>
+bool findTokenSkipDeadCodeImpl(const Library* library, Token* start, const Token* end, Predicate pred, Found found)
+{
+    for (Token* tok = start; precedes(tok, end); tok = tok->next()) {
+        if (pred(tok)) {
+            if (found(tok))
+                return true;
+        }
+        if (Token::simpleMatch(tok, "if (")) {
+            const Token* condTok = tok->next()->astOperand2();
+            if (!condTok)
+                continue;
+            if (!condTok->hasKnownIntValue())
+                continue;
+            if (!Token::simpleMatch(tok->linkAt(1), ") {"))
+                continue;
+            if (findTokenSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, found))
+                return true;
+            Token* thenStart = tok->linkAt(1)->next();
+            Token* elseStart = nullptr;
+            if (Token::simpleMatch(thenStart->link(), "} else {"))
+                elseStart = thenStart->link()->tokAt(2);
+
+            int r = condTok->values().front().intvalue;
+            if (r == 0) {
+                if (elseStart) {
+                    if (findTokenSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, found))
+                        return true;
+                    if (isReturnScope(elseStart->link(), library))
+                        return true;
+                    tok = elseStart->link();
+                } else {
+                    tok = thenStart->link();
+                }
+            } else {
+                if (findTokenSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, found))
+                    return true;
+                if (isReturnScope(thenStart->link(), library))
+                    return true;
+                tok = thenStart->link();
+            }
+        } else if (Token::Match(tok->astParent(), "&&|?|%oror%") && astIsLHS(tok) && tok->hasKnownIntValue()) {
+            int r = tok->values().front().intvalue;
+            Token* next = nullptr;
+            if ((r == 0 && Token::simpleMatch(tok->astParent(), "||")) ||
+                (r != 0 && Token::simpleMatch(tok->astParent(), "&&"))) {
+                next = nextAfterAstRightmostLeaf(tok->astParent());
+            } else if (Token::simpleMatch(tok->astParent(), "?")) {
+                Token* colon = tok->astParent()->astOperand2();
+                if (r == 0) {
+                    next = colon;
+                } else {
+                    if (findTokenSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found))
+                        return true;
+                    next = nextAfterAstRightmostLeaf(colon);
+                }
+            }
+            if (next)
+                tok = next;
+        } else if (Token::simpleMatch(tok, "} else {")) {
+            const Token* condTok = getCondTokFromEnd(tok);
+            if (!condTok)
+                continue;
+            if (!condTok->hasKnownIntValue())
+                continue;
+            if (isReturnScope(tok->link(), library))
+                return true;
+            int r = condTok->values().front().intvalue;
+            if (r != 0) {
+                tok = tok->linkAt(1);
+            }
+        } else if (Token::simpleMatch(tok, "[") && Token::Match(tok->link(), "] (|{")) {
+            Token* afterCapture = tok->link()->next();
+            if (Token::simpleMatch(afterCapture, "(") && afterCapture->link())
+                tok = afterCapture->link()->next();
+            else
+                tok = afterCapture;
+        }
+    }
+    return false;
+}
+
+template<class Predicate>
+std::vector<Token*> findTokensSkipDeadCode(const Library* library, Token* start, const Token* end, Predicate pred)
+{
+    std::vector<Token*> result;
+    findTokenSkipDeadCodeImpl(library, start, end, pred, [&](Token* tok) {
+        result.push_back(tok);
+        return false;
+    });
+    return result;
+}
+
+static std::vector<Token*> findAllUsages(const Variable* var,
+                                         Token* start, // cppcheck-suppress constParameterPointer // FP
+                                         const Library* library)
+{
+    // std::vector<Token*> result;
+    const Scope* scope = var->scope();
+    if (!scope)
+        return {};
+    return findTokensSkipDeadCode(library, start, scope->bodyEnd, [&](const Token* tok) {
+        return tok->varId() == var->declarationId();
+    });
+}
+
+static Token* findStartToken(const Variable* var, Token* start, const Library* library)
+{
+    std::vector<Token*> uses = findAllUsages(var, start, library);
+    if (uses.empty())
+        return start;
+    Token* first = uses.front();
+    if (Token::findmatch(start, "goto|asm|setjmp|longjmp", first))
+        return start;
+    if (first != var->nameToken()) {
+        // if this is lhs in assignment then set first to the first token in LHS expression
+        Token* temp = first;
+        while (Token::Match(temp->astParent(), "[&*(]") && precedes(temp->astParent(), temp))
+            temp = temp->astParent();
+        if (Token::simpleMatch(temp->astParent(), "=") && precedes(temp, temp->astParent()))
+            first = temp;
+    }
+    // If there is only one usage
+    if (uses.size() == 1)
+        return first->previous();
+    const Scope* scope = first->scope();
+    // If first usage is in variable scope
+    if (scope == var->scope()) {
+        bool isLoopExpression = false;
+        for (const Token* parent = first; parent; parent = parent->astParent()) {
+            if (Token::simpleMatch(parent->astParent(), ";") &&
+                Token::simpleMatch(parent->astParent()->astParent(), ";") &&
+                Token::simpleMatch(parent->astParent()->astParent()->astParent(), "(") &&
+                Token::simpleMatch(parent->astParent()->astParent()->astParent()->astOperand1(), "for (") &&
+                parent == parent->astParent()->astParent()->astParent()->astOperand2()->astOperand2()->astOperand2()) {
+                isLoopExpression = true;
+            }
+        }
+        return isLoopExpression ? start : first->previous();
+    }
+    // If all uses are in the same scope
+    if (std::all_of(uses.begin() + 1, uses.end(), [&](const Token* tok) {
+        return tok->scope() == scope;
+    }))
+        return first->previous();
+    // Compute the outer scope
+    while (scope && scope->nestedIn != var->scope())
+        scope = scope->nestedIn;
+    if (!scope)
+        return start;
+    Token* tok = const_cast<Token*>(scope->bodyStart);
+    if (!tok)
+        return start;
+    if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
+        tok = tok->linkAt(-2);
+    if (Token::simpleMatch(tok->previous(), ") {"))
+        return tok->linkAt(-1)->previous();
+    return tok;
+}
+
 static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDatabase*/, const Settings* settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
@@ -7670,6 +7974,8 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
 
         bool partial = false;
 
+        Token* start = findStartToken(var, tok->next(), &settings->library);
+
         std::map<Token*, ValueFlow::Value> partialReads;
         if (const Scope* scope = var->typeScope()) {
             if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
@@ -7685,7 +7991,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
                     continue;
                 }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), tok, uninitValue, tokenlist, settings);
-                valueFlowGenericForward(tok->next(), tok->scope()->bodyEnd, analyzer, *settings);
+                valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, *settings);
 
                 for (auto&& p : *analyzer.partialReads) {
                     Token* tok2 = p.first;
@@ -7715,7 +8021,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         if (partial)
             continue;
 
-        valueFlowForward(tok->next(), tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
+        valueFlowForward(start, tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
     }
 }
 
@@ -8140,8 +8446,8 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
             continue;
         if (!astIsContainer(tok))
             continue;
-        const Token* ftok = nullptr;
-        const Library::Container::Yield yield = findIteratorYield(tok, &ftok, settings);
+        Token* ftok = nullptr;
+        const Library::Container::Yield yield = findIteratorYield(tok, const_cast<const Token**>(&ftok), settings);
         if (ftok) {
             ValueFlow::Value v(0);
             v.setKnown();
@@ -8370,10 +8676,17 @@ static void valueFlowContainerSetTokValue(TokenList* tokenlist, const Settings* 
     }
 }
 
+static const Scope* getFunctionScope(const Scope* scope) {
+    while (scope && scope->type != Scope::ScopeType::eFunction)
+        scope = scope->nestedIn;
+    return scope;
+}
+
 static void valueFlowContainerSize(TokenList* tokenlist,
-                                   SymbolDatabase* symboldatabase,
+                                   const SymbolDatabase* symboldatabase,
                                    ErrorLogger* /*errorLogger*/,
-                                   const Settings* settings)
+                                   const Settings* settings,
+                                   const std::set<const Scope*>& skippedFunctions)
 {
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
@@ -8384,6 +8697,8 @@ static void valueFlowContainerSize(TokenList* tokenlist,
         if (!var->valueType() || !var->valueType()->container)
             continue;
         if (!astIsContainer(var->nameToken()))
+            continue;
+        if (skippedFunctions.count(getFunctionScope(var->scope())))
             continue;
 
         bool known = true;
@@ -8408,39 +8723,39 @@ static void valueFlowContainerSize(TokenList* tokenlist,
         }
         if (!staticSize && nonLocal)
             continue;
-        if (var->nameToken()->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+        Token* nameToken = const_cast<Token*>(var->nameToken());
+        if (nameToken->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;
         if (!staticSize) {
-            if (!Token::Match(var->nameToken(), "%name% ;") &&
-                !(Token::Match(var->nameToken(), "%name% {") &&
-                  Token::simpleMatch(var->nameToken()->next()->link(), "} ;")) &&
-                !Token::Match(var->nameToken(), "%name% ("))
+            if (!Token::Match(nameToken, "%name% ;") &&
+                !(Token::Match(nameToken, "%name% {") && Token::simpleMatch(nameToken->next()->link(), "} ;")) &&
+                !Token::Match(nameToken, "%name% ("))
                 continue;
         }
-        if (var->nameToken()->astTop() && Token::Match(var->nameToken()->astTop()->previous(), "for|while"))
+        if (nameToken->astTop() && Token::Match(nameToken->astTop()->previous(), "for|while"))
             known = !isVariableChanged(var, settings, true);
         std::vector<ValueFlow::Value> values{ValueFlow::Value{size}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
         if (known)
             values.back().setKnown();
         if (!staticSize) {
-            if (Token::simpleMatch(var->nameToken()->next(), "{")) {
-                Token* initList = var->nameToken()->next();
-                valueFlowContainerSetTokValue(tokenlist, settings, var->nameToken(), initList);
+            if (Token::simpleMatch(nameToken->next(), "{")) {
+                Token* initList = nameToken->next();
+                valueFlowContainerSetTokValue(tokenlist, settings, nameToken, initList);
                 values = getInitListSize(initList, var->valueType(), settings, known);
-            } else if (Token::simpleMatch(var->nameToken()->next(), "(")) {
-                const Token* constructorArgs = var->nameToken()->next();
+            } else if (Token::simpleMatch(nameToken->next(), "(")) {
+                const Token* constructorArgs = nameToken->next();
                 values = getContainerSizeFromConstructor(constructorArgs, var->valueType(), settings, known);
             }
         }
 
         if (constSize) {
-            valueFlowForwardConst(var->nameToken()->next(), var->scope()->bodyEnd, var, values, settings);
+            valueFlowForwardConst(nameToken->next(), var->scope()->bodyEnd, var, values, settings);
             continue;
         }
 
         for (const ValueFlow::Value& value : values) {
-            valueFlowForward(var->nameToken()->next(), var->nameToken(), value, tokenlist, settings);
+            valueFlowForward(nameToken->next(), var->nameToken(), value, tokenlist, settings);
         }
     }
 
@@ -8459,6 +8774,21 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                     value.setKnown();
                     valueFlowForward(containerTok->next(), containerTok, value, tokenlist, settings);
                 }
+            } else if (Token::Match(tok->previous(), ">|return (|{") && astIsContainer(tok)) {
+                std::vector<ValueFlow::Value> values;
+                if (Token::simpleMatch(tok, "{")) {
+                    values = getInitListSize(tok, tok->valueType(), settings, true);
+                    ValueFlow::Value value;
+                    value.valueType = ValueFlow::Value::ValueType::TOK;
+                    value.tokvalue = tok;
+                    value.setKnown();
+                    values.push_back(value);
+                } else if (Token::simpleMatch(tok, "(")) {
+                    const Token* constructorArgs = tok;
+                    values = getContainerSizeFromConstructor(constructorArgs, tok->valueType(), settings, true);
+                }
+                for (const ValueFlow::Value& value : values)
+                    setTokenValue(tok, value, settings);
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
                 Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)
@@ -8567,7 +8897,7 @@ struct ContainerConditionHandler : ConditionHandler {
     }
 };
 
-static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowDynamicBufferSize(const TokenList* tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
 {
     auto getBufferSizeFromAllocFunc = [&](const Token* funcTok) -> MathLib::bigint {
         MathLib::bigint sizeValue = -1;
@@ -8611,17 +8941,14 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             const Token* bracTok = nullptr, *typeTok = nullptr;
             if (newTok->astOperand1()->str() == "[")
                 bracTok = newTok->astOperand1();
-            else if (newTok->astOperand1()->str() == "(") {
+            else if (Token::Match(newTok->astOperand1(), "(|{")) {
                 if (newTok->astOperand1()->astOperand1() && newTok->astOperand1()->astOperand1()->str() == "[")
                     bracTok = newTok->astOperand1()->astOperand1();
                 else
                     typeTok = newTok->astOperand1()->astOperand1();
             }
-            else {
+            else
                 typeTok = newTok->astOperand1();
-                if (typeTok->str() == "{")
-                    typeTok = typeTok->astOperand1();
-            }
             if (bracTok && bracTok->astOperand2() && bracTok->astOperand2()->hasKnownIntValue())
                 numElem = bracTok->astOperand2()->getKnownIntValue();
             else if (Token::Match(typeTok, "%type%"))
@@ -8739,7 +9066,7 @@ static bool getMinMaxValues(const std::string &typestr, const Settings *settings
     return getMinMaxValues(&vt, settings->platform, minvalue, maxvalue);
 }
 
-static void valueFlowSafeFunctions(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowSafeFunctions(TokenList* tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
 {
     for (const Scope *functionScope : symboldatabase->functionScopes) {
         if (!functionScope->bodyStart)
@@ -8893,125 +9220,256 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const S
     return expr && expr->hasKnownValue() ? &expr->values().front() : nullptr;
 }
 
-static std::size_t getTotalValues(TokenList *tokenlist)
+struct ValueFlowState {
+    explicit ValueFlowState(TokenList* tokenlist = nullptr,
+                            SymbolDatabase* symboldatabase = nullptr,
+                            ErrorLogger* errorLogger = nullptr,
+                            const Settings* settings = nullptr)
+        : tokenlist(tokenlist), symboldatabase(symboldatabase), errorLogger(errorLogger), settings(settings)
+    {}
+
+    TokenList* tokenlist = nullptr;
+    SymbolDatabase* symboldatabase = nullptr;
+    ErrorLogger* errorLogger = nullptr;
+    const Settings* settings = nullptr;
+    std::set<const Scope*> skippedFunctions = {};
+};
+
+struct ValueFlowPass {
+    ValueFlowPass() = default;
+    ValueFlowPass(const ValueFlowPass&) = default;
+    // Name of pass
+    virtual const char* name() const = 0;
+    // Run the pass
+    virtual void run(const ValueFlowState& state) const = 0;
+    // Returns true if pass needs C++
+    virtual bool cpp() const = 0;
+    virtual ~ValueFlowPass() noexcept {}
+};
+
+struct ValueFlowPassRunner {
+    using Clock = std::chrono::steady_clock;
+    using TimePoint = std::chrono::time_point<Clock>;
+    explicit ValueFlowPassRunner(ValueFlowState state, TimerResultsIntf* timerResults = nullptr)
+        : state(std::move(state)), stop(TimePoint::max()), timerResults(timerResults)
+    {
+        setSkippedFunctions();
+        setStopTime();
+    }
+
+    bool run_once(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const
+    {
+        return std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
+            return run(pass);
+        });
+    }
+
+    bool run(std::initializer_list<ValuePtr<ValueFlowPass>> passes) const
+    {
+        std::size_t values = 0;
+        std::size_t n = state.settings->valueFlowMaxIterations;
+        while (n > 0 && values != getTotalValues()) {
+            values = getTotalValues();
+            if (std::any_of(passes.begin(), passes.end(), [&](const ValuePtr<ValueFlowPass>& pass) {
+                return run(pass);
+            }))
+                return true;
+            --n;
+        }
+        if (state.settings->debugwarnings) {
+            if (n == 0 && values != getTotalValues()) {
+                ErrorMessage::FileLocation loc;
+                loc.setfile(state.tokenlist->getFiles()[0]);
+                ErrorMessage errmsg({std::move(loc)},
+                                    emptyString,
+                                    Severity::debug,
+                                    "ValueFlow maximum iterations exceeded",
+                                    "valueFlowMaxIterations",
+                                    Certainty::normal);
+                state.errorLogger->reportErr(errmsg);
+            }
+        }
+        return false;
+    }
+
+    bool run(const ValuePtr<ValueFlowPass>& pass) const
+    {
+        auto start = Clock::now();
+        if (start > stop)
+            return true;
+        if (!state.tokenlist->isCPP() && pass->cpp())
+            return false;
+        if (timerResults) {
+            Timer t(pass->name(), state.settings->showtime, timerResults);
+            pass->run(state);
+        } else {
+            pass->run(state);
+        }
+        return false;
+    }
+
+    std::size_t getTotalValues() const
+    {
+        std::size_t n = 1;
+        for (Token* tok = state.tokenlist->front(); tok; tok = tok->next())
+            n += tok->values().size();
+        return n;
+    }
+
+    void setSkippedFunctions()
+    {
+        if (state.settings->performanceValueFlowMaxIfCount > 0) {
+            for (const Scope* functionScope : state.symboldatabase->functionScopes) {
+                int countIfScopes = 0;
+                std::vector<const Scope*> scopes{functionScope};
+                while (!scopes.empty()) {
+                    const Scope* s = scopes.back();
+                    scopes.pop_back();
+                    for (const Scope* s2 : s->nestedList) {
+                        scopes.emplace_back(s2);
+                        if (s2->type == Scope::ScopeType::eIf)
+                            ++countIfScopes;
+                    }
+                }
+                if (countIfScopes > state.settings->performanceValueFlowMaxIfCount) {
+                    state.skippedFunctions.emplace(functionScope);
+
+                    if (state.settings->severity.isEnabled(Severity::information)) {
+                        const std::string& functionName = functionScope->className;
+                        const std::list<ErrorMessage::FileLocation> callstack(
+                            1,
+                            ErrorMessage::FileLocation(functionScope->bodyStart, state.tokenlist));
+                        const ErrorMessage errmsg(callstack,
+                                                  state.tokenlist->getSourceFilePath(),
+                                                  Severity::information,
+                                                  "ValueFlow analysis is limited in " + functionName +
+                                                  ". Use --check-level=exhaustive if full analysis is wanted.",
+                                                  "checkLevelNormal",
+                                                  Certainty::normal);
+                        state.errorLogger->reportErr(errmsg);
+                    }
+                }
+            }
+        }
+    }
+
+    void setStopTime()
+    {
+        if (state.settings->performanceValueFlowMaxTime >= 0)
+            stop = Clock::now() + std::chrono::seconds{state.settings->performanceValueFlowMaxTime};
+    }
+
+    ValueFlowState state;
+    TimePoint stop;
+    TimerResultsIntf* timerResults;
+};
+
+template<class F>
+struct ValueFlowPassAdaptor : ValueFlowPass {
+    const char* mName = nullptr;
+    bool mCPP = false;
+    F mRun;
+    ValueFlowPassAdaptor(const char* pname, bool pcpp, F prun) : mName(pname), mCPP(pcpp), mRun(prun) {}
+    const char* name() const override {
+        return mName;
+    }
+    void run(const ValueFlowState& state) const override
+    {
+        mRun(state.tokenlist, state.symboldatabase, state.errorLogger, state.settings, state.skippedFunctions);
+    }
+    bool cpp() const override {
+        return mCPP;
+    }
+};
+
+template<class F>
+ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool cpp, F run)
 {
-    std::size_t n = 1;
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next())
-        n += tok->values().size();
-    return n;
+    return {name, cpp, run};
 }
 
-static std::uint64_t getValueFlowStopTime(const Settings* settings) {
-    if (settings->performanceValueFlowMaxTime >= 0)
-        return std::time(nullptr) + settings->performanceValueFlowMaxTime;
-    return ~0ULL;
-}
+#define VALUEFLOW_ADAPTOR(cpp, ...)                                                                                    \
+    makeValueFlowPassAdaptor(#__VA_ARGS__,                                                                             \
+                             cpp,                                                                                      \
+                             [](TokenList* tokenlist,                                                                  \
+                                SymbolDatabase* symboldatabase,                                                        \
+                                ErrorLogger* errorLogger,                                                              \
+                                const Settings* settings,                                                              \
+                                const std::set<const Scope*>& skippedFunctions) {                                      \
+        (void)tokenlist;                                                                      \
+        (void)symboldatabase;                                                                 \
+        (void)errorLogger;                                                                    \
+        (void)settings;                                                                       \
+        (void)skippedFunctions;                                                               \
+        __VA_ARGS__;                                                                          \
+    })
 
-void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+#define VFA(...) VALUEFLOW_ADAPTOR(false, __VA_ARGS__)
+#define VFA_CPP(...) VALUEFLOW_ADAPTOR(true, __VA_ARGS__)
+
+void ValueFlow::setValues(TokenList* tokenlist,
+                          SymbolDatabase* symboldatabase,
+                          ErrorLogger* errorLogger,
+                          const Settings* settings,
+                          TimerResultsIntf* timerResults)
 {
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next())
+    for (Token* tok = tokenlist->front(); tok; tok = tok->next())
         tok->clearValueFlow();
 
-    valueFlowEnumValue(symboldatabase, settings);
-    valueFlowNumber(tokenlist, settings);
-    valueFlowString(tokenlist, settings);
-    valueFlowArray(tokenlist, settings);
-    valueFlowUnknownFunctionReturn(tokenlist, settings);
-    valueFlowGlobalConstVar(tokenlist, settings);
-    valueFlowEnumValue(symboldatabase, settings);
-    valueFlowNumber(tokenlist, settings);
-    valueFlowGlobalStaticVar(tokenlist, settings);
-    valueFlowPointerAlias(tokenlist, settings);
-    valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
-    valueFlowSymbolic(tokenlist, symboldatabase, settings);
-    valueFlowBitAnd(tokenlist, settings);
-    valueFlowSameExpressions(tokenlist, settings);
-    valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, *settings);
+    ValueFlowPassRunner runner{ValueFlowState{tokenlist, symboldatabase, errorLogger, settings}, timerResults};
+    runner.run_once({
+        VFA(valueFlowEnumValue(symboldatabase, settings)),
+        VFA(valueFlowNumber(tokenlist, settings)),
+        VFA(valueFlowString(tokenlist, settings)),
+        VFA(valueFlowArray(tokenlist, settings)),
+        VFA(valueFlowUnknownFunctionReturn(tokenlist, settings)),
+        VFA(valueFlowGlobalConstVar(tokenlist, settings)),
+        VFA(valueFlowEnumValue(symboldatabase, settings)),
+        VFA(valueFlowNumber(tokenlist, settings)),
+        VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
+        VFA(valueFlowPointerAlias(tokenlist, settings)),
+        VFA(valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings)),
+        VFA(valueFlowSymbolic(tokenlist, symboldatabase, settings)),
+        VFA(valueFlowBitAnd(tokenlist, settings)),
+        VFA(valueFlowSameExpressions(tokenlist, settings)),
+        VFA(valueFlowConditionExpressions(tokenlist, symboldatabase, errorLogger, *settings)),
+    });
 
-    const std::uint64_t stopTime = getValueFlowStopTime(settings);
+    runner.run({
+        VFA(valueFlowImpossibleValues(tokenlist, settings)),
+        VFA(valueFlowSymbolicOperators(symboldatabase, settings)),
+        VFA(valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+        VFA(valueFlowSymbolicInfer(symboldatabase, settings)),
+        VFA(valueFlowArrayBool(tokenlist, settings)),
+        VFA(valueFlowArrayElement(tokenlist, settings)),
+        VFA(valueFlowRightShift(tokenlist, settings)),
+        VFA(valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+        VFA_CPP(valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings)),
+        VFA(valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+        VFA(valueFlowInferCondition(tokenlist, settings)),
+        VFA(valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings)),
+        VFA(valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings)),
+        VFA(valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, *settings)),
+        VFA(valueFlowFunctionReturn(tokenlist, errorLogger, settings)),
+        VFA(valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings)),
+        VFA(valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, settings)),
+        VFA(valueFlowUninit(tokenlist, symboldatabase, settings)),
+        VFA_CPP(valueFlowAfterMove(tokenlist, symboldatabase, settings)),
+        VFA_CPP(valueFlowSmartPointer(tokenlist, errorLogger, settings)),
+        VFA_CPP(valueFlowIterators(tokenlist, settings)),
+        VFA_CPP(
+            valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+        VFA_CPP(valueFlowIteratorInfer(tokenlist, settings)),
+        VFA_CPP(valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+        VFA_CPP(
+            valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings, skippedFunctions)),
+        VFA(valueFlowSafeFunctions(tokenlist, symboldatabase, settings)),
+    });
 
-    std::size_t values = 0;
-    std::size_t n = settings->valueFlowMaxIterations;
-    while (n > 0 && values != getTotalValues(tokenlist)) {
-        values = getTotalValues(tokenlist);
-
-        if (std::time(nullptr) < stopTime)
-            valueFlowImpossibleValues(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowSymbolicOperators(symboldatabase, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowCondition(SymbolicConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowSymbolicInfer(symboldatabase, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowArrayBool(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowArrayElement(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowRightShift(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowAfterAssign(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowAfterSwap(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowCondition(SimpleConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowInferCondition(tokenlist, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowSwitchVariable(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, *settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowFunctionReturn(tokenlist, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, settings);
-        if (std::time(nullptr) < stopTime)
-            valueFlowUninit(tokenlist, symboldatabase, settings);
-
-        if (tokenlist->isCPP()) {
-            if (std::time(nullptr) < stopTime)
-                valueFlowAfterMove(tokenlist, symboldatabase, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowSmartPointer(tokenlist, errorLogger, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowIterators(tokenlist, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowCondition(IteratorConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowIteratorInfer(tokenlist, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowContainerSize(tokenlist, symboldatabase, errorLogger, settings);
-            if (std::time(nullptr) < stopTime)
-                valueFlowCondition(ContainerConditionHandler{}, tokenlist, symboldatabase, errorLogger, settings);
-        }
-        if (std::time(nullptr) < stopTime)
-            valueFlowSafeFunctions(tokenlist, symboldatabase, settings);
-        n--;
-    }
-
-    if (settings->debugwarnings) {
-        if (n == 0 && values != getTotalValues(tokenlist)) {
-            ErrorMessage::FileLocation loc;
-            loc.setfile(tokenlist->getFiles()[0]);
-            ErrorMessage errmsg({std::move(loc)},
-                                emptyString,
-                                Severity::debug,
-                                "ValueFlow maximum iterations exceeded",
-                                "valueFlowMaxIterations",
-                                Certainty::normal);
-            errorLogger->reportErr(errmsg);
-        }
-    }
-
-    if (std::time(nullptr) < stopTime)
-        valueFlowDynamicBufferSize(tokenlist, symboldatabase, settings);
-
-    if (std::time(nullptr) < stopTime)
-        valueFlowDebug(tokenlist, errorLogger, settings);
+    runner.run_once({
+        VFA(valueFlowDynamicBufferSize(tokenlist, symboldatabase, settings)),
+        VFA(valueFlowDebug(tokenlist, errorLogger, settings)),
+    });
 }
 
 std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)

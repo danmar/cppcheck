@@ -33,20 +33,38 @@
 #include <list>
 #include <string>
 
+#include <QByteArray>
+#include <QChar>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QCoreApplication>
+#include <QDialogButtonBox>
 #include <QDir>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QFileInfoList>
+#include <QFlags>
+#include <QLabel>
+#include <QLineEdit>
+#include <QListWidget>
+#include <QListWidgetItem>
+#include <QMap>
+#include <QPushButton>
+#include <QRadioButton>
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QSettings>
+#include <QSize>
+#include <QSpinBox>
+#include <QVariant>
+#include <QtCore>
 
 static const char ADDON_MISRA[]   = "misra";
 static const char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
 static const char CODING_STANDARD_CERT_C[] = "cert-c-2016";
 static const char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
 static const char CODING_STANDARD_AUTOSAR[] = "autosar";
-
-class QModelIndex;
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -329,6 +347,7 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     mUI->mComboBoxPlatform->setCurrentText(projectFile->getPlatform());
     setSuppressions(projectFile->getSuppressions());
 
+    // TODO
     // Human knowledge..
     /*
        mUI->mListUnknownFunctionReturn->clear();
@@ -415,7 +434,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         projectFile->setPlatform(mUI->mComboBoxPlatform->currentText());
     else {
         const int i = mUI->mComboBoxPlatform->currentIndex();
-        if (i < numberOfBuiltinPlatforms)
+        if (i>=0 && i < numberOfBuiltinPlatforms)
             projectFile->setPlatform(cppcheck::Platform::toString(builtinPlatforms[i]));
         else
             projectFile->setPlatform(QString());
@@ -734,34 +753,8 @@ void ProjectFileDialog::setLibraries(const QStringList &libraries)
 
 void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &suppression)
 {
-    QString suppression_name;
-    static const char sep = QDir::separator().toLatin1();
-    bool found_relative = false;
-
-    // Replace relative file path in the suppression with the absolute one
-    if ((suppression.fileName.find('*') == std::string::npos) &&
-        (suppression.fileName.find(sep) == std::string::npos)) {
-        QFileInfo inf(mProjectFile->getFilename());
-        QString rootpath = inf.absolutePath();
-        if (QFile::exists(QString{"%1%2%3"}.arg(rootpath,
-                                                QDir::separator(),
-                                                QString::fromStdString(suppression.fileName)))) {
-            Suppressions::Suppression sup = suppression;
-            sup.fileName = rootpath.toLatin1().constData();
-            sup.fileName += sep;
-            sup.fileName += suppression.fileName;
-            mSuppressions += sup;
-            suppression_name = QString::fromStdString(sup.getText());
-            found_relative = true;
-        }
-    }
-
-    if (!found_relative) {
-        mSuppressions += suppression;
-        suppression_name = QString::fromStdString(suppression.getText());
-    }
-
-    mUI->mListSuppressions->addItem(suppression_name);
+    mSuppressions += suppression;
+    mUI->mListSuppressions->addItem(QString::fromStdString(suppression.getText()));
 }
 
 void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)

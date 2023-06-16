@@ -51,7 +51,11 @@ namespace tinyxml2 {
  * @brief Library definitions handling
  */
 class CPPCHECKLIB Library {
+    // TODO: get rid of this
     friend class TestSymbolDatabase; // For testing only
+    friend class TestSingleExecutorBase; // For testing only
+    friend class TestThreadExecutor; // For testing only
+    friend class TestProcessExecutor; // For testing only
 
 public:
     Library() = default;
@@ -236,10 +240,11 @@ public:
         struct Function {
             Action action;
             Yield yield;
+            std::string returnType;
         };
         struct RangeItemRecordTypeItem {
             std::string name;
-            int templateParameter;
+            int templateParameter; // TODO: use this
         };
         std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
@@ -269,13 +274,18 @@ public:
             return Yield::NO_YIELD;
         }
 
+        const std::string& getReturnType(const std::string& function) const {
+            auto i = functions.find(function);
+            return (i != functions.end()) ? i->second.returnType : emptyString;
+        }
+
         static Yield yieldFrom(const std::string& yieldName);
         static Action actionFrom(const std::string& actionName);
     };
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart) const;
     const Container* detectIterator(const Token* typeStart) const;
-    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
+    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr, bool withoutStd = false) const;
 
     struct ArgumentChecks {
         bool notbool{};
@@ -363,15 +373,6 @@ public:
         return arg ? arg->valid : emptyString;
     }
 
-    struct InvalidArgValue {
-        enum class Type {le, lt, eq, ge, gt, range} type;
-        std::string op1;
-        std::string op2;
-        bool isInt() const {
-            return MathLib::isInt(op1);
-        }
-    };
-
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
         return arg && arg->iteratorInfo.it ? &arg->iteratorInfo : nullptr;
@@ -450,7 +451,7 @@ public:
 
     std::unordered_map<std::string, SmartPointer> smartPointers;
     bool isSmartPointer(const Token *tok) const;
-    const SmartPointer* detectSmartPointer(const Token* tok) const;
+    const SmartPointer* detectSmartPointer(const Token* tok, bool withoutStd = false) const;
 
     struct PodType {
         unsigned int size;
@@ -518,6 +519,7 @@ public:
                            checkFiniteLifetime, // (unusedvar) object has side effects, but immediate destruction is wrong
     };
     TypeCheck getTypeCheck(std::string check, std::string typeName) const;
+    bool hasAnyTypeCheck(const std::string& typeName) const;
 
 private:
     // load a <function> xml node
@@ -613,7 +615,7 @@ private:
     }
 
     enum DetectContainer { ContainerOnly, IteratorOnly, Both };
-    const Library::Container* detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator = nullptr) const;
+    const Library::Container* detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator = nullptr, bool withoutStd = false) const;
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);

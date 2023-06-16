@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      # TODO: files are cached but are still cache misses on platforms other than ubuntu-22.04
+      # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
@@ -45,13 +45,13 @@ jobs:
       - name: CMake build on ubuntu (with GUI / system tinyxml2)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: CMake build on macos (with GUI / system tinyxml2)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
       - name: Run CMake test (system tinyxml2)
@@ -68,7 +68,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     env:
-      # TODO: files are cached but are still cache misses
+      # TODO: figure out why there are cache misses with PCH enabled
       CCACHE_SLOPPINESS: pch_defines,time_macros
 
     steps:
@@ -95,13 +95,13 @@ jobs:
       - name: CMake build on ubuntu (with GUI)
         if: contains(matrix.os, 'ubuntu')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output -- -j$(nproc)
 
       - name: CMake build on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
-          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
           cmake --build cmake.output -- -j$(nproc)
 
       - name: Run CMake test
@@ -111,7 +111,7 @@ jobs:
       - name: Run CTest
         run: |
           pushd cmake.output
-          ctest -j$(nproc)
+          ctest --output-on-failure -j$(nproc)
 
   build_uchar:
 
@@ -378,9 +378,9 @@ jobs:
       # TODO: move to scriptcheck.yml so these are tested with all Python versions?
       - name: Test addons
         run: |
-          ./cppcheck --addon=threadsafety addons/test/threadsafety
-          ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
-          ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety addons/test/threadsafety
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety --std=c++03 addons/test/threadsafety
+          ./cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
           pushd addons/test
           # We'll force C89 standard to enable an additional verification for
           # rules 5.4 and 5.5 which have standard-dependent options.
@@ -393,7 +393,7 @@ jobs:
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
           python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
-          ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
+          ../../cppcheck --addon=misra --enable=style --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
           ../../cppcheck --dump misc-test.cpp 
           python3 ../misc.py -verify misc-test.cpp.dump
           ../../cppcheck --dump naming_test.c 
@@ -407,6 +407,12 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         run: |
           ./cppcheck --addon=misra addons/test/misra/crash1.c | ( ! grep 'Bailing out from checking' )
+
+      - name: Build democlient
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          warnings="-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar"
+          g++ $warnings -c -Ilib -Iexternals/tinyxml2 democlient/democlient.cpp
 
   selfcheck:
     needs: build # wait for all tests to be successful first
@@ -446,7 +452,7 @@ jobs:
 
       - name: Self check
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
           ec=0
           
           # early exit

@@ -41,7 +41,6 @@
 #include <initializer_list>
 #include <iterator>
 #include <list>
-#include <memory>
 #include <set>
 #include <type_traits>
 #include <unordered_map>
@@ -312,11 +311,11 @@ bool astIsRangeBasedForDecl(const Token* tok)
     return Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "(");
 }
 
-std::string astCanonicalType(const Token *expr)
+std::string astCanonicalType(const Token *expr, bool pointedToType)
 {
     if (!expr)
         return "";
-    std::pair<const Token*, const Token*> decl = Token::typeDecl(expr, /*pointedToType*/ true);
+    std::pair<const Token*, const Token*> decl = Token::typeDecl(expr, pointedToType);
     if (decl.first && decl.second) {
         std::string ret;
         for (const Token *type = decl.first; Token::Match(type,"%name%|::") && type != decl.second; type = type->next()) {
@@ -2347,7 +2346,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     const Token * const tok1 = tok;
 
     // address of variable
-    if (tok->astParent() && tok->astParent()->isUnaryOp("&"))
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+    if (addressOf)
         indirect++;
 
     int argnr;
@@ -2407,12 +2407,11 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
             continue;
         conclusive = true;
         if (indirect > 0) {
-            if (!arg->isConst() && arg->isPointer())
+            if (arg->isPointer() && !(arg->valueType() && arg->valueType()->isConst(indirect)))
                 return true;
-            // If const is applied to the pointer, then the value can still be modified
-            if (Token::simpleMatch(arg->typeEndToken(), "* const"))
+            if (indirect > 1 && addressOf && arg->isPointer() && (!arg->valueType() || !arg->valueType()->isConst(indirect-1)))
                 return true;
-            if (!arg->isPointer())
+            if (arg->isArray() || (!arg->isPointer() && (!arg->valueType() || arg->valueType()->type == ValueType::UNKNOWN_TYPE)))
                 return true;
         }
         if (!arg->isConst() && arg->isReference())
@@ -2436,7 +2435,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     int derefs = 0;
     while (Token::simpleMatch(tok2->astParent(), "*") ||
            (Token::simpleMatch(tok2->astParent(), ".") && !Token::simpleMatch(tok2->astParent()->astParent(), "(")) ||
-           (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && !tok2->astParent()->astOperand2() && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->") ||
+           (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->") ||
            (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1())) {
         if (tok2->astParent() && (tok2->astParent()->isUnaryOp("*") || (astIsLHS(tok2) && tok2->astParent()->originalName() == "->")))
             derefs++;
@@ -2445,6 +2444,14 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         if (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->")
             tok2 = tok2->astParent();
         tok2 = tok2->astParent();
+    }
+
+    if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
+        const Token* parent = tok2->astParent();
+        while (parent->astParent() && parent->astParent()->isCast())
+            parent = parent->astParent();
+        if (parent->astParent() && parent->astParent()->isUnaryOp("*"))
+            tok2 = parent->astParent();
     }
 
     while ((Token::simpleMatch(tok2, ":") && Token::simpleMatch(tok2->astParent(), "?")) ||
@@ -2477,6 +2484,18 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         }
     }
 
+    const ValueType* vt = tok->variable() ? tok->variable()->valueType() : tok->valueType();
+
+    // Check addressof
+    if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
+        if (isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1))
+            return true;
+    } else {
+        // If its already const then it cant be modified
+        if (vt && vt->isConst(indirect))
+            return false;
+    }
+
     if (cpp && Token::Match(tok2->astParent(), ">>|&") && astIsRHS(tok2) && isLikelyStreamRead(cpp, tok2->astParent()))
         return true;
 
@@ -2484,22 +2503,15 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         return true;
 
     // Member function call
-    if (tok->variable() && Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) && tok2->astParent()->astOperand1() == tok2) {
-        const Variable * var = tok->variable();
+    if (Token::Match(tok2->astParent(), ". %name%") && isFunctionCall(tok2->astParent()->next()) &&
+        tok2->astParent()->astOperand1() == tok2) {
         // Member function cannot change what `this` points to
         if (indirect == 0 && astIsPointer(tok))
             return false;
-        bool isConst = var && var->isConst();
-        if (!isConst) {
-            const ValueType * valueType = var->valueType();
-            isConst = (valueType && valueType->pointer == 1 && valueType->constness == 1);
-        }
-        if (isConst)
-            return false;
 
         const Token *ftok = tok->tokAt(2);
-        if (astIsContainer(tok) && tok->valueType() && tok->valueType()->container) {
-            const Library::Container* c = tok->valueType()->container;
+        if (astIsContainer(tok) && vt && vt->container) {
+            const Library::Container* c = vt->container;
             const Library::Container::Action action = c->getAction(ftok->str());
             if (contains({Library::Container::Action::INSERT,
                           Library::Container::Action::ERASE,
@@ -2529,14 +2541,25 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
                 return false;
             }
         }
-        if (settings)
-            return !settings->library.isFunctionConst(ftok);
+        if ((settings && settings->library.isFunctionConst(ftok)) || (astIsSmartPointer(tok) && ftok->str() == "get")) // TODO: replace with action/yield?
+            return false;
 
         const Function * fun = ftok->function();
         if (!fun)
             return true;
         return !fun->isConst();
     }
+
+    // Member pointer
+    if (Token::Match(tok2->astParent(), ". * ( & %name% ::")) {
+        const Token* ftok = tok2->astParent()->linkAt(2)->previous();
+        // TODO: Check for pointer to member variable
+        if (!ftok->function() || !ftok->function()->isConst())
+            return true;
+    }
+
+    if (Token::simpleMatch(tok2, "[") && astIsContainer(tok) && vt && vt->container && vt->container->stdAssociativeLike)
+        return true;
 
     const Token *ftok = tok2;
     while (ftok && (!Token::Match(ftok, "[({]") || ftok->isCast()))
@@ -2619,7 +2642,7 @@ bool isVariableChanged(const Token *start, const Token *end, int indirect, const
 
 const Token* findExpression(const Token* start, const nonneg int exprid)
 {
-    Function * f = Scope::nestedInFunction(start->scope());
+    const Function* f = Scope::nestedInFunction(start->scope());
     if (!f)
         return nullptr;
     const Scope* scope = f->functionScope;
@@ -2675,7 +2698,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
             aliased = isAliasOf(tok, expr);
         if (!aliased)
             return false;
-        if (isVariableChanged(tok, 1, settings, cpp, depth))
+        if (isVariableChanged(tok, indirect + 1, settings, cpp, depth))
             return true;
         // TODO: Try to traverse the lambda function
         if (Token::Match(tok, "%var% ("))
@@ -2935,7 +2958,24 @@ const Token *findLambdaStartToken(const Token *last)
 template<class T>
 T* findLambdaEndTokenGeneric(T* first)
 {
+    auto maybeLambda = [](T* tok) -> bool {
+        while (Token::Match(tok, "*|%name%|::|>")) {
+            if (tok->link())
+                tok = tok->link()->previous();
+            else {
+                if (tok->str() == ">")
+                    return true;
+                if (tok->str() == "new")
+                    return false;
+                tok = tok->previous();
+            }
+        }
+        return true;
+    };
+
     if (!first || first->str() != "[")
+        return nullptr;
+    if (!maybeLambda(first->previous()))
         return nullptr;
     if (!Token::Match(first->link(), "] (|{"))
         return nullptr;

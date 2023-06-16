@@ -27,11 +27,22 @@
 
 #include <string>
 
+#include <QCheckBox>
+#include <QComboBox>
 #include <QFile>
 #include <QFileDialog>
+#include <QFlags>
+#include <QIODevice>
+#include <QLineEdit>
+#include <QList>
+#include <QListWidget>
+#include <QListWidgetItem>
 #include <QMessageBox>
+#include <QPlainTextEdit>
+#include <QPushButton>
 #include <QRegularExpression>
 #include <QTextStream>
+#include <Qt>
 
 class QWidget;
 
@@ -263,7 +274,7 @@ void LibraryDialog::sortFunctions(bool sort)
         mUi->functions->sortItems();
     } else {
         mIgnoreChanges = true;
-        CppcheckLibraryData::Function *selfunction = currentFunction();
+        const CppcheckLibraryData::Function* selfunction = currentFunction();
         mUi->functions->clear();
         for (CppcheckLibraryData::Function &function : mData.functions) {
             mUi->functions->addItem(new FunctionListItem(mUi->functions,

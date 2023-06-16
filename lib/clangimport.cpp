@@ -501,11 +501,12 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
 {
     for (const std::string &ext: mExtTokens) {
         if (ext.compare(0, 5, "<col:") == 0)
-            col = std::atoi(ext.substr(5).c_str());
+            col = strToInt<int>(ext.substr(5, ext.find_first_of(",>", 5) - 5));
         else if (ext.compare(0, 6, "<line:") == 0) {
-            line = std::atoi(ext.substr(6).c_str());
-            if (ext.find(", col:") != std::string::npos)
-                col = std::atoi(ext.c_str() + ext.find(", col:") + 6);
+            line = strToInt<int>(ext.substr(6, ext.find_first_of(":,>", 6) - 6));
+            const auto pos = ext.find(", col:");
+            if (pos != std::string::npos)
+                col = strToInt<int>(ext.substr(pos+6, ext.find_first_of(":,>", pos+6) - (pos+6)));
         } else if (ext[0] == '<') {
             const std::string::size_type colon = ext.find(':');
             if (colon != std::string::npos) {
@@ -513,7 +514,7 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
                 const std::string::size_type sep1 = windowsPath ? ext.find(':', 4) : colon;
                 const std::string::size_type sep2 = ext.find(':', sep1 + 1);
                 file = tokenList->appendFileIfNew(ext.substr(1, sep1 - 1));
-                line = MathLib::toLongNumber(ext.substr(sep1 + 1, sep2 - sep1 - 1));
+                line = strToInt<int>(ext.substr(sep1 + 1, sep2 - sep1 - 1));
             }
         }
     }
@@ -1148,10 +1149,10 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == NamespaceDecl) {
         if (children.empty())
             return nullptr;
-        Token *defToken = addtoken(tokenList, "namespace");
+        const Token *defToken = addtoken(tokenList, "namespace");
         const std::string &s = mExtTokens[mExtTokens.size() - 2];
-        Token *nameToken = (s.compare(0,4,"col:")==0 || s.compare(0,5,"line:")==0) ?
-                           addtoken(tokenList, mExtTokens.back()) : nullptr;
+        const Token* nameToken = (s.compare(0, 4, "col:") == 0 || s.compare(0, 5, "line:") == 0) ?
+                                 addtoken(tokenList, mExtTokens.back()) : nullptr;
         Scope *scope = createScope(tokenList, Scope::ScopeType::eNamespace, children, defToken);
         if (nameToken)
             scope->className = nameToken->str();
@@ -1522,7 +1523,7 @@ static void setTypes(TokenList *tokenList)
     }
 }
 
-static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
+static void setValues(const Tokenizer *tokenizer, const SymbolDatabase *symbolDatabase)
 {
     const Settings * const settings = tokenizer->getSettings();
 
@@ -1551,7 +1552,7 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
             for (const Token *arrtok = tok->linkAt(1)->previous(); arrtok; arrtok = arrtok->previous()) {
                 const std::string &a = arrtok->str();
                 if (a.size() > 2 && a[0] == '[' && a.back() == ']')
-                    mul *= std::atoi(a.substr(1).c_str());
+                    mul *= strToInt<long long>(a.substr(1));
                 else
                     break;
             }

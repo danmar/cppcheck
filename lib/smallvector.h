@@ -41,6 +41,17 @@ struct TaggedAllocator : std::allocator<T>
     TaggedAllocator(Ts&&... ts)
         : std::allocator<T>(std::forward<Ts>(ts)...)
     {}
+
+    template<class U>
+    // cppcheck-suppress noExplicitConstructor
+    // NOLINTNEXTLINE(google-explicit-constructor)
+    TaggedAllocator(const TaggedAllocator<U, N> /*unused*/) {}
+
+    template<class U>
+    struct rebind
+    {
+        using other = TaggedAllocator<U, N>;
+    };
 };
 
 template<typename T, std::size_t N = DefaultSmallVectorSize>

@@ -285,7 +285,7 @@ MathLib::value MathLib::value::shiftRight(const MathLib::value &v) const
     return ret;
 }
 
-
+// TODO: remove handling of non-literal stuff
 MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
@@ -364,6 +364,7 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
     });
 }
 
+// TODO: remove handling of non-literal stuff
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:
@@ -544,7 +545,7 @@ bool MathLib::isDecimalFloat(const std::string &str)
     if (str.empty())
         return false;
     enum class State {
-        START, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L
+        START, BASE_DIGITS1, LEADING_DECIMAL, TRAILING_DECIMAL, BASE_DIGITS2, E, MANTISSA_PLUSMINUS, MANTISSA_DIGITS, SUFFIX_F, SUFFIX_L, SUFFIX_LITERAL_LEADER, SUFFIX_LITERAL
     } state = State::START;
     std::string::const_iterator it = str.cbegin();
     if ('+' == *it || '-' == *it)
@@ -580,6 +581,8 @@ bool MathLib::isDecimalFloat(const std::string &str)
                 state = State::SUFFIX_F;
             else if (*it=='l' || *it=='L')
                 state = State::SUFFIX_L;
+            else if (*it == '_')
+                state = State::SUFFIX_LITERAL_LEADER;
             else if (std::isdigit(static_cast<unsigned char>(*it)))
                 state = State::BASE_DIGITS2;
             else
@@ -592,6 +595,8 @@ bool MathLib::isDecimalFloat(const std::string &str)
                 state = State::SUFFIX_F;
             else if (*it=='l' || *it=='L')
                 state = State::SUFFIX_L;
+            else if (*it == '_')
+                state = State::SUFFIX_LITERAL_LEADER;
             else if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             break;
@@ -617,13 +622,18 @@ bool MathLib::isDecimalFloat(const std::string &str)
             else if (!std::isdigit(static_cast<unsigned char>(*it)))
                 return false;
             break;
+        // Ensure at least one post _ char for user defined literals
+        case State::SUFFIX_LITERAL:
+        case State::SUFFIX_LITERAL_LEADER:
+            state = State::SUFFIX_LITERAL;
+            break;
         case State::SUFFIX_F:
             return false;
         case State::SUFFIX_L:
             return false;
         }
     }
-    return (state==State::BASE_DIGITS2 || state==State::MANTISSA_DIGITS || state==State::TRAILING_DECIMAL || state==State::SUFFIX_F || state==State::SUFFIX_L);
+    return (state==State::BASE_DIGITS2 || state==State::MANTISSA_DIGITS || state==State::TRAILING_DECIMAL || state==State::SUFFIX_F || state==State::SUFFIX_L || (state==State::SUFFIX_LITERAL));
 }
 
 bool MathLib::isNegative(const std::string &str)
@@ -642,7 +652,7 @@ bool MathLib::isPositive(const std::string &str)
 
 static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::const_iterator end, bool supportMicrosoftExtensions=true)
 {
-    enum class Status { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64 } state = Status::START;
+    enum class Status { START, SUFFIX_U, SUFFIX_UL, SUFFIX_ULL, SUFFIX_UZ, SUFFIX_L, SUFFIX_LU, SUFFIX_LL, SUFFIX_LLU, SUFFIX_I, SUFFIX_I6, SUFFIX_I64, SUFFIX_UI, SUFFIX_UI6, SUFFIX_UI64, SUFFIX_Z, SUFFIX_LITERAL_LEADER, SUFFIX_LITERAL } state = Status::START;
     for (; it != end; ++it) {
         switch (state) {
         case Status::START:
@@ -650,14 +660,20 @@ static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::
                 state = Status::SUFFIX_U;
             else if (*it == 'l' || *it == 'L')
                 state = Status::SUFFIX_L;
+            else if (*it == 'z' || *it == 'Z')
+                state = Status::SUFFIX_Z;
             else if (supportMicrosoftExtensions && (*it == 'i' || *it == 'I'))
                 state = Status::SUFFIX_I;
+            else if (*it == '_')
+                state = Status::SUFFIX_LITERAL_LEADER;
             else
                 return false;
             break;
         case Status::SUFFIX_U:
             if (*it == 'l' || *it == 'L')
                 state = Status::SUFFIX_UL; // UL
+            else if (*it == 'z' || *it == 'Z')
+                state = Status::SUFFIX_UZ; // UZ
             else if (supportMicrosoftExtensions && (*it == 'i' || *it == 'I'))
                 state = Status::SUFFIX_UI;
             else
@@ -709,19 +725,33 @@ static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::
             else
                 return false;
             break;
+        case Status::SUFFIX_Z:
+            if (*it == 'u' || *it == 'U')
+                state = Status::SUFFIX_UZ;
+            else
+                return false;
+            break;
+        // Ensure at least one post _ char for user defined literals
+        case Status::SUFFIX_LITERAL:
+        case Status::SUFFIX_LITERAL_LEADER:
+            state = Status::SUFFIX_LITERAL;
+            break;
         default:
             return false;
         }
     }
     return ((state == Status::SUFFIX_U) ||
             (state == Status::SUFFIX_L) ||
+            (state == Status::SUFFIX_Z) ||
             (state == Status::SUFFIX_UL) ||
+            (state == Status::SUFFIX_UZ) ||
             (state == Status::SUFFIX_LU) ||
             (state == Status::SUFFIX_LL) ||
             (state == Status::SUFFIX_ULL) ||
             (state == Status::SUFFIX_LLU) ||
             (state == Status::SUFFIX_I64) ||
-            (state == Status::SUFFIX_UI64));
+            (state == Status::SUFFIX_UI64) ||
+            (state == Status::SUFFIX_LITERAL));
 }
 
 // cppcheck-suppress unusedFunction

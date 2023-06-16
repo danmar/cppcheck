@@ -36,6 +36,7 @@
 #include <istream>
 #include <iterator>
 #include <map>
+#include <memory>
 #include <numeric>
 #include <string_view>
 #include <unordered_map>
@@ -1795,7 +1796,6 @@ void uninitvar_fread(void)
 
 void uninitvar_free(void)
 {
-    // cppcheck-suppress unassignedVariable
     void *block;
     // cppcheck-suppress uninitvar
     std::free(block);
@@ -4236,7 +4236,7 @@ void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwst
     testwstr.compare(L"wtest");
 }
 
-// cppcheck-suppress constParameter
+// cppcheck-suppress constParameterReference
 void ignoredReturnValue_container_access(std::string& s, std::string_view& sv, std::vector<int>& v)
 {
     // cppcheck-suppress ignoredReturnValue
@@ -4489,6 +4489,7 @@ void getline()
     in.close();
 }
 
+// TODO cppcheck-suppress passedByValue
 void stream_write(std::ofstream& s, std::vector<char> v) {
     if (v.empty()) {}
     s.write(v.data(), v.size());
@@ -4634,18 +4635,26 @@ void stdspan()
     // cppcheck-suppress unreadVariable
     std::span spn2 = spn;
 
+    //cppcheck-suppress ignoredReturnValue
     spn.begin();
+    //cppcheck-suppress ignoredReturnValue
     spn.end();
+    //cppcheck-suppress ignoredReturnValue
     spn.rbegin();
-    spn.end();
 
+    //cppcheck-suppress ignoredReturnValue
     spn.front();
+    //cppcheck-suppress ignoredReturnValue
     spn.back();
     //cppcheck-suppress constStatement
     spn[0];
+    //cppcheck-suppress ignoredReturnValue
     spn.data();
+    //cppcheck-suppress ignoredReturnValue
     spn.size();
+    //cppcheck-suppress ignoredReturnValue
     spn.size_bytes();
+    //cppcheck-suppress ignoredReturnValue
     spn.empty();
     //cppcheck-suppress ignoredReturnValue
     spn.first(2);
@@ -4704,4 +4713,45 @@ void beginEnd()
     std::cend(arr);
     //cppcheck-suppress ignoredReturnValue
     std::crend(arr);
+}
+
+void smartPtr_get()
+{
+    std::unique_ptr<int> p;
+    //cppcheck-suppress ignoredReturnValue
+    p.get();
+    //cppcheck-suppress nullPointer
+    *p = 1;
+}
+
+void smartPtr_get2(std::vector<std::unique_ptr<int>>& v)
+{
+    for (auto& u : v) {
+        int* p = u.get();
+        *p = 0;
+    }
+}
+
+void smartPtr_reset()
+{
+    std::unique_ptr<int> p(new int());
+    p.reset(nullptr);
+    //cppcheck-suppress nullPointer
+    *p = 1;
+}
+
+void smartPtr_release()
+{
+    std::unique_ptr<int> p{ new int() };
+    //cppcheck-suppress ignoredReturnValue
+    p.release();
+    //cppcheck-suppress nullPointer
+    *p = 1;
+}
+
+void std_vector_data_arithmetic()
+{
+    std::vector<char> buf;
+    buf.resize(1);
+    memcpy(buf.data() + 0, "", 1);
 }

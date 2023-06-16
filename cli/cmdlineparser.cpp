@@ -21,6 +21,7 @@
 #include "check.h"
 #include "config.h"
 #include "cppcheckexecutor.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "filelister.h"
 #include "importproject.h"
@@ -113,7 +114,7 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>& se
     return true;
 }
 
-CmdLineParser::CmdLineParser(Settings &settings)
+CmdLineParser::CmdLineParser(Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail)
     : mSettings(settings)
 {}
 
@@ -142,15 +143,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool def = false;
     bool maxconfigs = false;
 
-    mSettings.exename = argv[0];
-#ifdef __linux__
-    // Executing cppcheck in PATH. argv[0] does not contain the path.
-    if (mSettings.exename.find_first_of("/\\") == std::string::npos) {
-        char buf[PATH_MAX] = {0};
-        if (FileLister::fileExists("/proc/self/exe") && readlink("/proc/self/exe", buf, sizeof(buf)-1) > 0)
-            mSettings.exename = buf;
-    }
-#endif
+    mSettings.exename = Path::getCurrentExecutablePath(argv[0]);
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
@@ -250,13 +243,22 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings.checkConfiguration = true;
 
+            // Check code exhaustively
+            else if (std::strcmp(argv[i], "--check-level=exhaustive") == 0)
+                mSettings.setCheckLevelExhaustive();
+
+            // Check code with normal analysis
+            else if (std::strcmp(argv[i], "--check-level=normal") == 0)
+                mSettings.setCheckLevelNormal();
+
             // Check library definitions
             else if (std::strcmp(argv[i], "--check-library") == 0) {
                 mSettings.checkLibrary = true;
             }
 
             else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
-                mSettings.checksMaxTime = std::atoi(argv[i] + 18);
+                if (!parseNumberArg(argv[i], 18, mSettings.checksMaxTime))
+                    return false;
             }
 
             else if (std::strcmp(argv[i], "--clang") == 0) {
@@ -282,6 +284,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
+                // TODO: bail out when the folder does not exist? will silently do nothing
                 mSettings.buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(mSettings.buildDir, '/'))
                     mSettings.buildDir.pop_back();
@@ -361,12 +364,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // --error-exitcode=1
             else if (std::strncmp(argv[i], "--error-exitcode=", 17) == 0) {
-                const std::string temp = argv[i]+17;
-                std::istringstream iss(temp);
-                if (!(iss >> mSettings.exitCode)) {
-                    printError("argument must be an integer. Try something like '--error-exitcode=1'.");
+                if (!parseNumberArg(argv[i], 17, mSettings.exitCode))
                     return false;
-                }
             }
 
             // Exception handling inside cppcheck client
@@ -395,7 +394,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("couldn't open the file: \"" + filename + "\".");
                     return false;
                 }
-                const std::string errmsg(mSettings.nofail.parseFile(f));
+                const std::string errmsg(mSuppressionsNoFail.parseFile(f));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -501,18 +500,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else
                     numberString = argv[i]+2;
 
-                std::istringstream iss(numberString);
-                if (!(iss >> mSettings.jobs)) {
-                    printError("argument to '-j' is not a number.");
+                unsigned int tmp;
+                std::string err;
+                if (!strToInt(numberString, tmp, &err)) {
+                    printError("argument to '-j' is not valid - " +  err + ".");
                     return false;
                 }
-
-                if (mSettings.jobs > 10000) {
+                if (tmp > 10000) {
                     // This limit is here just to catch typos. If someone has
                     // need for more jobs, this value should be increased.
                     printError("argument for '-j' is allowed to be 10000 at max.");
                     return false;
                 }
+                mSettings.jobs = tmp;
             }
 
 #ifdef THREADING_MODEL_FORK
@@ -534,11 +534,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else
                     numberString = argv[i]+2;
 
-                std::istringstream iss(numberString);
-                if (!(iss >> mSettings.loadAverage)) {
-                    printError("argument to '-l' is not a number.");
+                int tmp;
+                std::string err;
+                if (!strToInt(numberString, tmp, &err)) {
+                    printError("argument to '-l' is not valid - " + err + ".");
                     return false;
                 }
+                mSettings.loadAverage = tmp;
             }
 #endif
 
@@ -573,25 +575,24 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Set maximum number of #ifdef configurations to check
             else if (std::strncmp(argv[i], "--max-configs=", 14) == 0) {
-                mSettings.force = false;
-
-                std::istringstream iss(14+argv[i]);
-                if (!(iss >> mSettings.maxConfigs)) {
-                    printError("argument to '--max-configs=' is not a number.");
+                int tmp;
+                if (!parseNumberArg(argv[i], 14, tmp))
                     return false;
-                }
-
-                if (mSettings.maxConfigs < 1) {
+                if (tmp < 1) {
                     printError("argument to '--max-configs=' must be greater than 0.");
                     return false;
                 }
 
+                mSettings.maxConfigs = tmp;
+                mSettings.force = false;
                 maxconfigs = true;
             }
 
             // max ctu depth
-            else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0)
-                mSettings.maxCtuDepth = std::atoi(argv[i] + 16);
+            else if (std::strncmp(argv[i], "--max-ctu-depth=", 16) == 0) {
+                if (!parseNumberArg(argv[i], 16, mSettings.maxCtuDepth))
+                    return false;
+            }
 
             // Write results in file
             else if (std::strncmp(argv[i], "--output-file=", 14) == 0)
@@ -599,8 +600,15 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Experimental: limit execution time for extended valueflow analysis. basic valueflow analysis
             // is always executed.
-            else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0)
-                mSettings.performanceValueFlowMaxTime = std::atoi(argv[i] + 33);
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-time=", 33) == 0) {
+                if (!parseNumberArg(argv[i], 33, mSettings.performanceValueFlowMaxTime, true))
+                    return false;
+            }
+
+            else if (std::strncmp(argv[i], "--performance-valueflow-max-if-count=", 37) == 0) {
+                if (!parseNumberArg(argv[i], 37, mSettings.performanceValueFlowMaxIfCount, true))
+                    return false;
+            }
 
             // Specify platform
             else if (std::strncmp(argv[i], "--platform=", 11) == 0) {
@@ -769,26 +777,26 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                         Settings::Rule rule;
 
-                        tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
+                        const tinyxml2::XMLElement *tokenlist = node->FirstChildElement("tokenlist");
                         if (tokenlist)
                             rule.tokenlist = tokenlist->GetText();
 
-                        tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
+                        const tinyxml2::XMLElement *pattern = node->FirstChildElement("pattern");
                         if (pattern) {
                             rule.pattern = pattern->GetText();
                         }
 
                         tinyxml2::XMLElement *message = node->FirstChildElement("message");
                         if (message) {
-                            tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
+                            const tinyxml2::XMLElement *severity = message->FirstChildElement("severity");
                             if (severity)
                                 rule.severity = Severity::fromString(severity->GetText());
 
-                            tinyxml2::XMLElement *id = message->FirstChildElement("id");
+                            const tinyxml2::XMLElement *id = message->FirstChildElement("id");
                             if (id)
                                 rule.id = id->GetText();
 
-                            tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
+                            const tinyxml2::XMLElement *summary = message->FirstChildElement("summary");
                             if (summary)
                                 rule.summary = summary->GetText() ? summary->GetText() : "";
                         }
@@ -808,6 +816,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const std::string showtimeMode = argv[i] + 11;
                 if (showtimeMode == "file")
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE;
+                else if (showtimeMode == "file-total")
+                    mSettings.showtime = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
                 else if (showtimeMode == "summary")
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY;
                 else if (showtimeMode == "top5")
@@ -815,7 +825,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (showtimeMode.empty())
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
-                    printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, summary, top5.");
+                    printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, file-total, summary, top5.");
                     return false;
                 }
             }
@@ -838,7 +848,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
                 const std::string suppression = argv[i]+11;
-                const std::string errmsg(mSettings.nomsg.addSuppressionLine(suppression));
+                const std::string errmsg(mSuppressions.addSuppressionLine(suppression));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -865,7 +875,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError(message);
                     return false;
                 }
-                const std::string errmsg(mSettings.nomsg.parseFile(f));
+                const std::string errmsg(mSuppressions.parseFile(f));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
@@ -874,13 +884,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             else if (std::strncmp(argv[i], "--suppress-xml=", 15) == 0) {
                 const char * filename = argv[i] + 15;
-                const std::string errmsg(mSettings.nomsg.parseXmlFile(filename));
+                const std::string errmsg(mSuppressions.parseXmlFile(filename));
                 if (!errmsg.empty()) {
                     printError(errmsg);
                     return false;
                 }
             }
 
+            // TODO: deprecate "--template <template>"
             // Output formatter
             else if (std::strcmp(argv[i], "--template") == 0 ||
                      std::strncmp(argv[i], "--template=", 11) == 0) {
@@ -894,6 +905,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("argument to '--template' is missing.");
                     return false;
                 }
+                // TODO: bail out when no placeholders are found?
 
                 if (mSettings.templateFormat == "gcc") {
                     mSettings.templateFormat = "{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}";
@@ -915,6 +927,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // TODO: deprecate "--template-location <template>"
             else if (std::strcmp(argv[i], "--template-location") == 0 ||
                      std::strncmp(argv[i], "--template-location=", 20) == 0) {
                 // "--template-location format"
@@ -924,32 +937,25 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     ++i;
                     mSettings.templateLocation = argv[i];
                 } else {
-                    printError("argument to '--template' is missing.");
+                    printError("argument to '--template-location' is missing.");
                     return false;
                 }
+                // TODO: bail out when no placeholders are found?
             }
 
             else if (std::strncmp(argv[i], "--template-max-time=", 20) == 0) {
-                mSettings.templateMaxTime = std::atoi(argv[i] + 20);
+                if (!parseNumberArg(argv[i], 20, mSettings.templateMaxTime))
+                    return false;
             }
 
             else if (std::strncmp(argv[i], "--typedef-max-time=", 19) == 0) {
-                mSettings.typedefMaxTime = std::atoi(argv[i] + 19);
+                if (!parseNumberArg(argv[i], 19, mSettings.typedefMaxTime))
+                    return false;
             }
 
             else if (std::strncmp(argv[i], "--valueflow-max-iterations=", 27) == 0) {
-                long tmp;
-                try {
-                    tmp = std::stol(argv[i] + 27);
-                } catch (const std::invalid_argument &) {
-                    printError("argument to '--valueflow-max-iteration' is invalid.");
+                if (!parseNumberArg(argv[i], 27, mSettings.valueFlowMaxIterations))
                     return false;
-                }
-                if (tmp < 0) {
-                    printError("argument to '--valueflow-max-iteration' needs to be at least 0.");
-                    return false;
-                }
-                mSettings.valueFlowMaxIterations = static_cast<std::size_t>(tmp);
             }
 
             else if (std::strcmp(argv[i], "-v") == 0 || std::strcmp(argv[i], "--verbose") == 0)
@@ -968,20 +974,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Define the XML file version (and enable XML output)
             else if (std::strncmp(argv[i], "--xml-version=", 14) == 0) {
-                const std::string numberString(argv[i]+14);
-
-                std::istringstream iss(numberString);
-                if (!(iss >> mSettings.xml_version)) {
-                    printError("argument to '--xml-version' is not a number.");
+                int tmp;
+                if (!parseNumberArg(argv[i], 14, tmp))
                     return false;
-                }
-
-                if (mSettings.xml_version != 2) {
+                if (tmp != 2) {
                     // We only have xml version 2
                     printError("'--xml-version' can only be 2.");
                     return false;
                 }
 
+                mSettings.xml_version = tmp;
                 // Enable also XML if version is set
                 mSettings.xml = true;
             }
@@ -1008,6 +1010,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         if (mSettings.templateLocation.empty())
             mSettings.templateLocation = "{bold}{file}:{line}:{column}: {dim}note:{reset} {info}\\n{code}";
     }
+    // replace static parts of the templates
+    substituteTemplateFormatStatic(mSettings.templateFormat);
+    substituteTemplateLocationStatic(mSettings.templateLocation);
 
     mSettings.project.ignorePaths(mIgnoredPaths);
 
@@ -1035,10 +1040,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     }
 
 #if defined(_WIN64)
-    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform && !mSettings.quiet)
         printMessage("Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.");
 #elif defined(_WIN32)
-    if (SHOW_DEF_PLATFORM_MSG && default_platform)
+    if (SHOW_DEF_PLATFORM_MSG && default_platform && !mSettings.quiet)
         printMessage("Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.");
 #endif
 
@@ -1086,6 +1091,13 @@ void CmdLineParser::printHelp()
         "                            execute clang/clang-tidy/addons.\n"
         "    --check-config       Check cppcheck configuration. The normal code\n"
         "                         analysis is disabled by this flag.\n"
+        "    --check-level=<level>\n"
+        "                         Configure how much checking you want:\n"
+        "                          * normal: Cppcheck uses some compromises in the checking so\n"
+        "                            the checking will finish in reasonable time.\n"
+        "                          * exhaustive: deeper analysis that you choose when you can\n"
+        "                            wait.\n"
+        "                         The default choice is 'normal'.\n"
         "    --check-library      Show information messages when library files have\n"
         "                         incomplete info.\n"
         "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"

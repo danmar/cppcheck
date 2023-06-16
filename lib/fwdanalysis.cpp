@@ -27,7 +27,6 @@
 
 #include <list>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 
@@ -502,8 +501,6 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
     const bool pure = false;
     const bool followVar = false;
     for (const Token *tok = startToken; tok; tok = tok->previous()) {
-        if (tok->str() == "{" && tok->scope()->type == Scope::eFunction && !(tok->astParent() && tok->astParent()->str() == ","))
-            break;
 
         if (Token::Match(tok, "%name% (") && !Token::Match(tok, "if|while|for")) {
             // Is argument passed by reference?

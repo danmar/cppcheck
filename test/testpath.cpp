@@ -32,6 +32,7 @@ private:
         TEST_CASE(removeQuotationMarks);
         TEST_CASE(acceptFile);
         TEST_CASE(getCurrentPath);
+        TEST_CASE(getCurrentExecutablePath);
         TEST_CASE(isAbsolute);
         TEST_CASE(getRelative);
         TEST_CASE(is_c);
@@ -70,6 +71,10 @@ private:
 
     void getCurrentPath() const {
         ASSERT_EQUALS(true, Path::isAbsolute(Path::getCurrentPath()));
+    }
+
+    void getCurrentExecutablePath() const {
+        ASSERT_EQUALS(false, Path::getCurrentExecutablePath("").empty());
     }
 
     void isAbsolute() const {

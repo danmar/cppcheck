@@ -177,9 +177,6 @@ public:
         checkMemoryLeak.checkReallocUsage();
     }
 
-    /** @brief Unit testing : testing the white list */
-    static bool test_white_list(const std::string &funcname, const Settings *settings, bool cpp);
-
     /**
      * Checking for a memory leak caused by improper realloc usage.
      */
@@ -277,14 +274,14 @@ public:
         checkMemoryLeak.check();
     }
 
-    void check();
+    void check() const;
 
 private:
 
     /** Is local variable allocated with malloc? */
     static bool isMalloc(const Variable *variable);
 
-    void checkStructVariable(const Variable * const variable);
+    void checkStructVariable(const Variable* const variable) const;
 
     void getErrorMessages(ErrorLogger * /*errorLogger*/, const Settings * /*settings*/) const override {}
 

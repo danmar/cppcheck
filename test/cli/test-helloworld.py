@@ -58,14 +58,19 @@ def test_absolute_path():
     assert stderr == '[%s:5]: (error) Division by zero.\n' % filename
 
 def test_addon_local_path():
-    ret, stdout, stderr = cppcheck_local(['--addon=misra', '--template=cppcheck1', '.'])
+    ret, stdout, stderr = cppcheck_local(['--addon=misra', '--enable=style', '--template=cppcheck1', '.'])
     assert ret == 0, stdout
     assert stderr == ('[main.c:5]: (error) Division by zero.\n'
                       '[main.c:1]: (style) misra violation (use --rule-texts=<file> to get proper output)\n')
 
+def test_addon_local_path_not_enable():
+    ret, stdout, stderr = cppcheck_local(['--addon=misra', '--template=cppcheck1', '.'])
+    assert ret == 0, stdout
+    assert stderr == '[main.c:5]: (error) Division by zero.\n'
+
 def test_addon_absolute_path():
     prjpath = getAbsoluteProjectPath()
-    ret, stdout, stderr = cppcheck(['--addon=misra', '--template=cppcheck1', prjpath])
+    ret, stdout, stderr = cppcheck(['--addon=misra', '--enable=style', '--template=cppcheck1', prjpath])
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert stderr == ('[%s:5]: (error) Division by zero.\n'
@@ -73,7 +78,7 @@ def test_addon_absolute_path():
 
 def test_addon_relative_path():
     prjpath = getRelativeProjectPath()
-    ret, stdout, stderr = cppcheck(['--platform=native', '--addon=misra', '--template=cppcheck1', prjpath])
+    ret, stdout, stderr = cppcheck(['--platform=native', '--addon=misra', '--enable=style', '--template=cppcheck1', prjpath])
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert stdout == ('Checking %s ...\n'
@@ -84,7 +89,7 @@ def test_addon_relative_path():
 def test_addon_with_gui_project():
     project_file = 'helloworld/test.cppcheck'
     create_gui_project_file(project_file, paths=['.'], addon='misra')
-    ret, stdout, stderr = cppcheck(['--platform=native', '--template=cppcheck1', '--project=' + project_file])
+    ret, stdout, stderr = cppcheck(['--platform=native', '--template=cppcheck1', '--enable=style', '--project=' + project_file])
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0, stdout
     assert stdout == 'Checking %s ...\n' % filename
@@ -191,11 +196,8 @@ def test_build_dir_dump_output():
 
         filename = f'{tempdir}/main.a1.*.dump'
         filelist = glob.glob(filename)
-        assert(len(filelist) == 1)
+        assert(len(filelist) == 0)
 
-        with open(filelist[0], 'rt') as f:
-            dump = f.read()
-            assert '</dump>' in dump, 'invalid dump data: ...' + dump[-100:]
 
 def __test_missing_include_system(use_j):
     args = ['--enable=missingInclude', '--suppress=zerodiv', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', 'helloworld']

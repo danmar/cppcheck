@@ -139,7 +139,7 @@ private:
         /** unsafe array index usage */
         std::list<CTU::FileInfo::UnsafeUsage> unsafeArrayIndex;
 
-        /** unsafe pointer arithmetics */
+        /** unsafe pointer arithmetic */
         std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
 
         /** Convert MyFileInfo data into xml string */

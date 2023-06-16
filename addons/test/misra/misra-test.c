@@ -82,6 +82,7 @@ static void misra_2_2(int x) {
 /* // */   // 3.1
 /* /* */   // 3.1
 ////
+/* https://cppcheck.net */
 
 // http://example.com // no warning
 
@@ -406,6 +407,10 @@ enum misra_8_12_d { misra_d1 = 1, misra_d2 = 2, misra_d3 = misra_d1 }; // no-war
 enum misra_8_12_e { misra_e1 = sizeof(int), misra_e2}; // no-crash
 
 static void misra_8_14(char * restrict str) {(void)str;} // 8.14
+
+// #11707 -- false positive
+struct S_9_3 { struct S_9_3* p; int x; };
+struct S_9_3* s_9_3_array[] = { x, NULL }; // 8.4
 
 static void misra_9_empty_or_zero_initializers(void) {
     int a[2]    = {};                          // 9.2

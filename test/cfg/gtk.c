@@ -51,6 +51,7 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     printf("%s", pGchar1);
     g_free(pGchar1);
 
+    // cppcheck-suppress unusedAllocatedMemory
     GError * pGerror = g_error_new(1, -2, "a %d", 1);
     g_error_free(pGerror);
 

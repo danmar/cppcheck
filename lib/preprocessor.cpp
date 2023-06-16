@@ -23,6 +23,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "path.h"
+#include "platform.h"
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
@@ -31,7 +32,6 @@
 #include <array>
 #include <cstddef>
 #include <iterator> // back_inserter
-#include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 
@@ -64,7 +64,7 @@ Directive::Directive(std::string _file, const int _linenr, const std::string &_s
 
 char Preprocessor::macroChar = char(1);
 
-Preprocessor::Preprocessor(const Settings& settings, Suppressions &suppressions, ErrorLogger *errorLogger) : mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
+Preprocessor::Preprocessor(const Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
 {}
 
 Preprocessor::~Preprocessor()
@@ -179,20 +179,20 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, const Sett
             suppr.fileName = relativeFilename;
             suppr.lineNumber = tok->location.line;
             suppr.thisAndNextLine = thisAndNextLine;
-            suppressions.addSuppression(suppr);
+            suppressions.addSuppression(std::move(suppr));
         }
     }
 }
 
-void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
+void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppressions &suppressions)
 {
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::addinlineSuppressions(tokens, mSettings, mSuppressions, err);
+    ::addinlineSuppressions(tokens, mSettings, suppressions, err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.cbegin(); it != mTokenLists.cend(); ++it) {
         if (it->second)
-            ::addinlineSuppressions(*it->second, mSettings, mSuppressions, err);
+            ::addinlineSuppressions(*it->second, mSettings, suppressions, err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
@@ -627,23 +627,29 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     return dui;
 }
 
-static bool hasErrors(const simplecpp::OutputList &outputList)
+bool Preprocessor::hasErrors(const simplecpp::Output &output)
 {
-    for (simplecpp::OutputList::const_iterator it = outputList.cbegin(); it != outputList.cend(); ++it) {
-        switch (it->type) {
-        case simplecpp::Output::ERROR:
-        case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-        case simplecpp::Output::SYNTAX_ERROR:
-        case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-        case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-            return true;
-        case simplecpp::Output::WARNING:
-        case simplecpp::Output::MISSING_HEADER:
-        case simplecpp::Output::PORTABILITY_BACKSLASH:
-            break;
-        }
+    switch (output.type) {
+    case simplecpp::Output::ERROR:
+    case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
+    case simplecpp::Output::SYNTAX_ERROR:
+    case simplecpp::Output::UNHANDLED_CHAR_ERROR:
+    case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
+        return true;
+    case simplecpp::Output::WARNING:
+    case simplecpp::Output::MISSING_HEADER:
+    case simplecpp::Output::PORTABILITY_BACKSLASH:
+        break;
     }
     return false;
+}
+
+bool Preprocessor::hasErrors(const simplecpp::OutputList &outputList)
+{
+    const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output) {
+        return hasErrors(output);
+    });
+    return it != outputList.cend();
 }
 
 void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool throwError)
@@ -651,19 +657,11 @@ void Preprocessor::handleErrors(const simplecpp::OutputList& outputList, bool th
     const bool showerror = (!mSettings.userDefines.empty() && !mSettings.force);
     reportOutput(outputList, showerror);
     if (throwError) {
-        for (const simplecpp::Output& output : outputList) {
-            switch (output.type) {
-            case simplecpp::Output::ERROR:
-            case simplecpp::Output::INCLUDE_NESTED_TOO_DEEPLY:
-            case simplecpp::Output::SYNTAX_ERROR:
-            case simplecpp::Output::UNHANDLED_CHAR_ERROR:
-            case simplecpp::Output::EXPLICIT_INCLUDE_NOT_FOUND:
-                throw output;
-            case simplecpp::Output::WARNING:
-            case simplecpp::Output::MISSING_HEADER:
-            case simplecpp::Output::PORTABILITY_BACKSLASH:
-                break;
-            }
+        const auto it = std::find_if(outputList.cbegin(), outputList.cend(), [](const simplecpp::Output &output){
+            return hasErrors(output);
+        });
+        if (it != outputList.cend()) {
+            throw *it;
         }
     }
 }
@@ -752,35 +750,6 @@ std::string Preprocessor::getcode(const simplecpp::TokenList &tokens1, const std
     return ret.str();
 }
 
-std::string Preprocessor::getcode(const std::string &filedata, const std::string &cfg, const std::string &filename)
-{
-    simplecpp::OutputList outputList;
-    std::vector<std::string> files;
-
-    std::istringstream istr(filedata);
-    simplecpp::TokenList tokens1(istr, files, Path::simplifyPath(filename), &outputList);
-    inlineSuppressions(tokens1);
-    tokens1.removeComments();
-    removeComments();
-    setDirectives(tokens1);
-
-    reportOutput(outputList, true);
-
-    if (hasErrors(outputList))
-        return "";
-
-    std::string ret;
-    try {
-        ret = getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
-        // Since "files" is a local variable the tracking info must be cleared..
-        mMacroUsage.clear();
-        mIfCond.clear();
-    } catch (const simplecpp::Output &) {
-        ret.clear();
-    }
-    return ret;
-}
-
 void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool showerror)
 {
     for (const simplecpp::Output &out : outputList) {
@@ -833,41 +802,26 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
-    if (!mSettings.checks.isEnabled(Checks::missingInclude))
+    if (!mSettings.checks.isEnabled(Checks::missingInclude) || !mErrorLogger)
         return;
 
-    std::string fname = Path::fromNativeSeparators(filename);
-    std::string errorId = (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude";
-    Suppressions::ErrorMessage errorMessage;
-    errorMessage.errorId = errorId;
-    errorMessage.setFileName(std::move(fname));
-    errorMessage.lineNumber = linenr;
-    if (mSuppressions.isSuppressed(errorMessage))
-        return;
-
-    if (mErrorLogger) {
-        std::list<ErrorMessage::FileLocation> locationList;
-        if (!filename.empty()) {
-            ErrorMessage::FileLocation loc;
-            loc.line = linenr;
-            loc.setfile(Path::toNativeSeparators(filename));
-            locationList.push_back(std::move(loc));
-        }
-        ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
-                            (headerType==SystemHeader) ?
-                            "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
-                            "Include file: \"" + header + "\" not found.",
-                            std::move(errorId),
-                            Certainty::normal);
-        mErrorLogger->reportErr(errmsg);
+    std::list<ErrorMessage::FileLocation> locationList;
+    if (!filename.empty()) {
+        locationList.emplace_back(filename, linenr);
     }
+    ErrorMessage errmsg(std::move(locationList), mFile0, Severity::information,
+                        (headerType==SystemHeader) ?
+                        "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
+                        "Include file: \"" + header + "\" not found.",
+                        (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
+                        Certainty::normal);
+    mErrorLogger->reportErr(errmsg);
 }
 
 void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings)
 {
     Settings settings2(*settings);
-    Suppressions supressions2;
-    Preprocessor preprocessor(settings2, supressions2, errorLogger);
+    Preprocessor preprocessor(settings2, errorLogger);
     preprocessor.missingInclude(emptyString, 1, emptyString, UserHeader);
     preprocessor.missingInclude(emptyString, 1, emptyString, SystemHeader);
     preprocessor.error(emptyString, 1, "#error message");   // #error ..
@@ -893,10 +847,10 @@ void Preprocessor::dump(std::ostream &out) const
         for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
             out << "    <macro"
                 << " name=\"" << macroUsage.macroName << "\""
-                << " file=\"" << macroUsage.macroLocation.file() << "\""
+                << " file=\"" << ErrorLogger::toxml(macroUsage.macroLocation.file()) << "\""
                 << " line=\"" << macroUsage.macroLocation.line << "\""
                 << " column=\"" << macroUsage.macroLocation.col << "\""
-                << " usefile=\"" << macroUsage.useLocation.file() << "\""
+                << " usefile=\"" << ErrorLogger::toxml(macroUsage.useLocation.file()) << "\""
                 << " useline=\"" << macroUsage.useLocation.line << "\""
                 << " usecolumn=\"" << macroUsage.useLocation.col << "\""
                 << " is-known-value=\"" << (macroUsage.macroValueKnown ? "true" : "false") << "\""

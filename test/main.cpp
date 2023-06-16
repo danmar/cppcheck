@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "color.h"
 #include "options.h"
 #include "preprocessor.h"
 #include "fixture.h"
@@ -30,6 +31,7 @@ int main(int argc, char *argv[])
 #endif
 
     Preprocessor::macroChar = '$';     // While macroChar is char(1) per default outside test suite, we require it to be a human-readable character here.
+    gDisableColors = true;
 
     options args(argc, argv);
 

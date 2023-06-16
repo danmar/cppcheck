@@ -21,7 +21,6 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
-#include "errortypes.h"
 
 #include <cstddef>
 #include <istream>
@@ -35,6 +34,7 @@
 
 class Tokenizer;
 class ErrorMessage;
+enum class Certainty;
 
 /** @brief class for handling suppressions */
 class CPPCHECKLIB Suppressions {
@@ -148,21 +148,22 @@ public:
      * @param suppression suppression details
      * @return error message. empty upon success
      */
-    std::string addSuppression(const Suppression &suppression);
+    std::string addSuppression(Suppression suppression);
 
     /**
      * @brief Combine list of suppressions into the current suppressions.
      * @param suppressions list of suppression details
      * @return error message. empty upon success
      */
-    std::string addSuppressions(const std::list<Suppression> &suppressions);
+    std::string addSuppressions(std::list<Suppression> suppressions);
 
     /**
      * @brief Returns true if this message should not be shown to the user.
      * @param errmsg error message
+     * @param global use global suppressions
      * @return true if this error is suppressed.
      */
-    bool isSuppressed(const ErrorMessage &errmsg);
+    bool isSuppressed(const ErrorMessage &errmsg, bool global = true);
 
     /**
      * @brief Returns true if this message should not be shown to the user.
@@ -170,13 +171,6 @@ public:
      * @return true if this error is suppressed.
      */
     bool isSuppressed(const ::ErrorMessage &errmsg);
-
-    /**
-     * @brief Returns true if this message should not be shown to the user, only uses local suppressions.
-     * @param errmsg error message
-     * @return true if this error is suppressed.
-     */
-    bool isSuppressedLocal(const ErrorMessage &errmsg);
 
     /**
      * @brief Create an xml dump of suppressions

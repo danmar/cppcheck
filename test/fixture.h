@@ -24,6 +24,7 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
+#include "settings.h"
 
 #include <cstddef>
 #include <list>
@@ -43,8 +44,7 @@ private:
     static std::size_t fails_counter;
     static std::size_t todos_counter;
     static std::size_t succeeded_todos_counter;
-    static std::set<std::string> missingLibs;
-    bool mVerbose{};
+    bool mVerbose;
     std::string mTemplateFormat;
     std::string mTemplateLocation;
     std::string mTestname;
@@ -95,7 +95,6 @@ protected:
     void assertThrow(const char * const filename, const unsigned int linenr) const;
     void assertThrowFail(const char * const filename, const unsigned int linenr) const;
     void assertNoThrowFail(const char * const filename, const unsigned int linenr) const;
-    static void complainMissingLib(const char * const libname);
     static std::string deleteLineNumber(const std::string &message);
 
     void setVerbose(bool v) {
@@ -114,7 +113,7 @@ protected:
     static T& getCheck()
     {
         for (Check *check : Check::instances()) {
-            //cppcheck-suppress [constVariable, useStlAlgorithm] - TODO: fix constVariable FP
+            //cppcheck-suppress [constVariablePointer, useStlAlgorithm] - TODO: fix constVariable FP
             if (T* c = dynamic_cast<T*>(check))
                 return *c;
         }
@@ -127,6 +126,86 @@ protected:
         T& check = getCheck<T>();
         check.runChecks(tokenizer, settings, errorLogger);
     }
+
+    // TODO: bail out on redundant settings
+    class SettingsBuilder
+    {
+    public:
+        explicit SettingsBuilder(const TestFixture &fixture) : fixture(fixture) {}
+        SettingsBuilder(const TestFixture &fixture, Settings settings) : fixture(fixture), settings(std::move(settings)) {}
+
+        SettingsBuilder& severity(Severity::SeverityType sev, bool b = true) {
+            settings.severity.setEnabled(sev, b);
+            return *this;
+        }
+
+        SettingsBuilder& certainty(Certainty cert, bool b = true) {
+            settings.certainty.setEnabled(cert, b);
+            return *this;
+        }
+
+        SettingsBuilder& clang() {
+            settings.clang = true;
+            return *this;
+        }
+
+        SettingsBuilder& checkLibrary() {
+            settings.checkLibrary = true;
+            return *this;
+        }
+
+        SettingsBuilder& checkUnusedTemplates(bool b = true) {
+            settings.checkUnusedTemplates = b;
+            return *this;
+        }
+
+        SettingsBuilder& debugwarnings(bool b = true) {
+            settings.debugwarnings = b;
+            return *this;
+        }
+
+        SettingsBuilder& c(Standards::cstd_t std) {
+            settings.standards.c = std;
+            return *this;
+        }
+
+        SettingsBuilder& cpp(Standards::cppstd_t std) {
+            settings.standards.cpp = std;
+            return *this;
+        }
+
+        SettingsBuilder& library(const char lib[]);
+
+        SettingsBuilder& libraryxml(const char xmldata[], std::size_t len);
+
+        SettingsBuilder& platform(cppcheck::Platform::Type type);
+
+        SettingsBuilder& checkConfiguration() {
+            settings.checkConfiguration = true;
+            return *this;
+        }
+
+        SettingsBuilder& checkHeaders(bool b = true) {
+            settings.checkHeaders = b;
+            return *this;
+        }
+
+        Settings build() {
+            return std::move(settings);
+        }
+    private:
+        const TestFixture &fixture;
+        Settings settings;
+    };
+
+    SettingsBuilder settingsBuilder() const {
+        return SettingsBuilder(*this);
+    }
+
+    SettingsBuilder settingsBuilder(Settings settings) const {
+        return SettingsBuilder(*this, std::move(settings));
+    }
+
 public:
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
@@ -157,6 +236,7 @@ extern std::ostringstream output;
 #define ASSERT_EQUALS_MSG( EXPECTED, ACTUAL, MSG )  assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL, MSG)
 #define ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&) {} catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_THROW_EQUALS( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.errorMessage); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
+#define ASSERT_THROW_EQUALS_2( CMD, EXCEPTION, EXPECTED ) do { try { CMD; assertThrowFail(__FILE__, __LINE__); } catch (const EXCEPTION&e) { assertEquals(__FILE__, __LINE__, EXPECTED, e.what()); } catch (...) { assertThrowFail(__FILE__, __LINE__); } } while (false)
 #define ASSERT_NO_THROW( CMD ) do { try { CMD; } catch (...) { assertNoThrowFail(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT_THROW( CMD, EXCEPTION ) do { try { CMD; } catch (const EXCEPTION&) {} catch (...) { assertThrow(__FILE__, __LINE__); } } while (false)
 #define TODO_ASSERT( CONDITION ) do { const bool condition=(CONDITION); todoAssertEquals(__FILE__, __LINE__, true, false, condition); } while (false)
@@ -164,12 +244,8 @@ extern std::ostringstream output;
 #define EXPECT_EQ( EXPECTED, ACTUAL ) assertEquals(__FILE__, __LINE__, EXPECTED, ACTUAL)
 #define REGISTER_TEST( CLASSNAME ) namespace { CLASSNAME instance_ ## CLASSNAME; }
 
-#define LOAD_LIB_2( LIB, NAME ) do { \
-        if (((LIB).load(exename.c_str(), NAME).errorcode != Library::ErrorCode::OK)) { \
-            complainMissingLib(NAME); \
-            return; \
-        } \
-} while (false)
+#define LOAD_LIB_2_EXE( LIB, NAME, EXE ) do { if (((LIB).load((EXE), NAME).errorcode != Library::ErrorCode::OK)) throw std::runtime_error("library '" + std::string(NAME) + "' not found"); } while (false)
+#define LOAD_LIB_2( LIB, NAME ) LOAD_LIB_2_EXE(LIB, NAME, exename.c_str())
 
 #define PLATFORM( P, T ) do { std::string errstr; assertEquals(__FILE__, __LINE__, true, P.set(cppcheck::Platform::toString(T), errstr, {exename}), errstr); } while (false)
 

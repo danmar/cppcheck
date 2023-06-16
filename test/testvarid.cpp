@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "errortypes.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
@@ -27,20 +28,13 @@
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
-struct InternalError;
-
 
 class TestVarID : public TestFixture {
 public:
-    TestVarID() : TestFixture("TestVarID") {
-        PLATFORM(settings.platform, cppcheck::Platform::Type::Unix64);
-        settings.standards.c = Standards::C89;
-        settings.standards.cpp = Standards::CPPLatest;
-        settings.checkUnusedTemplates = true;
-    }
+    TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).checkUnusedTemplates().platform(cppcheck::Platform::Type::Unix64).build();
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -103,6 +97,9 @@ private:
         TEST_CASE(varid63);
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
         TEST_CASE(varid65); // #10936
+        TEST_CASE(varid66);
+        TEST_CASE(varid67); // #11711 - NOT function pointer
+        TEST_CASE(varid68); // #11740 - switch (str_chars(&strOut)[0])
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -191,6 +188,7 @@ private:
         TEST_CASE(varid_declInIfCondition);
         TEST_CASE(varid_globalScope);
         TEST_CASE(varid_function_pointer_args);
+        TEST_CASE(varid_alignas);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -235,15 +233,18 @@ private:
         TEST_CASE(decltype2);
 
         TEST_CASE(exprid1);
+        TEST_CASE(exprid2);
 
         TEST_CASE(structuredBindings);
     }
 
 #define tokenize(...) tokenize_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokenize_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
+    std::string tokenize_(const char* file, int line, const char code[], const char filename[] = "test.cpp", const Settings *s = nullptr) {
         errout.str("");
 
-        Tokenizer tokenizer(&settings, this);
+        const Settings *settings1 = s ? s : &settings;
+
+        Tokenizer tokenizer(settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC((tokenizer.tokenize)(istr, filename), file, line);
 
@@ -898,11 +899,13 @@ private:
     void varid41() {
         const char code1[] = "union evt; void f(const evt & event);";
         ASSERT_EQUALS("1: union evt ; void f ( const evt & event@1 ) ;\n",
-                      tokenize(code1, "test.c"));
+                      tokenize(code1));
+        ASSERT_THROW(tokenize(code1, "test.c"), InternalError);
 
         const char code2[] = "struct evt; void f(const evt & event);";
         ASSERT_EQUALS("1: struct evt ; void f ( const evt & event@1 ) ;\n",
-                      tokenize(code2, "test.c"));
+                      tokenize(code2));
+        ASSERT_THROW(tokenize(code2, "test.c"), InternalError);
     }
 
     void varid42() {
@@ -1194,6 +1197,48 @@ private:
             const char expected[] = "1: int ( i@1 ) ;\n";
             ASSERT_EQUALS(expected, tokenize(code));
         }
+    }
+
+    void varid66() {
+        {
+            const char code[] = "std::string g();\n"
+                                "const std::string s(g() + \"abc\");\n";
+            const char expected[] = "1: std :: string g ( ) ;\n"
+                                    "2: const std :: string s@1 ( g ( ) + \"abc\" ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "enum E {};\n"
+                                "typedef E(*fp_t)();\n"
+                                "E f(fp_t fp);\n";
+            const char expected[] = "1: enum E { } ;\n"
+                                    "2:\n"
+                                    "3: E f ( E ( * fp@1 ) ( ) ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+    }
+
+    void varid67() { // #11711
+        const char code1[] = "int *x;\n"
+                             "_Generic(*x, int: foo, default: bar)();";
+        const char expected1[] = "1: int * x@1 ;\n"
+                                 "2: _Generic ( * x@1 , int : foo , default : bar ) ( ) ;\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.c"));
+    }
+
+    void varid68() { // #11740
+        const char code1[] = "struct S {};\n"
+                             "char* str_chars(struct S* s);\n"
+                             "void f(struct S strOut) {\n"
+                             "	 switch (str_chars(&strOut)[0])  {}\n"
+                             "}";
+        const char expected1[] = "1: struct S { } ;\n"
+                                 "2: char * str_chars ( struct S * s@1 ) ;\n"
+                                 "3: void f ( struct S strOut@2 ) {\n"
+                                 "4: switch ( str_chars ( & strOut@2 ) [ 0 ] ) { }\n"
+                                 "5: }\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.c"));
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
     }
 
     void varid_for_1() {
@@ -2006,10 +2051,9 @@ private:
     }
 
     void varid_in_class25() {
-        const char *code{}, *expected{};
-        Settings oldSettings = settings;
-        LOAD_LIB_2(settings.library, "std.cfg");
+        const Settings s = settingsBuilder(settings).library("std.cfg").build();
 
+        const char *code{}, *expected{};
         code = "struct F {\n" // #11497
                "    int i;\n"
                "    void f(const std::vector<F>&v) {\n"
@@ -2022,7 +2066,7 @@ private:
                    "4: if ( v@2 . front ( ) . i@3 ) { }\n"
                    "5: }\n"
                    "6: } ;\n";
-        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp", &s));
 
         code = "struct T { };\n" // 11533
                "struct U { T t; };\n"
@@ -2038,8 +2082,7 @@ private:
                    "5: std :: vector < U * > * p@2 ; p@2 = g ( ) ;\n"
                    "6: auto t@3 ; t@3 = p@2 . front ( ) . t@4 ;\n"
                    "7: }\n";
-        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
-        settings = oldSettings;
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp", &s));
     }
 
     void varid_namespace_1() { // #7272
@@ -3020,6 +3063,14 @@ private:
         ASSERT_EQUALS("1: void f ( void ( * g@1 ) ( int , IN int ) ) { }\n", tokenize(code3));
     }
 
+    void varid_alignas() {
+        const char code[] = "extern alignas(16) int x;\n"
+                            "alignas(16) int x;";
+        const char expected[] = "1: extern alignas ( 16 ) int x@1 ;\n"
+                                "2: alignas ( 16 ) int x@2 ;\n";
+        ASSERT_EQUALS(expected, tokenize(code, "test.c"));
+    }
+
     void varidclass1() {
         const std::string actual = tokenize(
             "class Fred\n"
@@ -3714,14 +3765,34 @@ private:
             "    return x + y + a.y + b.y;\n"
             "}\n");
 
-        const char expected[] = "1: struct A {\n"
-                                "2: int x ; int y ;\n"
-                                "3: } ;\n"
-                                "4: int f ( A a , A b ) {\n"
-                                "5: int x@5 ; x@5 =@9 a@3 .@10 x@6 +@11 b@4 .@12 x@7 ;\n"
-                                "6: int y@8 ; y@8 =@13 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
-                                "7: return x@5 +@17 y@8 +@18 a@3 .@19 y@9 +@20 b@4 .@21 y@10 ;\n"
-                                "8: }\n";
+        const char expected[] =
+            "1: struct A {\n"
+            "2: int x ; int y ;\n"
+            "3: } ;\n"
+            "4: int f ( A a , A b ) {\n"
+            "5: int x@5 ; x@5 =@9 a@3 .@10 x@6 +@11 b@4 .@12 x@7 ;\n"
+            "6: int y@8 ; y@8 =@1073741837 b@4 .@12 x@7 +@11 a@3 .@10 x@6 ;\n"
+            "7: return x@5 +@1073741841 y@8 +@1073741842 a@3 .@1073741843 y@9 +@1073741844 b@4 .@1073741845 y@10 ;\n"
+            "8: }\n";
+
+        ASSERT_EQUALS(expected, actual);
+    }
+
+    void exprid2() {
+        const std::string actual = tokenizeExpr( // #11739
+            "struct S { std::unique_ptr<int> u; };\n"
+            "auto f = [](const S& s) -> std::unique_ptr<int> {\n"
+            "    if (auto p = s.u.get())\n"
+            "        return std::make_unique<int>(*p);\n"
+            "    return nullptr;\n"
+            "};\n");
+
+        const char expected[] = "1: struct S { std :: unique_ptr < int > u ; } ;\n"
+                                "2: auto f ; f = [ ] ( const S & s ) . std :: unique_ptr < int > {\n"
+                                "3: if (@5 auto p@4 =@1073741830 s@3 .@1073741831 u@5 .@1073741832 get (@1073741833 ) ) {\n"
+                                "4: return std ::@1073741834 make_unique < int > (@1073741835 *@1073741836 p@4 ) ; }\n"
+                                "5: return nullptr ;\n"
+                                "6: } ;\n";
 
         ASSERT_EQUALS(expected, actual);
     }

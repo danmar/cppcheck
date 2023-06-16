@@ -37,7 +37,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iterator>
-#include <memory>
 #include <utility>
 #include <unordered_map>
 
@@ -107,13 +106,13 @@ static bool isVclTypeInit(const Type *type)
 {
     if (!type)
         return false;
-    for (const Type::BaseInfo &baseInfo: type->derivedFrom) {
+    return std::any_of(type->derivedFrom.begin(), type->derivedFrom.end(), [&](const Type::BaseInfo& baseInfo) {
         if (!baseInfo.type)
             return true;
         if (isVclTypeInit(baseInfo.type))
             return true;
-    }
-    return false;
+        return false;
+    });
 }
 //---------------------------------------------------------------------------
 
@@ -222,13 +221,15 @@ void CheckClass::constructors()
                 if (!usage.assign && !usage.init)
                     continue;
                 const Scope* varScope1 = var.nameToken()->scope();
+                while (varScope1->type == Scope::ScopeType::eStruct)
+                    varScope1 = varScope1->nestedIn;
                 if (varScope1->type == Scope::ScopeType::eUnion) {
                     for (Usage &usage2 : usageList) {
                         const Variable& var2 = *usage2.var;
                         if (usage2.assign || usage2.init || var2.isStatic())
                             continue;
                         const Scope* varScope2 = var2.nameToken()->scope();
-                        if (varScope2->type == Scope::ScopeType::eStruct)
+                        while (varScope2->type == Scope::ScopeType::eStruct)
                             varScope2 = varScope2->nestedIn;
                         if (varScope1 == varScope2)
                             usage2.assign = true;
@@ -252,8 +253,17 @@ void CheckClass::constructors()
                 // Check if this is a class constructor
                 if (!var.isPointer() && !var.isPointerArray() && var.isClass() && func.type == Function::eConstructor) {
                     // Unknown type so assume it is initialized
-                    if (!var.type())
-                        continue;
+                    if (!var.type()) {
+                        if (var.isStlType() && var.valueType() && var.valueType()->containerTypeToken && var.getTypeName() == "std::array") {
+                            const Token* ctt = var.valueType()->containerTypeToken;
+                            if (!ctt->isStandardType() &&
+                                (!ctt->type() || ctt->type()->needInitialization != Type::NeedInitialization::True) &&
+                                !mSettings->library.podtype(ctt->str())) // TODO: handle complex type expression
+                                continue;
+                        }
+                        else
+                            continue;
+                    }
 
                     // Known type that doesn't need initialization or
                     // known type that has member variables of an unknown type
@@ -731,7 +741,7 @@ bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *sco
     return false;
 }
 
-void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
+void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const
 {
     if (!func.functionScope)
         return;
@@ -1728,7 +1738,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
 
         // check for deallocating memory
         const Token *var;
-        if (Token::Match(tok, "free ( %var%"))
+        if (Token::Match(tok, "%name% ( %var%") && mSettings->library.getDeallocFuncInfo(tok))
             var = tok->tokAt(2);
         else if (Token::Match(tok, "delete [ ] %var%"))
             var = tok->tokAt(3);
@@ -2098,12 +2108,12 @@ void CheckClass::checkConst()
             if (!scope->definedType->derivedFrom.empty() && func.isImplicitlyVirtual(true))
                 continue;
 
-            bool memberAccessed = false;
+            enum MemberAccess memberAccessed = MemberAccess::NONE;
             // if nothing non-const was found. write error..
             if (!checkConstFunc(scope, &func, memberAccessed))
                 continue;
 
-            const bool suggestStatic = !memberAccessed && !func.isOperator();
+            const bool suggestStatic = memberAccessed != MemberAccess::MEMBER && !func.isOperator();
             if ((returnsPtrOrRef || func.isConst()) && !suggestStatic)
                 continue;
 
@@ -2215,7 +2225,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     return false;
 }
 
-bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
+bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function()) {
         for (const Function &func : scope->functionList) {
@@ -2256,7 +2266,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
-bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
+bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function())
         return false;
@@ -2283,7 +2293,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
 
 const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map", "std :: map|unordered_map <" }; // start pattern
 
-bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
+bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const
 {
     if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
         return false;
@@ -2300,26 +2310,39 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
         return nullptr;
     };
 
-    auto checkFuncCall = [this, &memberAccessed](const Token* funcTok, const Scope* scope) {
+    auto checkFuncCall = [this, &memberAccessed](const Token* funcTok, const Scope* scope, const Function* func) {
         if (isMemberFunc(scope, funcTok) && (funcTok->strAt(-1) != "." || Token::simpleMatch(funcTok->tokAt(-2), "this ."))) {
-            if (!isConstMemberFunc(scope, funcTok))
+            const bool isSelf = func == funcTok->function();
+            if (!isConstMemberFunc(scope, funcTok) && !isSelf)
                 return false;
-            memberAccessed = true;
+            memberAccessed = (isSelf && memberAccessed != MemberAccess::MEMBER) ? MemberAccess::SELF : MemberAccess::MEMBER;
         }
-        bool mayModifyArgs = true;
-        if (const Function* f = funcTok->function()) { // TODO: improve (we bail out if there is any possible modification of any argument)
+
+        if (const Function* f = funcTok->function()) { // check known function
             const std::vector<const Token*> args = getArguments(funcTok);
             const auto argMax = std::min<nonneg int>(args.size(), f->argCount());
-            mayModifyArgs = false;
+
             for (nonneg int argIndex = 0; argIndex < argMax; ++argIndex) {
                 const Variable* const argVar = f->getArgumentVar(argIndex);
-                if (!argVar || !argVar->valueType() || ((argVar->valueType()->pointer || argVar->valueType()->reference != Reference::None) && !argVar->isConst())) {
-                    mayModifyArgs = true;
-                    break;
+                if (!argVar || ((argVar->isArrayOrPointer() || argVar->isReference()) &&
+                                !(argVar->valueType() && argVar->valueType()->isConst(argVar->valueType()->pointer)))) { // argument might be modified
+                    const Token* arg = args[argIndex];
+                    // Member variable given as parameter
+                    const Token* varTok = previousBeforeAstLeftmostLeaf(arg);
+                    if (!varTok)
+                        return false;
+                    varTok = varTok->next();
+                    if ((varTok->isName() && isMemberVar(scope, varTok)) || (varTok->isUnaryOp("&") && (varTok = varTok->astOperand1()) && isMemberVar(scope, varTok))) {
+                        const Variable* var = varTok->variable();
+                        if (!var || (!var->isMutable() && !var->isConst()))
+                            return false;
+                    }
                 }
             }
+            return true;
         }
-        // Member variable given as parameter
+
+        // Member variable given as parameter to unknown function
         const Token *lpar = funcTok->next();
         if (Token::simpleMatch(lpar, "( ) ("))
             lpar = lpar->tokAt(2);
@@ -2328,8 +2351,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 tok = tok->link();
             else if ((tok->isName() && isMemberVar(scope, tok)) || (tok->isUnaryOp("&") && (tok = tok->astOperand1()) && isMemberVar(scope, tok))) {
                 const Variable* var = tok->variable();
-                if ((!var || !var->isMutable()) && mayModifyArgs)
-                    return false; // TODO: Only bailout if function takes argument as non-const reference
+                if (!var || (!var->isMutable() && !var->isConst()))
+                    return false;
             }
         }
         return true;
@@ -2339,7 +2362,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
     // it can be a const function..
     for (const Token *tok1 = func->functionScope->bodyStart; tok1 && tok1 != func->functionScope->bodyEnd; tok1 = tok1->next()) {
         if (tok1->isName() && isMemberVar(scope, tok1)) {
-            memberAccessed = true;
+            memberAccessed = MemberAccess::MEMBER;
             const Variable* v = tok1->variable();
             if (v && v->isMutable())
                 continue;
@@ -2354,7 +2377,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             }
 
             // non const pointer cast
-            if (tok1->valueType() && tok1->valueType()->pointer > 0 && tok1->astParent() && tok1->astParent()->isCast() && !Token::simpleMatch(tok1->astParent(), "( const"))
+            if (tok1->valueType() && tok1->valueType()->pointer > 0 && tok1->astParent() && tok1->astParent()->isCast() &&
+                !(tok1->astParent()->valueType() &&
+                  (tok1->astParent()->valueType()->pointer == 0 || tok1->astParent()->valueType()->isConst(tok1->astParent()->valueType()->pointer))))
                 return false;
 
             const Token* lhs = tok1->previous();
@@ -2365,10 +2390,14 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->astParent() && lhs->astParent()->str() == "?")
                 lhs = lhs->astParent()->astParent();
             if (lhs->str() == "&") {
-                lhs = lhs->previous();
-                if (lhs->isAssignmentOp() && lhs->previous()->variable()) {
-                    if (lhs->previous()->variable()->typeStartToken()->strAt(-1) != "const" && lhs->previous()->variable()->isPointer())
+                const Token* const top = lhs->astTop();
+                if (top->isAssignmentOp()) {
+                    if (Token::simpleMatch(top->astOperand2(), "{") && !top->astOperand2()->previous()->function()) // TODO: check usage in init list
                         return false;
+                    else if (top->previous()->variable()) {
+                        if (top->previous()->variable()->typeStartToken()->strAt(-1) != "const" && top->previous()->variable()->isPointer())
+                            return false;
+                    }
                 }
             } else if (lhs->str() == ":" && lhs->astParent() && lhs->astParent()->str() == "(") { // range-based for-loop (C++11)
                 // TODO: We could additionally check what is done with the elements to avoid false negatives. Here we just rely on "const" keyword being used.
@@ -2444,10 +2473,11 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     ;
                 else if (var->smartPointerType() && var->smartPointerType()->classScope && isConstMemberFunc(var->smartPointerType()->classScope, end)) {
                     ;
-                }
-                else if (hasOverloadedMemberAccess(end, var->typeScope())) {
+                } else if (var->isSmartPointer() && Token::simpleMatch(tok1->next(), ".") && tok1->next()->originalName().empty() && mSettings->library.isFunctionConst(end)) {
                     ;
-                } else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
+                } else if (hasOverloadedMemberAccess(end, var->typeScope())) {
+                    ;
+                } else if (!var->typeScope() || (end->function() != func && !isConstMemberFunc(var->typeScope(), end)))
                     return false;
             }
 
@@ -2474,7 +2504,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
 
             tok1 = jumpBackToken?jumpBackToken:end; // Jump back to first [ to check inside, or jump to end of expression
-            if (tok1 == end && Token::Match(end->previous(), ". %name% ( !!)") && !checkFuncCall(tok1, scope)) // function call on member
+            if (tok1 == end && Token::Match(end->previous(), ". %name% ( !!)") && !checkFuncCall(tok1, scope, func)) // function call on member
                 return false;
         }
 
@@ -2493,7 +2523,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
 
         // function/constructor call, return init list
         else if (const Token* funcTok = getFuncTok(tok1)) {
-            if (!checkFuncCall(funcTok, scope))
+            if (!checkFuncCall(funcTok, scope, func))
                 return false;
         } else if (Token::simpleMatch(tok1, "> (") && (!tok1->link() || !Token::Match(tok1->link()->previous(), "static_cast|const_cast|dynamic_cast|reinterpret_cast"))) {
             return false;
@@ -3128,6 +3158,9 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
         if (classScope->isAnonymous())
             continue;
 
+        if (classScope->classDef && Token::simpleMatch(classScope->classDef->previous(), ">"))
+            continue;
+
         // the full definition must be compared
         const bool fullDefinition = std::all_of(classScope->functionList.cbegin(),
                                                 classScope->functionList.cend(),
@@ -3212,9 +3245,9 @@ Check::FileInfo * CheckClass::loadFileInfoFromXml(const tinyxml2::XMLElement *xm
             MyFileInfo::NameLoc nameLoc;
             nameLoc.className = name;
             nameLoc.fileName = file;
-            nameLoc.lineNumber = std::atoi(line);
-            nameLoc.column = std::atoi(col);
-            nameLoc.hash = MathLib::toULongNumber(hash);
+            nameLoc.lineNumber = strToInt<int>(line);
+            nameLoc.column = strToInt<int>(col);
+            nameLoc.hash = strToInt<std::size_t>(hash);
             fileInfo->classDefinitions.push_back(std::move(nameLoc));
         }
     }
@@ -3233,7 +3266,7 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
 
     std::unordered_map<std::string, MyFileInfo::NameLoc> all;
 
-    for (Check::FileInfo *fi1 : fileInfo) {
+    for (const Check::FileInfo* fi1 : fileInfo) {
         const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
         if (!fi)
             continue;

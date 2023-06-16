@@ -40,7 +40,7 @@ namespace {
 
 void TimerResults::showResults(SHOWTIME_MODES mode) const
 {
-    if (mode == SHOWTIME_MODES::SHOWTIME_NONE)
+    if (mode == SHOWTIME_MODES::SHOWTIME_NONE || mode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
         return;
 
     std::cout << std::endl;
@@ -58,7 +58,17 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     for (std::vector<dataElementType>::const_iterator iter=data.cbegin(); iter!=data.cend(); ++iter) {
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
-        overallData.mClocks += iter->second.mClocks;
+        bool hasParent = false;
+        {
+            // Do not use inner timers in "Overall time"
+            const std::string::size_type pos = iter->first.rfind("::");
+            if (pos != std::string::npos)
+                hasParent = std::any_of(data.cbegin(), data.cend(), [iter,pos](const dataElementType& d) {
+                    return d.first.size() == pos && iter->first.compare(0, d.first.size(), d.first) == 0;
+                });
+        }
+        if (!hasParent)
+            overallData.mClocks += iter->second.mClocks;
         if ((mode != SHOWTIME_MODES::SHOWTIME_TOP5) || (ordinal<=5)) {
             std::cout << iter->first << ": " << sec << "s (avg. " << secAverage << "s - " << iter->second.mNumberOfResults  << " result(s))" << std::endl;
         }
@@ -80,11 +90,18 @@ void TimerResults::addResults(const std::string& str, std::clock_t clocks)
 Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
     : mStr(std::move(str))
     , mTimerResults(timerResults)
+    , mStart(std::clock())
     , mShowTimeMode(showtimeMode)
-{
-    if (showtimeMode != SHOWTIME_MODES::SHOWTIME_NONE)
-        mStart = std::clock();
-}
+    , mStopped(showtimeMode == SHOWTIME_MODES::SHOWTIME_NONE || showtimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
+{}
+
+Timer::Timer(bool fileTotal, std::string filename)
+    : mStr(std::move(filename))
+    , mTimerResults(nullptr)
+    , mStart(std::clock())
+    , mShowTimeMode(SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
+    , mStopped(!fileTotal)
+{}
 
 Timer::~Timer()
 {
@@ -100,6 +117,9 @@ void Timer::stop()
         if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE) {
             const double sec = (double)diff / CLOCKS_PER_SEC;
             std::cout << mStr << ": " << sec << "s" << std::endl;
+        } else if (mShowTimeMode == SHOWTIME_MODES::SHOWTIME_FILE_TOTAL) {
+            const double sec = (double)diff / CLOCKS_PER_SEC;
+            std::cout << "Check time: " << mStr << ": " << sec << "s" << std::endl;
         } else {
             if (mTimerResults)
                 mTimerResults->addResults(mStr, diff);

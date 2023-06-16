@@ -418,9 +418,15 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             continue;
         }
 
-        // assignment with nonzero constant..
-        if (Token::Match(tok->previous(), "[;{}] %var% = - %name% ;"))
-            variableValue[tok->varId()] = !VariableValue(0);
+        // track values of other variables..
+        if (Token::Match(tok->previous(), "[;{}] %var% =")) {
+            if (tok->next()->astOperand2() && tok->next()->astOperand2()->hasKnownIntValue())
+                variableValue[tok->varId()] = VariableValue(tok->next()->astOperand2()->getKnownIntValue());
+            else if (Token::Match(tok->previous(), "[;{}] %var% = - %name% ;"))
+                variableValue[tok->varId()] = !VariableValue(0);
+            else
+                variableValue.erase(tok->varId());
+        }
 
         // Inner scope..
         else if (Token::simpleMatch(tok, "if (")) {
@@ -565,7 +571,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         // = { .. }
-        else if (Token::simpleMatch(tok, "= {")) {
+        else if (Token::simpleMatch(tok, "= {") || (Token::Match(tok, "%name% {") && tok->variable() && tok == tok->variable()->nameToken())) {
             // end token
             const Token *end = tok->next()->link();
 
@@ -657,7 +663,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         // Unknown or unhandled inner scope
-        else if (Token::simpleMatch(tok, ") {") || (Token::Match(tok, "%name% {") && tok->str() != "try")) {
+        else if (Token::simpleMatch(tok, ") {") || (Token::Match(tok, "%name% {") && tok->str() != "try" && !(tok->variable() && tok == tok->variable()->nameToken()))) {
             if (tok->str() == "struct" || tok->str() == "union") {
                 tok = tok->linkAt(1);
                 continue;
@@ -827,7 +833,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
     return false;
 }
 
-const Token *CheckUninitVar::checkExpr(const Token *tok, const Variable& var, const Alloc alloc, bool known, bool *bailout)
+const Token* CheckUninitVar::checkExpr(const Token* tok, const Variable& var, const Alloc alloc, bool known, bool* bailout) const
 {
     if (!tok)
         return nullptr;
@@ -1123,6 +1129,10 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         // (type &)x
         else if (valueExpr->astParent()->isCast() && valueExpr->astParent()->isUnaryOp("(") && Token::simpleMatch(valueExpr->astParent()->link()->previous(), "& )"))
             valueExpr = valueExpr->astParent();
+        // designated initializers: {.x | { ... , .x
+        else if (Token::simpleMatch(valueExpr->astParent(), ".") &&
+                 Token::Match(valueExpr->astParent()->previous(), ",|{"))
+            valueExpr = valueExpr->astParent();
         else
             break;
     }
@@ -1240,7 +1250,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
                 tok = tok->astParent();
         }
         if (Token::simpleMatch(tok->astParent(), "=")) {
-            if (astIsLhs(tok))
+            if (astIsLhs(tok) && (alloc == ARRAY || !derefValue || !derefValue->astOperand1() || !derefValue->astOperand1()->isCast()))
                 return nullptr;
             if (alloc != NO_ALLOC && astIsRhs(valueExpr))
                 return nullptr;
@@ -1694,7 +1704,7 @@ bool CheckUninitVar::analyseWholeProgram(const CTU::FileInfo *ctu, const std::li
 
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
-    for (Check::FileInfo *fi1 : fileInfo) {
+    for (const Check::FileInfo* fi1 : fileInfo) {
         const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
         if (!fi)
             continue;

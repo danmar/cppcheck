@@ -24,11 +24,16 @@
 #include "settings.h"
 
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 #include <QDebug>
+#include <QFile>
 #include <QFileInfo>
+#include <QIODevice>
 #include <QSettings>
+#include <QTextStream>
+#include <QVariant>
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent)

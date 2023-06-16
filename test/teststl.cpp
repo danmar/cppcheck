@@ -35,14 +35,9 @@ public:
     TestStl() : TestFixture("TestStl") {}
 
 private:
-    Settings settings;
+    Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::style).severity(Severity::performance).library("std.cfg").build();
 
     void run() override {
-        settings.severity.enable(Severity::warning);
-        settings.severity.enable(Severity::style);
-        settings.severity.enable(Severity::performance);
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(outOfBounds);
         TEST_CASE(outOfBoundsSymbolic);
         TEST_CASE(outOfBoundsIndexExpression);
@@ -185,17 +180,15 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
-        settings.standards.cpp = cppstandard;
-
+        const Settings settings1 = settingsBuilder(settings).certainty(Certainty::inconclusive, inconclusive).cpp(cppstandard).build();
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
 
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        runChecks<CheckStl>(&tokenizer, &settings, this);
+        runChecks<CheckStl>(&tokenizer, &settings1, this);
     }
 
     void check_(const char* file, int line, const std::string& code, const bool inconclusive = false) {
@@ -4202,6 +4195,25 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (performance) Assigning the result of c_str() to a std::string is slow and redundant.\n"
                       "[test.cpp:8]: (performance) Assigning the result of c_str() to a std::string is slow and redundant.\n",
                       errout.str());
+
+        check("void f(std::string_view);\n" // #11547
+              "void g(const std::string & s) {\n"
+              "    f(s.c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Passing the result of c_str() to a function that takes std::string_view as argument no. 1 is slow and redundant.\n",
+                      errout.str());
+
+        check("std::string_view f(const std::string& s) {\n"
+              "    std::string_view sv = s.c_str();\n"
+              "    return sv;\n"
+              "}\n"
+              "std::string_view g(const std::string& s) {\n"
+              "    std::string_view sv{ s.c_str() };\n"
+              "    return sv;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Assigning the result of c_str() to a std::string_view is slow and redundant.\n"
+                      "[test.cpp:6]: (performance) Constructing a std::string_view from the result of c_str() is slow and redundant.\n",
+                      errout.str());
     }
 
     void uselessCalls() {
@@ -4750,6 +4762,15 @@ private:
               "    return true;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #6925
+        check("void f(const std::string& s, std::string::iterator i) {\n"
+              "    if (i != s.end() && *(i + 1) == *i) {\n"
+              "        if (i + 1 != s.end()) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:2]: (warning) Either the condition 'i+1!=s.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n",
+                      errout.str());
     }
 
     void dereferenceInvalidIterator2() {
@@ -5492,7 +5513,7 @@ private:
               "    QString s;\n"
               "public:\n"
               "    C(QString);\n"
-              "private slots:\n"
+              "private:\n"
               "    void f() {\n"
               "        QVERIFY(QDir(s).exists());\n"
               "    }\n"
@@ -5873,6 +5894,15 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n",
             errout.str());
+
+        // #11630
+        check("int main(int argc, const char* argv[]) {\n"
+              "    std::vector<std::string> args(argv + 1, argv + argc);\n"
+              "    args.push_back(\"-h\");\n"
+              "    args.front();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {

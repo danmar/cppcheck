@@ -18,8 +18,15 @@
 
 #include "testcppchecklibrarydata.h"
 
+#include <QDir>
 #include <QDebug>
-#include <QTest>
+#include <QFile>
+#include <QIODevice>
+#include <QList>
+#include <QPair>
+#include <QStringList>
+#include <QTextStream>
+#include <QtTest>
 
 const QString TestCppcheckLibraryData::TempCfgFile = "./tmp.cfg";
 

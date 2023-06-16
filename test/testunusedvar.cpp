@@ -24,21 +24,22 @@
 #include "tokenize.h"
 
 #include <list>
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
+#include <vector>
+
+#include <simplecpp.h>
 
 class TestUnusedVar : public TestFixture {
 public:
     TestUnusedVar() : TestFixture("TestUnusedVar") {}
 
 private:
-    Settings settings;
+    const Settings settings = settingsBuilder().severity(Severity::style).checkLibrary().library("std.cfg").build();
 
     void run() override {
-        settings.severity.enable(Severity::style);
-        settings.checkLibrary = true;
-        LOAD_LIB_2(settings.library, "std.cfg");
-
         TEST_CASE(isRecordTypeWithoutSideEffects);
         TEST_CASE(cleanFunction);
 
@@ -69,6 +70,9 @@ private:
         TEST_CASE(structmember20); // #10737
         TEST_CASE(structmember21); // #4759
         TEST_CASE(structmember22); // #11016
+        TEST_CASE(structmember23);
+        TEST_CASE(structmember_macro);
+        TEST_CASE(classmember);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -137,6 +141,7 @@ private:
         TEST_CASE(localvar66); // #11143
         TEST_CASE(localvar67); // #9946
         TEST_CASE(localvar68);
+        TEST_CASE(localvar69);
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -158,6 +163,7 @@ private:
         TEST_CASE(localvaralias18); // ticket #9234 - iterator
         TEST_CASE(localvaralias19); // ticket #9828
         TEST_CASE(localvaralias20); // ticket #10966
+        TEST_CASE(localvaralias21);
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -248,23 +254,50 @@ private:
 
 #define functionVariableUsage(...) functionVariableUsage_(__FILE__, __LINE__, __VA_ARGS__)
 #define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
-    void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr) {
+    void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr, const Settings *s = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
         if (directives)
             preprocessor.setDirectives(*directives);
 
+        const Settings *settings1 = s ? s : &settings;
+
         // Tokenize..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
+        Tokenizer tokenizer(settings1, this, &preprocessor);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+
+        // Check for unused variables..
+        CheckUnusedVar checkUnusedVar(&tokenizer, settings1, this);
+        (checkUnusedVar.checkStructMemberUsage)();
+    }
+
+    void checkStructMemberUsageP(const char code[]) {
+        // Raw tokens..
+        std::vector<std::string> files(1, "test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        Preprocessor preprocessor(settings);
+        preprocessor.setDirectives(tokens1);
+
+        // Tokenizer..
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.simplifyTokens1("");
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
         (checkUnusedVar.checkStructMemberUsage)();
     }
+
 
     void checkFunctionVariableUsageP(const char code[], const char* filename = "test.cpp") {
         // Raw tokens..
@@ -277,7 +310,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
@@ -1633,6 +1666,14 @@ private:
                                "\n"
                                "input.skip(sizeof(struct Header));");
         ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a, b, c; };\n" // #6561
+                               "int f(FILE * fp) {\n"
+                               "    S s;\n"
+                               "    ::fread(&s, sizeof(S), 1, fp);\n"
+                               "    return s.b;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember16() {
@@ -1676,7 +1717,7 @@ private:
                                "    uint8_t* p = (uint8_t*)&s;\n"
                                "    return p[10];\n"
                                "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::padding' is never used.\n", errout.str());
 
         checkStructMemberUsage("struct S { uint8_t padding[500]; };\n"
                                "uint8_t f(const S& s) {\n"
@@ -1684,7 +1725,14 @@ private:
                                "    auto p = reinterpret_cast<const uint8_t*>(&s);\n"
                                "    return p[10];\n"
                                "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::padding' is never used.\n", errout.str());
+
+        checkStructMemberUsage("struct S { int i, j; };\n" // #11577
+                               "void f(S s) {\n"
+                               "  void* p = (void*)&s;\n"
+                               "  if (s.i) {}\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'S::j' is never used.\n", errout.str());
     }
 
     void structmember19() {
@@ -1769,7 +1817,8 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
 
-        settings.enforcedLang = Settings::C;
+        Settings s = settings;
+        s.enforcedLang = Settings::C;
         checkStructMemberUsage("struct A {\n" // #10852
                                "    struct B {\n"
                                "        int x;\n"
@@ -1778,7 +1827,7 @@ private:
                                "void f() {\n"
                                "    struct B* pb = &a.b;\n"
                                "    pb->x = 1;\n"
-                               "}\n");
+                               "}\n", nullptr, &s);
         ASSERT_EQUALS("", errout.str());
 
         checkStructMemberUsage("union U {\n"
@@ -1796,9 +1845,8 @@ private:
                                "    pb->x = 1;\n"
                                "    struct C* pc = &u.c;\n"
                                "    pc->s[0] = 1;\n"
-                               "}\n");
+                               "}\n", nullptr, &s);
         ASSERT_EQUALS("", errout.str());
-        settings.enforcedLang = Settings::None;
     }
 
     void structmember20() { // #10737
@@ -1843,6 +1891,58 @@ private:
                                "    std::vector<A>::const_iterator it = b.begin();\n"
                                "    if (it->b) {}\n"
                                "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember23() {
+        checkStructMemberUsage("namespace N {\n"
+                               "    struct S { std::string s; };\n"
+                               "}\n"
+                               "std::string f() {\n"
+                               "    std::map<int, N::S> m = { { 0, { \"abc\" } } };\n"
+                               "    return m[0].s;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember_macro() {
+        checkStructMemberUsageP("#define S(n) struct n { int a, b, c; };\n"
+                                "S(unused);\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void classmember() {
+        checkStructMemberUsage("class C {\n"
+                               "    int i{};\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) class member 'C::i' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "    int i{}, j{};\n"
+                               "public:\n"
+                               "    int& get() { return i; }\n"
+                               "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) class member 'C::j' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "private:\n"
+                               "    int i;\n"
+                               "};\n"
+                               "class D : public C {};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) class member 'C::i' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "public:\n"
+                               "    int i;\n"
+                               "};\n"
+                               "class D : C {};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) class member 'C::i' is never used.\n", errout.str());
+
+        checkStructMemberUsage("class C {\n"
+                               "public:\n"
+                               "    int i;\n"
+                               "};\n"
+                               "class D : public C {};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3675,6 +3775,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvar69() {
+        functionVariableUsage("int g();\n" // #11063
+                              "int h(int);\n"
+                              "int f() {\n"
+                              "    int i = g();\n"
+                              "    return (::h)(i);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarloops() {
         // loops
         functionVariableUsage("void fun(int c) {\n"
@@ -4712,17 +4822,6 @@ private:
                               "    ref[0] = 123;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
-
-        functionVariableUsage("void foo()\n"
-                              "{\n"
-                              "    Foo foo;\n"
-                              "    Foo &ref = foo;\n"
-                              "    ref[0] = 123;\n"
-                              "}",
-                              "test.c");
-        TODO_ASSERT_EQUALS("[test.c:5]: (style) Variable 'foo' is assigned a value that is never used.\n",
-                           "",
-                           errout.str());
     }
 
     void localvaralias10() { // ticket 2004
@@ -4732,15 +4831,6 @@ private:
                               "    int *x = &ref.x();\n"
                               "    *x = 0;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
-
-        functionVariableUsage("void foo(Foo &foo)\n"
-                              "{\n"
-                              "    Foo &ref = foo;\n"
-                              "    int *x = &ref.x;\n"
-                              "    *x = 0;\n"
-                              "}",
-                              "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4878,6 +4968,18 @@ private:
                            "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
                            "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
                            errout.str());
+    }
+
+    void localvaralias21() { // #11728
+        functionVariableUsage("void f(int i) {\n"
+                              "    bool b = true;\n"
+                              "    bool* p = &b;\n"
+                              "    int j{};\n"
+                              "    if (i)\n"
+                              "        b = false;\n"
+                              "    if (*p) {}\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarasm() {
@@ -6282,6 +6384,13 @@ private:
                               "    });\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f() {\n" // #8433
+                              "    float a;\n"
+                              "    auto lambda = []() {};\n"
+                              "    return 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: a\n", errout.str());
     }
 
 

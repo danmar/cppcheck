@@ -19,7 +19,6 @@
 #include "checkstl.h"
 
 #include "astutils.h"
-#include "check.h"
 #include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
@@ -39,7 +38,6 @@
 #include <iterator>
 #include <list>
 #include <map>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <tuple>
@@ -452,11 +450,6 @@ static std::string getContainerName(const Token *containerToken)
     }
     return ret;
 }
-
-enum OperandPosition {
-    Left,
-    Right
-};
 
 static bool isVector(const Token* tok)
 {
@@ -921,7 +914,7 @@ struct InvalidContainerAnalyzer {
             const Token* ftok;
         };
         std::unordered_map<int, Reference> expressions;
-        ErrorPath errorPath;
+
         void add(const std::vector<Reference>& refs) {
             for (const Reference& r : refs) {
                 add(r);
@@ -1558,13 +1551,12 @@ static std::pair<const Token *, const Token *> isMapFind(const Token *tok)
     return {contTok, tok->astOperand2()};
 }
 
-static const Token *skipLocalVars(const Token *tok)
+static const Token* skipLocalVars(const Token* const tok)
 {
     if (!tok)
         return tok;
     if (Token::simpleMatch(tok, "{"))
         return skipLocalVars(tok->next());
-    const Scope *scope = tok->scope();
 
     const Token *top = tok->astTop();
     if (!top) {
@@ -1586,7 +1578,7 @@ static const Token *skipLocalVars(const Token *tok)
         const Variable *var = varTok->variable();
         if (!var)
             return tok;
-        if (var->scope() != scope)
+        if (var->scope() != tok->scope())
             return tok;
         const Token *endTok = nextAfterAstRightmostLeaf(top);
         if (!endTok)
@@ -1907,15 +1899,19 @@ void CheckStl::string_c_str()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Find all functions that take std::string as argument
-    std::multimap<const Function*, int> c_strFuncParam;
+    struct StrArg {
+        nonneg int n; // cppcheck-suppress unusedStructMember // FP used through iterator/pair
+        std::string argtype; // cppcheck-suppress unusedStructMember
+    };
+    std::multimap<const Function*, StrArg> c_strFuncParam;
     if (printPerformance) {
         for (const Scope &scope : symbolDatabase->scopeList) {
             for (const Function &func : scope.functionList) {
-                int numpar = 0;
+                nonneg int numpar = 0;
                 for (const Variable &var : func.argumentList) {
                     numpar++;
-                    if (var.isStlStringType() && (!var.isReference() || var.isConst()))
-                        c_strFuncParam.insert(std::make_pair(&func, numpar));
+                    if ((var.isStlStringType() || var.isStlStringViewType()) && (!var.isReference() || var.isConst()))
+                        c_strFuncParam.emplace(&func, StrArg{ numpar, var.getTypeName() });
                 }
             }
         }
@@ -1963,24 +1959,24 @@ void CheckStl::string_c_str()
                         string_c_strError(tok);
                 } else if (printPerformance && tok->tokAt(1)->astOperand2() && Token::Match(tok->tokAt(1)->astOperand2()->tokAt(-3), "%var% . c_str|data ( ) ;")) {
                     const Token* vartok = tok->tokAt(1)->astOperand2()->tokAt(-3);
-                    if (tok->variable()->isStlStringType() && vartok->variable() && vartok->variable()->isStlStringType())
-                        string_c_strAssignment(tok);
+                    if ((tok->variable()->isStlStringType() || tok->variable()->isStlStringViewType()) && vartok->variable() && vartok->variable()->isStlStringType())
+                        string_c_strAssignment(tok, tok->variable()->getTypeName());
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
-                const std::pair<std::multimap<const Function*, int>::const_iterator, std::multimap<const Function*, int>::const_iterator> range = c_strFuncParam.equal_range(tok->function());
-                for (std::multimap<const Function*, int>::const_iterator i = range.first; i != range.second; ++i) {
-                    if (i->second == 0)
+                const auto range = c_strFuncParam.equal_range(tok->function());
+                for (std::multimap<const Function*, StrArg>::const_iterator i = range.first; i != range.second; ++i) {
+                    if (i->second.n == 0)
                         continue;
 
                     const Token* tok2 = tok->tokAt(2);
                     int j;
-                    for (j = 0; tok2 && j < i->second-1; j++)
+                    for (j = 0; tok2 && j < i->second.n - 1; j++)
                         tok2 = tok2->nextArgument();
                     if (tok2)
                         tok2 = tok2->nextArgument();
                     else
                         break;
-                    if (!tok2 && j == i->second-1)
+                    if (!tok2 && j == i->second.n - 1)
                         tok2 = tok->next()->link();
                     else if (tok2)
                         tok2 = tok2->previous();
@@ -1988,17 +1984,18 @@ void CheckStl::string_c_str()
                         break;
                     if (tok2 && Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         if (isString(tok2->tokAt(-4)->astOperand1())) {
-                            string_c_strParam(tok, i->second);
+                            string_c_strParam(tok, i->second.n, i->second.argtype);
                         } else if (Token::Match(tok2->tokAt(-9), "%name% . str ( )")) { // Check ss.str().c_str() as parameter
                             const Variable* ssVar = tok2->tokAt(-9)->variable();
                             if (ssVar && ssVar->isStlType(stl_string_stream))
-                                string_c_strParam(tok, i->second);
+                                string_c_strParam(tok, i->second.n, i->second.argtype);
                         }
                     }
                 }
             } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") &&
-                       tok->variable() && tok->variable()->isStlStringType() && tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType()) {
-                string_c_strConstructor(tok);
+                       tok->variable() && (tok->variable()->isStlStringType() || tok->variable()->isStlStringViewType()) &&
+                       tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType()) {
+                string_c_strConstructor(tok, tok->variable()->getTypeName());
             } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER &&
                        ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable() && tok->previous()->variable()->isStlStringType()) ||
                         (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable() && tok->tokAt(-5)->variable()->isStlStringType()))) {
@@ -2111,25 +2108,25 @@ void CheckStl::string_c_strReturn(const Token* tok)
                 "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly returning the string.", CWE704, Certainty::normal);
 }
 
-void CheckStl::string_c_strParam(const Token* tok, nonneg int number)
+void CheckStl::string_c_strParam(const Token* tok, nonneg int number, const std::string& argtype)
 {
     std::ostringstream oss;
-    oss << "Passing the result of c_str() to a function that takes std::string as argument no. " << number << " is slow and redundant.\n"
-        "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly passing the string.";
+    oss << "Passing the result of c_str() to a function that takes " << argtype << " as argument no. " << number << " is slow and redundant.\n"
+        "The conversion from const char* as returned by c_str() to " << argtype << " creates an unnecessary string copy or length calculation. Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrParam", oss.str(), CWE704, Certainty::normal);
 }
 
-void CheckStl::string_c_strConstructor(const Token* tok)
+void CheckStl::string_c_strConstructor(const Token* tok, const std::string& argtype)
 {
-    std::string msg = "Constructing a std::string from the result of c_str() is slow and redundant.\n"
-                      "Constructing a std::string from const char* requires a call to strlen(). Solve that by directly passing the string.";
+    std::string msg = "Constructing a " + argtype + " from the result of c_str() is slow and redundant.\n"
+                      "Constructing a " + argtype + " from const char* requires a call to strlen(). Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrConstructor", msg, CWE704, Certainty::normal);
 }
 
-void CheckStl::string_c_strAssignment(const Token* tok)
+void CheckStl::string_c_strAssignment(const Token* tok, const std::string& argtype)
 {
-    std::string msg = "Assigning the result of c_str() to a std::string is slow and redundant.\n"
-                      "Assigning a const char* to a std::string requires a call to strlen(). Solve that by directly assigning the string.";
+    std::string msg = "Assigning the result of c_str() to a " + argtype + " is slow and redundant.\n"
+                      "Assigning a const char* to a " + argtype + " requires a call to strlen(). Solve that by directly assigning the string.";
     reportError(tok, Severity::performance, "stlcstrAssignment", msg, CWE704, Certainty::normal);
 }
 

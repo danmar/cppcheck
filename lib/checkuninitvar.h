@@ -82,7 +82,7 @@ public:
     void checkStruct(const Token *tok, const Variable &structvar);
     enum Alloc { NO_ALLOC, NO_CTOR_CALL, CTOR_CALL, ARRAY };
     bool checkScopeForVariable(const Token *tok, const Variable& var, bool* const possibleInit, bool* const noreturn, Alloc* const alloc, const std::string &membervar, std::map<nonneg int, VariableValue> variableValue);
-    const Token *checkExpr(const Token *tok, const Variable& var, const Alloc alloc, bool known, bool *bailout=nullptr);
+    const Token* checkExpr(const Token* tok, const Variable& var, const Alloc alloc, bool known, bool* bailout = nullptr) const;
     bool checkIfForWhileHead(const Token *startparentheses, const Variable& var, bool suppressErrors, bool isuninit, Alloc alloc, const std::string &membervar);
     bool checkLoopBody(const Token *tok, const Variable& var, const Alloc alloc, const std::string &membervar, const bool suppressErrors);
     const Token* checkLoopBodyRecursive(const Token *start, const Variable& var, const Alloc alloc, const std::string &membervar, bool &bailout) const;
@@ -133,7 +133,6 @@ public:
 private:
     std::set<const Token*> mUninitDiags;
     Check::FileInfo* getFileInfo() const;
-    bool isUnsafeFunction(const Scope* scope, int argnr, const Token** tok) const;
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override
     {

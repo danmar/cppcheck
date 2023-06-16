@@ -274,7 +274,7 @@ static std::string unescape(const std::string &in)
     return out;
 }
 
-void ImportProject::FileSettings::parseCommand(std::string command)
+void ImportProject::FileSettings::parseCommand(const std::string& command)
 {
     std::string defs;
 
@@ -1147,6 +1147,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 
     guiProject.analyzeAllVsConfigs.clear();
 
+    // TODO: this should support all available command-line options
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (strcmp(node->Name(), CppcheckXml::RootPathName) == 0) {
             if (node->Attribute(CppcheckXml::RootPathNameAttrib)) {
@@ -1190,7 +1191,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                     s.fileName = joinRelativePath(path, s.fileName);
                 s.lineNumber = child->IntAttribute("lineNumber", Suppressions::Suppression::NO_LINE);
                 s.symbolName = readSafe(child->Attribute("symbolName"), "");
-                std::istringstream(readSafe(child->Attribute("hash"), "0")) >> s.hash;
+                s.hash = strToInt<std::size_t>(readSafe(child->Attribute("hash"), "0"));
                 suppressions.push_back(std::move(s));
             }
         } else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
@@ -1218,9 +1219,9 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), CppcheckXml::CheckUnusedTemplatesElementName) == 0)
             temp.checkUnusedTemplates = (strcmp(readSafe(node->GetText(), ""), "true") == 0);
         else if (strcmp(node->Name(), CppcheckXml::MaxCtuDepthElementName) == 0)
-            temp.maxCtuDepth = std::atoi(readSafe(node->GetText(), "")); // TODO: get rid of atoi()
+            temp.maxCtuDepth = strToInt<int>(readSafe(node->GetText(), "2")); // TODO: bail out when missing?
         else if (strcmp(node->Name(), CppcheckXml::MaxTemplateRecursionElementName) == 0)
-            temp.maxTemplateRecursion = std::atoi(readSafe(node->GetText(), "")); // TODO: get rid of atoi()
+            temp.maxTemplateRecursion = strToInt<int>(readSafe(node->GetText(), "100")); // TODO: bail out when missing?
         else if (strcmp(node->Name(), CppcheckXml::CheckUnknownFunctionReturn) == 0)
             ; // TODO
         else if (strcmp(node->Name(), Settings::SafeChecks::XmlRootName) == 0) {
@@ -1273,8 +1274,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);
-    for (const Suppressions::Suppression &supp : suppressions)
-        settings->nomsg.addSuppression(supp);
+    settings->nomsg.addSuppressions(std::move(suppressions));
     settings->checkHeaders = temp.checkHeaders;
     settings->checkUnusedTemplates = temp.checkUnusedTemplates;
     settings->maxCtuDepth = temp.maxCtuDepth;
@@ -1300,14 +1300,36 @@ void ImportProject::selectOneVsConfig(cppcheck::Platform::Type platform)
             remove = true;
         else if ((platform == cppcheck::Platform::Type::Win32A || platform == cppcheck::Platform::Type::Win32W) && fs.platformType == cppcheck::Platform::Type::Win64)
             remove = true;
-        else if (fs.platformType != cppcheck::Platform::Type::Win64 && platform == cppcheck::Platform::Type::Win64)
-            remove = true;
         else if (filenames.find(fs.filename) != filenames.end())
             remove = true;
         if (remove) {
             it = fileSettings.erase(it);
         } else {
             filenames.insert(fs.filename);
+            ++it;
+        }
+    }
+}
+
+void ImportProject::selectVsConfigurations(cppcheck::Platform::Type platform, const std::vector<std::string> &configurations)
+{
+    for (std::list<ImportProject::FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
+        if (it->cfg.empty()) {
+            ++it;
+            continue;
+        }
+        const ImportProject::FileSettings &fs = *it;
+        const auto config = fs.cfg.substr(0, fs.cfg.find('|'));
+        bool remove = false;
+        if (std::find(configurations.begin(), configurations.end(), config) == configurations.end())
+            remove = true;
+        if (platform == cppcheck::Platform::Type::Win64 && fs.platformType != platform)
+            remove = true;
+        else if ((platform == cppcheck::Platform::Type::Win32A || platform == cppcheck::Platform::Type::Win32W) && fs.platformType == cppcheck::Platform::Type::Win64)
+            remove = true;
+        if (remove) {
+            it = fileSettings.erase(it);
+        } else {
             ++it;
         }
     }

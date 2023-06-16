@@ -55,10 +55,10 @@ static bool isPtrArg(const Token *tok)
     return (var && var->isArgument() && var->isPointer());
 }
 
-static bool isArrayArg(const Token *tok)
+static bool isArrayArg(const Token *tok, const Settings* settings)
 {
     const Variable *var = tok->variable();
-    return (var && var->isArgument() && var->isArray());
+    return (var && var->isArgument() && var->isArray() && !settings->library.isentrypoint(var->scope()->className));
 }
 
 static bool isArrayVar(const Token *tok)
@@ -143,24 +143,27 @@ static bool isAutoVarArray(const Token *tok)
     return false;
 }
 
-// Verification that we really take the address of a local variable
-static bool checkRvalueExpression(const Token * const vartok)
+static bool isLocalContainerBuffer(const Token* tok)
 {
-    const Variable * const var = vartok->variable();
-    if (var == nullptr)
+    if (!tok)
         return false;
 
-    if (Token::Match(vartok->previous(), "& %name% [") && var->isPointer())
+    // x+y
+    if (tok->str() == "+")
+        return isLocalContainerBuffer(tok->astOperand1()) || isLocalContainerBuffer(tok->astOperand2());
+
+    if (tok->str() != "(" || !Token::simpleMatch(tok->astOperand1(), "."))
         return false;
 
-    const Token * const next = vartok->next();
-    // &a.b[0]
-    if (Token::Match(vartok, "%name% . %var% [") && !var->isPointer()) {
-        const Variable *var2 = next->next()->variable();
-        return var2 && !var2->isPointer();
-    }
+    tok = tok->astOperand1()->astOperand1();
 
-    return ((next->str() != "." || (!var->isPointer() && (!var->isClass() || var->type()))) && next->strAt(2) != ".");
+    const Variable* var = tok->variable();
+    if (!var || !var->isLocal() || var->isStatic())
+        return false;
+
+    const Library::Container::Yield yield = astContainerYield(tok);
+
+    return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
 }
 
 static bool isAddressOfLocalVariable(const Token *expr)
@@ -232,6 +235,30 @@ void CheckAutoVariables::assignFunctionArg()
     }
 }
 
+static bool isAutoVariableRHS(const Token* tok) {
+    return isAddressOfLocalVariable(tok) || isAutoVarArray(tok) || isLocalContainerBuffer(tok);
+}
+
+static bool hasOverloadedAssignment(const Token* tok, bool c, bool& inconclusive)
+{
+    inconclusive = false;
+    if (c)
+        return false;
+    if (const ValueType* vt = tok->valueType()) {
+        if (vt->pointer && !Token::simpleMatch(tok->astParent(), "*"))
+            return false;
+        if (vt->container && vt->container->stdStringLike)
+            return true;
+        if (vt->typeScope)
+            return std::any_of(vt->typeScope->functionList.begin(), vt->typeScope->functionList.end(), [](const Function& f) { // TODO: compare argument type
+                return f.name() == "operator=";
+            });
+        return false;
+    }
+    inconclusive = true;
+    return true;
+}
+
 void CheckAutoVariables::autoVariables()
 {
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
@@ -244,42 +271,39 @@ void CheckAutoVariables::autoVariables()
                 continue;
             }
             // Critical assignment
-            if (Token::Match(tok, "[;{}] %var% = & %var%") && isRefPtrArg(tok->next()) && isAutoVar(tok->tokAt(4))) {
-                if (checkRvalueExpression(tok->tokAt(4)))
-                    checkAutoVariableAssignment(tok->next(), false);
-            } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAddressOfLocalVariable(tok->tokAt(3)->astOperand2())) {
+            if (Token::Match(tok, "[;{}] %var% =") && isRefPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(2)->astOperand2())) {
                 checkAutoVariableAssignment(tok->next(), false);
-            } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAddressOfLocalVariable(tok->tokAt(4)->astOperand2())) {
-                checkAutoVariableAssignment(tok->next(), false);
-            } else if (Token::Match(tok, "[;{}] %var% . %var% = %var% ;")) {
-                // TODO: check if the parameter is only changed temporarily (#2969)
-                if (printInconclusive && isPtrArg(tok->next())) {
-                    if (isAutoVarArray(tok->tokAt(5)))
-                        checkAutoVariableAssignment(tok->next(), true);
-                }
-                tok = tok->tokAt(5);
-            } else if (Token::Match(tok, "[;{}] * %var% = %var% ;")) {
-                const Variable * var1 = tok->tokAt(2)->variable();
-                if (var1 && var1->isArgument() && Token::Match(var1->nameToken()->tokAt(-3), "%type% * *")) {
-                    if (isAutoVarArray(tok->tokAt(4)))
-                        checkAutoVariableAssignment(tok->next(), false);
-                }
+            } else if (Token::Match(tok, "[;{}] * %var% =") && isPtrArg(tok->tokAt(2)) && isAutoVariableRHS(tok->tokAt(3)->astOperand2())) {
+                const Token* lhs = tok->tokAt(2);
+                bool inconclusive = false;
+                if (!hasOverloadedAssignment(lhs, mTokenizer->isC(), inconclusive) || (printInconclusive && inconclusive))
+                    checkAutoVariableAssignment(tok->next(), inconclusive);
                 tok = tok->tokAt(4);
+            } else if (Token::Match(tok, "[;{}] %var% . %var% =") && isPtrArg(tok->next()) && isAutoVariableRHS(tok->tokAt(4)->astOperand2())) {
+                const Token* lhs = tok->tokAt(3);
+                bool inconclusive = false;
+                if (!hasOverloadedAssignment(lhs, mTokenizer->isC(), inconclusive) || (printInconclusive && inconclusive))
+                    checkAutoVariableAssignment(tok->next(), inconclusive);
+                tok = tok->tokAt(5);
             } else if (Token::Match(tok, "[;{}] %var% [") && Token::simpleMatch(tok->linkAt(2), "] =") &&
-                       (isPtrArg(tok->next()) || isArrayArg(tok->next())) && isAddressOfLocalVariable(tok->linkAt(2)->next()->astOperand2())) {
+                       (isPtrArg(tok->next()) || isArrayArg(tok->next(), mSettings)) &&
+                       isAutoVariableRHS(tok->linkAt(2)->next()->astOperand2())) {
                 errorAutoVariableAssignment(tok->next(), false);
             }
             // Invalid pointer deallocation
             else if ((Token::Match(tok, "%name% ( %var%|%str% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
                      (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var%|%str% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%|%str%");
+                if (Token::simpleMatch(tok->astParent(), "."))
+                    continue;
                 if (isArrayVar(tok) || tok->tokType() == Token::eString)
                     errorInvalidDeallocation(tok, nullptr);
                 else if (tok->variable() && tok->variable()->isPointer()) {
                     for (const ValueFlow::Value &v : tok->values()) {
-                        if (!(v.isTokValue()))
+                        if (v.isImpossible())
                             continue;
-                        if (isArrayVar(v.tokvalue) || ((v.tokvalue->tokType() == Token::eString) && !v.isImpossible())) {
+                        if ((v.isTokValue() && (isArrayVar(v.tokvalue) || ((v.tokvalue->tokType() == Token::eString)))) ||
+                            (v.isLocalLifetimeValue() && v.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)) {
                             errorInvalidDeallocation(tok, &v);
                             break;
                         }
@@ -309,8 +333,12 @@ bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inc
         }
         if (Token::simpleMatch(tok, "=")) {
             const Token *lhs = tok;
-            while (Token::Match(lhs->previous(), "%name%|.|*"))
-                lhs = lhs->previous();
+            while (Token::Match(lhs->previous(), "%name%|.|*|]")) {
+                if (lhs->linkAt(-1))
+                    lhs = lhs->linkAt(-1);
+                else
+                    lhs = lhs->previous();
+            }
             const Token *e = expr;
             while (e->str() != "=" && lhs->str() == e->str()) {
                 e = e->next();
@@ -471,7 +499,7 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
     const Variable* var = tokvalue->variable();
     if (!var->isLocal())
         return false;
-    Function* f = Scope::nestedInFunction(tok->scope());
+    const Function* f = Scope::nestedInFunction(tok->scope());
     if (!f)
         return false;
     const Token* parent = tokvalue->astParent();
@@ -610,7 +638,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
                     if (!nextTok)
                         nextTok = tok->next();
-                    if (var && !var->isLocal() && !var->isArgument() &&
+                    if (var && !var->isLocal() && !var->isArgument() && !(val.tokvalue && val.tokvalue->variable() && val.tokvalue->variable()->isStatic()) &&
                         !isVariableChanged(nextTok,
                                            tok->scope()->bodyEnd,
                                            var->declarationId(),

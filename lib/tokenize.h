@@ -158,13 +158,6 @@ public:
     nonneg int sizeOfType(const std::string& type) const;
 
     void simplifyDebug();
-    /**
-     * Try to determine if function parameter is passed by value by looking
-     * at the function declaration.
-     * @param fpar token for function parameter in the function call
-     * @return true if the parameter is passed by value. if unsure, false is returned
-     */
-    bool isFunctionParameterPassedByValue(const Token *fpar) const;
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
@@ -202,7 +195,7 @@ public:
      * \param only_k_r_fpar Only simplify K&R function parameters
      */
     void simplifyVarDecl(const bool only_k_r_fpar);
-    void simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar);
+    void simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, const bool only_k_r_fpar); // cppcheck-suppress functionConst // has side effects
 
     /**
      * Simplify variable initialization
@@ -267,6 +260,11 @@ public:
      * A c;
      */
     void simplifyTypedef();
+    void simplifyTypedefCpp();
+    /**
+     * Move typedef token to the left og the expression
+     */
+    void simplifyTypedefLHS();
 
     /**
      */
@@ -275,6 +273,7 @@ public:
     /**
      */
     bool simplifyUsing();
+    void simplifyUsingError(const Token* usingStart, const Token* usingEnd);
 
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
@@ -468,13 +467,13 @@ private:
      */
     void simplifyAttribute();
 
+    /** Get function token for a attribute */
+    Token* getAttributeFuncTok(Token* tok, bool gccattr) const;
+
     /**
      * Remove \__cppcheck\__ ((?))
      */
     void simplifyCppcheckAttribute();
-
-    /** Remove alignas */
-    void removeAlignas();
 
     /** Simplify c++20 spaceship operator */
     void simplifySpaceshipOperator();
@@ -549,12 +548,6 @@ private:
     void simplifyCPPAttribute();
 
     /**
-     * Replace strlen(str)
-     * @return true if any replacement took place, false else
-     * */
-    bool simplifyStrlen();
-
-    /**
      * Convert namespace aliases
      */
     void simplifyNamespaceAliases();
@@ -586,8 +579,8 @@ private:
 
     void unsupportedTypedef(const Token *tok) const;
 
-    void setVarIdClassDeclaration(const Token * const startToken, // cppcheck-suppress functionConst // has side effects
-                                  VariableMap &variableMap,
+    void setVarIdClassDeclaration(Token* const startToken, // cppcheck-suppress functionConst // has side effects
+                                  VariableMap& variableMap,
                                   const nonneg int scopeStartVarId,
                                   std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
 
@@ -649,6 +642,10 @@ public:
     TokenList list;
     // Implement tokens() as a wrapper for convenience when using the TokenList
     const Token* tokens() const {
+        return list.front();
+    }
+
+    Token* tokens() {
         return list.front();
     }
 

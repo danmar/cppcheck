@@ -27,12 +27,12 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <functional>
 #include <list>
-#include <memory>
 #include <string>
 #include <tuple>
 #include <type_traits>
@@ -49,7 +49,7 @@ struct OnExit {
 
 struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
-    enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
+    enum class Terminate { None, Bail, Inconclusive };
     ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
         : analyzer(analyzer), settings(settings)
     {}
@@ -333,8 +333,6 @@ struct ForwardTraversal {
 
     enum class Status {
         None,
-        Escaped,
-        Modified,
         Inconclusive,
     };
 
@@ -413,7 +411,7 @@ struct ForwardTraversal {
             return Break();
         if (stepTok && updateRecursive(stepTok) == Progress::Break)
             return Break();
-        if (condTok && updateRecursive(condTok) == Progress::Break)
+        if (condTok && !Token::simpleMatch(condTok, ":") && updateRecursive(condTok) == Progress::Break)
             return Break();
         return Progress::Continue;
     }
@@ -896,6 +894,8 @@ struct ForwardTraversal {
 
 Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings& settings)
 {
+    if (a->invalid())
+        return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
     ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
     return Analyzer::Result{ ft.actions, ft.terminate };
@@ -905,6 +905,8 @@ Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>&
 {
     if (Settings::terminated())
         throw TerminateException();
+    if (a->invalid())
+        return Analyzer::Result{Analyzer::Action::None, Analyzer::Terminate::Bail};
     ForwardTraversal ft{a, settings};
     ft.updateRecursive(start);
     return Analyzer::Result{ ft.actions, ft.terminate };

@@ -420,8 +420,9 @@ void MacroTest3()
     QVERIFY2(2 >= 0, message.constData());
 }
 
-void validCode(int * pIntPtr, QString & qstrArg)
+void validCode(int * pIntPtr, QString & qstrArg, double d)
 {
+    Q_UNUSED(d)
     if (QFile::exists("test")) {}
 
     if (pIntPtr != Q_NULLPTR) {
@@ -440,6 +441,7 @@ void validCode(int * pIntPtr, QString & qstrArg)
 
     printf(QT_TR_NOOP("Hi"));
 
+    // cppcheck-suppress checkLibraryFunction
     Q_DECLARE_LOGGING_CATEGORY(logging_category_test);
     QT_FORWARD_DECLARE_CLASS(forwardDeclaredClass);
     QT_FORWARD_DECLARE_STRUCT(forwardDeclaredStruct);

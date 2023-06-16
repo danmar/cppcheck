@@ -67,6 +67,7 @@ private:
         TEST_CASE(zeroDiv15); // #8319
         TEST_CASE(zeroDiv16); // #11158
         TEST_CASE(zeroDiv17); // #9931
+        TEST_CASE(zeroDiv18);
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -103,6 +104,8 @@ private:
         TEST_CASE(varScope30);      // #8541
         TEST_CASE(varScope31);      // #11099
         TEST_CASE(varScope32);      // #11441
+        TEST_CASE(varScope33);
+        TEST_CASE(varScope34);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -266,6 +269,7 @@ private:
         TEST_CASE(moveClassVariable);
         TEST_CASE(forwardAndUsed);
         TEST_CASE(moveAndReference);
+        TEST_CASE(moveForRange);
 
         TEST_CASE(funcArgNamesDifferent);
         TEST_CASE(funcArgOrderDifferent);
@@ -305,7 +309,7 @@ private:
         settings->certainty.setEnabled(Certainty::inconclusive, inconclusive);
         settings->verbose = verbose;
 
-        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
+        Preprocessor preprocessor(*settings);
 
         // Tokenize..
         Tokenizer tokenizer(settings, this, &preprocessor);
@@ -345,7 +349,7 @@ private:
         std::map<std::string, simplecpp::TokenList*> filedata;
         simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
-        Preprocessor preprocessor(*settings, settings->nomsg, nullptr);
+        Preprocessor preprocessor(*settings);
         preprocessor.setDirectives(tokens1);
 
         // Tokenizer..
@@ -649,6 +653,17 @@ private:
               "    return x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv18()
+    {
+        check("int f(int x, int y) {\n"
+              "    if (x == y) {}\n"
+              "    return 1 / (x-y);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'x==y' is redundant or there is division by zero at line 3.\n",
+            errout.str());
     }
 
     void zeroDivCond() {
@@ -1419,6 +1434,19 @@ private:
               "    }\n"
               "    return *iter;\n"
               "}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'vec' can be declared as reference to const\n", errout.str());
+
+        check("auto& foo(std::vector<int>& vec, bool flag) {\n"
+              "    std::vector<int> dummy;\n"
+              "    std::vector<int>::iterator iter;\n"
+              "    if (flag)\n"
+              "        iter = vec.begin();\n"
+              "    else {\n"
+              "        dummy.push_back(42);\n"
+              "        iter = dummy.begin();\n"
+              "    }\n"
+              "    return *iter;\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1537,16 +1565,78 @@ private:
         ASSERT_EQUALS("[test.cpp:6]: (warning) Unused variable value 'x'\n", errout.str());
     }
 
+    void varScope33() { // #11131
+        check("struct S {\n"
+              "    const std::string& getStr() const;\n"
+              "    void mutate();\n"
+              "    bool getB() const;\n"
+              "};\n"
+              "void g(S& s) {\n"
+              "    std::string str = s.getStr();\n"
+              "    s.mutate();\n"
+              "    if (s.getB()) {\n"
+              "        if (str == \"abc\") {}\n"
+              "    }\n"
+              "}\n"
+              "void g(char* s, bool b) {\n"
+              "    int i = strlen(s);\n"
+              "    s[0] = '\\0';\n"
+              "    if (b) {\n"
+              "        if (i == 5) {}\n"
+              "    }\n"
+              "}\n"
+              "void f(const S& s) {\n"
+              "    std::string str = s.getStr();\n"
+              "    std::string str2{ s.getStr() };\n"
+              "    std::string str3(s.getStr());\n"
+              "    if (s.getB()) {\n"
+              "        if (str == \"abc\") {}\n"
+              "        if (str2 == \"abc\") {}\n"
+              "        if (str3 == \"abc\") {}\n"
+              "    }\n"
+              "}\n"
+              "void f(const char* s, bool b) {\n"
+              "    int i = strlen(s);\n"
+              "    if (b) {\n"
+              "        if (i == 5) {}\n"
+              "    }\n"
+              "}\n"
+              "void f(int j, bool b) {\n"
+              "    int k = j;\n"
+              "    if (b) {\n"
+              "        if (k == 5) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:21]: (style) The scope of the variable 'str' can be reduced.\n"
+                      "[test.cpp:22]: (style) The scope of the variable 'str2' can be reduced.\n"
+                      "[test.cpp:23]: (style) The scope of the variable 'str3' can be reduced.\n"
+                      "[test.cpp:31]: (style) The scope of the variable 'i' can be reduced.\n"
+                      "[test.cpp:37]: (style) The scope of the variable 'k' can be reduced.\n",
+                      errout.str());
+    }
+
+    void varScope34() { // #11742
+        check("void f() {\n"
+              "    bool b = false;\n"
+              "    int i = 1;\n"
+              "    for (int k = 0; k < 20; ++k) {\n"
+              "        b = !b;\n"
+              "        if (b)\n"
+              "            i++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
     void checkOldStylePointerCast_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.severity.enable(Severity::style);
-        settings.standards.cpp = Standards::CPP03; // #5560
+        // #5560 - set c++03
+        const Settings settings = settingsBuilder().severity(Severity::style).cpp(Standards::CPP03).build();
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizerCpp(&settings, this, &preprocessor);
@@ -1745,14 +1835,10 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings;
-        settings.severity.enable(Severity::warning);
-        if (portability)
-            settings.severity.enable(Severity::portability);
-        settings.certainty.setEnabled(Certainty::inconclusive, inconclusive);
+        Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability, portability).certainty(Certainty::inconclusive, inconclusive).build();
         settings.platform.defaultSign = 's';
 
-        Preprocessor preprocessor(settings, settings.nomsg, nullptr);
+        Preprocessor preprocessor(settings);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this, &preprocessor);
@@ -1993,8 +2079,37 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        Settings settings1;
-        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
+        check("int x(int);\n"
+              "void f(std::vector<int> v, int& j) {\n"
+              "    for (int i : v)\n"
+              "        j = i;\n"
+              "}\n"
+              "void fn(std::vector<int> v) {\n"
+              "    for (int& i : v)\n"
+              "        i = x(i);\n"
+              "}\n"
+              "void g(std::vector<int> v, int& j) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        j = v[i];\n"
+              "}\n"
+              "void gn(std::vector<int> v) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        v[i] = x(i);\n"
+              "}\n"
+              "void h(std::vector<std::vector<int>> v, int& j) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        j = v[i][0];\n"
+              "}\n"
+              "void hn(std::vector<std::vector<int>> v) {\n"
+              "    for (int i = 0; i < v.size(); ++i)\n"
+              "        v[i][0] = x(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'v' should be passed by const reference.\n"
+                      "[test.cpp:10]: (performance) Function parameter 'v' should be passed by const reference.\n"
+                      "[test.cpp:18]: (performance) Function parameter 'v' should be passed by const reference.\n",
+                      errout.str());
+
+        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
               /*filename*/ nullptr, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
@@ -2139,13 +2254,11 @@ private:
                                 "};\n"
                                 "void f(X x) {}";
 
-            Settings s32(_settings);
-            PLATFORM(s32.platform, cppcheck::Platform::Type::Unix32);
+            Settings s32 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix32).build();
             check(code, &s32);
             ASSERT_EQUALS("[test.cpp:5]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
-            Settings s64(_settings);
-            PLATFORM(s64.platform, cppcheck::Platform::Type::Unix64);
+            Settings s64 = settingsBuilder(_settings).platform(cppcheck::Platform::Type::Unix64).build();
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
@@ -2194,7 +2307,7 @@ private:
               "    const int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'x' should be passed by const reference.\n", errout.str());
 
         check("int f(std::vector<int> x) {\n"
               "    static int& i = x[0];\n"
@@ -3036,6 +3149,76 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int& g(int* p, int& r) {\n" // #11625
+              "    if (p)\n"
+              "        return *p;\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T> void f(std::vector<T*>& d, const std::vector<T*>& s) {\n" // #11632
+              "    for (const auto& e : s) {\n"
+              "        T* newE = new T(*e);\n"
+              "        d.push_back(newE);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::array<int, 2>& a) {\n"
+              "    if (a[0]) {}\n"
+              "}\n"
+              "void g(std::array<int, 2>& a) {\n"
+              "    a.fill(0);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'a' can be declared as const array\n", errout.str());
+
+        // #11682
+        check("struct b {\n"
+              "    void mutate();\n"
+              "};\n"
+              "struct c {\n"
+              "    const b& get() const;\n"
+              "    b get();\n"
+              "};\n"
+              "struct d {\n"
+              "    void f(c& e) const {\n"
+              "        e.get().mutate();\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct B { virtual void f() const {} };\n" // #11528
+              "struct D : B {};\n"
+              "void g(B* b) {\n"
+              "    D* d = dynamic_cast<D*>(b);\n"
+              "    if (d)\n"
+              "        d->f();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'd' can be declared as pointer to const\n", errout.str());
+
+        check("void g(const int*);\n"
+              "void f(const std::vector<int*>&v) {\n"
+              "    for (int* i : v)\n"
+              "        g(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' can be declared as pointer to const\n", errout.str());
+
+        check("struct A {\n" // #11225
+              "    A();\n"
+              "    virtual ~A();\n"
+              "};\n"
+              "struct B : A {};\n"
+              "void f(A* a) {\n"
+              "    const B* b = dynamic_cast<const B*>(a);\n"
+              "}\n"
+              "void g(A* a) {\n"
+              "    const B* b = (const B*)a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style) C-style pointer casting\n"
+                      "[test.cpp:6]: (style) Parameter 'a' can be declared as pointer to const\n"
+                      "[test.cpp:9]: (style) Parameter 'a' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void constParameterCallback() {
@@ -3361,6 +3544,157 @@ private:
               "    std::array<int, 1> a{}, b{};\n"
               "    const std::array<int, 1>& r = a;\n"
               "    if (r == b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {};\n" // #11599
+              "void g(S);\n"
+              "void h(const S&);\n"
+              "void h(int, int, const S&);\n"
+              "void i(S&);\n"
+              "void j(const S*);\n"
+              "void j(int, int, const S*);\n"
+              "void f1(S* s) {\n"
+              "    g(*s);\n"
+              "}\n"
+              "void f2(S* s) {\n"
+              "    h(*s);\n"
+              "}\n"
+              "void f3(S* s) {\n"
+              "    h(1, 2, *s);\n"
+              "}\n"
+              "void f4(S* s) {\n"
+              "    i(*s);\n"
+              "}\n"
+              "void f5(S& s) {\n"
+              "    j(&s);\n"
+              "}\n"
+              "void f6(S& s) {\n"
+              "    j(1, 2, &s);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:20]: (style) Parameter 's' can be declared as reference to const\n"
+                      "[test.cpp:23]: (style) Parameter 's' can be declared as reference to const\n"
+                      "[test.cpp:8]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:11]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:14]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void g(int, const int*);\n"
+              "void h(const int*);\n"
+              "void f(int* p) {\n"
+              "    g(1, p);\n"
+              "    h(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'p' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void f(int, const int*);\n"
+              "void f(int i, int* p) {\n"
+              "    f(i, const_cast<const int*>(p));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int a; };\n"
+              "void f(std::vector<S>& v, int b) {\n"
+              "    size_t n = v.size();\n"
+              "    for (size_t i = 0; i < n; i++) {\n"
+              "        S& s = v[i];\n"
+              "        if (!(b & s.a))\n"
+              "            continue;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 's' can be declared as reference to const\n", errout.str()); // don't crash
+
+        check("void f(int& i) {\n"
+              "    new (&i) int();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str()); // don't crash
+
+        check("void f(int& i) {\n"
+              "    int& r = i;\n"
+              "    if (!&r) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'r' can be declared as reference to const\n", errout.str()); // don't crash
+
+        check("class C;\n" // #11646
+              "void g(const C* const p);\n"
+              "void f(C* c) {\n"
+              "    g(c);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Parameter 'c' can be declared as pointer to const\n", errout.str());
+
+        check("typedef void (*cb_t)(int*);\n" // #11674
+              "void cb(int* p) {\n"
+              "    if (*p) {}\n"
+              "}\n"
+              "void g(cb_t);\n"
+              "void f() {\n"
+              "    g(cb);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (style) Parameter 'p' can be declared as pointer to const. "
+                      "However it seems that 'cb' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
+                      errout.str());
+
+        check("typedef void (*cb_t)(int*);\n"
+              "void cb(int* p) {\n"
+              "    if (*p) {}\n"
+              "}\n"
+              "void g(cb_t);\n"
+              "void f() {\n"
+              "    g(::cb);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (style) Parameter 'p' can be declared as pointer to const. "
+                      "However it seems that 'cb' is a callback function, if 'p' is declared with const you might also need to cast function pointer(s).\n",
+                      errout.str());
+
+        check("void f1(std::vector<int>* p) {\n" // #11681
+              "    if (p->empty()) {}\n" // warn
+              "}\n"
+              "void f2(std::vector<int>* p) {\n"
+              "    p->resize(0);\n"
+              "}\n"
+              "struct S {\n"
+              "    void h1() const;\n"
+              "    void h2();\n"
+              "    int i;\n"
+              "};\n"
+              "void k(int&);\n"
+              "void g1(S* s) {\n"
+              "    s->h1();\n" // warn
+              "}\n"
+              "void g1(S* s) {\n"
+              "    s->h2();\n"
+              "}\n"
+              "void g1(S* s) {\n"
+              "    if (s->i) {}\n" // warn
+              "}\n"
+              "void g2(S* s) {\n"
+              "    s->i = 0;\n"
+              "}\n"
+              "void g3(S* s) {\n"
+              "    k(s->i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n"
+                      "[test.cpp:13]: (style) Parameter 's' can be declared as pointer to const\n"
+                      "[test.cpp:19]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("struct S {\n" // #11573
+              "    const char* g() const {\n"
+              "        return m;\n"
+              "    }\n"
+              "    const char* m;\n"
+              "};\n"
+              "struct T { std::vector<S*> v; };\n"
+              "void f(T* t, const char* n) {\n"
+              "    for (const auto* p : t->v)\n"
+              "        if (strcmp(p->g(), n) == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Parameter 't' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void f(int*& p, int* q) {\n"
+              "    p = q;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5523,7 +5857,9 @@ private:
               "        x = j;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Found duplicate branches for 'if' and 'else'.\n"
+                      "[test.cpp:2]: (style) The scope of the variable 'j' can be reduced.\n",
+                      errout.str());
 
         check("void f(bool b, int i) {\n"
               "    int j = i;\n"
@@ -5889,7 +6225,6 @@ private:
     }
 
     void duplicateExpression3() {
-        Settings settings;
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <function name=\"mystrcmp\">\n"
@@ -5898,7 +6233,7 @@ private:
                                "    <arg nr=\"2\"/>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
 
         check("void foo() {\n"
               "    if (x() || x()) {}\n"
@@ -6957,13 +7292,19 @@ private:
               "    int start = x->first;\n"
               "    int end   = x->first;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n",
+                      errout.str());
+
         check("struct SW { int first; };\n"
               "void foo(SW* x, int i, int j) {\n"
               "    int start = x->first;\n"
               "    int end   = x->first;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'start' and 'end'.\n"
+                      "[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n",
+                      errout.str());
+
         check("struct Foo { int f() const; };\n"
               "void test() {\n"
               "    Foo f = Foo{};\n"
@@ -7164,7 +7505,7 @@ private:
               "  if (*p < 0) continue;\n"
               "  if ((*p > 0)) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n", errout.str());
 
         check("void f() {\n"
               "  int val = 0;\n"
@@ -7173,7 +7514,9 @@ private:
               "  if ((*p > 0)) {}\n"
               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison '*p < 0' is always false.\n"
-                           "[test.cpp:2] -> [test.cpp:4]: (style) The comparison '*p > 0' is always false.\n", "", errout.str());
+                           "[test.cpp:2] -> [test.cpp:4]: (style) The comparison '*p > 0' is always false.\n",
+                           "[test.cpp:3]: (style) Variable 'p' can be declared as pointer to const\n",
+                           errout.str());
 
         check("void f() {\n"
               "  int val = 0;\n"
@@ -7406,11 +7749,10 @@ private:
         }
 
         {
-            Settings keepTemplates;
-            keepTemplates.checkUnusedTemplates = true;
+            Settings s = settingsBuilder().checkUnusedTemplates().build();
             check("template<int n> void foo(unsigned int x) {\n"
                   "if (x <= 0);\n"
-                  "}", &keepTemplates);
+                  "}", &s);
             ASSERT_EQUALS("[test.cpp:2]: (style) Checking if unsigned expression 'x' is less than zero.\n", errout.str());
         }
 
@@ -7425,8 +7767,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Checking if unsigned expression 'value' is less than zero.\n", errout.str());
 
         // #9040
-        Settings settings1;
-        PLATFORM(settings1.platform, cppcheck::Platform::Type::Win64);
+        Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
         check("using BOOL = unsigned;\n"
               "int i;\n"
               "bool f() {\n"
@@ -7517,7 +7858,9 @@ private:
               "void foo(S* first) {\n"
               "  if (first.ptr >= 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n"
+                      "[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7525,7 +7868,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if((first.ptr - second.ptr) >= 0) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7533,7 +7878,9 @@ private:
               "void foo(S* first) {\n"
               "  if((first.ptr) >= 0) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n"
+                      "[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7541,7 +7888,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(0 <= first.ptr - second.ptr) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7549,7 +7898,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(0 <= (first.ptr - second.ptr)) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7557,7 +7908,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(first.ptr - second.ptr < 0) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7565,7 +7918,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if((first.ptr - second.ptr) < 0) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7573,7 +7928,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(0 > first.ptr - second.ptr) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S {\n"
               "  int* ptr;\n"
@@ -7581,7 +7938,9 @@ private:
               "void foo(S* first, S* second) {\n"
               "  if(0 > (first.ptr - second.ptr)) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'first' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Parameter 'second' can be declared as pointer to const\n",
+                      errout.str());
 
         check("void foo(const int* x) {\n"
               "  if (0 <= x[0]) {}\n"
@@ -7591,17 +7950,19 @@ private:
         check("void foo(Bar* x) {\n"
               "  if (0 <= x.y) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
 
         check("void foo(Bar* x) {\n"
               "  if (0 <= x->y) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
 
         check("void foo(Bar* x, Bar* y) {\n"
               "  if (0 <= x->y - y->y ) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n"
+                      "[test.cpp:1]: (style) Parameter 'y' can be declared as pointer to const\n",
+                      errout.str());
 
         check("void foo(const Bar* x) {\n"
               "  if (0 > x) {}\n"
@@ -7616,12 +7977,12 @@ private:
         check("void foo(Bar* x) {\n"
               "  if (0 > x.y) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
 
         check("void foo(Bar* x) {\n"
               "  if (0 > x->y) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
 
         check("void foo() {\n"
               "  int (*t)(void *a, void *b);\n"
@@ -7639,13 +8000,17 @@ private:
               "void packed_object_info(struct object_info *oi) {\n"
               "  if (oi->typep < 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n"
+                      "[test.cpp:2]: (style) Parameter 'oi' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct object_info { int typep[10]; };\n"
               "void packed_object_info(struct object_info *oi) {\n"
               "  if (oi->typep < 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n"
+                      "[test.cpp:2]: (style) Parameter 'oi' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct object_info { int *typep; };\n"
               "void packed_object_info(struct object_info *oi) {\n"
@@ -9449,7 +9814,7 @@ private:
         check("void f(char **ptr) {\n"
               "    int *x = &(*ptr)[10];\n"
               "}\n", nullptr, true);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' can be declared as pointer to const\n", errout.str());
 
         // function calls
         check("void f(Mutex *mut) {\n"
@@ -10218,14 +10583,13 @@ private:
     }
 
     void forwardAndUsed() {
-        Settings keepTemplates;
-        keepTemplates.checkUnusedTemplates = true;
+        Settings s = settingsBuilder().checkUnusedTemplates().build();
 
         check("template<typename T>\n"
               "void f(T && t) {\n"
               "    g(std::forward<T>(t));\n"
               "    T s = t;\n"
-              "}", &keepTemplates);
+              "}", &s);
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of forwarded variable 't'.\n", errout.str());
     }
 
@@ -10239,6 +10603,18 @@ private:
               "    h(r);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Access of moved variable 'r'.\n", errout.str());
+    }
+
+    void moveForRange()
+    {
+        check("struct C {\n"
+              "    void f() {\n"
+              "        for (auto r : mCategory.find(std::move(mWhere))) {}\n"
+              "    }\n"
+              "    cif::category mCategory;\n"
+              "    cif::condition mWhere;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void funcArgNamesDifferent() {
@@ -10464,7 +10840,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(char *c) {\n"
+        check("void foo(const char *c) {\n"
               "    if (*c == '+' && (operand || !isalnum(*c))) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -10482,7 +10858,7 @@ private:
               "    int x[] = { 10, 10 };\n"
               "    f(x[0]);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'x' can be declared as const array\n", errout.str());
 
         check("struct A { int x; };"
               "void g(int);\n"
@@ -10516,6 +10892,15 @@ private:
               "    self->maxsize = 32;\n"
               "    dostuff(self->maxsize * sizeof(intptr_t));\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11679
+        check("bool g(int);\n"
+              "void h(int);\n"
+              "int k(int a) { h(a); return 0; }\n"
+              "void f(int i) {\n"
+              "    if (g(k(i))) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -10569,7 +10954,9 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n",
+            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:6]: (error) Comparing pointers that point to different objects\n"
+            "[test.cpp:4]: (style) Variable 'xp' can be declared as pointer to const\n"
+            "[test.cpp:5]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("bool f() {\n"
@@ -10590,7 +10977,9 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:1] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n",
+            "[test.cpp:1] -> [test.cpp:5] -> [test.cpp:1] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n"
+            "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
+            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("struct A {int data;};\n"
@@ -10602,7 +10991,9 @@ private:
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n",
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:6] -> [test.cpp:7]: (error) Comparing pointers that point to different objects\n"
+            "[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
+            "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
             errout.str());
 
         check("bool f(int * xp, int* yp) {\n"
@@ -10627,7 +11018,9 @@ private:
               "    int* yp = &x[1];\n"
               "    return xp > yp;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'xp' can be declared as pointer to const\n"
+                      "[test.cpp:4]: (style) Variable 'yp' can be declared as pointer to const\n",
+                      errout.str());
 
         check("bool f(const int * xp, const int* yp) {\n"
               "    return xp > yp;\n"
@@ -10657,7 +11050,9 @@ private:
               "    int* yp = &y->data;\n"
               "    return xp > yp;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'xp' can be declared as pointer to const\n"
+                      "[test.cpp:6]: (style) Variable 'yp' can be declared as pointer to const\n",
+                      errout.str());
 
         check("struct S { int i; };\n" // #11576
               "int f(S s) {\n"
@@ -10740,6 +11135,12 @@ private:
               "    u.i = u.f;\n" // <- error
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Overlapping read/write of union is undefined behavior\n", errout.str());
+
+        check("void foo() {\n" // #11013
+              "    union { struct { uint8_t a; uint8_t b; }; uint16_t c; } u;\n"
+              "    u.a = u.b = 0;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         // memcpy
         check("void foo() {\n"

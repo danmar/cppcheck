@@ -22,9 +22,10 @@
 #include "cppchecklibrarydata.h"
 
 #include <QDialog>
+#include <QObject>
+#include <QString>
 
 class QListWidgetItem;
-class QObject;
 class QWidget;
 namespace Ui {
     class LibraryDialog;

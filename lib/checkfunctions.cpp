@@ -24,6 +24,7 @@
 
 #include "astutils.h"
 #include "mathlib.h"
+#include "platform.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -394,11 +395,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
         if (tok->str() == "goto" && !isForwardJump(tok))
             return nullptr;
         if (Token::Match(tok, "%name% (") && !library.isnotnoreturn(tok)) {
-            const Token *start = tok;
-            while (Token::Match(start->tokAt(-2), "%name% :: %name%"))
-                start = start->tokAt(-2);
-            if (Token::Match(start->previous(), "[;{}] %name% ::|("))
-                return nullptr;
+            return nullptr;
         }
         if (Token::Match(tok, "[;{}] %name% :"))
             return tok;
@@ -624,6 +621,14 @@ void CheckFunctions::checkLibraryMatchFunctions()
 
         if (Token::simpleMatch(tok->astTop(), "throw"))
             continue;
+
+        if (Token::simpleMatch(tok->astParent(), ".")) {
+            const Token* contTok = tok->astParent()->astOperand1();
+            if (astContainerAction(contTok) != Library::Container::Action::NO_ACTION)
+                continue;
+            if (astContainerYield(contTok) != Library::Container::Yield::NO_YIELD)
+                continue;
+        }
 
         if (!mSettings->library.isNotLibraryFunction(tok))
             continue;

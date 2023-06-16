@@ -25,9 +25,10 @@
 #include <QColor>
 #include <QComboBox>
 #include <QFont>
+#include <QObject>
 #include <QPushButton>
+#include <QString>
 
-class QObject;
 class QWidget;
 
 class SelectColorButton : public QPushButton {

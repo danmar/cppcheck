@@ -36,7 +36,6 @@
 #include <algorithm>
 #include <limits>
 #include <list>
-#include <memory>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -1498,6 +1497,8 @@ void CheckCondition::alwaysTrueFalse()
                 (tok->astOperand1()->hasKnownIntValue() || tok->astOperand2()->hasKnownIntValue()))
                 continue;
             if (Token::simpleMatch(tok, ":"))
+                continue;
+            if (Token::Match(tok->astOperand1(), "%name% (") && Token::simpleMatch(tok->astParent(), "return"))
                 continue;
             if (tok->isComparisonOp() && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1()) &&
                 isSameExpression(mTokenizer->isCPP(),

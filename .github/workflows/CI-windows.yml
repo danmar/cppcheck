@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
-        qt_ver: [5.15.2, 6.2.4, 6.4.2]
+        qt_ver: [5.15.2, 6.2.4, 6.5.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -179,7 +179,7 @@ jobs:
         run: |
           .\cppcheck --addon=threadsafety addons\test\threadsafety || exit /b !errorlevel!
           .\cppcheck --addon=threadsafety --std=c++03 addons\test\threadsafety || exit /b !errorlevel!
-          .\cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c || exit /b !errorlevel!
+          .\cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c || exit /b !errorlevel!
           cd addons\test
           rem We'll force C89 standard to enable an additional verification for
           rem rules 5.4 and 5.5 which have standard-dependent options.
@@ -192,7 +192,7 @@ jobs:
           python3 ..\misra.py --rule-texts=misra\misra2012_rules_dummy_ascii.txt -verify misra\misra-test.cpp.dump || exit /b !errorlevel!
           python3 ..\misra.py --rule-texts=misra\misra2012_rules_dummy_utf8.txt -verify misra\misra-test.cpp.dump || exit /b !errorlevel!
           python3 ..\misra.py --rule-texts=misra\misra2012_rules_dummy_windows1250.txt -verify misra\misra-test.cpp.dump || exit /b !errorlevel!
-          ..\..\cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra\misra-test-avr8.c || exit /b !errorlevel!
+          ..\..\cppcheck --addon=misra --enable=style --platform=avr8 --error-exitcode=1 misra\misra-test-avr8.c || exit /b !errorlevel!
           ..\..\cppcheck --dump misc-test.cpp || exit /b !errorlevel!
           python3 ..\misc.py -verify misc-test.cpp.dump || exit /b !errorlevel!
           ..\..\cppcheck --dump naming_test.c || exit /b !errorlevel!
