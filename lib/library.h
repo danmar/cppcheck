@@ -251,6 +251,7 @@ public:
         struct Function {
             Action action;
             Yield yield;
+            std::string returnType;
         };
         struct RangeItemRecordTypeItem {
             std::string name;
@@ -282,6 +283,11 @@ public:
             if (i != functions.end())
                 return i->second.yield;
             return Yield::NO_YIELD;
+        }
+
+        const std::string& getReturnType(const std::string& function) const {
+            auto i = functions.find(function);
+            return (i != functions.end()) ? i->second.returnType : emptyString;
         }
 
         static Yield yieldFrom(const std::string& yieldName);
@@ -359,6 +365,7 @@ public:
         bool formatstr_secure;
         Container::Action containerAction;
         Container::Yield containerYield;
+        std::string returnType;
         Function()
             : use(false),
             leakignore(false),

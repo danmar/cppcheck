@@ -8546,6 +8546,12 @@ private:
 
         ctu({"class A::C { C() { std::cout << 0; } };", "class B::C { C() { std::cout << 1; } };"});
         ASSERT_EQUALS("", errout.str());
+
+        // 11435 - template specialisations
+        const std::string header = "template<typename T1, typename T2> struct Test {};\n";
+        ctu({header + "template<typename T1> struct Test<T1, int> {};\n",
+             header + "template<typename T1> struct Test<T1, double> {};\n"});
+        ASSERT_EQUALS("", errout.str());
     }
 
 

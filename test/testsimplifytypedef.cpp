@@ -3352,6 +3352,19 @@ private:
                "    a** p = new a * [N];\n"
                "}\n";
         TODO_ASSERT_EQUALS("does not compile", "void f ( int N ) { int ( * * p ) [ 7 ] ; p = new int ( * ) [ N ] [ 7 ] ; }", tok(code));
+
+        // #11772
+        code = "typedef t;\n" // don't crash on implicit int
+               "void g() {\n"
+               "    sizeof(t);\n"
+               "}\n";
+        ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
+
+        code = "typedef t[3];\n"
+               "void g() {\n"
+               "    sizeof(t);\n"
+               "}\n";
+        ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
     }
 
     void simplifyTypedefFunction1() {
