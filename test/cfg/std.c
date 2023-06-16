@@ -516,7 +516,6 @@ void nullpointer(int value)
     wcstok(NULL,L"xyz",&pWcsUninit);
 
     strxfrm(0,"foo",0);
-    // cppcheck-suppress bufferAccessOutOfBounds
     strxfrm(0,"foo",42);
     wcsxfrm(0,L"foo",0);
     // TODO: error message when arg1==NULL and arg3!=0 #6306: https://trac.cppcheck.net/ticket/6306#comment:2
