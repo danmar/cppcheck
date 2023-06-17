@@ -6875,6 +6875,23 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        valueFlowUninit("struct S {\n"
+                        "   int t[1];\n"
+                        "   int u;\n"
+                        "};\n"
+                        "\n"
+                        "int f(const S* ps) {\n"
+                        "   return ps->t[0];\n"
+                        "}\n"
+                        "\n"
+                        "int main(void)\n"
+                        "{\n"
+                        "   S s;\n"
+                        "   s.t[0] = 1;\n"
+                        "   f(&s);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
         valueFlowUninit("struct X {\n"
                         "   int a, b;\n"
                         "};\n"
