@@ -726,20 +726,27 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
         mTemplateInstantiations.emplace_back(std::move(instantiation));
 }
 
-static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
+static const Token* getFunctionToken(const Token* nameToken)
 {
-    const Token *argToken;
+    if (Token::Match(nameToken, "%name% ("))
+        return nameToken->next();
 
-    if (nameToken->strAt(1) == "(")
-        argToken = nameToken->tokAt(2);
-    else if (nameToken->strAt(1) == "<") {
-        const Token *end = nameToken->next()->findClosingBracket();
-        if (end)
-            argToken = end->tokAt(2);
-        else
-            return;
-    } else
+    if (Token::Match(nameToken, "%name% <")) {
+        const Token* end = nameToken->next()->findClosingBracket();
+        if (Token::simpleMatch(end, "> ("))
+            return end->next();
+    }
+
+    return nullptr;
+}
+
+static void getFunctionArguments(const Token* nameToken, std::vector<const Token*>& args)
+{
+    const Token* functionToken = getFunctionToken(nameToken);
+    if (!functionToken)
         return;
+
+    const Token* argToken = functionToken->next();
 
     if (argToken->str() == ")")
         return;
@@ -748,6 +755,15 @@ static void getFunctionArguments(const Token *nameToken, std::vector<const Token
 
     while ((argToken = argToken->nextArgumentBeforeCreateLinks2()))
         args.push_back(argToken);
+}
+
+static bool isConstMethod(const Token* nameToken)
+{
+    const Token* functionToken = getFunctionToken(nameToken);
+    if (!functionToken)
+        return false;
+    const Token* endToken = functionToken->link();
+    return Token::simpleMatch(endToken, ") const");
 }
 
 static bool areAllParamsTypes(const std::vector<const Token *> &params)
@@ -2059,6 +2075,8 @@ void TemplateSimplifier::expandTemplate(
                     Token * const beforeTypeToken = mTokenList.back();
                     bool pointerType = false;
                     const bool isVariadicTemplateArg = templateDeclaration.isVariadic() && itype + 1 == typeParametersInDeclaration.size();
+                    if (isVariadicTemplateArg && mTypesUsedInTemplateInstantiation.size() > 1 && !Token::simpleMatch(tok3->next(), "..."))
+                        continue;
                     if (isVariadicTemplateArg && Token::Match(tok3, "%name% ... %name%"))
                         tok3 = tok3->tokAt(2);
                     const std::string endStr(isVariadicTemplateArg ? ">" : ",>");
@@ -3823,6 +3841,57 @@ void TemplateSimplifier::simplifyTemplates(
 
         if (mSettings.debugtemplate)
             printOut("### Template Simplifier pass " + std::to_string(passCount + 1) + " ###");
+
+        // Keep track of the order the names appear so sort can preserve that order
+        std::unordered_map<std::string, int> nameOrdinal;
+        int ordinal = 0;
+        for (const auto& decl : mTemplateDeclarations) {
+            nameOrdinal.emplace(decl.fullName(), ordinal++);
+        }
+
+        auto score = [&](const Token* arg) {
+            int i = 0;
+            for (const Token* tok = arg; tok; tok = tok->next()) {
+                if (tok->str() == ",")
+                    return i;
+                else if (tok->link() && Token::Match(tok, "(|{|["))
+                    tok = tok->link();
+                else if (tok->str() == "<") {
+                    const Token* temp = tok->findClosingBracket();
+                    if (temp)
+                        tok = temp;
+                } else if (Token::Match(tok, ")|;"))
+                    return i;
+                else if (Token::simpleMatch(tok, "const"))
+                    i--;
+            }
+            return 0;
+        };
+        // Sort so const parameters come first in the list
+        mTemplateDeclarations.sort([&](const TokenAndName& x, const TokenAndName& y) {
+            if (x.fullName() != y.fullName())
+                return nameOrdinal.at(x.fullName()) < nameOrdinal.at(y.fullName());
+            if (x.isFunction() && y.isFunction()) {
+                std::vector<const Token*> xargs;
+                getFunctionArguments(x.nameToken(), xargs);
+                std::vector<const Token*> yargs;
+                getFunctionArguments(y.nameToken(), yargs);
+                if (xargs.size() != yargs.size())
+                    return xargs.size() < yargs.size();
+                if (isConstMethod(x.nameToken()) != isConstMethod(y.nameToken()))
+                    return isConstMethod(x.nameToken());
+                return std::lexicographical_compare(xargs.begin(),
+                                                    xargs.end(),
+                                                    yargs.begin(),
+                                                    yargs.end(),
+                                                    [&](const Token* xarg, const Token* yarg) {
+                    if (xarg != yarg)
+                        return score(xarg) < score(yarg);
+                    return false;
+                });
+            }
+            return false;
+        });
 
         std::set<std::string> expandedtemplates;
 
