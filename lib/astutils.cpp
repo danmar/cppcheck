@@ -3105,6 +3105,10 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         }
         if (!args.empty() && indirect == 0 && !addressOf)
             return ExprUsage::Used;
+    } else if (ftok->isControlFlowKeyword()) {
+        return ExprUsage::Used;
+    } else if (ftok->str() == "{") {
+        return ExprUsage::Used;
     } else {
         const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
         if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)

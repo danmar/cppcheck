@@ -7775,7 +7775,7 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
         bool warn = true;
         if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
             const Token * const ftok = endScopeToken->linkAt(-2)->previous();
-            if (ftok && (ftok->type() || ftok->function())) // constructor call
+            if (ftok && (ftok->type() || ftok->function() || ftok->variable())) // constructor call
                 warn = false;
         }
 
