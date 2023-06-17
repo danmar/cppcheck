@@ -5543,6 +5543,17 @@ private:
                "}";
         values = tokenValues(code, "n )", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
+
+        // #11774 - function call to init data
+        code = "struct id_struct { int id; };\n"
+               "int init(const id_struct **id);\n"
+               "void fp() {\n"
+               "  const id_struct *id_st;\n"
+               "  init(&id_st);\n"
+               "  if (id_st->id > 0) {}\n"
+               "}\n";
+        values = tokenValues(code, ". id", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {
@@ -7063,7 +7074,7 @@ private:
         valueOfTok(code, "c");
 
         code = "class T {\n"
-               "private slots:\n"
+               "private:\n"
                "    void f() { D& r = dynamic_cast<D&>(*m); }\n"
                "    void g() { m.reset(new D); }\n"
                "private:\n"

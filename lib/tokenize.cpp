@@ -665,14 +665,14 @@ namespace {
             }
 
             for (Token* type = start; Token::Match(type, "%name%|*|&"); type = type->next()) {
-                if (Token::Match(type, "%name% ;") && !type->isStandardType()) {
+                if (type != start && Token::Match(type, "%name% ;") && !type->isStandardType()) {
                     mRangeType.first = start;
                     mRangeType.second = type;
                     mNameToken = type;
                     mEndToken = mNameToken->next();
                     return;
                 }
-                if (Token::Match(type, "%name% [")) {
+                if (type != start && Token::Match(type, "%name% [")) {
                     Token* end = type->linkAt(1);
                     while (Token::simpleMatch(end, "] ["))
                         end = end->linkAt(1);
@@ -5251,7 +5251,7 @@ void Tokenizer::createLinks2()
         } else if (token->str() == "<" &&
                    ((token->previous() && (token->previous()->isTemplate() ||
                                            (token->previous()->isName() && !token->previous()->varId()) ||
-                                           token->strAt(-1) == "]")) ||
+                                           (token->strAt(-1) == "]" && !Token::Match(token->linkAt(-1)->previous(), "%name%|)")))) ||
                     Token::Match(token->next(), ">|>>"))) {
             type.push(token);
             if (token->previous()->str() == "template")
@@ -7775,7 +7775,7 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
         bool warn = true;
         if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
             const Token * const ftok = endScopeToken->linkAt(-2)->previous();
-            if (ftok && (ftok->type() || ftok->function())) // constructor call
+            if (ftok && (ftok->type() || ftok->function() || ftok->variable())) // constructor call
                 warn = false;
         }
 
@@ -8106,6 +8106,8 @@ void Tokenizer::reportUnknownMacros() const
                 else
                     unknownMacroError(tok);
             }
+        } else if (isCPP() && Token::Match(tok, "public|private|protected %name% :")) {
+            unknownMacroError(tok->next());
         }
     }
 

@@ -837,6 +837,16 @@ private:
               "        free(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct E { int* i; };\n" // #11768
+              "struct C { E e; };\n"
+              "int foo(C* cin) {\n"
+              "    E* e = &cin->e;\n"
+              "    e->i = new int[42];\n"
+              "    delete[] e->i;\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_input() {
