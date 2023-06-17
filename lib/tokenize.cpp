@@ -7444,8 +7444,17 @@ Token * Tokenizer::initVar(Token * tok)
 void Tokenizer::elseif()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "else if"))
+        if (tok->str() != "else")
             continue;
+
+        if (!Token::Match(tok->previous(), ";|}"))
+            syntaxError(tok->previous());
+
+        if (!Token::Match(tok->next(), "%name%"))
+            continue;
+
+        if (tok->strAt(1) != "if")
+            unknownMacroError(tok->next());
 
         for (Token *tok2 = tok; tok2; tok2 = tok2->next()) {
             if (Token::Match(tok2, "(|{|["))
@@ -10258,8 +10267,15 @@ void Tokenizer::simplifyNamespaceAliases()
             Token * tokNameStart = tok->tokAt(3);
             Token * tokNameEnd = tokNameStart;
 
-            while (tokNameEnd && tokNameEnd->next() && tokNameEnd->next()->str() != ";")
+            while (tokNameEnd && tokNameEnd->next() && tokNameEnd->next()->str() != ";") {
+                if (tokNameEnd->str() == "(") {
+                    if (tokNameEnd->previous()->isName())
+                        unknownMacroError(tokNameEnd->previous());
+                    else
+                        syntaxError(tokNameEnd);
+                }
                 tokNameEnd = tokNameEnd->next();
+            }
 
             if (!tokNameEnd)
                 return; // syntax error
