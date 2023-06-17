@@ -3130,6 +3130,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     bool local = true;
     bool unknown{};
     bool dependOnThis{};
+    bool uniqueExprId{};
 
     ExpressionAnalyzer() = default;
 

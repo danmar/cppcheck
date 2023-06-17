@@ -1747,7 +1747,7 @@ void TokenList::validateAst() const
             continue;
         }
 
-        if (const Token* lambdaEnd = findLambdaEndToken(tok)) { // skip lambda captures
+        if (findLambdaEndToken(tok)) { // skip lambda captures
             tok = tok->link();
             continue;
         }
