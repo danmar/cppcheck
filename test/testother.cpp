@@ -3220,6 +3220,18 @@ private:
                       "[test.cpp:9]: (style) Parameter 'a' can be declared as pointer to const\n",
                       errout.str());
 
+        check("void g(int*);\n"
+              "void f(std::vector<int>& v) {\n"
+              "    g(v.data());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g(const int*);\n"
+              "void f(std::vector<int>& v) {\n"
+              "    g(v.data());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'v' can be declared as reference to const\n", errout.str());
+
         check("struct a {\n"
               "    template <class T>\n"
               "    void mutate();\n"
