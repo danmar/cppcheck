@@ -3219,6 +3219,37 @@ private:
                       "[test.cpp:6]: (style) Parameter 'a' can be declared as pointer to const\n"
                       "[test.cpp:9]: (style) Parameter 'a' can be declared as pointer to const\n",
                       errout.str());
+
+        check("struct a {\n"
+              "    template <class T>\n"
+              "    void mutate();\n"
+              "};\n"
+              "struct b {};\n"
+              "template <class T>\n"
+              "void f(a& x) {\n"
+              "    x.mutate<T>();\n"
+              "}\n"
+              "template <class T>\n"
+              "void f(const b&)\n"
+              "{}\n"
+              "void g(a& c) { f<int>(c); }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    template <typename T>\n"
+              "    T* g() {\n"
+              "        return reinterpret_cast<T*>(m);\n"
+              "    }\n"
+              "    template <typename T>\n"
+              "    const T* g() const {\n"
+              "        return reinterpret_cast<const T*>(m);\n"
+              "    }\n"
+              "    char* m;\n"
+              "};\n"
+              "void f(S& s) {\n"
+              "    const int* p = s.g<int>();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {

@@ -4064,11 +4064,11 @@ private:
                              "    f<T>(0);\n"
                              "}\n";
         const char exp2[] = "template < typename T > void f ( ) ; "
-                            "void f<int> ( int ) ; "
                             "void f<char> ( int ) ; "
+                            "void f<int> ( int ) ; "
                             "void g ( ) { f<int> ( ) ; f<char> ( 1 ) ; } "
-                            "void f<int> ( ) { f<int> ( 0 ) ; } "
-                            "void f<char> ( int ) { }";
+                            "void f<char> ( int ) { } "
+                            "void f<int> ( ) { f<int> ( 0 ) ; }";
         ASSERT_EQUALS(exp2, tok(code2));
     }
 
