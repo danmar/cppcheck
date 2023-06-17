@@ -10267,8 +10267,15 @@ void Tokenizer::simplifyNamespaceAliases()
             Token * tokNameStart = tok->tokAt(3);
             Token * tokNameEnd = tokNameStart;
 
-            while (tokNameEnd && tokNameEnd->next() && tokNameEnd->next()->str() != ";")
+            while (tokNameEnd && tokNameEnd->next() && tokNameEnd->next()->str() != ";") {
+                if (tokNameEnd->str() == "(") {
+                    if (tokNameEnd->previous()->isName())
+                        unknownMacroError(tokNameEnd->previous());
+                    else
+                        syntaxError(tokNameEnd);
+                }
                 tokNameEnd = tokNameEnd->next();
+            }
 
             if (!tokNameEnd)
                 return; // syntax error

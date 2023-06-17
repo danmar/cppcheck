@@ -6969,6 +6969,15 @@ private:
                                                  "};\n"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If slots is a macro then please configure it.");
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("namespace U_ICU_ENTRY_POINT_RENAME(icu) { }\n"
+                                                 "namespace icu = U_ICU_ENTRY_POINT_RENAME(icu);\n"
+                                                 "namespace U_ICU_ENTRY_POINT_RENAME(icu) {\n"
+                                                 "    class BreakIterator;\n"
+                                                 "}\n"
+                                                 "typedef int UStringCaseMapper(icu::BreakIterator* iter);\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If U_ICU_ENTRY_POINT_RENAME is a macro then please configure it.");
     }
 
 
