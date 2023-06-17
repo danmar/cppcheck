@@ -6947,6 +6947,13 @@ private:
                                                  "void g() {}\n"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_NO_THROW(tokenizeAndStringify("void f(int i) {\n"
+                                             "    if (i == 0) {}\n"
+                                             "    else if (i == 1) {}\n"
+                                             "    else\n"
+                                             "        MACRO(i);\n"
+                                             "}\n"
+                                             "void g() {}\n"));
 
         ASSERT_THROW_EQUALS(tokenizeAndStringify("class C : public QObject {\n" // #11770
                                                  "    struct S { static void g() {} };\n"
