@@ -38,6 +38,8 @@ jobs:
     needs: build
     # 'ubuntu-22.04' removes Python 2.7, 3.5 and 3.6 so keep the previous LTS version
     runs-on: ubuntu-20.04
+        container:
+            image: python:2.7.18-buster
     strategy:
       matrix:
         python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, '3.10', '3.11']
