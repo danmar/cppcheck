@@ -40,7 +40,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, '3.10', '3.11']
+        python-version: [3.5, 3.6, 3.7, 3.8, 3.9, '3.10', '3.11']
       fail-fast: false
 
     steps:
@@ -63,16 +63,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install tidy libxml2-utils
 
-      - name: Install missing software on ubuntu (Python 2)
-        if: matrix.python-version == '2.7'
-        run: |
-          python -m pip install pip --upgrade
-          python -m pip install pathlib
-          python -m pip install pytest
-          python -m pip install pygments
-
       - name: Install missing software on ubuntu (Python 3)
-        if: matrix.python-version != '2.7'
         run: |
           # shellcheck cannot be installed via pip
           # ERROR: Could not find a version that satisfies the requirement shellcheck (from versions: none)
@@ -112,7 +103,6 @@ jobs:
           make -j$(nproc) validateCFG validatePlatforms validateRules
 
       - name: check python syntax
-        if: matrix.python-version != '2.7'
         run: |
           python -m py_compile addons/*.py
           python -m py_compile htmlreport/cppcheck-htmlreport
@@ -146,14 +136,12 @@ jobs:
           PYTHONPATH: ./tools
 
       - name: test donate_cpu_lib
-        if: matrix.python-version != '2.7'
         run: |
           python -m pytest -v tools/test_donate_cpu_lib.py
         env:
           PYTHONPATH: ./tools
 
       - name: test donate_cpu_server
-        if: matrix.python-version != '2.7'
         run: |
           python -m pytest -v tools/test_donate_cpu_server.py
         env:
