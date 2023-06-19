@@ -1250,8 +1250,15 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
                 tok = tok->astParent();
         }
         if (Token::simpleMatch(tok->astParent(), "=")) {
-            if (astIsLhs(tok) && (alloc == ARRAY || !derefValue || !derefValue->astOperand1() || !derefValue->astOperand1()->isCast()))
-                return nullptr;
+            if (astIsLhs(tok)) {
+                if (alloc == ARRAY || !derefValue || !derefValue->astOperand1() || !derefValue->isUnaryOp("*"))
+                    return nullptr;
+                const Token* deref = derefValue->astOperand1();
+                while (deref && deref->isCast())
+                    deref = deref->astOperand1();
+                if (deref == vartok)
+                    return nullptr;
+            }
             if (alloc != NO_ALLOC && astIsRhs(valueExpr))
                 return nullptr;
         }

@@ -2066,6 +2066,20 @@ private:
                        "    return i;\n"
                        "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Memory is allocated but not initialized: a\n", errout.str());
+
+        checkUninitVar("void* f(size_t n, int i) {\n" // #11766
+                       "    char* p = (char*)malloc(n);\n"
+                       "    *(int*)p = i;\n"
+                       "    return p;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void* f(size_t n, int i) {\n"
+                       "    char* p = (char*)malloc(n);\n"
+                       "    *(int*)(void*)p = i;\n"
+                       "    return p;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // class / struct..
