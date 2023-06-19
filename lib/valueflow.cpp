@@ -2949,7 +2949,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 addErrorPath(tok, "Assuming container is " + s);
             } else {
                 std::string s = state ? "true" : "false";
-                addErrorPath(tok, s);
+                addErrorPath(tok, "Assuming condition is " + s);
             }
         }
         if (!(flags & Assume::Absolute))
@@ -7217,7 +7217,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
 
     void addErrorPath(const Token* tok, const std::string& s) override {
         for (auto&& p:values) {
-            p.second.errorPath.emplace_back(tok, "Assuming condition is " + s);
+            p.second.errorPath.emplace_back(tok, s);
         }
     }
 
