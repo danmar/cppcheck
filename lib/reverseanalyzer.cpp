@@ -114,8 +114,7 @@ struct ReverseTraversal {
             continueB &= update(tok);
             if (continueB)
                 return ChildrenToVisit::op1_and_op2;
-            else
-                return ChildrenToVisit::done;
+            return ChildrenToVisit::done;
         });
         return continueB;
     }
@@ -302,7 +301,7 @@ struct ReverseTraversal {
                 }
                 if (thenAction.isModified() && inLoop)
                     break;
-                else if (thenAction.isModified() && !elseAction.isModified())
+                if (thenAction.isModified() && !elseAction.isModified())
                     analyzer->assume(condTok, hasElse);
                 else if (elseAction.isModified() && !thenAction.isModified())
                     analyzer->assume(condTok, !hasElse);

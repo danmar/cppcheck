@@ -69,8 +69,7 @@ static bool IsAddressOnStack(const void* ptr)
     char a;
     if (bStackBelowHeap)
         return ptr < &a;
-    else
-        return ptr > &a;
+    return ptr > &a;
 }
 
 /* (declare this list here, so it may be used in signal handlers in addition to main())

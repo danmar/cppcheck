@@ -335,8 +335,8 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         const double doubleval = toDoubleNumber(str);
         if (doubleval > (double)std::numeric_limits<biguint>::max())
             return std::numeric_limits<biguint>::max();
-        else // cast to bigint to avoid UBSAN warning about negative double being out-of-range
-            return static_cast<biguint>(static_cast<bigint>(doubleval));
+        // cast to bigint to avoid UBSAN warning about negative double being out-of-range
+        return static_cast<biguint>(static_cast<bigint>(doubleval));
     }
 
     if (isCharLiteral(str))

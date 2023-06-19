@@ -428,11 +428,10 @@ static bool isIterator(const Variable *var, bool& inconclusiveType)
         // look for operator* and operator++
         const Function* end = var->type()->getFunction("operator*");
         const Function* incOperator = var->type()->getFunction("operator++");
-        if (!end || end->argCount() > 0 || !incOperator) {
+        if (!end || end->argCount() > 0 || !incOperator)
             return false;
-        } else {
-            inconclusiveType = true; // heuristics only
-        }
+
+        inconclusiveType = true; // heuristics only
     }
 
     return true;
@@ -1617,8 +1616,7 @@ static const Token *findInsertValue(const Token *tok, const Token *containerTok,
         isSameExpression(true, true, keyTok, ikeyTok, library, true, true)) {
         if (ivalueTok)
             return ivalueTok;
-        else
-            return ikeyTok;
+        return ikeyTok;
     }
     return nullptr;
 }
@@ -2029,7 +2027,8 @@ void CheckStl::string_c_str()
                             search_tok->next()->variable() && search_tok->next()->variable()->isStlStringType()) {
                             is_implicit_std_string = true;
                             break;
-                        } else if (Token::Match(search_tok, "+ std :: string|wstring (")) {
+                        }
+                        if (Token::Match(search_tok, "+ std :: string|wstring (")) {
                             is_implicit_std_string = true;
                             break;
                         }
@@ -2761,8 +2760,7 @@ namespace {
                     return "";
                 if (alwaysTrue)
                     return "std::any_of";
-                else
-                    return "std::all_of or std::none_of";
+                return "std::all_of or std::none_of";
             }
             return "";
         }

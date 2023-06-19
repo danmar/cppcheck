@@ -1601,7 +1601,8 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
                 typeToken = nameTok->tokAt(4);
                 _template = true;
                 return true;
-            } else if (Token::Match(nameTok, "std :: string|wstring")) {
+            }
+            if (Token::Match(nameTok, "std :: string|wstring")) {
                 tempToken = new Token();
                 tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
                 tempToken->linenr(variableInfo->typeStartToken()->linenr());
@@ -1647,16 +1648,19 @@ bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
         if (variable->isStlType(stl_container)) {
             typeToken = variable->typeStartToken()->tokAt(4);
             return true;
-        } else if (variable->isStlType(stl_string)) {
+        }
+        if (variable->isStlType(stl_string)) {
             typeToken = variable->typeStartToken();
             return true;
-        } else if (variable->type() && !variable->type()->derivedFrom.empty()) {
+        }
+        if (variable->type() && !variable->type()->derivedFrom.empty()) {
             for (const Type::BaseInfo &baseInfo : variable->type()->derivedFrom) {
                 const Token* nameTok = baseInfo.nameTok;
                 if (Token::Match(nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
                     typeToken = nameTok->tokAt(4);
                     return true;
-                } else if (Token::Match(nameTok, "std :: string|wstring")) {
+                }
+                if (Token::Match(nameTok, "std :: string|wstring")) {
                     typeToken = nameTok;
                     return true;
                 }
@@ -1671,15 +1675,15 @@ bool CheckIO::ArgumentInfo::isArrayOrPointer() const
 {
     if (address)
         return true;
-    else if (variableInfo && !_template) {
+    if (variableInfo && !_template)
         return variableInfo->isArrayOrPointer();
-    } else {
-        const Token *tok = typeToken;
-        while (Token::Match(tok, "const|struct"))
-            tok = tok->next();
-        if (tok && tok->strAt(1) == "*")
-            return true;
-    }
+
+    const Token *tok = typeToken;
+    while (Token::Match(tok, "const|struct"))
+        tok = tok->next();
+    if (tok && tok->strAt(1) == "*")
+        return true;
+
     return false;
 }
 

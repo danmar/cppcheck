@@ -2002,7 +2002,7 @@ static int getVersion(const QString& nameWithVersion) {
     for (const auto c: nameWithVersion) {
         if (c == '\n' || c == '\r')
             break;
-        else if (c == ' ') {
+        if (c == ' ') {
             if (ret > 0 && dot == 1 && nameWithVersion.endsWith(" dev"))
                 return ret * 1000000 + v * 1000 + 500;
             dot = ret = v = 0;

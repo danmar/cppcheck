@@ -700,11 +700,10 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
     const int declarationId(variable->declarationId());
     bool alloc = false;
     for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
-        if (Token::Match(tok2, "= %varid% [;=]", declarationId)) {
+        if (Token::Match(tok2, "= %varid% [;=]", declarationId))
             return false;
-        } else if (Token::Match(tok2, "%varid% = malloc|kmalloc (", declarationId)) {
+        if (Token::Match(tok2, "%varid% = malloc|kmalloc (", declarationId)) // TODO use library
             alloc = true;
-        }
     }
     return alloc;
 }

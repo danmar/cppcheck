@@ -99,9 +99,8 @@ QStringList FileList::getFileList() const
             names << name;
         }
         return names;
-    } else {
-        return applyExcludeList();
     }
+    return applyExcludeList();
 }
 
 void FileList::addExcludeList(const QStringList &paths)
