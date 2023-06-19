@@ -246,6 +246,7 @@ private:
         TEST_CASE(functionArgs17);
         TEST_CASE(functionArgs18); // #10376
         TEST_CASE(functionArgs19); // #10376
+        TEST_CASE(functionArgs20);
 
         TEST_CASE(functionImplicitlyVirtual);
 
@@ -2707,6 +2708,17 @@ private:
         ASSERT_EQUALS(3, func->argCount());
     }
 
+    void functionArgs20() { // #11769
+        const char code[] = "void f(void *(*g)(void *) = [](void *p) { return p; }) {}";
+        GET_SYMBOL_DB(code);
+        ASSERT(db != nullptr);
+        const Scope *scope = db->functionScopes.front();
+        const Function *func = scope->function;
+        ASSERT_EQUALS(1, func->argCount());
+        const Variable* arg = func->getArgumentVar(0);
+        TODO_ASSERT(arg->hasDefault());
+    }
+
     void functionImplicitlyVirtual() {
         GET_SYMBOL_DB("class base { virtual void f(); };\n"
                       "class derived : base { void f(); };\n"
@@ -2859,7 +2871,7 @@ private:
 
     void symboldatabase2() {
         check("class foo {\n"
-              "public slots :\n"
+              "public:\n"
               "foo() { }\n"
               "};");
         ASSERT_EQUALS("", errout.str());

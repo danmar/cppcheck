@@ -1628,6 +1628,8 @@ void CheckUninitVar::valueFlowUninit()
                 if (tok->variable()) {
                     bool unknown;
                     const bool isarray = tok->variable()->isArray();
+                    if (isarray && tok->variable()->isMember())
+                        continue; // Todo: this is a bailout
                     const bool ispointer = astIsPointer(tok) && !isarray;
                     const bool deref = CheckNullPointer::isPointerDeRef(tok, unknown, mSettings);
                     if (ispointer && v->indirect == 1 && !deref)
@@ -1640,7 +1642,7 @@ void CheckUninitVar::valueFlowUninit()
                         continue;
                 }
                 const ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);
-                if (usage == ExprUsage::NotUsed)
+                if (usage == ExprUsage::NotUsed || usage == ExprUsage::Inconclusive)
                     continue;
                 if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)
                     continue;

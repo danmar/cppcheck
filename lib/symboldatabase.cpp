@@ -4311,7 +4311,13 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             initArgCount++;
             if (tok->strAt(1) == "[") {
                 const Token* lambdaStart = tok->next();
-                tok = type == eLambda ? findLambdaEndTokenWithoutAST(lambdaStart) : findLambdaEndToken(lambdaStart);
+                if (type == eLambda)
+                    tok = findLambdaEndTokenWithoutAST(lambdaStart);
+                else {
+                    tok = findLambdaEndToken(lambdaStart);
+                    if (!tok)
+                        tok = findLambdaEndTokenWithoutAST(lambdaStart);
+                }
                 if (!tok)
                     throw InternalError(lambdaStart, "Analysis failed (lambda not recognized). If the code is valid then please report this failure.", InternalError::INTERNAL);
             }

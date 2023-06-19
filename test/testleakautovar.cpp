@@ -2652,11 +2652,19 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: file\n", errout.str());
     }
 
-    void configuration6() { // #11198
-        check("void f() {}\n"
+    void configuration6() {
+        check("void f() {}\n" // #11198
               "void g() {\n"
               "    f();\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::function<void()> cb) {\n" // #11189
+              "    cb();\n"
+              "}\n"
+              "void g(void (*cb)()) {\n"
+              "    cb();\n"
+              "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 

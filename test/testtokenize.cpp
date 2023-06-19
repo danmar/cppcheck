@@ -5955,6 +5955,7 @@ private:
         ASSERT_EQUALS("x00throw:?return", testAst("return x ? 0 : throw 0;")); // #9768
         ASSERT_EQUALS("val0<1throwval:?return", testAst("return val < 0 ? throw 1 : val;")); // #8526
         ASSERT_EQUALS("ix0<00throw:?=", testAst("int i = x < 0 ? 0 : throw 0;"));
+        ASSERT_EQUALS("pa[pb[<1-pa[pb[>:?return", testAst("return p[a] < p[b] ? -1 : p[a] > p[b];"));
 
         ASSERT_EQUALS("a\"\"=", testAst("a=\"\""));
         ASSERT_EQUALS("a\'\'=", testAst("a=\'\'"));
@@ -6936,6 +6937,47 @@ private:
         ASSERT_THROW_EQUALS(tokenizeAndStringify("int f() { MACRO(x) return 0; }"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f(int i) {\n" // #11770
+                                                 "    if (i == 0) {}\n"
+                                                 "    else if (i == 1) {}\n"
+                                                 "    else\n"
+                                                 "        MACRO(i)\n"
+                                                 "}\n"
+                                                 "void g() {}\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_NO_THROW(tokenizeAndStringify("void f(int i) {\n"
+                                             "    if (i == 0) {}\n"
+                                             "    else if (i == 1) {}\n"
+                                             "    else\n"
+                                             "        MACRO(i);\n"
+                                             "}\n"
+                                             "void g() {}\n"));
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("class C : public QObject {\n" // #11770
+                                                 "    struct S { static void g() {} };\n"
+                                                 "private Q_SLOTS:\n"
+                                                 "    void f() { S::g(); }\n"
+                                                 "};\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If Q_SLOTS is a macro then please configure it.");
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("class C : public QObject {\n"
+                                                 "    struct S { static void g() {} };\n"
+                                                 "private slots:\n"
+                                                 "    void f() { S::g(); }\n"
+                                                 "};\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If slots is a macro then please configure it.");
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("namespace U_ICU_ENTRY_POINT_RENAME(icu) { }\n"
+                                                 "namespace icu = U_ICU_ENTRY_POINT_RENAME(icu);\n"
+                                                 "namespace U_ICU_ENTRY_POINT_RENAME(icu) {\n"
+                                                 "    class BreakIterator;\n"
+                                                 "}\n"
+                                                 "typedef int UStringCaseMapper(icu::BreakIterator* iter);\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If U_ICU_ENTRY_POINT_RENAME is a macro then please configure it.");
     }
 
 

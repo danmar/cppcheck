@@ -2346,7 +2346,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     const Token * const tok1 = tok;
 
     // address of variable
-    if (tok->astParent() && tok->astParent()->isUnaryOp("&"))
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+    if (addressOf)
         indirect++;
 
     int argnr;
@@ -2408,6 +2409,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         if (indirect > 0) {
             if (arg->isPointer() && !(arg->valueType() && arg->valueType()->isConst(indirect)))
                 return true;
+            if (indirect > 1 && addressOf && arg->isPointer() && (!arg->valueType() || !arg->valueType()->isConst(indirect-1)))
+                return true;
             if (arg->isArray() || (!arg->isPointer() && (!arg->valueType() || arg->valueType()->type == ValueType::UNKNOWN_TYPE)))
                 return true;
         }
@@ -2432,7 +2435,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     int derefs = 0;
     while (Token::simpleMatch(tok2->astParent(), "*") ||
            (Token::simpleMatch(tok2->astParent(), ".") && !Token::simpleMatch(tok2->astParent()->astParent(), "(")) ||
-           (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && !tok2->astParent()->astOperand2() && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->") ||
+           (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->") ||
            (Token::simpleMatch(tok2->astParent(), "[") && tok2 == tok2->astParent()->astOperand1())) {
         if (tok2->astParent() && (tok2->astParent()->isUnaryOp("*") || (astIsLHS(tok2) && tok2->astParent()->originalName() == "->")))
             derefs++;
@@ -2441,6 +2444,14 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
         if (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->")
             tok2 = tok2->astParent();
         tok2 = tok2->astParent();
+    }
+
+    if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
+        const Token* parent = tok2->astParent();
+        while (parent->astParent() && parent->astParent()->isCast())
+            parent = parent->astParent();
+        if (parent->astParent() && parent->astParent()->isUnaryOp("*"))
+            tok2 = parent->astParent();
     }
 
     while ((Token::simpleMatch(tok2, ":") && Token::simpleMatch(tok2->astParent(), "?")) ||
@@ -2474,16 +2485,15 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     }
 
     const ValueType* vt = tok->variable() ? tok->variable()->valueType() : tok->valueType();
-    // If its already const then it cant be modified
-    if (vt) {
-        if (vt->isConst(indirect))
-            return false;
-    }
 
     // Check addressof
-    if (tok2->astParent() && tok2->astParent()->isUnaryOp("&") &&
-        isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1)) {
-        return true;
+    if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
+        if (isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1))
+            return true;
+    } else {
+        // If its already const then it cant be modified
+        if (vt && vt->isConst(indirect))
+            return false;
     }
 
     if (cpp && Token::Match(tok2->astParent(), ">>|&") && astIsRHS(tok2) && isLikelyStreamRead(cpp, tok2->astParent()))
@@ -3095,6 +3105,10 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
         }
         if (!args.empty() && indirect == 0 && !addressOf)
             return ExprUsage::Used;
+    } else if (ftok->isControlFlowKeyword()) {
+        return ExprUsage::Used;
+    } else if (ftok->str() == "{") {
+        return ExprUsage::Used;
     } else {
         const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
         if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
