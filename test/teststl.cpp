@@ -5535,7 +5535,7 @@ private:
               "    QString s;\n"
               "public:\n"
               "    C(QString);\n"
-              "private slots:\n"
+              "private:\n"
               "    void f() {\n"
               "        QVERIFY(QDir(s).exists());\n"
               "    }\n"

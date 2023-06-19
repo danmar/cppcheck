@@ -484,6 +484,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                                 return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, yieldName);
                         }
 
+                        const char* const returnType = functionNode->Attribute("returnType");
+                        if (returnType)
+                            container.functions[functionName].returnType = returnType;
+
                         container.functions[functionName].action = action;
                         container.functions[functionName].yield = yield;
                     }
@@ -905,6 +909,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, yieldName);
             }
             func.containerYield = yield;
+
+            const char* const returnType = functionnode->Attribute("returnType");
+            if (returnType)
+                func.returnType = returnType;
         } else
             unknown_elements.insert(functionnodename);
     }
@@ -967,7 +975,15 @@ std::string Library::getFunctionName(const Token *ftok, bool &error) const
                 continue;
             const std::vector<Type::BaseInfo> &derivedFrom = scope->definedType->derivedFrom;
             for (const Type::BaseInfo & baseInfo : derivedFrom) {
-                const std::string name(baseInfo.name + "::" + ftok->str());
+                std::string name;
+                const Token* tok = baseInfo.nameTok; // baseInfo.name still contains template parameters, but is missing namespaces
+                if (tok->str() == "::")
+                    tok = tok->next();
+                while (Token::Match(tok, "%name%|::")) {
+                    name += tok->str();
+                    tok = tok->next();
+                }
+                name += "::" + ftok->str();
                 if (functions.find(name) != functions.end() && matchArguments(ftok, name))
                     return name;
             }
@@ -1358,17 +1374,18 @@ const Library::NonOverlappingData* Library::getNonOverlappingData(const Token *f
 
 Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 {
-    if (Token::simpleMatch(ftok->astParent(), ".")) {
-        using Yield = Library::Container::Yield;
-        using Action = Library::Container::Action;
-        const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
-        if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
-            yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
-            ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(ftok->astParent()->astOperand1()) == Action::NO_ACTION))
-            return Library::UseRetValType::DEFAULT;
-    }
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            const Token* contTok = ftok->astParent()->astOperand1();
+            using Yield = Library::Container::Yield;
+            const Yield yield = astContainerYield(contTok);
+            if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
+                yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
+                ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(contTok) == Library::Container::Action::NO_ACTION))
+                return Library::UseRetValType::DEFAULT;
+        }
         return Library::UseRetValType::NONE;
+    }
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     if (it != functions.cend())
         return it->second.useretval;
@@ -1385,8 +1402,14 @@ const std::string& Library::returnValue(const Token *ftok) const
 
 const std::string& Library::returnValueType(const Token *ftok) const
 {
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
+            const Token* contTok = ftok->astParent()->astOperand1();
+            if (contTok->valueType() && contTok->valueType()->container)
+                return contTok->valueType()->container->getReturnType(ftok->str());
+        }
         return emptyString;
+    }
     const std::map<std::string, std::string>::const_iterator it = mReturnValueType.find(getFunctionName(ftok));
     return it != mReturnValueType.cend() ? it->second : emptyString;
 }
@@ -1479,8 +1502,15 @@ bool Library::isFunctionConst(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isConst())
         return true;
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            using Yield = Library::Container::Yield;
+            const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+            if (yield == Yield::EMPTY || yield == Yield::SIZE || yield == Yield::BUFFER_NT)
+                return true;
+        }
         return false;
+    }
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     return (it != functions.cend() && it->second.isconst);
 }
@@ -1489,8 +1519,15 @@ bool Library::isnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return true;
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            const Token* contTok = ftok->astParent()->astOperand1();
+            if (astContainerAction(contTok) != Library::Container::Action::NO_ACTION ||
+                astContainerYield(contTok) != Library::Container::Yield::NO_YIELD)
+                return false;
+        }
         return false;
+    }
     const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
     if (it == mNoReturn.end())
         return false;
