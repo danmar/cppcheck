@@ -2949,7 +2949,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 addErrorPath(tok, "Assuming container is " + s);
             } else {
                 std::string s = state ? "true" : "false";
-                addErrorPath(tok, "Assuming condition is " + s);
+                addErrorPath(tok, s);
             }
         }
         if (!(flags & Assume::Absolute))
