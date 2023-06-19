@@ -62,7 +62,7 @@ void CheckInternal::checkTokenMatchPatterns()
             // Check for signs of complex patterns
             if (pattern.find_first_of("[|") != std::string::npos)
                 continue;
-            else if (pattern.find("!!") != std::string::npos)
+            if (pattern.find("!!") != std::string::npos)
                 continue;
 
             bool complex = false;

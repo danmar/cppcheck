@@ -1074,8 +1074,7 @@ void CheckBufferOverrun::objectIndex()
                     if (std::any_of(idxValues.cbegin(), idxValues.cend(), [&](const ValueFlow::Value& vidx) {
                         if (vidx.isImpossible())
                             return (vidx.intvalue == 0);
-                        else
-                            return (vidx.intvalue != 0);
+                        return (vidx.intvalue != 0);
                     })) {
                         objectIndexError(tok, &v, idx->hasKnownIntValue());
                     }

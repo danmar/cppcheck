@@ -832,7 +832,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     } else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
                         tok = tok->previous();
                     break;
-                } else if (Token::Match(tok2, "[;({=]"))
+                }
+                if (Token::Match(tok2, "[;({=]"))
                     break;
             }
         }
