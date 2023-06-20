@@ -457,10 +457,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
                 if (it != variableValue.cend() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
-                else {
-                    condVarId = condVarTok->varId();
-                    condVarValue = !VariableValue(0);
-                }
+
+                condVarId = condVarTok->varId();
+                condVarValue = !VariableValue(0);
             } else if (Token::Match(tok->next()->astOperand2(), "==|!=")) {
                 const Token *condition = tok->next()->astOperand2();
                 const Token *lhs = condition->astOperand1();
@@ -721,7 +720,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return true;
                 }
 
-                else if (isSizeOfEtc(tok))
+                if (isSizeOfEtc(tok))
                     tok = tok->linkAt(1);
 
                 else if (tok->str() == "?") {
@@ -802,30 +801,28 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return true;
                 }
 
-                else {
-                    const Token *parent = tok;
-                    while (parent->astParent() && ((astIsLHS(parent) && parent->astParent()->str() == "[") || parent->astParent()->isUnaryOp("*"))) {
-                        parent = parent->astParent();
-                        if (parent->str() == "[") {
-                            if (const Token *errorToken = checkExpr(parent->astOperand2(), var, *alloc, number_of_if==0)) {
-                                if (!suppressErrors)
-                                    uninitvarError(errorToken, errorToken->expressionString(), *alloc);
-                                return true;
-                            }
-                        }
-                    }
-                    if (Token::simpleMatch(parent->astParent(), "=") && astIsLHS(parent)) {
-                        const Token *eq = parent->astParent();
-                        if (const Token *errorToken = checkExpr(eq->astOperand2(), var, *alloc, number_of_if==0)) {
+                const Token *parent = tok;
+                while (parent->astParent() && ((astIsLHS(parent) && parent->astParent()->str() == "[") || parent->astParent()->isUnaryOp("*"))) {
+                    parent = parent->astParent();
+                    if (parent->str() == "[") {
+                        if (const Token *errorToken = checkExpr(parent->astOperand2(), var, *alloc, number_of_if==0)) {
                             if (!suppressErrors)
                                 uninitvarError(errorToken, errorToken->expressionString(), *alloc);
                             return true;
                         }
                     }
-
-                    // assume that variable is assigned
-                    return true;
                 }
+                if (Token::simpleMatch(parent->astParent(), "=") && astIsLHS(parent)) {
+                    const Token *eq = parent->astParent();
+                    if (const Token *errorToken = checkExpr(eq->astOperand2(), var, *alloc, number_of_if==0)) {
+                        if (!suppressErrors)
+                            uninitvarError(errorToken, errorToken->expressionString(), *alloc);
+                        return true;
+                    }
+                }
+
+                // assume that variable is assigned
+                return true;
             }
         }
     }
@@ -856,7 +853,7 @@ const Token* CheckUninitVar::checkExpr(const Token* tok, const Variable& var, co
         const Token *errorToken = isVariableUsage(tok, var.isPointer(), alloc);
         if (errorToken)
             return errorToken;
-        else if (bailout)
+        if (bailout)
             *bailout = true;
     }
     return nullptr;
@@ -1401,11 +1398,11 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
     if (Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar) {
         if (Token::Match(tok->tokAt(3), "[=.[]"))
             return true;
-        else if (Token::Match(tok->tokAt(-2), "[(,=] &"))
+        if (Token::Match(tok->tokAt(-2), "[(,=] &"))
             return true;
-        else if (isLikelyStreamRead(mTokenizer->isCPP(), tok->previous()))
+        if (isLikelyStreamRead(mTokenizer->isCPP(), tok->previous()))
             return true;
-        else if ((tok->previous() && tok->previous()->isConstOp()) || Token::Match(tok->previous(), "[|="))
+        if ((tok->previous() && tok->previous()->isConstOp()) || Token::Match(tok->previous(), "[|="))
             ; // member variable usage
         else if (tok->tokAt(3)->isConstOp())
             ; // member variable usage
@@ -1445,7 +1442,7 @@ bool CheckUninitVar::isMemberVariableAssignment(const Token *tok, const std::str
                     const Library::ArgumentChecks::Direction argDirection = mSettings->library.getArgDirection(ftok, 1 + argumentNumber);
                     if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
                         return false;
-                    else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT)
+                    if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT)
                         return true;
                 }
 
@@ -1480,14 +1477,15 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
     if (Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar && !(tok->tokAt(-2)->variable() && tok->tokAt(-2)->variable()->isReference())) {
         const Token *parent = tok->next()->astParent();
         return !parent || !parent->isUnaryOp("&");
-    } else if (!isPointer && !Token::simpleMatch(tok->astParent(), ".") && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
+    }
+    if (!isPointer && !Token::simpleMatch(tok->astParent(), ".") && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
         return true;
 
-    else if (!isPointer && Token::Match(tok->previous(), "= %name% ;"))
+    if (!isPointer && Token::Match(tok->previous(), "= %name% ;"))
         return true;
 
     // = *(&var);
-    else if (!isPointer &&
+    if (!isPointer &&
              Token::simpleMatch(tok->astParent(),"&") &&
              Token::simpleMatch(tok->astParent()->astParent(),"*") &&
              Token::Match(tok->astParent()->astParent()->astParent(), "= * (| &") &&
@@ -1495,7 +1493,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
         return true;
 
     // TODO: this used to be experimental - enable or remove see #5586
-    else if ((false) && // NOLINT(readability-simplify-boolean-expr)
+    if ((false) && // NOLINT(readability-simplify-boolean-expr)
              !isPointer &&
              Token::Match(tok->tokAt(-2), "[(,] & %name% [,)]") &&
              isVariableUsage(tok, isPointer, alloc))

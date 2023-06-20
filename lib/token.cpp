@@ -465,6 +465,7 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
         if (haystack[3] == '%') { // %any%
             haystack += 4;
             return 1;
+        }
         // %assign%
         haystack += 7;
         if (tok->isAssignmentOp())

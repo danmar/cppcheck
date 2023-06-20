@@ -518,7 +518,8 @@ static Library::Container::Yield getContainerYield(Token* tok, const Settings* s
         if (parent)
             *parent = tok->astParent();
         return c ? c->getYield(tok->strAt(1)) : Library::Container::Yield::NO_YIELD;
-    } else if (Token::Match(tok->previous(), "%name% (")) {
+    }
+    if (Token::Match(tok->previous(), "%name% (")) {
         if (parent)
             *parent = tok;
         if (const Library::Function* f = settings->library.getFunction(tok->previous())) {
@@ -1450,7 +1451,7 @@ static void valueFlowArray(TokenList *tokenlist, const Settings *settings)
             continue;
         }
 
-        else if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
+        if (Token::Match(tok, "const char %var% [ %num%| ] = %str% ;")) {
             Token *vartok = tok->tokAt(2);
             Token *strtok = vartok->next()->link()->tokAt(2);
             constantArrays[vartok->varId()] = strtok;
@@ -2175,8 +2176,7 @@ static const std::string& invertAssign(const std::string& assign)
     if (it == lookup.end()) {
         return emptyString;
     }
-    else
-        return it->second;
+    return it->second;
 }
 
 static std::string removeAssign(const std::string& assign) {
@@ -2488,11 +2488,13 @@ struct ValueFlowAnalyzer : Analyzer {
             result.dependent = true;
             result.unknown = false;
             return result;
-        } else if (tok->hasKnownIntValue() || tok->isLiteral()) {
+        }
+        if (tok->hasKnownIntValue() || tok->isLiteral()) {
             result.dependent = false;
             result.unknown = false;
             return result;
-        } else if (Token::Match(tok, "%cop%")) {
+        } 
+        if (Token::Match(tok, "%cop%")) {
             if (isLikelyStream(isCPP(), tok->astOperand1())) {
                 result.dependent = false;
                 return result;
@@ -2509,7 +2511,8 @@ struct ValueFlowAnalyzer : Analyzer {
                 result.dependent = lhs.dependent || rhs.dependent;
             result.unknown = lhs.unknown || rhs.unknown;
             return result;
-        } else if (Token::Match(tok->previous(), "%name% (")) {
+        }
+        if (Token::Match(tok->previous(), "%name% (")) {
             std::vector<const Token*> args = getArguments(tok->previous());
             if (Token::Match(tok->tokAt(-2), ". %name% (")) {
                 args.push_back(tok->tokAt(-2)->astOperand1());
@@ -2524,23 +2527,23 @@ struct ValueFlowAnalyzer : Analyzer {
                     result.unknown = false;
             }
             return result;
-        } else {
-            std::unordered_map<nonneg int, const Token*> symbols = getSymbols(tok);
-            result.dependent = false;
-            for (auto&& p : symbols) {
-                const Token* arg = p.second;
-                ConditionState cs = analyzeCondition(arg, depth - 1);
-                result.dependent = cs.dependent;
-                if (result.dependent)
-                    break;
-            }
-            if (result.dependent) {
-                // Check if we can evaluate the token
-                if (!evaluate(Evaluate::Integral, tok).empty())
-                    result.unknown = false;
-            }
-            return result;
         }
+
+        std::unordered_map<nonneg int, const Token*> symbols = getSymbols(tok);
+        result.dependent = false;
+        for (auto&& p : symbols) {
+            const Token* arg = p.second;
+            ConditionState cs = analyzeCondition(arg, depth - 1);
+            result.dependent = cs.dependent;
+            if (result.dependent)
+                break;
+        }
+        if (result.dependent) {
+            // Check if we can evaluate the token
+            if (!evaluate(Evaluate::Integral, tok).empty())
+                result.unknown = false;
+        }
+        return result;
     }
 
     virtual Action isModified(const Token* tok) const {
@@ -2624,8 +2627,7 @@ struct ValueFlowAnalyzer : Analyzer {
     {
         if (d == Direction::Forward)
             return tok->str();
-        else
-            return invertAssign(tok->str());
+        return invertAssign(tok->str());
     }
 
     virtual Action isWritable(const Token* tok, Direction d) const {
@@ -2831,11 +2833,11 @@ struct ValueFlowAnalyzer : Analyzer {
             Action a = isAliasModified(tok);
             if (inconclusive && a.isModified())
                 return Action::Inconclusive;
-            else
-                return a;
-        } else if (isSameSymbolicValue(ref)) {
-            return Action::Read | Action::SymbolicMatch;
+            return a;
         }
+        if (isSameSymbolicValue(ref))
+            return Action::Read | Action::SymbolicMatch;
+
         return Action::None;
     }
 
