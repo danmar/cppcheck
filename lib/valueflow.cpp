@@ -2903,7 +2903,8 @@ struct ValueFlowAnalyzer : Analyzer {
             return evaluateInt(tok, [&] {
                 return pms.get(tok, ctx, getProgramState());
             });
-        } else if (e == Evaluate::ContainerEmpty) {
+        }
+        if (e == Evaluate::ContainerEmpty) {
             const ValueFlow::Value* value = ValueFlow::findValue(tok->values(), nullptr, [](const ValueFlow::Value& v) {
                 return v.isKnown() && v.isContainerSizeValue();
             });
@@ -2914,9 +2915,8 @@ struct ValueFlowAnalyzer : Analyzer {
             if (pm.getContainerEmptyValue(tok->exprId(), out))
                 return {static_cast<int>(out)};
             return {};
-        } else {
-            return {};
         }
+        return {};
     }
 
     void assume(const Token* tok, bool state, unsigned int flags) override {
@@ -3101,9 +3101,9 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         const Scope* scope = endBlock->scope();
         if (!scope)
             return false;
-        if (scope->type == Scope::eLambda) {
+        if (scope->type == Scope::eLambda)
             return value.isLifetimeValue();
-        } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
+        if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
                    scope->type == Scope::eFor) {
             if (value.isKnown() || value.isImpossible())
                 return true;
@@ -3474,7 +3474,8 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
             if (var->isArgument()) {
                 errorPath.emplace_back(varDeclEndToken, "Passed to reference.");
                 return {{tok, true, std::move(errorPath)}};
-            } else if (Token::simpleMatch(varDeclEndToken, "=")) {
+            }
+            if (Token::simpleMatch(varDeclEndToken, "=")) {
                 errorPath.emplace_back(varDeclEndToken, "Assigned to reference.");
                 const Token *vartok = varDeclEndToken->astOperand2();
                 const bool temporary = isTemporary(true, vartok, nullptr, true);
@@ -3494,8 +3495,7 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                 const Token* contok = var->nameToken()->astParent()->astOperand2();
                 if (astIsContainer(contok))
                     return getLifetimeTokens(contok, escape, std::move(errorPath), pred, depth - 1);
-                else
-                    return std::vector<ValueFlow::LifetimeToken>{};
+                return std::vector<ValueFlow::LifetimeToken>{};
             } else {
                 return std::vector<ValueFlow::LifetimeToken> {};
             }
@@ -3543,7 +3543,8 @@ static std::vector<ValueFlow::LifetimeToken> getLifetimeTokens(const Token* tok,
                 }
             }
             return result;
-        } else if (Token::Match(tok->tokAt(-2), ". %name% (") && tok->tokAt(-2)->originalName() != "->" && astIsContainer(tok->tokAt(-2)->astOperand1())) {
+        }
+        if (Token::Match(tok->tokAt(-2), ". %name% (") && tok->tokAt(-2)->originalName() != "->" && astIsContainer(tok->tokAt(-2)->astOperand1())) {
             const Library::Container* library = getLibraryContainer(tok->tokAt(-2)->astOperand1());
             const Library::Container::Yield y = library->getYield(tok->previous()->str());
             if (y == Library::Container::Yield::AT_INDEX || y == Library::Container::Yield::ITEM) {
@@ -4857,9 +4858,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
             auto isImplicitCapturingThis = [&](const Token* tok2) {
                 if (capturedThis)
                     return false;
-                if (Token::simpleMatch(tok2, "this")) {
+                if (Token::simpleMatch(tok2, "this"))
                     return true;
-                } else if (tok2->variable()) {
+                if (tok2->variable()) {
                     if (Token::simpleMatch(tok2->previous(), "."))
                         return false;
                     const Variable* var = tok2->variable();
@@ -4868,9 +4869,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
                     if (var->isArgument())
                         return false;
                     return exprDependsOnThis(tok2);
-                } else if (Token::simpleMatch(tok2, "(")) {
+                } 
+                if (Token::simpleMatch(tok2, "("))
                     return exprDependsOnThis(tok2);
-                }
                 return false;
             };
 
@@ -6561,7 +6562,8 @@ struct ConditionHandler {
                             "valueFlowAfterCondition: " + cond.vartok->expressionString() +
                             " is changed in conditional block");
                 return;
-            } else if (bailBlock >= 0) {
+            }
+            if (bailBlock >= 0) {
                 if (settings->debugwarnings)
                     bailout(tokenlist,
                             errorLogger,
@@ -7044,7 +7046,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))))
             break;
 
-        else if (Token::simpleMatch(tok2, ") {")) {
+        if (Token::simpleMatch(tok2, ") {")) {
             if (vartok->varId() && Token::findmatch(tok2->link(), "%varid%", tok2, vartok->varId())) {
                 if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), vartok->varId())) {
                     if (settings->debugwarnings)
@@ -7280,7 +7282,8 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             return std::all_of(values.cbegin(), values.cend(), [](const std::pair<nonneg int, ValueFlow::Value>& p) {
                 return p.second.isLifetimeValue();
             });
-        } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
+        }
+        if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
                    scope->type == Scope::eFor) {
             auto pred = [](const ValueFlow::Value& value) {
                 if (value.isKnown())

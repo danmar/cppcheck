@@ -420,7 +420,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                     syntaxError(tok);
                 if (Token::Match(tok, ">|>>|>>="))
                     return numberOfParameters;
-                else if (tok->str() == ",") {
+                if (tok->str() == ",") {
                     ++numberOfParameters;
                     tok = tok->next();
                     continue;
@@ -479,9 +479,9 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 return 0;
             if (tok->str() == ">" && level == 0)
                 return numberOfParameters;
-            else if ((tok->str() == ">>" || tok->str() == ">>=") && level == 1)
+            if ((tok->str() == ">>" || tok->str() == ">>=") && level == 1)
                 return numberOfParameters;
-            else if (tok->str() == ",") {
+            if (tok->str() == ",") {
                 if (level == 0)
                     ++numberOfParameters;
                 tok = tok->next();
@@ -973,42 +973,41 @@ void TemplateSimplifier::getTemplateInstantiations()
                         // full name matches
                         addInstantiation(tok, it->scope());
                         break;
-                    } else {
-                        // full name doesn't match so try with using namespaces if available
-                        bool found = false;
-                        for (const auto & nameSpace :  tok->scopeInfo()->usingNamespaces) {
-                            std::string fullNameSpace = scopeName + (scopeName.empty()?"":" :: ") +
-                                                        nameSpace + (qualification.empty()?"":" :: ") + qualification;
-                            std::string newFullName = fullNameSpace + " :: " + tok->str();
-                            const std::list<TokenAndName>::const_iterator it1 = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(newFullName));
-                            if (it1 != mTemplateDeclarations.end()) {
-                                // insert using namespace into token stream
-                                std::string::size_type offset = 0;
-                                std::string::size_type pos = 0;
-                                while ((pos = nameSpace.find(' ', offset)) != std::string::npos) {
-                                    qualificationTok->insertToken(nameSpace.substr(offset, pos - offset), emptyString, true);
-                                    offset = pos + 1;
-                                }
-                                qualificationTok->insertToken(nameSpace.substr(offset), emptyString, true);
-                                qualificationTok->insertToken("::", emptyString, true);
-                                addInstantiation(tok, it1->scope());
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (found)
-                            break;
-
-                        if (scopeName.empty()) {
-                            if (!qualification.empty())
-                                addInstantiation(tok, qualification);
-                            else
-                                addInstantiation(tok,  tok->scopeInfo()->name);
-                            break;
-                        }
-                        const std::string::size_type pos = scopeName.rfind(" :: ");
-                        scopeName = (pos == std::string::npos) ? std::string() : scopeName.substr(0,pos);
                     }
+                    // full name doesn't match so try with using namespaces if available
+                    bool found = false;
+                    for (const auto & nameSpace :  tok->scopeInfo()->usingNamespaces) {
+                        std::string fullNameSpace = scopeName + (scopeName.empty()?"":" :: ") +
+                                                    nameSpace + (qualification.empty()?"":" :: ") + qualification;
+                        std::string newFullName = fullNameSpace + " :: " + tok->str();
+                        const std::list<TokenAndName>::const_iterator it1 = std::find_if(mTemplateDeclarations.cbegin(), mTemplateDeclarations.cend(), FindFullName(newFullName));
+                        if (it1 != mTemplateDeclarations.end()) {
+                            // insert using namespace into token stream
+                            std::string::size_type offset = 0;
+                            std::string::size_type pos = 0;
+                            while ((pos = nameSpace.find(' ', offset)) != std::string::npos) {
+                                qualificationTok->insertToken(nameSpace.substr(offset, pos - offset), emptyString, true);
+                                offset = pos + 1;
+                            }
+                            qualificationTok->insertToken(nameSpace.substr(offset), emptyString, true);
+                            qualificationTok->insertToken("::", emptyString, true);
+                            addInstantiation(tok, it1->scope());
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found)
+                        break;
+
+                    if (scopeName.empty()) {
+                        if (!qualification.empty())
+                            addInstantiation(tok, qualification);
+                        else
+                            addInstantiation(tok,  tok->scopeInfo()->name);
+                        break;
+                    }
+                    const std::string::size_type pos = scopeName.rfind(" :: ");
+                    scopeName = (pos == std::string::npos) ? std::string() : scopeName.substr(0,pos);
                 }
             }
         }
@@ -1076,8 +1075,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                 if (!eq.empty())
                     eq.back().end = tok;
                 break;
-            } else
-                --templateParmDepth;
+            }
+            --templateParmDepth;
         }
 
         // map type parameter name to index
@@ -1407,7 +1406,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateFunction(const Token *to
         if (Token::Match(tok->next(), ";|{"))
             return false;
         // skip decltype(...)
-        else if (Token::simpleMatch(tok->next(), "decltype (")) {
+        if (Token::simpleMatch(tok->next(), "decltype (")) {
             const Token * end = tok->linkAt(2)->previous();
             while (tok->next() && tok != end) {
                 tok = tok->next();
@@ -1439,7 +1438,7 @@ bool TemplateSimplifier::getTemplateNamePositionTemplateVariable(const Token *to
         if (Token::Match(tok->next(), ";|{|(|using"))
             return false;
         // skip decltype(...)
-        else if (Token::simpleMatch(tok->next(), "decltype (")) {
+        if (Token::simpleMatch(tok->next(), "decltype (")) {
             const Token * end = tok->linkAt(2);
             while (tok->next() && tok != end) {
                 tok = tok->next();
@@ -2137,7 +2136,8 @@ void TemplateSimplifier::expandTemplate(
                                 eraseTokens(tok3, closingBracket->next());
                             }
                             continue;
-                        } else if (!templateDeclaration.scope().empty() &&
+                        }
+                        if (!templateDeclaration.scope().empty() &&
                                    !alreadyHasNamespace(templateDeclaration, tok3) &&
                                    !Token::Match(closingBracket->next(), "(|::")) {
                             if (copy)
@@ -2336,8 +2336,9 @@ bool TemplateSimplifier::simplifyNumericCalculations(Token *tok, bool isTemplate
 
         // Don't simplify "%num% / 0"
         if (Token::Match(op, "[/%] 0")) {
-            if (isTemplate) throw InternalError(op, "Instantiation error: Divide by zero in template instantiation.", InternalError::INSTANTIATION);
-            else return ret;
+            if (isTemplate)
+                throw InternalError(op, "Instantiation error: Divide by zero in template instantiation.", InternalError::INSTANTIATION);
+            return ret;
         }
 
         // Integer operations
@@ -3298,28 +3299,25 @@ static bool matchTemplateParameters(const Token *nameTok, const std::list<std::s
         if (tok->isUnsigned()) {
             if (*it != "unsigned")
                 return false;
-            else {
-                ++it;
-                if (it == strings.cend())
-                    return false;
-            }
+
+            ++it;
+            if (it == strings.cend())
+                return false;
         } else if (tok->isSigned()) {
             if (*it != "signed")
                 return false;
-            else {
-                ++it;
-                if (it == strings.cend())
-                    return false;
-            }
+
+            ++it;
+            if (it == strings.cend())
+                return false;
         }
         if (tok->isLong()) {
             if (*it != "long")
                 return false;
-            else {
-                ++it;
-                if (it == strings.cend())
-                    return false;
-            }
+
+            ++it;
+            if (it == strings.cend())
+                return false;
         }
         if (*it != tok->str())
             return false;
@@ -3378,9 +3376,8 @@ void TemplateSimplifier::replaceTemplateUsage(
                     if (ti->token() == tok) {
                         ti = mTemplateInstantiations.erase(ti);
                         break;
-                    } else {
-                        ++ti;
                     }
+                    ++ti;
                 }
             }
         }

@@ -1681,10 +1681,7 @@ bool CheckIO::ArgumentInfo::isArrayOrPointer() const
     const Token *tok = typeToken;
     while (Token::Match(tok, "const|struct"))
         tok = tok->next();
-    if (tok && tok->strAt(1) == "*")
-        return true;
-
-    return false;
+    return tok && tok->strAt(1) == "*";
 }
 
 bool CheckIO::ArgumentInfo::isComplexType() const
@@ -1703,7 +1700,7 @@ bool CheckIO::ArgumentInfo::isKnownType() const
 {
     if (variableInfo)
         return (typeToken->isStandardType() || typeToken->next()->isStandardType() || isComplexType());
-    else if (functionInfo)
+    if (functionInfo)
         return (typeToken->isStandardType() || functionInfo->retType || Token::Match(typeToken, "std :: string|wstring"));
 
     return typeToken->isStandardType() || Token::Match(typeToken, "std :: string|wstring");
