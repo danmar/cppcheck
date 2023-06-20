@@ -7217,7 +7217,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
 
     void addErrorPath(const Token* tok, const std::string& s) override {
         for (auto&& p:values) {
-            p.second.errorPath.emplace_back(tok, "Assuming condition is " + s);
+            p.second.errorPath.emplace_back(tok, s);
         }
     }
 

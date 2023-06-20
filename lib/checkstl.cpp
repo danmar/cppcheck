@@ -1326,7 +1326,9 @@ void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &inde
                << ", otherwise there is negative array index " << index.intvalue << ".";
     else
         errmsg << "Array index " << index.intvalue << " is out of bounds.";
-    reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeContainerIndex", errmsg.str(), CWE786, index.isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+    const auto severity = index.errorSeverity() && index.isKnown() ? Severity::error : Severity::warning;
+    const auto certainty = index.isInconclusive() ? Certainty::inconclusive : Certainty::normal;
+    reportError(errorPath, severity, "negativeContainerIndex", errmsg.str(), CWE786, certainty);
 }
 
 void CheckStl::erase()
