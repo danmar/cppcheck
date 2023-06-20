@@ -2523,16 +2523,16 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
                 return true;
             const Library::Container::Yield yield = c->getYield(ftok->str());
             // If accessing element check if the element is changed
-            if (contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield)) {
+            if (contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield))
                 return isVariableChanged(ftok->next(), indirect, settings, cpp, depth - 1);
-            }
+
             if (contains({Library::Container::Yield::BUFFER,
                           Library::Container::Yield::BUFFER_NT,
                           Library::Container::Yield::START_ITERATOR,
                           Library::Container::Yield::ITERATOR},
                          yield)) {
                 return isVariableChanged(ftok->next(), indirect + 1, settings, cpp, depth - 1);
-            } 
+            }
             if (contains({Library::Container::Yield::SIZE,
                           Library::Container::Yield::EMPTY,
                           Library::Container::Yield::END_ITERATOR},
