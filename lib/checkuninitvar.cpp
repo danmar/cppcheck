@@ -1486,17 +1486,17 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
 
     // = *(&var);
     if (!isPointer &&
-             Token::simpleMatch(tok->astParent(),"&") &&
-             Token::simpleMatch(tok->astParent()->astParent(),"*") &&
-             Token::Match(tok->astParent()->astParent()->astParent(), "= * (| &") &&
-             tok->astParent()->astParent()->astParent()->astOperand2() == tok->astParent()->astParent())
+        Token::simpleMatch(tok->astParent(),"&") &&
+        Token::simpleMatch(tok->astParent()->astParent(),"*") &&
+        Token::Match(tok->astParent()->astParent()->astParent(), "= * (| &") &&
+        tok->astParent()->astParent()->astParent()->astOperand2() == tok->astParent()->astParent())
         return true;
 
     // TODO: this used to be experimental - enable or remove see #5586
     if ((false) && // NOLINT(readability-simplify-boolean-expr)
-             !isPointer &&
-             Token::Match(tok->tokAt(-2), "[(,] & %name% [,)]") &&
-             isVariableUsage(tok, isPointer, alloc))
+        !isPointer &&
+        Token::Match(tok->tokAt(-2), "[(,] & %name% [,)]") &&
+        isVariableUsage(tok, isPointer, alloc))
         return true;
 
     return false;

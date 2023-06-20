@@ -1164,9 +1164,9 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",")
         return expr->values().front();
     if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
-               (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
-               (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
-               (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
+        (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
+        (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
+        (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
         return *value;
     }
     if (expr->isNumber()) {

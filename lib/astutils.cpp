@@ -1903,7 +1903,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             }
             return false;
         }
-        if (f->argumentList.empty()) 
+        if (f->argumentList.empty())
             return f->isConstexpr();
     } else if (Token::Match(ftok->previous(), ". %name% (") && ftok->previous()->originalName() != "->" &&
                astIsSmartPointer(ftok->previous()->astOperand1())) {
@@ -2527,10 +2527,10 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
                 return isVariableChanged(ftok->next(), indirect, settings, cpp, depth - 1);
             }
             if (contains({Library::Container::Yield::BUFFER,
-                                 Library::Container::Yield::BUFFER_NT,
-                                 Library::Container::Yield::START_ITERATOR,
-                                 Library::Container::Yield::ITERATOR},
-                                yield)) {
+                          Library::Container::Yield::BUFFER_NT,
+                          Library::Container::Yield::START_ITERATOR,
+                          Library::Container::Yield::ITERATOR},
+                          yield)) {
                 return isVariableChanged(ftok->next(), indirect + 1, settings, cpp, depth - 1);
             } 
             if (contains({Library::Container::Yield::SIZE,

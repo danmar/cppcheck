@@ -5690,7 +5690,7 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
         if (tok1 && tok1->valueType() && tok1->valueType()->typeScope)
             return tok1->valueType()->typeScope->findFunction(tok, tok1->valueType()->constness == 1);
         if (tok1 && Token::Match(tok1->previous(), "%name% (") && tok1->previous()->function() &&
-                   tok1->previous()->function()->retDef) {
+            tok1->previous()->function()->retDef) {
             ValueType vt = ValueType::parseDecl(tok1->previous()->function()->retDef, mSettings, mIsCpp);
             if (vt.typeScope)
                 return vt.typeScope->findFunction(tok, vt.constness == 1);

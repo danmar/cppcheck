@@ -488,7 +488,7 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
         *formatArgTok = argTok->nextArgument();
         *formatStringTok = argTok;
         return true;
-    } 
+    }
     if (Token::Match(argTok, "%var% [,)]") &&
         argTok->variable() &&
         Token::Match(argTok->variable()->typeStartToken(), "char|wchar_t") &&
@@ -1473,7 +1473,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                 } else
                     varTok = tok1->previous();
                 break;
-            } 
+            }
             if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
                 tok1 = tok1->link();
             else if (tok1->link() && tok1->str() == "<")

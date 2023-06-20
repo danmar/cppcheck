@@ -915,7 +915,7 @@ void CheckOther::checkVariableScope()
             if (tok->str() == "(") {
                 forHead = true;
                 break;
-            } 
+            }
             if (Token::Match(tok, "[;{}]"))
                 break;
         }

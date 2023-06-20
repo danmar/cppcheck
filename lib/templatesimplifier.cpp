@@ -2156,8 +2156,8 @@ void TemplateSimplifier::expandTemplate(
                             continue;
                         }
                         if (!templateDeclaration.scope().empty() &&
-                                   !alreadyHasNamespace(templateDeclaration, tok3) &&
-                                   !Token::Match(closingBracket->next(), "(|::")) {
+                            !alreadyHasNamespace(templateDeclaration, tok3) &&
+                            !Token::Match(closingBracket->next(), "(|::")) {
                             if (copy)
                                 addNamespace(templateDeclaration, tok3);
                         }

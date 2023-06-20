@@ -2493,7 +2493,7 @@ struct ValueFlowAnalyzer : Analyzer {
             result.dependent = false;
             result.unknown = false;
             return result;
-        } 
+        }
         if (Token::Match(tok, "%cop%")) {
             if (isLikelyStream(isCPP(), tok->astOperand1())) {
                 result.dependent = false;
@@ -3104,7 +3104,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         if (scope->type == Scope::eLambda)
             return value.isLifetimeValue();
         if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
-                   scope->type == Scope::eFor) {
+            scope->type == Scope::eFor) {
             if (value.isKnown() || value.isImpossible())
                 return true;
             if (value.isLifetimeValue())
@@ -4869,7 +4869,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase* /*db*/, Erro
                     if (var->isArgument())
                         return false;
                     return exprDependsOnThis(tok2);
-                } 
+                }
                 if (Token::simpleMatch(tok2, "("))
                     return exprDependsOnThis(tok2);
                 return false;
@@ -7284,7 +7284,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             });
         }
         if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
-                   scope->type == Scope::eFor) {
+            scope->type == Scope::eFor) {
             auto pred = [](const ValueFlow::Value& value) {
                 if (value.isKnown())
                     return true;

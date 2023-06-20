@@ -254,7 +254,7 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
             if (called->isThrow() && called->throwArg)
                 return tok;
             if (called->isNoExcept() && called->noexceptArg &&
-                       called->noexceptArg->str() != "true")
+                called->noexceptArg->str() != "true")
                 return tok;
             if (functionThrowsRecursive(called, recursive))
                 return tok;
