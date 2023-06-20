@@ -2547,7 +2547,7 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 
     virtual Action isModified(const Token* tok) const {
-        Action read = Action::Read;
+        const Action read = Action::Read;
         const ValueFlow::Value* value = getValue(tok);
         if (value) {
             // Moving a moved value won't change the moved value
@@ -7221,7 +7221,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
 
     void addErrorPath(const Token* tok, const std::string& s) override {
         for (auto&& p:values) {
-            p.second.errorPath.emplace_back(tok, "Assuming condition is " + s);
+            p.second.errorPath.emplace_back(tok, s);
         }
     }
 
@@ -7857,14 +7857,14 @@ bool findTokenSkipDeadCodeImpl(const Library* library, Token* start, const Token
                 tok = thenStart->link();
             }
         } else if (Token::Match(tok->astParent(), "&&|?|%oror%") && astIsLHS(tok) && tok->hasKnownIntValue()) {
-            int r = tok->values().front().intvalue;
+            const bool cond = tok->values().front().intvalue != 0;
             Token* next = nullptr;
-            if ((r == 0 && Token::simpleMatch(tok->astParent(), "||")) ||
-                (r != 0 && Token::simpleMatch(tok->astParent(), "&&"))) {
+            if ((cond && Token::simpleMatch(tok->astParent(), "||")) ||
+                (!cond && Token::simpleMatch(tok->astParent(), "&&"))) {
                 next = nextAfterAstRightmostLeaf(tok->astParent());
             } else if (Token::simpleMatch(tok->astParent(), "?")) {
                 Token* colon = tok->astParent()->astOperand2();
-                if (r == 0) {
+                if (!cond) {
                     next = colon;
                 } else {
                     if (findTokenSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found))

@@ -279,6 +279,7 @@ private:
         TEST_CASE(template_variadic_1); // #9144
         TEST_CASE(template_variadic_2); // #4349
         TEST_CASE(template_variadic_3); // #6172
+        TEST_CASE(template_variadic_4);
 
         TEST_CASE(template_variable_1);
         TEST_CASE(template_variable_2);
@@ -4063,11 +4064,11 @@ private:
                              "    f<T>(0);\n"
                              "}\n";
         const char exp2[] = "template < typename T > void f ( ) ; "
-                            "void f<int> ( int ) ; "
                             "void f<char> ( int ) ; "
+                            "void f<int> ( int ) ; "
                             "void g ( ) { f<int> ( ) ; f<char> ( 1 ) ; } "
-                            "void f<int> ( ) { f<int> ( 0 ) ; } "
-                            "void f<char> ( int ) { }";
+                            "void f<char> ( int ) { } "
+                            "void f<int> ( ) { f<int> ( 0 ) ; }";
         ASSERT_EQUALS(exp2, tok(code2));
     }
 
@@ -6130,6 +6131,25 @@ private:
         const char expected[] = "struct A<0> ; "
                                 "void bar ( ) { A<0> :: foo ( ) ; } "
                                 "struct A<0> { static void foo ( ) { int i ; i = 0 ; } } ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void template_variadic_4() { // #11763
+        const char code[] = "template <int... N>\n"
+                            "class E {\n"
+                            "    template <int... I>\n"
+                            "    int f(int n, std::integer_sequence<int, I...>) {\n"
+                            "        return (((I == n) ? N : 0) + ...);\n"
+                            "    }\n"
+                            "};\n"
+                            "E<1, 3> e;\n";
+        const char expected[] = "class E<1,3> ; E<1,3> e ; "
+                                "class E<1,3> { "
+                                "template < int ... I > "
+                                "int f ( int n , std :: integer_sequence < int , I ... > ) { "
+                                "return ( ( ( I == n ) ? : 0 ) + ... ) ; "
+                                "} "
+                                "} ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
