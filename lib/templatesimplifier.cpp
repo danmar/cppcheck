@@ -3851,7 +3851,7 @@ void TemplateSimplifier::simplifyTemplates(
             for (const Token* tok = arg; tok; tok = tok->next()) {
                 if (tok->str() == ",")
                     return i;
-                else if (tok->link() && Token::Match(tok, "(|{|["))
+                if (tok->link() && Token::Match(tok, "(|{|["))
                     tok = tok->link();
                 else if (tok->str() == "<") {
                     const Token* temp = tok->findClosingBracket();
