@@ -1251,7 +1251,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         }
         if (Token::simpleMatch(tok->astParent(), "=")) {
             if (astIsLhs(tok)) {
-                if (alloc == ARRAY || !derefValue || !derefValue->astOperand1() || !derefValue->isUnaryOp("*"))
+                if (alloc == ARRAY || !derefValue || !derefValue->isUnaryOp("*"))
                     return nullptr;
                 const Token* deref = derefValue->astOperand1();
                 while (deref && deref->isCast())
