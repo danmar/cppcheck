@@ -2310,7 +2310,8 @@ void CheckOther::checkInvalidFree()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
 
             // Keep track of which variables were assigned addresses to newly-allocated memory
-            if (Token::Match(tok, "%var% = malloc|g_malloc|new")) {
+            if ((mTokenizer->isCPP() && Token::Match(tok, "%var% = new")) ||
+                (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) {
                 allocation.insert(std::make_pair(tok->varId(), tok->strAt(2)));
                 inconclusive.insert(std::make_pair(tok->varId(), false));
             }

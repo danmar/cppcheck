@@ -1028,7 +1028,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (var) {
                 // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
                 if (var->mType == Variables::pointer &&
-                    ((mTokenizer->isCPP() && Token::Match(skipBrackets(tok->next()), "= new")) ||
+                    ((mTokenizer->isCPP() && Token::simpleMatch(skipBrackets(tok->next()), "= new")) ||
                      (Token::Match(skipBrackets(tok->next()), "= %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2))))) {
                     variables.allocateMemory(varid, tok);
                 } else if (var->mType == Variables::pointer || var->mType == Variables::reference) {
