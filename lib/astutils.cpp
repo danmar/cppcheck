@@ -2530,13 +2530,13 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
                           Library::Container::Yield::BUFFER_NT,
                           Library::Container::Yield::START_ITERATOR,
                           Library::Container::Yield::ITERATOR},
-                          yield)) {
+                         yield)) {
                 return isVariableChanged(ftok->next(), indirect + 1, settings, cpp, depth - 1);
             } 
             if (contains({Library::Container::Yield::SIZE,
-                                 Library::Container::Yield::EMPTY,
-                                 Library::Container::Yield::END_ITERATOR},
-                                yield)) {
+                          Library::Container::Yield::EMPTY,
+                          Library::Container::Yield::END_ITERATOR},
+                         yield)) {
                 return false;
             }
         }
