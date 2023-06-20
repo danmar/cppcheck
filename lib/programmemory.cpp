@@ -72,8 +72,7 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
     const bool found = it != mValues.cend() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
-    else
-        return nullptr;
+    return nullptr;
 }
 
 // cppcheck-suppress unusedFunction
@@ -1162,23 +1161,25 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     const ValueFlow::Value* value = nullptr;
     if (!expr)
         return unknown;
-    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",") {
+    if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",")
         return expr->values().front();
-    } else if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
+    if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
                (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
                (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
         return *value;
-    } else if (expr->isNumber()) {
+    }
+    if (expr->isNumber()) {
         if (MathLib::isFloat(expr->str()))
             return unknown;
         MathLib::bigint i = MathLib::toLongNumber(expr->str());
         if (i < 0 && astIsUnsigned(expr))
             return unknown;
         return ValueFlow::Value{i};
-    } else if (expr->isBoolean()) {
+    }
+    if (expr->isBoolean())
         return ValueFlow::Value{ expr->str() == "true" };
-    } else if (Token::Match(expr->tokAt(-2), ". %name% (") && astIsContainer(expr->tokAt(-2)->astOperand1())) {
+    if (Token::Match(expr->tokAt(-2), ". %name% (") && astIsContainer(expr->tokAt(-2)->astOperand1())) {
         const Token* containerTok = expr->tokAt(-2)->astOperand1();
         const Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
         if (yield == Library::Container::Yield::SIZE) {
@@ -1187,7 +1188,8 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
                 return unknown;
             v.valueType = ValueFlow::Value::ValueType::INT;
             return v;
-        } else if (yield == Library::Container::Yield::EMPTY) {
+        }
+        if (yield == Library::Container::Yield::EMPTY) {
             ValueFlow::Value v = execute(containerTok, pm);
             if (!v.isContainerSizeValue())
                 return unknown;
