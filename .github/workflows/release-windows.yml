@@ -1,0 +1,145 @@
+# Some convenient links:
+# - https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
+#
+
+name: release-windows
+
+on:
+  push:
+    tags:
+      - '2.*'
+  schedule:
+    - cron:  '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+
+  build:
+
+    runs-on: windows-2022
+
+    env:
+      # see https://www.pcre.org/original/changelog.txt
+      PCRE_VERSION: 8.45
+      QT_VERSION: 5.15.2
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Cache PCRE
+        id: cache-pcre
+        uses: actions/cache@v3
+        with:
+          path: |
+            externals\pcre.h
+            externals\pcre64.lib
+          key: pcre-${{ env.PCRE_VERSION }}-bin-x64-win-release-job
+
+      - name: Download PCRE
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
+
+      - name: Install PCRE
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
+        run: |
+          7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
+          cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
+          cmake . -G "Visual Studio 17 2022" -A x64 -DPCRE_BUILD_PCRECPP=OFF -DPCRE_BUILD_PCREGREP=OFF -DPCRE_BUILD_TESTS=OFF || exit /b !errorlevel!
+          msbuild -m PCRE.sln -p:Configuration=Release -p:Platform=x64 || exit /b !errorlevel!
+          copy pcre.h ..\externals || exit /b !errorlevel!
+          copy Release\pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
+
+      # available modules: https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-modules
+      # available tools:   https://github.com/miurahr/aqtinstall/blob/master/docs/getting_started.rst#installing-tools
+      - name: Install Qt ${{ env.QT_VERSION }}
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          modules: 'qtcharts'
+          tools: 'tools_openssl_x64,qt.tools.openssl.win_x64'
+          cache: true
+
+      - name: Create .qm
+        run: |
+          cd gui || exit /b !errorlevel!
+          lupdate gui.pro -no-obsolete || exit /b !errorlevel!
+          lrelease gui.pro -removeidentical || exit /b !errorlevel!
+
+      - name: Matchcompiler
+        run: python tools\matchcompiler.py --write-dir lib || exit /b !errorlevel!
+
+      - name: Build x64 release GUI
+        run: |
+          cd gui || exit /b !errorlevel!
+          qmake HAVE_QCHART=yes || exit /b !errorlevel!
+          nmake release || exit /b !errorlevel!
+        env:
+          CL: /MP
+
+      - name: Deploy app
+        run: |
+          windeployqt Build\gui || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
+
+      # TODO: build with boost enabled
+      - name: Build CLI x64 release configuration using MSBuild
+        run: msbuild -m cppcheck.sln -t:cli -p:Configuration=Release-PCRE -p:Platform=x64 || exit /b !errorlevel!
+
+      - name: Compile misra.py executable
+        run: |
+          pip install -U pyinstaller || exit /b !errorlevel!
+          cd addons || exit /b !errorlevel!
+          pyinstaller --hidden-import xml --hidden-import xml.etree --hidden-import xml.etree.ElementTree misra.py || exit /b !errorlevel!
+          del *.spec || exit /b !errorlevel!
+
+      - name: Collect files
+        run: |
+          move Build\gui win_installer\files || exit /b !errorlevel!
+          mkdir win_installer\files\addons || exit /b !errorlevel!
+          copy addons\*.* win_installer\files\addons || exit /b !errorlevel!
+          copy addons\dist\misra\*.* win_installer\files\addons || exit /b !errorlevel!
+          mkdir win_installer\files\cfg || exit /b !errorlevel!
+          copy cfg\*.cfg win_installer\files\cfg || exit /b !errorlevel!
+          :: "platforms" is a folder used by Qt as well so it already exists
+          :: mkdir win_installer\files\platforms || exit /b !errorlevel!
+          copy platforms\*.xml win_installer\files\platforms || exit /b !errorlevel!
+          copy bin\cppcheck.exe win_installer\files || exit /b !errorlevel!
+          copy bin\cppcheck-core.dll win_installer\files || exit /b !errorlevel!
+          mkdir win_installer\files\help || exit /b !errorlevel!
+          xcopy /s gui\help win_installer\files\help || exit /b !errorlevel!
+          del win_installer\files\translations\*.qm || exit /b !errorlevel!
+          move gui\*.qm win_installer\files\translations || exit /b !errorlevel!
+          :: copy libcrypto-1_1-x64.dll and libssl-1_1-x64.dll
+          copy %RUNNER_WORKSPACE%\Qt\Tools\OpenSSL\Win_x64\bin\lib*.dll win_installer\files || exit /b !errorlevel!
+
+      - name: Build Installer
+        run: |
+          cd win_installer || exit /b !errorlevel!
+          REM Read ProductVersion
+          for /f "tokens=4 delims= " %%a in ('find "ProductVersion" productInfo.wxi') do set PRODUCTVER=%%a
+          REM Remove double quotes
+          set PRODUCTVER=%PRODUCTVER:"=%
+          echo ProductVersion="%PRODUCTVER%" || exit /b !errorlevel!
+          msbuild -m cppcheck.wixproj -p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: installer
+          path: win_installer/Build/
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: deploy
+          path: win_installer\files
