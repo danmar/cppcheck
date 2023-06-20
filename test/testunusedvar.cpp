@@ -71,6 +71,7 @@ private:
         TEST_CASE(structmember21); // #4759
         TEST_CASE(structmember22); // #11016
         TEST_CASE(structmember23);
+        TEST_CASE(structmember24); // #10847
         TEST_CASE(structmember_macro);
         TEST_CASE(classmember);
 
@@ -275,6 +276,9 @@ private:
     }
 
     void checkStructMemberUsageP(const char code[]) {
+        // Clear the error buffer..
+        errout.str("");
+
         // Raw tokens..
         std::vector<std::string> files(1, "test.cpp");
         std::istringstream istr(code);
@@ -300,6 +304,9 @@ private:
 
 
     void checkFunctionVariableUsageP(const char code[], const char* filename = "test.cpp") {
+        // Clear the error buffer..
+        errout.str("");
+
         // Raw tokens..
         std::vector<std::string> files(1, filename);
         std::istringstream istr(code);
@@ -1707,7 +1714,7 @@ private:
                                "    t.i = 0;\n" // <- used
                                "    g(t);\n"
                                "};\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:1]: (style) struct member 'T::i' is never used.\n", errout.str()); // due to removeMacroInClassDef()
+        ASSERT_EQUALS("", errout.str()); // due to removeMacroInClassDef()
     }
 
     void structmember18() { // #10684
@@ -1869,7 +1876,7 @@ private:
                                "public:\n"
                                "    int f() { return 0; }\n"
                                "};\n"
-                               "C C;\n"
+                               "C c;\n"
                                "int g() {\n"
                                "    return c.f();\n"
                                "}\n"
@@ -1901,6 +1908,29 @@ private:
                                "std::string f() {\n"
                                "    std::map<int, N::S> m = { { 0, { \"abc\" } } };\n"
                                "    return m[0].s;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember24() { // #10847
+        checkStructMemberUsage("struct S { std::map<int, S*> m; };\n"
+                               "std::map<int, S*> u;\n"
+                               "std::map<int, S*>::iterator f() {\n"
+                               "    return u.find(0)->second->m.begin();\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int i; };\n"
+                               "void f() {\n"
+                               "    std::map<int, S> m = { { 0, S() } };\n"
+                               "    m[0].i = 1;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { bool b; };\n"
+                               "std::vector<S> v;\n"
+                               "bool f() {\n"
+                               "    return v.begin()->b;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
     }
