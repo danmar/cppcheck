@@ -185,7 +185,7 @@ std::string Path::getRelativePath(const std::string& absolutePath, const std::ve
 
         if (endsWith(bp,'/'))
             return absolutePath.substr(bp.length());
-        else if (absolutePath.size() > bp.size() && absolutePath[bp.length()] == '/')
+        if (absolutePath.size() > bp.size() && absolutePath[bp.length()] == '/')
             return absolutePath.substr(bp.length() + 1);
     }
     return absolutePath;

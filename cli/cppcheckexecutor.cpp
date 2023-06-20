@@ -182,7 +182,8 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
         return false;
-    } else if (!settings.fileFilters.empty() && settings.project.fileSettings.empty()) {
+    }
+    if (!settings.fileFilters.empty() && settings.project.fileSettings.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.cbegin(); i != mFiles.cend(); ++i)
             if (matchglobs(settings.fileFilters, i->first)) {

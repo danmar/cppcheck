@@ -1411,7 +1411,7 @@ public:
             return nullptr;
         if (this == astParent()->astOperand1())
             return astParent()->astOperand2();
-        else if (this == astParent()->astOperand2())
+        if (this == astParent()->astOperand2())
             return astParent()->astOperand1();
         return nullptr;
 
@@ -1421,7 +1421,7 @@ public:
             return nullptr;
         if (this == astParent()->astOperand1())
             return astParent()->astOperand2();
-        else if (this == astParent()->astOperand2())
+        if (this == astParent()->astOperand2())
             return astParent()->astOperand1();
         return nullptr;
 

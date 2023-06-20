@@ -218,7 +218,8 @@ bool ProcessExecutor::checkLoadAverage(size_t nchildren)
     if (getloadavg(&sample, 1) != 1) {
         // disable load average checking on getloadavg error
         return true;
-    } else if (sample < mSettings.loadAverage) {
+    }
+    if (sample < mSettings.loadAverage) {
         return true;
     }
     return false;

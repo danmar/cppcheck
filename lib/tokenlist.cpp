@@ -1717,7 +1717,7 @@ void TokenList::validateAst() const
         if (tok->str() == "?") {
             if (!tok->astOperand1() || !tok->astOperand2())
                 throw InternalError(tok, "AST broken, ternary operator missing operand(s)", InternalError::AST);
-            else if (tok->astOperand2()->str() != ":")
+            if (tok->astOperand2()->str() != ":")
                 throw InternalError(tok, "Syntax Error: AST broken, ternary operator lacks ':'.", InternalError::AST);
         }
 

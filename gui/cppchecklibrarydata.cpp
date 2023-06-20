@@ -514,11 +514,9 @@ QString CppcheckLibraryData::open(QIODevice &file)
             break;
         }
     }
-    if (xmlReader.hasError()) {
+    if (xmlReader.hasError())
         return xmlReader.errorString();
-    } else {
-        return QString();
-    }
+    return QString();
 }
 
 static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &name, int extra, const QList<struct CppcheckLibraryData::Container::Function> &functions)

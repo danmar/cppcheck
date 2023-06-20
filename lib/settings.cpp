@@ -171,8 +171,7 @@ std::string Settings::parseEnabled(const std::string &str, std::tuple<SimpleEnab
         // the actual option is prepending in the applyEnabled() call
         if (str.empty())
             return " parameter is empty";
-        else
-            return " parameter with the unknown name '" + str + "'";
+        return " parameter with the unknown name '" + str + "'";
     }
 
     return "";

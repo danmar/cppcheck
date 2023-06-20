@@ -124,11 +124,12 @@ struct ForwardTraversal {
     Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
         if (Token::Match(tok, "asm|goto"))
             return Break(Analyzer::Terminate::Bail);
-        else if (Token::Match(tok, "setjmp|longjmp (")) {
+        if (Token::Match(tok, "setjmp|longjmp (")) {
             // Traverse the parameters of the function before escaping
             traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Bail);
-        } else if (Token::simpleMatch(tok, "continue")) {
+        }
+        if (Token::simpleMatch(tok, "continue")) {
             if (loopEnds.empty())
                 return Break(Analyzer::Terminate::Escape);
             // If we are in a loop then jump to the end

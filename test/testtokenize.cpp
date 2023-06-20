@@ -477,8 +477,7 @@ private:
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
-        else
-            return "";
+        return "";
     }
 
 #define tokenizeAndStringifyWindows(...) tokenizeAndStringifyWindows_(__FILE__, __LINE__, __VA_ARGS__)
@@ -504,8 +503,7 @@ private:
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
-        else
-            return "";
+        return "";
     }
 
     std::string tokenizeAndStringify_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
