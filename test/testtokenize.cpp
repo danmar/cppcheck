@@ -6920,7 +6920,8 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("template <class T> constexpr int n = 1;\n"
                                              "template <class T> T a[n<T>];\n"));
 
-        ASSERT_NO_THROW(tokenizeAndStringify("std::vector<int> typedef v;\n")); // #11785
+        ASSERT_EQUALS("std :: vector < int > x ;", // #11785
+                      tokenizeAndStringify("std::vector<int> typedef v; v x;\n"));
 
 
         // op op
