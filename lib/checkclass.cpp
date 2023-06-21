@@ -1739,16 +1739,18 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
     if (!end)
         end = func->functionScope->bodyEnd;
     for (const Token *tok = start; tok && (tok != end); tok = tok->next()) {
-        if (Token::Match(tok, "%var% = malloc|realloc|calloc|new") && isMemberVar(scope, tok))
+        if (((mTokenizer->isCPP() && Token::Match(tok, "%var% = new")) ||
+             (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) &&
+            isMemberVar(scope, tok))
             return true;
 
         // check for deallocating memory
         const Token *var;
         if (Token::Match(tok, "%name% ( %var%") && mSettings->library.getDeallocFuncInfo(tok))
             var = tok->tokAt(2);
-        else if (Token::Match(tok, "delete [ ] %var%"))
+        else if (mTokenizer->isCPP() && Token::Match(tok, "delete [ ] %var%"))
             var = tok->tokAt(3);
-        else if (Token::Match(tok, "delete %var%"))
+        else if (mTokenizer->isCPP() && Token::Match(tok, "delete %var%"))
             var = tok->next();
         else
             continue;
