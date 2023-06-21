@@ -279,7 +279,7 @@ public:
 private:
 
     /** Is local variable allocated with malloc? */
-    static bool isMalloc(const Variable *variable);
+    bool isMalloc(const Variable *variable) const;
 
     void checkStructVariable(const Variable* const variable) const;
 
