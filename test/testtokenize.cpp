@@ -6920,6 +6920,8 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("template <class T> constexpr int n = 1;\n"
                                              "template <class T> T a[n<T>];\n"));
 
+        ASSERT_NO_THROW(tokenizeAndStringify("std::vector<int> typedef v;\n")); // #11785
+
 
         // op op
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
