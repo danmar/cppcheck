@@ -1760,42 +1760,42 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation>匯入專案</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="799"/>
+        <location filename="projectfiledialog.cpp" line="773"/>
         <source>Select a directory to check</source>
         <translation>選取要檢查的目錄</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="819"/>
+        <location filename="projectfiledialog.cpp" line="793"/>
         <source>Select include directory</source>
         <translation>選取包含目錄</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="839"/>
+        <location filename="projectfiledialog.cpp" line="813"/>
         <source>Select directory to ignore</source>
         <translation>選取要忽略的目錄</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="847"/>
+        <location filename="projectfiledialog.cpp" line="821"/>
         <source>Source files</source>
         <translation>來源檔</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="848"/>
+        <location filename="projectfiledialog.cpp" line="822"/>
         <source>All files</source>
         <translation>所有檔案</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="849"/>
+        <location filename="projectfiledialog.cpp" line="823"/>
         <source>Exclude file</source>
         <translation>排除檔案</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="933"/>
+        <location filename="projectfiledialog.cpp" line="907"/>
         <source>Select MISRA rule texts file</source>
         <translation>選取 MISRA 規則文字檔</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="935"/>
+        <location filename="projectfiledialog.cpp" line="909"/>
         <source>MISRA rule texts file (%1)</source>
         <translation>MISRA 規則文字檔 (%1)</translation>
     </message>
