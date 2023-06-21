@@ -8246,7 +8246,8 @@ void Tokenizer::findGarbageCode() const
                 prev = prev->previous();
             if (Token::Match(prev, "%op%|%num%|%str%|%char%")) {
                 if (!Token::simpleMatch(tok->tokAt(-2), "operator \"\" if") &&
-                    !Token::simpleMatch(tok->tokAt(-2), "extern \"C\""))
+                    !Token::simpleMatch(tok->tokAt(-2), "extern \"C\"") &&
+                    !Token::simpleMatch(prev, "> typedef"))
                     syntaxError(tok, prev == tok->previous() ? (prev->str() + " " + tok->str()) : (prev->str() + " .. " + tok->str()));
             }
         }
