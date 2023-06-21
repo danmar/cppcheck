@@ -2084,7 +2084,7 @@ private:
         checkUninitVar("void f(int n) {\n"
                        "    int* p = (int*)malloc(n * sizeof(int));\n"
                        "    for (int i = 0; i < n; ++i)\n"
-                       "        (*p + i) = 0;\n"
+                       "        *(p + i) = 0;\n"
                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
