@@ -564,6 +564,13 @@ private:
               "    g();\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void g() {}\n" // #10517
+              "void f() {\n"
+              "    char* p = malloc(10);\n"
+              "    g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:5]: (error) Memory leak: p\n", errout.str());
     }
 
     void isAutoDealloc() {
