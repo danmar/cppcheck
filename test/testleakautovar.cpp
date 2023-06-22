@@ -178,6 +178,7 @@ private:
 
         // loops
         TEST_CASE(loop1);
+        TEST_CASE(loop2);
 
         // mismatching allocation/deallocation
         TEST_CASE(mismatchAllocDealloc);
@@ -2067,6 +2068,17 @@ private:
               "    if (x) { free(p) }\n"
               "    else { a = p; }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void loop2() {
+        check("void f() {\n" // #11786
+              "    int* p = (int*)malloc(sizeof(int));\n"
+              "    if (1) {\n"
+              "        while (0) {}\n"
+              "        free(p);\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
