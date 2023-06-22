@@ -15,3 +15,8 @@ release notes for cppcheck-2.11
     - `constVariablePointer`
 - More command-line parameters will now check if the given integer argument is actually valid. Several other internal string-to-integer conversions will not be error checked.
 - scanning projects (with -j1) will now defer the analysis of markup files until the whole code was processed
+- Improve useStlAlgorithm check to handle many more conditions in the loop for any_of, all_of and none_of algorithms
+- ValueFlow can evaluate the return value of functions even when conditionals are used
+- ValueFlow will now forward the container sizes being returned froma function
+- ValueFlow can infer possible values from possible symbolic values
+- Improve valueflow after pushing to container 
