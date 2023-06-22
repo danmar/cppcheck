@@ -2751,6 +2751,20 @@ private:
               "    free_func((void *)(1), buf);\n"
               "}", settingsFunctionCall);
         ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: Function free_func() should have <use>/<leak-ignore> configuration\n", errout.str());
+
+        check("void g(void*);\n"
+              "void h(int, void*);\n"
+              "void f1() {\n"
+              "    int* p = new int;\n"
+              "    g(static_cast<void*>(p));\n"
+              "}\n"
+              "void f2() {\n"
+              "    int* p = new int;\n"
+              "    h(1, static_cast<void*>(p));\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (information) --check-library: Function g() should have <use>/<leak-ignore> configuration\n"
+                      "[test.cpp:10]: (information) --check-library: Function h() should have <use>/<leak-ignore> configuration\n",
+                      errout.str());
     }
 
     void functionCallLeakIgnoreConfig() { // #7923
