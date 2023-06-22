@@ -28,7 +28,7 @@ from urllib.parse import urlparse
 # changes)
 SERVER_VERSION = "1.3.40"
 
-OLD_VERSION = '2.10'
+OLD_VERSION = '2.11'
 
 HEAD_MARKER = 'head results:'
 INFO_MARKER = 'info messages:'
