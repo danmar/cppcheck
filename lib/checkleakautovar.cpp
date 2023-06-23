@@ -545,8 +545,10 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                 }
                 closingParenthesis = closingParenthesis->linkAt(1);
                 if (Token::simpleMatch(closingParenthesis, "} else {")) {
-                    if (!checkScope(closingParenthesis->tokAt(2), varInfo2, notzero, recursiveCount))
-                        continue;
+                    if (!checkScope(closingParenthesis->tokAt(2), varInfo2, notzero, recursiveCount)) {
+                        varInfo.clear();
+                        return false;
+                    }
                     tok = closingParenthesis->linkAt(2)->previous();
                 } else {
                     tok = closingParenthesis->previous();
