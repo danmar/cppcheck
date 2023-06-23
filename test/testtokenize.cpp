@@ -477,8 +477,7 @@ private:
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
-        else
-            return "";
+        return "";
     }
 
 #define tokenizeAndStringifyWindows(...) tokenizeAndStringifyWindows_(__FILE__, __LINE__, __VA_ARGS__)
@@ -504,8 +503,7 @@ private:
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
-        else
-            return "";
+        return "";
     }
 
     std::string tokenizeAndStringify_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -6920,6 +6918,9 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("template <class T> constexpr int n = 1;\n"
                                              "template <class T> T a[n<T>];\n"));
 
+        ASSERT_EQUALS("std :: vector < int > x ;", // #11785
+                      tokenizeAndStringify("std::vector<int> typedef v; v x;\n"));
+
 
         // op op
         ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { dostuff (x==>y); }"), InternalError, "syntax error: == >");
@@ -6938,6 +6939,23 @@ private:
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
 
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f(int i) {\n" // #11770
+                                                 "    if (i == 0) {}\n"
+                                                 "    else if (i == 1) {}\n"
+                                                 "    else\n"
+                                                 "        MACRO(i)\n"
+                                                 "}\n"
+                                                 "void g() {}\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+        ASSERT_NO_THROW(tokenizeAndStringify("void f(int i) {\n"
+                                             "    if (i == 0) {}\n"
+                                             "    else if (i == 1) {}\n"
+                                             "    else\n"
+                                             "        MACRO(i);\n"
+                                             "}\n"
+                                             "void g() {}\n"));
+
         ASSERT_THROW_EQUALS(tokenizeAndStringify("class C : public QObject {\n" // #11770
                                                  "    struct S { static void g() {} };\n"
                                                  "private Q_SLOTS:\n"
@@ -6952,6 +6970,15 @@ private:
                                                  "};\n"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If slots is a macro then please configure it.");
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("namespace U_ICU_ENTRY_POINT_RENAME(icu) { }\n"
+                                                 "namespace icu = U_ICU_ENTRY_POINT_RENAME(icu);\n"
+                                                 "namespace U_ICU_ENTRY_POINT_RENAME(icu) {\n"
+                                                 "    class BreakIterator;\n"
+                                                 "}\n"
+                                                 "typedef int UStringCaseMapper(icu::BreakIterator* iter);\n"),
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If U_ICU_ENTRY_POINT_RENAME is a macro then please configure it.");
     }
 
 

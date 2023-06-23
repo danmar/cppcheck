@@ -214,8 +214,7 @@ private:
 
         if (tokenizer.tokens())
             return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
-        else
-            return "";
+        return "";
     }
 
 #define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)

@@ -555,7 +555,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     isInScope(var->nameToken(), tok->scope())) {
                     errorReturnReference(tok, lt.errorPath, lt.inconclusive);
                     break;
-                } else if (isDeadTemporary(mTokenizer->isCPP(), lt.token, nullptr, &mSettings->library)) {
+                }
+                if (isDeadTemporary(mTokenizer->isCPP(), lt.token, nullptr, &mSettings->library)) {
                     errorReturnTempReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }

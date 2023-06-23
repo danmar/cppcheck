@@ -5554,6 +5554,17 @@ private:
                "}\n";
         values = tokenValues(code, ". id", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
+
+        // #11777 - false || ...
+        code = "bool init(int *p);\n"
+               "\n"
+               "void uninitvar_FP9() {\n"
+               "  int x;\n"
+               "  if (false || init(&x)) {}\n"
+               "  int b = x+1;\n"
+               "}";
+        values = tokenValues(code, "x + 1", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
     }
 
     void valueFlowConditionExpressions() {

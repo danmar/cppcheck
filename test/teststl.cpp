@@ -82,6 +82,7 @@ private:
         TEST_CASE(STLSize);
         TEST_CASE(STLSizeNoErr);
         TEST_CASE(negativeIndex);
+        TEST_CASE(negativeIndexMultiline);
         TEST_CASE(erase1);
         TEST_CASE(erase2);
         TEST_CASE(erase3);
@@ -2324,7 +2325,28 @@ private:
         settings = oldSettings;
     }
 
+    void negativeIndexMultiline() {
+        setMultiline();
+        const auto oldSettings = settings;
+        settings.verbose = true;
 
+        check("bool valid(int);\n" // #11697
+              "void f(int i, const std::vector<int>& v) {\n"
+              "    if (!valid(i))\n"
+              "        return;\n"
+              "    if (v[i]) {}\n"
+              "}\n"
+              "void g(const std::vector<int>& w) {\n"
+              "    f(-1, w);\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:5:warning:Array index -1 is out of bounds.\n"
+                      "test.cpp:8:note:Calling function 'f', 1st argument '-1' value is -1\n"
+                      "test.cpp:3:note:Assuming condition is false\n"
+                      "test.cpp:5:note:Negative array index\n",
+                      errout.str());
+
+        settings = oldSettings;
+    }
 
     void erase1() {
         check("void f()\n"

@@ -509,7 +509,8 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
                     if (tok3->str() == "(" && Token::Match(tok3->astOperand1(), "UNLIKELY|LIKELY")) {
                         return ChildrenToVisit::op2;
-                    } else if (tok3->str() == "(" && tok3->previous()->isName()) {
+                    }
+                    if (tok3->str() == "(" && tok3->previous()->isName()) {
                         const std::vector<const Token *> params = getArguments(tok3->previous());
                         for (const Token *par : params) {
                             if (!par->isComparisonOp())
@@ -608,7 +609,7 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
         // unknown control.. (TODO: handle loops)
         else if ((Token::Match(tok, "%type% (") && Token::simpleMatch(tok->linkAt(1), ") {")) || Token::simpleMatch(tok, "do {")) {
             varInfo.clear();
-            break;
+            return false;
         }
 
         // return
@@ -933,6 +934,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
         }
 
         // Skip casts
+        if (arg->isKeyword() && arg->astParent() && arg->astParent()->isCast())
+            arg = arg->astParent();
         while (arg && arg->isCast())
             arg = arg->astOperand2() ? arg->astOperand2() : arg->astOperand1();
         const Token * const argTypeStartTok = arg;

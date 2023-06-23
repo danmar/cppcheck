@@ -508,10 +508,9 @@ static std::string arithmeticTypeString(const Token *tok)
 {
     if (tok && tok->str()[0] == '-')
         return "subtraction";
-    else if (tok && tok->str()[0] == '+')
+    if (tok && tok->str()[0] == '+')
         return "addition";
-    else
-        return "arithmetic";
+    return "arithmetic";
 }
 
 void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive)

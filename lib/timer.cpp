@@ -60,6 +60,10 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
         bool hasParent = false;
         {
+            // Do not use valueFlow.. in "Overall time" because those are included in Tokenizer already
+            if (iter->first.compare(0,9,"valueFlow") == 0)
+                hasParent = true;
+
             // Do not use inner timers in "Overall time"
             const std::string::size_type pos = iter->first.rfind("::");
             if (pos != std::string::npos)

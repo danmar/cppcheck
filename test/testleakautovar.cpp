@@ -178,6 +178,7 @@ private:
 
         // loops
         TEST_CASE(loop1);
+        TEST_CASE(loop2);
 
         // mismatching allocation/deallocation
         TEST_CASE(mismatchAllocDealloc);
@@ -564,6 +565,13 @@ private:
               "    g();\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void g() {}\n" // #10517
+              "void f() {\n"
+              "    char* p = malloc(10);\n"
+              "    g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:5]: (error) Memory leak: p\n", errout.str());
     }
 
     void isAutoDealloc() {
@@ -2063,6 +2071,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void loop2() {
+        check("void f() {\n" // #11786
+              "    int* p = (int*)malloc(sizeof(int));\n"
+              "    if (1) {\n"
+              "        while (0) {}\n"
+              "        free(p);\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void mismatchAllocDealloc() {
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
@@ -2652,11 +2671,19 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Resource leak: file\n", errout.str());
     }
 
-    void configuration6() { // #11198
-        check("void f() {}\n"
+    void configuration6() {
+        check("void f() {}\n" // #11198
               "void g() {\n"
               "    f();\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::function<void()> cb) {\n" // #11189
+              "    cb();\n"
+              "}\n"
+              "void g(void (*cb)()) {\n"
+              "    cb();\n"
+              "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2743,6 +2770,20 @@ private:
               "    free_func((void *)(1), buf);\n"
               "}", settingsFunctionCall);
         ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: Function free_func() should have <use>/<leak-ignore> configuration\n", errout.str());
+
+        check("void g(void*);\n"
+              "void h(int, void*);\n"
+              "void f1() {\n"
+              "    int* p = new int;\n"
+              "    g(static_cast<void*>(p));\n"
+              "}\n"
+              "void f2() {\n"
+              "    int* p = new int;\n"
+              "    h(1, static_cast<void*>(p));\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:6]: (information) --check-library: Function g() should have <use>/<leak-ignore> configuration\n"
+                      "[test.cpp:10]: (information) --check-library: Function h() should have <use>/<leak-ignore> configuration\n",
+                      errout.str());
     }
 
     void functionCallLeakIgnoreConfig() { // #7923

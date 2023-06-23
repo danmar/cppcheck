@@ -499,7 +499,8 @@ void CheckClass::copyconstructors()
                 }
             }
             for (tok = func.functionScope->bodyStart; tok != func.functionScope->bodyEnd; tok = tok->next()) {
-                if (Token::Match(tok, "%var% = new|malloc|g_malloc|g_try_malloc|realloc|g_realloc|g_try_realloc")) {
+                if ((mTokenizer->isCPP() && Token::Match(tok, "%var% = new")) ||
+                    (Token::Match(tok, "%var% = %name% (") && (mSettings->library.getAllocFuncInfo(tok->tokAt(2)) || mSettings->library.getReallocFuncInfo(tok->tokAt(2))))) {
                     allocatedVars.erase(tok->varId());
                 } else if (Token::Match(tok, "%var% = %name% . %name% ;") && allocatedVars.find(tok->varId()) != allocatedVars.end()) {
                     copiedVars.insert(tok);
@@ -585,7 +586,8 @@ bool CheckClass::canNotCopy(const Scope *scope)
         if (func.type == Function::eCopyConstructor) {
             publicCopy = true;
             break;
-        } else if (func.type == Function::eOperatorEqual) {
+        }
+        if (func.type == Function::eOperatorEqual) {
             publicAssign = true;
             break;
         }
@@ -609,10 +611,12 @@ bool CheckClass::canNotMove(const Scope *scope)
         if (func.type == Function::eCopyConstructor) {
             publicCopy = true;
             break;
-        } else if (func.type == Function::eMoveConstructor) {
+        }
+        if (func.type == Function::eMoveConstructor) {
             publicMove = true;
             break;
-        } else if (func.type == Function::eOperatorEqual) {
+        }
+        if (func.type == Function::eOperatorEqual) {
             publicAssign = true;
             break;
         }
@@ -874,7 +878,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Ticket #7068
-        else if (Token::Match(ftok, "::| memset ( &| this . %name%")) {
+        if (Token::Match(ftok, "::| memset ( &| this . %name%")) {
             if (ftok->str() == "::")
                 ftok = ftok->next();
             int offsetToMember = 4;
@@ -886,7 +890,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Clearing array..
-        else if (Token::Match(ftok, "::| memset ( %name% ,")) {
+        if (Token::Match(ftok, "::| memset ( %name% ,")) {
             if (ftok->str() == "::")
                 ftok = ftok->next();
             assignVar(usage, ftok->tokAt(2)->varId());
@@ -895,7 +899,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Calling member function?
-        else if (Token::simpleMatch(ftok, "operator= (")) {
+        if (Token::simpleMatch(ftok, "operator= (")) {
             if (ftok->function()) {
                 const Function *member = ftok->function();
                 // recursive call
@@ -1164,7 +1168,8 @@ void CheckClass::initializationListUsage()
                     if (var2->scope() == owner && tok2->strAt(-1)!=".") { // Is there a dependency between two member variables?
                         allowed = false;
                         return ChildrenToVisit::done;
-                    } else if (var2->isArray() && var2->isLocal()) { // Can't initialize with a local array
+                    }
+                    if (var2->isArray() && var2->isLocal()) { // Can't initialize with a local array
                         allowed = false;
                         return ChildrenToVisit::done;
                     }
@@ -1400,7 +1405,8 @@ void CheckClass::checkMemset()
                     const std::set<const Scope *> parsedTypes;
                     checkMemsetType(scope, tok, type, false, parsedTypes);
                 }
-            } else if (tok->variable() && tok->variable()->typeScope() && Token::Match(tok, "%var% = calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc (")) {
+            } else if (tok->variable() && tok->variable()->typeScope() && Token::Match(tok, "%var% = %name% (") &&
+                       (mSettings->library.getAllocFuncInfo(tok->tokAt(2)) || mSettings->library.getReallocFuncInfo(tok->tokAt(2)))) {
                 const std::set<const Scope *> parsedTypes;
                 checkMemsetType(scope, tok->tokAt(2), tok->variable()->typeScope(), true, parsedTypes);
 
@@ -1733,16 +1739,18 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
     if (!end)
         end = func->functionScope->bodyEnd;
     for (const Token *tok = start; tok && (tok != end); tok = tok->next()) {
-        if (Token::Match(tok, "%var% = malloc|realloc|calloc|new") && isMemberVar(scope, tok))
+        if (((mTokenizer->isCPP() && Token::Match(tok, "%var% = new")) ||
+             (Token::Match(tok, "%var% = %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2)))) &&
+            isMemberVar(scope, tok))
             return true;
 
         // check for deallocating memory
         const Token *var;
         if (Token::Match(tok, "%name% ( %var%") && mSettings->library.getDeallocFuncInfo(tok))
             var = tok->tokAt(2);
-        else if (Token::Match(tok, "delete [ ] %var%"))
+        else if (mTokenizer->isCPP() && Token::Match(tok, "delete [ ] %var%"))
             var = tok->tokAt(3);
-        else if (Token::Match(tok, "delete %var%"))
+        else if (mTokenizer->isCPP() && Token::Match(tok, "delete %var%"))
             var = tok->next();
         else
             continue;
@@ -2158,11 +2166,11 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     do {
         again = false;
 
-        if (tok->str() == "this") {
+        if (tok->str() == "this")
             return !getFuncTokFromThis(tok); // function calls are handled elsewhere
-        } else if (Token::simpleMatch(tok->tokAt(-3), "( * this )")) {
+        if (Token::simpleMatch(tok->tokAt(-3), "( * this )"))
             return true;
-        } else if (Token::Match(tok->tokAt(-3), "%name% ) . %name%")) {
+        if (Token::Match(tok->tokAt(-3), "%name% ) . %name%")) {
             tok = tok->tokAt(-3);
             again = true;
         } else if (Token::Match(tok->tokAt(-2), "%name% . %name%")) {
@@ -2394,7 +2402,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 if (top->isAssignmentOp()) {
                     if (Token::simpleMatch(top->astOperand2(), "{") && !top->astOperand2()->previous()->function()) // TODO: check usage in init list
                         return false;
-                    else if (top->previous()->variable()) {
+                    if (top->previous()->variable()) {
                         if (top->previous()->variable()->typeStartToken()->strAt(-1) != "const" && top->previous()->variable()->isPointer())
                             return false;
                     }

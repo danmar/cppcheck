@@ -1,17 +1,11 @@
-release notes for cppcheck-2.11
+release notes for cppcheck-2.12
 
-- The new option --check-level=<level> has been added that controls how much checking is made by Cppcheck. The default checking level is "normal". If you feel that you can wait longer on results you can use --check-level=exhaustive.
-- The platform type 'Unspecified' within .cppcheck projects has been deprecated and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.
-- It is no longer necessary to run "--check-config" to get detailed "missingInclude" and "missingIncludeSystem" messages. They will always be issued in the regular analysis if "missingInclude" is enabled.
-- "missingInclude" and "missingIncludeSystem" are reported with "-j" is > 1 and processes are used in the backend (default in non-Windows binaries)
-- "missingInclude" and "missingIncludeSystem" will now cause the "--error-exitcode" to be applied
-- "--enable=information" will no longer implicitly enable "missingInclude" starting with 2.16. Please enable it explicitly if you require it.
-- The `constParameter` and `constVariable` checks have been split into 3 different IDs based on if the variable is a pointer, a reference, or local. The different IDs will allow users to suppress different const warning based on variable type.
-    - `constParameter`
-    - `constParameterReference`
-    - `constParameterPointer`
-    - `constVariable`
-    - `constVariableReference`
-    - `constVariablePointer`
-- More command-line parameters will now check if the given integer argument is actually valid. Several other internal string-to-integer conversions will not be error checked.
-- scanning projects (with -j1) will now defer the analysis of markup files until the whole code was processed
+New checks:
+
+Improved checking:
+
+GUI:
+
+Changed interface:
+
+Other:

@@ -48,7 +48,7 @@ static bool isUnchanged(const Token *startToken, const Token *endToken, const st
         if (parent->astParent()) {
             if (parent->astParent()->tokType() == Token::Type::eIncDecOp)
                 return false;
-            else if (parent->astParent()->isAssignmentOp() && parent == parent->astParent()->astOperand1())
+            if (parent->astParent()->isAssignmentOp() && parent == parent->astParent()->astOperand1())
                 return false;
         }
     }
@@ -321,15 +321,18 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());
                 return Result(Result::Type::READ);
-            } else if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1()) {
+            }
+            if (mWhat == What::Reassign && parent->valueType() && parent->valueType()->pointer && Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand1())
                 return Result(Result::Type::READ);
-            } else if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
+
+            if (Token::Match(parent->astParent(), "%assign%") && !parent->astParent()->astParent() && parent == parent->astParent()->astOperand1()) {
                 if (mWhat == What::Reassign)
                     return Result(Result::Type::BAILOUT, parent->astParent());
                 if (mWhat == What::UnusedValue && (!parent->valueType() || parent->valueType()->reference != Reference::None))
                     return Result(Result::Type::BAILOUT, parent->astParent());
                 continue;
-            } else if (mWhat == What::UnusedValue && parent->isUnaryOp("&") && Token::Match(parent->astParent(), "[,(]")) {
+            }
+            if (mWhat == What::UnusedValue && parent->isUnaryOp("&") && Token::Match(parent->astParent(), "[,(]")) {
                 // Pass variable to function the writes it
                 const Token *ftok = parent->astParent();
                 while (Token::simpleMatch(ftok, ","))
@@ -349,10 +352,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                     }
                 }
                 return Result(Result::Type::BAILOUT, parent->astParent());
-            } else {
-                // TODO: this is a quick bailout
-                return Result(Result::Type::BAILOUT, parent->astParent());
             }
+            // TODO: this is a quick bailout
+            return Result(Result::Type::BAILOUT, parent->astParent());
         }
 
         if (Token::Match(tok, ")|do {")) {

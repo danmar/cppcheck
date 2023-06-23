@@ -72,8 +72,7 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
     const bool found = it != mValues.cend() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
-    else
-        return nullptr;
+    return nullptr;
 }
 
 // cppcheck-suppress unusedFunction
@@ -1162,23 +1161,25 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     const ValueFlow::Value* value = nullptr;
     if (!expr)
         return unknown;
-    else if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",") {
+    if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",")
         return expr->values().front();
-    } else if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
-               (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
-               (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
-               (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
+    if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
+        (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
+        (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
+        (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
         return *value;
-    } else if (expr->isNumber()) {
+    }
+    if (expr->isNumber()) {
         if (MathLib::isFloat(expr->str()))
             return unknown;
         MathLib::bigint i = MathLib::toLongNumber(expr->str());
         if (i < 0 && astIsUnsigned(expr))
             return unknown;
         return ValueFlow::Value{i};
-    } else if (expr->isBoolean()) {
+    }
+    if (expr->isBoolean())
         return ValueFlow::Value{ expr->str() == "true" };
-    } else if (Token::Match(expr->tokAt(-2), ". %name% (") && astIsContainer(expr->tokAt(-2)->astOperand1())) {
+    if (Token::Match(expr->tokAt(-2), ". %name% (") && astIsContainer(expr->tokAt(-2)->astOperand1())) {
         const Token* containerTok = expr->tokAt(-2)->astOperand1();
         const Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
         if (yield == Library::Container::Yield::SIZE) {
@@ -1187,13 +1188,14 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
                 return unknown;
             v.valueType = ValueFlow::Value::ValueType::INT;
             return v;
-        } else if (yield == Library::Container::Yield::EMPTY) {
+        }
+        if (yield == Library::Container::Yield::EMPTY) {
             ValueFlow::Value v = execute(containerTok, pm);
             if (!v.isContainerSizeValue())
                 return unknown;
             if (v.isImpossible() && v.intvalue == 0)
                 return ValueFlow::Value{0};
-            else if (!v.isImpossible())
+            if (!v.isImpossible())
                 return ValueFlow::Value{v.intvalue == 0};
         }
     } else if (expr->isAssignmentOp() && expr->astOperand1() && expr->astOperand2() && expr->astOperand1()->exprId() > 0) {
@@ -1212,10 +1214,9 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             else
                 return unknown;
             return lhs;
-        } else {
-            pm.setValue(expr->astOperand1(), rhs);
-            return rhs;
         }
+        pm.setValue(expr->astOperand1(), rhs);
+        return rhs;
     } else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
         if (!lhs.isIntValue())
@@ -1273,7 +1274,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         const MathLib::bigint index = rhs.intvalue;
         if (index >= 0 && index < strValue.size())
             return ValueFlow::Value{strValue[index]};
-        else if (index == strValue.size())
+        if (index == strValue.size())
             return ValueFlow::Value{};
     } else if (Token::Match(expr, "%cop%") && expr->astOperand1() && expr->astOperand2()) {
         ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
@@ -1324,15 +1325,14 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         const Token* child = expr->astOperand2();
         if (isFalse(cond))
             return execute(child->astOperand2(), pm);
-        else if (isTrue(cond))
+        if (isTrue(cond))
             return execute(child->astOperand1(), pm);
-        else
-            return unknown;
+
+        return unknown;
     } else if (expr->str() == "(" && expr->isCast()) {
         if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
             return execute(expr->astOperand2(), pm);
-        else
-            return execute(expr->astOperand1(), pm);
+        return execute(expr->astOperand1(), pm);
     }
     if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
         ValueFlow::Value result = pm.at(expr->exprId());
@@ -1354,20 +1354,18 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
                 return execute(tok, pm, settings);
             });
             BuiltinLibraryFunction lf = getBuiltinLibraryFunction(ftok->str());
-            if (lf) {
+            if (lf)
                 return lf(args);
-            } else {
-                const std::string& returnValue = settings->library.returnValue(ftok);
-                if (!returnValue.empty()) {
-                    std::unordered_map<nonneg int, ValueFlow::Value> arg_map;
-                    int argn = 0;
-                    for (const ValueFlow::Value& result : args) {
-                        if (!result.isUninitValue())
-                            arg_map[argn] = result;
-                        argn++;
-                    }
-                    return evaluateLibraryFunction(arg_map, returnValue, settings);
+            const std::string& returnValue = settings->library.returnValue(ftok);
+            if (!returnValue.empty()) {
+                std::unordered_map<nonneg int, ValueFlow::Value> arg_map;
+                int argn = 0;
+                for (const ValueFlow::Value& result : args) {
+                    if (!result.isUninitValue())
+                        arg_map[argn] = result;
+                    argn++;
                 }
+                return evaluateLibraryFunction(arg_map, returnValue, settings);
             }
         }
         // Check if function modifies argument
@@ -1435,9 +1433,10 @@ std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, con
         if (!top)
             return unknown;
 
-        if (Token::simpleMatch(top, "return") && top->astOperand1()) {
+        if (Token::simpleMatch(top, "return") && top->astOperand1())
             return {execute(top->astOperand1(), pm, settings)};
-        } else if (Token::Match(top, "%op%")) {
+
+        if (Token::Match(top, "%op%")) {
             if (execute(top, pm, settings).isUninitValue())
                 return unknown;
             const Token* next = nextAfterAstRightmostLeaf(top);

@@ -428,11 +428,10 @@ static bool isIterator(const Variable *var, bool& inconclusiveType)
         // look for operator* and operator++
         const Function* end = var->type()->getFunction("operator*");
         const Function* incOperator = var->type()->getFunction("operator++");
-        if (!end || end->argCount() > 0 || !incOperator) {
+        if (!end || end->argCount() > 0 || !incOperator)
             return false;
-        } else {
-            inconclusiveType = true; // heuristics only
-        }
+
+        inconclusiveType = true; // heuristics only
     }
 
     return true;
@@ -1326,7 +1325,9 @@ void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &inde
                << ", otherwise there is negative array index " << index.intvalue << ".";
     else
         errmsg << "Array index " << index.intvalue << " is out of bounds.";
-    reportError(errorPath, index.errorSeverity() ? Severity::error : Severity::warning, "negativeContainerIndex", errmsg.str(), CWE786, index.isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+    const auto severity = index.errorSeverity() && index.isKnown() ? Severity::error : Severity::warning;
+    const auto certainty = index.isInconclusive() ? Certainty::inconclusive : Certainty::normal;
+    reportError(errorPath, severity, "negativeContainerIndex", errmsg.str(), CWE786, certainty);
 }
 
 void CheckStl::erase()
@@ -1617,8 +1618,7 @@ static const Token *findInsertValue(const Token *tok, const Token *containerTok,
         isSameExpression(true, true, keyTok, ikeyTok, library, true, true)) {
         if (ivalueTok)
             return ivalueTok;
-        else
-            return ikeyTok;
+        return ikeyTok;
     }
     return nullptr;
 }
@@ -2029,7 +2029,8 @@ void CheckStl::string_c_str()
                             search_tok->next()->variable() && search_tok->next()->variable()->isStlStringType()) {
                             is_implicit_std_string = true;
                             break;
-                        } else if (Token::Match(search_tok, "+ std :: string|wstring (")) {
+                        }
+                        if (Token::Match(search_tok, "+ std :: string|wstring (")) {
                             is_implicit_std_string = true;
                             break;
                         }
@@ -2761,8 +2762,7 @@ namespace {
                     return "";
                 if (alwaysTrue)
                     return "std::any_of";
-                else
-                    return "std::all_of or std::none_of";
+                return "std::all_of or std::none_of";
             }
             return "";
         }
