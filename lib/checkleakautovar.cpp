@@ -936,6 +936,8 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
         }
 
         // Skip casts
+        if (arg->isKeyword() && arg->astParent() && arg->astParent()->isCast())
+            arg = arg->astParent();
         while (arg && arg->isCast())
             arg = arg->astOperand2() ? arg->astOperand2() : arg->astOperand1();
         const Token * const argTypeStartTok = arg;

@@ -11,7 +11,7 @@
 #
 # self check, fix critical issues:
 # make clean && make CXXFLAGS=-O2 MATCHCOMPILER=yes -j4
-# ./cppcheck -D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
+# ./cppcheck -D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
 # Update translations
 #   lupdate gui.pro

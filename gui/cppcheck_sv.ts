@@ -95,43 +95,86 @@ Parametrar: -l(line) (file)</translation>
         <translation>Bläddra</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="63"/>
+        <location filename="applicationdialog.cpp" line="65"/>
         <source>Executable files (*.exe);;All files(*.*)</source>
         <translation>Exekverbara filer (*.exe);;Alla filer(*.*)</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="66"/>
+        <location filename="applicationdialog.cpp" line="68"/>
         <source>Select viewer application</source>
         <translation>Välj program</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="81"/>
+        <location filename="applicationdialog.cpp" line="83"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="applicationdialog.cpp" line="82"/>
+        <location filename="applicationdialog.cpp" line="84"/>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
         <translation>Du måste ange namn, sökväg samt eventuellt parametrar för applikationen!</translation>
     </message>
 </context>
 <context>
+    <name>ComplianceReportDialog</name>
+    <message>
+        <location filename="compliancereportdialog.ui" line="14"/>
+        <source>Compliance Report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="compliancereportdialog.ui" line="22"/>
+        <source>Project name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="compliancereportdialog.ui" line="32"/>
+        <source>Project version</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="compliancereportdialog.ui" line="44"/>
+        <source>List of files with md5 checksums</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="compliancereportdialog.cpp" line="101"/>
+        <source>Compliance report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="compliancereportdialog.cpp" line="103"/>
+        <source>HTML files (*.html)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="compliancereportdialog.cpp" line="137"/>
+        <source>Save compliance report</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="compliancereportdialog.cpp" line="138"/>
+        <source>Failed to import &apos;%1&apos;, can not show files in compliance report</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>FileViewDialog</name>
     <message>
-        <location filename="fileviewdialog.cpp" line="51"/>
+        <location filename="fileviewdialog.cpp" line="53"/>
         <source>Could not find the file: %1</source>
         <oldsource>Could not find the file:
 </oldsource>
         <translation>Kunde inte hitta filen: %1</translation>
     </message>
     <message>
-        <location filename="fileviewdialog.cpp" line="55"/>
-        <location filename="fileviewdialog.cpp" line="69"/>
+        <location filename="fileviewdialog.cpp" line="57"/>
+        <location filename="fileviewdialog.cpp" line="71"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="fileviewdialog.cpp" line="65"/>
+        <location filename="fileviewdialog.cpp" line="67"/>
         <source>Could not read the file: %1</source>
         <translation>Kunde inte läsa filen: %1</translation>
     </message>
@@ -154,12 +197,12 @@ Parametrar: -l(line) (file)</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="helpdialog.cpp" line="79"/>
+        <location filename="helpdialog.cpp" line="83"/>
         <source>Helpfile &apos;%1&apos; was not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="helpdialog.cpp" line="81"/>
+        <location filename="helpdialog.cpp" line="85"/>
         <source>Cppcheck</source>
         <translation type="unfinished">Cppcheck</translation>
     </message>
@@ -270,42 +313,42 @@ Parametrar: -l(line) (file)</translation>
         <translation>Redigera</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="87"/>
-        <location filename="librarydialog.cpp" line="159"/>
+        <location filename="librarydialog.cpp" line="98"/>
+        <location filename="librarydialog.cpp" line="170"/>
         <source>Library files (*.cfg)</source>
         <translation>Library fil (*.cfg)</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="89"/>
+        <location filename="librarydialog.cpp" line="100"/>
         <source>Open library file</source>
         <translation>Öppna Library fil</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="100"/>
-        <location filename="librarydialog.cpp" line="112"/>
-        <location filename="librarydialog.cpp" line="149"/>
+        <location filename="librarydialog.cpp" line="111"/>
+        <location filename="librarydialog.cpp" line="123"/>
+        <location filename="librarydialog.cpp" line="160"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="101"/>
+        <location filename="librarydialog.cpp" line="112"/>
         <source>Cannot open file %1.</source>
         <oldsource>Can not open file %1.</oldsource>
         <translation type="unfinished">Kunde ej öppna filen %1.</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="113"/>
+        <location filename="librarydialog.cpp" line="124"/>
         <source>Failed to load %1. %2.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="150"/>
+        <location filename="librarydialog.cpp" line="161"/>
         <source>Cannot save file %1.</source>
         <oldsource>Can not save file %1.</oldsource>
         <translation type="unfinished">Kunde ej spara filen %1.</translation>
     </message>
     <message>
-        <location filename="librarydialog.cpp" line="162"/>
+        <location filename="librarydialog.cpp" line="173"/>
         <source>Save the library as</source>
         <translation>Spara library som</translation>
     </message>
@@ -430,29 +473,30 @@ Exempel:
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="26"/>
-        <location filename="mainwindow.ui" line="667"/>
-        <location filename="mainwindow.cpp" line="384"/>
-        <location filename="mainwindow.cpp" line="541"/>
-        <location filename="mainwindow.cpp" line="616"/>
-        <location filename="mainwindow.cpp" line="721"/>
-        <location filename="mainwindow.cpp" line="743"/>
-        <location filename="mainwindow.cpp" line="1230"/>
-        <location filename="mainwindow.cpp" line="1355"/>
-        <location filename="mainwindow.cpp" line="1639"/>
-        <location filename="mainwindow.cpp" line="1647"/>
-        <location filename="mainwindow.cpp" line="1670"/>
-        <location filename="mainwindow.cpp" line="1741"/>
-        <location filename="mainwindow.cpp" line="1815"/>
+        <location filename="mainwindow.ui" line="668"/>
+        <location filename="mainwindow.cpp" line="409"/>
+        <location filename="mainwindow.cpp" line="571"/>
+        <location filename="mainwindow.cpp" line="646"/>
+        <location filename="mainwindow.cpp" line="751"/>
+        <location filename="mainwindow.cpp" line="773"/>
+        <location filename="mainwindow.cpp" line="1260"/>
+        <location filename="mainwindow.cpp" line="1389"/>
+        <location filename="mainwindow.cpp" line="1687"/>
+        <location filename="mainwindow.cpp" line="1695"/>
+        <location filename="mainwindow.cpp" line="1740"/>
+        <location filename="mainwindow.cpp" line="1749"/>
+        <location filename="mainwindow.cpp" line="1820"/>
+        <location filename="mainwindow.cpp" line="1894"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="193"/>
+        <location filename="mainwindow.ui" line="194"/>
         <source>A&amp;nalyze</source>
         <translation>Analysera</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="246"/>
+        <location filename="mainwindow.ui" line="247"/>
         <source>Standard</source>
         <translation>Standard</translation>
     </message>
@@ -462,243 +506,243 @@ Exempel:
         <translation>&amp;Arkiv</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="151"/>
+        <location filename="mainwindow.ui" line="152"/>
         <source>&amp;View</source>
         <translation>&amp;Visa</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="155"/>
+        <location filename="mainwindow.ui" line="156"/>
         <source>&amp;Toolbars</source>
         <translation>Verktygsfält</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="197"/>
+        <location filename="mainwindow.ui" line="198"/>
         <source>C++ standard</source>
         <translation>C++ standard</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="208"/>
+        <location filename="mainwindow.ui" line="209"/>
         <source>&amp;C standard</source>
         <oldsource>C standard</oldsource>
         <translation>C standard</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="233"/>
+        <location filename="mainwindow.ui" line="234"/>
         <source>&amp;Edit</source>
         <translation>&amp;Redigera</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="294"/>
+        <location filename="mainwindow.ui" line="295"/>
         <source>&amp;License...</source>
         <translation>&amp;Licens...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="299"/>
+        <location filename="mainwindow.ui" line="300"/>
         <source>A&amp;uthors...</source>
         <translation>&amp;Utvecklat av...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="308"/>
+        <location filename="mainwindow.ui" line="309"/>
         <source>&amp;About...</source>
         <translation>&amp;Om...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="313"/>
+        <location filename="mainwindow.ui" line="314"/>
         <source>&amp;Files...</source>
         <translation>&amp;Filer...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="316"/>
-        <location filename="mainwindow.ui" line="319"/>
+        <location filename="mainwindow.ui" line="317"/>
+        <location filename="mainwindow.ui" line="320"/>
         <source>Analyze files</source>
         <oldsource>Check files</oldsource>
         <translation>Analysera filer</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="322"/>
+        <location filename="mainwindow.ui" line="323"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="331"/>
+        <location filename="mainwindow.ui" line="332"/>
         <source>&amp;Directory...</source>
         <translation>&amp;Katalog...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="334"/>
-        <location filename="mainwindow.ui" line="337"/>
+        <location filename="mainwindow.ui" line="335"/>
+        <location filename="mainwindow.ui" line="338"/>
         <source>Analyze directory</source>
         <oldsource>Check directory</oldsource>
         <translation>Analysera mapp</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="340"/>
+        <location filename="mainwindow.ui" line="341"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="352"/>
+        <location filename="mainwindow.ui" line="353"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="370"/>
+        <location filename="mainwindow.ui" line="371"/>
         <source>&amp;Stop</source>
         <translation>&amp;Stoppa</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="373"/>
-        <location filename="mainwindow.ui" line="376"/>
+        <location filename="mainwindow.ui" line="374"/>
+        <location filename="mainwindow.ui" line="377"/>
         <source>Stop analysis</source>
         <oldsource>Stop checking</oldsource>
         <translation>Stoppa analys</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="379"/>
+        <location filename="mainwindow.ui" line="380"/>
         <source>Esc</source>
         <translation>Esc</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="388"/>
+        <location filename="mainwindow.ui" line="389"/>
         <source>&amp;Save results to file...</source>
         <translation>&amp;Spara resultat till fil...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="391"/>
+        <location filename="mainwindow.ui" line="392"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="396"/>
+        <location filename="mainwindow.ui" line="397"/>
         <source>&amp;Quit</source>
         <translation>&amp;Avsluta</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="408"/>
+        <location filename="mainwindow.ui" line="409"/>
         <source>&amp;Clear results</source>
         <translation>&amp;Töm resultat</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="417"/>
+        <location filename="mainwindow.ui" line="418"/>
         <source>&amp;Preferences</source>
         <translation>&amp;Inställningar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="450"/>
-        <location filename="mainwindow.ui" line="453"/>
+        <location filename="mainwindow.ui" line="451"/>
+        <location filename="mainwindow.ui" line="454"/>
         <source>Show errors</source>
         <translation>Visa fel</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="596"/>
-        <location filename="mainwindow.ui" line="599"/>
+        <location filename="mainwindow.ui" line="597"/>
+        <location filename="mainwindow.ui" line="600"/>
         <source>Show warnings</source>
         <translation>Visa varningar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="614"/>
-        <location filename="mainwindow.ui" line="617"/>
+        <location filename="mainwindow.ui" line="615"/>
+        <location filename="mainwindow.ui" line="618"/>
         <source>Show performance warnings</source>
         <translation>Visa prestanda varningar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="625"/>
+        <location filename="mainwindow.ui" line="626"/>
         <source>Show &amp;hidden</source>
         <translation>Visa dolda</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="831"/>
-        <location filename="mainwindow.cpp" line="869"/>
+        <location filename="mainwindow.cpp" line="861"/>
+        <location filename="mainwindow.cpp" line="899"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="640"/>
+        <location filename="mainwindow.ui" line="641"/>
         <source>Show information messages</source>
         <translation>Visa informations meddelanden</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="655"/>
+        <location filename="mainwindow.ui" line="656"/>
         <source>Show portability warnings</source>
         <translation>Visa portabilitets varningar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="670"/>
+        <location filename="mainwindow.ui" line="671"/>
         <source>Show Cppcheck results</source>
         <translation>Visa Cppcheck resultat</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="682"/>
+        <location filename="mainwindow.ui" line="683"/>
         <source>Clang</source>
         <translation>Clang</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="685"/>
+        <location filename="mainwindow.ui" line="686"/>
         <source>Show Clang results</source>
         <translation>Visa Clang resultat</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="693"/>
+        <location filename="mainwindow.ui" line="694"/>
         <source>&amp;Filter</source>
         <translation>&amp;Filter</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="696"/>
+        <location filename="mainwindow.ui" line="697"/>
         <source>Filter results</source>
         <translation>Filtrera resultat</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="712"/>
+        <location filename="mainwindow.ui" line="713"/>
         <source>Windows 32-bit ANSI</source>
         <translation>Windows 32-bit ANSI</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="720"/>
+        <location filename="mainwindow.ui" line="721"/>
         <source>Windows 32-bit Unicode</source>
         <translation>Windows 32-bit Unicode</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="728"/>
+        <location filename="mainwindow.ui" line="729"/>
         <source>Unix 32-bit</source>
         <translation>Unix 32-bit</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="736"/>
+        <location filename="mainwindow.ui" line="737"/>
         <source>Unix 64-bit</source>
         <translation>Unix 64-bit</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="744"/>
+        <location filename="mainwindow.ui" line="745"/>
         <source>Windows 64-bit</source>
         <translation>Windows 64-bit</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="814"/>
+        <location filename="mainwindow.ui" line="815"/>
         <source>&amp;Print...</source>
         <translation>Skriv ut...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="817"/>
+        <location filename="mainwindow.ui" line="818"/>
         <source>Print the Current Report</source>
         <translation>Skriv ut aktuell rapport</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="822"/>
+        <location filename="mainwindow.ui" line="823"/>
         <source>Print Pre&amp;view...</source>
         <translation>Förhandsgranska utskrift...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="825"/>
+        <location filename="mainwindow.ui" line="826"/>
         <source>Open a Print Preview Dialog for the Current Results</source>
         <translation>Öppnar förhandsgranskning för nuvarande resultat</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="833"/>
+        <location filename="mainwindow.ui" line="834"/>
         <source>Open library editor</source>
         <translation>Öppna library editor</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="458"/>
+        <location filename="mainwindow.ui" line="459"/>
         <source>&amp;Check all</source>
         <translation>&amp;Kryssa alla</translation>
     </message>
@@ -713,276 +757,281 @@ Exempel:
         <translation type="unfinished">Dölj</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="283"/>
+        <location filename="mainwindow.ui" line="284"/>
         <source>Filter</source>
         <translation>Filter</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="349"/>
+        <location filename="mainwindow.ui" line="350"/>
         <source>&amp;Reanalyze modified files</source>
         <oldsource>&amp;Recheck modified files</oldsource>
         <translation>Analysera om ändrade filer</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="361"/>
+        <location filename="mainwindow.ui" line="362"/>
         <source>Reanal&amp;yze all files</source>
         <translation>Analysera om alla filer</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="399"/>
+        <location filename="mainwindow.ui" line="400"/>
         <source>Ctrl+Q</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="429"/>
+        <location filename="mainwindow.ui" line="430"/>
         <source>Style war&amp;nings</source>
         <translation>Style varningar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="447"/>
+        <location filename="mainwindow.ui" line="448"/>
         <source>E&amp;rrors</source>
         <translation>Fel</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="463"/>
+        <location filename="mainwindow.ui" line="464"/>
         <source>&amp;Uncheck all</source>
         <translation>Kryssa &amp;ur alla</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="468"/>
+        <location filename="mainwindow.ui" line="469"/>
         <source>Collapse &amp;all</source>
         <translatorcomment>Ingen bra översättning!</translatorcomment>
         <translation>&amp;Fäll ihop alla</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="473"/>
+        <location filename="mainwindow.ui" line="474"/>
         <source>&amp;Expand all</source>
         <translation>&amp;Expandera alla</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="481"/>
+        <location filename="mainwindow.ui" line="482"/>
         <source>&amp;Standard</source>
         <translation>&amp;Standard</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="484"/>
+        <location filename="mainwindow.ui" line="485"/>
         <source>Standard items</source>
         <translation>Standard poster</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="500"/>
+        <location filename="mainwindow.ui" line="501"/>
         <source>Toolbar</source>
         <translation>Verktygsfält</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="508"/>
+        <location filename="mainwindow.ui" line="509"/>
         <source>&amp;Categories</source>
         <translation>&amp;Kategorier</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="511"/>
+        <location filename="mainwindow.ui" line="512"/>
         <source>Error categories</source>
         <translation>Fel kategorier</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="516"/>
+        <location filename="mainwindow.ui" line="517"/>
         <source>&amp;Open XML...</source>
         <translation>&amp;Öppna XML...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="525"/>
+        <location filename="mainwindow.ui" line="526"/>
         <source>Open P&amp;roject File...</source>
         <translation>Öppna Projektfil...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="528"/>
+        <location filename="mainwindow.ui" line="529"/>
         <source>Ctrl+Shift+O</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="537"/>
+        <location filename="mainwindow.ui" line="538"/>
         <source>Sh&amp;ow Scratchpad...</source>
         <translation>Visa Scratchpad...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="542"/>
+        <location filename="mainwindow.ui" line="543"/>
         <source>&amp;New Project File...</source>
         <translation>Ny projektfil...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="545"/>
+        <location filename="mainwindow.ui" line="546"/>
         <source>Ctrl+Shift+N</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="550"/>
+        <location filename="mainwindow.ui" line="551"/>
         <source>&amp;Log View</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="553"/>
+        <location filename="mainwindow.ui" line="554"/>
         <source>Log View</source>
         <translation>Logg vy</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="561"/>
+        <location filename="mainwindow.ui" line="562"/>
         <source>C&amp;lose Project File</source>
         <translation>Stäng projektfil</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="569"/>
+        <location filename="mainwindow.ui" line="570"/>
         <source>&amp;Edit Project File...</source>
         <translation>Redigera projektfil...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="581"/>
+        <location filename="mainwindow.ui" line="582"/>
         <source>&amp;Statistics</source>
         <translation>Statistik</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="593"/>
+        <location filename="mainwindow.ui" line="594"/>
         <source>&amp;Warnings</source>
         <translation>Varningar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="611"/>
+        <location filename="mainwindow.ui" line="612"/>
         <source>Per&amp;formance warnings</source>
         <translation>Optimerings varningar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="637"/>
+        <location filename="mainwindow.ui" line="638"/>
         <source>&amp;Information</source>
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="652"/>
+        <location filename="mainwindow.ui" line="653"/>
         <source>&amp;Portability</source>
         <translation>Portabilitet</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="752"/>
+        <location filename="mainwindow.ui" line="753"/>
         <source>P&amp;latforms</source>
         <translation>Plattformar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="766"/>
+        <location filename="mainwindow.ui" line="767"/>
         <source>C++&amp;11</source>
         <translation>C++11</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="777"/>
+        <location filename="mainwindow.ui" line="778"/>
         <source>C&amp;99</source>
         <translation>C99</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="785"/>
+        <location filename="mainwindow.ui" line="786"/>
         <source>&amp;Posix</source>
         <translation>Posix</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="793"/>
+        <location filename="mainwindow.ui" line="794"/>
         <source>C&amp;11</source>
         <translation>C11</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="801"/>
+        <location filename="mainwindow.ui" line="802"/>
         <source>&amp;C89</source>
         <translation>C89</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="809"/>
+        <location filename="mainwindow.ui" line="810"/>
         <source>&amp;C++03</source>
         <translation>C++03</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="830"/>
+        <location filename="mainwindow.ui" line="831"/>
         <source>&amp;Library Editor...</source>
         <translation>Library Editor...</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="841"/>
+        <location filename="mainwindow.ui" line="842"/>
         <source>&amp;Auto-detect language</source>
         <translation>Detektera språk automatiskt</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="849"/>
+        <location filename="mainwindow.ui" line="850"/>
         <source>&amp;Enforce C++</source>
         <translation>Tvinga C++</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="857"/>
+        <location filename="mainwindow.ui" line="858"/>
         <source>E&amp;nforce C</source>
         <translation>Tvinga C</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="868"/>
+        <location filename="mainwindow.ui" line="869"/>
         <source>C++14</source>
         <translation>C++14</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="876"/>
+        <location filename="mainwindow.ui" line="877"/>
         <source>Reanalyze and check library</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="884"/>
+        <location filename="mainwindow.ui" line="885"/>
         <source>Check configuration (defines, includes)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="892"/>
+        <location filename="mainwindow.ui" line="893"/>
         <source>C++17</source>
         <translation type="unfinished">C++17</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="903"/>
+        <location filename="mainwindow.ui" line="904"/>
         <source>C++20</source>
         <translation type="unfinished">C++20</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="489"/>
+        <location filename="mainwindow.ui" line="920"/>
+        <source>Compliance report...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="490"/>
         <source>&amp;Contents</source>
         <translation>&amp;Innehåll</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="264"/>
+        <location filename="mainwindow.ui" line="265"/>
         <source>Categories</source>
         <translation>Kategorier</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="432"/>
-        <location filename="mainwindow.ui" line="435"/>
+        <location filename="mainwindow.ui" line="433"/>
+        <location filename="mainwindow.ui" line="436"/>
         <source>Show style warnings</source>
         <translation>Visa stil varningar</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="492"/>
+        <location filename="mainwindow.ui" line="493"/>
         <source>Open the help contents</source>
         <translation>Öppna hjälp</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="495"/>
+        <location filename="mainwindow.ui" line="496"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="183"/>
+        <location filename="mainwindow.ui" line="184"/>
         <source>&amp;Help</source>
         <translation>&amp;Hjälp</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="119"/>
-        <location filename="mainwindow.cpp" line="1511"/>
+        <location filename="mainwindow.cpp" line="141"/>
+        <location filename="mainwindow.cpp" line="1559"/>
         <source>Quick Filter:</source>
         <translation>Snabbfilter:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="692"/>
+        <location filename="mainwindow.cpp" line="722"/>
         <source>Select configuration</source>
         <translation>Välj konfiguration</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="722"/>
+        <location filename="mainwindow.cpp" line="752"/>
         <source>Found project file: %1
 
 Do you want to load this project file instead?</source>
@@ -991,60 +1040,60 @@ Do you want to load this project file instead?</source>
 Vill du ladda denna projektfil istället?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="840"/>
+        <location filename="mainwindow.cpp" line="870"/>
         <source>File not found</source>
         <translation>Filen hittades ej</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="843"/>
+        <location filename="mainwindow.cpp" line="873"/>
         <source>Bad XML</source>
         <translation>Ogiltig XML</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="846"/>
+        <location filename="mainwindow.cpp" line="876"/>
         <source>Missing attribute</source>
         <translation>Attribut finns ej</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="849"/>
+        <location filename="mainwindow.cpp" line="879"/>
         <source>Bad attribute value</source>
         <translation>Ogiltigt attribut värde</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="852"/>
+        <location filename="mainwindow.cpp" line="882"/>
         <source>Unsupported format</source>
         <translation>Format stöds ej</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="869"/>
+        <location filename="mainwindow.cpp" line="899"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
         <translation>Misslyckades att ladda valda library &apos;%1&apos;.
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1407"/>
+        <location filename="mainwindow.cpp" line="1441"/>
         <source>License</source>
         <translation>Licens</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1414"/>
+        <location filename="mainwindow.cpp" line="1448"/>
         <source>Authors</source>
         <translation>Utvecklare</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1429"/>
+        <location filename="mainwindow.cpp" line="1463"/>
         <source>Save the report file</source>
         <translation>Spara rapport</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1246"/>
-        <location filename="mainwindow.cpp" line="1436"/>
+        <location filename="mainwindow.cpp" line="1276"/>
+        <location filename="mainwindow.cpp" line="1470"/>
         <source>XML files (*.xml)</source>
         <translation>XML filer (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="379"/>
+        <location filename="mainwindow.cpp" line="404"/>
         <source>There was a problem with loading the editor application settings.
 
 This is probably because the settings were changed between the Cppcheck versions. Please check (and fix) the editor application settings, otherwise the editor program might not start correctly.</source>
@@ -1053,122 +1102,122 @@ This is probably because the settings were changed between the Cppcheck versions
 En trolig orsak är att inställningarna ändrats för olika Cppcheck versioner. Kontrollera programinställningarna.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="617"/>
+        <location filename="mainwindow.cpp" line="647"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>Du måste stänga projektfilen innan nya filer eller sökvägar kan väljas!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="831"/>
+        <location filename="mainwindow.cpp" line="861"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
         <translation>Library filen &apos;%1&apos; har element som ej hanteras:
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="855"/>
+        <location filename="mainwindow.cpp" line="885"/>
         <source>Duplicate platform type</source>
         <translation>Dubbel plattformstyp</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="858"/>
+        <location filename="mainwindow.cpp" line="888"/>
         <source>Platform type redefined</source>
         <translation>Plattformstyp definieras igen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="861"/>
+        <location filename="mainwindow.cpp" line="891"/>
         <source>Unknown element</source>
         <translation>Element hanteras ej</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="864"/>
+        <location filename="mainwindow.cpp" line="894"/>
         <source>Unknown issue</source>
         <translation>Något problem</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="885"/>
+        <location filename="mainwindow.cpp" line="915"/>
         <source>Error</source>
         <translation>Fel</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="885"/>
+        <location filename="mainwindow.cpp" line="915"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.</source>
         <translation>Misslyckades att ladda %1. Din Cppcheck installation är ej komplett. Du kan använda --data-dir&lt;directory&gt; på kommandoraden för att specificera var denna fil finns. Det är meningen att --data-dir kommandot skall köras under installationen,så GUIt kommer ej visas när --data-dir används allt som händer är att en inställning görs.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1248"/>
+        <location filename="mainwindow.cpp" line="1278"/>
         <source>Open the report file</source>
         <translation>Öppna rapportfilen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1440"/>
+        <location filename="mainwindow.cpp" line="1474"/>
         <source>Text files (*.txt)</source>
         <translation>Text filer (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1444"/>
+        <location filename="mainwindow.cpp" line="1478"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV filer (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1549"/>
+        <location filename="mainwindow.cpp" line="1597"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>Projektfiler (*.cppcheck);;Alla filer(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1551"/>
+        <location filename="mainwindow.cpp" line="1599"/>
         <source>Select Project File</source>
         <translation>Välj projektfil</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="190"/>
-        <location filename="mainwindow.cpp" line="1513"/>
-        <location filename="mainwindow.cpp" line="1579"/>
-        <location filename="mainwindow.cpp" line="1710"/>
+        <location filename="mainwindow.cpp" line="213"/>
+        <location filename="mainwindow.cpp" line="1561"/>
+        <location filename="mainwindow.cpp" line="1627"/>
+        <location filename="mainwindow.cpp" line="1789"/>
         <source>Project:</source>
         <translation>Projekt:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="542"/>
+        <location filename="mainwindow.cpp" line="572"/>
         <source>No suitable files found to analyze!</source>
         <translation>Inga filer hittades att analysera!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="631"/>
+        <location filename="mainwindow.cpp" line="661"/>
         <source>C/C++ Source</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="632"/>
+        <location filename="mainwindow.cpp" line="662"/>
         <source>Compile database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="633"/>
+        <location filename="mainwindow.cpp" line="663"/>
         <source>Visual Studio</source>
         <translation type="unfinished">Visual Studio</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="634"/>
+        <location filename="mainwindow.cpp" line="664"/>
         <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="637"/>
+        <location filename="mainwindow.cpp" line="667"/>
         <source>Select files to analyze</source>
         <translation>Välj filer att analysera</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="652"/>
+        <location filename="mainwindow.cpp" line="682"/>
         <source>Select directory to analyze</source>
         <translation>Välj mapp att analysera</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="692"/>
+        <location filename="mainwindow.cpp" line="722"/>
         <source>Select the configuration that will be analyzed</source>
         <translation>Välj konfiguration som kommer analyseras</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="744"/>
+        <location filename="mainwindow.cpp" line="774"/>
         <source>Found project files from the directory.
 
 Do you want to proceed analysis without using any of these project files?</source>
@@ -1177,7 +1226,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
 Vill du fortsätta analysen utan att använda någon av dessa projekt filer?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1231"/>
+        <location filename="mainwindow.cpp" line="1261"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -1185,7 +1234,7 @@ Do you want to proceed?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1351"/>
+        <location filename="mainwindow.cpp" line="1385"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1194,47 +1243,69 @@ Do you want to stop the analysis and exit Cppcheck?</source>
 Vill du stoppa analysen och avsluta Cppcheck?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1393"/>
+        <location filename="mainwindow.cpp" line="1427"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1427"/>
+        <location filename="mainwindow.cpp" line="1461"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation>XML filer (*.xml);;Text filer (*.txt);;CSV filer (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1640"/>
+        <location filename="mainwindow.cpp" line="1688"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation>Build dir &apos;%1&apos; existerar ej, skapa den?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1648"/>
+        <location filename="mainwindow.cpp" line="1696"/>
         <source>To check the project using addons, you need a build directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1671"/>
+        <location filename="mainwindow.cpp" line="1728"/>
+        <source>Failed to open file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="1731"/>
+        <source>Unknown project file format</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="1734"/>
+        <source>Failed to import project file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="1741"/>
+        <source>Failed to import &apos;%1&apos;: %2
+
+Analysis is stopped.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="1750"/>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
         <translation>Misslyckades att importera &apos;%1&apos;, analysen stoppas</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1695"/>
+        <location filename="mainwindow.cpp" line="1774"/>
         <source>Project files (*.cppcheck)</source>
         <translation>Projekt filer (*.cppcheck)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1697"/>
+        <location filename="mainwindow.cpp" line="1776"/>
         <source>Select Project Filename</source>
         <translation>Välj Projektfil</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1742"/>
+        <location filename="mainwindow.cpp" line="1821"/>
         <source>No project file loaded</source>
         <translation>Inget projekt laddat</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1810"/>
+        <location filename="mainwindow.cpp" line="1889"/>
         <source>The project file
 
 %1
@@ -1251,17 +1322,17 @@ Do you want to remove the file from the recently used projects -list?</source>
 Vill du ta bort filen från &apos;senast använda projekt&apos;-listan?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1970"/>
+        <location filename="mainwindow.cpp" line="2049"/>
         <source>Install</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1974"/>
+        <location filename="mainwindow.cpp" line="2053"/>
         <source>New version available: %1. %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.cpp" line="102"/>
+        <location filename="main.cpp" line="107"/>
         <source>Cppcheck GUI.
 
 Syntax:
@@ -1304,7 +1375,7 @@ Options:
                             is used.</translation>
     </message>
     <message>
-        <location filename="main.cpp" line="117"/>
+        <location filename="main.cpp" line="122"/>
         <source>Cppcheck GUI - Command line parameters</source>
         <translation>Cppcheck GUI - Command line parameters</translation>
     </message>
@@ -1337,7 +1408,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="newsuppressiondialog.cpp" line="78"/>
+        <location filename="newsuppressiondialog.cpp" line="80"/>
         <source>Edit suppression</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1713,77 +1784,77 @@ Options:
 <context>
     <name>ProjectFileDialog</name>
     <message>
-        <location filename="projectfiledialog.cpp" line="100"/>
+        <location filename="projectfiledialog.cpp" line="118"/>
         <source>Project file: %1</source>
         <translation>Projektfil: %1</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="388"/>
+        <location filename="projectfiledialog.cpp" line="407"/>
         <source>Clang-tidy (not found)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="504"/>
+        <location filename="projectfiledialog.cpp" line="523"/>
         <source>Select Cppcheck build dir</source>
         <translation>Välj Cppcheck build dir</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="800"/>
+        <location filename="projectfiledialog.cpp" line="793"/>
         <source>Select include directory</source>
         <translation>Välj include sökväg</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="828"/>
+        <location filename="projectfiledialog.cpp" line="821"/>
         <source>Source files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="829"/>
+        <location filename="projectfiledialog.cpp" line="822"/>
         <source>All files</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="830"/>
+        <location filename="projectfiledialog.cpp" line="823"/>
         <source>Exclude file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="914"/>
+        <location filename="projectfiledialog.cpp" line="907"/>
         <source>Select MISRA rule texts file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="916"/>
+        <location filename="projectfiledialog.cpp" line="909"/>
         <source>MISRA rule texts file (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="780"/>
+        <location filename="projectfiledialog.cpp" line="773"/>
         <source>Select a directory to check</source>
         <translation>Välj mapp att analysera</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="544"/>
+        <location filename="projectfiledialog.cpp" line="563"/>
         <source>Visual Studio</source>
         <translation type="unfinished">Visual Studio</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="545"/>
+        <location filename="projectfiledialog.cpp" line="564"/>
         <source>Compile database</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="546"/>
+        <location filename="projectfiledialog.cpp" line="565"/>
         <source>Borland C++ Builder 6</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="547"/>
+        <location filename="projectfiledialog.cpp" line="566"/>
         <source>Import Project</source>
         <translation>Importera Projekt</translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="820"/>
+        <location filename="projectfiledialog.cpp" line="813"/>
         <source>Select directory to ignore</source>
         <translation>Välj sökväg att ignorera</translation>
     </message>
@@ -1791,170 +1862,170 @@ Options:
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="87"/>
+        <location filename="translationhandler.cpp" line="90"/>
         <source>Unknown language specified!</source>
         <translation>Okänt språk valt!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="112"/>
+        <location filename="translationhandler.cpp" line="116"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation>Språk filen %1 hittades ej!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="118"/>
+        <location filename="translationhandler.cpp" line="121"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation>Misslyckades med att ladda översättningen för %1 från filen %2</translation>
     </message>
     <message>
-        <location filename="cppchecklibrarydata.cpp" line="35"/>
+        <location filename="cppchecklibrarydata.cpp" line="43"/>
         <source>line %1: Unhandled element %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="cppchecklibrarydata.cpp" line="40"/>
+        <location filename="cppchecklibrarydata.cpp" line="48"/>
         <source>line %1: Mandatory attribute &apos;%2&apos; missing in &apos;%3&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="projectfiledialog.cpp" line="259"/>
+        <location filename="projectfiledialog.cpp" line="277"/>
         <source> (Not found)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="73"/>
+        <location filename="codeeditstylecontrols.cpp" line="75"/>
         <source>Thin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="75"/>
+        <location filename="codeeditstylecontrols.cpp" line="77"/>
         <source>ExtraLight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="77"/>
+        <location filename="codeeditstylecontrols.cpp" line="79"/>
         <source>Light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="79"/>
+        <location filename="codeeditstylecontrols.cpp" line="81"/>
         <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="81"/>
+        <location filename="codeeditstylecontrols.cpp" line="83"/>
         <source>Medium</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="83"/>
+        <location filename="codeeditstylecontrols.cpp" line="85"/>
         <source>DemiBold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="85"/>
+        <location filename="codeeditstylecontrols.cpp" line="87"/>
         <source>Bold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="87"/>
+        <location filename="codeeditstylecontrols.cpp" line="89"/>
         <source>ExtraBold</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstylecontrols.cpp" line="89"/>
+        <location filename="codeeditstylecontrols.cpp" line="91"/>
         <source>Black</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="73"/>
+        <location filename="codeeditstyledialog.cpp" line="80"/>
         <source>Editor Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="76"/>
+        <location filename="codeeditstyledialog.cpp" line="83"/>
         <source>Editor Background Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="79"/>
+        <location filename="codeeditstyledialog.cpp" line="86"/>
         <source>Highlight Background Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="82"/>
+        <location filename="codeeditstyledialog.cpp" line="89"/>
         <source>Line Number Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="85"/>
+        <location filename="codeeditstyledialog.cpp" line="92"/>
         <source>Line Number Background Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="88"/>
+        <location filename="codeeditstyledialog.cpp" line="95"/>
         <source>Keyword Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="91"/>
+        <location filename="codeeditstyledialog.cpp" line="98"/>
         <source>Keyword Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="94"/>
+        <location filename="codeeditstyledialog.cpp" line="101"/>
         <source>Class Foreground Color</source>
         <oldsource>Class ForegroundColor</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="97"/>
+        <location filename="codeeditstyledialog.cpp" line="104"/>
         <source>Class Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="100"/>
+        <location filename="codeeditstyledialog.cpp" line="107"/>
         <source>Quote Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="103"/>
+        <location filename="codeeditstyledialog.cpp" line="110"/>
         <source>Quote Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="106"/>
+        <location filename="codeeditstyledialog.cpp" line="113"/>
         <source>Comment Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="109"/>
+        <location filename="codeeditstyledialog.cpp" line="116"/>
         <source>Comment Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="112"/>
+        <location filename="codeeditstyledialog.cpp" line="119"/>
         <source>Symbol Foreground Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="115"/>
+        <location filename="codeeditstyledialog.cpp" line="122"/>
         <source>Symbol Background Color</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="118"/>
+        <location filename="codeeditstyledialog.cpp" line="125"/>
         <source>Symbol Font Weight</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="138"/>
+        <location filename="codeeditstyledialog.cpp" line="145"/>
         <source>Set to Default Light</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="codeeditstyledialog.cpp" line="140"/>
+        <location filename="codeeditstyledialog.cpp" line="147"/>
         <source>Set to Default Dark</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1962,22 +2033,22 @@ Options:
 <context>
     <name>QPlatformTheme</name>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Cancel</source>
         <translation>Avbryt</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="39"/>
         <source>Close</source>
         <translation>Stäng</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="38"/>
+        <location filename="translationhandler.cpp" line="40"/>
         <source>Save</source>
         <translation>Spara</translation>
     </message>
@@ -1985,109 +2056,109 @@ Options:
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1429"/>
+        <location filename="resultstree.cpp" line="1438"/>
         <source>File</source>
         <translation>Fil</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1429"/>
+        <location filename="resultstree.cpp" line="1438"/>
         <source>Severity</source>
         <translation>Typ</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1429"/>
+        <location filename="resultstree.cpp" line="1438"/>
         <source>Line</source>
         <translation>Rad</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1429"/>
+        <location filename="resultstree.cpp" line="1438"/>
         <source>Summary</source>
         <translation>Sammanfattning</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="156"/>
+        <location filename="resultstree.cpp" line="165"/>
         <source>Undefined file</source>
         <translation>Odefinierad fil</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="656"/>
+        <location filename="resultstree.cpp" line="665"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="839"/>
+        <location filename="resultstree.cpp" line="848"/>
         <source>Could not find file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="843"/>
+        <location filename="resultstree.cpp" line="852"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="844"/>
+        <location filename="resultstree.cpp" line="853"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="846"/>
+        <location filename="resultstree.cpp" line="855"/>
         <source>Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="353"/>
+        <location filename="resultstree.cpp" line="362"/>
         <source>debug</source>
         <translation>debug</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="278"/>
+        <location filename="resultstree.cpp" line="287"/>
         <source>note</source>
         <translation>note</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="655"/>
+        <location filename="resultstree.cpp" line="664"/>
         <source>Recheck</source>
         <translation>Analysera om</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="657"/>
+        <location filename="resultstree.cpp" line="666"/>
         <source>Hide</source>
         <translation>Dölj</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="658"/>
+        <location filename="resultstree.cpp" line="667"/>
         <source>Hide all with id</source>
         <translation>Dölj alla med id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="677"/>
+        <location filename="resultstree.cpp" line="686"/>
         <source>Suppress selected id(s)</source>
         <translation>Stäng av valda id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="659"/>
+        <location filename="resultstree.cpp" line="668"/>
         <source>Open containing folder</source>
         <translation>Öppna mapp</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="693"/>
-        <location filename="resultstree.cpp" line="1429"/>
+        <location filename="resultstree.cpp" line="702"/>
+        <location filename="resultstree.cpp" line="1438"/>
         <source>Tag</source>
         <translation>Tag</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="695"/>
+        <location filename="resultstree.cpp" line="704"/>
         <source>No tag</source>
         <translation>Ingen tag</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="737"/>
-        <location filename="resultstree.cpp" line="751"/>
+        <location filename="resultstree.cpp" line="746"/>
+        <location filename="resultstree.cpp" line="760"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="738"/>
+        <location filename="resultstree.cpp" line="747"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2097,7 +2168,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Konfigurera program i inställningar/program.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="752"/>
+        <location filename="resultstree.cpp" line="761"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2106,12 +2177,12 @@ Please select the default editor application in preferences/Applications.</sourc
 Vänligen välj standard editor i inställningar/Program.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="778"/>
+        <location filename="resultstree.cpp" line="787"/>
         <source>Could not find the file!</source>
         <translation>Kunde inte hitta filen!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="825"/>
+        <location filename="resultstree.cpp" line="834"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2120,52 +2191,52 @@ Please check the application path and parameters are correct.</source>
 Kontrollera att sökvägen och parametrarna är korrekta.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="847"/>
+        <location filename="resultstree.cpp" line="856"/>
         <source>Select Directory</source>
         <translation>Välj mapp</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1429"/>
+        <location filename="resultstree.cpp" line="1438"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1429"/>
+        <location filename="resultstree.cpp" line="1438"/>
         <source>Inconclusive</source>
         <translation>Inconclusive</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1429"/>
+        <location filename="resultstree.cpp" line="1438"/>
         <source>Since date</source>
         <translation>Sedan datum</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="335"/>
+        <location filename="resultstree.cpp" line="344"/>
         <source>style</source>
         <translation>stil</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="338"/>
+        <location filename="resultstree.cpp" line="347"/>
         <source>error</source>
         <translation>fel</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="341"/>
+        <location filename="resultstree.cpp" line="350"/>
         <source>warning</source>
         <translation>varning</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="344"/>
+        <location filename="resultstree.cpp" line="353"/>
         <source>performance</source>
         <translation>prestanda</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="347"/>
+        <location filename="resultstree.cpp" line="356"/>
         <source>portability</source>
         <translation>portabilitet</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="350"/>
+        <location filename="resultstree.cpp" line="359"/>
         <source>information</source>
         <translation>information</translation>
     </message>
@@ -2173,82 +2244,82 @@ Kontrollera att sökvägen och parametrarna är korrekta.</translation>
 <context>
     <name>ResultsView</name>
     <message>
-        <location filename="resultsview.cpp" line="201"/>
+        <location filename="resultsview.cpp" line="221"/>
         <source>Print Report</source>
         <translation>Skriv ut rapport</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="220"/>
+        <location filename="resultsview.cpp" line="240"/>
         <source>No errors found, nothing to print.</source>
         <translation>Inga fel hittades, inget att skriva ut.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="264"/>
+        <location filename="resultsview.cpp" line="284"/>
         <source>%p% (%1 of %2 files checked)</source>
         <translation>%p% (%1 av %2 filer analyserade)</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="281"/>
-        <location filename="resultsview.cpp" line="292"/>
+        <location filename="resultsview.cpp" line="301"/>
+        <location filename="resultsview.cpp" line="312"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="282"/>
+        <location filename="resultsview.cpp" line="302"/>
         <source>No errors found.</source>
         <translation>Inga fel hittades.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="289"/>
+        <location filename="resultsview.cpp" line="309"/>
         <source>Errors were found, but they are configured to be hidden.
 To toggle what kind of errors are shown, open view menu.</source>
         <translation>Fel hittades, men de visas ej.
 För att ställa in vilka fel som skall visas använd visa menyn.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="336"/>
-        <location filename="resultsview.cpp" line="355"/>
+        <location filename="resultsview.cpp" line="356"/>
+        <location filename="resultsview.cpp" line="375"/>
         <source>Failed to read the report.</source>
         <translation>Misslyckades att läsa rapporten.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="343"/>
+        <location filename="resultsview.cpp" line="363"/>
         <source>XML format version 1 is no longer supported.</source>
         <translation>XML format version 1 stöds ej längre.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="403"/>
+        <location filename="resultsview.cpp" line="423"/>
         <source>First included by</source>
         <translation>Först inkluderad av</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="408"/>
+        <location filename="resultsview.cpp" line="428"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="410"/>
+        <location filename="resultsview.cpp" line="430"/>
         <source>Bug hunting analysis is incomplete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="484"/>
+        <location filename="resultsview.cpp" line="504"/>
         <source>Clear Log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="485"/>
+        <location filename="resultsview.cpp" line="505"/>
         <source>Copy this Log entry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="486"/>
+        <location filename="resultsview.cpp" line="506"/>
         <source>Copy complete Log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="183"/>
-        <location filename="resultsview.cpp" line="191"/>
+        <location filename="resultsview.cpp" line="203"/>
+        <location filename="resultsview.cpp" line="211"/>
         <source>Failed to save the report.</source>
         <translation>Misslyckades med att spara rapporten.</translation>
     </message>
@@ -2496,47 +2567,47 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="settingsdialog.cpp" line="114"/>
+        <location filename="settingsdialog.cpp" line="126"/>
         <source>N/A</source>
         <translation>Ej tillgängligt</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="228"/>
+        <location filename="settingsdialog.cpp" line="237"/>
         <source>The executable file &quot;%1&quot; is not available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="239"/>
+        <location filename="settingsdialog.cpp" line="248"/>
         <source>Add a new application</source>
         <translation>Lägg till program</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="269"/>
+        <location filename="settingsdialog.cpp" line="278"/>
         <source>Modify an application</source>
         <translation>Ändra program</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="274"/>
+        <location filename="settingsdialog.cpp" line="283"/>
         <source> [Default]</source>
         <translation> [Vald]</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="299"/>
+        <location filename="settingsdialog.cpp" line="308"/>
         <source>[Default]</source>
         <translation>[Förvald]</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="354"/>
+        <location filename="settingsdialog.cpp" line="363"/>
         <source>Select python binary</source>
         <translation>Välj python binär</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="361"/>
+        <location filename="settingsdialog.cpp" line="370"/>
         <source>Select MISRA File</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="392"/>
+        <location filename="settingsdialog.cpp" line="401"/>
         <source>Select clang path</source>
         <translation>Välj Clang sökväg</translation>
     </message>
@@ -2546,14 +2617,14 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
     <message>
         <location filename="statsdialog.ui" line="14"/>
         <location filename="statsdialog.ui" line="248"/>
-        <location filename="statsdialog.cpp" line="162"/>
-        <location filename="statsdialog.cpp" line="209"/>
+        <location filename="statsdialog.cpp" line="181"/>
+        <location filename="statsdialog.cpp" line="228"/>
         <source>Statistics</source>
         <translation>Statistik</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="27"/>
-        <location filename="statsdialog.cpp" line="200"/>
+        <location filename="statsdialog.cpp" line="219"/>
         <source>Project</source>
         <translation>Projekt</translation>
     </message>
@@ -2584,7 +2655,7 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="165"/>
-        <location filename="statsdialog.cpp" line="205"/>
+        <location filename="statsdialog.cpp" line="224"/>
         <source>Previous Scan</source>
         <translation>Föregående analys</translation>
     </message>
@@ -2654,143 +2725,143 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
         <translation>Pdf Export</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="157"/>
         <source>1 day</source>
         <translation>1 dag</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="157"/>
         <source>%1 days</source>
         <translation>%1 dagar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="159"/>
         <source>1 hour</source>
         <translation>1 timme</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="159"/>
         <source>%1 hours</source>
         <translation>%1 timmar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="161"/>
         <source>1 minute</source>
         <translation>1 minut</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="161"/>
         <source>%1 minutes</source>
         <translation>%1 minuter</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="144"/>
+        <location filename="statsdialog.cpp" line="163"/>
         <source>1 second</source>
         <translation>1 sekund</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="144"/>
+        <location filename="statsdialog.cpp" line="163"/>
         <source>%1 seconds</source>
         <translation>%1 sekunder</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="148"/>
+        <location filename="statsdialog.cpp" line="167"/>
         <source>0.%1 seconds</source>
         <translation>0.%1 sekunder</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="150"/>
+        <location filename="statsdialog.cpp" line="169"/>
         <source> and </source>
         <translation> och </translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="177"/>
+        <location filename="statsdialog.cpp" line="196"/>
         <source>Export PDF</source>
         <translation>Exportera PDF</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="199"/>
+        <location filename="statsdialog.cpp" line="218"/>
         <source>Project Settings</source>
         <translation>Projekt inställningar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="201"/>
+        <location filename="statsdialog.cpp" line="220"/>
         <source>Paths</source>
         <translation>Sökvägar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="202"/>
+        <location filename="statsdialog.cpp" line="221"/>
         <source>Include paths</source>
         <translation>Include sökvägar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="203"/>
+        <location filename="statsdialog.cpp" line="222"/>
         <source>Defines</source>
         <translation>Definitioner</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="204"/>
+        <location filename="statsdialog.cpp" line="223"/>
         <source>Undefines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="206"/>
+        <location filename="statsdialog.cpp" line="225"/>
         <source>Path selected</source>
         <translation>Vald sökväg</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="207"/>
+        <location filename="statsdialog.cpp" line="226"/>
         <source>Number of files scanned</source>
         <translation>Antal analyserade filer</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="208"/>
+        <location filename="statsdialog.cpp" line="227"/>
         <source>Scan duration</source>
         <translation>Tid</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="164"/>
-        <location filename="statsdialog.cpp" line="210"/>
+        <location filename="statsdialog.cpp" line="183"/>
+        <location filename="statsdialog.cpp" line="229"/>
         <source>Errors</source>
         <translation>Fel</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="90"/>
+        <location filename="statsdialog.cpp" line="109"/>
         <source>File: </source>
         <translation>Fil:</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="90"/>
+        <location filename="statsdialog.cpp" line="109"/>
         <source>No cppcheck build dir</source>
         <translation>Ingen Cppcheck build dir</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="166"/>
-        <location filename="statsdialog.cpp" line="211"/>
+        <location filename="statsdialog.cpp" line="185"/>
+        <location filename="statsdialog.cpp" line="230"/>
         <source>Warnings</source>
         <translation>Varningar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="168"/>
-        <location filename="statsdialog.cpp" line="212"/>
+        <location filename="statsdialog.cpp" line="187"/>
+        <location filename="statsdialog.cpp" line="231"/>
         <source>Style warnings</source>
         <translation>Stil varningar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="170"/>
-        <location filename="statsdialog.cpp" line="213"/>
+        <location filename="statsdialog.cpp" line="189"/>
+        <location filename="statsdialog.cpp" line="232"/>
         <source>Portability warnings</source>
         <translation>Portabilitetsvarningar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="172"/>
-        <location filename="statsdialog.cpp" line="214"/>
+        <location filename="statsdialog.cpp" line="191"/>
+        <location filename="statsdialog.cpp" line="233"/>
         <source>Performance warnings</source>
         <translation>Prestanda varningar</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="174"/>
-        <location filename="statsdialog.cpp" line="215"/>
+        <location filename="statsdialog.cpp" line="193"/>
+        <location filename="statsdialog.cpp" line="234"/>
         <source>Information messages</source>
         <translation>Informationsmeddelanden</translation>
     </message>
@@ -2798,7 +2869,7 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
 <context>
     <name>ThreadResult</name>
     <message>
-        <location filename="threadresult.cpp" line="52"/>
+        <location filename="threadresult.cpp" line="55"/>
         <source>%1 of %2 files checked</source>
         <translation>%1 av %2 filer analyserade</translation>
     </message>
@@ -2806,7 +2877,7 @@ För att ställa in vilka fel som skall visas använd visa menyn.</translation>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="125"/>
+        <location filename="translationhandler.cpp" line="129"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -2819,7 +2890,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 Språket har nollställts till Engelska. Öppna Preferences och välj något av de tillgängliga språken.</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="131"/>
+        <location filename="translationhandler.cpp" line="135"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -2827,7 +2898,7 @@ Språket har nollställts till Engelska. Öppna Preferences och välj något av 
 <context>
     <name>TxtReport</name>
     <message>
-        <location filename="txtreport.cpp" line="74"/>
+        <location filename="txtreport.cpp" line="77"/>
         <source>inconclusive</source>
         <translation>inconclusive</translation>
     </message>
@@ -2835,12 +2906,12 @@ Språket har nollställts till Engelska. Öppna Preferences och välj något av 
 <context>
     <name>toFilterString</name>
     <message>
-        <location filename="common.cpp" line="53"/>
+        <location filename="common.cpp" line="57"/>
         <source>All supported files (%1)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="common.cpp" line="58"/>
+        <location filename="common.cpp" line="62"/>
         <source>All files (%1)</source>
         <translation type="unfinished"></translation>
     </message>

@@ -2891,7 +2891,7 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).library("std.cfg").build();
         checkNoMemset_(file, line, code, settings);
     }
 
