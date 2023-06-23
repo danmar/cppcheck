@@ -2080,6 +2080,22 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(node **p) {\n"
+              "    node* n = *p;\n"
+              "    if (n->left == NULL) {\n"
+              "        *p = n->right;\n"
+              "        free(n);\n"
+              "    }\n"
+              "    else if (n->right == NULL) {\n"
+              "        *p = n->left;\n"
+              "        free(n);\n"
+              "    }\n"
+              "    else {\n"
+              "        for (int i = 0; i < 4; ++i) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mismatchAllocDealloc() {
