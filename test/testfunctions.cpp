@@ -119,6 +119,16 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
+        // filter out ValueFlow messages..
+        const std::string debugwarnings = errout.str();
+        errout.str("");
+        std::istringstream istr2(debugwarnings);
+        std::string errline;
+        while (std::getline(istr2, errline)) {
+            if (errline.find("valueflow.cpp") == std::string::npos)
+                errout << errline << "\n";
+        }
+
         runChecks<CheckFunctions>(&tokenizer, settings_, this);
     }
 
@@ -1947,10 +1957,7 @@ private:
               "    for (it = l.begin(); it != l.end(); ++it)\n"
               "        it->g(0);\n"
               "}\n", "test.cpp", &s);
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:4]: (debug) valueflow.cpp:6270:(valueFlow) bailout: variable 'it' used in loop\n"
-                           "[test.cpp:4]: (debug) valueflow.cpp:6294:(valueFlow) bailout: variable 'l.end()' used in loop\n",
-                           errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("auto f() {\n"
               "    return std::runtime_error(\"abc\");\n"
@@ -1977,9 +1984,7 @@ private:
               "    const auto& t = N::S::s;\n"
               "    if (t.find(\"abc\") != t.end()) {}\n"
               "}\n", "test.cpp", &s);
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:6]: (debug) valueflow.cpp:6571:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
-                           errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
               "    auto& s = v[i][j];\n"
@@ -2026,11 +2031,7 @@ private:
               "    auto t = h();\n"
               "    if (t.at(0)) {}\n"
               "};\n", "test.cpp", &s);
-        TODO_ASSERT_EQUALS("",
-                           "[test.cpp:2]: (debug) valueflow.cpp:5246:valueFlowConditionExpressions bailout: Skipping function due to incomplete variable string\n"
-                           "[test.cpp:4]: (debug) valueflow.cpp:6571:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n"
-                           "[test.cpp:7]: (debug) valueflow.cpp:6571:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
-                           errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkUseStandardLibrary1() {
