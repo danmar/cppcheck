@@ -1929,14 +1929,14 @@ private:
     void array_index_72()
     {
         check("char f(int i) {\n"
-                "  char d[4] = {};\n"
-                "  for (; i < 3; i++) {}\n"
-                "  for (i++; i > 0;) {\n"
-                "    d[--i] = 1;\n"
-                "    break;\n"
-                "  }\n"
-                "  return d[3];\n"
-                "}\n");
+              "  char d[4] = {};\n"
+              "  for (; i < 3; i++) {}\n"
+              "  for (i++; i > 0;) {\n"
+              "    d[--i] = 1;\n"
+              "    break;\n"
+              "  }\n"
+              "  return d[3];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
