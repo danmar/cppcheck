@@ -174,6 +174,7 @@ private:
         TEST_CASE(array_index_69); // #6370
         TEST_CASE(array_index_70); // #11355
         TEST_CASE(array_index_71); // #11461
+        TEST_CASE(array_index_72); // #11784
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1920,6 +1921,21 @@ private:
               "  Idx -= 64;\n"
               "  int arr[64] = { 0 };\n"
               "  return arr[Idx];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #11784
+    void array_index_72()
+    {
+        check("char f(int i) {\n"
+              "  char d[4] = {};\n"
+              "  for (; i < 3; i++) {}\n"
+              "  for (i++; i > 0;) {\n"
+              "    d[--i] = 1;\n"
+              "    break;\n"
+              "  }\n"
+              "  return d[3];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
