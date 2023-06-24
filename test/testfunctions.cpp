@@ -1819,6 +1819,7 @@ private:
     void checkLibraryMatchFunctions() {
         Settings s = settingsBuilder(settings).checkLibrary().build();
         s.daca = true;
+        s.debugwarnings = true;
 
         check("void f() {\n"
               "    lib_func();"
@@ -1925,7 +1926,7 @@ private:
               "    auto x = std::vector<int>(1);\n"
               "    x.push_back(1);\n"
               "}\n", "test.cpp", &s);
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:2]: (debug) auto token with no type.\n", errout.str());
 
         check("void f() {\n"
               "    auto p(std::make_shared<std::vector<int>>());\n"
@@ -1934,6 +1935,8 @@ private:
               "    q->push_back(1);\n"
               "}\n", "test.cpp", &s);
         TODO_ASSERT_EQUALS("",
+                           "[test.cpp:2]: (debug) auto token with no type.\n"
+                           "[test.cpp:4]: (debug) auto token with no type.\n"
                            "[test.cpp:3]: (information) --check-library: There is no matching configuration for function auto::push_back()\n"
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
@@ -1944,12 +1947,17 @@ private:
               "    for (it = l.begin(); it != l.end(); ++it)\n"
               "        it->g(0);\n"
               "}\n", "test.cpp", &s);
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:4]: (debug) valueflow.cpp:6270:(valueFlow) bailout: variable 'it' used in loop\n"
+                           "[test.cpp:4]: (debug) valueflow.cpp:6294:(valueFlow) bailout: variable 'l.end()' used in loop\n",
+                           errout.str());
 
         check("auto f() {\n"
               "    return std::runtime_error(\"abc\");\n"
               "}\n", "test.cpp", &s);
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:1]: (debug) auto token with no type.\n",
+                           errout.str());
 
         check("struct S {\n" // #11543
               "    S() {}\n"
@@ -1969,7 +1977,9 @@ private:
               "    const auto& t = N::S::s;\n"
               "    if (t.find(\"abc\") != t.end()) {}\n"
               "}\n", "test.cpp", &s);
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:6]: (debug) valueflow.cpp:6571:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
+                           errout.str());
 
         check("void f(std::vector<std::unordered_map<int, std::unordered_set<int>>>& v, int i, int j) {\n"
               "    auto& s = v[i][j];\n"
@@ -2007,6 +2017,20 @@ private:
               "    void f(int i) { push_back(i); }\n"
               "};\n", "test.cpp", &s);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    auto g = []() -> std::string { return \"abc\"; };\n"
+              "    auto s = g();\n"
+              "    if (s.at(0)) {}\n"
+              "    auto h{ []() -> std::string { return \"xyz\"; } };\n"
+              "    auto t = h();\n"
+              "    if (t.at(0)) {}\n"
+              "};\n", "test.cpp", &s);
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:2]: (debug) valueflow.cpp:5246:valueFlowConditionExpressions bailout: Skipping function due to incomplete variable string\n"
+                           "[test.cpp:4]: (debug) valueflow.cpp:6571:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n"
+                           "[test.cpp:7]: (debug) valueflow.cpp:6571:(valueFlow) bailout: valueFlowAfterCondition: bailing in conditional block\n",
+                           errout.str());
     }
 
     void checkUseStandardLibrary1() {

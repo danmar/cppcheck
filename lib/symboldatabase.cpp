@@ -2447,7 +2447,7 @@ Function::Function(const Tokenizer *mTokenizer,
     const Token *tok1 = setFlags(tok, scope);
 
     // find the return type
-    if (!isConstructor() && !isDestructor() && !isLambda()) {
+    if (!isConstructor() && !isDestructor()) {
         // @todo auto type deduction should be checked
         // @todo attributes and exception specification can also precede trailing return type
         if (Token::Match(argDef->link()->next(), "const|volatile| &|&&| .")) { // Trailing return type
@@ -2458,7 +2458,7 @@ Function::Function(const Tokenizer *mTokenizer,
                 retDef = argDef->link()->tokAt(3);
             else if (argDef->link()->strAt(3) == ".")
                 retDef = argDef->link()->tokAt(4);
-        } else {
+        } else if (!isLambda()) {
             if (tok1->str() == ">")
                 tok1 = tok1->next();
             while (Token::Match(tok1, "extern|virtual|static|friend|struct|union|enum"))
@@ -6895,6 +6895,23 @@ static const Function *getOperatorFunction(const Token * const tok)
     return nullptr;
 }
 
+static const Function* getFunction(const Token* tok) {
+    if (!tok)
+        return nullptr;
+    if (tok->function() && tok->function()->retDef)
+        return tok->function();
+    if (const Variable* lvar = tok->variable()) { // lambda
+        const Function* lambda{};
+        if (Token::Match(lvar->nameToken()->next(), "; %varid% = [", lvar->declarationId()))
+            lambda = lvar->nameToken()->tokAt(4)->function();
+        else if (Token::simpleMatch(lvar->nameToken()->next(), "{ ["))
+            lambda = lvar->nameToken()->tokAt(2)->function();
+        if (lambda && lambda->retDef)
+            return lambda;
+    }
+    return nullptr;
+}
+
 void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens)
 {
     if (!tokens)
@@ -7012,10 +7029,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
             }
 
-            // function
-            else if (tok->previous() && tok->previous()->function() && tok->previous()->function()->retDef) {
+            // function or lambda
+            else if (const Function* f = getFunction(tok->previous())) {
                 ValueType valuetype;
-                if (parsedecl(tok->previous()->function()->retDef, &valuetype, mDefaultSignedness, mSettings, mIsCpp))
+                if (parsedecl(f->retDef, &valuetype, mDefaultSignedness, mSettings, mIsCpp))
                     setValueType(tok, valuetype);
             }
 
