@@ -6611,7 +6611,7 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "( ) ;"), 0));
 
         code = "std::vector<int> f() { return std::vector<int>{}; }";
-        TODO_ASSERT_EQUALS("", "values.size():0", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
 
         code = "std::vector<int> f() { return {}; }";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));

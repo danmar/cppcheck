@@ -735,11 +735,6 @@ static void compileTerm(Token *&tok, AST_state& state)
                     tok = tok->next();
                 else
                     throw InternalError(tok, "Syntax error. Unexpected tokens in designated initializer.", InternalError::AST);
-            } else if (Token::simpleMatch(tok, "{ }")) {
-                tok->astOperand1(state.op.top());
-                state.op.pop();
-                state.op.push(tok);
-                tok = tok->tokAt(2);
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             std::vector<Token*> inner;
