@@ -2097,7 +2097,7 @@ void CheckClass::checkConst()
             };
 
             const bool returnsPtrOrRef = isPointerOrReference(func.retDef, func.tokenDef);
-            
+
             if (Function::returnsPointer(&func, /*unknown*/ true) || func.returnsReference(&func, /*unknown*/ true, /*includeRValueRef*/ true)) { // returns const/non-const depending on template arg
                 bool isTemplateArg = false;
                 for (const Token* tok2 = func.retDef; precedes(tok2, func.token); tok2 = tok2->next())
