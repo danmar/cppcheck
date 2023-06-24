@@ -671,7 +671,8 @@ struct ForwardTraversal {
                             return Break();
                     } else {
                         Token* stepTok = getStepTok(tok);
-                        if (updateLoop(end, endBlock, condTok, initTok, stepTok) == Progress::Break)
+                        // Dont pass initTok since it was already evaluated
+                        if (updateLoop(end, endBlock, condTok, nullptr, stepTok) == Progress::Break)
                             return Break();
                     }
                     tok = endBlock;
