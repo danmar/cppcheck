@@ -180,6 +180,7 @@ private:
         TEST_CASE(const88);
         TEST_CASE(const89);
         TEST_CASE(const90);
+        TEST_CASE(const91);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6593,6 +6594,20 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'T::f1' can be const.\n"
                       "[test.cpp:9]: (style, inconclusive) Technically the member function 'T::f2' can be const.\n",
                       errout.str());
+    }
+
+    void const91() { // #11790
+        checkConst("struct S {\n"
+                   "    char* p;\n"
+                   "    template <typename T>\n"
+                   "    T* get() {\n"
+                   "        return reinterpret_cast<T*>(p);\n"
+                   "    }\n"
+                   "};\n"
+                   "const int* f(S& s) {\n"
+                   "    return s.get<const int>();\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {
