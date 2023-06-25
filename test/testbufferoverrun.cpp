@@ -1945,10 +1945,10 @@ private:
     void array_index_73()
     {
         check("void f() {\n"
-                "  int k = 0;\n"
-                "  std::function<void(int)> a[1] = {};\n"
-                "  a[k++](0);\n"
-                "}\n");
+              "  int k = 0;\n"
+              "  std::function<void(int)> a[1] = {};\n"
+              "  a[k++](0);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
