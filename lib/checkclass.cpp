@@ -2098,6 +2098,17 @@ void CheckClass::checkConst()
 
             const bool returnsPtrOrRef = isPointerOrReference(func.retDef, func.tokenDef);
 
+            if (Function::returnsPointer(&func, /*unknown*/ true) || Function::returnsReference(&func, /*unknown*/ true, /*includeRValueRef*/ true)) { // returns const/non-const depending on template arg
+                bool isTemplateArg = false;
+                for (const Token* tok2 = func.retDef; precedes(tok2, func.token); tok2 = tok2->next())
+                    if (tok2->isTemplateArg() && tok2->str() == "const") {
+                        isTemplateArg = true;
+                        break;
+                    }
+                if (isTemplateArg)
+                    continue;
+            }
+
             if (func.isOperator()) { // Operator without return type: conversion operator
                 const std::string& opName = func.tokenDef->str();
                 if (opName.compare(8, 5, "const") != 0 && (endsWith(opName,'&') || endsWith(opName,'*')))
