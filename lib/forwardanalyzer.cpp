@@ -796,13 +796,14 @@ struct ForwardTraversal {
                     return Break();
                 return Break();
             } else if (Token* callTok = callExpr(tok)) {
+                // TODO: Dont traverse tokens a second time
+                if (start != callTok && tok != callTok && updateRecursive(callTok->astOperand1()) == Progress::Break)
+                    return Break();
                 // Since the call could be an unknown macro, traverse the tokens as a range instead of recursively
                 if (!Token::simpleMatch(callTok, "( )") &&
                     updateRange(callTok->next(), callTok->link(), depth - 1) == Progress::Break)
                     return Break();
                 if (updateTok(callTok) == Progress::Break)
-                    return Break();
-                if (start != callTok && updateRecursive(callTok->astOperand1()) == Progress::Break)
                     return Break();
                 tok = callTok->link();
                 if (!tok)
