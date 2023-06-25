@@ -2101,7 +2101,7 @@ void CheckClass::checkConst()
             if (Function::returnsPointer(&func, /*unknown*/ true) || Function::returnsReference(&func, /*unknown*/ true, /*includeRValueRef*/ true)) { // returns const/non-const depending on template arg
                 bool isTemplateArg = false;
                 for (const Token* tok2 = func.retDef; precedes(tok2, func.token); tok2 = tok2->next())
-                    if (tok2->isTemplateArg()) {
+                    if (tok2->isTemplateArg() && tok2->str() == "const") {
                         isTemplateArg = true;
                         break;
                     }
