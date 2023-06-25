@@ -820,6 +820,14 @@ private:
                "    STATIC_ASSERT(sizeof(int) == sizeof(FOO));\n"
                "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11505
+        check("void f(uint16_t num, uint8_t radix) {\n"
+              "    int c = num % radix;\n"
+              "    num /= radix;\n"
+              "    if (!num) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {
