@@ -5852,6 +5852,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " isComplex=\"true\"";
         if (tok->isRestrict())
             out << " isRestrict=\"true\"";
+        if (tok->isAtomic())
+            out << " isAtomic=\"true\"";
         if (tok->isAttributeExport())
             out << " isAttributeExport=\"true\"";
         if (tok->link())
@@ -9046,16 +9048,31 @@ void Tokenizer::simplifyKeyword()
             tok->deleteNext();
 
         if (c99) {
-            if (tok->str() == "restrict") {
-                for (Token *temp = tok->next(); Token::Match(temp, "%name%"); temp = temp->next()) {
-                    temp->isRestrict(true);
+            auto getTypeTokens = [tok]() {
+                std::vector<Token*> ret;
+                for (Token *temp = tok; Token::Match(temp, "%name%"); temp = temp->previous()) {
+                    if (!temp->isKeyword())
+                        ret.emplace_back(temp);
                 }
+                for (Token *temp = tok->next(); Token::Match(temp, "%name%"); temp = temp->next()) {
+                    if (!temp->isKeyword())
+                        ret.emplace_back(temp);
+                }
+                return ret;
+            };
+
+            if (tok->str() == "restrict") {
+                for (Token* temp: getTypeTokens())
+                    temp->isRestrict(true);
                 tok->deleteThis();
             }
 
             if (mSettings->standards.c >= Standards::C11) {
-                while (tok->str() == "_Atomic")
+                while (tok->str() == "_Atomic") {
+                    for (Token* temp: getTypeTokens())
+                        temp->isAtomic(true);
                     tok->deleteThis();
+                }
             }
         }
 
