@@ -119,6 +119,16 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
+        // filter out ValueFlow messages..
+        const std::string debugwarnings = errout.str();
+        errout.str("");
+        std::istringstream istr2(debugwarnings);
+        std::string errline;
+        while (std::getline(istr2, errline)) {
+            if (errline.find("valueflow.cpp") == std::string::npos)
+                errout << errline << "\n";
+        }
+
         runChecks<CheckFunctions>(&tokenizer, settings_, this);
     }
 
@@ -1819,6 +1829,7 @@ private:
     void checkLibraryMatchFunctions() {
         Settings s = settingsBuilder(settings).checkLibrary().build();
         s.daca = true;
+        s.debugwarnings = true;
 
         check("void f() {\n"
               "    lib_func();"
@@ -1934,6 +1945,8 @@ private:
               "    q->push_back(1);\n"
               "}\n", "test.cpp", &s);
         TODO_ASSERT_EQUALS("",
+                           "[test.cpp:2]: (debug) auto token with no type.\n"
+                           "[test.cpp:4]: (debug) auto token with no type.\n"
                            "[test.cpp:3]: (information) --check-library: There is no matching configuration for function auto::push_back()\n"
                            "[test.cpp:5]: (information) --check-library: There is no matching configuration for function auto::push_back()\n",
                            errout.str());
@@ -1949,7 +1962,9 @@ private:
         check("auto f() {\n"
               "    return std::runtime_error(\"abc\");\n"
               "}\n", "test.cpp", &s);
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("",
+                           "[test.cpp:1]: (debug) auto token with no type.\n",
+                           errout.str());
 
         check("struct S {\n" // #11543
               "    S() {}\n"
@@ -2005,6 +2020,16 @@ private:
 
         check("struct S : std::vector<int> {\n"
               "    void f(int i) { push_back(i); }\n"
+              "};\n", "test.cpp", &s);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    auto g = []() -> std::string { return \"abc\"; };\n"
+              "    auto s = g();\n"
+              "    if (s.at(0)) {}\n"
+              "    auto h{ []() -> std::string { return \"xyz\"; } };\n"
+              "    auto t = h();\n"
+              "    if (t.at(0)) {}\n"
               "};\n", "test.cpp", &s);
         ASSERT_EQUALS("", errout.str());
     }
