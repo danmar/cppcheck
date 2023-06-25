@@ -1926,7 +1926,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // #11530
+    // #11784
     void array_index_72()
     {
         check("char f(int i) {\n"
@@ -1941,7 +1941,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // #11784
+    // #11530
     void array_index_73()
     {
         check("void f() {\n"
