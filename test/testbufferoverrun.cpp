@@ -175,6 +175,7 @@ private:
         TEST_CASE(array_index_70); // #11355
         TEST_CASE(array_index_71); // #11461
         TEST_CASE(array_index_72); // #11784
+        TEST_CASE(array_index_73); // #11530
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1925,7 +1926,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // #11784
+    // #11530
     void array_index_72()
     {
         check("char f(int i) {\n"
@@ -1937,6 +1938,17 @@ private:
               "  }\n"
               "  return d[3];\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #11784
+    void array_index_73()
+    {
+        check("void f() {\n"
+                "  int k = 0;\n"
+                "  std::function<void(int)> a[1] = {};\n"
+                "  a[k++](0);\n"
+                "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
