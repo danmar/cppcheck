@@ -5874,747 +5874,750 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         // condition
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (!static_cast<bool>(ints.empty()))\n"
-               "    ints.front();\n"
-               "}";
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
-
-        // valueFlowContainerReverse
-        code = "void f(const std::list<int> &ints) {\n"
-               "  ints.front();\n" // <- container can be empty
-               "  if (ints.empty()) {}\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  ints.front();\n" // <- container can be empty
-               "  if (ints.size()==0) {}\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
-
-        code = "void f(std::list<int> ints) {\n"
-               "  ints.front();\n" // <- no container size
-               "  ints.pop_back();\n"
-               "  if (ints.empty()) {}\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 1));
-
-        code = "void f(std::vector<int> v) {\n"
-               "  v[10] = 0;\n" // <- container size can be 10
-               "  if (v.size() == 10) {}\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
-
-        code = "void f(std::vector<std::string> params) {\n"
-               "  switch(x) {\n"
-               "  case CMD_RESPONSE:\n"
-               "    if(y) { break; }\n"
-               "    params[2];\n" // <- container use
-               "    break;\n"
-               "  case CMD_DELETE:\n"
-               "    if (params.size() < 2) { }\n" // <- condition
-               "    break;\n"
-               "  }\n"
-               "}";
-        ASSERT(tokenValues(code, "params [ 2 ]").empty());
-
-        // valueFlowAfterCondition
-        code = "void f(const std::vector<std::string>& v) {\n"
-               "    if(v.empty()) {\n"
-               "        v.front();\n"
-               "    }\n"
-               "}\n";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
-
-        code = "void f(const std::vector<std::string>& v) {\n"
-               "    if(std::empty(v)) {\n"
-               "        v.front();\n"
-               "    }\n"
-               "}\n";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
-
-        code = "void f(const std::vector<std::string>& v) {\n"
-               "    if(!v.empty()) {\n"
-               "        v.front();\n"
-               "    }\n"
-               "}\n";
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v . front"), 0));
-
-        code = "void f(const std::vector<std::string>& v) {\n"
-               "    if(!v.empty() && v[0] != \"\") {\n"
-               "        v.front();\n"
-               "    }\n"
-               "}\n";
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v . front"), 0));
-
-        // valueFlowContainerForward
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.empty()) {}\n"
-               "  ints.front();\n" // <- container can be empty
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.empty()) { continue; }\n"
-               "  ints.front();\n" // <- no container size
-               "}";
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.empty()) { ints.push_back(0); }\n"
-               "  ints.front();\n" // <- container is not empty
-               "}";
-        ASSERT(tokenValues(code, "ints . front").empty());
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.empty()) {\n"
-               "    ints.front();\n" // <- container is empty
-               "  }\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.size() == 3) {\n"
-               "    ints.front();\n" // <- container size is 3
-               "  }\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 3));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.size() <= 3) {\n"
-               "    ints.front();\n" // <- container size is 3
-               "  }\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 4, false));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.size() >= 3) {\n"
-               "    ints.front();\n" // <- container size is 3
-               "  }\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 2, false));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.size() < 3) {\n"
-               "    ints.front();\n" // <- container size is 2
-               "  }\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 2, false));
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.size() > 3) {\n"
-               "    ints.front();\n" // <- container size is 4
-               "  }\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 4, false));
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
-
-        code = "void f(const std::list<int> &ints) {\n"
-               "  if (ints.empty() == false) {\n"
-               "    ints.front();\n" // <- container is not empty
-               "  }\n"
-               "}";
-        ASSERT(tokenValues(code, "ints . front").empty());
-
-        code = "void f(const std::vector<int> &v) {\n"
-               "  if (v.empty()) {}\n"
-               "  if (!v.empty() && v[10]==0) {}\n" // <- no container size for 'v[10]'
-               "}";
-        ASSERT(removeImpossible(tokenValues(code, "v [")).empty());
-
-        code = "void f() {\n"
-               "  std::list<int> ints;\n"  // No value => ints is empty
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
-
-        code = "void f() {\n"
-               "  std::array<int,10> ints;\n" // Array size is 10
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 10));
-
-        code = "void f() {\n"
-               "  std::string s;\n"
-               "  cin >> s;\n"
-               "  s[0];\n"
-               "}";
-        ASSERT(tokenValues(code, "s [").empty());
-
-        code = "void f() {\n"
-               "  std::string s = \"abc\";\n" // size of s is 3
-               "  s.size();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
-
-        code = "void f(const char* p) {\n"
-               "  if (p == nullptr) return;\n"
-               "  std::string s { p };\n" // size of s is unknown
-               "  s.front();\n"
-               "}";
-        ASSERT(removeSymbolicTok(tokenValues(code, "s . front")).empty());
-
-        code = "void f() {\n"
-               "  std::string s = { 'a', 'b', 'c' };\n" // size of s is 3
-               "  s.size();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
-
-        code = "void f() {\n"
-               "  std::string s=\"abc\";\n" // size of s is 3
-               "  s += unknown;\n"
-               "  s.size();\n"
-               "}";
-        ASSERT(tokenValues(code, "s . size").empty());
-
-        code = "void f() {\n"
-               "  std::string s=\"abc\";\n" // size of s is 3
-               "  s += \"def\";\n" // size of s => 6
-               "  s.size();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 6));
-
-        code = "void f(std::string s) {\n"
-               "    if (s == \"hello\")\n"
-               "        s[40] = c;\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s ["), 5));
-
-        code = "void f(std::string s) {\n"
-               "    s[40] = c;\n"
-               "    if (s == \"hello\") {}\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "s ["), 5));
-
-        code = "void f(std::string s) {\n"
-               "    if (s != \"hello\") {}\n"
-               "    s[40] = c;\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "s ["), 5));
-
-        code = "void f(std::string s) {\n"
-               "    if (s != \"hello\")\n"
-               "        s[40] = c;\n"
-               "}";
-        ASSERT(!isImpossibleContainerSizeValue(tokenValues(code, "s ["), 5).empty());
-
-        code = "void f() {\n"
-               "    static std::string s;\n"
-               "    if (s.size() == 0)\n"
-               "        s = x;\n"
-               "}";
-        ASSERT(tokenValues(code, "s . size").empty());
-
-        code = "void f() {\n"
-               "    const uint8_t data[] = { 1, 2, 3 };\n"
-               "    std::vector<uint8_t> v{ data, data + sizeof(data) };\n"
-               "    v.size();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3, false));
-
-        // valueFlowContainerForward, loop
-        code = "void f() {\n"
-               "    std::stack<Token *> links;\n"
-               "    while (!links.empty() || indentlevel)\n"
-               "        links.push(tok);\n"
-               "}";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "links . empty"), 0));
-
-        // valueFlowContainerForward, function call
-        code = "void f() {\n"
-               "  std::list<int> x;\n"
-               "  f(x);\n"
-               "  x.front();\n" // <- unknown container size
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void f() {\n" // #8689
-               "  std::list<int> x;\n"
-               "  f<ns::a>(x);\n"
-               "  x.front();\n" // <- unknown container size
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void g(std::list<int>&);\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void g(std::list<int>*);\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(&x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void g(std::list<int>* const);\n" // #9434
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(&x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void g(const std::list<int>&);\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
-
-        code = "void g(std::list<int>);\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
-
-        code = "void g(int&);\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x[0]);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
-
-        code = "void g(int&);\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x.back());\n"
-               "  x.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
-
-        code = "void g(std::list<int>&) {}\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
-
-        code = "void g(std::list<int>& y) { y.push_back(1); }\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void g(std::list<int>*) {}\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(&x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
-
-        code = "void g(std::list<int>* y) { y->push_back(1); }\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(&x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void h(std::list<int>&);\n"
-               "void g(std::list<int>& y) { h(y); }\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void h(const std::list<int>&);\n"
-               "void g(std::list<int>& y) { h(y); }\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
-
-        code = "void h(const std::list<int>&);\n"
-               "void g(std::list<int>& y) { h(y); y.push_back(1); }\n"
-               "void f() {\n"
-               "  std::list<int> x;\n"
-               "  g(x);\n"
-               "  x.front();\n"
-               "}";
-        ASSERT(tokenValues(code, "x . front").empty());
-
-        code = "void f(std::vector<int> ints) {\n" // #8697
-               "  if (ints.empty())\n"
-               "    abort() << 123;\n"
-               "  ints[0] = 0;\n"
-               "}";
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints ["), 0));
-
-        code = "struct A {\n"  // forward, nested function call, #9424
-               "    double getMessage( std::vector<unsigned char> *message );\n"
-               "};\n"
-               "\n"
-               "struct B {\n"
-               "    A *a;\n"
-               "    double getMessage( std::vector<unsigned char> *message ) { return a->getMessage( message ); }\n"
-               "};\n"
-               "\n"
-               "void foo(B *ptr) {\n"
-               "    std::vector<unsigned char> v;\n"
-               "    ptr->getMessage (&v);\n"
-               "    if (v.size () > 0) {}\n" // <- v has unknown size!
-               "}";
-        ASSERT_EQUALS(0U, tokenValues(code, "v . size ( )").size());
-
-        // if
-        code = "bool f(std::vector<int>&) {\n" // #9532
-               "  return false;\n"
-               "}\n"
-               "int g() {\n"
-               "    std::vector<int> v;\n"
-               "    if (f(v) || v.empty())\n"
-               "        return 0;\n"
-               "    return v[0];\n"
-               "}\n";
-        ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v [ 0 ]"), 0));
-
-        // container size => yields
-        code = "void f() {\n"
-               "  std::string s = \"abcd\";\n"
-               "  s.size();\n"
-               "}";
-        ASSERT_EQUALS(4, tokenValues(code, "( ) ;").front().intvalue);
-
-        code = "void f() {\n"
-               "  std::string s;\n"
-               "  s.empty();\n"
-               "}";
-        ASSERT_EQUALS(1, tokenValues(code, "( ) ;").front().intvalue);
-
-        // Calculations
-        code = "void f() {\n"
-               "  std::string s = \"abcd\";\n"
-               "  x = s + s;\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "+"), 8));
-
-        code = "void f(const std::vector<int> &ints) {\n"
-               "  ints.clear();\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "void f(const std::vector<int> &ints) {\n"
-               "  ints.resize(3);\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
-
-        code = "void f(const std::vector<int> &ints) {\n"
-               "  ints.resize(3);\n"
-               "  ints.push_back(3);\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 4));
-
-        code = "void f(const std::vector<int> &ints) {\n"
-               "  ints.resize(3);\n"
-               "  ints.pop_back();\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 2));
-
-        code = "int f(bool b) {\n"
-               "    std::map<int, int> m;\n"
-               "    if (b)\n"
-               "        m[0] = 1;\n"
-               "    return m.at(0);\n"
-               "}\n";
-        ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "m . at", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "struct Base {\n"
-               "    virtual bool GetString(std::string &) const { return false; }\n"
-               "};\n"
-               "int f() {\n"
-               "    std::string str;\n"
-               "    Base *b = GetClass();\n"
-               "    if (!b->GetString(str)) {\n"
-               "        return -2;\n"
-               "    }\n"
-               "    else {\n"
-               "        return str.front();\n"
-               "    }\n"
-               "}\n";
-        ASSERT_EQUALS(0U, tokenValues(code, "str . front").size());
-
-        code = "void f() {\n"
-               "  std::vector<int> ints{};\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "void f() {\n"
-               "  std::vector<int> ints{};\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "void f() {\n"
-               "  std::vector<int> ints{1};\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
-
-        code = "void f() {\n"
-               "  std::vector<int> ints{1};\n"
-               "  std::vector<int> ints2{ints.begin(), ints.end()};\n"
-               "  ints2.front();\n"
-               "}";
-        ASSERT_EQUALS(
-            "", isKnownContainerSizeValue(tokenValues(code, "ints2 . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
-
-        code = "void f() {\n"
-               "  std::vector<int> ints = {};\n"
-               "  ints.front();\n"
-               "}";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "void f(std::string str) {\n"
-               "    if (str == \"123\")\n"
-               "        bool x = str.empty();\n"
-               "}\n";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
-
-        code = "int f() {\n"
-               "    std::array<int, 10> a = {};\n"
-               "    return a.front();\n"
-               "}\n";
-        ASSERT_EQUALS("",
-                      isKnownContainerSizeValue(tokenValues(code, "a . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 10));
-
-        code = "int f(const std::vector<int>& x) {\n"
-               "    if (!x.empty() && x[0] == 0)\n"
-               "        return 2;\n"
-               "    return x.front();\n"
-               "}\n";
-        ASSERT_EQUALS("",
-                      isPossibleContainerSizeValue(tokenValues(code, "x . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "int f(const std::vector<int>& x) {\n"
-               "    if (!(x.empty() || x[0] != 0))\n"
-               "        return 2;\n"
-               "    return x.front();\n"
-               "}\n";
-        ASSERT_EQUALS("",
-                      isPossibleContainerSizeValue(tokenValues(code, "x . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "int f() {\n"
-               "    const size_t len = 6;\n"
-               "    std::vector<char> v;\n"
-               "    v.resize(1 + len);\n"
-               "    return v.front();\n"
-               "}\n";
-        ASSERT_EQUALS(
-            "",
-            isKnownContainerSizeValue(tokenValues(code, "v . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 7));
-
-        code = "void f(std::string str) {\n"
-               "    if (str == \"123\") {\n"
-               "        bool x = (str == \"\");\n"
-               "        bool a = x;\n"
-               "     }\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
-
-        code = "void f(std::string str) {\n"
-               "    if (str == \"123\") {\n"
-               "        bool x = (str != \"\");\n"
-               "        bool a = x;\n"
-               "     }\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
-
-        code = "void f(std::string str) {\n"
-               "    if (str == \"123\") {\n"
-               "        bool x = (str == \"321\");\n"
-               "        bool a = x;\n"
-               "     }\n"
-               "}\n";
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
-
-        code = "void f(std::string str) {\n"
-               "    if (str == \"123\") {\n"
-               "        bool x = (str != \"321\");\n"
-               "        bool a = x;\n"
-               "     }\n"
-               "}\n";
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
-
-        code = "void f(std::string str) {\n"
-               "    if (str.size() == 1) {\n"
-               "        bool x = (str == \"123\");\n"
-               "        bool a = x;\n"
-               "     }\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
-
-        code = "bool f(std::string s) {\n"
-               "    if (!s.empty()) {\n"
-               "        bool x = s == \"0\";\n"
-               "        return x;\n"
-               "    }\n"
-               "    return false;\n"
-               "}\n";
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
-        ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
-
-        code = "void f() {\n"
-               "    std::vector<int> v;\n"
-               "    int x = v.size();\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
-
-        code = "void f() {\n"
-               "    std::vector<int> v;\n"
-               "    int x = v.empty();\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
-
-        code = "void f() {\n"
-               "    std::vector<int> v;\n"
-               "    int x = std::size(v);\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
-
-        code = "void f() {\n"
-               "    std::vector<int> v;\n"
-               "    int x = std::empty(v);\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
-
-        code = "bool f() {\n"
-               "    std::list<int> x1;\n"
-               "    std::list<int> x2;\n"
-               "    for (int i = 0; i < 10; ++i) {\n"
-               "        std::list<int>& x = (i < 5) ? x1 : x2;\n"
-               "        x.push_back(i);\n"
-               "    }\n"
-               "    return x1.empty() || x2.empty();\n"
-               "}\n";
-        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x1 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-        ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "std::vector<int> g();\n"
-               "int f(bool b) {\n"
-               "    std::set<int> a;\n"
-               "    std::vector<int> c = g();\n"
-               "    a.insert(c.begin(), c.end());\n"
-               "    return a.size();\n"
-               "}\n";
-        ASSERT_EQUALS(true, tokenValues(code, "a . size", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
-
-        code = "std::vector<int> g();\n"
-               "std::vector<int> f() {\n"
-               "    std::vector<int> v = g();\n"
-               "    if (!v.empty()) {\n"
-               "        if (v[0] != 0)\n"
-               "            v.clear();\n"
-               "    }\n"
-               "    if (!v.empty() && v[0] != 0) {}\n"
-               "    return v;\n"
-               "}\n";
-        ASSERT_EQUALS(
-            true,
-            removeImpossible(tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE)).empty());
-
-        code = "std::vector<int> f() {\n"
-               "    std::vector<int> v;\n"
-               "    v.reserve(1);\n"
-               "    v[1] = 42;\n"
-               "    return v;\n"
-               "}\n";
-        ASSERT_EQUALS(
-            "", isKnownContainerSizeValue(tokenValues(code, "v [", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
-
-        code = "void f() {\n"
-               "  std::vector<int> v(3);\n"
-               "  v.size();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3));
-
-        code = "void f() {\n"
-               "  std::vector<int> v({ 1, 2, 3 });\n"
-               "  v.size();\n"
-               "}";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3));
-
-        code = "int f() {\n"
-               "    std::vector<std::vector<int>> v;\n"
-               "    auto it = v.begin();\n"
-               "    auto x = it->size();\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
-
-        code = "std::vector<int> g();\n" // #11417
-               "int f() {\n"
-               "    std::vector<int> v{ g() };\n"
-               "    auto x = v.size();\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 1));
-
-        code = "std::vector<int> g();\n"
-               "int f() {\n"
-               "    std::vector<std::vector<int>> v{ g() };\n"
-               "    auto x = v.size();\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
-
-        // #11548
-        code = "void f(const std::string& a, const std::string& b) {\n"
-               "  if (a.empty() && b.empty()) {}\n"
-               "  else if (a.empty() == false && b.empty() == false) {}\n"
-               "}\n";
-        ASSERT("" != isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0));
-
-        code = "bool g(std::vector<int>& v) {\n"
-               "    v.push_back(1);\n"
-               "    int x = v.empty();\n"
-               "    return x;\n"
-               "}\n";
-        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
-
-        code = "std::vector<int> f() { return std::vector<int>(); }";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "( ) ;"), 0));
-
-        code = "std::vector<int> f() { return std::vector<int>{}; }";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (!static_cast<bool>(ints.empty()))\n"
+        //       "    ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        //// valueFlowContainerReverse
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  ints.front();\n" // <- container can be empty
+        //       "  if (ints.empty()) {}\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  ints.front();\n" // <- container can be empty
+        //       "  if (ints.size()==0) {}\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        //code = "void f(std::list<int> ints) {\n"
+        //       "  ints.front();\n" // <- no container size
+        //       "  ints.pop_back();\n"
+        //       "  if (ints.empty()) {}\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 1));
+
+        //code = "void f(std::vector<int> v) {\n"
+        //       "  v[10] = 0;\n" // <- container size can be 10
+        //       "  if (v.size() == 10) {}\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "v ["), 10));
+
+        //code = "void f(std::vector<std::string> params) {\n"
+        //       "  switch(x) {\n"
+        //       "  case CMD_RESPONSE:\n"
+        //       "    if(y) { break; }\n"
+        //       "    params[2];\n" // <- container use
+        //       "    break;\n"
+        //       "  case CMD_DELETE:\n"
+        //       "    if (params.size() < 2) { }\n" // <- condition
+        //       "    break;\n"
+        //       "  }\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "params [ 2 ]").empty());
+
+        //// valueFlowAfterCondition
+        //code = "void f(const std::vector<std::string>& v) {\n"
+        //       "    if(v.empty()) {\n"
+        //       "        v.front();\n"
+        //       "    }\n"
+        //       "}\n";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
+
+        //code = "void f(const std::vector<std::string>& v) {\n"
+        //       "    if(std::empty(v)) {\n"
+        //       "        v.front();\n"
+        //       "    }\n"
+        //       "}\n";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . front"), 0));
+
+        //code = "void f(const std::vector<std::string>& v) {\n"
+        //       "    if(!v.empty()) {\n"
+        //       "        v.front();\n"
+        //       "    }\n"
+        //       "}\n";
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v . front"), 0));
+
+        //code = "void f(const std::vector<std::string>& v) {\n"
+        //       "    if(!v.empty() && v[0] != \"\") {\n"
+        //       "        v.front();\n"
+        //       "    }\n"
+        //       "}\n";
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v . front"), 0));
+
+        //// valueFlowContainerForward
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.empty()) {}\n"
+        //       "  ints.front();\n" // <- container can be empty
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.empty()) { continue; }\n"
+        //       "  ints.front();\n" // <- no container size
+        //       "}";
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.empty()) { ints.push_back(0); }\n"
+        //       "  ints.front();\n" // <- container is not empty
+        //       "}";
+        //ASSERT(tokenValues(code, "ints . front").empty());
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.empty()) {\n"
+        //       "    ints.front();\n" // <- container is empty
+        //       "  }\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.size() == 3) {\n"
+        //       "    ints.front();\n" // <- container size is 3
+        //       "  }\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 3));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.size() <= 3) {\n"
+        //       "    ints.front();\n" // <- container size is 3
+        //       "  }\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 4, false));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.size() >= 3) {\n"
+        //       "    ints.front();\n" // <- container size is 3
+        //       "  }\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 2, false));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.size() < 3) {\n"
+        //       "    ints.front();\n" // <- container size is 2
+        //       "  }\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 2, false));
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.size() > 3) {\n"
+        //       "    ints.front();\n" // <- container size is 4
+        //       "  }\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "ints . front"), 4, false));
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints . front"), 3, false));
+
+        //code = "void f(const std::list<int> &ints) {\n"
+        //       "  if (ints.empty() == false) {\n"
+        //       "    ints.front();\n" // <- container is not empty
+        //       "  }\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "ints . front").empty());
+
+        //code = "void f(const std::vector<int> &v) {\n"
+        //       "  if (v.empty()) {}\n"
+        //       "  if (!v.empty() && v[10]==0) {}\n" // <- no container size for 'v[10]'
+        //       "}";
+        //ASSERT(removeImpossible(tokenValues(code, "v [")).empty());
+
+        //code = "void f() {\n"
+        //       "  std::list<int> ints;\n"  // No value => ints is empty
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 0));
+
+        //code = "void f() {\n"
+        //       "  std::array<int,10> ints;\n" // Array size is 10
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front"), 10));
+
+        //code = "void f() {\n"
+        //       "  std::string s;\n"
+        //       "  cin >> s;\n"
+        //       "  s[0];\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "s [").empty());
+
+        //code = "void f() {\n"
+        //       "  std::string s = \"abc\";\n" // size of s is 3
+        //       "  s.size();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
+
+        //code = "void f(const char* p) {\n"
+        //       "  if (p == nullptr) return;\n"
+        //       "  std::string s { p };\n" // size of s is unknown
+        //       "  s.front();\n"
+        //       "}";
+        //ASSERT(removeSymbolicTok(tokenValues(code, "s . front")).empty());
+
+        //code = "void f() {\n"
+        //       "  std::string s = { 'a', 'b', 'c' };\n" // size of s is 3
+        //       "  s.size();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 3));
+
+        //code = "void f() {\n"
+        //       "  std::string s=\"abc\";\n" // size of s is 3
+        //       "  s += unknown;\n"
+        //       "  s.size();\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "s . size").empty());
+
+        //code = "void f() {\n"
+        //       "  std::string s=\"abc\";\n" // size of s is 3
+        //       "  s += \"def\";\n" // size of s => 6
+        //       "  s.size();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s . size"), 6));
+
+        //code = "void f(std::string s) {\n"
+        //       "    if (s == \"hello\")\n"
+        //       "        s[40] = c;\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "s ["), 5));
+
+        //code = "void f(std::string s) {\n"
+        //       "    s[40] = c;\n"
+        //       "    if (s == \"hello\") {}\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "s ["), 5));
+
+        //code = "void f(std::string s) {\n"
+        //       "    if (s != \"hello\") {}\n"
+        //       "    s[40] = c;\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "s ["), 5));
+
+        //code = "void f(std::string s) {\n"
+        //       "    if (s != \"hello\")\n"
+        //       "        s[40] = c;\n"
+        //       "}";
+        //ASSERT(!isImpossibleContainerSizeValue(tokenValues(code, "s ["), 5).empty());
+
+        //code = "void f() {\n"
+        //       "    static std::string s;\n"
+        //       "    if (s.size() == 0)\n"
+        //       "        s = x;\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "s . size").empty());
+
+        //code = "void f() {\n"
+        //       "    const uint8_t data[] = { 1, 2, 3 };\n"
+        //       "    std::vector<uint8_t> v{ data, data + sizeof(data) };\n"
+        //       "    v.size();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3, false));
+
+        //// valueFlowContainerForward, loop
+        //code = "void f() {\n"
+        //       "    std::stack<Token *> links;\n"
+        //       "    while (!links.empty() || indentlevel)\n"
+        //       "        links.push(tok);\n"
+        //       "}";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "links . empty"), 0));
+
+        //// valueFlowContainerForward, function call
+        //code = "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  f(x);\n"
+        //       "  x.front();\n" // <- unknown container size
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void f() {\n" // #8689
+        //       "  std::list<int> x;\n"
+        //       "  f<ns::a>(x);\n"
+        //       "  x.front();\n" // <- unknown container size
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void g(std::list<int>&);\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void g(std::list<int>*);\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(&x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void g(std::list<int>* const);\n" // #9434
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(&x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void g(const std::list<int>&);\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
+
+        //code = "void g(std::list<int>);\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
+
+        //code = "void g(int&);\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x[0]);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
+
+        //code = "void g(int&);\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x.back());\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
+
+        //code = "void g(std::list<int>&) {}\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
+
+        //code = "void g(std::list<int>& y) { y.push_back(1); }\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void g(std::list<int>*) {}\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(&x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
+
+        //code = "void g(std::list<int>* y) { y->push_back(1); }\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(&x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void h(std::list<int>&);\n"
+        //       "void g(std::list<int>& y) { h(y); }\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void h(const std::list<int>&);\n"
+        //       "void g(std::list<int>& y) { h(y); }\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "x . front"), 0));
+
+        //code = "void h(const std::list<int>&);\n"
+        //       "void g(std::list<int>& y) { h(y); y.push_back(1); }\n"
+        //       "void f() {\n"
+        //       "  std::list<int> x;\n"
+        //       "  g(x);\n"
+        //       "  x.front();\n"
+        //       "}";
+        //ASSERT(tokenValues(code, "x . front").empty());
+
+        //code = "void f(std::vector<int> ints) {\n" // #8697
+        //       "  if (ints.empty())\n"
+        //       "    abort() << 123;\n"
+        //       "  ints[0] = 0;\n"
+        //       "}";
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "ints ["), 0));
+
+        //code = "struct A {\n"  // forward, nested function call, #9424
+        //       "    double getMessage( std::vector<unsigned char> *message );\n"
+        //       "};\n"
+        //       "\n"
+        //       "struct B {\n"
+        //       "    A *a;\n"
+        //       "    double getMessage( std::vector<unsigned char> *message ) { return a->getMessage( message ); }\n"
+        //       "};\n"
+        //       "\n"
+        //       "void foo(B *ptr) {\n"
+        //       "    std::vector<unsigned char> v;\n"
+        //       "    ptr->getMessage (&v);\n"
+        //       "    if (v.size () > 0) {}\n" // <- v has unknown size!
+        //       "}";
+        //ASSERT_EQUALS(0U, tokenValues(code, "v . size ( )").size());
+
+        //// if
+        //code = "bool f(std::vector<int>&) {\n" // #9532
+        //       "  return false;\n"
+        //       "}\n"
+        //       "int g() {\n"
+        //       "    std::vector<int> v;\n"
+        //       "    if (f(v) || v.empty())\n"
+        //       "        return 0;\n"
+        //       "    return v[0];\n"
+        //       "}\n";
+        //ASSERT_EQUALS("", isImpossibleContainerSizeValue(tokenValues(code, "v [ 0 ]"), 0));
+
+        //// container size => yields
+        //code = "void f() {\n"
+        //       "  std::string s = \"abcd\";\n"
+        //       "  s.size();\n"
+        //       "}";
+        //ASSERT_EQUALS(4, tokenValues(code, "( ) ;").front().intvalue);
+
+        //code = "void f() {\n"
+        //       "  std::string s;\n"
+        //       "  s.empty();\n"
+        //       "}";
+        //ASSERT_EQUALS(1, tokenValues(code, "( ) ;").front().intvalue);
+
+        //// Calculations
+        //code = "void f() {\n"
+        //       "  std::string s = \"abcd\";\n"
+        //       "  x = s + s;\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "+"), 8));
+
+        //code = "void f(const std::vector<int> &ints) {\n"
+        //       "  ints.clear();\n"
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "void f(const std::vector<int> &ints) {\n"
+        //       "  ints.resize(3);\n"
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
+
+        //code = "void f(const std::vector<int> &ints) {\n"
+        //       "  ints.resize(3);\n"
+        //       "  ints.push_back(3);\n"
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 4));
+
+        //code = "void f(const std::vector<int> &ints) {\n"
+        //       "  ints.resize(3);\n"
+        //       "  ints.pop_back();\n"
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 2));
+
+        //code = "int f(bool b) {\n"
+        //       "    std::map<int, int> m;\n"
+        //       "    if (b)\n"
+        //       "        m[0] = 1;\n"
+        //       "    return m.at(0);\n"
+        //       "}\n";
+        //ASSERT_EQUALS("", isPossibleContainerSizeValue(tokenValues(code, "m . at", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "struct Base {\n"
+        //       "    virtual bool GetString(std::string &) const { return false; }\n"
+        //       "};\n"
+        //       "int f() {\n"
+        //       "    std::string str;\n"
+        //       "    Base *b = GetClass();\n"
+        //       "    if (!b->GetString(str)) {\n"
+        //       "        return -2;\n"
+        //       "    }\n"
+        //       "    else {\n"
+        //       "        return str.front();\n"
+        //       "    }\n"
+        //       "}\n";
+        //ASSERT_EQUALS(0U, tokenValues(code, "str . front").size());
+
+        //code = "void f() {\n"
+        //       "  std::vector<int> ints{};\n"
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("",
+        //              isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "void f() {\n"
+        //       "  std::vector<int> ints{};\n"
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("",
+        //              isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "void f() {\n"
+        //       "  std::vector<int> ints{1};\n"
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("",
+        //              isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
+
+        //code = "void f() {\n"
+        //       "  std::vector<int> ints{1};\n"
+        //       "  std::vector<int> ints2{ints.begin(), ints.end()};\n"
+        //       "  ints2.front();\n"
+        //       "}";
+        //ASSERT_EQUALS(
+        //    "", isKnownContainerSizeValue(tokenValues(code, "ints2 . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 1));
+
+        //code = "void f() {\n"
+        //       "  std::vector<int> ints = {};\n"
+        //       "  ints.front();\n"
+        //       "}";
+        //ASSERT_EQUALS("",
+        //              isKnownContainerSizeValue(tokenValues(code, "ints . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "void f(std::string str) {\n"
+        //       "    if (str == \"123\")\n"
+        //       "        bool x = str.empty();\n"
+        //       "}\n";
+        //ASSERT_EQUALS("",
+        //              isKnownContainerSizeValue(tokenValues(code, "str . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 3));
+
+        //code = "int f() {\n"
+        //       "    std::array<int, 10> a = {};\n"
+        //       "    return a.front();\n"
+        //       "}\n";
+        //ASSERT_EQUALS("",
+        //              isKnownContainerSizeValue(tokenValues(code, "a . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 10));
+
+        //code = "int f(const std::vector<int>& x) {\n"
+        //       "    if (!x.empty() && x[0] == 0)\n"
+        //       "        return 2;\n"
+        //       "    return x.front();\n"
+        //       "}\n";
+        //ASSERT_EQUALS("",
+        //              isPossibleContainerSizeValue(tokenValues(code, "x . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "int f(const std::vector<int>& x) {\n"
+        //       "    if (!(x.empty() || x[0] != 0))\n"
+        //       "        return 2;\n"
+        //       "    return x.front();\n"
+        //       "}\n";
+        //ASSERT_EQUALS("",
+        //              isPossibleContainerSizeValue(tokenValues(code, "x . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "int f() {\n"
+        //       "    const size_t len = 6;\n"
+        //       "    std::vector<char> v;\n"
+        //       "    v.resize(1 + len);\n"
+        //       "    return v.front();\n"
+        //       "}\n";
+        //ASSERT_EQUALS(
+        //    "",
+        //    isKnownContainerSizeValue(tokenValues(code, "v . front", ValueFlow::Value::ValueType::CONTAINER_SIZE), 7));
+
+        //code = "void f(std::string str) {\n"
+        //       "    if (str == \"123\") {\n"
+        //       "        bool x = (str == \"\");\n"
+        //       "        bool a = x;\n"
+        //       "     }\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        //code = "void f(std::string str) {\n"
+        //       "    if (str == \"123\") {\n"
+        //       "        bool x = (str != \"\");\n"
+        //       "        bool a = x;\n"
+        //       "     }\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
+        //code = "void f(std::string str) {\n"
+        //       "    if (str == \"123\") {\n"
+        //       "        bool x = (str == \"321\");\n"
+        //       "        bool a = x;\n"
+        //       "     }\n"
+        //       "}\n";
+        //ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+
+        //code = "void f(std::string str) {\n"
+        //       "    if (str == \"123\") {\n"
+        //       "        bool x = (str != \"321\");\n"
+        //       "        bool a = x;\n"
+        //       "     }\n"
+        //       "}\n";
+        //ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+
+        //code = "void f(std::string str) {\n"
+        //       "    if (str.size() == 1) {\n"
+        //       "        bool x = (str == \"123\");\n"
+        //       "        bool a = x;\n"
+        //       "     }\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        //code = "bool f(std::string s) {\n"
+        //       "    if (!s.empty()) {\n"
+        //       "        bool x = s == \"0\";\n"
+        //       "        return x;\n"
+        //       "    }\n"
+        //       "    return false;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 0));
+        //ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+        //ASSERT_EQUALS(false, testValueOfXImpossible(code, 4U, 0));
+
+        //code = "void f() {\n"
+        //       "    std::vector<int> v;\n"
+        //       "    int x = v.size();\n"
+        //       "    return x;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        //code = "void f() {\n"
+        //       "    std::vector<int> v;\n"
+        //       "    int x = v.empty();\n"
+        //       "    return x;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
+        //code = "void f() {\n"
+        //       "    std::vector<int> v;\n"
+        //       "    int x = std::size(v);\n"
+        //       "    return x;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        //code = "void f() {\n"
+        //       "    std::vector<int> v;\n"
+        //       "    int x = std::empty(v);\n"
+        //       "    return x;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
+
+        //code = "bool f() {\n"
+        //       "    std::list<int> x1;\n"
+        //       "    std::list<int> x2;\n"
+        //       "    for (int i = 0; i < 10; ++i) {\n"
+        //       "        std::list<int>& x = (i < 5) ? x1 : x2;\n"
+        //       "        x.push_back(i);\n"
+        //       "    }\n"
+        //       "    return x1.empty() || x2.empty();\n"
+        //       "}\n";
+        //ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x1 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+        //ASSERT_EQUALS("", isInconclusiveContainerSizeValue(tokenValues(code, "x2 . empty", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "std::vector<int> g();\n"
+        //       "int f(bool b) {\n"
+        //       "    std::set<int> a;\n"
+        //       "    std::vector<int> c = g();\n"
+        //       "    a.insert(c.begin(), c.end());\n"
+        //       "    return a.size();\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, tokenValues(code, "a . size", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
+
+        //code = "std::vector<int> g();\n"
+        //       "std::vector<int> f() {\n"
+        //       "    std::vector<int> v = g();\n"
+        //       "    if (!v.empty()) {\n"
+        //       "        if (v[0] != 0)\n"
+        //       "            v.clear();\n"
+        //       "    }\n"
+        //       "    if (!v.empty() && v[0] != 0) {}\n"
+        //       "    return v;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(
+        //    true,
+        //    removeImpossible(tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE)).empty());
+
+        //code = "std::vector<int> f() {\n"
+        //       "    std::vector<int> v;\n"
+        //       "    v.reserve(1);\n"
+        //       "    v[1] = 42;\n"
+        //       "    return v;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(
+        //    "", isKnownContainerSizeValue(tokenValues(code, "v [", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        //code = "void f() {\n"
+        //       "  std::vector<int> v(3);\n"
+        //       "  v.size();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3));
+
+        //code = "void f() {\n"
+        //       "  std::vector<int> v({ 1, 2, 3 });\n"
+        //       "  v.size();\n"
+        //       "}";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3));
+
+        //code = "int f() {\n"
+        //       "    std::vector<std::vector<int>> v;\n"
+        //       "    auto it = v.begin();\n"
+        //       "    auto x = it->size();\n"
+        //       "    return x;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+
+        //code = "std::vector<int> g();\n" // #11417
+        //       "int f() {\n"
+        //       "    std::vector<int> v{ g() };\n"
+        //       "    auto x = v.size();\n"
+        //       "    return x;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 1));
+
+        //code = "std::vector<int> g();\n"
+        //       "int f() {\n"
+        //       "    std::vector<std::vector<int>> v{ g() };\n"
+        //       "    auto x = v.size();\n"
+        //       "    return x;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 5U, 1));
+
+        //// #11548
+        //code = "void f(const std::string& a, const std::string& b) {\n"
+        //       "  if (a.empty() && b.empty()) {}\n"
+        //       "  else if (a.empty() == false && b.empty() == false) {}\n"
+        //       "}\n";
+        //ASSERT("" != isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0));
+
+        //code = "bool g(std::vector<int>& v) {\n"
+        //       "    v.push_back(1);\n"
+        //       "    int x = v.empty();\n"
+        //       "    return x;\n"
+        //       "}\n";
+        //ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        //code = "std::vector<int> f() { return std::vector<int>(); }";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "( ) ;"), 0));
+
+        //code = "std::vector<int> f() { return std::vector<int>{}; }";
+        //ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
 
         code = "std::vector<int> f() { return {}; }";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+
+        code = "int f() { auto a = std::array<int, 2>{}; return a[1]; }";
+        ASSERT_EQUALS("values.size():0", isKnownContainerSizeValue(tokenValues(code, "a ["), 0));
     }
 
     void valueFlowContainerElement()

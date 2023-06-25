@@ -8801,7 +8801,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                     value.setKnown();
                     valueFlowForward(containerTok->next(), containerTok, value, tokenlist, settings);
                 }
-            } else if (Token::Match(tok->previous(), ">|return (|{") && astIsContainer(tok)) {
+            } else if (Token::Match(tok->previous(), ">|return (|{") && astIsContainer(tok) && getLibraryContainer(tok)->size_templateArgNo < 0) {
                 std::vector<ValueFlow::Value> values;
                 if (Token::simpleMatch(tok, "{")) {
                     values = getInitListSize(tok, tok->valueType(), settings, true);
