@@ -8,10 +8,10 @@ CheckOptions:
   - { key: HeaderFileExtensions,          value: 'x' }
 ")
 
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_DEBUG>)
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_DEBUG_OUTPUT>)
-    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:-DQT_NO_WARNING_OUTPUT>)
-    add_compile_definitions($<$<CONFIG:Debug>:-DQT_DEBUG>)
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG>)
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_DEBUG_OUTPUT>)
+    add_compile_definitions($<$<NOT:$<CONFIG:Debug>>:QT_NO_WARNING_OUTPUT>)
+    add_compile_definitions($<$<CONFIG:Debug>:QT_DEBUG>)
 
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
