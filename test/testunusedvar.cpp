@@ -1933,6 +1933,31 @@ private:
                                "    return v.begin()->b;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("int f(int s) {\n" // #10587
+                               "    const struct S { int a, b; } Map[] = { { 0, 1 }, { 2, 3 } };\n"
+                               "    auto it = std::find_if(std::begin(Map), std::end(Map), [&](const auto& m) { return s == m.a; });\n"
+                               "    if (it != std::end(Map))\n"
+                               "        return it->b;\n"
+                               "    return 0;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("int f(int s) {\n"
+                               "    const struct S { int a, b; } Map[] = { { 0, 1 }, { 2, 3 } };\n"
+                               "    for (auto&& m : Map)\n"
+                               "        if (m.a == s)\n"
+                               "            return m.b;\n"
+                               "    return 0;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct R { bool b{ false }; };\n" // #11539
+                               "void f(std::optional<R> r) {\n"
+                               "    if (r.has_value())\n"
+                               "        std::cout << r->b;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember_macro() {
