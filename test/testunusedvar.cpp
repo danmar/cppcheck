@@ -6171,7 +6171,7 @@ private:
         functionVariableUsage("void f(std::span<int> s) {\n" // #11545
                               "    s[0] = 0;\n"
                               "}\n");
-        ASSERT_EQUALS("", errout.str());        
+        ASSERT_EQUALS("", errout.str());
 
         functionVariableUsage("struct S {\n"
                               "    std::mutex m;\n"
