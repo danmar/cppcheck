@@ -6462,6 +6462,11 @@ private:
                               "    std::list<std::list<int>>::value_type a{ 1, 2, 3, 4 };\n"
                               "}\n");
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (information) --check-library: Provide <type-checks><unusedvar> configuration for std::list::value_type\n", errout.str());
+
+        functionVariableUsage("void f(int* p) {\n"
+                              "    int* q{ p };\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'q' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarRangeBasedFor() {

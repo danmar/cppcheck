@@ -1213,7 +1213,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
                 tok = tok->next();
             }
-            if (tok->astParent() && !tok->astParent()->isAssignmentOp() && tok->str() != "(") {
+            if (!isInitialization && tok->astParent() && !tok->astParent()->isAssignmentOp() && tok->str() != "(") {
                 const Token *parent = tok->astParent();
                 while (Token::Match(parent, "%oror%|%comp%|!|&&"))
                     parent = parent->astParent();
