@@ -1269,7 +1269,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     (!op1Var->valueType() || op1Var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
                     // Check in the library if we should bailout or not..
                     std::string typeName = op1Var->getTypeName();
-                    if (typeName.find("::") == 0)
+                    if (typeName.compare(0, 2, "::") == 0)
                         typeName.erase(typeName.begin(), typeName.begin() + 2);
                     switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
                     case Library::TypeCheck::def:
