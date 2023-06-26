@@ -661,7 +661,8 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         const ValueFlow::Value& len = args[2];
         if (!len.isIntValue())
             return ValueFlow::Value::unknown();
-        ValueFlow::Value v(getStringLiteral(lhs.tokvalue->str()).compare(0, len.intvalue, getStringLiteral(rhs.tokvalue->str()), 0, len.intvalue));
+        ValueFlow::Value v(getStringLiteral(lhs.tokvalue->str())
+                           .compare(0, len.intvalue, getStringLiteral(rhs.tokvalue->str()), 0, len.intvalue));
         ValueFlow::combineValueProperties(lhs, rhs, v);
         return v;
     };

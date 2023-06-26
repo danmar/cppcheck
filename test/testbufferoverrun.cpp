@@ -1957,14 +1957,14 @@ private:
     void array_index_74()
     {
         check("void foo(const char *keys) {\n"
-            "  const char *prefix = \"<Shift+\";\n"
-            "  const size_t prefix_len = strlen(prefix);\n"
-            "  if (strncmp(keys, prefix, prefix_len)) { return; }\n"
-            "  if (keys[prefix_len] == '>') {}\n"
-            "}\n"
-            "void bar() {\n"
-            "  foo(\"q\");\n"
-            "}\n");
+              "  const char *prefix = \"<Shift+\";\n"
+              "  const size_t prefix_len = strlen(prefix);\n"
+              "  if (strncmp(keys, prefix, prefix_len)) { return; }\n"
+              "  if (keys[prefix_len] == '>') {}\n"
+              "}\n"
+              "void bar() {\n"
+              "  foo(\"q\");\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
