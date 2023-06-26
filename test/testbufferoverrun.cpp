@@ -175,6 +175,7 @@ private:
         TEST_CASE(array_index_70); // #11355
         TEST_CASE(array_index_71); // #11461
         TEST_CASE(array_index_72); // #11784
+        TEST_CASE(array_index_73); // #11530
         TEST_CASE(array_index_74); // #11088
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
