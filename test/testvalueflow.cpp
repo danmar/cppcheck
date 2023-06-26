@@ -6615,6 +6615,9 @@ private:
 
         code = "std::vector<int> f() { return {}; }";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+
+        code = "int f() { auto a = std::array<int, 2>{}; return a[1]; }";
+        ASSERT_EQUALS("values.size():0", isKnownContainerSizeValue(tokenValues(code, "a ["), 0));
     }
 
     void valueFlowContainerElement()
