@@ -317,8 +317,15 @@ void CheckCondition::checkBadBitmaskCheck()
 
             const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0);
             const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
+            if (!isZero1 && !isZero2)
+                continue;
 
-            if ((isZero1 || isZero2) && !tok->isExpandedMacro() && !(isZero1 && tok->astOperand1()->isExpandedMacro()) && !(isZero2 && tok->astOperand2()->isExpandedMacro()))
+            auto isOperandExpanded = [](const Token *op) {
+                return op->isExpandedMacro() || op->isEnumerator();
+            };
+            if (!tok->isExpandedMacro() &&
+                !(isZero1 && isOperandExpanded(tok->astOperand1())) &&
+                !(isZero2 && isOperandExpanded(tok->astOperand2())))
                 badBitmaskCheckError(tok, /*isNoOp*/ true);
         }
     }

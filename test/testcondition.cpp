@@ -912,6 +912,11 @@ private:
               "#endif\n"
               "    0;");
         ASSERT_EQUALS("", errout.str());
+
+        check("enum precedence { PC0, UNARY };\n"
+              "int x = PC0   | UNARY;\n"
+              "int y = UNARY | PC0;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
