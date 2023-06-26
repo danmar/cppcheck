@@ -175,7 +175,7 @@ private:
         TEST_CASE(array_index_70); // #11355
         TEST_CASE(array_index_71); // #11461
         TEST_CASE(array_index_72); // #11784
-        TEST_CASE(array_index_73); // #11530
+        TEST_CASE(array_index_74); // #11088
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1949,6 +1949,21 @@ private:
               "  std::function<void(int)> a[1] = {};\n"
               "  a[k++](0);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    // #11088
+    void array_index_74()
+    {
+        check("void foo(const char *keys) {\n"
+            "  const char *prefix = \"<Shift+\";\n"
+            "  const size_t prefix_len = strlen(prefix);\n"
+            "  if (strncmp(keys, prefix, prefix_len)) { return; }\n"
+            "  if (keys[prefix_len] == '>') {}\n"
+            "}\n"
+            "void bar() {\n"
+            "  foo(\"q\");\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
