@@ -257,7 +257,7 @@ unsigned int ProcessExecutor::check()
                 std::exit(EXIT_FAILURE);
             }
 
-            if (fcntl(pipes[0], F_SETFL, flags | O_NONBLOCK) < 0) {
+            if (fcntl(pipes[0], F_SETFL, flags) < 0) {
                 std::cerr << "#### ThreadExecutor::check, fcntl(F_SETFL) failed: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             }
