@@ -6171,6 +6171,15 @@ private:
         functionVariableUsage("void f(std::span<int> s) {\n" // #11545
                               "    s[0] = 0;\n"
                               "}\n");
+        ASSERT_EQUALS("", errout.str());        
+
+        functionVariableUsage("struct S {\n"
+                              "    std::mutex m;\n"
+                              "    void f();\n"
+                              "};\n"
+                              "void S::f() {\n"
+                              "    const ::std::lock_guard g(m);\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
