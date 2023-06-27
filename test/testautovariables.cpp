@@ -847,6 +847,12 @@ private:
               "    return 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    S* p = &g();\n"
+              "    delete p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_input() {
