@@ -472,6 +472,7 @@ private:
         TEST_CASE(lambda2); // #7473
         TEST_CASE(lambda3);
         TEST_CASE(lambda4);
+        TEST_CASE(lambda5);
 
         TEST_CASE(circularDependencies); // #6298
 
