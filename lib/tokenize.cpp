@@ -3251,7 +3251,7 @@ bool Tokenizer::simplifyUsing()
                 skip = true;
                 simplifyUsingError(usingStart, usingEnd);
             }
-            tok1 = after;
+            tok1 = after->previous();
         }
 
         if (!skip)
