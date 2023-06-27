@@ -636,6 +636,36 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         v.tokvalue = nullptr;
         return v;
     };
+    functions["strcmp"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 2)
+            return ValueFlow::Value::unknown();
+        const ValueFlow::Value& lhs = args[0];
+        if (!(lhs.isTokValue() && lhs.tokvalue->tokType() == Token::eString))
+            return ValueFlow::Value::unknown();
+        const ValueFlow::Value& rhs = args[1];
+        if (!(rhs.isTokValue() && rhs.tokvalue->tokType() == Token::eString))
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v(getStringLiteral(lhs.tokvalue->str()).compare(getStringLiteral(rhs.tokvalue->str())));
+        ValueFlow::combineValueProperties(lhs, rhs, v);
+        return v;
+    };
+    functions["strncmp"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 3)
+            return ValueFlow::Value::unknown();
+        const ValueFlow::Value& lhs = args[0];
+        if (!(lhs.isTokValue() && lhs.tokvalue->tokType() == Token::eString))
+            return ValueFlow::Value::unknown();
+        const ValueFlow::Value& rhs = args[1];
+        if (!(rhs.isTokValue() && rhs.tokvalue->tokType() == Token::eString))
+            return ValueFlow::Value::unknown();
+        const ValueFlow::Value& len = args[2];
+        if (!len.isIntValue())
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v(getStringLiteral(lhs.tokvalue->str())
+                           .compare(0, len.intvalue, getStringLiteral(rhs.tokvalue->str()), 0, len.intvalue));
+        ValueFlow::combineValueProperties(lhs, rhs, v);
+        return v;
+    };
     functions["sin"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
@@ -1164,6 +1194,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     if (expr->hasKnownIntValue() && !expr->isAssignmentOp() && expr->str() != ",")
         return expr->values().front();
     if ((value = expr->getKnownValue(ValueFlow::Value::ValueType::FLOAT)) ||
+        (value = expr->getKnownValue(ValueFlow::Value::ValueType::TOK)) ||
         (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_START)) ||
         (value = expr->getKnownValue(ValueFlow::Value::ValueType::ITERATOR_END)) ||
         (value = expr->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))) {
