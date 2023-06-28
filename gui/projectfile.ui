@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>940</width>
-    <height>617</height>
+    <height>701</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -461,7 +461,7 @@
           <item>
            <widget class="QRadioButton" name="mCheckLevelNormal">
             <property name="text">
-             <string>Normal : meant for normal analysis in CI. Analysis should finish in reasonable time.</string>
+             <string>Normal -- meant for normal analysis in CI. Analysis should finish in reasonable time.</string>
             </property>
            </widget>
           </item>
