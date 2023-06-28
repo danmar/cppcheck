@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>940</width>
-    <height>617</height>
+    <height>701</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -402,7 +402,7 @@
       <attribute name="title">
        <string>Analysis</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout_18">
+      <layout class="QVBoxLayout" name="verticalLayout_22">
        <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
@@ -446,6 +446,29 @@
            <widget class="QRadioButton" name="mBtnClangParser">
             <property name="text">
              <string>Clang (experimental)</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_13">
+         <property name="title">
+          <string>Check level</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_18">
+          <item>
+           <widget class="QRadioButton" name="mCheckLevelNormal">
+            <property name="text">
+             <string>Normal -- meant for normal analysis in CI. Analysis should finish in reasonable time.</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QRadioButton" name="mCheckLevelExhaustive">
+            <property name="text">
+             <string>Exhaustive -- meant for nightly builds etc. Analysis time can be longer (10x slower than compilation is OK).</string>
             </property>
            </widget>
           </item>

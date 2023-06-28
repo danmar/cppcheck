@@ -1147,6 +1147,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 
     guiProject.analyzeAllVsConfigs.clear();
 
+    bool checkLevelExhaustive = false;
+
     // TODO: this should support all available command-line options
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (strcmp(node->Name(), CppcheckXml::RootPathName) == 0) {
@@ -1216,6 +1218,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             }
         } else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
             temp.checkHeaders = (strcmp(readSafe(node->GetText(), ""), "true") == 0);
+        else if (strcmp(node->Name(), CppcheckXml::CheckLevelExhaustiveElementName) == 0)
+            checkLevelExhaustive = true;
         else if (strcmp(node->Name(), CppcheckXml::CheckUnusedTemplatesElementName) == 0)
             temp.checkUnusedTemplates = (strcmp(readSafe(node->GetText(), ""), "true") == 0);
         else if (strcmp(node->Name(), CppcheckXml::MaxCtuDepthElementName) == 0)
@@ -1280,6 +1284,11 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->maxCtuDepth = temp.maxCtuDepth;
     settings->maxTemplateRecursion = temp.maxTemplateRecursion;
     settings->safeChecks = temp.safeChecks;
+
+    if (checkLevelExhaustive)
+        settings->setCheckLevelExhaustive();
+    else
+        settings->setCheckLevelNormal();
 
     return true;
 }
