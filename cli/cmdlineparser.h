@@ -123,9 +123,8 @@ protected:
 private:
     bool isCppcheckPremium() const;
 
-    // TODO: get rid of is_signed
     template<typename T>
-    static bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool is_signed = false)
+    static bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool mustBePositive = false)
     {
         T tmp;
         std::string err;
@@ -133,7 +132,7 @@ private:
             printError("argument to '" + std::string(arg, offset) + "' is not valid - " + err + ".");
             return false;
         }
-        if (is_signed && tmp < 0) {
+        if (mustBePositive && tmp < 0) {
             printError("argument to '" + std::string(arg, offset) + "' needs to be a positive integer.");
             return false;
         }

@@ -263,7 +263,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
-                if (!parseNumberArg(argv[i], 18, mSettings.checksMaxTime))
+                if (!parseNumberArg(argv[i], 18, mSettings.checksMaxTime, true))
                     return false;
             }
 
