@@ -476,7 +476,8 @@ def createRecordChildrenDefs(ed, var):
     valueType = ed.valueType
     if not valueType or not valueType.typeScope:
         return
-
+    if valueType.pointer>=1:
+        return
     for variable in valueType.typeScope.varlist:
         if variable is var:
             continue
