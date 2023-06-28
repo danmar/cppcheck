@@ -58,6 +58,7 @@ void ProjectFile::clear()
 {
     const Settings settings;
     clangParser = false;
+    mCheckLevel = CheckLevel::normal;
     mRootPath.clear();
     mBuildDir.clear();
     mImportProject.clear();
@@ -140,6 +141,9 @@ bool ProjectFile::read(const QString &filename)
 
             if (xmlReader.name() == QString(CppcheckXml::CheckUnusedTemplatesElementName))
                 mCheckUnusedTemplates = readBool(xmlReader);
+
+            if (xmlReader.name() == QString(CppcheckXml::CheckLevelExhaustiveElementName))
+                mCheckLevel = CheckLevel::exhaustive;
 
             // Find include directory from inside project element
             if (xmlReader.name() == QString(CppcheckXml::IncludeDirElementName))
@@ -780,6 +784,16 @@ void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
     mVsConfigurations = vsConfigs;
 }
 
+void ProjectFile::setCheckLevel(ProjectFile::CheckLevel checkLevel)
+{
+    mCheckLevel = checkLevel;
+}
+
+bool ProjectFile::isCheckLevelExhaustive() const
+{
+    return mCheckLevel == CheckLevel::exhaustive;
+}
+
 void ProjectFile::setWarningTags(std::size_t hash, const QString& tags)
 {
     if (tags.isEmpty())
@@ -976,6 +990,11 @@ bool ProjectFile::write(const QString &filename)
             }
             xmlWriter.writeEndElement();
         }
+    }
+
+    if (mCheckLevel == CheckLevel::exhaustive) {
+        xmlWriter.writeStartElement(CppcheckXml::CheckLevelExhaustiveElementName);
+        xmlWriter.writeEndElement();
     }
 
     // Cppcheck Premium

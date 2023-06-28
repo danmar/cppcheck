@@ -307,6 +307,10 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
         else
             item->setCheckState(Qt::Unchecked);
     }
+    if (projectFile->isCheckLevelExhaustive())
+        mUI->mCheckLevelExhaustive->setChecked(true);
+    else
+        mUI->mCheckLevelNormal->setChecked(true);
     mUI->mCheckHeaders->setChecked(projectFile->getCheckHeaders());
     mUI->mCheckUnusedTemplates->setChecked(projectFile->getCheckUnusedTemplates());
     mUI->mMaxCtuDepth->setValue(projectFile->getMaxCtuDepth());
@@ -428,6 +432,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setCheckPaths(getCheckPaths());
     projectFile->setExcludedPaths(getExcludedPaths());
     projectFile->setLibraries(getLibraries());
+    projectFile->setCheckLevel(mUI->mCheckLevelExhaustive->isChecked() ? ProjectFile::CheckLevel::exhaustive : ProjectFile::CheckLevel::normal);
     projectFile->clangParser = mUI->mBtnClangParser->isChecked();
     projectFile->safeChecks.classes = mUI->mBtnSafeClasses->isChecked();
     if (mUI->mComboBoxPlatform->currentText().endsWith(".xml"))

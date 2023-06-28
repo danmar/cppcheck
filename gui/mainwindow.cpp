@@ -979,6 +979,10 @@ Settings MainWindow::getCppcheckSettings()
 
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
+        if (mProjectFile->isCheckLevelExhaustive())
+            result.setCheckLevelExhaustive();
+        else
+            result.setCheckLevelNormal();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
         result.safeChecks.classes = mProjectFile->safeChecks.classes;
