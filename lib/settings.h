@@ -128,7 +128,7 @@ public:
     bool checkLibrary;
 
     /** @brief The maximum time in seconds for the checks of a single file */
-    std::size_t checksMaxTime;
+    int checksMaxTime;
 
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;

@@ -1684,7 +1684,7 @@ private:
     void checksMaxTime() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--checks-max-time=12", "file.cpp"};
-        settings.checksMaxTime = SIZE_MAX;
+        settings.checksMaxTime = 0;
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings.checksMaxTime);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
