@@ -8420,7 +8420,7 @@ private:
                              "};");
         ASSERT_EQUALS("", errout.str());
 
-        checkUselessOverride("struct B { virtual void f(int, int, int) const; };\n"
+        checkUselessOverride("struct B { virtual void f(int, int, int) const; };\n" // #11799
                              "struct D : B {\n"
                              "    int m = 42;\n"
                              "    void f(int a, int b, int c) const override;\n"
