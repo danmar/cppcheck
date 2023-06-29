@@ -1395,7 +1395,7 @@ struct Executor {
                     if (fdepth >= 0) {
                         ProgramMemory functionState;
                         for (std::size_t i = 0; i < args.size(); ++i) {
-                            const Variable * const arg = f->getArgumentVar(i);
+                            const Variable* const arg = f->getArgumentVar(i);
                             if (!arg)
                                 return unknown;
                             functionState.setValue(arg->nameToken(), args[i]);
