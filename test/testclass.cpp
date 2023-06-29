@@ -8403,6 +8403,32 @@ private:
                              "    int f() override { return B::f(); }\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct S { virtual void f(); };\n"
+                             "struct D : S {\n"
+                             "    void f() final { S::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct S {\n"
+                             "protected:\n"
+                             "    virtual void f();\n"
+                             "};\n"
+                             "struct D : S {\n"
+                             "public:\n"
+                             "    void f() override { S::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual void f(int, int, int) const; };\n"
+                             "struct D : B {\n"
+                             "    int m = 42;\n"
+                             "    void f(int a, int b, int c) const override;\n"
+                             "};\n"
+                             "void D::f(int a, int b, int c) const {\n"
+                             "    B::f(a, b, m);\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
