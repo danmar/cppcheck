@@ -1384,26 +1384,45 @@ struct Executor {
         if (Token::Match(expr->previous(), ">|%name% {|(")) {
             const Token* ftok = expr->previous();
             const Function* f = ftok->function();
-            // TODO: Evaluate inline functions as well
-            if (!f && settings && expr->str() == "(") {
+            ValueFlow::Value result = unknown;
+            if (settings && expr->str() == "(") {
                 std::vector<const Token*> tokArgs = getArguments(expr);
                 std::vector<ValueFlow::Value> args(tokArgs.size());
                 std::transform(tokArgs.cbegin(), tokArgs.cend(), args.begin(), [&](const Token* tok) {
                     return execute(tok);
                 });
-                BuiltinLibraryFunction lf = getBuiltinLibraryFunction(ftok->str());
-                if (lf)
-                    return lf(args);
-                const std::string& returnValue = settings->library.returnValue(ftok);
-                if (!returnValue.empty()) {
-                    std::unordered_map<nonneg int, ValueFlow::Value> arg_map;
-                    int argn = 0;
-                    for (const ValueFlow::Value& result : args) {
-                        if (!result.isUninitValue())
-                            arg_map[argn] = result;
-                        argn++;
+                if (f) {
+                    if (fdepth >= 0) {
+                        ProgramMemory functionState;
+                        for (std::size_t i = 0; i < args.size(); ++i) {
+                            const Variable * const arg = f->getArgumentVar(i);
+                            if (!arg)
+                                return unknown;
+                            functionState.setValue(arg->nameToken(), args[i]);
+                        }
+                        Executor ex = *this;
+                        ex.pm = &functionState;
+                        ex.fdepth--;
+                        auto r = ex.execute(f->functionScope);
+                        if (!r.empty())
+                            result = r.front();
+                        // TODO: Track values changed by reference
                     }
-                    return evaluateLibraryFunction(arg_map, returnValue, settings);
+                } else {
+                    BuiltinLibraryFunction lf = getBuiltinLibraryFunction(ftok->str());
+                    if (lf)
+                        return lf(args);
+                    const std::string& returnValue = settings->library.returnValue(ftok);
+                    if (!returnValue.empty()) {
+                        std::unordered_map<nonneg int, ValueFlow::Value> arg_map;
+                        int argn = 0;
+                        for (const ValueFlow::Value& v : args) {
+                            if (!v.isUninitValue())
+                                arg_map[argn] = v;
+                            argn++;
+                        }
+                        return evaluateLibraryFunction(arg_map, returnValue, settings);
+                    }
                 }
             }
             // Check if function modifies argument
@@ -1420,6 +1439,7 @@ struct Executor {
                 }
                 return ChildrenToVisit::op1_and_op2;
             });
+            return result;
         }
 
         return unknown;
