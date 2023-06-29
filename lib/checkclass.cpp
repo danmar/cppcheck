@@ -3082,15 +3082,18 @@ void CheckClass::checkUselessOverride()
         for (const Function& func : classScope->functionList) {
             if (!func.functionScope)
                 continue;
+            if (func.hasFinalSpecifier())
+                continue;
             const Function* baseFunc = func.getOverriddenFunction();
-            if (!baseFunc || baseFunc->isPure())
+            if (!baseFunc || baseFunc->isPure() || baseFunc->access != func.access)
                 continue;
             if (const Token* const call = getSingleFunctionCall(func.functionScope)) {
                 if (call->function() != baseFunc)
                     continue;
                 std::vector<const Token*> funcArgs = getArguments(func.tokenDef);
                 std::vector<const Token*> callArgs = getArguments(call);
-                if (!std::equal(funcArgs.begin(), funcArgs.end(), callArgs.begin(), [](const Token* t1, const Token* t2) {
+                if (funcArgs.size() != callArgs.size() ||
+                    !std::equal(funcArgs.begin(), funcArgs.end(), callArgs.begin(), [](const Token* t1, const Token* t2) {
                     return t1->str() == t2->str();
                 }))
                     continue;
