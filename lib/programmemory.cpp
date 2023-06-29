@@ -1185,7 +1185,13 @@ static BuiltinLibraryFunction getBuiltinLibraryFunction(const std::string& name)
     return it->second;
 }
 
-static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const Settings* settings)
+struct Executor
+{
+    ProgramMemory* pm = nullptr;
+    const Settings* settings = nullptr;
+    int fdepth = 4;
+
+    ValueFlow::Value executeImpl(const Token* expr)
 {
     ValueFlow::Value unknown = ValueFlow::Value::unknown();
     const ValueFlow::Value* value = nullptr;
@@ -1214,14 +1220,14 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         const Token* containerTok = expr->tokAt(-2)->astOperand1();
         const Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
         if (yield == Library::Container::Yield::SIZE) {
-            ValueFlow::Value v = execute(containerTok, pm);
+            ValueFlow::Value v = execute(containerTok);
             if (!v.isContainerSizeValue())
                 return unknown;
             v.valueType = ValueFlow::Value::ValueType::INT;
             return v;
         }
         if (yield == Library::Container::Yield::EMPTY) {
-            ValueFlow::Value v = execute(containerTok, pm);
+            ValueFlow::Value v = execute(containerTok);
             if (!v.isContainerSizeValue())
                 return unknown;
             if (v.isImpossible() && v.intvalue == 0)
@@ -1230,13 +1236,13 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
                 return ValueFlow::Value{v.intvalue == 0};
         }
     } else if (expr->isAssignmentOp() && expr->astOperand1() && expr->astOperand2() && expr->astOperand1()->exprId() > 0) {
-        ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
+        ValueFlow::Value rhs = execute(expr->astOperand2());
         if (rhs.isUninitValue())
             return unknown;
         if (expr->str() != "=") {
-            if (!pm.hasValue(expr->astOperand1()->exprId()))
+            if (!pm->hasValue(expr->astOperand1()->exprId()))
                 return unknown;
-            ValueFlow::Value& lhs = pm.at(expr->astOperand1()->exprId());
+            ValueFlow::Value& lhs = pm->at(expr->astOperand1()->exprId());
             rhs = evaluate(removeAssign(expr->str()), lhs, rhs);
             if (lhs.isIntValue())
                 ValueFlow::Value::visitValue(rhs, std::bind(assign{}, std::ref(lhs.intvalue), std::placeholders::_1));
@@ -1246,33 +1252,33 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
                 return unknown;
             return lhs;
         }
-        pm.setValue(expr->astOperand1(), rhs);
+        pm->setValue(expr->astOperand1(), rhs);
         return rhs;
     } else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
-        ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
+        ValueFlow::Value lhs = execute(expr->astOperand1());
         if (!lhs.isIntValue())
             return unknown;
         if (isFalse(lhs))
             return lhs;
         if (isTrue(lhs))
-            return execute(expr->astOperand2(), pm);
+            return execute(expr->astOperand2());
         return unknown;
     } else if (expr->str() == "||" && expr->astOperand1() && expr->astOperand2()) {
-        ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
+        ValueFlow::Value lhs = execute(expr->astOperand1());
         if (!lhs.isIntValue() || lhs.isImpossible())
             return unknown;
         if (isTrue(lhs))
             return lhs;
         if (isFalse(lhs))
-            return execute(expr->astOperand2(), pm);
+            return execute(expr->astOperand2());
         return unknown;
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
-        execute(expr->astOperand1(), pm);
-        return execute(expr->astOperand2(), pm);
+        execute(expr->astOperand1());
+        return execute(expr->astOperand2());
     } else if (expr->tokType() == Token::eIncDecOp && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
-        if (!pm.hasValue(expr->astOperand1()->exprId()))
+        if (!pm->hasValue(expr->astOperand1()->exprId()))
             return unknown;
-        ValueFlow::Value& lhs = pm.at(expr->astOperand1()->exprId());
+        ValueFlow::Value& lhs = pm->at(expr->astOperand1()->exprId());
         if (!lhs.isIntValue())
             return unknown;
         // overflow
@@ -1286,7 +1292,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         return lhs;
     } else if (expr->str() == "[" && expr->astOperand1() && expr->astOperand2()) {
         const Token *tokvalue = nullptr;
-        if (!pm.getTokValue(expr->astOperand1()->exprId(), &tokvalue)) {
+        if (!pm->getTokValue(expr->astOperand1()->exprId(), &tokvalue)) {
             auto tokvalue_it = std::find_if(expr->astOperand1()->values().cbegin(),
                                             expr->astOperand1()->values().cend(),
                                             std::mem_fn(&ValueFlow::Value::isTokValue));
@@ -1299,7 +1305,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             return unknown;
         }
         const std::string strValue = tokvalue->strValue();
-        ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
+        ValueFlow::Value rhs = execute(expr->astOperand2());
         if (!rhs.isIntValue())
             return unknown;
         const MathLib::bigint index = rhs.intvalue;
@@ -1308,8 +1314,8 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         if (index == strValue.size())
             return ValueFlow::Value{};
     } else if (Token::Match(expr, "%cop%") && expr->astOperand1() && expr->astOperand2()) {
-        ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
-        ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
+        ValueFlow::Value lhs = execute(expr->astOperand1());
+        ValueFlow::Value rhs = execute(expr->astOperand2());
         ValueFlow::Value r = unknown;
         if (!lhs.isUninitValue() && !rhs.isUninitValue())
             r = evaluate(expr->str(), lhs, rhs);
@@ -1332,7 +1338,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     }
     // Unary ops
     else if (Token::Match(expr, "!|+|-") && expr->astOperand1() && !expr->astOperand2()) {
-        ValueFlow::Value lhs = execute(expr->astOperand1(), pm);
+        ValueFlow::Value lhs = execute(expr->astOperand1());
         if (!lhs.isIntValue())
             return unknown;
         if (expr->str() == "!") {
@@ -1350,23 +1356,23 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             lhs.intvalue = -lhs.intvalue;
         return lhs;
     } else if (expr->str() == "?" && expr->astOperand1() && expr->astOperand2()) {
-        ValueFlow::Value cond = execute(expr->astOperand1(), pm);
+        ValueFlow::Value cond = execute(expr->astOperand1());
         if (!cond.isIntValue())
             return unknown;
         const Token* child = expr->astOperand2();
         if (isFalse(cond))
-            return execute(child->astOperand2(), pm);
+            return execute(child->astOperand2());
         if (isTrue(cond))
-            return execute(child->astOperand1(), pm);
+            return execute(child->astOperand1());
 
         return unknown;
     } else if (expr->str() == "(" && expr->isCast()) {
         if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
-            return execute(expr->astOperand2(), pm);
-        return execute(expr->astOperand1(), pm);
+            return execute(expr->astOperand2());
+        return execute(expr->astOperand1());
     }
-    if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
-        ValueFlow::Value result = pm.at(expr->exprId());
+    if (expr->exprId() > 0 && pm->hasValue(expr->exprId())) {
+        ValueFlow::Value result = pm->at(expr->exprId());
         if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr)) {
             result.intvalue = !result.intvalue;
             result.setKnown();
@@ -1382,7 +1388,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             std::vector<const Token*> tokArgs = getArguments(expr);
             std::vector<ValueFlow::Value> args(tokArgs.size());
             std::transform(tokArgs.cbegin(), tokArgs.cend(), args.begin(), [&](const Token* tok) {
-                return execute(tok, pm, settings);
+                return execute(tok);
             });
             BuiltinLibraryFunction lf = getBuiltinLibraryFunction(ftok->str());
             if (lf)
@@ -1401,8 +1407,8 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         }
         // Check if function modifies argument
         visitAstNodes(expr->astOperand2(), [&](const Token* child) {
-            if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
-                ValueFlow::Value& v = pm.at(child->exprId());
+            if (child->exprId() > 0 && pm->hasValue(child->exprId())) {
+                ValueFlow::Value& v = pm->at(child->exprId());
                 if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
                     if (ValueFlow::isContainerSizeChanged(child, v.indirect, settings))
                         v = unknown;
@@ -1417,92 +1423,105 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
 
     return unknown;
 }
-
-static const ValueFlow::Value* getImpossibleValue(const Token* tok)
-{
-    if (!tok)
-        return nullptr;
-    std::vector<const ValueFlow::Value*> values;
-    for (const ValueFlow::Value& v : tok->values()) {
-        if (!v.isImpossible())
-            continue;
-        if (v.isContainerSizeValue() || v.isIntValue()) {
-            values.push_back(std::addressof(v));
+    static const ValueFlow::Value* getImpossibleValue(const Token* tok)
+    {
+        if (!tok)
+            return nullptr;
+        std::vector<const ValueFlow::Value*> values;
+        for (const ValueFlow::Value& v : tok->values()) {
+            if (!v.isImpossible())
+                continue;
+            if (v.isContainerSizeValue() || v.isIntValue()) {
+                values.push_back(std::addressof(v));
+            }
         }
+        auto it = std::max_element(values.begin(), values.end(), [](const ValueFlow::Value* x, const ValueFlow::Value* y) {
+            return x->intvalue < y->intvalue;
+        });
+        if (it == values.end())
+            return nullptr;
+        return *it;
     }
-    auto it = std::max_element(values.begin(), values.end(), [](const ValueFlow::Value* x, const ValueFlow::Value* y) {
-        return x->intvalue < y->intvalue;
-    });
-    if (it == values.end())
-        return nullptr;
-    return *it;
-}
 
-static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings)
+    ValueFlow::Value execute(const Token* expr)
+    {
+        ValueFlow::Value v = executeImpl(expr);
+        if (!v.isUninitValue())
+            return v;
+        if (!expr)
+            return v;
+        if (expr->exprId() > 0 && pm->hasValue(expr->exprId()))
+            return pm->at(expr->exprId());
+        if (const ValueFlow::Value* value = getImpossibleValue(expr))
+            return *value;
+        return v;
+    }
+    
+    std::vector<ValueFlow::Value> execute(const Scope* scope)
+    {
+        static const std::vector<ValueFlow::Value> unknown = {ValueFlow::Value::unknown()};
+        if (!scope)
+            return unknown;
+        if (!scope->bodyStart)
+            return unknown;
+        for (const Token* tok = scope->bodyStart->next(); precedes(tok, scope->bodyEnd); tok = tok->next()) {
+            const Token* top = tok->astTop();
+            if (!top)
+                return unknown;
+
+            if (Token::simpleMatch(top, "return") && top->astOperand1())
+                return {execute(top->astOperand1())};
+
+            if (Token::Match(top, "%op%")) {
+                if (execute(top).isUninitValue())
+                    return unknown;
+                const Token* next = nextAfterAstRightmostLeaf(top);
+                if (!next)
+                    return unknown;
+                tok = next;
+            } else if (Token::simpleMatch(top->previous(), "if (")) {
+                const Token* condTok = top->astOperand2();
+                ValueFlow::Value v = execute(condTok);
+                if (!v.isIntValue())
+                    return unknown;
+                const Token* thenStart = top->link()->next();
+                const Token* next = thenStart->link();
+                const Token* elseStart = nullptr;
+                if (Token::simpleMatch(thenStart->link(), "} else {")) {
+                    elseStart = thenStart->link()->tokAt(2);
+                    next = elseStart->link();
+                }
+                std::vector<ValueFlow::Value> result;
+                if (isTrue(v)) {
+                    result = execute(thenStart->scope());
+                } else if (isFalse(v)) {
+                    if (elseStart)
+                        result = execute(elseStart->scope());
+                } else {
+                    return unknown;
+                }
+                if (!result.empty())
+                    return result;
+                tok = next;
+            } else {
+                return unknown;
+            }
+        }
+        return {};
+    }
+
+};
+
+static ValueFlow::Value execute(const Token* tok, ProgramMemory& pm, const Settings* settings)
 {
-    ValueFlow::Value v = executeImpl(expr, pm, settings);
-    if (!v.isUninitValue())
-        return v;
-    if (!expr)
-        return v;
-    if (expr->exprId() > 0 && pm.hasValue(expr->exprId()))
-        return pm.at(expr->exprId());
-    if (const ValueFlow::Value* value = getImpossibleValue(expr))
-        return *value;
-    return v;
+    Executor ex{&pm, settings};
+    return ex.execute(tok);
 }
 
 std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings* settings)
 {
-    static const std::vector<ValueFlow::Value> unknown = {ValueFlow::Value::unknown()};
-    if (!scope)
-        return unknown;
-    if (!scope->bodyStart)
-        return unknown;
-    for (const Token* tok = scope->bodyStart->next(); precedes(tok, scope->bodyEnd); tok = tok->next()) {
-        const Token* top = tok->astTop();
-        if (!top)
-            return unknown;
-
-        if (Token::simpleMatch(top, "return") && top->astOperand1())
-            return {execute(top->astOperand1(), pm, settings)};
-
-        if (Token::Match(top, "%op%")) {
-            if (execute(top, pm, settings).isUninitValue())
-                return unknown;
-            const Token* next = nextAfterAstRightmostLeaf(top);
-            if (!next)
-                return unknown;
-            tok = next;
-        } else if (Token::simpleMatch(top->previous(), "if (")) {
-            const Token* condTok = top->astOperand2();
-            ValueFlow::Value v = execute(condTok, pm, settings);
-            if (!v.isIntValue())
-                return unknown;
-            const Token* thenStart = top->link()->next();
-            const Token* next = thenStart->link();
-            const Token* elseStart = nullptr;
-            if (Token::simpleMatch(thenStart->link(), "} else {")) {
-                elseStart = thenStart->link()->tokAt(2);
-                next = elseStart->link();
-            }
-            std::vector<ValueFlow::Value> result;
-            if (isTrue(v)) {
-                result = execute(thenStart->scope(), pm, settings);
-            } else if (isFalse(v)) {
-                if (elseStart)
-                    result = execute(elseStart->scope(), pm, settings);
-            } else {
-                return unknown;
-            }
-            if (!result.empty())
-                return result;
-            tok = next;
-        } else {
-            return unknown;
-        }
-    }
-    return {};
+    Executor ex{&pm, settings};
+    return ex.execute(scope);
 }
 
 ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
