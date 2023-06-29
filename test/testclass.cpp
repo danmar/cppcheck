@@ -230,6 +230,8 @@ private:
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
 
+        TEST_CASE(uselessOverride);
+
         TEST_CASE(thisUseAfterFree);
 
         TEST_CASE(unsafeClassRefMember);
@@ -8338,6 +8340,70 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    #define checkUselessOverride(code) checkUselessOverride_(code, __FILE__, __LINE__)
+    void checkUselessOverride_(const char code[], const char* file, int line) {
+        // Clear the error log
+        errout.str("");
+
+        const Settings settings = settingsBuilder().severity(Severity::style).build();
+
+        Preprocessor preprocessor(settings);
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this, &preprocessor);
+        std::istringstream istr(code);
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        (checkClass.checkUselessOverride)();
+    }
+
+    void uselessOverride() {
+        checkUselessOverride("struct B { virtual int f() { return 5; } };\n" // #11757
+                             "struct D : B {\n"
+                             "    int f() override { return B::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
+
+        checkUselessOverride("struct B { virtual void f(); };\n"
+                             "struct D : B {\n"
+                             "    void f() override { B::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
+
+        checkUselessOverride("struct B { virtual int f() = 0; };\n"
+                             "int B::f() { return 5; }\n"
+                             "struct D : B {\n"
+                             "    int f() override { return B::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual int f(int i); };\n"
+                             "struct D : B {\n"
+                             "    int f(int i) override { return B::f(i); }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
+
+        checkUselessOverride("struct B { virtual int f(int i); };\n"
+                             "struct D : B {\n"
+                             "    int f(int i) override { return B::f(i + 1); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual int f(int i, int j); };\n"
+                             "struct D : B {\n"
+                             "    int f(int i, int j) override { return B::f(j, i); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual int f(); };\n"
+                             "struct I { virtual int f() = 0; };\n"
+                             "struct D : B, I {\n"
+                             "    int f() override { return B::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
     void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {
