@@ -227,8 +227,7 @@ struct Interval {
         if (!eq.empty()) {
             if (eq.front() == 0)
                 return {1, -1};
-            else
-                return {0};
+            return {0};
         }
         if (diff.isGreaterThan(-1, ref))
             return {0, 1};

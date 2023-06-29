@@ -124,11 +124,12 @@ struct ForwardTraversal {
     Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
         if (Token::Match(tok, "asm|goto"))
             return Break(Analyzer::Terminate::Bail);
-        else if (Token::Match(tok, "setjmp|longjmp (")) {
+        if (Token::Match(tok, "setjmp|longjmp (")) {
             // Traverse the parameters of the function before escaping
             traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Bail);
-        } else if (Token::simpleMatch(tok, "continue")) {
+        }
+        if (Token::simpleMatch(tok, "continue")) {
             if (loopEnds.empty())
                 return Break(Analyzer::Terminate::Escape);
             // If we are in a loop then jump to the end
@@ -670,7 +671,8 @@ struct ForwardTraversal {
                             return Break();
                     } else {
                         Token* stepTok = getStepTok(tok);
-                        if (updateLoop(end, endBlock, condTok, initTok, stepTok) == Progress::Break)
+                        // Dont pass initTok since it was already evaluated
+                        if (updateLoop(end, endBlock, condTok, nullptr, stepTok) == Progress::Break)
                             return Break();
                     }
                     tok = endBlock;
@@ -794,13 +796,14 @@ struct ForwardTraversal {
                     return Break();
                 return Break();
             } else if (Token* callTok = callExpr(tok)) {
+                // TODO: Dont traverse tokens a second time
+                if (start != callTok && tok != callTok && updateRecursive(callTok->astOperand1()) == Progress::Break)
+                    return Break();
                 // Since the call could be an unknown macro, traverse the tokens as a range instead of recursively
                 if (!Token::simpleMatch(callTok, "( )") &&
                     updateRange(callTok->next(), callTok->link(), depth - 1) == Progress::Break)
                     return Break();
                 if (updateTok(callTok) == Progress::Break)
-                    return Break();
-                if (start != callTok && updateRecursive(callTok->astOperand1()) == Progress::Break)
                     return Break();
                 tok = callTok->link();
                 if (!tok)

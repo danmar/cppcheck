@@ -294,6 +294,8 @@ void CheckAutoVariables::autoVariables()
             else if ((Token::Match(tok, "%name% ( %var%|%str% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
                      (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var%|%str% !!["))) {
                 tok = Token::findmatch(tok->next(), "%var%|%str%");
+                if (Token::simpleMatch(tok->astParent(), "."))
+                    continue;
                 if (isArrayVar(tok) || tok->tokType() == Token::eString)
                     errorInvalidDeallocation(tok, nullptr);
                 else if (tok->variable() && tok->variable()->isPointer()) {
@@ -301,7 +303,7 @@ void CheckAutoVariables::autoVariables()
                         if (v.isImpossible())
                             continue;
                         if ((v.isTokValue() && (isArrayVar(v.tokvalue) || ((v.tokvalue->tokType() == Token::eString)))) ||
-                            (v.isLocalLifetimeValue() && v.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)) {
+                            (v.isLocalLifetimeValue() && v.lifetimeKind == ValueFlow::Value::LifetimeKind::Address && !Token::simpleMatch(v.tokvalue, "("))) {
                             errorInvalidDeallocation(tok, &v);
                             break;
                         }
@@ -553,7 +555,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     isInScope(var->nameToken(), tok->scope())) {
                     errorReturnReference(tok, lt.errorPath, lt.inconclusive);
                     break;
-                } else if (isDeadTemporary(mTokenizer->isCPP(), lt.token, nullptr, &mSettings->library)) {
+                }
+                if (isDeadTemporary(mTokenizer->isCPP(), lt.token, nullptr, &mSettings->library)) {
                     errorReturnTempReference(tok, lt.errorPath, lt.inconclusive);
                     break;
                 }

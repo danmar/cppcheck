@@ -317,8 +317,15 @@ void CheckCondition::checkBadBitmaskCheck()
 
             const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0);
             const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
+            if (!isZero1 && !isZero2)
+                continue;
 
-            if ((isZero1 || isZero2) && !tok->isExpandedMacro() && !(isZero1 && tok->astOperand1()->isExpandedMacro()) && !(isZero2 && tok->astOperand2()->isExpandedMacro()))
+            auto isOperandExpanded = [](const Token *op) {
+                return op->isExpandedMacro() || op->isEnumerator();
+            };
+            if (!tok->isExpandedMacro() &&
+                !(isZero1 && isOperandExpanded(tok->astOperand1())) &&
+                !(isZero2 && isOperandExpanded(tok->astOperand2())))
                 badBitmaskCheckError(tok, /*isNoOp*/ true);
         }
     }
@@ -576,9 +583,9 @@ static bool isNonConstFunctionCall(const Token *ftok, const Library &library)
         obj = obj->astOperand1();
     if (!obj)
         return true;
-    else if (obj->variable() && obj->variable()->isConst())
+    if (obj->variable() && obj->variable()->isConst())
         return false;
-    else if (ftok->function() && ftok->function()->isConst())
+    if (ftok->function() && ftok->function()->isConst())
         return false;
     return true;
 }
@@ -968,8 +975,7 @@ T getvalue3(const T value1, const T value2)
     const T min = std::min(value1, value2);
     if (min== std::numeric_limits<T>::max())
         return min;
-    else
-        return min+1; // see #5895
+    return min + 1; // see #5895
 }
 
 template<>
@@ -1145,7 +1151,8 @@ void CheckCondition::checkIncorrectLogicOperator()
                                             "The condition '" + cond1VerboseMsg + "' is equivalent to '" + cond2VerboseMsg + "'.";
                     redundantConditionError(tok, msg, false);
                     continue;
-                } else if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok2, mSettings->library, true, true)) {
+                }
+                if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok2, mSettings->library, true, true)) {
                     std::string expr1(tok->astOperand1()->expressionString());
                     std::string expr2(tok->astOperand2()->astOperand1()->expressionString());
                     std::string expr3(tok->astOperand2()->astOperand2()->expressionString());

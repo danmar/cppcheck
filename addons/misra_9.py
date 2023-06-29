@@ -441,7 +441,7 @@ def getElementDef(nameToken, rawTokens = None):
     return ed
 
 def createArrayChildrenDefs(ed, token, var, rawTokens = None):
-    if token.str == '[':
+    if token and token.str == '[':
         if rawTokens is not None:
             foundToken = next((rawToken for rawToken in rawTokens
                                if rawToken.file == token.file

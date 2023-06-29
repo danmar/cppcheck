@@ -5295,7 +5295,7 @@ private:
         // initialization
         code = "int foo() {\n"
                "  int x;\n"
-               "  *((int *)(&x)) = 12;"
+               "  *((int *)(&x)) = 12;\n"
                "  a = x + 1;\n"
                "}";
         values = tokenValues(code, "x +");
@@ -5303,6 +5303,18 @@ private:
         // ASSERT_EQUALS(1U, values.size());
         // ASSERT(values.front().isIntValue());
         // ASSERT_EQUALS(12, values.front().intvalue);
+
+        code = "struct AB { int a; };\n" // 11767
+               "void fp(void) {\n"
+               "    struct AB ab;\n"
+               "    *((int*)(&(ab.a))) = 1;\n"
+               "    x = ab.a + 1;\n" // <- not uninitialized
+               "}\n";
+        values = tokenValues(code, "ab . a +");
+        ASSERT_EQUALS(0, values.size());
+        // ASSERT_EQUALS(1U, values.size());
+        // ASSERT(values.front().isIntValue());
+        // ASSERT_EQUALS(1, values.front().intvalue);
 
         // #8036
         code = "void foo() {\n"
@@ -5530,6 +5542,28 @@ private:
                "        n = 10;\n"
                "}";
         values = tokenValues(code, "n )", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        // #11774 - function call to init data
+        code = "struct id_struct { int id; };\n"
+               "int init(const id_struct **id);\n"
+               "void fp() {\n"
+               "  const id_struct *id_st;\n"
+               "  init(&id_st);\n"
+               "  if (id_st->id > 0) {}\n"
+               "}\n";
+        values = tokenValues(code, ". id", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        // #11777 - false || ...
+        code = "bool init(int *p);\n"
+               "\n"
+               "void uninitvar_FP9() {\n"
+               "  int x;\n"
+               "  if (false || init(&x)) {}\n"
+               "  int b = x+1;\n"
+               "}";
+        values = tokenValues(code, "x + 1", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
     }
 
@@ -6577,10 +6611,13 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "( ) ;"), 0));
 
         code = "std::vector<int> f() { return std::vector<int>{}; }";
-        TODO_ASSERT_EQUALS("", "values.size():0", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
 
         code = "std::vector<int> f() { return {}; }";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+
+        code = "int f() { auto a = std::array<int, 2>{}; return a[1]; }";
+        ASSERT_EQUALS("values.size():0", isKnownContainerSizeValue(tokenValues(code, "a ["), 0));
     }
 
     void valueFlowContainerElement()
@@ -7051,7 +7088,7 @@ private:
         valueOfTok(code, "c");
 
         code = "class T {\n"
-               "private slots:\n"
+               "private:\n"
                "    void f() { D& r = dynamic_cast<D&>(*m); }\n"
                "    void g() { m.reset(new D); }\n"
                "private:\n"

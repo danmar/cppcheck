@@ -979,6 +979,10 @@ Settings MainWindow::getCppcheckSettings()
 
         result.maxCtuDepth = mProjectFile->getMaxCtuDepth();
         result.maxTemplateRecursion = mProjectFile->getMaxTemplateRecursion();
+        if (mProjectFile->isCheckLevelExhaustive())
+            result.setCheckLevelExhaustive();
+        else
+            result.setCheckLevelNormal();
         result.checkHeaders = mProjectFile->getCheckHeaders();
         result.checkUnusedTemplates = mProjectFile->getCheckUnusedTemplates();
         result.safeChecks.classes = mProjectFile->safeChecks.classes;
@@ -2002,7 +2006,7 @@ static int getVersion(const QString& nameWithVersion) {
     for (const auto c: nameWithVersion) {
         if (c == '\n' || c == '\r')
             break;
-        else if (c == ' ') {
+        if (c == ' ') {
             if (ret > 0 && dot == 1 && nameWithVersion.endsWith(" dev"))
                 return ret * 1000000 + v * 1000 + 500;
             dot = ret = v = 0;

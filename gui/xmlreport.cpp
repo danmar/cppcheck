@@ -75,8 +75,8 @@ int XmlReport::determineVersion(const QString &filename)
                 if (attribs.hasAttribute(QString(VersionAttribute))) {
                     const int ver = attribs.value(QString(), VersionAttribute).toString().toInt();
                     return ver;
-                } else
-                    return 1;
+                }
+                return 1;
             }
             break;
 

@@ -181,7 +181,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
-        // the first charcater is the color
+        // the first character is the color
         const Color c = static_cast<Color>(buf[0]);
         mErrorLogger.reportOut(buf + 1, c);
     } else if (type == PipeWriter::REPORT_ERROR) {
@@ -218,7 +218,8 @@ bool ProcessExecutor::checkLoadAverage(size_t nchildren)
     if (getloadavg(&sample, 1) != 1) {
         // disable load average checking on getloadavg error
         return true;
-    } else if (sample < mSettings.loadAverage) {
+    }
+    if (sample < mSettings.loadAverage) {
         return true;
     }
     return false;
@@ -256,7 +257,7 @@ unsigned int ProcessExecutor::check()
                 std::exit(EXIT_FAILURE);
             }
 
-            if (fcntl(pipes[0], F_SETFL, flags | O_NONBLOCK) < 0) {
+            if (fcntl(pipes[0], F_SETFL, flags) < 0) {
                 std::cerr << "#### ThreadExecutor::check, fcntl(F_SETFL) failed: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             }

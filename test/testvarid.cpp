@@ -99,6 +99,7 @@ private:
         TEST_CASE(varid65); // #10936
         TEST_CASE(varid66);
         TEST_CASE(varid67); // #11711 - NOT function pointer
+        TEST_CASE(varid68); // #11740 - switch (str_chars(&strOut)[0])
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1223,6 +1224,21 @@ private:
         const char expected1[] = "1: int * x@1 ;\n"
                                  "2: _Generic ( * x@1 , int : foo , default : bar ) ( ) ;\n";
         ASSERT_EQUALS(expected1, tokenize(code1, "test.c"));
+    }
+
+    void varid68() { // #11740
+        const char code1[] = "struct S {};\n"
+                             "char* str_chars(struct S* s);\n"
+                             "void f(struct S strOut) {\n"
+                             "	 switch (str_chars(&strOut)[0])  {}\n"
+                             "}";
+        const char expected1[] = "1: struct S { } ;\n"
+                                 "2: char * str_chars ( struct S * s@1 ) ;\n"
+                                 "3: void f ( struct S strOut@2 ) {\n"
+                                 "4: switch ( str_chars ( & strOut@2 ) [ 0 ] ) { }\n"
+                                 "5: }\n";
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.c"));
+        ASSERT_EQUALS(expected1, tokenize(code1, "test.cpp"));
     }
 
     void varid_for_1() {

@@ -97,9 +97,9 @@ static OpenMode getMode(const std::string& str)
 {
     if (str.find('+', 1) != std::string::npos)
         return OpenMode::RW_MODE;
-    else if (str.find('w') != std::string::npos || str.find('a') != std::string::npos)
+    if (str.find('w') != std::string::npos || str.find('a') != std::string::npos)
         return OpenMode::WRITE_MODE;
-    else if (str.find('r') != std::string::npos)
+    if (str.find('r') != std::string::npos)
         return OpenMode::READ_MODE;
     return OpenMode::UNKNOWN_OM;
 }
@@ -488,13 +488,14 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
         *formatArgTok = argTok->nextArgument();
         *formatStringTok = argTok;
         return true;
-    } else if (Token::Match(argTok, "%var% [,)]") &&
-               argTok->variable() &&
-               Token::Match(argTok->variable()->typeStartToken(), "char|wchar_t") &&
-               (argTok->variable()->isPointer() ||
-                (argTok->variable()->dimensions().size() == 1 &&
-                 argTok->variable()->dimensionKnown(0) &&
-                 argTok->variable()->dimension(0) != 0))) {
+    }
+    if (Token::Match(argTok, "%var% [,)]") &&
+        argTok->variable() &&
+        Token::Match(argTok->variable()->typeStartToken(), "char|wchar_t") &&
+        (argTok->variable()->isPointer() ||
+         (argTok->variable()->dimensions().size() == 1 &&
+          argTok->variable()->dimensionKnown(0) &&
+          argTok->variable()->dimension(0) != 0))) {
         *formatArgTok = argTok->nextArgument();
         if (!argTok->values().empty()) {
             const std::list<ValueFlow::Value>::const_iterator value = std::find_if(
@@ -1402,11 +1403,12 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
     if (arg->tokType() == Token::eString) {
         typeToken = arg;
         return;
-    } else if (arg->str() == "&" || arg->tokType() == Token::eVariable ||
-               arg->tokType() == Token::eFunction || Token::Match(arg, "%type% ::") ||
-               (Token::Match(arg, "static_cast|reinterpret_cast|const_cast <") &&
-                Token::simpleMatch(arg->linkAt(1), "> (") &&
-                Token::Match(arg->linkAt(1)->linkAt(1), ") ,|)"))) {
+    }
+    if (arg->str() == "&" || arg->tokType() == Token::eVariable ||
+        arg->tokType() == Token::eFunction || Token::Match(arg, "%type% ::") ||
+        (Token::Match(arg, "static_cast|reinterpret_cast|const_cast <") &&
+         Token::simpleMatch(arg->linkAt(1), "> (") &&
+         Token::Match(arg->linkAt(1)->linkAt(1), ") ,|)"))) {
         if (Token::Match(arg, "static_cast|reinterpret_cast|const_cast")) {
             typeToken = arg->tokAt(2);
             while (typeToken->str() == "const" || typeToken->str() == "extern")
@@ -1471,7 +1473,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
                 } else
                     varTok = tok1->previous();
                 break;
-            } else if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
+            }
+            if (tok1->str() == "(" || tok1->str() == "{" || tok1->str() == "[")
                 tok1 = tok1->link();
             else if (tok1->link() && tok1->str() == "<")
                 tok1 = tok1->link();
@@ -1578,7 +1581,8 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
         typeToken = variableInfo->typeStartToken()->tokAt(4);
         _template = true;
         return true;
-    } else if (variableInfo->isStlType(stl_string)) {
+    }
+    if (variableInfo->isStlType(stl_string)) {
         tempToken = new Token();
         tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
         tempToken->linenr(variableInfo->typeStartToken()->linenr());
@@ -1588,7 +1592,8 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
             tempToken->str("wchar_t");
         typeToken = tempToken;
         return true;
-    } else if (variableInfo->type() && !variableInfo->type()->derivedFrom.empty()) {
+    }
+    if (variableInfo->type() && !variableInfo->type()->derivedFrom.empty()) {
         const std::vector<Type::BaseInfo>& derivedFrom = variableInfo->type()->derivedFrom;
         for (const Type::BaseInfo & i : derivedFrom) {
             const Token* nameTok = i.nameTok;
@@ -1596,7 +1601,8 @@ bool CheckIO::ArgumentInfo::isStdVectorOrString()
                 typeToken = nameTok->tokAt(4);
                 _template = true;
                 return true;
-            } else if (Token::Match(nameTok, "std :: string|wstring")) {
+            }
+            if (Token::Match(nameTok, "std :: string|wstring")) {
                 tempToken = new Token();
                 tempToken->fileIndex(variableInfo->typeStartToken()->fileIndex());
                 tempToken->linenr(variableInfo->typeStartToken()->linenr());
@@ -1642,16 +1648,19 @@ bool CheckIO::ArgumentInfo::isStdContainer(const Token *tok)
         if (variable->isStlType(stl_container)) {
             typeToken = variable->typeStartToken()->tokAt(4);
             return true;
-        } else if (variable->isStlType(stl_string)) {
+        }
+        if (variable->isStlType(stl_string)) {
             typeToken = variable->typeStartToken();
             return true;
-        } else if (variable->type() && !variable->type()->derivedFrom.empty()) {
+        }
+        if (variable->type() && !variable->type()->derivedFrom.empty()) {
             for (const Type::BaseInfo &baseInfo : variable->type()->derivedFrom) {
                 const Token* nameTok = baseInfo.nameTok;
                 if (Token::Match(nameTok, "std :: vector|array|bitset|deque|list|forward_list|map|multimap|multiset|priority_queue|queue|set|stack|hash_map|hash_multimap|hash_set|unordered_map|unordered_multimap|unordered_set|unordered_multiset <")) {
                     typeToken = nameTok->tokAt(4);
                     return true;
-                } else if (Token::Match(nameTok, "std :: string|wstring")) {
+                }
+                if (Token::Match(nameTok, "std :: string|wstring")) {
                     typeToken = nameTok;
                     return true;
                 }
@@ -1666,16 +1675,13 @@ bool CheckIO::ArgumentInfo::isArrayOrPointer() const
 {
     if (address)
         return true;
-    else if (variableInfo && !_template) {
+    if (variableInfo && !_template)
         return variableInfo->isArrayOrPointer();
-    } else {
-        const Token *tok = typeToken;
-        while (Token::Match(tok, "const|struct"))
-            tok = tok->next();
-        if (tok && tok->strAt(1) == "*")
-            return true;
-    }
-    return false;
+
+    const Token *tok = typeToken;
+    while (Token::Match(tok, "const|struct"))
+        tok = tok->next();
+    return tok && tok->strAt(1) == "*";
 }
 
 bool CheckIO::ArgumentInfo::isComplexType() const
@@ -1694,7 +1700,7 @@ bool CheckIO::ArgumentInfo::isKnownType() const
 {
     if (variableInfo)
         return (typeToken->isStandardType() || typeToken->next()->isStandardType() || isComplexType());
-    else if (functionInfo)
+    if (functionInfo)
         return (typeToken->isStandardType() || functionInfo->retType || Token::Match(typeToken, "std :: string|wstring"));
 
     return typeToken->isStandardType() || Token::Match(typeToken, "std :: string|wstring");

@@ -912,6 +912,11 @@ private:
               "#endif\n"
               "    0;");
         ASSERT_EQUALS("", errout.str());
+
+        check("enum precedence { PC0, UNARY };\n"
+              "int x = PC0   | UNARY;\n"
+              "int y = UNARY | PC0;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -4895,6 +4900,16 @@ private:
               "    return p != NULL && q != NULL && p == NULL;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Return value 'p==NULL' is always false\n", errout.str());
+
+        check("struct S {\n" // #11789
+              "    std::vector<int> v;\n"
+              "    void f(int i) const;\n"
+              "};\n"
+              "void S::f(int i) const {\n"
+              "    int j = i - v.size();\n"
+              "    if (j >= 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {

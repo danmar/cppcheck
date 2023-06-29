@@ -832,7 +832,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     } else if (var->typeEndToken()->str() == ">") // Be careful with types like std::vector
                         tok = tok->previous();
                     break;
-                } else if (Token::Match(tok2, "[;({=]"))
+                }
+                if (Token::Match(tok2, "[;({=]"))
                     break;
             }
         }
@@ -1027,7 +1028,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             if (var) {
                 // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
                 if (var->mType == Variables::pointer &&
-                    Token::Match(skipBrackets(tok->next()), "= new|malloc|calloc|kmalloc|kzalloc|kcalloc|strdup|strndup|vmalloc|g_new0|g_try_new|g_new|g_malloc|g_malloc0|g_try_malloc|g_try_malloc0|g_strdup|g_strndup|g_strdup_printf")) {
+                    ((mTokenizer->isCPP() && Token::simpleMatch(skipBrackets(tok->next()), "= new")) ||
+                     (Token::Match(skipBrackets(tok->next()), "= %name% (") && mSettings->library.getAllocFuncInfo(tok->tokAt(2))))) {
                     variables.allocateMemory(varid, tok);
                 } else if (var->mType == Variables::pointer || var->mType == Variables::reference) {
                     variables.read(varid, tok);
@@ -1211,7 +1213,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
                 tok = tok->next();
             }
-            if (tok->astParent() && !tok->astParent()->isAssignmentOp() && tok->str() != "(") {
+            if (!isInitialization && tok->astParent() && !tok->astParent()->isAssignmentOp() && tok->str() != "(") {
                 const Token *parent = tok->astParent();
                 while (Token::Match(parent, "%oror%|%comp%|!|&&"))
                     parent = parent->astParent();
@@ -1266,7 +1268,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     op1Var->isClass() &&
                     (!op1Var->valueType() || op1Var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
                     // Check in the library if we should bailout or not..
-                    const std::string typeName = op1Var->getTypeName();
+                    std::string typeName = op1Var->getTypeName();
+                    if (typeName.compare(0, 2, "::") == 0)
+                        typeName.erase(typeName.begin(), typeName.begin() + 2);
                     switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
                     case Library::TypeCheck::def:
                         bailoutTypeName = typeName;
@@ -1514,6 +1518,11 @@ void CheckUnusedVar::checkStructMemberUsage()
             // Check if the struct member variable is used anywhere in the file
             bool use = false;
             for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                if (Token::Match(tok, ". %name%") && !tok->next()->variable() && !tok->next()->function() && tok->next()->str() == var.name()) {
+                    // not known => assume variable is used
+                    use = true;
+                    break;
+                }
                 if (tok->variable() != &var)
                     continue;
                 if (tok != var.nameToken()) {

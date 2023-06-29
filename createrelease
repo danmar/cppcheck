@@ -11,7 +11,7 @@
 #
 # self check, fix critical issues:
 # make clean && make CXXFLAGS=-O2 MATCHCOMPILER=yes -j4
-# ./cppcheck -D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
+# ./cppcheck -D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
 # Update translations
 #   lupdate gui.pro
@@ -31,7 +31,7 @@
 #
 # Update version numbers in:
 # sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.9/" cli/main.cpp
-# sed -i -r "s|2[.][0-9]+([.]99)*|2.9|" cmake/versions.cmake
+# sed -i -r "s|2[.][0-9]+([.]99)*|2.9.0|" cmake/versions.cmake # version must have 3 parts.
 # sed -i -r "s/MINOR [0-9]+/MINOR 9/" lib/version.h
 # sed -i -r "s/2[.][0-9]+([.]99)*/2.9/" win_installer/productInfo.wxi
 # sed -i -r "s/subtitle: Version 2\.[0-9]+/subtitle: Version 2.9/" man/*.md

@@ -180,6 +180,7 @@ private:
         TEST_CASE(const88);
         TEST_CASE(const89);
         TEST_CASE(const90);
+        TEST_CASE(const91);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -2893,7 +2894,7 @@ private:
 
 #define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
     void checkNoMemset_(const char* file, int line, const char code[]) {
-        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).build();
+        const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).library("std.cfg").build();
         checkNoMemset_(file, line, code, settings);
     }
 
@@ -6597,6 +6598,20 @@ private:
                       errout.str());
     }
 
+    void const91() { // #11790
+        checkConst("struct S {\n"
+                   "    char* p;\n"
+                   "    template <typename T>\n"
+                   "    T* get() {\n"
+                   "        return reinterpret_cast<T*>(p);\n"
+                   "    }\n"
+                   "};\n"
+                   "const int* f(S& s) {\n"
+                   "    return s.get<const int>();\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
@@ -8611,6 +8626,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         ctu({"class A::C { C() { std::cout << 0; } };", "class B::C { C() { std::cout << 1; } };"});
+        ASSERT_EQUALS("", errout.str());
+
+        // 11435 - template specialisations
+        const std::string header = "template<typename T1, typename T2> struct Test {};\n";
+        ctu({header + "template<typename T1> struct Test<T1, int> {};\n",
+             header + "template<typename T1> struct Test<T1, double> {};\n"});
         ASSERT_EQUALS("", errout.str());
     }
 

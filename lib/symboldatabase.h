@@ -944,11 +944,9 @@ public:
     static std::vector<const Token*> findReturns(const Function* f);
 
     const Token* returnDefEnd() const {
-        if (this->hasTrailingReturnType()) {
+        if (this->hasTrailingReturnType())
             return Token::findmatch(retDef, "{|;");
-        } else {
-            return tokenDef;
-        }
+        return tokenDef;
     }
 
     /**

@@ -36,7 +36,7 @@ public:
     TestSizeof() : TestFixture("TestSizeof") {}
 
 private:
-    const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).certainty(Certainty::inconclusive).build();
+    const Settings settings = settingsBuilder().severity(Severity::warning).severity(Severity::portability).certainty(Certainty::inconclusive).library("std.cfg").build();
 
     void run() override {
         TEST_CASE(sizeofsizeof);

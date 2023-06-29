@@ -138,59 +138,56 @@ Library::Error Library::load(const char exename[], const char path[])
 
     if (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND)
         return Error(ErrorCode::FILE_NOT_FOUND);
-    else {
-        doc.PrintError();
-        return Error(ErrorCode::BAD_XML);
-    }
+
+    doc.PrintError();
+    return Error(ErrorCode::BAD_XML);
 }
 
 Library::Container::Yield Library::Container::yieldFrom(const std::string& yieldName)
 {
     if (yieldName == "at_index")
         return Container::Yield::AT_INDEX;
-    else if (yieldName == "item")
+    if (yieldName == "item")
         return Container::Yield::ITEM;
-    else if (yieldName == "buffer")
+    if (yieldName == "buffer")
         return Container::Yield::BUFFER;
-    else if (yieldName == "buffer-nt")
+    if (yieldName == "buffer-nt")
         return Container::Yield::BUFFER_NT;
-    else if (yieldName == "start-iterator")
+    if (yieldName == "start-iterator")
         return Container::Yield::START_ITERATOR;
-    else if (yieldName == "end-iterator")
+    if (yieldName == "end-iterator")
         return Container::Yield::END_ITERATOR;
-    else if (yieldName == "iterator")
+    if (yieldName == "iterator")
         return Container::Yield::ITERATOR;
-    else if (yieldName == "size")
+    if (yieldName == "size")
         return Container::Yield::SIZE;
-    else if (yieldName == "empty")
+    if (yieldName == "empty")
         return Container::Yield::EMPTY;
-    else
-        return Container::Yield::NO_YIELD;
+    return Container::Yield::NO_YIELD;
 }
 Library::Container::Action Library::Container::actionFrom(const std::string& actionName)
 {
     if (actionName == "resize")
         return Container::Action::RESIZE;
-    else if (actionName == "clear")
+    if (actionName == "clear")
         return Container::Action::CLEAR;
-    else if (actionName == "push")
+    if (actionName == "push")
         return Container::Action::PUSH;
-    else if (actionName == "pop")
+    if (actionName == "pop")
         return Container::Action::POP;
-    else if (actionName == "find")
+    if (actionName == "find")
         return Container::Action::FIND;
-    else if (actionName == "insert")
+    if (actionName == "insert")
         return Container::Action::INSERT;
-    else if (actionName == "erase")
+    if (actionName == "erase")
         return Container::Action::ERASE;
-    else if (actionName == "change-content")
+    if (actionName == "change-content")
         return Container::Action::CHANGE_CONTENT;
-    else if (actionName == "change-internal")
+    if (actionName == "change-internal")
         return Container::Action::CHANGE_INTERNAL;
-    else if (actionName == "change")
+    if (actionName == "change")
         return Container::Action::CHANGE;
-    else
-        return Container::Action::NO_ACTION;
+    return Container::Action::NO_ACTION;
 }
 
 // cppcheck-suppress unusedFunction - only used in unit tests
@@ -483,6 +480,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             if (yield == Container::Yield::NO_YIELD)
                                 return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, yieldName);
                         }
+
+                        const char* const returnType = functionNode->Attribute("returnType");
+                        if (returnType)
+                            container.functions[functionName].returnType = returnType;
 
                         container.functions[functionName].action = action;
                         container.functions[functionName].yield = yield;
@@ -878,10 +879,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                 }
             } else {
                 const char * const message = functionnode->GetText();
-                if (!message) {
+                if (!message)
                     return Error(ErrorCode::MISSING_ATTRIBUTE, "\"reason\" and \"alternatives\" or some text.");
-                } else
-                    wi.message = message;
+
+                wi.message = message;
             }
 
             functionwarn[name] = wi;
@@ -905,6 +906,10 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                     return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, yieldName);
             }
             func.containerYield = yield;
+
+            const char* const returnType = functionnode->Attribute("returnType");
+            if (returnType)
+                func.returnType = returnType;
         } else
             unknown_elements.insert(functionnodename);
     }
@@ -916,7 +921,7 @@ bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint 
     const ArgumentChecks *ac = getarg(ftok, argnr);
     if (!ac || ac->valid.empty())
         return true;
-    else if (ac->valid.find('.') != std::string::npos)
+    if (ac->valid.find('.') != std::string::npos)
         return isFloatArgValid(ftok, argnr, argvalue);
     TokenList tokenList(nullptr);
     gettokenlistfromvalid(ac->valid, tokenList);
@@ -967,7 +972,15 @@ std::string Library::getFunctionName(const Token *ftok, bool &error) const
                 continue;
             const std::vector<Type::BaseInfo> &derivedFrom = scope->definedType->derivedFrom;
             for (const Type::BaseInfo & baseInfo : derivedFrom) {
-                const std::string name(baseInfo.name + "::" + ftok->str());
+                std::string name;
+                const Token* tok = baseInfo.nameTok; // baseInfo.name still contains template parameters, but is missing namespaces
+                if (tok->str() == "::")
+                    tok = tok->next();
+                while (Token::Match(tok, "%name%|::")) {
+                    name += tok->str();
+                    tok = tok->next();
+                }
+                name += "::" + ftok->str();
                 if (functions.find(name) != functions.end() && matchArguments(ftok, name))
                     return name;
             }
@@ -1358,17 +1371,18 @@ const Library::NonOverlappingData* Library::getNonOverlappingData(const Token *f
 
 Library::UseRetValType Library::getUseRetValType(const Token *ftok) const
 {
-    if (Token::simpleMatch(ftok->astParent(), ".")) {
-        using Yield = Library::Container::Yield;
-        using Action = Library::Container::Action;
-        const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
-        if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
-            yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
-            ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(ftok->astParent()->astOperand1()) == Action::NO_ACTION))
-            return Library::UseRetValType::DEFAULT;
-    }
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            const Token* contTok = ftok->astParent()->astOperand1();
+            using Yield = Library::Container::Yield;
+            const Yield yield = astContainerYield(contTok);
+            if (yield == Yield::START_ITERATOR || yield == Yield::END_ITERATOR || yield == Yield::AT_INDEX ||
+                yield == Yield::SIZE || yield == Yield::EMPTY || yield == Yield::BUFFER || yield == Yield::BUFFER_NT ||
+                ((yield == Yield::ITEM || yield == Yield::ITERATOR) && astContainerAction(contTok) == Library::Container::Action::NO_ACTION))
+                return Library::UseRetValType::DEFAULT;
+        }
         return Library::UseRetValType::NONE;
+    }
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     if (it != functions.cend())
         return it->second.useretval;
@@ -1385,8 +1399,14 @@ const std::string& Library::returnValue(const Token *ftok) const
 
 const std::string& Library::returnValueType(const Token *ftok) const
 {
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".") && ftok->astParent()->astOperand1()) {
+            const Token* contTok = ftok->astParent()->astOperand1();
+            if (contTok->valueType() && contTok->valueType()->container)
+                return contTok->valueType()->container->getReturnType(ftok->str());
+        }
         return emptyString;
+    }
     const std::map<std::string, std::string>::const_iterator it = mReturnValueType.find(getFunctionName(ftok));
     return it != mReturnValueType.cend() ? it->second : emptyString;
 }
@@ -1440,8 +1460,7 @@ Library::ArgumentChecks::Direction Library::getArgDirection(const Token* ftok, i
         if (fs_argno >= 0 && argnr >= fs_argno) {
             if (formatstr_scan(ftok))
                 return ArgumentChecks::Direction::DIR_OUT;
-            else
-                return ArgumentChecks::Direction::DIR_IN;
+            return ArgumentChecks::Direction::DIR_IN;
         }
     }
     return ArgumentChecks::Direction::DIR_UNKNOWN;
@@ -1479,8 +1498,15 @@ bool Library::isFunctionConst(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isConst())
         return true;
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            using Yield = Library::Container::Yield;
+            const Yield yield = astContainerYield(ftok->astParent()->astOperand1());
+            if (yield == Yield::EMPTY || yield == Yield::SIZE || yield == Yield::BUFFER_NT)
+                return true;
+        }
         return false;
+    }
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(getFunctionName(ftok));
     return (it != functions.cend() && it->second.isconst);
 }
@@ -1489,8 +1515,15 @@ bool Library::isnoreturn(const Token *ftok) const
 {
     if (ftok->function() && ftok->function()->isAttributeNoreturn())
         return true;
-    if (isNotLibraryFunction(ftok))
+    if (isNotLibraryFunction(ftok)) {
+        if (Token::simpleMatch(ftok->astParent(), ".")) {
+            const Token* contTok = ftok->astParent()->astOperand1();
+            if (astContainerAction(contTok) != Library::Container::Action::NO_ACTION ||
+                astContainerYield(contTok) != Library::Container::Yield::NO_YIELD)
+                return false;
+        }
         return false;
+    }
     const std::unordered_map<std::string, FalseTrueMaybe>::const_iterator it = mNoReturn.find(getFunctionName(ftok));
     if (it == mNoReturn.end())
         return false;

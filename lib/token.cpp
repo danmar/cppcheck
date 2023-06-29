@@ -465,11 +465,11 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
         if (haystack[3] == '%') { // %any%
             haystack += 4;
             return 1;
-        } else { // %assign%
-            haystack += 7;
-            if (tok->isAssignmentOp())
-                return 1;
         }
+        // %assign%
+        haystack += 7;
+        if (tok->isAssignmentOp())
+            return 1;
     }
     break;
     case 'n':
@@ -646,9 +646,9 @@ bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_l
 bool Token::firstWordEquals(const char *str, const char *word)
 {
     for (;;) {
-        if (*str != *word) {
+        if (*str != *word)
             return (*str == ' ' && *word == 0);
-        } else if (*str == 0)
+        if (*str == 0)
             break;
 
         ++str;
@@ -841,7 +841,7 @@ const Token* Token::nextArgument() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
+        if (tok->link() && Token::Match(tok, "(|{|[|<"))
             tok = tok->link();
         else if (Token::Match(tok, ")|;"))
             return nullptr;
@@ -854,7 +854,7 @@ const Token* Token::nextArgumentBeforeCreateLinks2() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->link() && Token::Match(tok, "(|{|["))
+        if (tok->link() && Token::Match(tok, "(|{|["))
             tok = tok->link();
         else if (tok->str() == "<") {
             const Token* temp = tok->findClosingBracket();
@@ -871,7 +871,7 @@ const Token* Token::nextTemplateArgument() const
     for (const Token* tok = this; tok; tok = tok->next()) {
         if (tok->str() == ",")
             return tok->next();
-        else if (tok->link() && Token::Match(tok, "(|{|[|<"))
+        if (tok->link() && Token::Match(tok, "(|{|[|<"))
             tok = tok->link();
         else if (Token::Match(tok, ">|;"))
             return nullptr;
@@ -1944,16 +1944,15 @@ static bool removeContradiction(std::list<ValueFlow::Value>& values)
                 if (removey)
                     values.remove(y);
                 return true;
-            } else {
-                result = removex || removey;
-                bool bail = false;
-                if (removex && removePointValue(values, x))
-                    bail = true;
-                if (removey && removePointValue(values, y))
-                    bail = true;
-                if (bail)
-                    return true;
             }
+            result = removex || removey;
+            bool bail = false;
+            if (removex && removePointValue(values, x))
+                bail = true;
+            if (removey && removePointValue(values, y))
+                bail = true;
+            if (bail)
+                return true;
         }
     }
     return result;
@@ -2203,13 +2202,13 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
     if (typeTok != nullptr)
         *typeTok = tok;
     const Token* lhsVarTok{};
-    if (tok->type()) {
+    if (tok->type())
         return tok->type();
-    } else if (tok->variable()) {
+    if (tok->variable())
         return tok->variable()->type();
-    } else if (tok->function()) {
+    if (tok->function())
         return tok->function()->retType;
-    } else if (Token::simpleMatch(tok, "return")) {
+    if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
             return nullptr;
@@ -2217,15 +2216,16 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         if (!function)
             return nullptr;
         return function->retType;
-    } else if (Token::Match(tok->previous(), "%type%|= (|{")) {
+    }
+    if (Token::Match(tok->previous(), "%type%|= (|{"))
         return typeOf(tok->previous(), typeTok);
-    } else if (Token::simpleMatch(tok, "=") && (lhsVarTok = getLHSVariableToken(tok)) != tok->next()) {
+    if (Token::simpleMatch(tok, "=") && (lhsVarTok = getLHSVariableToken(tok)) != tok->next())
         return Token::typeOf(lhsVarTok, typeTok);
-    } else if (Token::simpleMatch(tok, ".")) {
+    if (Token::simpleMatch(tok, "."))
         return Token::typeOf(tok->astOperand2(), typeTok);
-    } else if (Token::simpleMatch(tok, "[")) {
+    if (Token::simpleMatch(tok, "["))
         return Token::typeOf(tok->astOperand1(), typeTok);
-    } else if (Token::simpleMatch(tok, "{")) {
+    if (Token::simpleMatch(tok, "{")) {
         int argnr;
         const Token* ftok = getTokenArgumentFunction(tok, argnr);
         if (argnr < 0)
@@ -2251,9 +2251,9 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
 {
     if (!tok)
         return {};
-    else if (tok->type()) {
+    if (tok->type())
         return {tok, tok->next()};
-    } else if (tok->variable()) {
+    if (tok->variable()) {
         const Variable *var = tok->variable();
         if (!var->typeStartToken() || !var->typeEndToken())
             return {};
@@ -2321,7 +2321,8 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
         if (result.first)
             return result;
         return {var->typeStartToken(), var->typeEndToken()->next()};
-    } else if (Token::simpleMatch(tok, "return")) {
+    }
+    if (Token::simpleMatch(tok, "return")) {
         const Scope* scope = tok->scope();
         if (!scope)
             return {};
@@ -2329,19 +2330,20 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token* tok, bool poi
         if (!function)
             return {};
         return { function->retDef, function->returnDefEnd() };
-    } else if (tok->previous() && tok->previous()->function()) {
+    }
+    if (tok->previous() && tok->previous()->function()) {
         const Function *function = tok->previous()->function();
         return {function->retDef, function->returnDefEnd()};
-    } else if (Token::simpleMatch(tok, "=")) {
-        return Token::typeDecl(tok->astOperand1());
-    } else if (Token::simpleMatch(tok, ".")) {
-        return Token::typeDecl(tok->astOperand2());
-    } else {
-        const ::Type * t = typeOf(tok);
-        if (!t || !t->classDef)
-            return {};
-        return {t->classDef->next(), t->classDef->tokAt(2)};
     }
+    if (Token::simpleMatch(tok, "="))
+        return Token::typeDecl(tok->astOperand1());
+    if (Token::simpleMatch(tok, "."))
+        return Token::typeDecl(tok->astOperand2());
+
+    const ::Type * t = typeOf(tok);
+    if (!t || !t->classDef)
+        return {};
+    return {t->classDef->next(), t->classDef->tokAt(2)};
 }
 std::string Token::typeStr(const Token* tok)
 {

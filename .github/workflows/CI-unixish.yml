@@ -85,6 +85,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install libxml2-utils qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
 
+      - name: Set up GCC
+        uses: egor-tensin/setup-gcc@v1
+        if: matrix.os == 'ubuntu-22.04'
+        with:
+          version: 13
+          platform: x64
+
+      - name: Select compiler
+        run: |
+          echo "CXX=g++-13" >> $GITHUB_ENV
+        if: matrix.os == 'ubuntu-22.04'
+
       # coreutils contains "nproc"
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
@@ -380,6 +392,7 @@ jobs:
         run: |
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety addons/test/threadsafety
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety --std=c++03 addons/test/threadsafety
+          ./cppcheck --error-exitcode=1 --addon=misra addons/test/misra/crash*.c
           ./cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
           pushd addons/test
           # We'll force C89 standard to enable an additional verification for
@@ -402,11 +415,6 @@ jobs:
           python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump
           ../../cppcheck --dump namingng_test.c 
           python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
-
-      - name: Ensure misra addon does not crash
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          ./cppcheck --addon=misra addons/test/misra/crash1.c | ( ! grep 'Bailing out from checking' )
 
       - name: Build democlient
         if: matrix.os == 'ubuntu-22.04'

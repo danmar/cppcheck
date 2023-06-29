@@ -246,19 +246,18 @@ static const Token * functionThrowsRecursive(const Function * function, std::set
          tok != function->functionScope->bodyEnd; tok = tok->next()) {
         if (Token::simpleMatch(tok, "try {"))
             tok = tok->linkAt(1);  // skip till start of catch clauses
-        if (tok->str() == "throw") {
+        if (tok->str() == "throw")
             return tok;
-        } else if (tok->function()) {
+        if (tok->function()) {
             const Function * called = tok->function();
             // check if called function has an exception specification
-            if (called->isThrow() && called->throwArg) {
+            if (called->isThrow() && called->throwArg)
                 return tok;
-            } else if (called->isNoExcept() && called->noexceptArg &&
-                       called->noexceptArg->str() != "true") {
+            if (called->isNoExcept() && called->noexceptArg &&
+                called->noexceptArg->str() != "true")
                 return tok;
-            } else if (functionThrowsRecursive(called, recursive)) {
+            if (functionThrowsRecursive(called, recursive))
                 return tok;
-            }
         }
     }
 
@@ -330,9 +329,9 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
         if (scope->function && !scope->function->isThrow() && !mSettings->library.isentrypoint(scope->className)) {
             for (const Token *tok = scope->function->functionScope->bodyStart->next();
                  tok != scope->function->functionScope->bodyEnd; tok = tok->next()) {
-                if (tok->str() == "try") {
+                if (tok->str() == "try")
                     break;
-                } else if (tok->function()) {
+                if (tok->function()) {
                     const Function * called = tok->function();
                     // check if called function has an exception specification
                     if (called->isThrow() && called->throwArg) {

@@ -335,8 +335,8 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
         const double doubleval = toDoubleNumber(str);
         if (doubleval > (double)std::numeric_limits<biguint>::max())
             return std::numeric_limits<biguint>::max();
-        else // cast to bigint to avoid UBSAN warning about negative double being out-of-range
-            return static_cast<biguint>(static_cast<bigint>(doubleval));
+        // cast to bigint to avoid UBSAN warning about negative double being out-of-range
+        return static_cast<biguint>(static_cast<bigint>(doubleval));
     }
 
     if (isCharLiteral(str))
@@ -414,10 +414,9 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
         const double doubleval = toDoubleNumber(str);
         if (doubleval > (double)std::numeric_limits<bigint>::max())
             return std::numeric_limits<bigint>::max();
-        else if (doubleval < (double)std::numeric_limits<bigint>::min())
+        if (doubleval < (double)std::numeric_limits<bigint>::min())
             return std::numeric_limits<bigint>::min();
-        else
-            return static_cast<bigint>(doubleval);
+        return static_cast<bigint>(doubleval);
     }
 
     if (isCharLiteral(str))
@@ -463,14 +462,12 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
     auto digitval = [&](char c) {
         if ((10 < base) && (c > '9'))
             return 10 + std::tolower(c) - 'a';
-        else
-            return c - '0';
+        return c - '0';
     };
     for (; it!=to; ++it) {
         if ('.' == *it)
             continue;
-        else
-            --distance;
+        --distance;
         result += digitval(*it)* std::pow(base, distance);
     }
     return positivesign ? result : -result;
@@ -1036,7 +1033,7 @@ std::string MathLib::getSuffix(const std::string& value)
         return isUnsigned ? "UL" : "L";
     if (longState == 2)
         return isUnsigned ? "ULL" : "LL";
-    else return "";
+    return "";
 }
 
 static std::string intsuffix(const std::string & first, const std::string & second)
@@ -1117,7 +1114,8 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
         if (a == std::numeric_limits<bigint>::min() && std::abs(b)<=1)
             throw InternalError(nullptr, "Internal Error: Division overflow");
         return toString(toLongNumber(first) / b) + intsuffix(first, second);
-    } else if (isNullValue(second)) {
+    }
+    if (isNullValue(second)) {
         if (isNullValue(first))
             return "nan.0";
         return isPositive(first) == isPositive(second) ? "inf.0" : "-inf.0";
@@ -1287,32 +1285,31 @@ bool MathLib::isDigitSeparator(const std::string& iCode, std::string::size_type 
             return true; // Only xdigits before '
         --i;
     }
-    if (i == iPos - 1) { // No xdigit before '
+    if (i == iPos - 1) // No xdigit before '
         return false;
-    } else {
-        switch (iCode[i]) {
-        case ' ':
-        case '.':
-        case ',':
-        case 'x':
-        case '(':
-        case '{':
-        case '+':
-        case '-':
-        case '*':
-        case '%':
-        case '/':
-        case '&':
-        case '|':
-        case '^':
-        case '~':
-        case '=':
-            return true;
-        case '\'':
-            return isDigitSeparator(iCode, i);
-        default:
-            return false;
-        }
+
+    switch (iCode[i]) {
+    case ' ':
+    case '.':
+    case ',':
+    case 'x':
+    case '(':
+    case '{':
+    case '+':
+    case '-':
+    case '*':
+    case '%':
+    case '/':
+    case '&':
+    case '|':
+    case '^':
+    case '~':
+    case '=':
+        return true;
+    case '\'':
+        return isDigitSeparator(iCode, i);
+    default:
+        return false;
     }
 }
 
