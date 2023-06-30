@@ -8429,6 +8429,17 @@ private:
                              "    B::f(a, b, m);\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B {\n" // #11803
+                             "    virtual void f();\n"
+                             "    virtual void f(int i);\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    void f() override { B::f(); }\n"
+                             "    void f(int i) override;\n"
+                             "    void g() { f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)

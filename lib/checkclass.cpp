@@ -3087,6 +3087,12 @@ void CheckClass::checkUselessOverride()
             const Function* baseFunc = func.getOverriddenFunction();
             if (!baseFunc || baseFunc->isPure() || baseFunc->access != func.access)
                 continue;
+            if (std::any_of(classScope->functionList.begin(), classScope->functionList.end(), [&func](const Function& f) { // check for overloads
+                if (&f == &func)
+                    return false;
+                return f.name() == func.name();
+            }))
+                continue;
             if (const Token* const call = getSingleFunctionCall(func.functionScope)) {
                 if (call->function() != baseFunc)
                     continue;
