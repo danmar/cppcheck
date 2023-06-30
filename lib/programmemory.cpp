@@ -1190,7 +1190,7 @@ struct Executor {
     const Settings* settings = nullptr;
     int fdepth = 4;
 
-    Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
+    explicit Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
 
     ValueFlow::Value executeImpl(const Token* expr)
     {
@@ -1535,10 +1535,10 @@ struct Executor {
     }
 };
 
-static ValueFlow::Value execute(const Token* tok, ProgramMemory& pm, const Settings* settings)
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {
     Executor ex{&pm, settings};
-    return ex.execute(tok);
+    return ex.execute(expr);
 }
 
 std::vector<ValueFlow::Value> execute(const Scope* scope, ProgramMemory& pm, const Settings* settings)
