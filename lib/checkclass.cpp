@@ -3077,6 +3077,23 @@ static const Token* getSingleFunctionCall(const Scope* scope) {
     return nullptr;
 }
 
+static bool compareTokenRanges(const Token* start1, const Token* end1, const Token* start2, const Token* end2) {
+    const Token* tok1 = start1;
+    const Token* tok2 = start2;
+    bool isEqual = false;
+    while (tok1 && tok2) {
+        if (tok1->str() != tok2->str())
+            break;
+        if (tok1 == end1 && tok2 == end2) {
+            isEqual = true;
+            break;
+        }
+        tok1 = tok1->next();
+        tok2 = tok2->next();
+    }
+    return isEqual;
+}
+
 void CheckClass::checkUselessOverride()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -3088,32 +3105,17 @@ void CheckClass::checkUselessOverride()
         for (const Function& func : classScope->functionList) {
             if (!func.functionScope)
                 continue;
+            if (func.hasFinalSpecifier())
+                continue;
             const Function* baseFunc = func.getOverriddenFunction();
-            if (!baseFunc || baseFunc->isPure())
+            if (!baseFunc || baseFunc->isPure() || baseFunc->access != func.access)
                 continue;
             if (baseFunc->functionScope) {
-                bool isSameCode = true;
-                const Token* baseTok = baseFunc->argDef;
-                const Token* funcTok = func.argDef;
-                while (baseTok != baseFunc->argDef->link() && funcTok != func.argDef->link()) {
-                    if (baseTok->str() != funcTok->str()) {
-                        isSameCode = false;
-                        break;
-                    }
-                    baseTok = baseTok->next();
-                    funcTok = funcTok->next();
-                }
+                bool isSameCode = compareTokenRanges(baseFunc->argDef, baseFunc->argDef->link(), func.argDef, func.argDef->link()); // function arguments
                 if (isSameCode) {
-                    baseTok = baseFunc->functionScope->bodyStart;
-                    funcTok = func.functionScope->bodyStart;
-                    while (baseTok != baseFunc->functionScope->bodyEnd && funcTok != func.functionScope->bodyEnd) {
-                        if (baseTok->str() != funcTok->str()) {
-                            isSameCode = false;
-                            break;
-                        }
-                        baseTok = baseTok->next();
-                        funcTok = funcTok->next();
-                    }
+                    isSameCode = compareTokenRanges(baseFunc->functionScope->bodyStart, baseFunc->functionScope->bodyEnd, // function body
+                                                    func.functionScope->bodyStart, func.functionScope->bodyEnd);
+
                     if (isSameCode) {
                         uselessOverrideError(baseFunc, &func, true);
                         continue;
@@ -3125,7 +3127,8 @@ void CheckClass::checkUselessOverride()
                     continue;
                 std::vector<const Token*> funcArgs = getArguments(func.tokenDef);
                 std::vector<const Token*> callArgs = getArguments(call);
-                if (!std::equal(funcArgs.begin(), funcArgs.end(), callArgs.begin(), [](const Token* t1, const Token* t2) {
+                if (funcArgs.size() != callArgs.size() ||
+                    !std::equal(funcArgs.begin(), funcArgs.end(), callArgs.begin(), [](const Token* t1, const Token* t2) {
                     return t1->str() == t2->str();
                 }))
                     continue;
