@@ -3036,7 +3036,7 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
                 Certainty::normal);
 }
 
-void CheckClass::uselessOverrideError(const Function *funcInBase, const Function *funcInDerived)
+void CheckClass::uselessOverrideError(const Function *funcInBase, const Function *funcInDerived, bool isSameCode)
 {
     const std::string functionName = funcInDerived ? ((funcInDerived->isDestructor() ? "~" : "") + funcInDerived->name()) : "";
     const std::string funcType = (funcInDerived && funcInDerived->isDestructor()) ? "destructor" : "function";
@@ -3047,9 +3047,15 @@ void CheckClass::uselessOverrideError(const Function *funcInBase, const Function
         errorPath.emplace_back(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class");
     }
 
+    std::string errStr = "\nThe " + funcType + " '$symbol' overrides a " + funcType + " in a base class but ";
+    if (isSameCode) {
+        errStr += "is identical to the overridden function";
+    }
+    else
+        errStr += "just delegates back to the base class.";
     reportError(errorPath, Severity::style, "uselessOverride",
-                "$symbol:" + functionName + "\n"
-                "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but just delegates back to the base class.",
+                "$symbol:" + functionName +
+                errStr,
                 CWE(0U) /* Unknown CWE! */,
                 Certainty::normal);
 }
@@ -3085,6 +3091,35 @@ void CheckClass::checkUselessOverride()
             const Function* baseFunc = func.getOverriddenFunction();
             if (!baseFunc || baseFunc->isPure())
                 continue;
+            if (baseFunc->functionScope) {
+                bool isSameCode = true;
+                const Token* baseTok = baseFunc->argDef;
+                const Token* funcTok = func.argDef;
+                while (baseTok != baseFunc->argDef->link() && funcTok != func.argDef->link()) {
+                    if (baseTok->str() != funcTok->str()) {
+                        isSameCode = false;
+                        break;
+                    }
+                    baseTok = baseTok->next();
+                    funcTok = funcTok->next();
+                }
+                if (isSameCode) {
+                    baseTok = baseFunc->functionScope->bodyStart;
+                    funcTok = func.functionScope->bodyStart;
+                    while (baseTok != baseFunc->functionScope->bodyEnd && funcTok != func.functionScope->bodyEnd) {
+                        if (baseTok->str() != funcTok->str()) {
+                            isSameCode = false;
+                            break;
+                        }
+                        baseTok = baseTok->next();
+                        funcTok = funcTok->next();
+                    }
+                    if (isSameCode) {
+                        uselessOverrideError(baseFunc, &func, true);
+                        continue;
+                    }
+                }
+            }
             if (const Token* const call = getSingleFunctionCall(func.functionScope)) {
                 if (call->function() != baseFunc)
                     continue;
