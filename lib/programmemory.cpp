@@ -1190,9 +1190,7 @@ struct Executor {
     const Settings* settings = nullptr;
     int fdepth = 4;
 
-    Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr)
-    : pm(pm), settings(settings)
-    {}
+    Executor(ProgramMemory* pm = nullptr, const Settings* settings = nullptr) : pm(pm), settings(settings) {}
 
     ValueFlow::Value executeImpl(const Token* expr)
     {
