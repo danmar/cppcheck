@@ -4394,7 +4394,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
                 bool match = true;
 
                 // check for matching return parameters
-                while (!Token::Match(temp1, "virtual|{|}|;")) {
+                while (!Token::Match(temp1, "virtual|public:|private:|protected:|{|}|;")) {
                     if (temp1->str() != temp2->str() &&
                         !(temp1->str() == derivedFromType->name() &&
                           temp2->str() == baseType->name())) {
