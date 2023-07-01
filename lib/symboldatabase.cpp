@@ -4388,13 +4388,13 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         auto range = parent->functionMap.equal_range(tokenDef->str());
         for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
             const Function * func = it->second;
-            if (func->hasVirtualSpecifier()) { // Base is virtual and of same name
+            if (func->isImplicitlyVirtual()) { // Base is virtual and of same name
                 const Token *temp1 = func->tokenDef->previous();
                 const Token *temp2 = tokenDef->previous();
                 bool match = true;
 
                 // check for matching return parameters
-                while (temp1->str() != "virtual") {
+                while (!Token::Match(temp1, "virtual|{|}|;")) {
                     if (temp1->str() != temp2->str() &&
                         !(temp1->str() == derivedFromType->name() &&
                           temp2->str() == baseType->name())) {
