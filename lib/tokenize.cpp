@@ -8054,6 +8054,17 @@ void Tokenizer::reportUnknownMacros() const
         }
     }
 
+    // Report unknown macros before } "{ .. if (x) MACRO }"
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (Token::Match(tok, ")|; %name% }")) {
+            const Token* prev = tok->linkAt(2);
+            while (Token::simpleMatch(prev, "{"))
+                prev = prev->previous();
+            if (Token::Match(prev, ";|)"))
+                unknownMacroError(tok->next());
+        }
+    }
+
     // Report unknown macros that contain several statements "MACRO(a;b;c)"
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
