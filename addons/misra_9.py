@@ -476,7 +476,13 @@ def createRecordChildrenDefs(ed, var):
     valueType = ed.valueType
     if not valueType or not valueType.typeScope:
         return
-
+    typeToken = var.typeEndToken
+    while typeToken and typeToken.isName:
+        typeToken = typeToken.previous
+    if typeToken and typeToken.str == '*':
+        child = ElementDef("pointer", var.nameToken, var.nameToken.valueType)
+        ed.addChild(child)
+        return
     for variable in valueType.typeScope.varlist:
         if variable is var:
             continue
