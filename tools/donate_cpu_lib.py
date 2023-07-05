@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.45"
+CLIENT_VERSION = "1.3.46"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -399,9 +399,9 @@ def __run_command(cmd, print_cmd=True):
     time_start = time.time()
     comm = None
     if sys.platform == 'win32':
-        p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+        p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape')
     else:
-        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, preexec_fn=os.setsid)
+        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, errors='surrogateescape', preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
@@ -605,6 +605,25 @@ def diff_results(ver1, results1, ver2, results2):
     while i2 < len(r2):
         ret += ver2 + ' ' + r2[i2] + '\n'
         i2 += 1
+
+    # if there are syntaxError/unknownMacro/etc then analysis stops.
+    # diffing normal checker warnings will not make much sense
+    bailout_ids = ('[syntaxError]', '[unknownMacro]')
+    has_bailout_id = False
+    for id in bailout_ids:
+        if (id in results1) or (id in results1):
+            has_bailout_id = True
+    if has_bailout_id:
+        def check_bailout(line):
+            for id in bailout_ids:
+                if line.endswith(id):
+                    return True
+            return False
+        out = ''
+        for line in ret.split('\n'):
+            if check_bailout(line):
+                out += line + '\n'
+        ret = out
 
     return ret
 

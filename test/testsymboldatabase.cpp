@@ -249,6 +249,7 @@ private:
         TEST_CASE(functionArgs20);
 
         TEST_CASE(functionImplicitlyVirtual);
+        TEST_CASE(functionGetOverridden);
 
         TEST_CASE(functionIsInlineKeyword);
 
@@ -2728,6 +2729,24 @@ private:
         ASSERT_EQUALS(4, db->scopeList.size());
         const Function *function = db->scopeList.back().function;
         ASSERT_EQUALS(true, function && function->isImplicitlyVirtual(false));
+    }
+
+    void functionGetOverridden() {
+        GET_SYMBOL_DB("struct B { virtual void f(); };\n"
+                      "struct D : B {\n"
+                      "public:\n"
+                      "    void f() override;\n"
+                      "};\n"
+                      "struct D2 : D { void f() override {} };\n");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(5, db->scopeList.size());
+        const Function *func = db->scopeList.back().function;
+        ASSERT(func && func->nestedIn);
+        ASSERT_EQUALS("D2", func->nestedIn->className);
+        bool foundAllBaseClasses{};
+        const Function* baseFunc = func->getOverriddenFunction(&foundAllBaseClasses);
+        ASSERT(baseFunc && baseFunc->nestedIn && foundAllBaseClasses);
+        ASSERT_EQUALS("D", baseFunc->nestedIn->className);
     }
 
     void functionIsInlineKeyword() {

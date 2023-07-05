@@ -8430,6 +8430,26 @@ private:
                              "};");
         ASSERT_EQUALS("", errout.str());
 
+        checkUselessOverride("struct B {\n" // #11803
+                             "    virtual void f();\n"
+                             "    virtual void f(int i);\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    void f() override { B::f(); }\n"
+                             "    void f(int i) override;\n"
+                             "    void g() { f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual void f(); };\n" // #11808
+                             "struct D : B { void f() override {} };\n"
+                             "struct D2 : D {\n"
+                             "    void f() override {\n"
+                             "        B::f();\n"
+                             "    }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
         checkUselessOverride("struct B {\n"
                              "    virtual int f() { return 1; }\n"
                              "    virtual int g() { return 7; }\n"
