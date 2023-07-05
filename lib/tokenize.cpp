@@ -5840,6 +5840,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " externLang=\"C\"";
         if (tok->isExpandedMacro())
             out << " isExpandedMacro=\"true\"";
+        if (tok->isTemplateArg())
+            out << " isTemplateArg=\"true\"";
         if (tok->isRemovedVoidParameter())
             out << " isRemovedVoidParameter=\"true\"";
         if (tok->isSplittedVarDeclComma())
