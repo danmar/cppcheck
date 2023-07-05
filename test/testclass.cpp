@@ -8449,6 +8449,22 @@ private:
                              "    }\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B {\n"
+                             "    virtual int f() { return 1; }\n"
+                             "    virtual int g() { return 7; }\n"
+                             "    virtual int h(int i, int j) { return i + j; }\n"
+                             "    virtual int j(int i, int j) { return i + j; }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    int f() override { return 2; }\n"
+                             "    int g() override { return 7; }\n"
+                             "    int h(int j, int i) override { return i + j; }\n"
+                             "    int j(int i, int j) override { return i + j; }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:9]: (style) The function 'g' overrides a function in a base class but is identical to the overridden function\n"
+                      "[test.cpp:5] -> [test.cpp:11]: (style) The function 'j' overrides a function in a base class but is identical to the overridden function\n",
+                      errout.str());
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)

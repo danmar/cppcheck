@@ -3036,7 +3036,7 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
                 Certainty::normal);
 }
 
-void CheckClass::uselessOverrideError(const Function *funcInBase, const Function *funcInDerived)
+void CheckClass::uselessOverrideError(const Function *funcInBase, const Function *funcInDerived, bool isSameCode)
 {
     const std::string functionName = funcInDerived ? ((funcInDerived->isDestructor() ? "~" : "") + funcInDerived->name()) : "";
     const std::string funcType = (funcInDerived && funcInDerived->isDestructor()) ? "destructor" : "function";
@@ -3047,9 +3047,15 @@ void CheckClass::uselessOverrideError(const Function *funcInBase, const Function
         errorPath.emplace_back(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class");
     }
 
+    std::string errStr = "\nThe " + funcType + " '$symbol' overrides a " + funcType + " in a base class but ";
+    if (isSameCode) {
+        errStr += "is identical to the overridden function";
+    }
+    else
+        errStr += "just delegates back to the base class.";
     reportError(errorPath, Severity::style, "uselessOverride",
-                "$symbol:" + functionName + "\n"
-                "The " + funcType + " '$symbol' overrides a " + funcType + " in a base class but just delegates back to the base class.",
+                "$symbol:" + functionName +
+                errStr,
                 CWE(0U) /* Unknown CWE! */,
                 Certainty::normal);
 }
@@ -3069,6 +3075,23 @@ static const Token* getSingleFunctionCall(const Scope* scope) {
     if (Token::simpleMatch(ftok, "(") && ftok->previous()->function())
         return ftok->previous();
     return nullptr;
+}
+
+static bool compareTokenRanges(const Token* start1, const Token* end1, const Token* start2, const Token* end2) {
+    const Token* tok1 = start1;
+    const Token* tok2 = start2;
+    bool isEqual = false;
+    while (tok1 && tok2) {
+        if (tok1->str() != tok2->str())
+            break;
+        if (tok1 == end1 && tok2 == end2) {
+            isEqual = true;
+            break;
+        }
+        tok1 = tok1->next();
+        tok2 = tok2->next();
+    }
+    return isEqual;
 }
 
 void CheckClass::checkUselessOverride()
@@ -3093,6 +3116,18 @@ void CheckClass::checkUselessOverride()
                 return f.name() == func.name();
             }))
                 continue;
+            if (baseFunc->functionScope) {
+                bool isSameCode = compareTokenRanges(baseFunc->argDef, baseFunc->argDef->link(), func.argDef, func.argDef->link()); // function arguments
+                if (isSameCode) {
+                    isSameCode = compareTokenRanges(baseFunc->functionScope->bodyStart, baseFunc->functionScope->bodyEnd, // function body
+                                                    func.functionScope->bodyStart, func.functionScope->bodyEnd);
+
+                    if (isSameCode) {
+                        uselessOverrideError(baseFunc, &func, true);
+                        continue;
+                    }
+                }
+            }
             if (const Token* const call = getSingleFunctionCall(func.functionScope)) {
                 if (call->function() != baseFunc)
                     continue;

@@ -7239,10 +7239,6 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         return false;
     }
 
-    bool isGlobal() const override {
-        return false;
-    }
-
     bool lowerToPossible() override {
         for (auto&& p:values) {
             if (p.second.isImpossible())
