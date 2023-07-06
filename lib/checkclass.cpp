@@ -2886,8 +2886,9 @@ void CheckClass::checkDuplInheritedMembers()
     }
 }
 
-void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
+static std::vector<std::tuple<const Variable*, const Variable*, const Type::BaseInfo*>> hasDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
 {
+    std::vector<std::tuple<const Variable*, const Variable*, const Type::BaseInfo*>> results;
     for (const Type::BaseInfo &parentClassIt : typeBase->derivedFrom) {
         // Check if there is info about the 'Base' class
         if (!parentClassIt.type || !parentClassIt.type->classScope)
@@ -2898,16 +2899,30 @@ void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, con
         // Check if they have a member variable in common
         for (const Variable &classVarIt : typeCurrent->classScope->varlist) {
             for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
-                if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) { // Check if the class and its parent have a common variable
-                    duplInheritedMembersError(classVarIt.nameToken(), parentClassVarIt.nameToken(),
-                                              typeCurrent->name(), parentClassIt.type->name(), classVarIt.name(),
-                                              typeCurrent->classScope->type == Scope::eStruct,
-                                              parentClassIt.type->classScope->type == Scope::eStruct);
-                }
+                if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) // Check if the class and its parent have a common variable
+                    results.emplace_back(&classVarIt, &parentClassVarIt, &parentClassIt);
             }
         }
-        if (typeCurrent != parentClassIt.type)
-            checkDuplInheritedMembersRecursive(typeCurrent, parentClassIt.type);
+        if (typeCurrent != parentClassIt.type) {
+            const auto recursive = hasDuplInheritedMembersRecursive(typeCurrent, parentClassIt.type);
+            results.insert(results.end(), recursive.begin(), recursive.end());
+        }
+    }
+    return results;
+}
+
+void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
+{
+    const auto results = hasDuplInheritedMembersRecursive(typeCurrent, typeBase);
+    for (const auto& r : results) {
+        if (const Variable* classVar = std::get<0>(r)) {
+            const Variable* parentClassVar = std::get<1>(r);
+            const Type::BaseInfo* parentClass = std::get<2>(r);
+            duplInheritedMembersError(classVar->nameToken(), parentClassVar->nameToken(),
+                                      typeCurrent->name(), parentClass->type->name(), classVar->name(),
+                                      typeCurrent->classScope->type == Scope::eStruct,
+                                      parentClass->type->classScope->type == Scope::eStruct);
+        }
     }
 }
 
@@ -3084,6 +3099,8 @@ static bool compareTokenRanges(const Token* start1, const Token* end1, const Tok
     while (tok1 && tok2) {
         if (tok1->str() != tok2->str())
             break;
+        if (tok1->str() == "this")
+            break;
         if (tok1 == end1 && tok2 == end2) {
             isEqual = true;
             break;
@@ -3115,6 +3132,10 @@ void CheckClass::checkUselessOverride()
                     return false;
                 return f.name() == func.name();
             }))
+                continue;
+            if (func.token->isExpandedMacro() || baseFunc->token->isExpandedMacro())
+                continue;
+            if (!classScope->definedType || !hasDuplInheritedMembersRecursive(classScope->definedType, classScope->definedType).empty()) // bailout for shadowed member variables
                 continue;
             if (baseFunc->functionScope) {
                 bool isSameCode = compareTokenRanges(baseFunc->argDef, baseFunc->argDef->link(), func.argDef, func.argDef->link()); // function arguments
