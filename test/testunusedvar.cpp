@@ -166,6 +166,7 @@ private:
         TEST_CASE(localvaralias20); // ticket #10966
         TEST_CASE(localvaralias21);
         TEST_CASE(localvaralias22);
+        TEST_CASE(localvaralias23);
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -5053,6 +5054,17 @@ private:
                               "    int x[1], *p(x);\n"
                               "    x[0] = 42;\n"
                               "    return *p;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias23() { // #11817
+        functionVariableUsage("void f(int& r, bool a, bool b) {\n"
+                              "    int& e = r;\n"
+                              "    if (a)\n"
+                              "        e = 42;\n"
+                              "    else if (b)\n"
+                              "        e = 1;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

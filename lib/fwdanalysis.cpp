@@ -364,6 +364,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local, inInnerClass, depth);
             if (result1.type == Result::Type::READ || result1.type == Result::Type::BAILOUT)
                 return result1;
+            if (mWhat == What::UnusedValue && result1.type == Result::Type::WRITE && expr->variable() && expr->variable()->isReference())
+                return result1;
             if (mWhat == What::ValueFlow && result1.type == Result::Type::WRITE)
                 mValueFlowKnown = false;
             if (mWhat == What::Reassign && result1.type == Result::Type::BREAK) {
