@@ -530,6 +530,10 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
             addrOf = tok->astOperand1();
         else if (Token::simpleMatch(tok, "std :: ref ("))
             addrOf = tok->tokAt(3)->astOperand2();
+        else if (tok->valueType() && tok->valueType()->pointer &&
+                 (Token::Match(tok, "%var% = %var% ;") || Token::Match(tok, "%var% {|( %var% }|)")) &&
+                 Token::Match(expr->previous(), "%varid% [", tok->tokAt(2)->varId()))
+            addrOf = tok->tokAt(2);
         else
             continue;
 
