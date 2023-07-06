@@ -2888,8 +2888,10 @@ void CheckClass::checkDuplInheritedMembers()
 
 namespace {
     struct DuplMemberInfo {
-        const Variable* classVar{}, *parentClassVar{};
-        const Type::BaseInfo* parentClass{};
+        DuplMemberInfo(const Variable* cv, const Variable* pcv, const Type::BaseInfo* pc) : classVar(cv), parentClassVar(pcv), parentClass(pc) {}
+        const Variable* classVar;
+        const Variable* parentClassVar;
+        const Type::BaseInfo* parentClass;
     };
 }
 
@@ -2907,7 +2909,7 @@ static std::vector<DuplMemberInfo> hasDuplInheritedMembersRecursive(const Type* 
         for (const Variable &classVarIt : typeCurrent->classScope->varlist) {
             for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
                 if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) // Check if the class and its parent have a common variable
-                    results.emplace_back(DuplMemberInfo{ &classVarIt, &parentClassVarIt, &parentClassIt });
+                    results.emplace_back(&classVarIt, &parentClassVarIt, &parentClassIt);
             }
         }
         if (typeCurrent != parentClassIt.type) {
