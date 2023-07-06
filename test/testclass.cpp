@@ -8359,7 +8359,7 @@ private:
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
-        tokenizer.createTokens(std::move(tokens2));       
+        tokenizer.createTokens(std::move(tokens2));
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check..
