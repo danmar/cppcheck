@@ -2886,9 +2886,16 @@ void CheckClass::checkDuplInheritedMembers()
     }
 }
 
-static std::vector<std::tuple<const Variable*, const Variable*, const Type::BaseInfo*>> hasDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
+namespace {
+    struct DuplMemberInfo {
+        const Variable* classVar{}, *parentClassVar{};
+        const Type::BaseInfo* parentClass{};
+    };
+}
+
+static std::vector<DuplMemberInfo> hasDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
 {
-    std::vector<std::tuple<const Variable*, const Variable*, const Type::BaseInfo*>> results;
+    std::vector<DuplMemberInfo> results;
     for (const Type::BaseInfo &parentClassIt : typeBase->derivedFrom) {
         // Check if there is info about the 'Base' class
         if (!parentClassIt.type || !parentClassIt.type->classScope)
@@ -2900,7 +2907,7 @@ static std::vector<std::tuple<const Variable*, const Variable*, const Type::Base
         for (const Variable &classVarIt : typeCurrent->classScope->varlist) {
             for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
                 if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) // Check if the class and its parent have a common variable
-                    results.emplace_back(&classVarIt, &parentClassVarIt, &parentClassIt);
+                    results.emplace_back(DuplMemberInfo{ &classVarIt, &parentClassVarIt, &parentClassIt });
             }
         }
         if (typeCurrent != parentClassIt.type) {
@@ -2915,14 +2922,10 @@ void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, con
 {
     const auto results = hasDuplInheritedMembersRecursive(typeCurrent, typeBase);
     for (const auto& r : results) {
-        if (const Variable* classVar = std::get<0>(r)) {
-            const Variable* parentClassVar = std::get<1>(r);
-            const Type::BaseInfo* parentClass = std::get<2>(r);
-            duplInheritedMembersError(classVar->nameToken(), parentClassVar->nameToken(),
-                                      typeCurrent->name(), parentClass->type->name(), classVar->name(),
-                                      typeCurrent->classScope->type == Scope::eStruct,
-                                      parentClass->type->classScope->type == Scope::eStruct);
-        }
+        duplInheritedMembersError(r.classVar->nameToken(), r.parentClassVar->nameToken(),
+                                  typeCurrent->name(), r.parentClass->type->name(), r.classVar->name(),
+                                  typeCurrent->classScope->type == Scope::eStruct,
+                                  r.parentClass->type->classScope->type == Scope::eStruct);
     }
 }
 
