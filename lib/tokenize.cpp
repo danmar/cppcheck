@@ -8058,7 +8058,7 @@ void Tokenizer::reportUnknownMacros() const
 
     // Report unknown macros before } "{ .. if (x) MACRO }"
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, ")|; %name% }")) {
+        if (Token::Match(tok, ")|; %name% } !!)")) {
             const Token* prev = tok->linkAt(2);
             while (Token::simpleMatch(prev, "{"))
                 prev = prev->previous();

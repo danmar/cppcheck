@@ -6876,6 +6876,10 @@ private:
 
         ASSERT_THROW(tokenizeAndStringify("void foo() { if(x) SYSTEM_ERROR }"), InternalError);
         ASSERT_THROW(tokenizeAndStringify("void foo() { dostuff(); SYSTEM_ERROR }"), InternalError);
+
+        ASSERT_NO_THROW(tokenizeAndStringify("void f(void* q) {\n"
+                                             "    g(&(S) { .p = (int*)q });\n"
+                                             "}\n", /*expand*/ true, cppcheck::Platform::Type::Native, "test.c"));
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

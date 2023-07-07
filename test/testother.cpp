@@ -3270,6 +3270,12 @@ private:
               "    const int* p = s.g<int>();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int x; };\n" // #11818
+              "std::istream& f(std::istream& is, S& s) {\n"
+              "    return is >> s.x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
