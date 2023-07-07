@@ -5249,7 +5249,7 @@ void Tokenizer::createLinks2()
         } else if (token->str() == "<" &&
                    ((token->previous() && (token->previous()->isTemplate() ||
                                            (token->previous()->isName() && !token->previous()->varId()) ||
-                                           (token->strAt(-1) == "]" && !Token::Match(token->linkAt(-1)->previous(), "%name%|)")))) ||
+                                           (token->strAt(-1) == "]" && (!Token::Match(token->linkAt(-1)->previous(), "%name%|)") || token->linkAt(-1)->previous()->isKeyword())))) ||
                     Token::Match(token->next(), ">|>>"))) {
             type.push(token);
             if (token->previous()->str() == "template")
