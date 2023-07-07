@@ -8503,6 +8503,16 @@ private:
                              "    int f() const override { return m; }\n"
                              "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B {\n"
+                             "    int g() const;\n"
+                             "    virtual int f() const { return g(); }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    int g() const;\n"
+                             "    int f() const override { return g(); }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)

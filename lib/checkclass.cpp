@@ -2893,9 +2893,15 @@ namespace {
         const Variable* parentClassVar;
         const Type::BaseInfo* parentClass;
     };
+    struct DuplMemberFuncInfo {
+        DuplMemberFuncInfo(const Function* cf, const Function* pcf, const Type::BaseInfo* pc) : classFunc(cf), parentClassFunc(pcf), parentClass(pc) {}
+        const Function* classFunc;
+        const Function* parentClassFunc;
+        const Type::BaseInfo* parentClass;
+    };
 }
 
-static std::vector<DuplMemberInfo> hasDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
+static std::vector<DuplMemberInfo> getDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase, bool skipPrivate = true)
 {
     std::vector<DuplMemberInfo> results;
     for (const Type::BaseInfo &parentClassIt : typeBase->derivedFrom) {
@@ -2908,12 +2914,38 @@ static std::vector<DuplMemberInfo> hasDuplInheritedMembersRecursive(const Type* 
         // Check if they have a member variable in common
         for (const Variable &classVarIt : typeCurrent->classScope->varlist) {
             for (const Variable &parentClassVarIt : parentClassIt.type->classScope->varlist) {
-                if (classVarIt.name() == parentClassVarIt.name() && !parentClassVarIt.isPrivate()) // Check if the class and its parent have a common variable
+                if (classVarIt.name() == parentClassVarIt.name() && (!parentClassVarIt.isPrivate() || !skipPrivate)) // Check if the class and its parent have a common variable
                     results.emplace_back(&classVarIt, &parentClassVarIt, &parentClassIt);
             }
         }
         if (typeCurrent != parentClassIt.type) {
-            const auto recursive = hasDuplInheritedMembersRecursive(typeCurrent, parentClassIt.type);
+            const auto recursive = getDuplInheritedMembersRecursive(typeCurrent, parentClassIt.type, skipPrivate);
+            results.insert(results.end(), recursive.begin(), recursive.end());
+        }
+    }
+    return results;
+}
+
+static std::vector<DuplMemberFuncInfo> getDuplInheritedMemberFunctionsRecursive(const Type* typeCurrent, const Type* typeBase, bool skipPrivate = true)
+{
+    std::vector<DuplMemberFuncInfo> results;
+    for (const Type::BaseInfo &parentClassIt : typeBase->derivedFrom) {
+        // Check if there is info about the 'Base' class
+        if (!parentClassIt.type || !parentClassIt.type->classScope)
+            continue;
+        // Don't crash on recursive templates
+        if (parentClassIt.type == typeBase)
+            continue;
+        for (const Function& classFuncIt : typeCurrent->classScope->functionList) {
+            if (classFuncIt.isImplicitlyVirtual())
+                continue;
+            for (const Function& parentClassFuncIt : parentClassIt.type->classScope->functionList) {
+                if (classFuncIt.name() == parentClassFuncIt.name() && (parentClassFuncIt.access != AccessControl::Private || !skipPrivate))
+                    results.emplace_back(&classFuncIt, &parentClassFuncIt, &parentClassIt);
+            }
+        }
+        if (typeCurrent != parentClassIt.type) {
+            const auto recursive = getDuplInheritedMemberFunctionsRecursive(typeCurrent, parentClassIt.type);
             results.insert(results.end(), recursive.begin(), recursive.end());
         }
     }
@@ -2922,7 +2954,7 @@ static std::vector<DuplMemberInfo> hasDuplInheritedMembersRecursive(const Type* 
 
 void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
 {
-    const auto results = hasDuplInheritedMembersRecursive(typeCurrent, typeBase);
+    const auto results = getDuplInheritedMembersRecursive(typeCurrent, typeBase);
     for (const auto& r : results) {
         duplInheritedMembersError(r.classVar->nameToken(), r.parentClassVar->nameToken(),
                                   typeCurrent->name(), r.parentClass->type->name(), r.classVar->name(),
@@ -3140,8 +3172,6 @@ void CheckClass::checkUselessOverride()
                 continue;
             if (func.token->isExpandedMacro() || baseFunc->token->isExpandedMacro())
                 continue;
-            if (!classScope->definedType || !hasDuplInheritedMembersRecursive(classScope->definedType, classScope->definedType).empty()) // bailout for shadowed member variables
-                continue;
             if (baseFunc->functionScope) {
                 bool isSameCode = compareTokenRanges(baseFunc->argDef, baseFunc->argDef->link(), func.argDef, func.argDef->link()); // function arguments
                 if (isSameCode) {
@@ -3149,6 +3179,11 @@ void CheckClass::checkUselessOverride()
                                                     func.functionScope->bodyStart, func.functionScope->bodyEnd);
 
                     if (isSameCode) {
+                        // bailout for shadowed members
+                        if (!classScope->definedType ||
+                            !getDuplInheritedMembersRecursive(classScope->definedType, classScope->definedType, /*skipPrivate*/ false).empty() ||
+                            !getDuplInheritedMemberFunctionsRecursive(classScope->definedType, classScope->definedType, /*skipPrivate*/ false).empty())
+                            continue;
                         uselessOverrideError(baseFunc, &func, true);
                         continue;
                     }
