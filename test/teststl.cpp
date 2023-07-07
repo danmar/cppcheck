@@ -4256,6 +4256,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (performance) Assigning the result of c_str() to a std::string_view is slow and redundant.\n"
                       "[test.cpp:6]: (performance) Constructing a std::string_view from the result of c_str() is slow and redundant.\n",
                       errout.str());
+
+        check("void f(const std::string& s) {\n" // #11819
+              "    std::string_view sv(s.data(), 13);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {
