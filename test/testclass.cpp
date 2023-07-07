@@ -674,6 +674,14 @@ private:
                                   "};\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (warning) The struct 'D' defines member function with name 'g' also defined in its parent struct 'B'.\n",
                       errout.str());
+
+        checkDuplInheritedMembers("struct B {\n"
+                                  "    int g() const;\n"
+                                  "};\n"
+                                  "struct D : B {\n"
+                                  "    int g(int) const;\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)

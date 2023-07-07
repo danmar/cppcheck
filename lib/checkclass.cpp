@@ -2940,7 +2940,9 @@ static std::vector<DuplMemberFuncInfo> getDuplInheritedMemberFunctionsRecursive(
             if (classFuncIt.isImplicitlyVirtual())
                 continue;
             for (const Function& parentClassFuncIt : parentClassIt.type->classScope->functionList) {
-                if (classFuncIt.name() == parentClassFuncIt.name() && (parentClassFuncIt.access != AccessControl::Private || !skipPrivate))
+                if (classFuncIt.name() == parentClassFuncIt.name() &&
+                    (parentClassFuncIt.access != AccessControl::Private || !skipPrivate) &&
+                    classFuncIt.argsMatch(parentClassIt.type->classScope, parentClassFuncIt.argDef, classFuncIt.argDef, emptyString, 0))
                     results.emplace_back(&classFuncIt, &parentClassFuncIt, &parentClassIt);
             }
         }
