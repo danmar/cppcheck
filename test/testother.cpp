@@ -6570,6 +6570,15 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The comparison 'p == 0' is always true.\n", errout.str());
+
+        // #11820
+        check("unsigned f(unsigned x) {\n"
+              "    return x - !!x;\n"
+              "}\n"
+              "unsigned g(unsigned x) {\n"
+              "    return !!x - x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpression8() {
