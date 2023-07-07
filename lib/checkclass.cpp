@@ -2942,6 +2942,7 @@ static std::vector<DuplMemberFuncInfo> getDuplInheritedMemberFunctionsRecursive(
             for (const Function& parentClassFuncIt : parentClassIt.type->classScope->functionList) {
                 if (classFuncIt.name() == parentClassFuncIt.name() &&
                     (parentClassFuncIt.access != AccessControl::Private || !skipPrivate) &&
+                    !classFuncIt.isConstructor() && !classFuncIt.isDestructor() &&
                     classFuncIt.argsMatch(parentClassIt.type->classScope, parentClassFuncIt.argDef, classFuncIt.argDef, emptyString, 0))
                     results.emplace_back(&classFuncIt, &parentClassFuncIt, &parentClassIt);
             }

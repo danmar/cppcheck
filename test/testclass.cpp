@@ -682,6 +682,16 @@ private:
                                   "    int g(int) const;\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("struct S {\n"
+                                  "    struct T {\n"
+                                  "        T() {}\n"
+                                  "    };\n"
+                                  "};\n"
+                                  "struct T : S::T {\n"
+                                  "    T() : S::T() {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
