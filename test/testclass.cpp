@@ -8347,12 +8347,20 @@ private:
 
         const Settings settings = settingsBuilder().severity(Severity::style).build();
 
-        Preprocessor preprocessor(settings);
+        // Raw tokens..
+        std::vector<std::string> files(1, "test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this, &preprocessor);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.createTokens(std::move(tokens2));
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -8465,6 +8473,36 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:9]: (style) The function 'g' overrides a function in a base class but is identical to the overridden function\n"
                       "[test.cpp:5] -> [test.cpp:11]: (style) The function 'j' overrides a function in a base class but is identical to the overridden function\n",
                       errout.str());
+
+        checkUselessOverride("struct B : std::exception {\n"
+                             "    virtual void f() { throw *this; }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    void f() override { throw *this; }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("#define MACRO virtual void f() {}\n"
+                             "struct B {\n"
+                             "    MACRO\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    MACRO\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B {\n"
+                             "    B() = default;\n"
+                             "    explicit B(int i) : m(i) {}\n"
+                             "    int m{};\n"
+                             "    virtual int f() const { return m; }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    explicit D(int i) : m(i) {}\n"
+                             "    int m{};\n"
+                             "    int f() const override { return m; }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
