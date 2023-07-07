@@ -165,6 +165,8 @@ private:
         TEST_CASE(localvaralias19); // ticket #9828
         TEST_CASE(localvaralias20); // ticket #10966
         TEST_CASE(localvaralias21);
+        TEST_CASE(localvaralias22);
+        TEST_CASE(localvaralias23);
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -5033,6 +5035,36 @@ private:
                               "    if (i)\n"
                               "        b = false;\n"
                               "    if (*p) {}\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias22() { // #11139
+        functionVariableUsage("int f() {\n"
+                              "    int x[1], *p = x;\n"
+                              "    x[0] = 42;\n"
+                              "    return *p;\n"
+                              "}\n"
+                              "int g() {\n"
+                              "    int x[1], *p{ x };\n"
+                              "    x[0] = 42;\n"
+                              "    return *p;\n"
+                              "}\n"
+                              "int h() {\n"
+                              "    int x[1], *p(x);\n"
+                              "    x[0] = 42;\n"
+                              "    return *p;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias23() { // #11817
+        functionVariableUsage("void f(int& r, bool a, bool b) {\n"
+                              "    int& e = r;\n"
+                              "    if (a)\n"
+                              "        e = 42;\n"
+                              "    else if (b)\n"
+                              "        e = 1;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

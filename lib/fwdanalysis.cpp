@@ -364,6 +364,8 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             const Result &result1 = checkRecursive(expr, tok->tokAt(2), tok->linkAt(1), exprVarIds, local, inInnerClass, depth);
             if (result1.type == Result::Type::READ || result1.type == Result::Type::BAILOUT)
                 return result1;
+            if (mWhat == What::UnusedValue && result1.type == Result::Type::WRITE && expr->variable() && expr->variable()->isReference())
+                return result1;
             if (mWhat == What::ValueFlow && result1.type == Result::Type::WRITE)
                 mValueFlowKnown = false;
             if (mWhat == What::Reassign && result1.type == Result::Type::BREAK) {
@@ -530,6 +532,10 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
             addrOf = tok->astOperand1();
         else if (Token::simpleMatch(tok, "std :: ref ("))
             addrOf = tok->tokAt(3)->astOperand2();
+        else if (tok->valueType() && tok->valueType()->pointer &&
+                 (Token::Match(tok, "%var% = %var% ;") || Token::Match(tok, "%var% {|( %var% }|)")) &&
+                 Token::Match(expr->previous(), "%varid% [", tok->tokAt(2)->varId()))
+            addrOf = tok->tokAt(2);
         else
             continue;
 
