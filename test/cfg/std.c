@@ -219,14 +219,12 @@ void bufferAccessOutOfBounds(void)
     strncpy_s(a,5,"abcd",5);
     // string will be truncated, error is returned, but no buffer overflow
     strncpy_s(a,5,"abcde",6);
-    // TODO cppcheck-suppress bufferAccessOutOfBounds
     strncpy_s(a,5,"a",6);
     strncpy_s(a,5,"abcdefgh",4);
     // valid call
     strncat_s(a,5,"1",2);
     // cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,10,"1",2);
-    // TODO cppcheck-suppress bufferAccessOutOfBounds
     strncat_s(a,5,"1",5);
     fread(a,1,5,stdin);
     // cppcheck-suppress bufferAccessOutOfBounds
@@ -518,7 +516,6 @@ void nullpointer(int value)
     wcstok(NULL,L"xyz",&pWcsUninit);
 
     strxfrm(0,"foo",0);
-    // TODO: error message (#6306 and http://trac.cppcheck.net/changeset/d11eb4931aea51cf2cb74faccdcd2a3289b818d6/)
     strxfrm(0,"foo",42);
     wcsxfrm(0,L"foo",0);
     // TODO: error message when arg1==NULL and arg3!=0 #6306: https://trac.cppcheck.net/ticket/6306#comment:2

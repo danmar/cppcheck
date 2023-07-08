@@ -554,20 +554,25 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
             return *value;
     }
 
-    if (!var)
+    MathLib::bigint dim = -1;
+    if (var) {
+        dim = std::accumulate(var->dimensions().cbegin(), var->dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
+            return i1 * dim.num;
+        });
+    }
+    else if (bufTok->tokType() == Token::Type::eString) {
+        dim = Token::getStrLength(bufTok) + 1;
+    }
+    else
         return ValueFlow::Value(-1);
-
-    const MathLib::bigint dim = std::accumulate(var->dimensions().cbegin(), var->dimensions().cend(), 1LL, [](MathLib::bigint i1, const Dimension &dim) {
-        return i1 * dim.num;
-    });
 
     ValueFlow::Value v;
     v.setKnown();
     v.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
 
-    if (var->isPointerArray())
+    if (var && var->isPointerArray())
         v.intvalue = dim * mSettings->platform.sizeof_pointer;
-    else if (var->isPointer())
+    else if (var && var->isPointer())
         return ValueFlow::Value(-1);
     else {
         const MathLib::bigint typeSize = bufTok->valueType()->typeSize(mSettings->platform);
@@ -646,7 +651,7 @@ void CheckBufferOverrun::bufferOverflow()
                     argtok = argtok->astOperand2() ? argtok->astOperand2() : argtok->astOperand1();
                 while (Token::Match(argtok, ".|::"))
                     argtok = argtok->astOperand2();
-                if (!argtok || !argtok->variable())
+                if (!argtok || (!argtok->variable() && argtok->tokType() != Token::Type::eString))
                     continue;
                 if (argtok->valueType() && argtok->valueType()->pointer == 0)
                     continue;
