@@ -663,6 +663,35 @@ private:
                                   "struct B { bool a; };\n"
                                   "template<> struct A<1> : B {};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("struct B {\n"
+                                  "    int g() const;\n"
+                                  "    virtual int f() const { return g(); }\n"
+                                  "};\n"
+                                  "struct D : B {\n"
+                                  "    int g() const;\n"
+                                  "    int f() const override { return g(); }\n"
+                                  "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (warning) The struct 'D' defines member function with name 'g' also defined in its parent struct 'B'.\n",
+                      errout.str());
+
+        checkDuplInheritedMembers("struct B {\n"
+                                  "    int g() const;\n"
+                                  "};\n"
+                                  "struct D : B {\n"
+                                  "    int g(int) const;\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("struct S {\n"
+                                  "    struct T {\n"
+                                  "        T() {}\n"
+                                  "    };\n"
+                                  "};\n"
+                                  "struct T : S::T {\n"
+                                  "    T() : S::T() {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
