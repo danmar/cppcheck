@@ -476,6 +476,8 @@ def createRecordChildrenDefs(ed, var):
     valueType = ed.valueType
     if not valueType or not valueType.typeScope:
         return
+    if var is None:
+        return
     typeToken = var.typeEndToken
     while typeToken and typeToken.isName:
         typeToken = typeToken.previous
