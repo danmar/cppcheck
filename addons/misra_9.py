@@ -393,20 +393,25 @@ def misra_9_x(self, data, rule, rawTokens = None):
         while tok.str == '[':
             sz = tok.astOperand2
             if sz and sz.getKnownIntValue() is None:
-                has_config_errors = True
-                err = False
+                has_var = False
+                unknown_constant = False
                 tokens = [sz]
                 while len(tokens) > 0:
                     t = tokens[-1]
                     tokens = tokens[:-1]
                     if t:
                         if t.isName and t.getKnownIntValue() is None:
-                            err = True
+                            if t.varId or t.variable:
+                                has_var = True
+                                continue
+                            unknown_constant = True
                             cppcheckdata.reportError(sz, 'error', f'Unknown constant {t.str}, please review configuration', 'misra', 'config')
+                            has_config_errors = True
                         if t.isArithmeticalOp:
                             tokens += [t.astOperand1, t.astOperand2]
-                if not err:
+                if not unknown_constant and not has_var:
                     cppcheckdata.reportError(sz, 'error', 'Unknown array size, please review configuration', 'misra', 'config')
+                    has_config_errors = True
             tok = tok.link.next
     if has_config_errors:
         return
