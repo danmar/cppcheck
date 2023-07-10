@@ -326,6 +326,7 @@ class InitializerParser:
                             else:
                                 self.ed.parent.setInitialized(isDesignated)
                             self.ed.parent.initializeChildren()
+
                     else:
                         if self.ed.parent != self.root:
                             # Check if token is correct value type for self.root.children[?]
@@ -345,7 +346,15 @@ class InitializerParser:
                         parent = parent.parent
                     isDesignated = False
 
-                self.unwindAndContinue()
+                if self.token.isString:
+                    if self.token == self.token.astParent.astOperand1 and self.token.astParent.astOperand2:
+                        self.token = self.token.astParent.astOperand2
+                        self.ed.markAsCurrent()
+                        self.ed = self.root.getNextChild()
+                    else:
+                        self.unwindAndContinue()
+                else:
+                    self.unwindAndContinue()
 
     def pushToRootStackAndMarkAsDesignated(self):
         new = self.ed.parent
