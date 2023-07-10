@@ -32,7 +32,7 @@ class ElementDef:
 
         attrs = ["childIndex", "elementType", "valueType"]
         return "{}({}, {}, {})".format(
-            "ED",
+            "ElementDef",
             self.getLongName(),
             inits,
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -255,6 +255,16 @@ class InitializerParser:
                 isFirstElement = False
                 isDesignated = True
 
+            elif self.token.isString and self.ed.isArray:
+                self.ed.setInitialized(isDesignated)
+                if self.token == self.token.astParent.astOperand1 and self.token.astParent.astOperand2:
+                    self.token = self.token.astParent.astOperand2
+                    self.ed.markAsCurrent()
+                    self.ed = self.root.getNextChild()
+                else:
+                    self.unwindAndContinue()
+                continue
+
             elif self.token.str == '{':
                 nextChild = self.root.getNextChild() if self.root is not None else None
 
@@ -316,6 +326,7 @@ class InitializerParser:
                             else:
                                 self.ed.parent.setInitialized(isDesignated)
                             self.ed.parent.initializeChildren()
+
                     else:
                         if self.ed.parent != self.root:
                             # Check if token is correct value type for self.root.children[?]
@@ -335,7 +346,15 @@ class InitializerParser:
                         parent = parent.parent
                     isDesignated = False
 
-                self.unwindAndContinue()
+                if self.token.isString:
+                    if self.token == self.token.astParent.astOperand1 and self.token.astParent.astOperand2:
+                        self.token = self.token.astParent.astOperand2
+                        self.ed.markAsCurrent()
+                        self.ed = self.root.getNextChild()
+                    else:
+                        self.unwindAndContinue()
+                else:
+                    self.unwindAndContinue()
 
     def pushToRootStackAndMarkAsDesignated(self):
         new = self.ed.parent
