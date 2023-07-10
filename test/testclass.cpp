@@ -692,6 +692,17 @@ private:
                                   "    T() : S::T() {}\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("struct S {};\n" // #11827
+                                  "struct SPtr {\n"
+                                  "    virtual S* operator->() const { return p; }\n"
+                                  "    S* p = nullptr;\n"
+                                  "};\n"
+                                  "struct T : public S {};\n"
+                                  "struct TPtr : public SPtr {\n"
+                                  "    T* operator->() const { return (T*)p; }\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
@@ -8349,6 +8360,18 @@ private:
                       "    friend T f();\n"
                       "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct S {};\n" // #11827
+                      "struct SPtr {\n"
+                      "    virtual S* operator->() const { return p; }\n"
+                      "    S* p = nullptr;\n"
+                      "};\n"
+                      "struct T : public S {};\n"
+                      "struct TPtr : public SPtr {\n"
+                      "    T* operator->() const { return (T*)p; }\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'operator.' overrides a function in a base class but is not marked with a 'override' specifier.\n",
+                      errout.str());
     }
 
     void overrideCVRefQualifiers() {
