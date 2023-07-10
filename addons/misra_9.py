@@ -32,7 +32,7 @@ class ElementDef:
 
         attrs = ["childIndex", "elementType", "valueType"]
         return "{}({}, {}, {})".format(
-            "ED",
+            "ElementDef",
             self.getLongName(),
             inits,
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -255,21 +255,21 @@ class InitializerParser:
                 isFirstElement = False
                 isDesignated = True
 
-            elif self.token.str == '{' or self.token.isString:
+            elif self.token.isString and self.ed.isArray:
+                self.ed.setInitialized(isDesignated)
+                if self.token == self.token.astParent.astOperand1 and self.token.astParent.astOperand2:
+                    self.token = self.token.astParent.astOperand2
+                    self.ed.markAsCurrent()
+                    self.ed = self.root.getNextChild()
+                else:
+                    self.unwindAndContinue()
+                continue
+
+            elif self.token.str == '{':
                 nextChild = self.root.getNextChild() if self.root is not None else None
 
                 if nextChild:
-                    if nextChild.isArray and self.token.isString:
-                        # Zero initializer causes recursive initialization
-                        nextChild.setInitialized(isDesignated)
-                        if self.token == self.token.astParent.astOperand1 and self.token.astParent.astOperand2:
-                            self.token = self.token.astParent.astOperand2
-                            self.ed.markAsCurrent()
-                            self.ed = self.root.getNextChild()
-                        else:
-                            self.unwindAndContinue()
-                        continue
-                    elif nextChild.isArray or nextChild.isRecord:
+                    if nextChild.isArray or nextChild.isRecord:
                         nextChild.unset()
                         nextChild.setInitialized(isDesignated)
                         self.ed = nextChild.getFirstValueElement()
