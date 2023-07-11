@@ -9778,7 +9778,7 @@ void Tokenizer::simplifyOperatorName()
                 if (par->str() == "," && !op.empty())
                     break;
                 if (!(Token::Match(par, "<|>") && !op.empty())) {
-                    op += par->str();
+                    op += par->str() == "." ? par->originalName() : par->str();
                     par = par->next();
                     done = false;
                 }

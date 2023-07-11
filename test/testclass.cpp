@@ -8370,7 +8370,7 @@ private:
                       "struct TPtr : public SPtr {\n"
                       "    T* operator->() const { return (T*)p; }\n"
                       "};\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'operator.' overrides a function in a base class but is not marked with a 'override' specifier.\n",
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'operator->' overrides a function in a base class but is not marked with a 'override' specifier.\n",
                       errout.str());
     }
 
