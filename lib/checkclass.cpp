@@ -2469,7 +2469,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 if (!end || !scope || !Token::simpleMatch(end->astParent(), "."))
                     return false;
                 auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) {
-                    return f.isConst() && f.name() == "operator->";
+                    return f.isConst() && (f.name() == "operator->" || f.name() == "operator->");
                 });
                 if (it == scope->functionList.end() || !it->retType || !it->retType->classScope)
                     return false;
