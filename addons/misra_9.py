@@ -255,7 +255,7 @@ class InitializerParser:
                 isFirstElement = False
                 isDesignated = True
 
-            elif self.token.isString and self.ed.isArray:
+            elif self.token.isString and self.ed and self.ed.isArray:
                 self.ed.setInitialized(isDesignated)
                 if self.token == self.token.astParent.astOperand1 and self.token.astParent.astOperand2:
                     self.token = self.token.astParent.astOperand2
