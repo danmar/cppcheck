@@ -346,15 +346,9 @@ class InitializerParser:
                         parent = parent.parent
                     isDesignated = False
 
-                if self.token.isString:
-                    if self.token == self.token.astParent.astOperand1 and self.token.astParent.astOperand2:
-                        self.token = self.token.astParent.astOperand2
-                        self.ed.markAsCurrent()
-                        self.ed = self.root.getNextChild()
-                    else:
-                        self.unwindAndContinue()
-                else:
-                    self.unwindAndContinue()
+                    if self.token.isString and self.ed.parent.isArray:
+                        self.ed = self.ed.parent
+                self.unwindAndContinue()
 
     def pushToRootStackAndMarkAsDesignated(self):
         new = self.ed.parent
