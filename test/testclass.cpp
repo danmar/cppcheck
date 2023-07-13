@@ -8565,6 +8565,13 @@ private:
                              "    int f() const override { return g(); }\n"
                              "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("#define MACRO 1\n"
+                             "struct B { virtual int f() { return 1; } };\n"
+                             "struct D : B {\n"
+                             "    int f() override { return MACRO; }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
