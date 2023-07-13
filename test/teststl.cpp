@@ -2334,6 +2334,19 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct B { virtual int g() { return 0; } };\n" // #11831
+              "struct C {\n"
+              "    int h() const { return b->g(); }\n"
+              "    B* b;\n"
+              "};\n"
+              "struct O {\n"
+              "    int f() const;\n"
+              "    std::vector<int> v;\n"
+              "    C c;\n"
+              "};\n"
+              "int O::f() const { return v[c.h() - 1]; }\n");
+        ASSERT_EQUALS("", errout.str());
+
         const auto oldSettings = settings;
         settings.daca = true;
 
