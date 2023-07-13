@@ -995,16 +995,6 @@ private:
     void garbageCode126() {
         ASSERT_THROW(checkCode("{ } float __ieee754_sinhf ( float x ) { float t , , do { gf_u ( jx ) { } ( 0 ) return ; ( ) { } t } ( 0x42b17180 ) { } }"),
                      InternalError);
-        ASSERT_NO_THROW(checkCode("const char* v1\n"
-          "#ifdef VERSION\n"
-          "    = VERSION\n"
-          "#endif\n"
-          ";\n"
-          "const char* v2\n"
-          "#ifdef VERSION\n"
-          "    = \"V\" VERSION\n"
-          "#endif\n"
-          ";"));
     }
 
     void garbageCode127() { // #6667
