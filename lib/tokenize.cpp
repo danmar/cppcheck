@@ -8397,7 +8397,7 @@ void Tokenizer::findGarbageCode() const
             }
         }
         if (Token::Match(tok, "%num%|%bool%|%char%|%str% %num%|%bool%|%char%|%str%") &&
-            !(Token::Match(tok, "%str% %str%") /*|| (Token::Match(tok, "%str% %num%") && tok->next()->isExpandedMacro())*/))
+            !(Token::Match(tok, "%str% %str%") || (Token::Match(tok, "%str% %num%") && tok->next()->isExpandedMacro())))
             syntaxError(tok);
         if (Token::Match(tok, "%assign% typename|class %assign%"))
             syntaxError(tok);
