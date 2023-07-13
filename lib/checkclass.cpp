@@ -3151,6 +3151,8 @@ static bool compareTokenRanges(const Token* start1, const Token* end1, const Tok
             break;
         if (tok1->str() == "this")
             break;
+        if (tok1->isExpandedMacro() || tok2->isExpandedMacro())
+            break;
         if (tok1 == end1 && tok2 == end2) {
             isEqual = true;
             break;
