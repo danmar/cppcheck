@@ -1,3 +1,5 @@
+import cppcheckdata
+
 # Holds information about an array, struct or union's element definition.
 class ElementDef:
     def __init__(self, elementType, name, valueType, dimensions = None):
@@ -30,7 +32,7 @@ class ElementDef:
 
         attrs = ["childIndex", "elementType", "valueType"]
         return "{}({}, {}, {})".format(
-            "ED",
+            "ElementDef",
             self.getLongName(),
             inits,
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -253,6 +255,16 @@ class InitializerParser:
                 isFirstElement = False
                 isDesignated = True
 
+            elif self.token.isString and self.ed and self.ed.isArray:
+                self.ed.setInitialized(isDesignated)
+                if self.token == self.token.astParent.astOperand1 and self.token.astParent.astOperand2:
+                    self.token = self.token.astParent.astOperand2
+                    self.ed.markAsCurrent()
+                    self.ed = self.root.getNextChild()
+                else:
+                    self.unwindAndContinue()
+                continue
+
             elif self.token.str == '{':
                 nextChild = self.root.getNextChild() if self.root is not None else None
 
@@ -314,6 +326,7 @@ class InitializerParser:
                             else:
                                 self.ed.parent.setInitialized(isDesignated)
                             self.ed.parent.initializeChildren()
+
                     else:
                         if self.ed.parent != self.root:
                             # Check if token is correct value type for self.root.children[?]
@@ -333,6 +346,8 @@ class InitializerParser:
                         parent = parent.parent
                     isDesignated = False
 
+                    if self.token.isString and self.ed.parent.isArray:
+                        self.ed = self.ed.parent
                 self.unwindAndContinue()
 
     def pushToRootStackAndMarkAsDesignated(self):
@@ -381,6 +396,39 @@ class InitializerParser:
                     break
 
 def misra_9_x(self, data, rule, rawTokens = None):
+    # If there are arrays with unknown size constants then we need to warn about missing configuration
+    # and bailout
+    has_config_errors = False
+    for var in data.variables:
+        if not var.isArray or var.nameToken is None or not cppcheckdata.simpleMatch(var.nameToken.next,'['):
+            continue
+        tok = var.nameToken.next
+        while tok.str == '[':
+            sz = tok.astOperand2
+            if sz and sz.getKnownIntValue() is None:
+                has_var = False
+                unknown_constant = False
+                tokens = [sz]
+                while len(tokens) > 0:
+                    t = tokens[-1]
+                    tokens = tokens[:-1]
+                    if t:
+                        if t.isName and t.getKnownIntValue() is None:
+                            if t.varId or t.variable:
+                                has_var = True
+                                continue
+                            unknown_constant = True
+                            cppcheckdata.reportError(sz, 'error', f'Unknown constant {t.str}, please review configuration', 'misra', 'config')
+                            has_config_errors = True
+                        if t.isArithmeticalOp:
+                            tokens += [t.astOperand1, t.astOperand2]
+                if not unknown_constant and not has_var:
+                    cppcheckdata.reportError(sz, 'error', 'Unknown array size, please review configuration', 'misra', 'config')
+                    has_config_errors = True
+            tok = tok.link.next
+    if has_config_errors:
+        return
+
     parser = InitializerParser()
 
     for variable in data.variables:
@@ -475,6 +523,8 @@ def createChild(ed, token, name, var):
 def createRecordChildrenDefs(ed, var):
     valueType = ed.valueType
     if not valueType or not valueType.typeScope:
+        return
+    if var is None:
         return
     typeToken = var.typeEndToken
     while typeToken and typeToken.isName:

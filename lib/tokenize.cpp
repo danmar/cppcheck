@@ -5916,7 +5916,7 @@ void Tokenizer::dump(std::ostream &out) const
         for (const TypedefInfo &typedefInfo: mTypedefInfo) {
             out << "    <info"
                 << " name=\"" << typedefInfo.name << "\""
-                << " file=\"" << typedefInfo.filename << "\""
+                << " file=\"" << ErrorLogger::toxml(typedefInfo.filename) << "\""
                 << " line=\"" << typedefInfo.lineNumber << "\""
                 << " column=\"" << typedefInfo.column << "\""
                 << " used=\"" << (typedefInfo.used?1:0) << "\""
@@ -9779,7 +9779,7 @@ void Tokenizer::simplifyOperatorName()
                 if (par->str() == "," && !op.empty())
                     break;
                 if (!(Token::Match(par, "<|>") && !op.empty())) {
-                    op += par->str();
+                    op += par->str() == "." ? par->originalName() : par->str();
                     par = par->next();
                     done = false;
                 }

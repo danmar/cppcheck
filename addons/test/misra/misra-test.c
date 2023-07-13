@@ -586,10 +586,6 @@ static void misra_9_struct_initializers(void) {
     struct1 os1 = { i1: 1, i2: 2 }; // 10.4 13.4
 }
 
-static void misra_9_broken_initializers(void) {
-    char a[UNKNOWN_MACRO] = { 19, 23, 0 };             // 18.8
-}
-
 static void misra_9_2(void) {
     union misra_9_2_union {     // 19.2
         char c;

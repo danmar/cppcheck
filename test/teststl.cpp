@@ -4261,6 +4261,15 @@ private:
               "    std::string_view sv(s.data(), 13);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { std::string x; };\n" // #11802
+              "std::vector<std::shared_ptr<S>> global;\n"
+              "const char* f() {\n"
+              "    auto s = std::make_shared<S>();\n"
+              "    global.push_back(s);\n"
+              "    return s->x.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {
