@@ -3460,6 +3460,18 @@ private:
                                 "5: }\n"
                                 "6: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
+
+        const char code2[] = "struct S {\n" // #11411
+                             "    std::vector<int> v;\n"
+                             "    int i;\n"
+                             "    S(int i) : v({ 0 }), i(i) {}\n"
+                             "};";
+        const char expected2[] = "1: struct S {\n"
+                                 "2: std :: vector < int > v@1 ;\n"
+                                 "3: int i@2 ;\n"
+                                 "4: S ( int i@3 ) : v@1 ( { 0 } ) , i@2 ( i@3 ) { }\n"
+                                 "5: } ;\n";
+        ASSERT_EQUALS(expected2, tokenize(code2));
     }
 
     void varidclass18() {
