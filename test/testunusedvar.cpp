@@ -2640,6 +2640,12 @@ private:
                               "        *(b+i) = 0;\n"
                               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Variable '*(b+i)' is assigned a value that is never used.\n", "", errout.str());
+
+        functionVariableUsage("void f() {\n" // #11832
+                              "    int b;\n"
+                              "    *(&b) = 0;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar8() {

@@ -1009,7 +1009,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
         // assignment
         else if ((Token::Match(tok, "%name% [") && Token::simpleMatch(skipBracketsAndMembers(tok->next()), "=")) ||
-                 (Token::simpleMatch(tok, "* (") && Token::simpleMatch(tok->next()->link(), ") ="))) {
+                 (tok->isUnaryOp("*") && tok->astParent() && tok->astParent()->isAssignmentOp() && Token::simpleMatch(tok->astOperand1(), "+"))) {
             const Token *eq = tok;
             while (eq && !eq->isAssignmentOp())
                 eq = eq->astParent();
