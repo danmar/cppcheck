@@ -1,4 +1,5 @@
 import cppcheckdata
+from cppcheckdata import simpleMatch
 
 # Holds information about an array, struct or union's element definition.
 class ElementDef:
@@ -166,7 +167,7 @@ class ElementDef:
     def markStuctureViolation(self, token):
         if self.name == '->':
             self.children[0].markStuctureViolation(token)
-        elif not self.structureViolationToken:
+        elif self.structureViolationToken is None:
             self.structureViolationToken = token
 
     def markAsFlexibleArray(self, token):
@@ -312,7 +313,7 @@ class InitializerParser:
                     if not isDesignated and len(self.rootStack) > 0 and self.rootStack[-1][1] == self.root:
                         self.rootStack[-1][0].markStuctureViolation(self.token)
 
-                    if isFirstElement and self.token.str == '0' and self.token.next.str == '}':
+                    if isFirstElement and simpleMatch(self.token, '0 }'):
                         # Zero initializer causes recursive initialization
                         self.root.initializeChildren()
                     elif self.token.isString and self.ed.valueType and self.ed.valueType.pointer > 0:
@@ -371,12 +372,16 @@ class InitializerParser:
 
     def unwindAndContinue(self):
         while self.token:
+            if simpleMatch(self.token.astParent, '=') and self.token == self.token.astParent.astOperand2 and self.token.astParent.astParent and (self.token.astParent.astParent.str in ',{'):
+                self.token = self.token.astParent
             if self.token.astParent.astOperand1 == self.token and self.token.astParent.astOperand2:
                 if self.ed:
                     self.ed.markAsCurrent()
                     self.ed = self.ed.getNextValueElement(self.root)
 
                 self.token = self.token.astParent.astOperand2
+                if simpleMatch(self.token, '=') and simpleMatch(self.token.astOperand1, '['):
+                    self.token = self.token.astOperand2
                 break
             else:
                 self.token = self.token.astParent
@@ -400,8 +405,16 @@ def misra_9_x(self, data, rule, rawTokens = None):
     # and bailout
     has_config_errors = False
     for var in data.variables:
-        if not var.isArray or var.nameToken is None or not cppcheckdata.simpleMatch(var.nameToken.next,'['):
+        if not var.isArray or var.nameToken is None or not simpleMatch(var.nameToken.next,'['):
             continue
+
+        # Is there initializer assignment
+        eq = var.nameToken
+        while eq and not eq.isAssignmentOp and eq.astParent:
+            eq = eq.astParent
+        if not eq.isAssignmentOp or not simpleMatch(eq.astOperand2, '{'):
+            continue
+
         tok = var.nameToken.next
         while tok.str == '[':
             sz = tok.astOperand2
