@@ -75,6 +75,7 @@ private:
         TEST_CASE(uninitvar11); // ticket #9123
         TEST_CASE(uninitvar12); // #10218 - stream read
         TEST_CASE(uninitvar13); // #9772
+        TEST_CASE(uninitvar14);
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -3121,6 +3122,15 @@ private:
                             "    free(ccb);\n"
                             " \n"
                             "  return rez;\n"
+                            "}";
+        checkUninitVar(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar14() { // #11832
+        const char code[] = "void f() {\n"
+                            "    int b;\n"
+                            "    *(&b) = 0;\n"
                             "}";
         checkUninitVar(code);
         ASSERT_EQUALS("", errout.str());
