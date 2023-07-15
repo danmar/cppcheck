@@ -5621,8 +5621,13 @@ static void valueFlowForwardConst(Token* start,
         throw InternalError(var->nameToken(), "valueFlowForwardConst: start token does not precede the end token.");
     for (Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == var->declarationId()) {
-            for (const ValueFlow::Value& value : values)
+            for (const ValueFlow::Value& value : values) {
+                if (std::any_of(tok->values().begin(), tok->values().end(), [&value](const ValueFlow::Value& v) {
+                    return v.isImpossible() && v.condition && v.valueType == ValueFlow::Value::ValueType::INT && v.valueType == value.valueType;
+                }))
+                    continue;
                 setTokenValue(tok, value, settings);
+            }
         } else {
             [&] {
                 // Follow references

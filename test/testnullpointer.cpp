@@ -142,6 +142,7 @@ private:
         TEST_CASE(nullpointer99); // #10602
         TEST_CASE(nullpointer100);        // #11636
         TEST_CASE(nullpointer101);        // #11382
+        TEST_CASE(nullpointer102);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2848,6 +2849,17 @@ private:
               "void f(const Base* base) {\n"
               "    const Derived* derived = dynamic_cast<const Derived*>(base);\n"
               "    if (derived && !is_valid(*derived) || base == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer102() // #11801
+    {
+        check("int* g() { return nullptr; }\n"
+              "void h() {\n"
+              "    int* const p = g();\n"
+              "    if (p)\n"
+              "        *p = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
