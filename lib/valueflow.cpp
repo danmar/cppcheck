@@ -8326,9 +8326,6 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
     if (astIsLHS(tok) && Token::Match(tok->astParent(), "%assign%|<<"))
         return true;
     const Library::Container* container = tok->valueType()->container;
-    // Views cannot change container size
-    if (container->view)
-        return false;
     if (astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "["))
         return container->stdAssociativeLike;
     const Library::Container::Action action = astContainerAction(tok);
