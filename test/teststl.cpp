@@ -920,9 +920,9 @@ private:
         checkNormal("char h() {\n"
                     "    std::string s;\n"
                     "    std::string_view sv(s);\n"
-                    "    return s[0];\n"
+                    "    return s[2];\n"
                     "}\n");
-        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 's[0]' because 's' is empty.\n", "", errout.str());
+        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 's[2]' because 's' is empty.\n", "", errout.str());
     }
 
     void outOfBoundsSymbolic()
