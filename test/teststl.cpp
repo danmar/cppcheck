@@ -908,6 +908,21 @@ private:
                     "    if (x.Set(42U)) {}\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("struct S { void g(std::span<int>& r) const; };\n" // #11828
+                    "int f(const S& s) {\n"
+                    "    std::span<int> t;\n"
+                    "    s.g(t);\n"
+                    "    return t[0];\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("char h() {\n"
+                    "    std::string s;\n"
+                    "    std::string_view sv(s);\n"
+                    "    return s[0];\n"
+                    "}\n");
+        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 's[0]' because 's' is empty.\n", "", errout.str());
     }
 
     void outOfBoundsSymbolic()
