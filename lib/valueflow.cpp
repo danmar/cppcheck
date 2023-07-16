@@ -5673,7 +5673,7 @@ static void valueFlowForwardConst(Token* start,
                         }
                         tmp.valueKind = v.valueKind;
                         tmp.bound = v.bound;
-                        tmp.errorPath.insert(value.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
+                        tmp.errorPath.insert(tmp.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
                         setTokenValue(tok, std::move(tmp), settings);
                     }
                 }();
