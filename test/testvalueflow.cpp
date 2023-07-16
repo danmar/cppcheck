@@ -5567,9 +5567,9 @@ private:
         ASSERT_EQUALS(0, values.size());
 
         code = "void g() {\n"
-                "  int y;\n"
-                "  int *q = 1 ? &y : 0;\n"
-                "}\n";
+               "  int y;\n"
+               "  int *q = 1 ? &y : 0;\n"
+               "}\n";
         values = tokenValues(code, "y :", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(1, values.size());
         ASSERT_EQUALS(true, values.front().isUninitValue());
