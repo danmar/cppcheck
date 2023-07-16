@@ -3133,6 +3133,8 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
             return ExprUsage::NotUsed;
         if (tok->astParent()->isCast())
             return ExprUsage::NotUsed;
+        if (Token::Match(tok->astParent(), ":") && Token::Match(tok->astParent()->astParent(), "?"))
+            return getExprUsage(tok->astParent()->astParent(), indirect, settings);
     }
     if (indirect == 0) {
         if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") &&
