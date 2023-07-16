@@ -5622,7 +5622,7 @@ static void valueFlowForwardConst(Token* start,
     for (const ValueFlow::Value& value : values) {
         ProgramMemory pm;
         pm.setValue(var->nameToken(), value);
- 
+
         for (Token* tok = start; tok != end; tok = tok->next()) {
             if (tok->varId() == var->declarationId()) {
                 const Scope* scope = tok->scope();
@@ -5649,12 +5649,11 @@ static void valueFlowForwardConst(Token* start,
                         return ref.token->varId() == var->declarationId();
                     });
                     if (it != refs.end()) {
-                        for (ValueFlow::Value value : values) {
-                            if (refs.size() > 1)
-                                value.setInconclusive();
-                            value.errorPath.insert(value.errorPath.end(), it->errors.cbegin(), it->errors.cend());
-                            setTokenValue(tok, std::move(value), settings);
-                        }
+                        ValueFlow::Value v{ value };
+                        if (refs.size() > 1)
+                            v.setInconclusive();
+                        v.errorPath.insert(value.errorPath.end(), it->errors.cbegin(), it->errors.cend());
+                        setTokenValue(tok, std::move(v), settings);
                         return;
                     }
                     // Follow symbolic values
@@ -5665,17 +5664,17 @@ static void valueFlowForwardConst(Token* start,
                             continue;
                         if (v.tokvalue->varId() != var->declarationId())
                             continue;
-                        for (ValueFlow::Value value : values) {
-                            if (v.intvalue != 0) {
-                                if (!value.isIntValue())
-                                    continue;
-                                value.intvalue += v.intvalue;
-                            }
-                            value.valueKind = v.valueKind;
-                            value.bound = v.bound;
-                            value.errorPath.insert(value.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
-                            setTokenValue(tok, std::move(value), settings);
+
+                        ValueFlow::Value tmp{ value };
+                        if (v.intvalue != 0) {
+                            if (!tmp.isIntValue())
+                                continue;
+                            tmp.intvalue += v.intvalue;
                         }
+                        tmp.valueKind = v.valueKind;
+                        tmp.bound = v.bound;
+                        tmp.errorPath.insert(value.errorPath.end(), v.errorPath.cbegin(), v.errorPath.cend());
+                        setTokenValue(tok, std::move(tmp), settings);
                     }
                 }();
             }
