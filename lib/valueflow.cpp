@@ -5631,7 +5631,7 @@ static void valueFlowForwardConst(Token* start,
                     if (scope->type == Scope::ScopeType::eIf) {
                         MathLib::bigint result{};
                         bool error{};
-                        execute(tok->scope()->bodyStart->linkAt(-1)->astOperand2(), pm, &result, &error, settings);
+                        execute(scope->bodyStart->linkAt(-1)->astOperand2(), pm, &result, &error, settings);
                         if (!result && !error) {
                             setValue = false;
                             break;
@@ -5652,7 +5652,7 @@ static void valueFlowForwardConst(Token* start,
                         ValueFlow::Value v{ value };
                         if (refs.size() > 1)
                             v.setInconclusive();
-                        v.errorPath.insert(value.errorPath.end(), it->errors.cbegin(), it->errors.cend());
+                        v.errorPath.insert(v.errorPath.end(), it->errors.cbegin(), it->errors.cend());
                         setTokenValue(tok, std::move(v), settings);
                         return;
                     }
