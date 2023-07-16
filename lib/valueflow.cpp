@@ -5625,14 +5625,22 @@ static void valueFlowForwardConst(Token* start,
  
         for (Token* tok = start; tok != end; tok = tok->next()) {
             if (tok->varId() == var->declarationId()) {
-                if (tok->scope()->type == Scope::ScopeType::eIf) {
-                    MathLib::bigint result{};
-                    bool error{};
-                    execute(tok->scope()->bodyStart->linkAt(-1), pm, &result, &error, settings);
-                    if (!result || error)
-                        continue;
+                const Scope* scope = tok->scope();
+                bool setValue = true;
+                while (scope && scope->isLocal()) {
+                    if (scope->type == Scope::ScopeType::eIf) {
+                        MathLib::bigint result{};
+                        bool error{};
+                        execute(tok->scope()->bodyStart->linkAt(-1)->astOperand2(), pm, &result, &error, settings);
+                        if (!result && !error) {
+                            setValue = false;
+                            break;
+                        }
+                    }
+                    scope = scope->nestedIn;
                 }
-                setTokenValue(tok, value, settings);
+                if (setValue)
+                    setTokenValue(tok, value, settings);
             } else {
                 [&] {
                     // Follow references
