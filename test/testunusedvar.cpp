@@ -5440,6 +5440,17 @@ private:
                               "        return y;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f(int i) {\n" // #11788
+                              "    if (int x = i) {\n"
+                              "        return x;\n"
+                              "    }\n"
+                              "    else {\n"
+                              "        x = 12;\n"
+                              "        return x;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarOpAssign() {
