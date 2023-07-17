@@ -5451,6 +5451,26 @@ private:
                               "    }\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(int i) {\n"
+                              "    if (int x = i) {\n"
+                              "        while (x < 100) {\n"
+                              "            if (x % 2 == 0) {\n"
+                              "                x += 3;\n"
+                              "            }\n"
+                              "            else if (x % 3 == 0) {\n"
+                              "                x += 5;\n"
+                              "            }\n"
+                              "            else {\n"
+                              "                x += 7;\n"
+                              "            }\n"
+                              "            x += 6;\n"
+                              "        }\n"
+                              "        return x;\n"
+                              "    }\n"
+                              "    return i;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarOpAssign() {
