@@ -3794,7 +3794,7 @@ private:
                         "    int a;\n"
                         "    int *p = ptr ? ptr : &a;\n"
                         "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (error) Uninitialized variable: &a\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("int f(int a) {\n"
                         "    int x;\n"
@@ -6114,6 +6114,18 @@ private:
                         "        a[idx++] = 1;\n"
                         "    for (int i = 0; i < idx; i++)\n"
                         "        (void)a[i];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "  int x;\n"
+                        "  int *p = 0 ? 0 : &x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void g() {\n"
+                        "  int y;\n"
+                        "  int *q = 1 ? &y : 0;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }

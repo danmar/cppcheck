@@ -593,7 +593,7 @@ struct ForwardTraversal {
                 // TODO: Don't break, instead move to the outer scope
                 if (!tok)
                     return Break();
-            } else if (Token::Match(tok, "%name% :") || tok->str() == "case") {
+            } else if (!tok->variable() && (Token::Match(tok, "%name% :") || tok->str() == "case")) {
                 if (!analyzer->lowerToPossible())
                     return Break(Analyzer::Terminate::Bail);
             } else if (tok->link() && tok->str() == "}") {
