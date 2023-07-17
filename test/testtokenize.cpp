@@ -6880,6 +6880,11 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void f(void* q) {\n"
                                              "    g(&(S) { .p = (int*)q });\n"
                                              "}\n", /*expand*/ true, cppcheck::Platform::Type::Native, "test.c"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("typedef struct { int i; } S;\n"
+                                             "void f(float a) {\n"
+                                             "S s = (S){ .i = (int)a };\n"
+                                             "}\n", /*expand*/ true, cppcheck::Platform::Type::Native, "test.c"));
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
