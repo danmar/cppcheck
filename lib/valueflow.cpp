@@ -3844,6 +3844,13 @@ const Token* ValueFlow::getEndOfExprScope(const Token* tok, const Scope* default
                 const Token* varEnd = getEndOfVarScope(var);
                 if (!end || (smallest ? precedes(varEnd, end) : succeeds(varEnd, end)))
                     end = varEnd;
+
+                const Token* top = var->nameToken()->astTop();
+                if (top && Token::simpleMatch(top->tokAt(-1), "if (")) { // variable declared in if (...)
+                    const Token* elseTok = top->link()->linkAt(1);
+                    if (Token::simpleMatch(elseTok, "} else {") && tok->scope()->isNestedIn(elseTok->tokAt(2)->scope()))
+                        end = tok->scope()->bodyEnd;
+                }
             }
         }
         return ChildrenToVisit::op1_and_op2;
