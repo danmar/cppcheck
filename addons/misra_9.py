@@ -281,7 +281,7 @@ class InitializerParser:
                         # Fake dummy as nextChild (of current root)
                         nextChild = dummyRoot
 
-                if self.token.astOperand1:
+                if nextChild and self.token.astOperand1:
                     self.root = nextChild
                     self.token = self.token.astOperand1
                     isFirstElement = True
@@ -315,7 +315,7 @@ class InitializerParser:
                                 self.ed.parent.setInitialized(isDesignated)
                             self.ed.parent.initializeChildren()
                     else:
-                        if self.ed.parent != self.root:
+                        if self.root != None and self.ed.parent != self.root:
                             # Check if token is correct value type for self.root.children[?]
                             child = self.root.getChildByValueElement(self.ed)
                             if self.token.valueType:
@@ -410,7 +410,6 @@ def misra_9_x(self, data, rule, rawTokens = None):
             # without it.
             if ed.valueType is None and not variable.isArray:
                 continue
-
             parser.parseInitializer(ed, eq.astOperand2)
             # print(rule, nameToken.str + '=', ed.getInitDump())
             if rule == 902 and not ed.isMisra92Compliant():

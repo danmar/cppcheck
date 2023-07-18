@@ -120,6 +120,11 @@ def test_rules_suppression(checker, capsys):
         assert found is None, 'Unexptected output:\n' + captured
         dump_remove(src)
 
+def test_crash_misra9_parseInitializer():
+    src = "addons/test/misra/crash_misra9_parseInitializer.c"
+    dump_remove(src)
+    dump_create(src, "--suppressions-list=addons/test/misra/suppressions.txt")
+    checker.parseDump(src + ".dump")
 
 def test_arguments_regression():
     args_ok = ["-generate-table",
