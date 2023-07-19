@@ -2786,7 +2786,7 @@ private:
                                "    }\n"
                                "}", "test.c"));
 
-        ASSERT_EQUALS("1: int * f ( ) {\n"
+        ASSERT_EQUALS("1: int * f ( ) {\n" // #11838
                       "2: int * label@1 ; label@1 = 0 ;\n"
                       "3: label : ;\n"
                       "4: return label@1 ;\n"
