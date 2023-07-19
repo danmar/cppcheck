@@ -2785,6 +2785,17 @@ private:
                                "        break;\n"
                                "    }\n"
                                "}", "test.c"));
+
+        ASSERT_EQUALS("1: int * f ( ) {\n"
+                      "2: int * label@1 ; label@1 = 0 ;\n"
+                      "3: label : ;\n"
+                      "4: return label@1 ;\n"
+                      "5: }\n",
+                      tokenize("int* f() {\n"
+                               "    int* label = 0;\n"
+                               "label:\n"
+                               "    return label;\n"
+                               "}"));
     }
 
     void varid_structinit() { // #6406
