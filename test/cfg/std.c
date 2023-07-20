@@ -586,13 +586,15 @@ size_t nullPointer_strlen(const char *s)
     return strlen(s);
 }
 
-void nullpointerMemchr1(char *p, const char *s)
+// cppcheck-suppress constParameterPointer
+void nullpointerMemchr1(char *p, char *s)
 {
     p = memchr(s, 'p', strlen(s));
     (void)p;
 }
 
-void nullpointerMemchr2(char *p, const char *s)
+// cppcheck-suppress constParameterPointer
+void nullpointerMemchr2(char *p, char *s)
 {
     p = memchr(s, 0, strlen(s));
     (void)p;
@@ -4475,7 +4477,8 @@ void uninitvar_swscanf(void)
 
 void uninitvar_system(void)
 {
-    const char *c;
+    // cppcheck-suppress constVariablePointer
+    char *c;
     // cppcheck-suppress uninitvar
     (void)system(c);
 }
@@ -4907,7 +4910,8 @@ void nullPointer_feholdexcept(void)
 
 void nullPointer_fesetenv(void)
 {
-    const fenv_t* envp = 0;
+    // cppcheck-suppress constVariablePointer
+    fenv_t* envp = 0;
     // cppcheck-suppress nullPointer
     (void)fesetenv(envp);
     // cppcheck-suppress nullPointer
@@ -4916,7 +4920,8 @@ void nullPointer_fesetenv(void)
 
 void nullPointer_fesetexceptflag(int excepts)
 {
-    const fexcept_t* flagp = 0;
+    // cppcheck-suppress constVariablePointer
+    fexcept_t* flagp = 0;
     // cppcheck-suppress nullPointer
     (void)fesetexceptflag(flagp,excepts);
     // cppcheck-suppress nullPointer
