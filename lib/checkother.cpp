@@ -1640,6 +1640,10 @@ void CheckOther::checkConstPointer()
                         if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
                             continue;
                     }
+                } else if (!parent->isCast()) {
+                    const auto dir = mSettings->library.getArgDirection(ftok, argn + 1);
+                    if (dir == Library::ArgumentChecks::Direction::DIR_IN)
+                        continue;
                 }
             }
             else if (Token::simpleMatch(parent, "(")) {
