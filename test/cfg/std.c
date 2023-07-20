@@ -586,13 +586,13 @@ size_t nullPointer_strlen(const char *s)
     return strlen(s);
 }
 
-void nullpointerMemchr1(char *p, char *s)
+void nullpointerMemchr1(char *p, const char *s)
 {
     p = memchr(s, 'p', strlen(s));
     (void)p;
 }
 
-void nullpointerMemchr2(char *p, char *s)
+void nullpointerMemchr2(char *p, const char *s)
 {
     p = memchr(s, 0, strlen(s));
     (void)p;
@@ -600,7 +600,7 @@ void nullpointerMemchr2(char *p, char *s)
 
 void nullPointer_memchr(char *p)
 {
-    char *s = 0;
+    const char *s = 0;
     // cppcheck-suppress nullPointer
     p = memchr(s, 0, strlen(s));
     (void)p;
@@ -4450,7 +4450,7 @@ void uninitvar_sscanf(char *s, const char *f, int i, int *ip)
 void uninitvar_fwscanf(void)
 {
     FILE* stream;
-    wchar_t* format1, *format2;
+    const wchar_t* format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
     (void)fwscanf(stream,format1);
@@ -4460,8 +4460,8 @@ void uninitvar_fwscanf(void)
 
 void uninitvar_swscanf(void)
 {
-    wchar_t* s;
-    wchar_t* format1, *format2;
+    const wchar_t* s;
+    const wchar_t* format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
     (void)swscanf(s,format1);
@@ -4471,12 +4471,12 @@ void uninitvar_swscanf(void)
 
 void uninitvar_system(void)
 {
-    char *c;
+    const char *c;
     // cppcheck-suppress uninitvar
     (void)system(c);
 }
 
-void nullPointer_system(char *c)
+void nullPointer_system(const char *c)
 {
     // If a null pointer is given, command processor is checked for existence
     (void)system(NULL);
@@ -4496,7 +4496,7 @@ int nullPointer_mtx_timedlock( mtx_t *restrict mutex, const struct timespec *res
 
 void uninitvar_zonetime(void)
 {
-    time_t *tp;
+    const time_t *tp;
     int zone;
     // cppcheck-suppress uninitvar
     (void)zonetime(tp,zone);
@@ -4524,7 +4524,7 @@ void uninitvar_c16rtomb(void)
 void uninitvar_mbrtoc16(void)
 {
     char16_t * pc16;
-    char * pmb;
+    const char * pmb;
     size_t max;
     mbstate_t * ps;
     // cppcheck-suppress uninitvar
@@ -4545,7 +4545,7 @@ void uninitvar_c32rtomb(void)
 void uninitvar_mbrtoc32(void)
 {
     char32_t * pc32;
-    char * pmb;
+    const char * pmb;
     size_t max;
     mbstate_t * ps;
     // cppcheck-suppress uninitvar
@@ -4847,7 +4847,7 @@ void ignoredReturnValue_abs(int i)
 
 void nullPointer_asctime(void)
 {
-    struct tm *tm = 0;
+    const struct tm *tm = 0;
     // cppcheck-suppress asctimeCalled
     // cppcheck-suppress nullPointer
     (void)asctime(tm);
@@ -4858,7 +4858,7 @@ void nullPointer_asctime(void)
 
 void nullPointer_asctime_s(void)
 {
-    struct tm *tm = 0;
+    const struct tm *tm = 0;
     char * buf = NULL;
     // cppcheck-suppress asctime_sCalled
     // cppcheck-suppress nullPointer
@@ -4897,7 +4897,7 @@ void nullPointer_feholdexcept(void)
 
 void nullPointer_fesetenv(void)
 {
-    fenv_t* envp = 0;
+    const fenv_t* envp = 0;
     // cppcheck-suppress nullPointer
     (void)fesetenv(envp);
     // cppcheck-suppress nullPointer
@@ -4906,14 +4906,14 @@ void nullPointer_fesetenv(void)
 
 void nullPointer_fesetexceptflag(int excepts)
 {
-    fexcept_t* flagp = 0;
+    const fexcept_t* flagp = 0;
     // cppcheck-suppress nullPointer
     (void)fesetexceptflag(flagp,excepts);
     // cppcheck-suppress nullPointer
     (void)fesetexceptflag(0,excepts);
 }
 
-void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+void invalidFunctionArg_fesetexceptflag(const fexcept_t* flagp, int excepts)
 {
     (void)fesetexceptflag(flagp, excepts);
     // cppcheck-suppress invalidFunctionArg
@@ -4945,7 +4945,7 @@ void invalidFunctionArg_fetestexcept(int excepts)
 
 void nullPointer_feupdateenv(void)
 {
-    fenv_t* envp = 0;
+    const fenv_t* envp = 0;
     // cppcheck-suppress nullPointer
     (void)feupdateenv(envp);
     // cppcheck-suppress nullPointer
@@ -4960,7 +4960,7 @@ void nullPointer_atexit(void)
 
 void nullPointer_atof(void)
 {
-    char * c = 0;
+    const char * c = 0;
     // cppcheck-suppress nullPointer
     (void)atof(c);
     // cppcheck-suppress nullPointer
