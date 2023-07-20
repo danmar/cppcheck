@@ -4259,26 +4259,30 @@ private:
     }
 };
 
-static bool isOwningVariables(const std::list<Variable>& vars, int depth = 10)
+static bool isOwningVariables(const std::list<Variable>& vars, const std::vector<const Token*>& args, int depth = 10)
 {
     if (depth < 0)
         return false;
-    return vars.empty() || std::all_of(vars.cbegin(), vars.cend(), [&](const Variable& var) {
-        if (var.isReference() || var.isPointer())
-            return false;
+    return std::any_of(vars.cbegin(), vars.cend(), [&](const Variable& var) {
         const ValueType* vt = var.valueType();
         if (vt) {
-            if (vt->pointer > 0)
+            if (std::none_of(args.begin(), args.end(), [vt](const Token* arg) {
+                return arg->valueType() && arg->valueType()->type == vt->type;
+            }))
                 return false;
+            if (vt->pointer > 0)
+                return true;
+            if (vt->reference != Reference::None)
+                return true;
             if (vt->isPrimitive())
-                return true;
+                return false;
             if (vt->isEnum())
-                return true;
+                return false;
             // TODO: Check container inner type
             if (vt->type == ValueType::CONTAINER && vt->container)
-                return !vt->container->view;
+                return vt->container->view;
             if (vt->typeScope)
-                return isOwningVariables(vt->typeScope->varlist, depth - 1);
+                return isOwningVariables(vt->typeScope->varlist, args, depth - 1);
         }
         return false;
     });
@@ -4357,7 +4361,7 @@ static void valueFlowLifetimeUserConstructor(Token* tok,
             else
                 ls.byVal(tok, tokenlist, errorLogger, settings);
         });
-    } else if (!isOwningVariables(constructor->nestedIn->varlist)) {
+    } else if (isOwningVariables(constructor->nestedIn->varlist, args)) {
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + name + "'.",
                                ValueFlow::Value::LifetimeKind::SubObject,
