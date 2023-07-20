@@ -662,8 +662,8 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
 
             //Create an action for the application
             QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
-            const QAction *copy             = new QAction(tr("Copy"), &menu);
-            const QAction *hide             = new QAction(tr("Hide"), &menu);
+            QAction *copy                   = new QAction(tr("Copy"), &menu);
+            QAction *hide                   = new QAction(tr("Hide"), &menu);
             QAction *hideallid              = new QAction(tr("Hide all with id"), &menu);
             QAction *opencontainingfolder   = new QAction(tr("Open containing folder"), &menu);
 
@@ -683,7 +683,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hide);
             menu.addAction(hideallid);
 
-            const QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
+            QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
             menu.addAction(suppress);
             connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
 
@@ -701,7 +701,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
                 QMenu *tagMenu = menu.addMenu(tr("Tag"));
                 {
-                    const QAction *action = new QAction(tr("No tag"), tagMenu);
+                    QAction *action = new QAction(tr("No tag"), tagMenu);
                     tagMenu->addAction(action);
                     connect(action, &QAction::triggered, [=]() {
                         tagSelectedItems(QString());
@@ -709,7 +709,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 }
 
                 for (const QString& tagstr : currentProject->getTags()) {
-                    const QAction *action = new QAction(tagstr, tagMenu);
+                    QAction *action = new QAction(tagstr, tagMenu);
                     tagMenu->addAction(action);
                     connect(action, &QAction::triggered, [=]() {
                         tagSelectedItems(tagstr);
@@ -725,7 +725,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             mContextItem = mModel.itemFromIndex(index);
             if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
                 //Disconnect all signals
-                for (const QAction* action : actions) {
+                for (QAction* action : actions) {
                     disconnect(action, SIGNAL(triggered()), signalMapper, SLOT(map()));
                 }
 
