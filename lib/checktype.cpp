@@ -329,7 +329,6 @@ void CheckType::checkLongCast()
             rhstype->originalTypeName.empty() &&
             (lhstype->type == ValueType::Type::LONG || lhstype->type == ValueType::Type::LONGLONG) &&
             lhstype->pointer == 0U &&
-            lhstype->constness == 1U &&
             lhstype->originalTypeName.empty() &&
             isSmallerTypeSize(rhstype, lhstype, mTokenizer))
             longCastAssignError(tok);
