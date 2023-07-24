@@ -1093,7 +1093,7 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
     const ValueType &valueType = ValueType::parseDecl(typeTok, *settings, true); // TODO: set isCpp
-    
+
     return ValueFlow::getSizeOf(valueType, settings);
 }
 
