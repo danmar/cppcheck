@@ -290,6 +290,17 @@ void CheckType::signConversionError(const Token *tok, const ValueFlow::Value *ne
 // Checking for long cast of int result   const long x = var1 * var2;
 //---------------------------------------------------------------------------
 
+static bool isSmallerTypeSize(const ValueType* a, const ValueType* b, const Tokenizer* tokenizer)
+{
+    std::string strArr[] = { a->str(), b->str() };
+    for (std::string& s : strArr) {
+        const std::size_t pos = s.rfind(' '); // get bare type string
+        if (pos != std::string::npos)
+            s.erase(s.begin(), s.begin() + pos + 1);
+    }
+    return tokenizer->sizeOfType(strArr[0]) < tokenizer->sizeOfType(strArr[1]);
+}
+
 void CheckType::checkLongCast()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -319,7 +330,8 @@ void CheckType::checkLongCast()
             (lhstype->type == ValueType::Type::LONG || lhstype->type == ValueType::Type::LONGLONG) &&
             lhstype->pointer == 0U &&
             lhstype->constness == 1U &&
-            lhstype->originalTypeName.empty())
+            lhstype->originalTypeName.empty() &&
+            isSmallerTypeSize(rhstype, lhstype, mTokenizer))
             longCastAssignError(tok);
     }
 
@@ -329,15 +341,10 @@ void CheckType::checkLongCast()
 
         // function must return long data
         const Token * def = scope->classDef;
-        bool islong = false;
-        while (Token::Match(def, "%type%|::")) {
-            if (def->str() == "long" && def->originalName().empty()) {
-                islong = true;
-                break;
-            }
-            def = def->previous();
-        }
-        if (!islong)
+        if (!Token::Match(def, "%name% (") || !def->next()->valueType())
+            continue;
+        const ValueType* retVt = def->next()->valueType();
+        if (retVt->type != ValueType::Type::LONG && retVt->type != ValueType::Type::LONGLONG)
             continue;
 
         // return statements
@@ -346,7 +353,10 @@ void CheckType::checkLongCast()
             if (tok->str() == "return") {
                 if (Token::Match(tok->astOperand1(), "<<|*")) {
                     const ValueType *type = tok->astOperand1()->valueType();
-                    if (type && type->type == ValueType::Type::INT && type->pointer == 0U && type->originalTypeName.empty())
+                    if (type && type->type == ValueType::Type::INT &&
+                        type->pointer == 0U &&
+                        type->originalTypeName.empty() &&
+                        isSmallerTypeSize(type, retVt, mTokenizer))
                         ret = tok;
                 }
                 // All return statements must have problem otherwise no warning

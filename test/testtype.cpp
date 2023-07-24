@@ -326,12 +326,16 @@ private:
 
     void longCastAssign() {
         const Settings settings = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsWin = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Win64).build();
 
-        check("long f(int x, int y) {\n"
-              "  const long ret = x * y;\n"
-              "  return ret;\n"
-              "}\n", settings);
+        const char code[] = "long f(int x, int y) {\n"
+                            "  const long ret = x * y;\n"
+                            "  return ret;\n"
+                            "}\n";
+        check(code, settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        check(code, settingsWin);
+        ASSERT_EQUALS("", errout.str());
 
         check("long f() {\n"
               "  const long long ret = 256 * (1 << 10);\n"
@@ -355,18 +359,22 @@ private:
     }
 
     void longCastReturn() {
-        const Settings settings = settingsBuilder().severity(Severity::style).build();
+        const Settings settings = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsWin = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Win64).build();
 
-        check("long f(int x, int y) {\n"
-              "  return x * y;\n"
-              "}\n", settings);
+        const char code[] = "long f(int x, int y) {\n"
+                             "  return x * y;\n"
+                             "}\n";
+        check(code, settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        check(code, settingsWin);
+        ASSERT_EQUALS("", errout.str());
 
         // typedef
         check("size_t f(int x, int y) {\n"
               "  return x * y;\n"
               "}\n", settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
     }
 
     // This function ensure that test works with different compilers. Floats can
