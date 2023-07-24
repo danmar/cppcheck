@@ -290,15 +290,11 @@ void CheckType::signConversionError(const Token *tok, const ValueFlow::Value *ne
 // Checking for long cast of int result   const long x = var1 * var2;
 //---------------------------------------------------------------------------
 
-static bool isSmallerTypeSize(const ValueType* a, const ValueType* b, const Tokenizer* tokenizer)
+static bool isSmallerTypeSize(const ValueType* a, const ValueType* b, const Settings* settings)
 {
-    std::string strArr[] = { a->str(), b->str() };
-    for (std::string& s : strArr) {
-        const std::size_t pos = s.find("signed"); // get bare type string
-        if (pos != std::string::npos)
-            s.erase(s.begin(), s.begin() + pos + 6 + 1);
-    }
-    return tokenizer->sizeOfType(strArr[0]) < tokenizer->sizeOfType(strArr[1]);
+    const std::size_t sizeA = ValueFlow::getSizeOf(*a, settings);
+    const std::size_t sizeB = ValueFlow::getSizeOf(*b, settings);
+    return sizeA > 0 && sizeB > 0 && sizeA < sizeB;
 }
 
 void CheckType::checkLongCast()
@@ -330,7 +326,7 @@ void CheckType::checkLongCast()
             (lhstype->type == ValueType::Type::LONG || lhstype->type == ValueType::Type::LONGLONG) &&
             lhstype->pointer == 0U &&
             lhstype->originalTypeName.empty() &&
-            isSmallerTypeSize(rhstype, lhstype, mTokenizer))
+            isSmallerTypeSize(rhstype, lhstype, mSettings))
             longCastAssignError(tok);
     }
 
@@ -355,7 +351,7 @@ void CheckType::checkLongCast()
                     if (type && type->type == ValueType::Type::INT &&
                         type->pointer == 0U &&
                         type->originalTypeName.empty() &&
-                        isSmallerTypeSize(type, retVt, mTokenizer))
+                        isSmallerTypeSize(type, retVt, mSettings))
                         ret = tok;
                 }
                 // All return statements must have problem otherwise no warning
