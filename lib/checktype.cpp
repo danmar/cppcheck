@@ -294,9 +294,9 @@ static bool isSmallerTypeSize(const ValueType* a, const ValueType* b, const Toke
 {
     std::string strArr[] = { a->str(), b->str() };
     for (std::string& s : strArr) {
-        const std::size_t pos = s.rfind(' '); // get bare type string
+        const std::size_t pos = s.find("signed"); // get bare type string
         if (pos != std::string::npos)
-            s.erase(s.begin(), s.begin() + pos + 1);
+            s.erase(s.begin(), s.begin() + pos + 6 + 1);
     }
     return tokenizer->sizeOfType(strArr[0]) < tokenizer->sizeOfType(strArr[1]);
 }

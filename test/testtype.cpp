@@ -363,12 +363,20 @@ private:
         const Settings settingsWin = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Win64).build();
 
         const char code[] = "long f(int x, int y) {\n"
-                             "  return x * y;\n"
-                             "}\n";
+                            "  return x * y;\n"
+                            "}\n";
         check(code, settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
         check(code, settingsWin);
         ASSERT_EQUALS("", errout.str());
+
+        const char code2[] = "long long f(int x, int y) {\n"
+                             "  return x * y;\n"
+                             "}\n";
+        check(code2, settings);
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        check(code2, settingsWin);
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
 
         // typedef
         check("size_t f(int x, int y) {\n"
