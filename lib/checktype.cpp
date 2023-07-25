@@ -297,6 +297,21 @@ static bool isSmallerTypeSize(const ValueType* a, const ValueType* b, const Sett
     return sizeA > 0 && sizeB > 0 && sizeA < sizeB;
 }
 
+static bool checkTypeCombination(ValueType::Type src, ValueType::Type target)
+{
+    static const std::pair<ValueType::Type, ValueType::Type> typeCombinations[] = {
+        { ValueType::Type::INT, ValueType::Type::LONG },
+        { ValueType::Type::INT, ValueType::Type::LONGLONG },
+        { ValueType::Type::LONG, ValueType::Type::LONGLONG },
+        { ValueType::Type::FLOAT, ValueType::Type::DOUBLE },
+        { ValueType::Type::FLOAT, ValueType::Type::LONGDOUBLE },
+        { ValueType::Type::DOUBLE, ValueType::Type::LONGDOUBLE },
+    };
+    return std::any_of(std::begin(typeCombinations), std::end(typeCombinations), [&](const std::pair<ValueType::Type, ValueType::Type>& p) {
+        return src == p.first && target == p.second;
+    });
+}
+
 void CheckType::checkLongCast()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -318,16 +333,16 @@ void CheckType::checkLongCast()
 
         if (!lhstype || !rhstype)
             continue;
+        if (!checkTypeCombination(rhstype->type, lhstype->type))
+            continue;
 
         // assign int result to long/longlong const nonpointer?
-        if (rhstype->type == ValueType::Type::INT &&
-            rhstype->pointer == 0U &&
+        if (rhstype->pointer == 0U &&
             rhstype->originalTypeName.empty() &&
-            (lhstype->type == ValueType::Type::LONG || lhstype->type == ValueType::Type::LONGLONG) &&
             lhstype->pointer == 0U &&
             lhstype->originalTypeName.empty() &&
             isSmallerTypeSize(rhstype, lhstype, mSettings))
-            longCastAssignError(tok);
+            longCastAssignError(tok, rhstype, lhstype);
     }
 
     // Return..
@@ -339,8 +354,6 @@ void CheckType::checkLongCast()
         if (!Token::Match(def, "%name% (") || !def->next()->valueType())
             continue;
         const ValueType* retVt = def->next()->valueType();
-        if (retVt->type != ValueType::Type::LONG && retVt->type != ValueType::Type::LONGLONG)
-            continue;
 
         // return statements
         const Token *ret = nullptr;
@@ -348,7 +361,7 @@ void CheckType::checkLongCast()
             if (tok->str() == "return") {
                 if (Token::Match(tok->astOperand1(), "<<|*")) {
                     const ValueType *type = tok->astOperand1()->valueType();
-                    if (type && type->type == ValueType::Type::INT &&
+                    if (type && checkTypeCombination(type->type, retVt->type) &&
                         type->pointer == 0U &&
                         type->originalTypeName.empty() &&
                         isSmallerTypeSize(type, retVt, mSettings))
@@ -363,26 +376,41 @@ void CheckType::checkLongCast()
         }
 
         if (ret)
-            longCastReturnError(ret);
+            longCastReturnError(ret, ret->astOperand1()->valueType(), retVt);
     }
 }
 
-void CheckType::longCastAssignError(const Token *tok)
+static void makeBaseTypeString(std::string& typeStr)
 {
+    const auto pos = typeStr.find("signed");
+    if (pos != std::string::npos)
+        typeStr.erase(typeStr.begin(), typeStr.begin() + pos + 6 + 1);
+}
+
+void CheckType::longCastAssignError(const Token *tok, const ValueType* src, const ValueType* tgt)
+{
+    std::string srcStr = src ? src->str() : "int";
+    makeBaseTypeString(srcStr);
+    std::string tgtStr = tgt ? tgt->str() : "long";
+    makeBaseTypeString(tgtStr);
     reportError(tok,
                 Severity::style,
                 "truncLongCastAssignment",
-                "int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n"
-                "int result is assigned to long variable. If the variable is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'l = a * b;' => 'l = (long)a * b;'.", CWE197, Certainty::normal);
+                srcStr + " result is assigned to " + tgtStr + " variable. If the variable is " + tgtStr + " to avoid loss of information, then you have loss of information.\n" +
+                srcStr + " result is assigned to " + tgtStr + " variable. If the variable is " + tgtStr + " to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to " + tgtStr + ", for example 'l = a * b;' => 'l = (" + tgtStr + ")a * b;'.", CWE197, Certainty::normal);
 }
 
-void CheckType::longCastReturnError(const Token *tok)
+void CheckType::longCastReturnError(const Token *tok, const ValueType* src, const ValueType* tgt)
 {
+    std::string srcStr = src ? src->str() : "int";
+    makeBaseTypeString(srcStr);
+    std::string tgtStr = tgt ? tgt->str() : "long";
+    makeBaseTypeString(tgtStr);
     reportError(tok,
                 Severity::style,
                 "truncLongCastReturn",
-                "int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n"
-                "int result is returned as long value. If the return value is long to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'return a*b;' => 'return (long)a*b'.", CWE197, Certainty::normal);
+                srcStr +" result is returned as " + tgtStr + " value. If the return value is " + tgtStr + " to avoid loss of information, then you have loss of information.\n" +
+                srcStr +" result is returned as " + tgtStr + " value. If the return value is " + tgtStr + " to avoid loss of information, then there is loss of information. To avoid loss of information you must cast a calculation operand to long, for example 'return a*b;' => 'return (long)a*b'.", CWE197, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------

@@ -362,6 +362,12 @@ private:
               "  return ret;\n"
               "}\n", settings);
         ASSERT_EQUALS("", errout.str());
+
+        check("double g(float f) {\n"
+              "    return f * f;\n"
+              "}\n", settings);
+        ASSERT_EQUALS("[test.cpp:2]: (style) float result is returned as double value. If the return value is double to avoid loss of information, then you have loss of information.\n",
+                      errout.str());
     }
 
     void longCastReturn() {
@@ -380,9 +386,9 @@ private:
                              "  return x * y;\n"
                              "}\n";
         check(code2, settings);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout.str());
         check(code2, settingsWin);
-        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout.str());
 
         // typedef
         check("size_t f(int x, int y) {\n"
