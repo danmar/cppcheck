@@ -300,9 +300,9 @@ static bool checkTypeCombination(const ValueType& src, const ValueType& tgt, con
         { ValueType::Type::DOUBLE, ValueType::Type::LONGDOUBLE },
     };
 
-    const std::size_t sizeA = ValueFlow::getSizeOf(src, settings);
-    const std::size_t sizeB = ValueFlow::getSizeOf(tgt, settings);
-    if (!(sizeA > 0 && sizeB > 0 && sizeA < sizeB))
+    const std::size_t sizeSrc = ValueFlow::getSizeOf(src, settings);
+    const std::size_t sizeTgt = ValueFlow::getSizeOf(tgt, settings);
+    if (!(sizeSrc > 0 && sizeTgt > 0 && sizeSrc < sizeTgt))
         return false;
 
     return std::any_of(std::begin(typeCombinations), std::end(typeCombinations), [&](const std::pair<ValueType::Type, ValueType::Type>& p) {
