@@ -106,6 +106,7 @@ private:
         TEST_CASE(varScope32);      // #11441
         TEST_CASE(varScope33);
         TEST_CASE(varScope34);
+        TEST_CASE(varScope35);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1632,6 +1633,27 @@ private:
               "        if (b)\n"
               "            i++;\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope35() { // #11845
+        check("void f(int err, const char* src) {\n"
+              "    const char* msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        msg = strcpy(buf, src);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char* g(char* dst, const char* src);\n"
+              "void f(int err, const char* src) {\n"
+              "    const char* msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        msg = g(buf, src);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
