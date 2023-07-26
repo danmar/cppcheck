@@ -54,9 +54,9 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
 #endif
     }
 
-    std::ofstream of(mFullPath);
-    if (!of.is_open())
-        throw std::runtime_error("ScopedFile(" + mFullPath + ") - could not open file");
+    std::ofstream of;
+    of.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+    of.open(mFullPath);
     of << content;
 }
 
