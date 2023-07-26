@@ -27,6 +27,7 @@
 #include "utils.h"
 #include "vfvalue.h"
 
+#include <cassert>
 #include <cstdint>
 #include <cstddef>
 #include <functional>

@@ -31,8 +31,6 @@
 #include "threadhandler.h"
 #include "xmlreportv2.h"
 
-#include <string>
-
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>

@@ -19,6 +19,7 @@
 #ifndef CMDLINE_PARSER_H
 #define CMDLINE_PARSER_H
 
+#include <cstddef>
 #include <string>
 #include <vector>
 

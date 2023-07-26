@@ -23,7 +23,6 @@
 #include "importproject.h"
 #include "settings.h"
 
-#include <string>
 #include <utility>
 
 #include <QFile>

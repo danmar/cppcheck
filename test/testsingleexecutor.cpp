@@ -19,6 +19,7 @@
 #include "cppcheck.h"
 #include "fixture.h"
 #include "helpers.h"
+#include "importproject.h"
 #include "redirect.h"
 #include "library.h"
 #include "settings.h"
@@ -28,10 +29,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <functional>
+#include <list>
 #include <map>
 #include <memory>
 #include <set>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>

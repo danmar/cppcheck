@@ -16,6 +16,7 @@
 
 #include <QByteArray>
 #include <QCheckBox>
+#include <QComboBox>
 #include <QCoreApplication>
 #include <QDialogButtonBox>
 #include <QDir>

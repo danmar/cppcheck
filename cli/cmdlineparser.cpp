@@ -44,17 +44,12 @@
 #include <list>
 #include <set>
 #include <sstream> // IWYU pragma: keep
-#include <stdexcept>
 #include <unordered_set>
 #include <utility>
 
 #ifdef HAVE_RULES
 // xml is used for rules
 #include <tinyxml2.h>
-#endif
-
-#ifdef __linux__
-#include <unistd.h>
 #endif
 
 static bool addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)

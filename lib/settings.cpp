@@ -23,7 +23,6 @@
 #include "vfvalue.h"
 
 #include <fstream>
-#include <utility>
 
 #define PICOJSON_USE_INT64
 #include <picojson.h>

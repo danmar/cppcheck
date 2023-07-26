@@ -17,6 +17,7 @@
 #include "options.h"
 #include "fixture.h"
 
+#include <functional>
 #include <set>
 #include <string>
 

@@ -24,17 +24,20 @@
 #include "color.h"
 #include "config.h"
 #include "errorlogger.h"
+#include "errortypes.h"
+#include "library.h"
+#include "platform.h"
 #include "settings.h"
+#include "standards.h"
 
 #include <cstddef>
 #include <list>
-#include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 class options;
-class Settings;
 class Tokenizer;
 
 class TestFixture : public ErrorLogger {
