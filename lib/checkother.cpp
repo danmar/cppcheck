@@ -1072,15 +1072,11 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
                     return false; // simplified if/for/switch init statement
             }
             if (var->isArrayOrPointer()) {
-                const Token* parent = tok->astParent();
-                while (parent && parent->isArithmeticalOp())
-                    parent = parent->astParent();
-                while (Token::simpleMatch(parent, ","))
-                    parent = parent->astParent();
-                if (parent && Token::Match(parent->previous(), "%name% (")) { // var passed to function?
-                    if (parent->previous()->function() && Function::returnsPointer(parent->previous()->function()))
+                int argn{};
+                if (const Token* ftok = getTokenArgumentFunction(tok, argn)) { // var passed to function?
+                    if (ftok->function() && Function::returnsPointer(ftok->function()))
                         return false;
-                    const std::string ret = mSettings->library.returnValueType(parent->previous()); // assume that var is returned
+                    const std::string ret = mSettings->library.returnValueType(ftok); // assume that var is returned
                     if (!ret.empty() && ret.back() == '*')
                         return false;
                 }
