@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     container:
-      image: "archlinux:latest"
+      image: "fedora:latest"
 
     steps:
       - uses: actions/checkout@v3
@@ -42,6 +42,14 @@ jobs:
           pacman -Sy
           pacman -S include-what-you-use --noconfirm
           ln -s iwyu-tool /usr/sbin/iwyu_tool
+
+      # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
+      - name: Install missing software on Fedora
+        run: |
+          dnf install -y cmake gcc-c++ qt5-qtbase-devel qt5-linguist qt5-qttools-devel qt5-qtcharts-devel pcre-devel
+          dnf install -y wget iwyu
+          ln -s iwyu_tool.py /usr/bin/iwyu_tool
+          ln -s qt5 /usr/include/qt
 
       - name: Prepare CMake
         run: |
