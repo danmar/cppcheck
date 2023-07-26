@@ -289,15 +289,7 @@ void CheckType::signConversionError(const Token *tok, const ValueFlow::Value *ne
 //---------------------------------------------------------------------------
 // Checking for long cast of int result   const long x = var1 * var2;
 //---------------------------------------------------------------------------
-
-static bool isSmallerTypeSize(const ValueType* a, const ValueType* b, const Settings* settings)
-{
-    const std::size_t sizeA = ValueFlow::getSizeOf(*a, settings);
-    const std::size_t sizeB = ValueFlow::getSizeOf(*b, settings);
-    return sizeA > 0 && sizeB > 0 && sizeA < sizeB;
-}
-
-static bool checkTypeCombination(ValueType::Type src, ValueType::Type target)
+static bool checkTypeCombination(const ValueType& src, const ValueType& tgt, const Settings* settings)
 {
     static const std::pair<ValueType::Type, ValueType::Type> typeCombinations[] = {
         { ValueType::Type::INT, ValueType::Type::LONG },
@@ -307,8 +299,14 @@ static bool checkTypeCombination(ValueType::Type src, ValueType::Type target)
         { ValueType::Type::FLOAT, ValueType::Type::LONGDOUBLE },
         { ValueType::Type::DOUBLE, ValueType::Type::LONGDOUBLE },
     };
+
+    const std::size_t sizeA = ValueFlow::getSizeOf(src, settings);
+    const std::size_t sizeB = ValueFlow::getSizeOf(tgt, settings);
+    if (!(sizeA > 0 && sizeB > 0 && sizeA < sizeB))
+        return false;
+
     return std::any_of(std::begin(typeCombinations), std::end(typeCombinations), [&](const std::pair<ValueType::Type, ValueType::Type>& p) {
-        return src == p.first && target == p.second;
+        return src.type == p.first && tgt.type == p.second;
     });
 }
 
@@ -333,15 +331,14 @@ void CheckType::checkLongCast()
 
         if (!lhstype || !rhstype)
             continue;
-        if (!checkTypeCombination(rhstype->type, lhstype->type))
+        if (!checkTypeCombination(*rhstype, *lhstype, mSettings))
             continue;
 
         // assign int result to long/longlong const nonpointer?
         if (rhstype->pointer == 0U &&
             rhstype->originalTypeName.empty() &&
             lhstype->pointer == 0U &&
-            lhstype->originalTypeName.empty() &&
-            isSmallerTypeSize(rhstype, lhstype, mSettings))
+            lhstype->originalTypeName.empty())
             longCastAssignError(tok, rhstype, lhstype);
     }
 
@@ -361,10 +358,9 @@ void CheckType::checkLongCast()
             if (tok->str() == "return") {
                 if (Token::Match(tok->astOperand1(), "<<|*")) {
                     const ValueType *type = tok->astOperand1()->valueType();
-                    if (type && checkTypeCombination(type->type, retVt->type) &&
+                    if (type && checkTypeCombination(*type, *retVt, mSettings) &&
                         type->pointer == 0U &&
-                        type->originalTypeName.empty() &&
-                        isSmallerTypeSize(type, retVt, mSettings))
+                        type->originalTypeName.empty())
                         ret = tok;
                 }
                 // All return statements must have problem otherwise no warning
