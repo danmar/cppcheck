@@ -43,6 +43,7 @@
 #endif
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <functional>
@@ -65,6 +66,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+// TODO: do not directly write to stdout
 
 
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
@@ -325,15 +328,10 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
         return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
     });
     if (failed_lib != settings.libraries.end()) {
-        const std::string msg("Failed to load the library " + *failed_lib);
-        const std::list<ErrorMessage::FileLocation> callstack;
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg); // TODO: depends on mSettings before they have been set
         return false;
     }
 
     if (!std) {
-        const std::list<ErrorMessage::FileLocation> callstack;
         const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
@@ -345,8 +343,7 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
 #endif
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg); // TODO: depends on mSettings before they have been set
+        std::cout << msg << " " << details << std::endl;
         return false;
     }
 
@@ -424,11 +421,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
         return;
     }
 
-    // TODO: workaround for calls during settings creation
-    if (!mSettings) {
-        reportOut(msg.toString(false));
-        return;
-    }
+    assert(mSettings != nullptr);
 
     // Alert only about unique errors
     if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
