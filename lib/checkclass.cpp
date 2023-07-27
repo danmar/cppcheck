@@ -3401,10 +3401,6 @@ namespace {
             int column;
             std::size_t hash;
 
-            bool operator==(const NameLoc& other) const {
-                return isSameLocation(other) && hash == other.hash;
-            }
-
             bool isSameLocation(const NameLoc& other) const {
                 return fileName == other.fileName &&
                        lineNumber == other.lineNumber &&
