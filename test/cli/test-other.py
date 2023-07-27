@@ -555,9 +555,14 @@ def test_showtime_top5_file(tmpdir):
 
 
 def test_missing_addon(tmpdir):
-    args = ['--addon=misra2', 'file.c']
+    args = ['--addon=misra3', '--addon=misra', '--addon=misra2', 'file.c']
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 1
-    assert stdout == 'Did not find addon misra2.py\n'
+    lines = stdout.splitlines()
+    lines.sort()
+    assert lines == [
+        'Did not find addon misra2.py',
+        'Did not find addon misra3.py'
+    ]
     assert stderr == ""

@@ -411,16 +411,18 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
 
 bool CppCheckExecutor::loadAddons(Settings& settings)
 {
+    bool result = true;
     for (const std::string &addon: settings.addons) {
         AddonInfo addonInfo;
         const std::string failedToGetAddonInfo = addonInfo.getAddonInfo(addon, settings.exename);
         if (!failedToGetAddonInfo.empty()) {
             std::cout << failedToGetAddonInfo << std::endl;
-            return false;
+            result = false;
+            continue;
         }
         settings.addonInfos.emplace_back(std::move(addonInfo));
     }
-    return true;
+    return result;
 }
 
 #ifdef _WIN32
