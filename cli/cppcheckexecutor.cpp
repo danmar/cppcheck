@@ -322,16 +322,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 
 bool CppCheckExecutor::loadLibraries(Settings& settings)
 {
-    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
-
-    const auto failed_lib = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&](const std::string& lib) {
-        return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
-    });
-    if (failed_lib != settings.libraries.end()) {
-        return false;
-    }
-
-    if (!std) {
+    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg")) {
         const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
@@ -347,7 +338,13 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
         return false;
     }
 
-    return true;
+    bool result = true;
+    for (const auto& lib : settings.libraries) {
+        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
+            result = false;
+        }
+    }
+    return result;
 }
 
 #ifdef _WIN32

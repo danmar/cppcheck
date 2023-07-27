@@ -67,7 +67,8 @@ def test_invalid_library(tmpdir):
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 1
-    assert (stdout == "cppcheck: Failed to load library configuration file 'none'. File not found\n")
+    assert (stdout == "cppcheck: Failed to load library configuration file 'none'. File not found\n"
+                      "cppcheck: Failed to load library configuration file 'none2'. File not found\n")
     assert stderr == ""
 
 # TODO: test missing std.cfg
