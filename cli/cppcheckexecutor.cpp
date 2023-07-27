@@ -328,7 +328,7 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
         const std::string msg("Failed to load the library " + *failed_lib);
         const std::list<ErrorMessage::FileLocation> callstack;
         ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
+        reportErr(errmsg); // TODO: depends on mSettings before they have been set
         return false;
     }
 
@@ -346,7 +346,7 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
                                   "should be configured.");
 #endif
         ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
+        reportErr(errmsg); // TODO: depends on mSettings before they have been set
         return false;
     }
 
@@ -421,6 +421,12 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     if (mShowAllErrors) {
         reportOut(msg.toXML());
+        return;
+    }
+
+    // TODO: workaround for calls during settings creation
+    if (!mSettings) {
+        reportOut(msg.toString(false));
         return;
     }
 
