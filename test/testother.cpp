@@ -1656,6 +1656,16 @@ private:
               "    printf(\"%d: %s\\n\", err, msg);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("char* g(char* dst, const char* src);\n"
+              "void f(int err, const char* src) {\n"
+              "    const char* msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        g(buf, src);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'buf' can be reduced.\n", errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
