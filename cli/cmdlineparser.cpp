@@ -39,7 +39,6 @@
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
 #include <fstream> // IWYU pragma: keep
-#include <iostream>
 #include <iterator>
 #include <list>
 #include <set>
@@ -124,14 +123,14 @@ CmdLineParser::CmdLineParser(Settings &settings, Suppressions &suppressions, Sup
     , mExitAfterPrint(false)
 {}
 
-void CmdLineParser::printMessage(const std::string &message)
+void CmdLineParser::printMessage(const std::string &message, std::ostream& stream)
 {
-    std::cout << "cppcheck: " << message << std::endl;
+    stream << "cppcheck: " << message << std::endl;
 }
 
 void CmdLineParser::printError(const std::string &message)
 {
-    printMessage("error: " + message);
+    printMessage("error: " + message, std::cerr);
 }
 
 #if defined(_WIN64) || defined(_WIN32)
@@ -864,6 +863,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             // Filter errors
             else if (std::strncmp(argv[i], "--suppressions-list=", 20) == 0) {
                 std::string filename = argv[i]+20;
+                
+                if (filename.empty()) {
+                    printError("No file was specified for '--suppressions-list=' option.");
+                    return false;
+                }
+
                 std::ifstream f(filename);
                 if (!f.is_open()) {
                     std::string message("couldn't open the file: \"");

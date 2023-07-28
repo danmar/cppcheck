@@ -21,6 +21,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include "utils.h"
 
@@ -113,7 +114,7 @@ protected:
     /**
      * Print message (to stdout).
      */
-    static void printMessage(const std::string &message);
+    static void printMessage(const std::string &message, std::ostream& stream = std::cout);
 
     /**
      * Print error message (to stdout).
