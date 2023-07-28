@@ -104,7 +104,6 @@ if (NOT USE_BOOST AND USE_BOOST_INT128)
 endif()
 option(USE_LIBCXX           "Use libc++ instead of libstdc++"                               OFF)
 
-option(DISABLE_CRTDBG_MAP_ALLOC "Disable usage of Visual Studio C++ memory leak detection in Debug build" OFF)
 option(NO_UNIX_SIGNAL_HANDLING "Disable usage of Unix Signal Handling"                      OFF)
 option(NO_UNIX_BACKTRACE_SUPPORT "Disable usage of Unix Backtrace support"                  OFF)
 option(NO_WINDOWS_SEH       "Disable usage of Windows SEH"                                  OFF)

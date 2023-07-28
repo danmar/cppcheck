@@ -14,6 +14,7 @@ GUI:
 -
 
 Changed interface:
+- removed CMake option "DISABLE_CRTDBG_MAP_ALLOC"
 -
 
 Infrastructure & dependencies:
