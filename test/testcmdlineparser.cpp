@@ -237,6 +237,10 @@ private:
         TEST_CASE(undefs_noarg3);
         TEST_CASE(undefs);
         TEST_CASE(undefs2);
+
+        TEST_CASE(cppcheckBuildDirExistent);
+        TEST_CASE(cppcheckBuildDirNonExistent);
+        TEST_CASE(cppcheckBuildDirEmpty);
     }
 
 
@@ -1946,6 +1950,27 @@ private:
         // Fails since -U has no param
         ASSERT_EQUALS(false, defParser.parseFromArgs(4, argv));
         ASSERT_EQUALS("cppcheck: error: argument to '-U' is missing.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void cppcheckBuildDirExistent() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=."};
+        ASSERT_EQUALS(true, defParser.parseFromArgs(2, argv));
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void cppcheckBuildDirNonExistent() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir=non-existent-path"};
+        ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: Directory 'non-existent-path' specified by --cppcheck-build-dir argument has to be existent.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void cppcheckBuildDirEmpty() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--cppcheck-build-dir="};
+        ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: Directory '' specified by --cppcheck-build-dir argument has to be existent.\n", GET_REDIRECT_OUTPUT);
     }
 };
 
