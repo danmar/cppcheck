@@ -11,9 +11,9 @@ def test_missing_project(project_ext):
     project_file = "file.{}".format(project_ext)
 
     ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
-    assert 1 == ret
-    assert "cppcheck: error: failed to open project '{}'. The file does not exist.\n".format(project_file) == stdout
-    assert "" == stderr
+    assert 1 == ret, stderr
+    assert "" == stdout
+    assert "cppcheck: error: failed to open project '{}'. The file does not exist.\n".format(project_file) == stderr
 
 
 def _test_project_error(tmpdir, ext, content, expected):
@@ -24,9 +24,9 @@ def _test_project_error(tmpdir, ext, content, expected):
             f.write(content)
 
     ret, stdout, stderr = cppcheck(['--project=' + str(project_file)])
-    assert 1 == ret
-    assert "cppcheck: error: " + expected + "\ncppcheck: error: failed to load project '{}'. An error occurred.\n".format(project_file) == stdout
-    assert "" == stderr
+    assert 1 == ret, stderr
+    assert "" == stdout
+    assert "cppcheck: error: " + expected + "\ncppcheck: error: failed to load project '{}'. An error occurred.\n".format(project_file) == stderr
 
 
 @pytest.mark.parametrize("project_ext, expected", [

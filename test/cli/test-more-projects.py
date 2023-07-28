@@ -120,9 +120,9 @@ def test_project_unknown_platform(tmpdir):
         f.write("int x;")
 
     ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
-    assert ret == 1, stdout
-    assert stdout == "cppcheck: error: unrecognized platform: 'dummy'.\n"
-    assert stderr == ''
+    assert ret == 1, stderr
+    assert stdout == ''
+    assert stderr == '"cppcheck: error: unrecognized platform: 'dummy'.\n"
 
 
 def test_project_empty_fields(tmpdir):
@@ -210,9 +210,9 @@ def test_project_empty_fields(tmpdir):
 </project>""")
 
     ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1'])
-    assert ret == 1, stdout # do not crash
-    assert stdout == 'cppcheck: error: no C or C++ source files found.\n'
-    assert stderr == ''
+    assert ret == 1, stderr # do not crash
+    assert stdout == ''
+    assert stderr == 'cppcheck: error: no C or C++ source files found.\n'
 
 
 def test_project_missing_subproject(tmpdir):
@@ -222,6 +222,6 @@ def test_project_missing_subproject(tmpdir):
     project_file = __write_cppcheck_project_file(tmpdir, importproject='dummy.json')
 
     ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
-    assert ret == 1, stdout
-    assert stdout == "cppcheck: error: failed to open project '{}/dummy.json'. The file does not exist.\n".format(str(tmpdir).replace('\\', '/'))
-    assert stderr == ''
+    assert ret == 1, stderr
+    assert stdout == ''
+    assert stderr == "cppcheck: error: failed to open project '{}/dummy.json'. The file does not exist.\n".format(str(tmpdir).replace('\\', '/'))
