@@ -45,7 +45,6 @@
 #include <set>
 #include <sstream> // IWYU pragma: keep
 #include <stdexcept>
-#include <sys/stat.h>
 #include <unordered_set>
 #include <utility>
 
@@ -295,8 +294,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (endsWith(mSettings.buildDir, '/'))
                     mSettings.buildDir.pop_back();
 
-                struct stat info;
-                if (stat(mSettings.buildDir.c_str(), &info) != 0 || !(info.st_mode & S_IFDIR)) {
+                if (!Path::directoryExists(mSettings.buildDir)) {
                     printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
                     return false;
                 }
