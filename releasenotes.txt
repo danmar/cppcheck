@@ -18,4 +18,6 @@ Deprecations:
 
 Other:
 - "missingInclude" is no longer implicitly enabled with "information" - you need to enable it explicitly now.
+- removed internal usage of "_CRTDBG_MAP_ALLOC" as it was never fully implemented and also does not work with Qt 6.
+- removed CMake option "DISABLE_CRTDBG_MAP_ALLOC"
 -
