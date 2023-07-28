@@ -1107,7 +1107,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
                 continue;
 
             bool isTemplateArg = false;
-            if (tok->next()->str() != "(") {
+            if (!Token::Match(tok->next(), "(|{")) {
                 const Token *start = tok;
                 while (Token::Match(start->tokAt(-2), "%name% ::"))
                     start = start->tokAt(-2);
