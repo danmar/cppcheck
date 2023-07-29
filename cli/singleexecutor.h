@@ -33,7 +33,7 @@ class Suppressions;
 class SingleExecutor : public Executor
 {
 public:
-    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
+    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
     SingleExecutor(const SingleExecutor &) = delete;
     ~SingleExecutor() override;
     void operator=(const SingleExecutor &) = delete;

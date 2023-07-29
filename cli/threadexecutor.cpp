@@ -40,7 +40,7 @@
 
 enum class Color;
 
-ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
     : Executor(files, settings, suppressions, errorLogger)
 {
     assert(mSettings.jobs > 1);
