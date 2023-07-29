@@ -163,8 +163,8 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
 
     // Don't rely on incoming data being null-terminated.
     // Allocate +1 element and null-terminate the buffer.
-    char *buf = new char[len + 1];
-    char *data_start = buf;
+    std::string buf(len + 1, '\0');
+    char *data_start = &buf[0];
     bytes_to_read = len;
     do {
         bytes_read = read(rpipe, data_start, bytes_to_read);
@@ -176,13 +176,14 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         bytes_to_read -= bytes_read;
         data_start += bytes_read;
     } while (bytes_to_read != 0);
-    buf[len] = 0;
+    buf[len] = '\0';
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
         // the first character is the color
         const Color c = static_cast<Color>(buf[0]);
-        mErrorLogger.reportOut(buf + 1, c);
+        // TODO: avoid string copy
+        mErrorLogger.reportOut(buf.substr(1), c);
     } else if (type == PipeWriter::REPORT_ERROR) {
         ErrorMessage msg;
         try {
@@ -199,7 +200,6 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         res = false;
     }
 
-    delete[] buf;
     return res;
 }
 
