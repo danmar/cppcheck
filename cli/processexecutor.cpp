@@ -90,31 +90,35 @@ public:
 
 private:
     // TODO: how to log file name in error?
-    void writeToPipe(PipeSignal type, const std::string &data) const
+    void writeToPipeInternal(PipeSignal type, const void* data, std::size_t to_write) const
     {
-        static constexpr std::size_t l_size = sizeof(unsigned int);
-        const unsigned int len = static_cast<unsigned int>(data.length() + 1);
-        const std::size_t bytes_to_write = len + 1 + l_size;
-        char *out = new char[bytes_to_write];
-        out[0] = static_cast<char>(type);
-        std::memcpy(&(out[1]), &len, l_size);
-        std::memcpy(&(out[1+l_size]), data.c_str(), len);
-
-        const ssize_t bytes_written = write(mWpipe, out, bytes_to_write);
+        const ssize_t bytes_written = write(mWpipe, data, to_write);
         if (bytes_written <= 0) {
             const int err = errno;
-            delete[] out;
-            std::cerr << "#### ThreadExecutor::writeToPipe() error for type " << type << ": " << std::strerror(err) << std::endl;
+            std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": " << std::strerror(err) << std::endl;
             std::exit(EXIT_FAILURE);
         }
         // TODO: write until everything is written
-        if (bytes_written != bytes_to_write) {
-            delete[] out;
-            std::cerr << "#### ThreadExecutor::writeToPipe() error for type " << type << ": insufficient data written (expected: " << bytes_to_write << " / got: " << bytes_written << ")" << std::endl;
+        if (bytes_written != to_write) {
+            std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": insufficient data written (expected: " << to_write << " / got: " << bytes_written << ")" << std::endl;
             std::exit(EXIT_FAILURE);
         }
+    }
 
-        delete[] out;
+    void writeToPipe(PipeSignal type, const std::string &data) const
+    {
+        {
+            const char t = static_cast<char>(type);
+            writeToPipeInternal(type, &t, 1);
+        }
+
+        const unsigned int len = static_cast<unsigned int>(data.length() + 1);
+        {
+            static constexpr std::size_t l_size = sizeof(unsigned int);
+            writeToPipeInternal(type, &len, l_size);
+        }
+
+        writeToPipeInternal(type, data.c_str(), len);
     }
 
     const int mWpipe;
