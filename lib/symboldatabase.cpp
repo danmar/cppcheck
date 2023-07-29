@@ -3500,14 +3500,14 @@ std::string Type::name() const
     else if (!start->isName())
         return emptyString;
     const Token* next = start;
-    while(Token::Match(next, "::|<|>|(|)|[|]|*|&|&&|%name%")) {
-        if(Token::Match(next, "<|(|[") && next->link())
+    while (Token::Match(next, "::|<|>|(|)|[|]|*|&|&&|%name%")) {
+        if (Token::Match(next, "<|(|[") && next->link())
             next = next->link();
         next = next->next();
     }
     std::string result;
-    for(const Token* tok=start;tok!=next;tok=tok->next()) {
-        if(!result.empty())
+    for (const Token* tok = start; tok != next; tok = tok->next()) {
+        if (!result.empty())
             result += ' ';
         result += tok->str();
     }
