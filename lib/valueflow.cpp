@@ -4259,7 +4259,7 @@ private:
     }
 };
 
-static bool isOwningVariables(const std::list<Variable>& vars, const std::vector<const Token*>& args, int depth = 10)
+static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::vector<const Token*>& args, int depth = 10)
 {
     if (depth < 0)
         return false;
@@ -4361,7 +4361,7 @@ static void valueFlowLifetimeUserConstructor(Token* tok,
             else
                 ls.byVal(tok, tokenlist, errorLogger, settings);
         });
-    } else if (isOwningVariables(constructor->nestedIn->varlist, args)) {
+    } else if (hasBorrowingVariables(constructor->nestedIn->varlist, args)) {
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + name + "'.",
                                ValueFlow::Value::LifetimeKind::SubObject,
