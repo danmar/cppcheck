@@ -4282,7 +4282,7 @@ static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::ve
             if (vt->type == ValueType::CONTAINER && vt->container)
                 return vt->container->view;
             if (vt->typeScope)
-                return isOwningVariables(vt->typeScope->varlist, args, depth - 1);
+                return hasBorrowingVariables(vt->typeScope->varlist, args, depth - 1);
         }
         return false;
     });
