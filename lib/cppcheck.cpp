@@ -1576,7 +1576,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         return;
 
     // TODO: there should be no need for the verbose messages here
-    const std::string errmsg = msg.toString(mSettings.verbose);
+    std::string errmsg = msg.toString(mSettings.verbose);
     if (errmsg.empty())
         return;
 
@@ -1607,7 +1607,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         mExitCode = 1;
     }
 
-    mErrorList.push_back(errmsg);
+    mErrorList.emplace_back(std::move(errmsg));
 
     mErrorLogger.reportErr(msg);
     // check if plistOutput should be populated and the current output file is open and the error is not suppressed
