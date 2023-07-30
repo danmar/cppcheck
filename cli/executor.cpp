@@ -41,6 +41,7 @@ bool Executor::hasToLog(const ErrorMessage &msg)
 {
     if (!mSuppressions.isSuppressed(msg, {}))
     {
+        // TODO: there should be no need for verbose messages here
         std::string errmsg = msg.toString(mSettings.verbose);
 
         std::lock_guard<std::mutex> lg(mErrorListSync);

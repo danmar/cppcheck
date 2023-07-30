@@ -1575,6 +1575,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (!mSettings.library.reportErrors(msg.file0))
         return;
 
+    // TODO: there should be no need for the verbose messages here
     const std::string errmsg = msg.toString(mSettings.verbose);
     if (errmsg.empty())
         return;

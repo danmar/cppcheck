@@ -74,6 +74,7 @@ protected:
 
 private:
     std::mutex mErrorListSync;
+    // TODO: store hashes instead of full messages
     std::list<std::string> mErrorList;
 };
 

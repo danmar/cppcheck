@@ -215,6 +215,7 @@ private:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
 
+    // TODO: store hashes instead of the full messages
     std::list<std::string> mErrorList;
     Settings mSettings;
 
