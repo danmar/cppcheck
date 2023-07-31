@@ -1598,7 +1598,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         return;
 
     // Alert only about unique errors
-    if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) != mErrorList.cend())
+    if (!mErrorList.emplace(std::move(errmsg)).second)
         return;
 
     if (!mSettings.buildDir.empty())
@@ -1607,8 +1607,6 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;
     }
-
-    mErrorList.emplace_back(std::move(errmsg));
 
     mErrorLogger.reportErr(msg);
     // check if plistOutput should be populated and the current output file is open and the error is not suppressed

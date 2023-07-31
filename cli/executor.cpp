@@ -51,8 +51,7 @@ bool Executor::hasToLog(const ErrorMessage &msg)
             return false;
 
         std::lock_guard<std::mutex> lg(mErrorListSync);
-        if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) == mErrorList.cend()) {
-            mErrorList.emplace_back(std::move(errmsg));
+        if (mErrorList.emplace(std::move(errmsg)).second) {
             return true;
         }
     }

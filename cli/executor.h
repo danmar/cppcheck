@@ -23,6 +23,7 @@
 #include <list>
 #include <mutex>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 class Settings;
@@ -75,7 +76,7 @@ protected:
 private:
     std::mutex mErrorListSync;
     // TODO: store hashes instead of full messages
-    std::list<std::string> mErrorList;
+    std::unordered_set<std::string> mErrorList;
 };
 
 /// @}
