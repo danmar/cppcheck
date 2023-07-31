@@ -474,7 +474,7 @@ private:
     }
 
     void assign23() {
-        const Settings s = settingsBuilder(settings).library("posix.cfg").build();
+        const Settings s = settingsBuilder().library("posix.cfg").build();
         check("void f() {\n"
               "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
               "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
@@ -2810,7 +2810,7 @@ private:
                                "    <arg nr=\"1\" direction=\"in\"/>\n"
                                "  </function>\n"
                                "</def>\n";
-        const Settings settingsLeakIgnore = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
+        const Settings settingsLeakIgnore = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"

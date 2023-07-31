@@ -397,7 +397,7 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n"
                       "[test.cpp:6] -> [test.cpp:1]: (style, inconclusive) Unhandled exception specification when calling function f().\n", errout.str());
 
-        const Settings s = settingsBuilder(settings).library("gnu.cfg").build();
+        const Settings s = settingsBuilder().library("gnu.cfg").build();
         check(code, true, &s);
         ASSERT_EQUALS("", errout.str());
     }
