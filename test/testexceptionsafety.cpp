@@ -63,7 +63,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        Settings settings1 = settingsBuilder(s ? *s : settings).certainty(Certainty::inconclusive, inconclusive).build();
+        const Settings settings1 = settingsBuilder(s ? *s : settings).certainty(Certainty::inconclusive, inconclusive).build();
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
