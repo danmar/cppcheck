@@ -119,8 +119,8 @@ class MacroUsage:
         self.name = element.get('name')
         _load_location(self, element)
         self.usefile = element.get('usefile')
-        self.useline = element.get('useline')
-        self.usecolumn = element.get('usecolumn')
+        self.useline = int(element.get('useline'))
+        self.usecolumn = int(element.get('usecolumn'))
         self.isKnownValue = element.get('is-known-value', 'false') == 'true'
 
     def __repr__(self):
