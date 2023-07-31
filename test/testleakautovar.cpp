@@ -2764,8 +2764,6 @@ private:
     }
 
     void functionCallCastConfig() { // #9652
-        Settings settingsFunctionCall = settings;
-
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def format=\"2\">\n"
                                "  <function name=\"free_func\">\n"
@@ -2778,7 +2776,8 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settingsFunctionCall.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settingsFunctionCall = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
+
         check("void test_func()\n"
               "{\n"
               "    char * buf = malloc(4);\n"
