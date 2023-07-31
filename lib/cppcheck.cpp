@@ -1565,6 +1565,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 //---------------------------------------------------------------------------
 
+// TODO: part of this logic is duplicated in Executor::hasToLog()
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
     if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
@@ -1574,18 +1575,6 @@ void CppCheck::reportErr(const ErrorMessage &msg)
 
     if (!mSettings.library.reportErrors(msg.file0))
         return;
-
-    // TODO: there should be no need for the verbose messages here
-    std::string errmsg = msg.toString(mSettings.verbose);
-    if (errmsg.empty())
-        return;
-
-    // Alert only about unique errors
-    if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) != mErrorList.cend())
-        return;
-
-    if (!mSettings.buildDir.empty())
-        mAnalyzerInformation.reportErr(msg);
 
     std::set<std::string> macroNames;
     if (!msg.callStack.empty()) {
@@ -1602,6 +1591,18 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
         return;
     }
+
+    // TODO: there should be no need for the verbose messages here
+    std::string errmsg = msg.toString(mSettings.verbose);
+    if (errmsg.empty())
+        return;
+
+    // Alert only about unique errors
+    if (std::find(mErrorList.cbegin(), mErrorList.cend(), errmsg) != mErrorList.cend())
+        return;
+
+    if (!mSettings.buildDir.empty())
+        mAnalyzerInformation.reportErr(msg);
 
     if (!mSettings.nofail.isSuppressed(errorMessage) && !mSettings.nomsg.isSuppressed(errorMessage)) {
         mExitCode = 1;
