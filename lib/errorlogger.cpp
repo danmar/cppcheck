@@ -623,6 +623,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     // Save this ErrorMessage in plain text.
 
     // No template is given
+    // (not 100%) equivalent templateFormat: {callstack} ({severity}{inconclusive:, inconclusive}) {message}
     if (templateFormat.empty()) {
         std::string text;
         if (!callStack.empty()) {
