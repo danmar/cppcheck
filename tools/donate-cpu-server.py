@@ -115,6 +115,7 @@ def overviewReport() -> str:
     html += '<br>\n'
     html += 'Important errors:<br>\n'
     html += '<a href="head-cppcheckError">cppcheckError</a><br>\n'
+    html += '<a href="head-internalError">internalError</a><br>\n'
     html += '<a href="head-internalAstError">internalAstError</a><br>\n'
     html += '<a href="head-syntaxError">syntaxError</a><br>\n'
     html += '<a href="head-DacaWrongData">DacaWrongData</a><br>\n'
