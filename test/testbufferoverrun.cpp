@@ -2342,13 +2342,13 @@ private:
     void array_index_negative10()
     {
         check("struct S { int a[4]; };\n"
-"void f(S* p, int k) {\n"
-"  int m = 3;\n"
-"  if (k)\n"
-"    m = 2;\n"
-"  for (int j = m + 1; j <= 4; j++)\n"
-"    p->a[j-1];\n"
-"}\n");
+              "void f(S* p, int k) {\n"
+              "  int m = 3;\n"
+              "  if (k)\n"
+              "    m = 2;\n"
+              "  for (int j = m + 1; j <= 4; j++)\n"
+              "    p->a[j-1];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

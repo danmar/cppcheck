@@ -890,10 +890,10 @@ bool extractForLoopValues(const Token *forToken,
     std::vector<MathLib::bigint> minInitValue = getMinValue(ValueFlow::makeIntegralInferModel(), initExpr->astOperand2()->values());
     if (minInitValue.empty()) {
         const ValueFlow::Value* v = initExpr->astOperand2()->getMinValue(true);
-        if(v)
+        if (v)
             minInitValue.push_back(v->intvalue);
     }
-    if(minInitValue.empty())
+    if (minInitValue.empty())
         return false;
     varid = initExpr->astOperand1()->varId();
     knownInitValue = initExpr->astOperand2()->hasKnownIntValue();

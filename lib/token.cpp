@@ -2422,7 +2422,10 @@ const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
 }
 
 template<class Compare>
-static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values, bool condition, MathLib::bigint path, Compare compare)
+static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values,
+                                               bool condition,
+                                               MathLib::bigint path,
+                                               Compare compare)
 {
     const ValueFlow::Value* ret = nullptr;
     for (const ValueFlow::Value& value : values) {
@@ -2432,8 +2435,7 @@ static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>
             continue;
         if (path > -0 && value.path != 0 && value.path != path)
             continue;
-        if ((!ret || compare(value.intvalue, ret->intvalue)) &&
-            ((value.condition != nullptr) == condition))
+        if ((!ret || compare(value.intvalue, ret->intvalue)) && ((value.condition != nullptr) == condition))
             ret = &value;
     }
     return ret;
