@@ -418,7 +418,7 @@ def misra_9_x(self, data, rule, rawTokens = None):
                                 has_var = True
                                 continue
                             unknown_constant = True
-                            cppcheckdata.reportError(sz, 'error', f'Unknown constant {t.str}, please review configuration', 'misra', 'config')
+                            cppcheckdata.reportError(sz, 'error', 'Unknown constant {}, please review configuration'.format(t.str), 'misra', 'config')
                             has_config_errors = True
                         if t.isArithmeticalOp:
                             tokens += [t.astOperand1, t.astOperand2]
