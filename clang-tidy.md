@@ -125,6 +125,10 @@ Reports warning with the Qt `<access-specifier> slots:` syntax in class declarat
 Produces warnings when `const char[]` is being used which is quite common in our code. Does not make sense to enable before C++17 when `std::string_view` becomes available.
 Also reports a false positive about templates which deduce the array length: https://github.com/llvm/llvm-project/issues/60053.
 
+`misc-include-cleaner`<br/>
+
+We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as the findings of the include checkers still need to be reviewed manually before applying them. 
+
 `readability-container-size-empty`<br/>
 `bugprone-branch-clone`<br/>
 `readability-const-return-type`<br/>

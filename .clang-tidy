@@ -37,6 +37,7 @@ Checks: >
         -misc-use-anonymous-namespace,
         -modernize-avoid-c-arrays,
         -modernize-deprecated-ios-base-aliases,
+        -misc-include-cleaner,
         -modernize-loop-convert,
         -modernize-raw-string-literal,
         -modernize-replace-auto-ptr,
