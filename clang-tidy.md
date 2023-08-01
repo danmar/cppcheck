@@ -140,6 +140,7 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `concurrency-mt-unsafe`<br/>
 `misc-use-anonymous-namespace`<br/>
 `performance-avoid-endl`<br/>
+`performance-noexcept-swap`<br/>
 
 To be evaluated (need to remove exclusion).
 
