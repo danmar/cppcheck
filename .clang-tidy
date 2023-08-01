@@ -24,6 +24,7 @@ Checks: >
         -bugprone-assignment-in-if-condition,
         -bugprone-branch-clone,
         -bugprone-easily-swappable-parameters,
+        -bugprone-empty-catch,
         -bugprone-macro-parentheses,
         -bugprone-narrowing-conversions,
         -bugprone-signed-char-misuse,
