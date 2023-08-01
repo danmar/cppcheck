@@ -141,7 +141,12 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `misc-use-anonymous-namespace`<br/>
 `performance-avoid-endl`<br/>
 
-To be evaluated.
+To be evaluated (need to remove exclusion).
+
+`cppcoreguidelines-missing-std-forward`<br/>
+`cppcoreguidelines-avoid-const-or-ref-data-members`<br/>
+
+To be evaluated (need to enable explicitly).
 
 `portability-std-allocator-const`<br/>
 
