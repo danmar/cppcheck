@@ -1302,8 +1302,7 @@ void dl(const char* libname, const char* func)
 void asctime_r_test(const struct tm * tm, char * bufSizeUnknown)
 {
     struct tm tm_uninit_data;
-    // cppcheck-suppress constVariablePointer
-    struct tm * tm_uninit_pointer;
+    const struct tm * tm_uninit_pointer;
     char bufSize5[5];
     char bufSize25[25];
     char bufSize26[26];
@@ -1334,8 +1333,7 @@ void asctime_r_test(const struct tm * tm, char * bufSizeUnknown)
 void ctime_r_test(const time_t * timep, char * bufSizeUnknown)
 {
     time_t time_t_uninit_data;
-    // cppcheck-suppress constVariablePointer
-    time_t * time_t_uninit_pointer;
+    const time_t * time_t_uninit_pointer;
     char bufSize5[5];
     char bufSize25[25];
     char bufSize26[26];

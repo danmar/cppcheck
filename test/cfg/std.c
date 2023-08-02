@@ -4527,8 +4527,7 @@ void uninitvar_c16rtomb(void)
 void uninitvar_mbrtoc16(void)
 {
     char16_t * pc16;
-    // cppcheck-suppress constVariablePointer
-    char * pmb;
+    const char * pmb;
     size_t max;
     mbstate_t * ps;
     // cppcheck-suppress uninitvar
@@ -4549,8 +4548,7 @@ void uninitvar_c32rtomb(void)
 void uninitvar_mbrtoc32(void)
 {
     char32_t * pc32;
-    // cppcheck-suppress constVariablePointer
-    char * pmb;
+    const char * pmb;
     size_t max;
     mbstate_t * ps;
     // cppcheck-suppress uninitvar
