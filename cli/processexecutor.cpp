@@ -92,6 +92,7 @@ private:
     // TODO: how to log file name in error?
     void writeToPipe(PipeSignal type, const std::string &data) const
     {
+        // TODO: simply write the existing buffers to the pipe instead if allocating new memory?
         unsigned int len = static_cast<unsigned int>(data.length() + 1);
         char *out = new char[len + 1 + sizeof(len)];
         out[0] = static_cast<char>(type);
@@ -235,16 +236,17 @@ unsigned int ProcessExecutor::check()
         return v + p.second;
     });
 
-    std::list<int> rpipes;
-    std::map<pid_t, std::string> childFile;
-    std::map<int, std::string> pipeFile;
     std::size_t processedsize = 0;
     std::map<std::string, std::size_t>::const_iterator iFile = mFiles.cbegin();
     std::list<ImportProject::FileSettings>::const_iterator iFileSettings = mSettings.project.fileSettings.cbegin();
     for (;;) {
+        if (iFile == mFiles.end() && iFileSettings == mSettings.project.fileSettings.end())
+            break;
+
         // Start a new child
-        const size_t nchildren = childFile.size();
-        if ((iFile != mFiles.cend() || iFileSettings != mSettings.project.fileSettings.cend()) && nchildren < mSettings.jobs && checkLoadAverage(nchildren)) {
+        //const size_t nchildren = childFile.size();
+        if (true /*nchildren < mSettings.jobs && checkLoadAverage(nchildren)*/) {
+            // setup pipe
             int pipes[2];
             if (pipe(pipes) == -1) {
                 std::cerr << "#### ThreadExecutor::check, pipe() failed: "<< std::strerror(errno) << std::endl;
@@ -262,12 +264,14 @@ unsigned int ProcessExecutor::check()
                 std::exit(EXIT_FAILURE);
             }
 
+            // fork process
             const pid_t pid = fork();
             if (pid < 0) {
-                // Error
                 std::cerr << "#### ThreadExecutor::check, Failed to create child process: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
-            } else if (pid == 0) {
+            }
+            if (pid == 0) {
+                // in forked process
 #if defined(__linux__)
                 prctl(PR_SET_PDEATHSIG, SIGHUP);
 #endif
@@ -289,93 +293,79 @@ unsigned int ProcessExecutor::check()
                 std::exit(EXIT_SUCCESS);
             }
 
+            // in main process
             close(pipes[1]);
-            rpipes.push_back(pipes[0]);
+            std::string fileName;
+            std::size_t fileSize;
             if (iFileSettings != mSettings.project.fileSettings.end()) {
-                childFile[pid] = iFileSettings->filename + ' ' + iFileSettings->cfg;
-                pipeFile[pipes[0]] = iFileSettings->filename + ' ' + iFileSettings->cfg;
+                fileName = iFileSettings->filename + ' ' + iFileSettings->cfg;
+                fileSize = 0;
                 ++iFileSettings;
             } else {
-                childFile[pid] = iFile->first;
-                pipeFile[pipes[0]] = iFile->first;
+                fileName = iFile->first;
+                fileSize = iFile->second;
                 ++iFile;
             }
-        }
-        if (!rpipes.empty()) {
-            fd_set rfds;
-            FD_ZERO(&rfds);
-            for (std::list<int>::const_iterator rp = rpipes.cbegin(); rp != rpipes.cend(); ++rp)
-                FD_SET(*rp, &rfds);
-            struct timeval tv; // for every second polling of load average condition
-            tv.tv_sec = 1;
-            tv.tv_usec = 0;
-            const int r = select(*std::max_element(rpipes.cbegin(), rpipes.cend()) + 1, &rfds, nullptr, nullptr, &tv);
 
-            if (r > 0) {
-                std::list<int>::iterator rp = rpipes.begin();
-                while (rp != rpipes.end()) {
-                    if (FD_ISSET(*rp, &rfds)) {
-                        std::string name;
-                        const std::map<int, std::string>::iterator p = pipeFile.find(*rp);
-                        if (p != pipeFile.end()) {
-                            name = p->second;
-                        }
-                        const bool readRes = handleRead(*rp, result, name);
-                        if (!readRes) {
-                            std::size_t size = 0;
-                            if (p != pipeFile.end()) {
-                                pipeFile.erase(p);
-                                const std::map<std::string, std::size_t>::const_iterator fs = mFiles.find(name);
-                                if (fs != mFiles.end()) {
-                                    size = fs->second;
-                                }
-                            }
+            // wait for pipe
+            while (true) {
+                fd_set rfds;
+                FD_ZERO(&rfds);
+                FD_SET(pipes[0], &rfds);
 
-                            fileCount++;
-                            processedsize += size;
-                            if (!mSettings.quiet)
-                                Executor::reportStatus(fileCount, mFiles.size() + mSettings.project.fileSettings.size(), processedsize, totalfilesize);
+                struct timeval tv; // for every second polling of load average condition
+                tv.tv_sec = 1;
+                tv.tv_usec = 0;
+                const int r = select(pipes[0] + 1, &rfds, nullptr, nullptr, &tv);
+                if (r <= 0)
+                    continue;
 
-                            close(*rp);
-                            rp = rpipes.erase(rp);
-                        } else
-                            ++rp;
-                    } else
-                        ++rp;
+                if (!FD_ISSET(pipes[0], &rfds))
+                    continue;
+
+                const bool readRes = handleRead(pipes[0], result, fileName);
+                if (!readRes) {
+                    fileCount++;
+                    processedsize += fileSize;
+                    if (!mSettings.quiet)
+                        Executor::reportStatus(fileCount,
+                                                       mFiles.size() + mSettings.project.fileSettings.size(),
+                                                       processedsize, totalfilesize);
+
+                    close(pipes[0]);
+                    break;
                 }
             }
-        }
-        if (!childFile.empty()) {
+
+            // wait for process
             int stat = 0;
-            const pid_t child = waitpid(0, &stat, WNOHANG);
-            if (child > 0) {
-                std::string childname;
-                const std::map<pid_t, std::string>::iterator c = childFile.find(child);
-                if (c != childFile.end()) {
-                    childname = c->second;
-                    childFile.erase(c);
-                }
-
-                if (WIFEXITED(stat)) {
-                    const int exitstatus = WEXITSTATUS(stat);
-                    if (exitstatus != EXIT_SUCCESS) {
-                        std::ostringstream oss;
-                        oss << "Child process exited with " << exitstatus;
-                        reportInternalChildErr(childname, oss.str());
-                    }
-                } else if (WIFSIGNALED(stat)) {
-                    std::ostringstream oss;
-                    oss << "Child process crashed with signal " << WTERMSIG(stat);
-                    reportInternalChildErr(childname, oss.str());
+            // TODO: wake up
+            const pid_t child = waitpid(pid, &stat, 0);
+            if (child == 0) {
+                continue;
+            }
+            if (child == -1) {
+                const int err = errno;
+                if (err != ECHILD) {
+                    std::cerr << "#### ThreadExecutor::check, Failed to wait for child process:"<< std::strerror(err) << std::endl;
+                    std::exit(EXIT_FAILURE);
                 }
             }
-        }
-        if (iFile == mFiles.end() && iFileSettings == mSettings.project.fileSettings.end() && rpipes.empty() && childFile.empty()) {
-            // All done
-            break;
+
+            if (WIFEXITED(stat)) {
+                const int exitstatus = WEXITSTATUS(stat);
+                if (exitstatus != EXIT_SUCCESS) {
+                    std::ostringstream oss;
+                    oss << "Child process exited with " << exitstatus;
+                    reportInternalChildErr(fileName, oss.str());
+                }
+            } else if (WIFSIGNALED(stat)) {
+                std::ostringstream oss;
+                oss << "Child process crashed with signal " << WTERMSIG(stat);
+                reportInternalChildErr(fileName, oss.str());
+            }
         }
     }
-
 
     return result;
 }
