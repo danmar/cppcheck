@@ -575,7 +575,7 @@ void nullPointer_vfwprintf(FILE *Stream, const wchar_t *Format, va_list Arg)
     (void)std::vfwprintf(Stream, Format, Arg);
 }
 
-void *bufferAccessOutOfBounds_memchr(const void *s, int c, size_t n)
+void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)
 {
     char buf[42]={0};
     (void)std::memchr(buf,c,42);
