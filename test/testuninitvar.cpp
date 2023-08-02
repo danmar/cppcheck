@@ -20,7 +20,6 @@
 #include "checkuninitvar.h"
 #include "ctu.h"
 #include "errortypes.h"
-#include "library.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
@@ -75,6 +74,7 @@ private:
         TEST_CASE(uninitvar11); // ticket #9123
         TEST_CASE(uninitvar12); // #10218 - stream read
         TEST_CASE(uninitvar13); // #9772
+        TEST_CASE(uninitvar14);
         TEST_CASE(uninitvar_unconditionalTry);
         TEST_CASE(uninitvar_funcptr); // #6404
         TEST_CASE(uninitvar_operator); // #6680
@@ -3126,6 +3126,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void uninitvar14() { // #11832
+        const char code[] = "void f() {\n"
+                            "    int b;\n"
+                            "    *(&b) = 0;\n"
+                            "}";
+        checkUninitVar(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void uninitvar_unconditionalTry() {
         // Unconditional scopes and try{} scopes
         checkUninitVar("int f() {\n"
@@ -3784,7 +3793,7 @@ private:
                         "    int a;\n"
                         "    int *p = ptr ? ptr : &a;\n"
                         "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (error) Uninitialized variable: &a\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         valueFlowUninit("int f(int a) {\n"
                         "    int x;\n"
@@ -6104,6 +6113,18 @@ private:
                         "        a[idx++] = 1;\n"
                         "    for (int i = 0; i < idx; i++)\n"
                         "        (void)a[i];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "  int x;\n"
+                        "  int *p = 0 ? 0 : &x;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void g() {\n"
+                        "  int y;\n"
+                        "  int *q = 1 ? &y : 0;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
     }

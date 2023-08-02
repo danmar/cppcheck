@@ -2785,6 +2785,17 @@ private:
                                "        break;\n"
                                "    }\n"
                                "}", "test.c"));
+
+        ASSERT_EQUALS("1: int * f ( ) {\n" // #11838
+                      "2: int * label@1 ; label@1 = 0 ;\n"
+                      "3: label : ;\n"
+                      "4: return label@1 ;\n"
+                      "5: }\n",
+                      tokenize("int* f() {\n"
+                               "    int* label = 0;\n"
+                               "label:\n"
+                               "    return label;\n"
+                               "}"));
     }
 
     void varid_structinit() { // #6406
@@ -3460,6 +3471,18 @@ private:
                                 "5: }\n"
                                 "6: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
+
+        const char code2[] = "struct S {\n" // #11411
+                             "    std::vector<int> v;\n"
+                             "    int i;\n"
+                             "    S(int i) : v({ 0 }), i(i) {}\n"
+                             "};";
+        const char expected2[] = "1: struct S {\n"
+                                 "2: std :: vector < int > v@1 ;\n"
+                                 "3: int i@2 ;\n"
+                                 "4: S ( int i@3 ) : v@1 ( { 0 } ) , i@2 ( i@3 ) { }\n"
+                                 "5: } ;\n";
+        ASSERT_EQUALS(expected2, tokenize(code2));
     }
 
     void varidclass18() {

@@ -392,7 +392,7 @@ jobs:
         run: |
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety addons/test/threadsafety
           ./cppcheck --error-exitcode=1 --inline-suppr --addon=threadsafety --std=c++03 addons/test/threadsafety
-          ./cppcheck --error-exitcode=1 --addon=misra addons/test/misra/crash*.c
+          ./cppcheck --error-exitcode=1 --inline-suppr --addon=misra addons/test/misra/crash*.c
           ./cppcheck --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
           pushd addons/test
           # We'll force C89 standard to enable an additional verification for

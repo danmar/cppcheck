@@ -2196,7 +2196,7 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
             parent = parent->astParent();
 
         // passing variable to subfunction?
-        if (Token::Match(parent, "[(,{]"))
+        if (Token::Match(parent, "[[(,{]"))
             ;
         else if (Token::simpleMatch(parent, ":")) {
             while (Token::Match(parent, "[?:]"))
@@ -3133,6 +3133,8 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
             return ExprUsage::NotUsed;
         if (tok->astParent()->isCast())
             return ExprUsage::NotUsed;
+        if (Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "?"))
+            return getExprUsage(tok->astParent()->astParent(), indirect, settings);
     }
     if (indirect == 0) {
         if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") &&

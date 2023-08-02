@@ -21,9 +21,11 @@
 #include "path.h"
 #include "preprocessor.h"
 
+#include <cerrno>
 #include <cstdio>
 #include <iostream>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
+#include <list>
 #include <stdexcept>
 #include <utility>
 #include <vector>

@@ -120,42 +120,42 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="compliancereportdialog.ui" line="14"/>
         <source>Compliance Report</source>
-        <translation type="unfinished"></translation>
+        <translation>コンプライアンスレポート</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="22"/>
         <source>Project name</source>
-        <translation type="unfinished"></translation>
+        <translation>プロジェクト名</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="32"/>
         <source>Project version</source>
-        <translation type="unfinished"></translation>
+        <translation>プロジェクトバージョン</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="44"/>
         <source>List of files with md5 checksums</source>
-        <translation type="unfinished"></translation>
+        <translation>md5チェックサムつきファイルリスト</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.cpp" line="101"/>
         <source>Compliance report</source>
-        <translation type="unfinished"></translation>
+        <translation>コンプライアンスレポート</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.cpp" line="103"/>
         <source>HTML files (*.html)</source>
-        <translation type="unfinished"></translation>
+        <translation>HTMLファイル(*.html)</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.cpp" line="137"/>
         <source>Save compliance report</source>
-        <translation type="unfinished"></translation>
+        <translation>コンプライアンスレポートの保存</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.cpp" line="138"/>
         <source>Failed to import &apos;%1&apos;, can not show files in compliance report</source>
-        <translation type="unfinished"></translation>
+        <translation>&apos;%1&apos;のインポートに失敗しました、コンプライアンスレポートでファイルを表示できません</translation>
     </message>
 </context>
 <context>
@@ -778,12 +778,12 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="84"/>
         <source>Checking for updates</source>
-        <translation type="unfinished"></translation>
+        <translation>更新の確認</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="100"/>
         <source>Hide</source>
-        <translation type="unfinished">非表示</translation>
+        <translation>非表示</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="194"/>
@@ -1019,7 +1019,7 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="mainwindow.ui" line="920"/>
         <source>Compliance report...</source>
-        <translation type="unfinished"></translation>
+        <translation>コンプライアンスレポート...</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="404"/>
@@ -1173,34 +1173,36 @@ Do you want to load this project file instead?</source>
     <message>
         <location filename="mainwindow.cpp" line="1728"/>
         <source>Failed to open file</source>
-        <translation type="unfinished"></translation>
+        <translation>ファイルを開くのに失敗しました</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1731"/>
         <source>Unknown project file format</source>
-        <translation type="unfinished"></translation>
+        <translation>プロジェクトファイルの形式が不明です</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1734"/>
         <source>Failed to import project file</source>
-        <translation type="unfinished"></translation>
+        <translation>プロジェクトファイルのインポートに失敗しました</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1741"/>
         <source>Failed to import &apos;%1&apos;: %2
 
 Analysis is stopped.</source>
-        <translation type="unfinished"></translation>
+        <translation>インポートに失敗&apos;%1&apos;: %2
+
+解析を停止しました。</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2049"/>
         <source>Install</source>
-        <translation type="unfinished"></translation>
+        <translation>インストール</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2053"/>
         <source>New version available: %1. %2</source>
-        <translation type="unfinished"></translation>
+        <translation>新しいバージョンが利用可能です。: %1. %2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="213"/>
@@ -1628,12 +1630,12 @@ Options:
     <message>
         <location filename="projectfile.ui" line="848"/>
         <source>Cert C++</source>
-        <translation type="unfinished"></translation>
+        <translation>Cert C++</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="865"/>
         <source>Bug hunting (Premium)</source>
-        <translation type="unfinished"></translation>
+        <translation>バグハンティング(プレミアム)</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="881"/>
@@ -2431,7 +2433,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="settings.ui" line="163"/>
         <source>Check for updates</source>
-        <translation type="unfinished"></translation>
+        <translation>更新の確認</translation>
     </message>
     <message>
         <location filename="settings.ui" line="183"/>

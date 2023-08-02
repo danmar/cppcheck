@@ -1394,7 +1394,7 @@ struct Executor {
                     return execute(tok);
                 });
                 if (f) {
-                    if (fdepth >= 0) {
+                    if (fdepth >= 0 && !f->isImplicitlyVirtual()) {
                         ProgramMemory functionState;
                         for (std::size_t i = 0; i < args.size(); ++i) {
                             const Variable* const arg = f->getArgumentVar(i);

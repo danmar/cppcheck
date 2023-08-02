@@ -109,10 +109,8 @@
 #include <cassert>
 #include <chrono>
 #include <climits>
-#include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <ctime>
 #include <exception>
 #include <functional>
 #include <initializer_list>
@@ -1093,29 +1091,15 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
     const ValueType &valueType = ValueType::parseDecl(typeTok, *settings, true); // TODO: set isCpp
-    if (valueType.pointer > 0)
-        return settings->platform.sizeof_pointer;
-    if (valueType.type == ValueType::Type::BOOL || valueType.type == ValueType::Type::CHAR)
-        return 1;
-    if (valueType.type == ValueType::Type::SHORT)
-        return settings->platform.sizeof_short;
-    if (valueType.type == ValueType::Type::INT)
-        return settings->platform.sizeof_int;
-    if (valueType.type == ValueType::Type::LONG)
-        return settings->platform.sizeof_long;
-    if (valueType.type == ValueType::Type::LONGLONG)
-        return settings->platform.sizeof_long_long;
-    if (valueType.type == ValueType::Type::WCHAR_T)
-        return settings->platform.sizeof_wchar_t;
 
-    return 0;
+    return ValueFlow::getSizeOf(valueType, settings);
 }
 
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 {
     if (vt.pointer)
         return settings->platform.sizeof_pointer;
-    if (vt.type == ValueType::Type::CHAR)
+    if (vt.type == ValueType::Type::BOOL || vt.type == ValueType::Type::CHAR)
         return 1;
     if (vt.type == ValueType::Type::SHORT)
         return settings->platform.sizeof_short;
@@ -3844,6 +3828,13 @@ const Token* ValueFlow::getEndOfExprScope(const Token* tok, const Scope* default
                 const Token* varEnd = getEndOfVarScope(var);
                 if (!end || (smallest ? precedes(varEnd, end) : succeeds(varEnd, end)))
                     end = varEnd;
+
+                const Token* top = var->nameToken()->astTop();
+                if (top && Token::simpleMatch(top->tokAt(-1), "if (")) { // variable declared in if (...)
+                    const Token* elseTok = top->link()->linkAt(1);
+                    if (Token::simpleMatch(elseTok, "} else {") && tok->scope()->isNestedIn(elseTok->tokAt(2)->scope()))
+                        end = tok->scope()->bodyEnd;
+                }
             }
         }
         return ChildrenToVisit::op1_and_op2;
@@ -8326,9 +8317,6 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
     if (astIsLHS(tok) && Token::Match(tok->astParent(), "%assign%|<<"))
         return true;
     const Library::Container* container = tok->valueType()->container;
-    // Views cannot change container size
-    if (container->view)
-        return false;
     if (astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "["))
         return container->stdAssociativeLike;
     const Library::Container::Action action = astContainerAction(tok);

@@ -34,7 +34,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iterator>
 #include <utility>
@@ -1067,7 +1066,7 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
 void CheckClass::noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
     const std::string message(std::string(isStruct ? "Struct" : "Class") + " '$symbol' has a constructor with 1 argument that is not explicit.");
-    const std::string verbose(message + " Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided.");
+    const std::string verbose(message + " Such, so called \"Converting constructors\", should in general be explicit for type safety reasons as that prevents unintended implicit conversions.");
     reportError(tok, Severity::style, "noExplicitConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
@@ -2468,8 +2467,9 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
             auto hasOverloadedMemberAccess = [](const Token* end, const Scope* scope) -> bool {
                 if (!end || !scope || !Token::simpleMatch(end->astParent(), "."))
                     return false;
-                auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [](const Function& f) {
-                    return f.isConst() && f.name() == "operator.";
+                const std::string op = "operator" + end->astParent()->originalName();
+                auto it = std::find_if(scope->functionList.begin(), scope->functionList.end(), [&op](const Function& f) {
+                    return f.isConst() && f.name() == op;
                 });
                 if (it == scope->functionList.end() || !it->retType || !it->retType->classScope)
                     return false;
@@ -2581,7 +2581,7 @@ void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const st
                     "passed to the function. This change should not cause compiler errors but it does not "
                     "necessarily make sense conceptually. Think about your design and the task of the function first - "
                     "is it a function that must not access members of class instances? And maybe it is more appropriate "
-                    "to move this function to a unnamed namespace.", CWE398, Certainty::inconclusive);
+                    "to move this function to an unnamed namespace.", CWE398, Certainty::inconclusive);
 }
 
 //---------------------------------------------------------------------------
@@ -3149,6 +3149,8 @@ static bool compareTokenRanges(const Token* start1, const Token* end1, const Tok
         if (tok1->str() != tok2->str())
             break;
         if (tok1->str() == "this")
+            break;
+        if (tok1->isExpandedMacro() || tok2->isExpandedMacro())
             break;
         if (tok1 == end1 && tok2 == end2) {
             isEqual = true;

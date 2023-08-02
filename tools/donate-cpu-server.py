@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.40"
+SERVER_VERSION = "1.3.41"
 
 OLD_VERSION = '2.11'
 
@@ -85,7 +85,7 @@ def overviewReport() -> str:
     html += '<a href="stale.html">Stale report</a><br>\n'
     html += '<a href="diff.html">Diff report</a><br>\n'
     html += '<a href="head.html">HEAD report</a><br>\n'
-    html += '<a href="headinfo.html">HEAD (info) report</a><br>\n'
+    html += '<a href="headinfo.html">HEAD (information) report</a><br>\n'
     html += '<a href="latest.html">Latest results</a><br>\n'
     html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
     html += '<a href="time_gt.html">Time report (regressed)</a> - <a href="time_gt.html?pkgs=1">packages.txt</a><br>\n'
@@ -115,6 +115,7 @@ def overviewReport() -> str:
     html += '<br>\n'
     html += 'Important errors:<br>\n'
     html += '<a href="head-cppcheckError">cppcheckError</a><br>\n'
+    html += '<a href="head-internalError">internalError</a><br>\n'
     html += '<a href="head-internalAstError">internalAstError</a><br>\n'
     html += '<a href="head-syntaxError">syntaxError</a><br>\n'
     html += '<a href="head-DacaWrongData">DacaWrongData</a><br>\n'
@@ -624,7 +625,7 @@ def summaryReport(resultsPath: str, name: str, prefix: str, marker: str) -> str:
                 outToday[messageId] += 1
 
     html = '<!DOCTYPE html>\n'
-    html += '<html><head><title>HEAD report</title></head><body>\n'
+    html += '<html><head><title>{} report</title></head><body>\n'.format(name)
     html += '<h1>HEAD report</h1>\n'
     html += '<h2>Uploaded today</h2>'
     html += summaryReportFromDict(outToday, prefix, 'today')
@@ -639,7 +640,7 @@ def headReport(resultsPath: str) -> str:
 
 
 def infoReport(resultsPath: str) -> str:
-    return summaryReport(resultsPath, 'HEAD (info)', 'headinfo', INFO_MARKER)
+    return summaryReport(resultsPath, 'HEAD (information)', 'headinfo', INFO_MARKER)
 
 
 def messageIdReport(resultPath: str, marker: str, messageId: str, query_params: dict) -> str:

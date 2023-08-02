@@ -42,6 +42,7 @@
 #include <initializer_list>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
@@ -1107,7 +1108,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
                 continue;
 
             bool isTemplateArg = false;
-            if (tok->next()->str() != "(") {
+            if (!Token::Match(tok->next(), "(|{")) {
                 const Token *start = tok;
                 while (Token::Match(start->tokAt(-2), "%name% ::"))
                     start = start->tokAt(-2);
@@ -3490,16 +3491,28 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
     return tok2;
 }
 
-const std::string& Type::name() const
+std::string Type::name() const
 {
-    const Token* next = classDef->next();
+    const Token* start = classDef->next();
     if (classScope && classScope->enumClass && isEnumType())
-        return next->strAt(1);
-    if (next->str() == "class")
-        return next->strAt(1);
-    if (next->isName())
-        return next->str();
-    return emptyString;
+        start = start->tokAt(1);
+    else if (start->str() == "class")
+        start = start->tokAt(1);
+    else if (!start->isName())
+        return emptyString;
+    const Token* next = start;
+    while (Token::Match(next, "::|<|>|(|)|[|]|*|&|&&|%name%")) {
+        if (Token::Match(next, "<|(|[") && next->link())
+            next = next->link();
+        next = next->next();
+    }
+    std::string result;
+    for (const Token* tok = start; tok != next; tok = tok->next()) {
+        if (!result.empty())
+            result += ' ';
+        result += tok->str();
+    }
+    return result;
 }
 
 void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, const std::string &msg) const
@@ -4396,8 +4409,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
                 // check for matching return parameters
                 while (!Token::Match(temp1, "virtual|public:|private:|protected:|{|}|;")) {
                     if (temp1->str() != temp2->str() &&
-                        !(temp1->str() == derivedFromType->name() &&
-                          temp2->str() == baseType->name())) {
+                        !(temp1->type() && temp2->type() && temp2->type()->isDerivedFrom(temp1->type()->name()))) {
                         match = false;
                         break;
                     }

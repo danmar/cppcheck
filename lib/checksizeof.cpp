@@ -21,6 +21,7 @@
 #include "checksizeof.h"
 
 #include "errortypes.h"
+#include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
