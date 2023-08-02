@@ -464,7 +464,7 @@ void nullPointer_std_ifstream_open(std::ifstream &is, const std::string &strFile
 
 void bufferAccessOutOfBounds_std_fstream_write(std::fstream &fs, const char* s, std::streamsize n)
 {
-    char buf[42] = {0};
+    const char buf[42] = {0};
     (void)fs.write(buf,42);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)fs.write(buf,43);
@@ -474,7 +474,7 @@ void bufferAccessOutOfBounds_std_fstream_write(std::fstream &fs, const char* s, 
 
 void bufferAccessOutOfBounds_std_ostream_write(std::ostream &os, const char* s, std::streamsize n)
 {
-    char buf[42] = {0};
+    const char buf[42] = {0};
     (void)os.write(buf,42);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)os.write(buf,43);
@@ -484,7 +484,7 @@ void bufferAccessOutOfBounds_std_ostream_write(std::ostream &os, const char* s, 
 
 void bufferAccessOutOfBounds_std_ostringstream_write(std::ostringstream &oss, const char* s, std::streamsize n)
 {
-    char buf[42] = {0};
+    const char buf[42] = {0};
     (void)oss.write(buf,42);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)oss.write(buf,43);
@@ -494,7 +494,7 @@ void bufferAccessOutOfBounds_std_ostringstream_write(std::ostringstream &oss, co
 
 void bufferAccessOutOfBounds_std_ofstream_write(std::ofstream &os, const char* s, std::streamsize n)
 {
-    char buf[42] = {0};
+    const char buf[42] = {0};
     (void)os.write(buf,42);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)os.write(buf,43);
@@ -3010,7 +3010,7 @@ void minsize_bsearch(const void* key, const void* base,
                      size_t num, size_t size,
                      int (*compar)(const void*,const void*))
 {
-    int Base[3] = {42, 43, 44};
+    const int Base[3] = {42, 43, 44};
 
     (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
     (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
