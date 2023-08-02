@@ -34,6 +34,7 @@ public:
 private:
     const Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).build();
     /*const*/ Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
+    const Settings settings2 = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
 
     void run() override {
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
@@ -153,9 +154,7 @@ private:
     template<size_t size>
     void checkP_(const char* file, int line, const char (&code)[size])
     {
-        const Settings settings = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
-
-        SimpleTokenizer2 tokenizer(settings, *this, code, "test.cpp");
+        SimpleTokenizer2 tokenizer(settings2, *this, code, "test.cpp");
 
         // Tokenizer..
         ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);

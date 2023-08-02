@@ -38,6 +38,7 @@ private:
     const Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
     const Settings settings2 = settingsBuilder().severity(Severity::style).library("std.cfg").certainty(Certainty::inconclusive).build();
     const Settings settings3 = settingsBuilder().severity(Severity::style).library("std.cfg").severity(Severity::warning).build();
+    const Settings settings3_i = settingsBuilder(settings3).certainty(Certainty::inconclusive).build();
 
     void run() override {
         mNewTemplate = true;
@@ -2640,7 +2641,7 @@ private:
 #define checkVirtualDestructor(...) checkVirtualDestructor_(__FILE__, __LINE__, __VA_ARGS__)
     template<size_t size>
     void checkVirtualDestructor_(const char* file, int line, const char (&code)[size], const CheckVirtualDestructorOptions& options = make_default_obj()) {
-        const Settings s = settingsBuilder(settings0).certainty(Certainty::inconclusive, options.inconclusive).severity(Severity::warning).build();
+        const Settings& s = options.inconclusive ? settings3_i : settings3;
 
         // Tokenize..
         SimpleTokenizer tokenizer(s, *this);
