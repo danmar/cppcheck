@@ -3573,15 +3573,15 @@ void uninivar_wcscspn(void)
 
 void uninivar_wcspbrk(void)
 {
-    wchar_t *cs;
-    wchar_t *ct;
+    const wchar_t *cs;
+    const wchar_t *ct;
     // cppcheck-suppress uninitvar
     (void)std::wcspbrk(cs,ct);
 }
 
 void uninivar_wcsncpy(void)
 {
-    wchar_t *cs;
+    const wchar_t *cs;
     wchar_t *ct;
     size_t n;
     // cppcheck-suppress uninitvar
@@ -3590,23 +3590,23 @@ void uninivar_wcsncpy(void)
 
 void uninivar_strcoll(void)
 {
-    char *cs;
-    char *ct;
+    const char *cs;
+    const char *ct;
     // cppcheck-suppress uninitvar
     (void)std::strcoll(cs,ct);
 }
 
 void uninivar_wcscoll(void)
 {
-    wchar_t *cs;
-    wchar_t *ct;
+    const wchar_t *cs;
+    const wchar_t *ct;
     // cppcheck-suppress uninitvar
     (void)std::wcscoll(cs,ct);
 }
 
 void uninivar_strrchr(void)
 {
-    char * str;
+    const char * str;
     int c;
     // cppcheck-suppress uninitvar
     (void)std::strrchr(str,c);
@@ -3633,7 +3633,7 @@ void uninivar_wcsrtombs(void)
 void uninivar_strtok(void)
 {
     char *s;
-    char *ct;
+    const char *ct;
     // cppcheck-suppress uninitvar
     (void)std::strtok(s,ct);
 }
@@ -3894,7 +3894,7 @@ void uninivar_wcstol(void)
     (void)wcstoumax(s8,endp8,base8);
 }
 
-void uninitvar_wprintf(wchar_t *Format, int Argument)
+void uninitvar_wprintf(const wchar_t *Format, int Argument)
 {
     const wchar_t *format1, *format2, *format3;
     int argument1, argument2;
@@ -3967,10 +3967,10 @@ void uninivar_fwprintf(void)
     (void)std::fwprintf(stream,format,i);
 }
 
-void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
+void uninivar_snprintf(char *S, size_t N, const char *Format, int Int)
 {
     size_t n1, n2;
-    char *format1, *format2;
+    const char *format1, *format2;
     int i1, i2;
     char *s1, *s2;
     // cppcheck-suppress uninitvar
@@ -3988,11 +3988,11 @@ void uninivar_snprintf(char *S, size_t N, char *Format, int Int)
     (void)std::snprintf(S,N,Format,Int);
 }
 
-void uninivar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
+void uninivar_vsnprintf(char *S, size_t N, const char *Format, va_list Arg)
 {
     char *s1, *s2;
     size_t n1, n2;
-    char *format1, *format2;
+    const char *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
@@ -4012,7 +4012,7 @@ void uninivar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
 
 void uninivar_wscanf(void)
 {
-    wchar_t *format1, *format2;
+    const wchar_t *format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
     (void)std::wscanf(format1);
@@ -4022,7 +4022,7 @@ void uninivar_wscanf(void)
 
 void uninivar_sscanf(void)
 {
-    char *string1, *string2;
+    const char *string1, *string2;
     const char * format;
     int i;
     // cppcheck-suppress uninitvar
@@ -4034,7 +4034,7 @@ void uninivar_sscanf(void)
 void uninivar_fwscanf(void)
 {
     FILE* stream;
-    wchar_t* format1, *format2;
+    const wchar_t* format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
     (void)std::fwscanf(stream,format1);
@@ -4045,7 +4045,7 @@ void uninivar_fwscanf(void)
 void uninivar_swscanf(void)
 {
     wchar_t* s;
-    wchar_t* format1, *format2;
+    const wchar_t* format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
     (void)std::swscanf(s,format1);
@@ -4055,14 +4055,14 @@ void uninivar_swscanf(void)
 
 void uninitvar_system(void)
 {
-    char *c;
+    const char *c;
     // cppcheck-suppress uninitvar
     (void)std::system(c);
 }
 
 #ifndef __STDC_NO_THREADS__
 
-void nullPointer_mtx_destroy( mtx_t *mutex )
+void nullPointer_mtx_destroy(const mtx_t *mutex )
 {
     // cppcheck-suppress nullPointer
     mtx_destroy(nullptr);
@@ -4093,7 +4093,7 @@ int nullPointer_mtx_timedlock( mtx_t *mutex, const struct timespec *time_point )
 }
 #endif
 
-void nullPointer_system(char *c)
+void nullPointer_system(const char *c)
 {
     // If a null pointer is given, command processor is checked for existence
     (void)std::system(NULL);
@@ -4200,11 +4200,11 @@ void uninivar_istream_read(std::istream &f)
 
 void uninitvar_string_compare(std::string &teststr, std::wstring &testwstr)
 {
-    char *pStrUninit;
+    const char *pStrUninit;
     // cppcheck-suppress uninitvar
     (void)teststr.compare(pStrUninit);
 
-    wchar_t *pWStrUninit;
+    const wchar_t *pWStrUninit;
     // cppcheck-suppress uninitvar
     (void)testwstr.compare(pWStrUninit);
 }
@@ -4275,7 +4275,7 @@ void nullPointer_istream_read(std::istream &f)
 
 void nullPointer_asctime(void)
 {
-    struct tm *tm = 0;
+    const struct tm *tm = 0;
     // cppcheck-suppress asctimeCalled
     // cppcheck-suppress nullPointer
     (void)std::asctime(tm);
@@ -4324,7 +4324,7 @@ void nullPointer_feholdexcept(void)
 
 void nullPointer_fesetenv(void)
 {
-    fenv_t* envp = 0;
+    const fenv_t* envp = 0;
     // cppcheck-suppress nullPointer
     (void)std::fesetenv(envp);
     // cppcheck-suppress nullPointer
@@ -4333,7 +4333,7 @@ void nullPointer_fesetenv(void)
 
 void nullPointer_fesetexceptflag(int expects)
 {
-    fexcept_t* flagp = 0;
+    const fexcept_t* flagp = 0;
     // cppcheck-suppress nullPointer
     (void)std::fesetexceptflag(flagp,expects);
     // cppcheck-suppress nullPointer
@@ -4342,7 +4342,7 @@ void nullPointer_fesetexceptflag(int expects)
 
 void nullPointer_feupdateenv(void)
 {
-    fenv_t* envp = 0;
+    const fenv_t* envp = 0;
     // cppcheck-suppress nullPointer
     (void)std::feupdateenv(envp);
     // cppcheck-suppress nullPointer
@@ -4357,7 +4357,7 @@ void nullPointer_atexit(void)
 
 void nullPointer_atof(void)
 {
-    char * c = 0;
+    const char * c = 0;
     // cppcheck-suppress nullPointer
     (void)std::atof(c);
     // cppcheck-suppress nullPointer
@@ -4694,6 +4694,7 @@ void beginEnd()
     //cppcheck-suppress ignoredReturnValue
     std::crend(v);
 
+    // cppcheck-suppress constVariable
     int arr[4];
 
     //cppcheck-suppress ignoredReturnValue
