@@ -502,7 +502,7 @@ void bufferAccessOutOfBounds_std_ofstream_write(std::ofstream &os, const char* s
     (void)os.write(s,n);
 }
 
-void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+void invalidFunctionArg_fesetexceptflag(const fexcept_t* flagp, int excepts)
 {
     (void)std::fesetexceptflag(flagp, excepts);
     // cppcheck-suppress invalidFunctionArg
@@ -532,7 +532,7 @@ void invalidFunctionArg_fetestexcept(int excepts)
     (void)std::fetestexcept(FE_ALL_EXCEPT+1);
 }
 
-void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
+void nullPointer_fprintf(FILE *Stream, const char *Format, int Argument)
 {
     // cppcheck-suppress nullPointer
     (void)std::fprintf(Stream, nullptr, Argument);
@@ -568,16 +568,16 @@ void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
     (void)std::vfprintf(Stream, Format, Arg);
 }
 
-void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+void nullPointer_vfwprintf(FILE *Stream, const wchar_t *Format, va_list Arg)
 {
     // cppcheck-suppress nullPointer
     (void)std::vfwprintf(Stream, nullptr, Arg);
     (void)std::vfwprintf(Stream, Format, Arg);
 }
 
-void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)
+void *bufferAccessOutOfBounds_memchr(const void *s, int c, size_t n)
 {
-    char buf[42]={0};
+    const char buf[42]={0};
     (void)std::memchr(buf,c,42);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)std::memchr(buf,c,43);
@@ -703,7 +703,7 @@ void overlappingWriteFunction_wcscat(wchar_t *src, wchar_t *dest)
     (void)wcscat(src, src);
 }
 
-void overlappingWriteFunction_wcsxfrm(wchar_t *s1, wchar_t *s2, size_t n)
+void overlappingWriteFunction_wcsxfrm(wchar_t *s1, const wchar_t *s2, size_t n)
 {
     // No warning shall be shown:
     (void)wcsxfrm(s1, s2, n);
@@ -735,7 +735,7 @@ wchar_t* nullPointer_wcsncpy(wchar_t *s, const wchar_t *cs, size_t n)
     return std::wcsncpy(s,cs,n);
 }
 
-char * overlappingWriteFunction_strncat(char *src, char *dest, const std::size_t count)
+char * overlappingWriteFunction_strncat(const char *src, char *dest, const std::size_t count)
 {
     // No warning shall be shown:
     (void)strncat(dest, src, 42);
@@ -748,7 +748,7 @@ char * overlappingWriteFunction_strncat(char *src, char *dest, const std::size_t
     return strncat(buffer, buffer + 1, 3);
 }
 
-wchar_t * overlappingWriteFunction_wcsncat(wchar_t *src, wchar_t *dest, const std::size_t count)
+wchar_t * overlappingWriteFunction_wcsncat(const wchar_t *src, wchar_t *dest, const std::size_t count)
 {
     // No warning shall be shown:
     (void)wcsncat(dest, src, 42);
@@ -1376,7 +1376,7 @@ void uninitvar_feraiseexcept(void)
     (void)std::feraiseexcept(expects);
 }
 
-void uninitvar_fesetexceptflag(fexcept_t* flagp)
+void uninitvar_fesetexceptflag(const fexcept_t* flagp)
 {
     int expects;
     // cppcheck-suppress uninitvar
@@ -1696,7 +1696,7 @@ void uninitar_fopen(void)
     fclose(fp);
 }
 
-void uninitar_fprintf(FILE *Stream, char *Format, int Argument)
+void uninitar_fprintf(FILE *Stream, const char *Format, int Argument)
 {
     FILE *stream1, *stream2;
     char *format1, *format2;
@@ -1733,7 +1733,7 @@ void uninitar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
     (void)std::vfprintf(Stream, Format, arg);
 }
 
-void uninitar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+void uninitar_vfwprintf(FILE *Stream, const wchar_t *Format, va_list Arg)
 {
     FILE *stream1, *stream2;
     wchar_t *format1, *format2;
@@ -1944,7 +1944,7 @@ void nullPointer_memcmp(const void *s1, const void *s2, size_t n)
     (void)std::memcmp(s1,s2,n);
 }
 
-void nullPointer_strncat(char *d, char *s, size_t n)
+void nullPointer_strncat(char *d, const char *s, size_t n)
 {
     // cppcheck-suppress nullPointer
     (void)std::strncat(NULL,s,n);
@@ -2945,7 +2945,7 @@ void uninitvar_remquo(void)
     (void)std::remquol(ld1,ld2,i3);
 }
 
-void uninivar_printf(char *Format, int Argument)
+void uninivar_printf(const char *Format, int Argument)
 {
     char * format_1, * format_2, * format_3;
     int argument1, argument2;
@@ -2964,7 +2964,7 @@ void uninivar_printf(char *Format, int Argument)
     (void)std::printf(Format,Argument);
 }
 
-void uninivar_vprintf(char *Format, va_list Arg)
+void uninivar_vprintf(const char *Format, va_list Arg)
 {
     char * format1, *format2;
     va_list arg;
@@ -2980,7 +2980,7 @@ void uninivar_vprintf(char *Format, va_list Arg)
     (void)std::vprintf(Format,arg);
 }
 
-void uninivar_vwprintf(wchar_t *Format, va_list Arg)
+void uninivar_vwprintf(const wchar_t *Format, va_list Arg)
 {
     wchar_t * format1, *format2;
     va_list arg;
@@ -3419,7 +3419,7 @@ void uninivar_strpbrk(void)
     (void)std::strpbrk(cs,ct);
 }
 
-void uninivar_strncat(char *Ct, char *S, size_t N)
+void uninivar_strncat(char *Ct, const char *S, size_t N)
 {
     char *ct_1, *ct_2;
     char *s1, *s2;
@@ -3437,7 +3437,7 @@ void uninivar_strncat(char *Ct, char *S, size_t N)
     (void)std::strncat(Ct,S,N);
 }
 
-void uninivar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
+void uninivar_wcsncat(wchar_t *Ct, const wchar_t *S, size_t N)
 {
     wchar_t *ct_1, *ct_2;
     wchar_t *s1, *s2;
@@ -3455,7 +3455,7 @@ void uninivar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
     (void)std::wcsncat(Ct,S,N);
 }
 
-void uninivar_strncmp(char *Ct, char *S, size_t N)
+void uninivar_strncmp(char *Ct, const char *S, size_t N)
 {
     char *ct1, *ct2;
     char *s1, *s2;
@@ -3473,7 +3473,7 @@ void uninivar_strncmp(char *Ct, char *S, size_t N)
     (void)std::strncmp(Ct,S,N);
 }
 
-void uninivar_wcsncmp(wchar_t *Ct, wchar_t *S, size_t N)
+void uninivar_wcsncmp(const wchar_t *Ct, const wchar_t *S, size_t N)
 {
     wchar_t *ct1, *ct2;
     wchar_t *s1, *s2;
