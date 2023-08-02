@@ -577,7 +577,7 @@ void nullPointer_vfwprintf(FILE *Stream, const wchar_t *Format, va_list Arg)
 
 void *bufferAccessOutOfBounds_memchr(const void *s, int c, size_t n)
 {
-    const char buf[42]={0};
+    char buf[42]={0};
     (void)std::memchr(buf,c,42);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)std::memchr(buf,c,43);
@@ -3581,7 +3581,7 @@ void uninivar_wcspbrk(void)
 
 void uninivar_wcsncpy(void)
 {
-    const wchar_t *cs;
+    wchar_t *cs;
     const wchar_t *ct;
     size_t n;
     // cppcheck-suppress uninitvar
@@ -4062,7 +4062,7 @@ void uninitvar_system(void)
 
 #ifndef __STDC_NO_THREADS__
 
-void nullPointer_mtx_destroy(const mtx_t *mutex )
+void nullPointer_mtx_destroy(mtx_t *mutex )
 {
     // cppcheck-suppress nullPointer
     mtx_destroy(nullptr);
