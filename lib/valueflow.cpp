@@ -1091,29 +1091,15 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
     const ValueType &valueType = ValueType::parseDecl(typeTok, *settings, true); // TODO: set isCpp
-    if (valueType.pointer > 0)
-        return settings->platform.sizeof_pointer;
-    if (valueType.type == ValueType::Type::BOOL || valueType.type == ValueType::Type::CHAR)
-        return 1;
-    if (valueType.type == ValueType::Type::SHORT)
-        return settings->platform.sizeof_short;
-    if (valueType.type == ValueType::Type::INT)
-        return settings->platform.sizeof_int;
-    if (valueType.type == ValueType::Type::LONG)
-        return settings->platform.sizeof_long;
-    if (valueType.type == ValueType::Type::LONGLONG)
-        return settings->platform.sizeof_long_long;
-    if (valueType.type == ValueType::Type::WCHAR_T)
-        return settings->platform.sizeof_wchar_t;
 
-    return 0;
+    return ValueFlow::getSizeOf(valueType, settings);
 }
 
 size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 {
     if (vt.pointer)
         return settings->platform.sizeof_pointer;
-    if (vt.type == ValueType::Type::CHAR)
+    if (vt.type == ValueType::Type::BOOL || vt.type == ValueType::Type::CHAR)
         return 1;
     if (vt.type == ValueType::Type::SHORT)
         return settings->platform.sizeof_short;
