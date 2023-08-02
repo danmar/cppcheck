@@ -10,6 +10,10 @@ permissions:
 jobs:
   iwyu:
 
+    strategy:
+      matrix:
+        image: ["fedora:latest"] # "debian:unstable" / "archlinux:latest"
+
     runs-on: ubuntu-22.04
 
     container:
@@ -20,7 +24,7 @@ jobs:
 
       # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
       - name: Install missing software on debian/ubuntu
-        if: false
+        if: contains(matrix.image, 'debian')
         run: |
           apt-get update
           apt-get install -y cmake g++ make libpcre3-dev
@@ -29,7 +33,7 @@ jobs:
           ln -s ../x86_64-linux-gnu/qt5 /usr/include/qt
 
       - name: Install missing software on archlinux
-        if: false
+        if: contains(matrix.image, 'archlinux')
         run: |
           set -x
           pacman -Sy
@@ -46,6 +50,7 @@ jobs:
 
       # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
       - name: Install missing software on Fedora
+        if: contains(matrix.image, 'fedora')
         run: |
           dnf install -y cmake gcc-c++ qt5-qtbase-devel qt5-linguist qt5-qttools-devel qt5-qtcharts-devel pcre-devel
           dnf install -y wget iwyu
