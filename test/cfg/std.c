@@ -589,15 +589,13 @@ size_t nullPointer_strlen(const char *s)
     return strlen(s);
 }
 
-// cppcheck-suppress constParameterPointer
-void nullpointerMemchr1(char *p, char *s)
+void nullpointerMemchr1(char *p, const char *s)
 {
     p = memchr(s, 'p', strlen(s));
     (void)p;
 }
 
-// cppcheck-suppress constParameterPointer
-void nullpointerMemchr2(char *p, char *s)
+void nullpointerMemchr2(char *p, const char *s)
 {
     p = memchr(s, 0, strlen(s));
     (void)p;
@@ -605,8 +603,7 @@ void nullpointerMemchr2(char *p, char *s)
 
 void nullPointer_memchr(char *p)
 {
-    // cppcheck-suppress constVariablePointer
-    char *s = 0;
+    const char *s = 0;
     // cppcheck-suppress nullPointer
     p = memchr(s, 0, strlen(s));
     (void)p;
@@ -4486,8 +4483,7 @@ void uninitvar_system(void)
     (void)system(c);
 }
 
-// cppcheck-suppress constParameterPointer
-void nullPointer_system(char *c)
+void nullPointer_system(const char *c)
 {
     // If a null pointer is given, command processor is checked for existence
     (void)system(NULL);
@@ -4861,8 +4857,7 @@ void ignoredReturnValue_abs(int i)
 
 void nullPointer_asctime(void)
 {
-    // cppcheck-suppress constVariablePointer
-    struct tm *tm = 0;
+    const struct tm *tm = 0;
     // cppcheck-suppress asctimeCalled
     // cppcheck-suppress nullPointer
     (void)asctime(tm);
@@ -4873,8 +4868,7 @@ void nullPointer_asctime(void)
 
 void nullPointer_asctime_s(void)
 {
-    // cppcheck-suppress constVariablePointer
-    struct tm *tm = 0;
+    const struct tm *tm = 0;
     char * buf = NULL;
     // cppcheck-suppress asctime_sCalled
     // cppcheck-suppress nullPointer
@@ -4913,8 +4907,7 @@ void nullPointer_feholdexcept(void)
 
 void nullPointer_fesetenv(void)
 {
-    // cppcheck-suppress constVariablePointer
-    fenv_t* envp = 0;
+    const fenv_t* envp = 0;
     // cppcheck-suppress nullPointer
     (void)fesetenv(envp);
     // cppcheck-suppress nullPointer
@@ -4931,8 +4924,7 @@ void nullPointer_fesetexceptflag(int excepts)
     (void)fesetexceptflag(0,excepts);
 }
 
-// cppcheck-suppress constParameterPointer
-void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+void invalidFunctionArg_fesetexceptflag(const fexcept_t* flagp, int excepts)
 {
     (void)fesetexceptflag(flagp, excepts);
     // cppcheck-suppress invalidFunctionArg
@@ -4964,8 +4956,7 @@ void invalidFunctionArg_fetestexcept(int excepts)
 
 void nullPointer_feupdateenv(void)
 {
-    // cppcheck-suppress constVariablePointer
-    fenv_t* envp = 0;
+    const fenv_t* envp = 0;
     // cppcheck-suppress nullPointer
     (void)feupdateenv(envp);
     // cppcheck-suppress nullPointer
@@ -4980,8 +4971,7 @@ void nullPointer_atexit(void)
 
 void nullPointer_atof(void)
 {
-    // cppcheck-suppress constVariablePointer
-    char * c = 0;
+    const char * c = 0;
     // cppcheck-suppress nullPointer
     (void)atof(c);
     // cppcheck-suppress nullPointer
