@@ -1534,12 +1534,12 @@ class MisraChecker:
                         if func_param.nameToken:
                             linenr = func_param.nameToken
                             if linenr not in reported_linenrs:
-                                self.reportError(func_param.nameToken, 2, 7, f"{func_param.nameToken.str} is unused")
+                                self.reportError(func_param.nameToken, 2, 7, '{} is unused'.format(func_param.nameToken.str))
                                 reported_linenrs.add(linenr)
                         else:
                             linenr = func.tokenDef.linenr
                             if linenr not in reported_linenrs:
-                                self.reportError(func.tokenDef, 2, 7, f"{func.tokenDef.str} is unused")
+                                self.reportError(func.tokenDef, 2, 7, '{} is unused'.format(func.tokenDef.str))
                                 reported_linenrs.add(linenr)
 
     def misra_3_1(self, rawTokens):
@@ -1808,7 +1808,7 @@ class MisraChecker:
     def misra_7_2(self, data):
         for token in data.tokenlist:
             if token.isInt and ('U' not in token.str.upper()) and token.valueType and token.valueType.sign == 'unsigned':
-                self.reportError(token, 7, 2, f"suffix 'u' missing for {token.str}")
+                self.reportError(token, 7, 2, "suffix 'u' missing for {}".format(token.str))
 
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
@@ -3104,9 +3104,9 @@ class MisraChecker:
         for token in data.tokenlist:
             if isFunctionCall(token) and token.astOperand1.str in (
             'va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'):
-                self.reportError(token, 17, 1, f"function '{token.astOperand1.str}' should not be used")
+                self.reportError(token, 17, 1, "function '{}' should not be used".format(token.astOperand1.str))
             elif token.str == 'va_list':
-                self.reportError(token, 17, 1, f"function '{token.str}' should not be used")
+                self.reportError(token, 17, 1, "function '{}' should not be used".format(token.str))
 
     def misra_17_2(self, data):
         # find recursions..
