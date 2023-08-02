@@ -82,7 +82,7 @@ unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned ch
     return _mbscat(src, src);
 }
 
-unsigned char * overlappingWriteFunction__memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
+unsigned char * overlappingWriteFunction__memccpy(const unsigned char *src, unsigned char *dest, int c, size_t count)
 {
     // No warning shall be shown:
     (void)_memccpy(dest, src, c, count);
@@ -117,17 +117,18 @@ SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
     return SystemInfo;
 }
 
-void uninitvar__putenv(char * envstr)
+void uninitvar__putenv(const char * envstr)
 {
     // No warning is expected
     (void)_putenv(envstr);
 
+    // cppcheck-suppress constVariablePointer
     char * p;
     // cppcheck-suppress uninitvar
     (void)_putenv(p);
 }
 
-void nullPointer__putenv(char * envstr)
+void nullPointer__putenv(const char * envstr)
 {
     // No warning is expected
     (void)_putenv(envstr);
@@ -753,7 +754,7 @@ void invalidFunctionArg()
 
 void uninitvar()
 {
-    // cppcheck-suppress unassignedVariable
+    // cppcheck-suppress [unassignedVariable, constVariablePointer]
     HANDLE hSemaphore;
     // cppcheck-suppress uninitvar
     CloseHandle(hSemaphore);
@@ -763,6 +764,7 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     lstrcat(buf, "test");
     buf[0] = '\0';
+    // cppcheck-suppress constVariablePointer
     char buf2[2];
     // cppcheck-suppress lstrcatCalled
     // cppcheck-suppress uninitvar
@@ -992,6 +994,7 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
 unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned char *strSource)
 {
     unsigned char *uninit_deststr;
+    // cppcheck-suppress constVariablePointer
     unsigned char *uninit_srcstr1, *uninit_srcstr2;
     // cppcheck-suppress uninitvar
     (void)_mbscat(uninit_deststr,uninit_srcstr1);
@@ -1019,6 +1022,7 @@ error_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElement
 {
     unsigned char *uninit_strDestination;
     size_t uninit_numberOfElements;
+    // cppcheck-suppress constVariablePointer
     unsigned char *uninit_strSource;
 
     // cppcheck-suppress uninitvar
