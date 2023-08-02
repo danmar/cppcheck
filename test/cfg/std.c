@@ -1724,7 +1724,7 @@ void nullPointer_fprintf(FILE *Stream, const char *Format, int Argument)
     (void)fprintf(Stream, Format, Argument);
 }
 
-void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
+void uninitvar_fprintf(FILE *Stream, const char *Format, int Argument)
 {
     FILE *stream1, *stream2;
     // cppcheck-suppress constVariablePointer
@@ -3071,8 +3071,9 @@ void uninitvar_remquo(void)
     (void)remquol(ld1,ld2,i3);
 }
 
-void uninitvar_printf(char *Format, int Argument)
+void uninitvar_printf(const char *Format, int Argument)
 {
+    // cppcheck-suppress constVariablePointer
     char * format_1, * format_2, * format_3;
     int argument1, argument2;
     // no warning is expected
@@ -3090,8 +3091,9 @@ void uninitvar_printf(char *Format, int Argument)
     (void)printf(Format,Argument);
 }
 
-void uninitvar_vprintf(char *Format, va_list Arg)
+void uninitvar_vprintf(const char *Format, va_list Arg)
 {
+    // cppcheck-suppress constVariablePointer
     char * format1, *format2;
     va_list arg1, arg2;
     // cppcheck-suppress va_list_usedBeforeStarted
@@ -3870,7 +3872,7 @@ void uninitvar_wcsncat(wchar_t *Ct, wchar_t *S, size_t N)
     (void)wcsncat(Ct,S,N);
 }
 
-void uninitvar_strncmp(char *Ct, char *S, size_t N)
+void uninitvar_strncmp(const char *Ct, const char *S, size_t N)
 {
     char *ct;
     char *s;
@@ -3887,9 +3889,11 @@ void uninitvar_strncmp(char *Ct, char *S, size_t N)
     (void)strncmp(Ct,S,N);
 }
 
-void uninitvar_wcsncmp(wchar_t *Ct, wchar_t *S, size_t N)
+void uninitvar_wcsncmp(const wchar_t *Ct, const wchar_t *S, size_t N)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *ct1, *ct2;
+    // cppcheck-suppress constVariablePointer
     wchar_t *s1, *s2;
     size_t n1, n2;
     // cppcheck-suppress uninitvar
@@ -3907,7 +3911,9 @@ void uninitvar_wcsncmp(wchar_t *Ct, wchar_t *S, size_t N)
 
 void uninitvar_strstr(void)
 {
+    // cppcheck-suppress constVariablePointer
     char *cs;
+    // cppcheck-suppress constVariablePointer
     char *ct;
     // cppcheck-suppress uninitvar
     (void)strstr(cs,ct);
@@ -3915,7 +3921,9 @@ void uninitvar_strstr(void)
 
 void uninitvar_wcsstr(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *cs;
+    // cppcheck-suppress constVariablePointer
     wchar_t *ct;
     // cppcheck-suppress uninitvar
     (void)wcsstr(cs,ct);
@@ -3923,7 +3931,9 @@ void uninitvar_wcsstr(void)
 
 void uninitvar_strspn(void)
 {
+    // cppcheck-suppress constVariablePointer
     char *cs;
+    // cppcheck-suppress constVariablePointer
     char *ct;
     // cppcheck-suppress uninitvar
     (void)strspn(cs,ct);
@@ -3932,6 +3942,7 @@ void uninitvar_strspn(void)
 void uninitvar_strxfrm(void)
 {
     char *ds;
+    // cppcheck-suppress constVariablePointer
     char *ss;
     size_t n;
     // cppcheck-suppress uninitvar
@@ -3953,7 +3964,7 @@ void bufferAccessOutOfBounds_strxfrm(void)
 void bufferAccessOutOfBounds_strncmp(void)
 {
     const char src[3] = "abc";
-    char dest[1] = "a";
+    const char dest[1] = "a";
     (void)strncmp(dest,src,1);
     (void)strncmp(dest,src,2);
     (void)strncmp(dest,src,3);
@@ -4155,6 +4166,7 @@ void uninitvar_wcsrtombs(void)
 void uninitvar_strtok(void)
 {
     char *s;
+    // cppcheck-suppress constVariablePointer
     char *ct;
     // cppcheck-suppress uninitvar
     (void)strtok(s,ct);
