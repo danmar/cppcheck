@@ -77,7 +77,7 @@ void g_malloc_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_malloc(8);
 
-    gpointer gpt = g_malloc(1);
+    gconstpointer gpt = g_malloc(1);
 
     printf("%p", gpt);
 
@@ -89,7 +89,7 @@ void g_malloc0_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_malloc0(8);
 
-    gpointer gpt = g_malloc0(1);
+    gconstpointer gpt = g_malloc0(1);
 
     printf("%p", gpt);
 
@@ -101,7 +101,7 @@ void g_malloc_n_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_malloc_n(8, 1);
 
-    gpointer gpt = g_malloc_n(1, 2);
+    gconstpointer gpt = g_malloc_n(1, 2);
 
     printf("%p", gpt);
 
@@ -113,7 +113,7 @@ void g_malloc0_n_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_malloc0_n(8, 1);
 
-    gpointer gpt = g_malloc0_n(1, 2);
+    gconstpointer gpt = g_malloc0_n(1, 2);
 
     printf("%p", gpt);
 
@@ -125,7 +125,7 @@ void g_try_malloc_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_try_malloc(8);
 
-    gpointer gpt = g_try_malloc(1);
+    gconstpointer gpt = g_try_malloc(1);
 
     printf("%p", gpt);
 
@@ -137,7 +137,7 @@ void g_try_malloc0_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_try_malloc0(8);
 
-    gpointer gpt = g_try_malloc0(1);
+    gconstpointer gpt = g_try_malloc0(1);
 
     printf("%p", gpt);
 
@@ -149,7 +149,7 @@ void g_try_malloc_n_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_try_malloc_n(8, 1);
 
-    gpointer gpt = g_try_malloc_n(1, 2);
+    gconstpointer gpt = g_try_malloc_n(1, 2);
 
     printf("%p", gpt);
 
@@ -161,7 +161,7 @@ void g_try_malloc0_n_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_try_malloc0_n(8, 1);
 
-    gpointer gpt = g_try_malloc0_n(1, 2);
+    gconstpointer gpt = g_try_malloc0_n(1, 2);
 
     printf("%p", gpt);
 
@@ -258,7 +258,7 @@ void g_new_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_new(struct a, 1);
 
-    struct a * pNew2 = g_new(struct a, 2);
+    const struct a * pNew2 = g_new(struct a, 2);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -289,7 +289,7 @@ void g_new0_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_new0(struct a, 1);
 
-    struct a * pNew2 = g_new0(struct a, 2);
+    const struct a * pNew2 = g_new0(struct a, 2);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -307,7 +307,7 @@ void g_try_new_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_try_new(struct a, 1);
 
-    struct a * pNew2 = g_try_new(struct a, 2);
+    const struct a * pNew2 = g_try_new(struct a, 2);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -324,7 +324,7 @@ void g_try_new0_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_try_new0(struct a, 1);
 
-    struct a * pNew2 = g_try_new0(struct a, 2);
+    const struct a * pNew2 = g_try_new0(struct a, 2);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }
@@ -370,7 +370,7 @@ void g_error_new_test()
     // cppcheck-suppress leakReturnValNotUsed
     g_error_new(1, -2, "a %d", 1);
 
-    GError * pNew2 = g_error_new(1, -2, "a %d", 1);
+    const GError * pNew2 = g_error_new(1, -2, "a %d", 1);
     printf("%p", pNew2);
     // cppcheck-suppress memleak
 }

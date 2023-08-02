@@ -139,7 +139,7 @@ void ignoredReturnValue_wxDC_GetSizeMM(const wxDC &dc, wxCoord *width, wxCoord *
     (void)dc.GetSizeMM();
 }
 
-wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer *sizer, wxWindow * window, const wxSizerFlags &flags)
+wxSizerItem* invalidFunctionArgBool_wxSizer_Add(wxSizer *sizer, const wxWindow * window, const wxSizerFlags &flags)
 {
     // No warning is expected for
     return sizer->Add(window,flags);
@@ -223,16 +223,16 @@ void nullPointer(const wxString &str)
     (void)str.ToULongLong(ulongLongPtr);
 }
 
-void nullPointer_wxSizer_Add(wxSizer &sizer, wxWindow *w)
+void nullPointer_wxSizer_Add(wxSizer &sizer, const wxWindow *w)
 {
-    wxWindow * const ptr = 0;
+    const wxWindow * const ptr = 0;
     // @todo cppcheck-suppress nullPointer
     sizer.Add(ptr);
     // No warning shall be issued for
     sizer.Add(w);
 }
 
-void uninitvar_wxSizer_Add(wxSizer &sizer, wxWindow *w,wxObject* userData)
+void uninitvar_wxSizer_Add(wxSizer &sizer, const wxWindow *w,wxObject* userData)
 {
     int uninit1, uninit2, uninit3;
     // cppcheck-suppress uninitvar
@@ -277,8 +277,8 @@ void invalidFunctionArg(const wxString &str)
 void uninitvar(wxWindow &w)
 {
     wxLogLevel logLevelUninit;
-    char cBufUninit[10];
-    char *pcUninit;
+    const char cBufUninit[10];
+    const char *pcUninit;
     bool uninitBool;
     // cppcheck-suppress uninitvar
     wxLogGeneric(logLevelUninit, "test");
@@ -353,7 +353,7 @@ void deprecatedFunctions_wxDataViewCustomRenderer(wxDataViewCustomRenderer &data
 
 void deprecatedFunctions(wxApp &a,
                          const wxString &s,
-                         wxArtProvider *artProvider,
+                         const wxArtProvider *artProvider,
                          wxCalendarCtrl &calenderCtrl,
                          wxComboCtrl &comboCtrl,
                          wxChar * path)
