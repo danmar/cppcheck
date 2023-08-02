@@ -1456,6 +1456,7 @@ void uninitvar_ccosh(void)
 
 void uninitvar_ctime(void)
 {
+    // cppcheck-suppress constVariablePointer
     time_t *tp;
     // cppcheck-suppress uninitvar
     (void)ctime(tp);
@@ -1715,7 +1716,7 @@ void uninitvar_fmod(void)
     (void)fmodl(ld1,ld2);
 }
 
-void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
+void nullPointer_fprintf(FILE *Stream, const char *Format, int Argument)
 {
     // cppcheck-suppress nullPointer
     (void)fprintf(Stream, NULL, Argument);
@@ -1726,6 +1727,7 @@ void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
 void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
 {
     FILE *stream1, *stream2;
+    // cppcheck-suppress constVariablePointer
     char *format1, *format2;
     int argument1, argument2;
     // cppcheck-suppress uninitvar
@@ -1751,6 +1753,7 @@ void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 {
     FILE *stream1, *stream2;
+    // cppcheck-suppress constVariablePointer
     char *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
@@ -1767,16 +1770,17 @@ void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
     (void)vfprintf(Stream, Format, arg);
 }
 
-void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+void nullPointer_vfwprintf(FILE *Stream, const wchar_t *Format, va_list Arg)
 {
     // cppcheck-suppress nullPointer
     (void)vfwprintf(Stream, NULL, Arg);
     (void)vfwprintf(Stream, Format, Arg);
 }
 
-void uninitvar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+void uninitvar_vfwprintf(FILE *Stream, const wchar_t *Format, va_list Arg)
 {
     FILE *stream1, *stream2;
+    // cppcheck-suppress constVariablePointer
     wchar_t *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
@@ -1803,6 +1807,7 @@ void uninitvar_fputwc(void)
 
 void uninitvar_fputws(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *string;
     FILE *stream;
     // cppcheck-suppress uninitvar
@@ -1821,7 +1826,7 @@ void uninitvar_fread(void)
 
 void uninitvar_free(void)
 {
-    // cppcheck-suppress unassignedVariable
+    // cppcheck-suppress [unassignedVariable, constVariablePointer]
     void *block;
     // cppcheck-suppress uninitvar
     free(block);
@@ -1829,7 +1834,9 @@ void uninitvar_free(void)
 
 void uninitvar_freopen(void)
 {
+    // cppcheck-suppress constVariablePointer
     char *filename;
+    // cppcheck-suppress constVariablePointer
     char *mode;
     FILE *stream;
     // cppcheck-suppress uninitvar
@@ -1873,6 +1880,7 @@ void uninitvar_hypot(void)
 void uninitvar_fscanf(void)
 {
     FILE *stream;
+    // cppcheck-suppress constVariablePointer
     char *format;
     int i;
     // cppcheck-suppress uninitvar
@@ -1882,6 +1890,7 @@ void uninitvar_fscanf(void)
 void uninitvar_vfscanf(void)
 {
     FILE *stream;
+    // cppcheck-suppress constVariablePointer
     char * format;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
@@ -1892,6 +1901,7 @@ void uninitvar_vfscanf(void)
 void uninitvar_vfwscanf(void)
 {
     FILE *stream;
+    // cppcheck-suppress constVariablePointer
     wchar_t *format;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
@@ -4010,6 +4020,7 @@ void nullPointer_strncmp(const char *s1, const char *s2, size_t n)
 void uninitvar_wcsxfrm(void)
 {
     wchar_t *ds;
+    // cppcheck-suppress constVariablePointer
     wchar_t *ss;
     size_t n;
     // cppcheck-suppress uninitvar
@@ -4018,7 +4029,9 @@ void uninitvar_wcsxfrm(void)
 
 void uninitvar_wcsspn(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *ds;
+    // cppcheck-suppress constVariablePointer
     wchar_t *ss;
     // cppcheck-suppress uninitvar
     (void)wcsspn(ds,ss);
@@ -4027,6 +4040,7 @@ void uninitvar_wcsspn(void)
 void uninitvar_setlocale(void)
 {
     int category;
+    // cppcheck-suppress constVariablePointer
     char* locale;
     // cppcheck-suppress uninitvar
     (void)setlocale(category,locale);
@@ -4071,7 +4085,6 @@ void uninitvar_wcspbrk(void)
 
 void uninitvar_wcsncpy(void)
 {
-    // cppcheck-suppress constVariablePointer
     wchar_t *cs;
     // cppcheck-suppress constVariablePointer
     wchar_t *ct;
@@ -4396,7 +4409,7 @@ void uninitvar_fwprintf(void)
     (void)fwprintf(stream,format,i);
 }
 
-void uninitvar_snprintf(char *S, size_t N, char *Format, int Int)
+void uninitvar_snprintf(char *S, size_t N, const char *Format, int Int)
 {
     size_t n1,n2;
     // cppcheck-suppress constVariablePointer
@@ -4452,7 +4465,7 @@ void uninitvar_wscanf(void)
     (void)wscanf(format2,&i);
 }
 
-void uninitvar_sscanf(char *s, const char *f, int i, int *ip)
+void uninitvar_sscanf(const char *s, const char *f, int i, int *ip)
 {
     // cppcheck-suppress constVariablePointer
     char *string1, *string2, *string3;
