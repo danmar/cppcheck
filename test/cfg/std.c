@@ -719,6 +719,7 @@ void uninitvar_fsetpos(void)
 {
     FILE *fp;
     fpos_t pos;
+    // cppcheck-suppress constVariablePointer
     fpos_t *ppos;
     // cppcheck-suppress uninitvar
     fsetpos(fp,&pos);
@@ -1092,7 +1093,9 @@ void uninitvar_casinh(void)
 void uninitvar_wcsftime(wchar_t* ptr)
 {
     size_t maxsize;
+    // cppcheck-suppress constVariablePointer
     wchar_t* format;
+    // cppcheck-suppress constVariablePointer
     struct tm* timeptr;
     // cppcheck-suppress uninitvar
     (void)wcsftime(ptr, maxsize, format, timeptr);
@@ -1181,6 +1184,7 @@ void uninitvar_feraiseexcept(void)
 
 void uninitvar_fesetenv(void)
 {
+    // cppcheck-suppress constVariablePointer
     fenv_t* envp;
     // cppcheck-suppress uninitvar
     (void)fesetenv(envp);
@@ -1202,6 +1206,7 @@ void uninitvar_fetestexcept(void)
 
 void uninitvar_feupdateenv(void)
 {
+    // cppcheck-suppress constVariablePointer
     fenv_t* envp;
     // cppcheck-suppress uninitvar
     (void)feupdateenv(envp);
@@ -1314,6 +1319,7 @@ void uninitvar_atan2(void)
 
 void uninitvar_atof(void)
 {
+    // cppcheck-suppress constVariablePointer
     char * c;
     // cppcheck-suppress uninitvar
     (void)atof(c);
@@ -1321,6 +1327,7 @@ void uninitvar_atof(void)
 
 void uninitvar_atol(void)
 {
+    // cppcheck-suppress constVariablePointer
     char * c1, *c2, *c3;
     // cppcheck-suppress uninitvar
     (void)atoi(c1);
@@ -4034,7 +4041,9 @@ void uninitvar_strerror(void)
 
 void uninitvar_strcspn(void)
 {
+    // cppcheck-suppress constVariablePointer
     char *cs;
+    // cppcheck-suppress constVariablePointer
     char *ct;
     // cppcheck-suppress uninitvar
     (void)strcspn(cs,ct);
@@ -4042,7 +4051,9 @@ void uninitvar_strcspn(void)
 
 void uninitvar_wcscspn(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *cs;
+    // cppcheck-suppress constVariablePointer
     wchar_t *ct;
     // cppcheck-suppress uninitvar
     (void)wcscspn(cs,ct);
@@ -4050,7 +4061,9 @@ void uninitvar_wcscspn(void)
 
 void uninitvar_wcspbrk(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *cs;
+    // cppcheck-suppress constVariablePointer
     wchar_t *ct;
     // cppcheck-suppress uninitvar
     (void)wcspbrk(cs,ct);
@@ -4058,7 +4071,9 @@ void uninitvar_wcspbrk(void)
 
 void uninitvar_wcsncpy(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *cs;
+    // cppcheck-suppress constVariablePointer
     wchar_t *ct;
     size_t n;
     // cppcheck-suppress uninitvar
@@ -4067,7 +4082,9 @@ void uninitvar_wcsncpy(void)
 
 void uninitvar_strcoll(void)
 {
+    // cppcheck-suppress constVariablePointer
     char *cs;
+    // cppcheck-suppress constVariablePointer
     char *ct;
     // cppcheck-suppress uninitvar
     (void)strcoll(cs,ct);
@@ -4075,7 +4092,9 @@ void uninitvar_strcoll(void)
 
 void uninitvar_wcscoll(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *cs;
+    // cppcheck-suppress constVariablePointer
     wchar_t *ct;
     // cppcheck-suppress uninitvar
     (void)wcscoll(cs,ct);
@@ -4085,6 +4104,7 @@ void uninitvar_wcscoll(void)
 //      char * strrchr (       char * str, int character );
 void uninitvar_strrchr(const char * s, int c)
 {
+    // cppcheck-suppress constVariablePointer
     char * str;
     int character;
 
@@ -4099,6 +4119,7 @@ void uninitvar_strrchr(const char * s, int c)
 
 void uninitvar_wcsrchr(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t* ws;
     wchar_t wc;
     // cppcheck-suppress uninitvar
@@ -4276,7 +4297,7 @@ void uninitvar_wcstol(void)
     (void)wcstoull(s4,endp,base4);
 }
 
-void uninitvar_wprintf(wchar_t *Format, int Argument)
+void uninitvar_wprintf(const wchar_t *Format, int Argument)
 {
     const wchar_t *format1, *format2, *format3;
     int argument1, argument2;
@@ -4293,7 +4314,7 @@ void uninitvar_wprintf(wchar_t *Format, int Argument)
     (void)wprintf(Format);
 }
 
-void uninitvar_sprintf(char *S, char *Format, int Argument)
+void uninitvar_sprintf(char *S, const char *Format, int Argument)
 {
     char *s1, *s2;
     const char *format1, *format2;
@@ -4378,6 +4399,7 @@ void uninitvar_fwprintf(void)
 void uninitvar_snprintf(char *S, size_t N, char *Format, int Int)
 {
     size_t n1,n2;
+    // cppcheck-suppress constVariablePointer
     char *format1, *format2;
     int i1, i2;
     char *s1, *s2;
@@ -4396,10 +4418,11 @@ void uninitvar_snprintf(char *S, size_t N, char *Format, int Int)
     (void)snprintf(S,N,Format,Int);
 }
 
-void uninitvar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
+void uninitvar_vsnprintf(char *S, size_t N, const char *Format, va_list Arg)
 {
     char *s1, *s2;
     size_t n1, n2;
+    // cppcheck-suppress constVariablePointer
     char *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
@@ -4420,6 +4443,7 @@ void uninitvar_vsnprintf(char *S, size_t N, char *Format, va_list Arg)
 
 void uninitvar_wscanf(void)
 {
+    // cppcheck-suppress constVariablePointer
     wchar_t *format1, *format2;
     int i;
     // cppcheck-suppress uninitvar
@@ -4430,6 +4454,7 @@ void uninitvar_wscanf(void)
 
 void uninitvar_sscanf(char *s, const char *f, int i, int *ip)
 {
+    // cppcheck-suppress constVariablePointer
     char *string1, *string2, *string3;
     const char * format;
     int *pInteger;

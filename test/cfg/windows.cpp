@@ -754,7 +754,7 @@ void invalidFunctionArg()
 
 void uninitvar()
 {
-    // cppcheck-suppress [unassignedVariable, constVariablePointer]
+    // cppcheck-suppress unassignedVariable
     HANDLE hSemaphore;
     // cppcheck-suppress uninitvar
     CloseHandle(hSemaphore);
