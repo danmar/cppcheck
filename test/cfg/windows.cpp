@@ -133,7 +133,7 @@ void nullPointer__putenv(const char * envstr)
     // No warning is expected
     (void)_putenv(envstr);
 
-    char * p=NULL;
+    const char * p=NULL;
     // cppcheck-suppress nullPointer
     (void)_putenv(p);
 }
@@ -764,7 +764,7 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     lstrcat(buf, "test");
     buf[0] = '\0';
-    // cppcheck-suppress constVariablePointer
+    // cppcheck-suppress constVariable
     char buf2[2];
     // cppcheck-suppress lstrcatCalled
     // cppcheck-suppress uninitvar
@@ -1081,7 +1081,7 @@ error_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const c
     return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
 }
 
-void GetShortPathName_validCode(TCHAR* lpszPath)
+void GetShortPathName_validCode(const TCHAR* lpszPath)
 {
     long length = GetShortPathName(lpszPath, NULL, 0);
     if (length == 0) {
