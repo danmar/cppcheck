@@ -1956,6 +1956,7 @@ void uninitvar_mblen(void)
 void uninitvar_mbtowc(void)
 {
     wchar_t* pwc;
+    // cppcheck-suppress constVariablePointer
     char* pmb;
     size_t max;
     // cppcheck-suppress uninitvar
@@ -1964,6 +1965,7 @@ void uninitvar_mbtowc(void)
 
 void uninitvar_mbrlen(const char* p, size_t m, mbstate_t* s)
 {
+    // cppcheck-suppress constVariablePointer
     char* pmb1, *pmb2;
     size_t max1, max2;
     mbstate_t* ps1, *ps2;
@@ -1997,6 +1999,7 @@ void uninitvar_btowc(void)
 
 void uninitvar_mbsinit(void)
 {
+    // cppcheck-suppress constVariablePointer
     mbstate_t* ps;
     // cppcheck-suppress uninitvar
     (void)mbsinit(ps);
