@@ -1634,7 +1634,7 @@ void CheckOther::checkConstPointer()
                 continue;
             if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
                 if (ftok->function()) {
-                    const bool isCastArg = parent->isCast() && !ftok->function()->getOverloadedFunctions().empty();
+                    const bool isCastArg = parent->isCast() && !ftok->function()->getOverloadedFunctions().empty(); // assume that cast changes the called function
                     if (!isCastArg) {
                         const Variable* argVar = ftok->function()->getArgumentVar(argn);
                         if (argVar && argVar->valueType() && argVar->valueType()->isConst(vt->pointer)) {
