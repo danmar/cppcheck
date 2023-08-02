@@ -3490,16 +3490,28 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
     return tok2;
 }
 
-const std::string& Type::name() const
+std::string Type::name() const
 {
-    const Token* next = classDef->next();
+    const Token* start = classDef->next();
     if (classScope && classScope->enumClass && isEnumType())
-        return next->strAt(1);
-    if (next->str() == "class")
-        return next->strAt(1);
-    if (next->isName())
-        return next->str();
-    return emptyString;
+        start = start->tokAt(1);
+    else if (start->str() == "class")
+        start = start->tokAt(1);
+    else if (!start->isName())
+        return emptyString;
+    const Token* next = start;
+    while (Token::Match(next, "::|<|>|(|)|[|]|*|&|&&|%name%")) {
+        if (Token::Match(next, "<|(|[") && next->link())
+            next = next->link();
+        next = next->next();
+    }
+    std::string result;
+    for (const Token* tok = start; tok != next; tok = tok->next()) {
+        if (!result.empty())
+            result += ' ';
+        result += tok->str();
+    }
+    return result;
 }
 
 void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, const std::string &msg) const
