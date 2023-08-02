@@ -148,7 +148,8 @@ void ThreadHandler::setThreadCount(const int count)
 void ThreadHandler::removeThreads()
 {
     for (CheckThread* thread : mThreads) {
-        thread->terminate();
+        thread->quit();
+        thread->wait();
         disconnect(thread, &CheckThread::done,
                    this, &ThreadHandler::threadDone);
         disconnect(thread, &CheckThread::fileChecked,
