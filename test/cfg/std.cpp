@@ -1156,8 +1156,8 @@ void uninitvar_asinh(void)
 void uninitvar_wcsftime(wchar_t* ptr)
 {
     size_t maxsize;
-    wchar_t* format;
-    struct tm* timeptr;
+    const wchar_t* format;
+    const struct tm* timeptr;
     // cppcheck-suppress uninitvar
     (void)std::wcsftime(ptr, maxsize, format, timeptr);
 }
@@ -1269,14 +1269,14 @@ void uninitvar_atan2(void)
 
 void uninitvar_atof(void)
 {
-    char * c;
+    const char * c;
     // cppcheck-suppress uninitvar
     (void)std::atof(c);
 }
 
 void uninitvar_atol(void)
 {
-    char * c1, *c2, *c3;
+    const char * c1, *c2, *c3;
     // cppcheck-suppress uninitvar
     (void)std::atoi(c1);
 
@@ -1392,7 +1392,7 @@ void uninitvar_feclearexcept(void)
 
 void uninitvar_fesetenv(void)
 {
-    fenv_t* envp;
+    const fenv_t* envp;
     // cppcheck-suppress uninitvar
     (void)std::fesetenv(envp);
 }
@@ -1413,14 +1413,14 @@ void uninitvar_fetestexcept(void)
 
 void uninitvar_feupdateenv(void)
 {
-    fenv_t* envp;
+    const fenv_t* envp;
     // cppcheck-suppress uninitvar
     (void)std::feupdateenv(envp);
 }
 
 void uninitvar_ctime(void)
 {
-    time_t *tp;
+    const time_t *tp;
     // cppcheck-suppress uninitvar
     (void)std::ctime(tp);
 }
@@ -1689,8 +1689,8 @@ void uninitvar_fmod(void)
 
 void uninitar_fopen(void)
 {
-    char *filename;
-    char *mode;
+    const char *filename;
+    const char *mode;
     // cppcheck-suppress uninitvar
     FILE * fp = std::fopen(filename, mode);
     fclose(fp);
@@ -1699,7 +1699,7 @@ void uninitar_fopen(void)
 void uninitar_fprintf(FILE *Stream, const char *Format, int Argument)
 {
     FILE *stream1, *stream2;
-    char *format1, *format2;
+    const char *format1, *format2;
     int argument1, argument2;
     // cppcheck-suppress uninitvar
     (void)std::fprintf(stream1, format1, argument1);
@@ -1717,7 +1717,7 @@ void uninitar_fprintf(FILE *Stream, const char *Format, int Argument)
 void uninitar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 {
     FILE *stream1, *stream2;
-    char *format1, *format2;
+    const char *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
@@ -1736,7 +1736,7 @@ void uninitar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 void uninitar_vfwprintf(FILE *Stream, const wchar_t *Format, va_list Arg)
 {
     FILE *stream1, *stream2;
-    wchar_t *format1, *format2;
+    const wchar_t *format1, *format2;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
@@ -1770,7 +1770,7 @@ void uninitvar_fputwc(void)
 
 void uninitvar_fputs(void)
 {
-    char *string;
+    const char *string;
     FILE *stream;
     // cppcheck-suppress uninitvar
     (void)std::fputs(string,stream);
@@ -1778,7 +1778,7 @@ void uninitvar_fputs(void)
 
 void uninitvar_fputws(void)
 {
-    wchar_t *string;
+    const wchar_t *string;
     FILE *stream;
     // cppcheck-suppress uninitvar
     (void)std::fputws(string,stream);
@@ -1803,8 +1803,8 @@ void uninitvar_free(void)
 
 void uninitvar_freopen(void)
 {
-    char *filename;
-    char *mode;
+    const char *filename;
+    const char *mode;
     FILE *stream;
     // cppcheck-suppress uninitvar
     FILE * p = std::freopen(filename,mode,stream);
@@ -1847,7 +1847,7 @@ void uninitvar_hypot(void)
 void uninitvar_fscanf(void)
 {
     FILE *stream;
-    char *format;
+    const char *format;
     int i;
     // cppcheck-suppress uninitvar
     (void)std::fscanf(stream,format,i);
@@ -1856,7 +1856,7 @@ void uninitvar_fscanf(void)
 void uninitvar_vfscanf(void)
 {
     FILE *stream;
-    char *format;
+    const char *format;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
@@ -1866,7 +1866,7 @@ void uninitvar_vfscanf(void)
 void uninitvar_vfwscanf(void)
 {
     FILE *stream;
-    wchar_t *format;
+    const wchar_t *format;
     va_list arg;
     // cppcheck-suppress va_list_usedBeforeStarted
     // cppcheck-suppress uninitvar
@@ -1910,7 +1910,7 @@ void invalidFunctionArgBool_fseek(FILE* stream, long int offset, int origin)
 void uninitvar_fsetpos(void)
 {
     FILE* stream;
-    fpos_t *ptr;
+    const fpos_t *ptr;
     // cppcheck-suppress uninitvar
     (void)std::fsetpos(stream,ptr);
 }
@@ -2040,7 +2040,7 @@ void uninitvar_fwide(void)
 
 void uninitvar_fwrite(void)
 {
-    void *ptr;
+    const void *ptr;
     size_t size;
     size_t nobj;
     FILE *stream;
@@ -2050,7 +2050,7 @@ void uninitvar_fwrite(void)
 
 void uninitvar_mblen(void)
 {
-    char *string;
+    const char *string;
     size_t size;
     // cppcheck-suppress uninitvar
     (void)std::mblen(string,size);
@@ -2059,7 +2059,7 @@ void uninitvar_mblen(void)
 void uninitvar_mbtowc(void)
 {
     wchar_t* pwc;
-    char* pmb;
+    const char* pmb;
     size_t max;
     // cppcheck-suppress uninitvar
     (void)std::mbtowc(pwc,pmb,max);
@@ -2067,7 +2067,7 @@ void uninitvar_mbtowc(void)
 
 void uninitvar_mbrlen(const char* p, size_t m, mbstate_t* s)
 {
-    char* pmb1, *pmb2;
+    const char* pmb1, *pmb2;
     size_t max1, max2;
     mbstate_t* ps1, *ps2;
     // cppcheck-suppress uninitvar
@@ -2100,7 +2100,7 @@ void uninitvar_btowc(void)
 
 void uninitvar_mbsinit(void)
 {
-    mbstate_t* ps;
+    const mbstate_t* ps;
     // cppcheck-suppress uninitvar
     (void)std::mbsinit(ps);
 }
@@ -2108,7 +2108,7 @@ void uninitvar_mbsinit(void)
 void uninitvar_mbstowcs(void)
 {
     wchar_t *ws;
-    char *s;
+    const char *s;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)std::mbstowcs(ws,s,n);
@@ -2142,7 +2142,7 @@ void uninitvar_wctomb(void)
 void uninitvar_wcstombs(void)
 {
     char *mbstr;
-    wchar_t *wcstr;
+    const wchar_t *wcstr;
     size_t n;
     // cppcheck-suppress uninitvar
     (void)std::wcstombs(mbstr,wcstr,n);
@@ -2180,14 +2180,14 @@ void uninitvar_ungetwc(void)
 
 void uninitvar_getenv(void)
 {
-    char *name;
+    const char *name;
     // cppcheck-suppress uninitvar
     (void)std::getenv(name);
 }
 
 void uninitvar_gmtime(void)
 {
-    time_t *tp;
+    const time_t *tp;
     // cppcheck-suppress uninitvar
     (void)std::gmtime(tp);
 }
@@ -2322,14 +2322,14 @@ void uninitvar_towupper(void)
 
 void uninitvar_wctrans(void)
 {
-    char* property;
+    const char* property;
     // cppcheck-suppress uninitvar
     (void)std::wctrans(property);
 }
 
 void uninitvar_wctype(void)
 {
-    char* property;
+    const char* property;
     // cppcheck-suppress uninitvar
     (void)std::wctype(property);
 }
@@ -2475,7 +2475,7 @@ void uninitvar_ldiv(void)
 
 void uninitvar_localtime(void)
 {
-    time_t *tp;
+    const time_t *tp;
     // cppcheck-suppress uninitvar
     (void)std::localtime(tp);
 }
@@ -2624,7 +2624,7 @@ void uninitvar_islessgreater(void)
 
 void uninitvar_nan(void)
 {
-    char *tagp1, *tagp2, *tagp3;
+    const char *tagp1, *tagp2, *tagp3;
     // cppcheck-suppress uninitvar
     (void)std::nanf(tagp1);
     // cppcheck-suppress uninitvar
@@ -3332,7 +3332,7 @@ void uninivar_wcrtomb(void)
 
 void uninivar_strchr(void)
 {
-    char *cs;
+    const char *cs;
     int c;
     // cppcheck-suppress uninitvar
     (void)std::strchr(cs,c);
@@ -3340,7 +3340,7 @@ void uninivar_strchr(void)
 
 void uninivar_wcschr(void)
 {
-    wchar_t *cs;
+    const wchar_t *cs;
     wchar_t c;
     // cppcheck-suppress uninitvar
     (void)std::wcschr(cs,c);
@@ -3383,7 +3383,7 @@ void uninivar_strftime(void)
     char *s;
     size_t max;
     const char *fmt;
-    struct tm *p;
+    const struct tm *p;
     // cppcheck-suppress uninitvar
     (void)std::strftime(s,max,fmt,p);
 }
@@ -3413,7 +3413,7 @@ void uninivar_strncpy(void)
 
 void uninivar_strpbrk(void)
 {
-    char *cs;
+    const char *cs;
     const char *ct;
     // cppcheck-suppress uninitvar
     (void)std::strpbrk(cs,ct);
@@ -3455,7 +3455,7 @@ void uninivar_wcsncat(wchar_t *Ct, const wchar_t *S, size_t N)
     (void)std::wcsncat(Ct,S,N);
 }
 
-void uninivar_strncmp(char *Ct, const char *S, size_t N)
+void uninivar_strncmp(const char *Ct, const char *S, size_t N)
 {
     const char *ct1, *ct2;
     const char *s1, *s2;
