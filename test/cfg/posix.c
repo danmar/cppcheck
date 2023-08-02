@@ -193,7 +193,7 @@ int nullPointer_getpwnam_r(const char *name, struct passwd *pwd, char *buffer, s
     return getpwnam_r(name, pwd, buffer, bufsize, result);
 }
 
-int nullPointer_fgetpwent_r(FILE *restrict stream, struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
+int nullPointer_fgetpwent_r(FILE *restrict stream, const struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
 {
     // cppcheck-suppress nullPointer
     (void) fgetpwent_r(NULL, pwbuf, buf, buflen, pwbufp);
@@ -774,10 +774,10 @@ wchar_t* overlappingWriteFunction_wcpncpy(wchar_t *src, wchar_t *dest, ssize_t n
     return wcpncpy(src, src+3, 4);
 }
 
-void overlappingWriteFunction_swab(const char *src, char *dest, ssize_t n)
+void overlappingWriteFunction_swab(char *src, char *dest, ssize_t n)
 {
     // No warning shall be shown:
-    swab(dest, src, n);
+    swab(src, dest, n);
     // cppcheck-suppress overlappingWriteFunction
     swab(src, src+3, 4);
 }
@@ -1260,6 +1260,7 @@ void uninitvar_types(void)
 void timet_h(const struct timespec* ptp1)
 {
     clockid_t clk_id1, clk_id2, clk_id3;
+    // cppcheck-suppress constVariablePointer
     struct timespec* ptp;
     // cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, ptp);
