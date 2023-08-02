@@ -1074,11 +1074,13 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
             if (var->isArrayOrPointer()) {
                 int argn{};
                 if (const Token* ftok = getTokenArgumentFunction(tok, argn)) { // var passed to function?
-                    if (ftok->function() && Function::returnsPointer(ftok->function()))
-                        return false;
-                    const std::string ret = mSettings->library.returnValueType(ftok); // assume that var is returned
-                    if (!ret.empty() && ret.back() == '*')
-                        return false;
+                    if (ftok->next()->astParent()) { // return value used?
+                        if (ftok->function() && Function::returnsPointer(ftok->function()))
+                            return false;
+                        const std::string ret = mSettings->library.returnValueType(ftok); // assume that var is returned
+                        if (!ret.empty() && ret.back() == '*')
+                            return false;
+                    }
                 }
             }
         }
