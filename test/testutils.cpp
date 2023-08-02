@@ -16,14 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "helpers.h"
 #include "fixture.h"
-#include "settings.h"
 #include "utils.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <stdexcept>
 #include <string>
 
 class TestUtils : public TestFixture {

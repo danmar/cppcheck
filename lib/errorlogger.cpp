@@ -30,7 +30,6 @@
 #include <array>
 #include <cassert>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <sstream> // IWYU pragma: keep

@@ -42,6 +42,7 @@
 #include <initializer_list>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
