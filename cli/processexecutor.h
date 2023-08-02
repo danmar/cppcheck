@@ -44,6 +44,8 @@ public:
 
     unsigned int check() override;
 
+    unsigned int STDCALL threadProc(ThreadData */*data*/) override { return 0; }
+
 private:
     /**
      * Read from the pipe, parse and handle what ever is in there.
