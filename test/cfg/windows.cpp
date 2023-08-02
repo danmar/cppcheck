@@ -122,8 +122,7 @@ void uninitvar__putenv(const char * envstr)
     // No warning is expected
     (void)_putenv(envstr);
 
-    // cppcheck-suppress constVariablePointer
-    char * p;
+    const char * p;
     // cppcheck-suppress uninitvar
     (void)_putenv(p);
 }
@@ -994,8 +993,7 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
 unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned char *strSource)
 {
     unsigned char *uninit_deststr;
-    // cppcheck-suppress constVariablePointer
-    unsigned char *uninit_srcstr1, *uninit_srcstr2;
+    const unsigned char *uninit_srcstr1, *uninit_srcstr2;
     // cppcheck-suppress uninitvar
     (void)_mbscat(uninit_deststr,uninit_srcstr1);
     // cppcheck-suppress uninitvar
@@ -1022,8 +1020,7 @@ error_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElement
 {
     unsigned char *uninit_strDestination;
     size_t uninit_numberOfElements;
-    // cppcheck-suppress constVariablePointer
-    unsigned char *uninit_strSource;
+    const unsigned char *uninit_strSource;
 
     // cppcheck-suppress uninitvar
     (void)_mbscat_s(uninit_strDestination, numberOfElements, strSource);

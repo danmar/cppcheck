@@ -3110,7 +3110,7 @@ void uninitvar_vwprintf(const wchar_t *Format, va_list Arg)
     (void)vwprintf(Format,arg);
 }
 
-void nullPointer_bsearch(void* key, void* base, size_t num, size_t size)
+void nullPointer_bsearch(const void* key, const void* base, size_t num, size_t size)
 {
     // cppcheck-suppress nullPointer
     (void)bsearch(NULL,base,num,size,(int (*)(const void*,const void*))strcmp);
