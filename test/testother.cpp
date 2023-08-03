@@ -8120,7 +8120,7 @@ private:
               "void packed_object_info(struct object_info *oi) {\n"
               "  if (*oi->typep < 0);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'oi' can be declared as pointer to const\n", errout.str());
     }
 
     void checkSuspiciousSemicolon1() {

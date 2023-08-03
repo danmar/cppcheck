@@ -2188,7 +2188,7 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
     argn = -1;
     {
         T* parent = tok->astParent();
-        if (parent && parent->isUnaryOp("&"))
+        if (parent && (parent->isUnaryOp("&") || parent->isIncDecOp()))
             parent = parent->astParent();
         while (parent && parent->isCast())
             parent = parent->astParent();
@@ -2196,7 +2196,7 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
             parent = parent->astParent();
 
         // passing variable to subfunction?
-        if (Token::Match(parent, "[[(,{]"))
+        if (Token::Match(parent, "[*[(,{]"))
             ;
         else if (Token::simpleMatch(parent, ":")) {
             while (Token::Match(parent, "[?:]"))
@@ -2455,7 +2455,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
            (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
 
-    if (tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
+    if (indirect == 0 && tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
         return true;
 
     auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) {
@@ -2576,9 +2576,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     }
 
     const Token *parent = tok2->astParent();
-    while (Token::Match(parent, ".|::"))
-        parent = parent->astParent();
-    if (parent && parent->tokType() == Token::eIncDecOp)
+    if (parent && parent->tokType() == Token::eIncDecOp && (indirect == 0 || tok2 != tok))
         return true;
 
     // structured binding, nonconst reference variable in lhs
@@ -2615,7 +2613,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (indirect > 0) {
         // check for `*(ptr + 1) = new_value` case
         parent = tok2->astParent();
-        while (parent && parent->isArithmeticalOp() && parent->isBinaryOp()) {
+        while (parent && ((parent->isArithmeticalOp() && parent->isBinaryOp()) || parent->isIncDecOp())) {
             parent = parent->astParent();
         }
         if (Token::simpleMatch(parent, "*")) {
