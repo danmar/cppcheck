@@ -3792,6 +3792,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
+
+        check("void f(int* p) {\n" // #11862
+              "    long long j = *(p++);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
