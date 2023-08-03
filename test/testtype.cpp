@@ -367,6 +367,11 @@ private:
               "}\n", settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) float result is returned as double value. If the return value is double to avoid loss of information, then you have loss of information.\n",
                       errout.str());
+
+        check("void f(int* p) {\n" // #11862
+              "    long long j = *(p++);\n"
+              "}\n", settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void longCastReturn() {
