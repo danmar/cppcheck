@@ -1,0 +1,164 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: include-what-you-use
+
+on: workflow_dispatch
+
+permissions:
+  contents: read
+
+jobs:
+  iwyu:
+
+    strategy:
+      matrix:
+        image: ["fedora:latest"] # "debian:unstable" / "archlinux:latest"
+
+    runs-on: ubuntu-22.04
+
+    container:
+      image: "fedora:latest"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
+      - name: Install missing software on debian/ubuntu
+        if: contains(matrix.image, 'debian')
+        run: |
+          apt-get update
+          apt-get install -y cmake g++ make libpcre3-dev
+          apt-get install -y qtbase5-dev qttools5-dev libqt5charts5-dev
+          apt-get install -y wget iwyu
+          ln -s ../x86_64-linux-gnu/qt5 /usr/include/qt
+
+      - name: Install missing software on archlinux
+        if: contains(matrix.image, 'archlinux')
+        run: |
+          set -x
+          pacman -Sy
+          pacman -S cmake make gcc qt5-base qt5-tools qt5-charts pcre wget --noconfirm
+          pacman-key --init
+          pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+          pacman-key --lsign-key 3056513887B78AEB 
+          pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' --noconfirm
+          echo "[chaotic-aur]" >> /etc/pacman.conf
+          echo "Include = /etc/pacman.d/chaotic-mirrorlist" >> /etc/pacman.conf
+          pacman -Sy
+          pacman -S include-what-you-use --noconfirm
+          ln -s iwyu-tool /usr/sbin/iwyu_tool
+
+      # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
+      - name: Install missing software on Fedora
+        if: contains(matrix.image, 'fedora')
+        run: |
+          dnf install -y cmake gcc-c++ qt5-qtbase-devel qt5-linguist qt5-qttools-devel qt5-qtcharts-devel pcre-devel
+          dnf install -y wget iwyu
+          ln -s iwyu_tool.py /usr/bin/iwyu_tool
+          ln -s qt5 /usr/include/qt
+
+      - name: Prepare CMake
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off
+
+      - name: Prepare CMake dependencies
+        run: |
+          # make sure the precompiled headers exist
+          #make -C cmake.output/cli cmake_pch.hxx.pch
+          #make -C cmake.output/gui cmake_pch.hxx.pch
+          #make -C cmake.output/lib cmake_pch.hxx.pch
+          #make -C cmake.output/test cmake_pch.hxx.pch
+          # make sure the auto-generated GUI sources exist
+          make -C cmake.output autogen
+          # make sure the auto-generated GUI dependencies exist
+          make -C cmake.output gui-build-deps
+          make -C cmake.output triage-build-ui-deps
+
+      - name: Build Qt mappings
+        run: |
+          wget https://raw.githubusercontent.com/include-what-you-use/include-what-you-use/master/mapgen/iwyu-mapgen-qt.py
+          python3 iwyu-mapgen-qt.py /usr/include/qt/ > qt5.imp
+
+      - name: iwyu_tool
+        run: |
+          PWD=$(pwd)
+          iwyu_tool -p cmake.output -j $(nproc) -- -w -Xiwyu --mapping_file=$PWD/qt5.imp > iwyu.log
+
+      - uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: Compilation Database
+          path: ./cmake.output/compile_commands.json
+
+      - uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: Qt Mappings
+          path: ./qt5.imp
+
+      - uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: Logs (include-what-you-use)
+          path: ./*.log
+
+  clang-include-cleaner:
+
+    runs-on: ubuntu-22.04
+
+    env:
+      QT_VERSION: 5.15.2
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install missing software
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake make
+          sudo apt-get install -y libpcre3-dev
+          sudo apt-get install -y libffi7 # work around missing dependency for Qt install step
+
+      - name: Install clang
+        run: |
+          sudo apt-get purge --auto-remove llvm python3-lldb-14 llvm-14
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 17
+          sudo apt-get install -y clang-tools-17
+
+      - name: Install Qt ${{ env.QT_VERSION }}
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: ${{ env.QT_VERSION }}
+          modules: 'qtcharts'
+          cache: true
+
+      - name: Prepare CMake
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off
+        env:
+          CC: clang-17
+          CXX: clang++-17
+
+      - name: Prepare CMake dependencies
+        run: |
+          # make sure the precompiled headers exist
+          #make -C cmake.output/cli cmake_pch.hxx.pch
+          #make -C cmake.output/gui cmake_pch.hxx.pch
+          #make -C cmake.output/lib cmake_pch.hxx.pch
+          #make -C cmake.output/test cmake_pch.hxx.pch
+          # make sure the auto-generated GUI sources exist
+          make -C cmake.output autogen
+          # make sure the auto-generated GUI dependencies exist
+          make -C cmake.output gui-build-deps
+
+      - name: clang-include-cleaner
+        run: |
+          # TODO: run multi-threaded
+          find $PWD/cli $PWD/lib $PWD/test -maxdepth 1 -name "*.cpp" | xargs -t -n 1 clang-include-cleaner-17 --print=changes --extra-arg=-w -p cmake.output > clang-include-cleaner.log 2>&1
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Logs (clang-include-cleaner)
+          path: ./*.log

@@ -1,0 +1,51 @@
+# Some convenient links:
+# - https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
+#
+
+name: CI-cygwin
+
+on: [push,pull_request]
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  build_cygwin:
+    strategy:
+      matrix:
+        os: [windows-2022]
+        arch: [x64]
+        include:
+          - platform: 'x86_64'
+            packages: |
+              gcc-g++
+              python3
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Cygwin
+        uses: cygwin/cygwin-install-action@master
+        with:
+          platform: ${{ matrix.arch }}
+          packages: ${{ matrix.packages }}
+
+      # Cygwin will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
+      - name: Build all and run test
+        run: |
+          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make VERBOSE=1 -j2 check
+
+      - name: Extra test for misra
+        run: |
+          cd %GITHUB_WORKSPACE%\addons\test
+          ..\..\cppcheck.exe --dump -DDUMMY --suppress=uninitvar --inline-suppr misra\misra-test.c --std=c89 --platform=unix64
+          python3 ..\misra.py -verify misra\misra-test.c.dump
+          ..\..\cppcheck.exe --addon=misra --enable=style --inline-suppr --enable=information --error-exitcode=1 misra\misra-ctu-1-test.c misra\misra-ctu-2-test.c
+
