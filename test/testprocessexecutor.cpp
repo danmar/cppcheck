@@ -229,6 +229,9 @@ private:
                            output.str());*/
         settings = settingsOld;
     }
+
+    // TODO: test clang-tidy
+    // TODO: test whole program analysis
 };
 
 REGISTER_TEST(TestProcessExecutor)
