@@ -1992,7 +1992,7 @@ void CheckStl::string_c_str()
                         }
                     }
                 }
-            } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") &&
+            } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( ) !!,") &&
                        tok->variable() && (tok->variable()->isStlStringType() || tok->variable()->isStlStringViewType()) &&
                        tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType()) {
                 string_c_strConstructor(tok, tok->variable()->getTypeName());
@@ -2054,7 +2054,7 @@ void CheckStl::string_c_str()
                         if (Token::Match(refTok, "%var% = %var% .|;|["))
                             refToNonLocal = !isLocal(refTok->tokAt(2));
                     }
-                    ptrOrRef = refToNonLocal || (tok2->variable() && tok2->variable()->isPointer());
+                    ptrOrRef = refToNonLocal || (tok2->variable() && (tok2->variable()->isPointer() || tok2->variable()->isSmartPointer()));
                 }
                 while (tok2) {
                     if (Token::Match(tok2, "%var% .|::")) {

@@ -23,7 +23,6 @@
 #include "fixture.h"
 #include "settings.h"
 
-#include <list>
 #include <sstream>
 
 class TestInternal : public TestFixture {

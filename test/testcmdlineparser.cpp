@@ -1684,7 +1684,7 @@ private:
     void checksMaxTime() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--checks-max-time=12", "file.cpp"};
-        settings.checksMaxTime = SIZE_MAX;
+        settings.checksMaxTime = 0;
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT_EQUALS(12, settings.checksMaxTime);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1694,7 +1694,7 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--checks-max-time=-1", "file.cpp"};
         ASSERT(!defParser.parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--checks-max-time=' is not valid - needs to be positive.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument to '--checks-max-time=' needs to be a positive integer.\n", GET_REDIRECT_OUTPUT);
     }
 
     void checksMaxTimeInvalid() {

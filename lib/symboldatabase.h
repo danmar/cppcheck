@@ -118,7 +118,7 @@ public:
         }
     }
 
-    const std::string& name() const;
+    std::string name() const;
 
     const std::string& type() const {
         return classDef ? classDef->str() : emptyString;

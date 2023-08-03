@@ -25,7 +25,6 @@
 #include "utils.h"
 
 #include <cstddef>
-#include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
@@ -888,6 +887,41 @@ private:
                     "  auto x = v->back();\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("template <typename T, uint8_t count>\n"
+                    "struct Foo {\n"
+                    "    std::array<T, count> items = {0};\n"
+                    "    T maxCount = count;\n"
+                    "    explicit Foo(const T& maxValue = (std::numeric_limits<T>::max)()) : maxCount(maxValue) {}\n"
+                    "    bool Set(const uint8_t idx) {\n"
+                    "        if (CheckBounds(idx) && items[idx] < maxCount) {\n"
+                    "            items[idx] += 1;\n"
+                    "            return true;\n"
+                    "        }\n"
+                    "        return false;\n"
+                    "    }\n"
+                    "    static bool CheckBounds(const uint8_t idx) { return idx < count; }\n"
+                    "};\n"
+                    "void f() {\n"
+                    "    Foo<uint8_t, 42U> x;\n"
+                    "    if (x.Set(42U)) {}\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("struct S { void g(std::span<int>& r) const; };\n" // #11828
+                    "int f(const S& s) {\n"
+                    "    std::span<int> t;\n"
+                    "    s.g(t);\n"
+                    "    return t[0];\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("char h() {\n"
+                    "    std::string s;\n"
+                    "    std::string_view sv(s);\n"
+                    "    return s[2];\n"
+                    "}\n");
+        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 's[2]' because 's' is empty.\n", "", errout.str());
     }
 
     void outOfBoundsSymbolic()
@@ -2312,6 +2346,19 @@ private:
               "        sum += values[j-1];\n"
               "    return sum;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct B { virtual int g() { return 0; } };\n" // #11831
+              "struct C {\n"
+              "    int h() const { return b->g(); }\n"
+              "    B* b;\n"
+              "};\n"
+              "struct O {\n"
+              "    int f() const;\n"
+              "    std::vector<int> v;\n"
+              "    C c;\n"
+              "};\n"
+              "int O::f() const { return v[c.h() - 1]; }\n");
         ASSERT_EQUALS("", errout.str());
 
         const auto oldSettings = settings;
@@ -4236,6 +4283,20 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (performance) Assigning the result of c_str() to a std::string_view is slow and redundant.\n"
                       "[test.cpp:6]: (performance) Constructing a std::string_view from the result of c_str() is slow and redundant.\n",
                       errout.str());
+
+        check("void f(const std::string& s) {\n" // #11819
+              "    std::string_view sv(s.data(), 13);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { std::string x; };\n" // #11802
+              "std::vector<std::shared_ptr<S>> global;\n"
+              "const char* f() {\n"
+              "    auto s = std::make_shared<S>();\n"
+              "    global.push_back(s);\n"
+              "    return s->x.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {

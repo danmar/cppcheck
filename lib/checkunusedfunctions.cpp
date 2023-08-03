@@ -33,7 +33,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <fstream> // IWYU pragma: keep
 #include <map>

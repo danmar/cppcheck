@@ -39,6 +39,7 @@ jobs:
 
       - name: Install clang
         run: |
+          sudo apt-get purge --auto-remove llvm python3-lldb-14 llvm-14
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 16

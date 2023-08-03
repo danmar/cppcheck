@@ -5565,6 +5565,17 @@ private:
                "}";
         values = tokenValues(code, "x + 1", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
+
+        code = "void g() {\n"
+               "  int y;\n"
+               "  int *q = 1 ? &y : 0;\n"
+               "}\n";
+        values = tokenValues(code, "y :", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(true, values.front().isUninitValue());
+        values = tokenValues(code, "& y :", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(1, values.size());
+        ASSERT_EQUALS(true, values.front().isUninitValue());
     }
 
     void valueFlowConditionExpressions() {
@@ -6611,10 +6622,13 @@ private:
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "( ) ;"), 0));
 
         code = "std::vector<int> f() { return std::vector<int>{}; }";
-        TODO_ASSERT_EQUALS("", "values.size():0", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
 
         code = "std::vector<int> f() { return {}; }";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "{ } ;"), 0));
+
+        code = "int f() { auto a = std::array<int, 2>{}; return a[1]; }";
+        ASSERT_EQUALS("values.size():0", isKnownContainerSizeValue(tokenValues(code, "a ["), 0));
     }
 
     void valueFlowContainerElement()
@@ -6798,6 +6812,14 @@ private:
                "    dummy_resource::log.clear();\n"
                "}\n";
         valueOfTok(code, "log");
+
+        code = "struct D : B<int> {\n"
+               "    D(int i, const std::string& s) : B<int>(i, s) {}\n"
+               "};\n"
+               "template<> struct B<int>::S {\n"
+               "    int j;\n"
+               "};\n";
+        valueOfTok(code, "B");
     }
 
     void valueFlowCrash() {

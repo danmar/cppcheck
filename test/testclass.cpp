@@ -19,17 +19,19 @@
 #include "check.h"
 #include "checkclass.h"
 #include "errortypes.h"
-#include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
 #include <vector>
 
+#include <simplecpp.h>
 
 class TestClass : public TestFixture {
 public:
@@ -180,6 +182,7 @@ private:
         TEST_CASE(const88);
         TEST_CASE(const89);
         TEST_CASE(const90);
+        TEST_CASE(const91);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -228,6 +231,8 @@ private:
 
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
+
+        TEST_CASE(uselessOverride);
 
         TEST_CASE(thisUseAfterFree);
 
@@ -659,6 +664,46 @@ private:
         checkDuplInheritedMembers("template<int i> struct A { bool a = true; };\n"
                                   "struct B { bool a; };\n"
                                   "template<> struct A<1> : B {};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("struct B {\n"
+                                  "    int g() const;\n"
+                                  "    virtual int f() const { return g(); }\n"
+                                  "};\n"
+                                  "struct D : B {\n"
+                                  "    int g() const;\n"
+                                  "    int f() const override { return g(); }\n"
+                                  "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (warning) The struct 'D' defines member function with name 'g' also defined in its parent struct 'B'.\n",
+                      errout.str());
+
+        checkDuplInheritedMembers("struct B {\n"
+                                  "    int g() const;\n"
+                                  "};\n"
+                                  "struct D : B {\n"
+                                  "    int g(int) const;\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("struct S {\n"
+                                  "    struct T {\n"
+                                  "        T() {}\n"
+                                  "    };\n"
+                                  "};\n"
+                                  "struct T : S::T {\n"
+                                  "    T() : S::T() {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkDuplInheritedMembers("struct S {};\n" // #11827
+                                  "struct SPtr {\n"
+                                  "    virtual S* operator->() const { return p; }\n"
+                                  "    S* p = nullptr;\n"
+                                  "};\n"
+                                  "struct T : public S {};\n"
+                                  "struct TPtr : public SPtr {\n"
+                                  "    T* operator->() const { return (T*)p; }\n"
+                                  "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -6018,7 +6063,7 @@ private:
                    "    int i{};\n"
                    "    S f() { return S{ &i }; }\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", errout.str());
 
         checkConst("struct S {\n"
                    "    explicit S(const int* p) : mp(p) {}\n"
@@ -6593,6 +6638,20 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (style, inconclusive) Technically the member function 'T::f1' can be const.\n"
                       "[test.cpp:9]: (style, inconclusive) Technically the member function 'T::f2' can be const.\n",
                       errout.str());
+    }
+
+    void const91() { // #11790
+        checkConst("struct S {\n"
+                   "    char* p;\n"
+                   "    template <typename T>\n"
+                   "    T* get() {\n"
+                   "        return reinterpret_cast<T*>(p);\n"
+                   "    }\n"
+                   "};\n"
+                   "const int* f(S& s) {\n"
+                   "    return s.get<const int>();\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {
@@ -8303,6 +8362,18 @@ private:
                       "    friend T f();\n"
                       "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct S {};\n" // #11827
+                      "struct SPtr {\n"
+                      "    virtual S* operator->() const { return p; }\n"
+                      "    S* p = nullptr;\n"
+                      "};\n"
+                      "struct T : public S {};\n"
+                      "struct TPtr : public SPtr {\n"
+                      "    T* operator->() const { return (T*)p; }\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:8]: (style) The function 'operator->' overrides a function in a base class but is not marked with a 'override' specifier.\n",
+                      errout.str());
     }
 
     void overrideCVRefQualifiers() {
@@ -8323,6 +8394,187 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    #define checkUselessOverride(code) checkUselessOverride_(code, __FILE__, __LINE__)
+    void checkUselessOverride_(const char code[], const char* file, int line) {
+        // Clear the error log
+        errout.str("");
+
+        const Settings settings = settingsBuilder().severity(Severity::style).build();
+
+        // Raw tokens..
+        std::vector<std::string> files(1, "test.cpp");
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        // Tokenize..
+        Tokenizer tokenizer(&settings, this);
+        tokenizer.createTokens(std::move(tokens2));
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
+
+        // Check..
+        CheckClass checkClass(&tokenizer, &settings, this);
+        (checkClass.checkUselessOverride)();
+    }
+
+    void uselessOverride() {
+        checkUselessOverride("struct B { virtual int f() { return 5; } };\n" // #11757
+                             "struct D : B {\n"
+                             "    int f() override { return B::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
+
+        checkUselessOverride("struct B { virtual void f(); };\n"
+                             "struct D : B {\n"
+                             "    void f() override { B::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
+
+        checkUselessOverride("struct B { virtual int f() = 0; };\n"
+                             "int B::f() { return 5; }\n"
+                             "struct D : B {\n"
+                             "    int f() override { return B::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual int f(int i); };\n"
+                             "struct D : B {\n"
+                             "    int f(int i) override { return B::f(i); }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:3]: (style) The function 'f' overrides a function in a base class but just delegates back to the base class.\n", errout.str());
+
+        checkUselessOverride("struct B { virtual int f(int i); };\n"
+                             "struct D : B {\n"
+                             "    int f(int i) override { return B::f(i + 1); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual int f(int i, int j); };\n"
+                             "struct D : B {\n"
+                             "    int f(int i, int j) override { return B::f(j, i); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual int f(); };\n"
+                             "struct I { virtual int f() = 0; };\n"
+                             "struct D : B, I {\n"
+                             "    int f() override { return B::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct S { virtual void f(); };\n"
+                             "struct D : S {\n"
+                             "    void f() final { S::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct S {\n"
+                             "protected:\n"
+                             "    virtual void f();\n"
+                             "};\n"
+                             "struct D : S {\n"
+                             "public:\n"
+                             "    void f() override { S::f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual void f(int, int, int) const; };\n" // #11799
+                             "struct D : B {\n"
+                             "    int m = 42;\n"
+                             "    void f(int a, int b, int c) const override;\n"
+                             "};\n"
+                             "void D::f(int a, int b, int c) const {\n"
+                             "    B::f(a, b, m);\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B {\n" // #11803
+                             "    virtual void f();\n"
+                             "    virtual void f(int i);\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    void f() override { B::f(); }\n"
+                             "    void f(int i) override;\n"
+                             "    void g() { f(); }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B { virtual void f(); };\n" // #11808
+                             "struct D : B { void f() override {} };\n"
+                             "struct D2 : D {\n"
+                             "    void f() override {\n"
+                             "        B::f();\n"
+                             "    }\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B {\n"
+                             "    virtual int f() { return 1; }\n"
+                             "    virtual int g() { return 7; }\n"
+                             "    virtual int h(int i, int j) { return i + j; }\n"
+                             "    virtual int j(int i, int j) { return i + j; }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    int f() override { return 2; }\n"
+                             "    int g() override { return 7; }\n"
+                             "    int h(int j, int i) override { return i + j; }\n"
+                             "    int j(int i, int j) override { return i + j; }\n"
+                             "};");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:9]: (style) The function 'g' overrides a function in a base class but is identical to the overridden function\n"
+                      "[test.cpp:5] -> [test.cpp:11]: (style) The function 'j' overrides a function in a base class but is identical to the overridden function\n",
+                      errout.str());
+
+        checkUselessOverride("struct B : std::exception {\n"
+                             "    virtual void f() { throw *this; }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    void f() override { throw *this; }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("#define MACRO virtual void f() {}\n"
+                             "struct B {\n"
+                             "    MACRO\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    MACRO\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B {\n"
+                             "    B() = default;\n"
+                             "    explicit B(int i) : m(i) {}\n"
+                             "    int m{};\n"
+                             "    virtual int f() const { return m; }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    explicit D(int i) : m(i) {}\n"
+                             "    int m{};\n"
+                             "    int f() const override { return m; }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("struct B {\n"
+                             "    int g() const;\n"
+                             "    virtual int f() const { return g(); }\n"
+                             "};\n"
+                             "struct D : B {\n"
+                             "    int g() const;\n"
+                             "    int f() const override { return g(); }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUselessOverride("#define MACRO 1\n"
+                             "struct B { virtual int f() { return 1; } };\n"
+                             "struct D : B {\n"
+                             "    int f() override { return MACRO; }\n"
+                             "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
 
 #define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
     void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {

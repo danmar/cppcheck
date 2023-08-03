@@ -138,6 +138,7 @@ if __name__ == "__main__":
                 print("No package downloaded")
                 continue
         else:
+            print('Package: ' + package)
             tgz = package
 
         source_path, source_found = lib.unpack_package(work_path, tgz, c_only=args.c_only, cpp_only=args.cpp_only)

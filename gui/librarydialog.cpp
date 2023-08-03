@@ -25,8 +25,6 @@
 
 #include "ui_librarydialog.h"
 
-#include <string>
-
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFile>

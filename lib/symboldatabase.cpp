@@ -42,6 +42,7 @@
 #include <initializer_list>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
@@ -1107,7 +1108,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
                 continue;
 
             bool isTemplateArg = false;
-            if (tok->next()->str() != "(") {
+            if (!Token::Match(tok->next(), "(|{")) {
                 const Token *start = tok;
                 while (Token::Match(start->tokAt(-2), "%name% ::"))
                     start = start->tokAt(-2);
@@ -2431,7 +2432,7 @@ Function::Function(const Tokenizer *mTokenizer,
     const Token *tok1 = setFlags(tok, scope);
 
     // find the return type
-    if (!isConstructor() && !isDestructor() && !isLambda()) {
+    if (!isConstructor() && !isDestructor()) {
         // @todo auto type deduction should be checked
         // @todo attributes and exception specification can also precede trailing return type
         if (Token::Match(argDef->link()->next(), "const|volatile| &|&&| .")) { // Trailing return type
@@ -2442,7 +2443,7 @@ Function::Function(const Tokenizer *mTokenizer,
                 retDef = argDef->link()->tokAt(3);
             else if (argDef->link()->strAt(3) == ".")
                 retDef = argDef->link()->tokAt(4);
-        } else {
+        } else if (!isLambda()) {
             if (tok1->str() == ">")
                 tok1 = tok1->next();
             while (Token::Match(tok1, "extern|virtual|static|friend|struct|union|enum"))
@@ -3459,16 +3460,28 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
     return tok2;
 }
 
-const std::string& Type::name() const
+std::string Type::name() const
 {
-    const Token* next = classDef->next();
+    const Token* start = classDef->next();
     if (classScope && classScope->enumClass && isEnumType())
-        return next->strAt(1);
-    if (next->str() == "class")
-        return next->strAt(1);
-    if (next->isName())
-        return next->str();
-    return emptyString;
+        start = start->tokAt(1);
+    else if (start->str() == "class")
+        start = start->tokAt(1);
+    else if (!start->isName())
+        return emptyString;
+    const Token* next = start;
+    while (Token::Match(next, "::|<|>|(|)|[|]|*|&|&&|%name%")) {
+        if (Token::Match(next, "<|(|[") && next->link())
+            next = next->link();
+        next = next->next();
+    }
+    std::string result;
+    for (const Token* tok = start; tok != next; tok = tok->next()) {
+        if (!result.empty())
+            result += ' ';
+        result += tok->str();
+    }
+    return result;
 }
 
 void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, const std::string &msg) const
@@ -4357,16 +4370,15 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         auto range = parent->functionMap.equal_range(tokenDef->str());
         for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
             const Function * func = it->second;
-            if (func->hasVirtualSpecifier()) { // Base is virtual and of same name
+            if (func->isImplicitlyVirtual()) { // Base is virtual and of same name
                 const Token *temp1 = func->tokenDef->previous();
                 const Token *temp2 = tokenDef->previous();
                 bool match = true;
 
                 // check for matching return parameters
-                while (temp1->str() != "virtual") {
+                while (!Token::Match(temp1, "virtual|public:|private:|protected:|{|}|;")) {
                     if (temp1->str() != temp2->str() &&
-                        !(temp1->str() == derivedFromType->name() &&
-                          temp2->str() == baseType->name())) {
+                        !(temp1->type() && temp2->type() && temp2->type()->isDerivedFrom(temp1->type()->name()))) {
                         match = false;
                         break;
                     }
@@ -6848,6 +6860,23 @@ static const Function *getOperatorFunction(const Token * const tok)
     return nullptr;
 }
 
+static const Function* getFunction(const Token* tok) {
+    if (!tok)
+        return nullptr;
+    if (tok->function() && tok->function()->retDef)
+        return tok->function();
+    if (const Variable* lvar = tok->variable()) { // lambda
+        const Function* lambda{};
+        if (Token::Match(lvar->nameToken()->next(), "; %varid% = [", lvar->declarationId()))
+            lambda = lvar->nameToken()->tokAt(4)->function();
+        else if (Token::simpleMatch(lvar->nameToken()->next(), "{ ["))
+            lambda = lvar->nameToken()->tokAt(2)->function();
+        if (lambda && lambda->retDef)
+            return lambda;
+    }
+    return nullptr;
+}
+
 void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *tokens)
 {
     if (!tokens)
@@ -6965,10 +6994,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
             }
 
-            // function
-            else if (tok->previous() && tok->previous()->function() && tok->previous()->function()->retDef) {
+            // function or lambda
+            else if (const Function* f = getFunction(tok->previous())) {
                 ValueType valuetype;
-                if (parsedecl(tok->previous()->function()->retDef, &valuetype, mDefaultSignedness, mSettings, mIsCpp))
+                if (parsedecl(f->retDef, &valuetype, mDefaultSignedness, mSettings, mIsCpp))
                     setValueType(tok, valuetype);
             }
 

@@ -27,6 +27,7 @@
 #include "utils.h"
 #include "vfvalue.h"
 
+#include <cassert>
 #include <cstdint>
 #include <cstddef>
 #include <functional>
@@ -637,6 +638,13 @@ public:
     }
     void isInline(bool b) {
         setFlag(fIsInline, b);
+    }
+
+    bool isAtomic() const {
+        return getFlag(fIsAtomic);
+    }
+    void isAtomic(bool b) {
+        setFlag(fIsAtomic, b);
     }
 
     bool isRestrict() const {
@@ -1315,8 +1323,9 @@ private:
         fIsRemovedVoidParameter = (1ULL << 36), // A void function parameter has been removed
         fIsIncompleteConstant   = (1ULL << 37),
         fIsRestrict             = (1ULL << 38), // Is this a restrict pointer type
-        fIsSimplifiedTypedef    = (1ULL << 39),
-        fIsFinalType            = (1ULL << 40), // Is this a type with final specifier
+        fIsAtomic               = (1ULL << 39), // Is this a _Atomic declaration
+        fIsSimplifiedTypedef    = (1ULL << 40),
+        fIsFinalType            = (1ULL << 41), // Is this a type with final specifier
     };
 
     enum : uint64_t {

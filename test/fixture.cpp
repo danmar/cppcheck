@@ -20,13 +20,13 @@
 
 #include "errortypes.h"
 #include "options.h"
-#include "path.h"
 #include "redirect.h"
 
 #include <cstdio>
 #include <cctype>
 #include <exception>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 

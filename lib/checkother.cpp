@@ -991,7 +991,7 @@ void CheckOther::checkVariableScope()
     }
 }
 
-bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used)
+bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& used) const
 {
     const Scope* scope = tok->next()->scope();
     bool loopVariable = scope->isLoopScope();
@@ -1070,6 +1070,18 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
 
                 if (scope->bodyStart && scope->bodyStart->isSimplifiedScope())
                     return false; // simplified if/for/switch init statement
+            }
+            if (var->isArrayOrPointer()) {
+                int argn{};
+                if (const Token* ftok = getTokenArgumentFunction(tok, argn)) { // var passed to function?
+                    if (ftok->next()->astParent()) { // return value used?
+                        if (ftok->function() && Function::returnsPointer(ftok->function()))
+                            return false;
+                        const std::string ret = mSettings->library.returnValueType(ftok); // assume that var is returned
+                        if (!ret.empty() && ret.back() == '*')
+                            return false;
+                    }
+                }
             }
         }
     }

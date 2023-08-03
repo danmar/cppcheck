@@ -249,6 +249,7 @@ private:
         TEST_CASE(functionArgs20);
 
         TEST_CASE(functionImplicitlyVirtual);
+        TEST_CASE(functionGetOverridden);
 
         TEST_CASE(functionIsInlineKeyword);
 
@@ -472,6 +473,7 @@ private:
         TEST_CASE(lambda2); // #7473
         TEST_CASE(lambda3);
         TEST_CASE(lambda4);
+        TEST_CASE(lambda5);
 
         TEST_CASE(circularDependencies); // #6298
 
@@ -2727,6 +2729,24 @@ private:
         ASSERT_EQUALS(4, db->scopeList.size());
         const Function *function = db->scopeList.back().function;
         ASSERT_EQUALS(true, function && function->isImplicitlyVirtual(false));
+    }
+
+    void functionGetOverridden() {
+        GET_SYMBOL_DB("struct B { virtual void f(); };\n"
+                      "struct D : B {\n"
+                      "public:\n"
+                      "    void f() override;\n"
+                      "};\n"
+                      "struct D2 : D { void f() override {} };\n");
+        ASSERT(db != nullptr);
+        ASSERT_EQUALS(5, db->scopeList.size());
+        const Function *func = db->scopeList.back().function;
+        ASSERT(func && func->nestedIn);
+        ASSERT_EQUALS("D2", func->nestedIn->className);
+        bool foundAllBaseClasses{};
+        const Function* baseFunc = func->getOverriddenFunction(&foundAllBaseClasses);
+        ASSERT(baseFunc && baseFunc->nestedIn && foundAllBaseClasses);
+        ASSERT_EQUALS("D", baseFunc->nestedIn->className);
     }
 
     void functionIsInlineKeyword() {
@@ -7773,6 +7793,26 @@ private:
         ASSERT(s.type());
         --scope;
         ASSERT_EQUALS(s.type()->classScope, &*scope);
+    }
+
+    void lambda5() { // #11275
+        GET_SYMBOL_DB("int* f() {\n"
+                      "    auto g = []<typename T>() {\n"
+                      "        return true;\n"
+                      "    };\n"
+                      "    return nullptr;\n"
+                      "}\n");
+
+        ASSERT(db && db->scopeList.size() == 3);
+        std::list<Scope>::const_iterator scope = db->scopeList.cbegin();
+        ASSERT_EQUALS(Scope::eGlobal, scope->type);
+        ++scope;
+        ASSERT_EQUALS(Scope::eFunction, scope->type);
+        ++scope;
+        ASSERT_EQUALS(Scope::eLambda, scope->type);
+        const Token* ret = Token::findsimplematch(tokenizer.tokens(), "return true");
+        ASSERT(ret && ret->scope());
+        ASSERT_EQUALS(ret->scope()->type, Scope::eLambda);
     }
 
     // #6298 "stack overflow in Scope::findFunctionInBase (endless recursion)"

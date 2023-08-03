@@ -44,17 +44,12 @@
 #include <list>
 #include <set>
 #include <sstream> // IWYU pragma: keep
-#include <stdexcept>
 #include <unordered_set>
 #include <utility>
 
 #ifdef HAVE_RULES
 // xml is used for rules
 #include <tinyxml2.h>
-#endif
-
-#ifdef __linux__
-#include <unistd.h>
 #endif
 
 static bool addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
@@ -259,7 +254,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
-                if (!parseNumberArg(argv[i], 18, mSettings.checksMaxTime))
+                if (!parseNumberArg(argv[i], 18, mSettings.checksMaxTime, true))
                     return false;
             }
 
@@ -1027,7 +1022,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     else if ((def || mSettings.preprocessOnly) && !maxconfigs)
         mSettings.maxConfigs = 1U;
 
-    if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1) {
+    if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1 && mSettings.buildDir.empty()) {
         printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 

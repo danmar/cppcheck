@@ -53,6 +53,11 @@ public:
         if (this == mActiveProject) mActiveProject = nullptr;
     }
 
+    enum class CheckLevel {
+        normal,
+        exhaustive
+    };
+
     static ProjectFile* getActiveProject() {
         return mActiveProject;
     }
@@ -329,6 +334,10 @@ public:
      */
     void setVSConfigurations(const QStringList &vsConfigs);
 
+    /** CheckLevel: normal/exhaustive */
+    void setCheckLevel(CheckLevel checkLevel);
+    bool isCheckLevelExhaustive() const;
+
     /**
      * @brief Set tags.
      * @param tags tag list
@@ -587,7 +596,10 @@ private:
      */
     QStringList mAddons;
 
-    bool mBughunting;
+    bool mBughunting = false;
+
+    /** @brief Should Cppcheck run normal or exhaustive analysis? */
+    CheckLevel mCheckLevel = CheckLevel::normal;
 
     /**
      * @brief List of coding standards, checked by Cppcheck Premium.
@@ -597,6 +609,7 @@ private:
     /** @brief Project name, used when generating compliance report */
     QString mProjectName;
 
+    /** @brief Cppcheck Premium: This value is passed to the Cert C checker if that is enabled */
     int mCertIntPrecision;
 
     /** @brief Execute clang analyzer? */

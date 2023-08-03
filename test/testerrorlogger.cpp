@@ -23,7 +23,6 @@
 #include "suppressions.h"
 #include "fixture.h"
 
-#include <iosfwd>
 #include <list>
 #include <string>
 

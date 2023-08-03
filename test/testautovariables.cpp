@@ -23,9 +23,7 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
-#include <string>
 
 class TestAutoVariables : public TestFixture {
 public:
@@ -845,6 +843,12 @@ private:
               "    e->i = new int[42];\n"
               "    delete[] e->i;\n"
               "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    S* p = &g();\n"
+              "    delete p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

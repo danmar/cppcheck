@@ -123,7 +123,7 @@ public:
 
     /** @brief %Check scope of variables */
     void checkVariableScope();
-    static bool checkInnerScope(const Token *tok, const Variable* var, bool& used);
+    bool checkInnerScope(const Token *tok, const Variable* var, bool& used) const;
 
     /** @brief %Check for comma separated statements in return */
     void checkCommaSeparatedReturn();

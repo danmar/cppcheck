@@ -732,11 +732,6 @@ static void compileTerm(Token *&tok, AST_state& state)
                     tok = tok->next();
                 else
                     throw InternalError(tok, "Syntax error. Unexpected tokens in designated initializer.", InternalError::AST);
-            } else if (Token::simpleMatch(tok, "{ }")) {
-                tok->astOperand1(state.op.top());
-                state.op.pop();
-                state.op.push(tok);
-                tok = tok->tokAt(2);
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             std::vector<Token*> inner;
@@ -911,7 +906,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             }
             compileBinOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
-            if (state.cpp && isPrefixUnary(tok, state.cpp) && Token::Match(tok->link(), "] (|{")) { // Lambda
+            if (state.cpp && isPrefixUnary(tok, state.cpp) && Token::Match(tok->link(), "] (|{|<")) { // Lambda
                 // What we do here:
                 // - Nest the round bracket under the square bracket.
                 // - Nest what follows the lambda (if anything) with the lambda opening [
@@ -928,8 +923,10 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
                     }
                 }
 
-                if (Token::simpleMatch(squareBracket->link(), "] (")) {
-                    Token* const roundBracket = squareBracket->link()->next();
+                const bool hasTemplateArg = Token::simpleMatch(squareBracket->link(), "] <") &&
+                                            Token::simpleMatch(squareBracket->link()->next()->link(), "> (");
+                if (Token::simpleMatch(squareBracket->link(), "] (") || hasTemplateArg) {
+                    Token* const roundBracket = hasTemplateArg ? squareBracket->link()->next()->link()->next() : squareBracket->link()->next();
                     Token* curlyBracket = roundBracket->link()->next();
                     while (Token::Match(curlyBracket, "mutable|const|constexpr|consteval"))
                         curlyBracket = curlyBracket->next();

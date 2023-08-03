@@ -30,7 +30,6 @@
 #include <array>
 #include <cassert>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <sstream> // IWYU pragma: keep
@@ -379,8 +378,17 @@ void ErrorMessage::deserialize(const std::string &data)
     }
 }
 
-std::string ErrorMessage::getXMLHeader(const std::string& productName)
+std::string ErrorMessage::getXMLHeader(std::string productName)
 {
+    std::string version = CppCheck::version();
+    if (!productName.empty() && std::isdigit(productName.back())) {
+        const std::string::size_type pos = productName.find_last_not_of(".0123456789");
+        if (pos > 1 && pos != std::string::npos && productName[pos] == ' ') {
+            version = productName.substr(pos+1);
+            productName.erase(pos);
+        }
+    }
+
     tinyxml2::XMLPrinter printer;
 
     // standard xml header
@@ -393,7 +401,7 @@ std::string ErrorMessage::getXMLHeader(const std::string& productName)
     printer.OpenElement("cppcheck", false);
     if (!productName.empty())
         printer.PushAttribute("product-name", productName.c_str());
-    printer.PushAttribute("version", CppCheck::version());
+    printer.PushAttribute("version", version.c_str());
     printer.CloseElement(false);
     printer.OpenElement("errors", false);
 

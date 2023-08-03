@@ -330,6 +330,13 @@ double nullPointer_erand48(unsigned short xsubi[3])
     return erand48(xsubi);
 }
 
+struct non_const_parameter_erand48_struct { unsigned short xsubi[3]; };
+// No warning is expected that dat can be const
+double non_const_parameter_erand48(struct non_const_parameter_erand48_struct *dat)
+{
+    return erand48(dat->xsubi);
+}
+
 unsigned short *nullPointer_seed48(unsigned short seed16v[3])
 {
     // cppcheck-suppress nullPointer

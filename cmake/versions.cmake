@@ -1,4 +1,5 @@
 # Version for libraries CPP
+# Version string must have 3 "parts". https://sourceforge.net/p/cppcheck/discussion/development/thread/e57efb2b62/
 SET(VERSION "2.11.99")
 STRING(REGEX MATCHALL "[0-9]+" VERSION_PARTS "${VERSION}")
 LIST(GET VERSION_PARTS 0 VERSION_MAJOR)

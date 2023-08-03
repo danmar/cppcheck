@@ -28,7 +28,6 @@
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
-#include <cstdlib>
 #include <cstring>
 #include <functional> // std::bind, std::placeholders
 #include <sstream> // IWYU pragma: keep
