@@ -1188,6 +1188,7 @@ void CmdLineParser::printHelp()
         "                         from the check. This applies only to source files so\n"
         "                         header files included by source files are not matched.\n"
         "                         Directory name is matched to all parts of the path.\n"
+        "                         This applies only to [files or paths], not to files included by --project."
         "    --inconclusive       Allow that Cppcheck reports even though the analysis is\n"
         "                         inconclusive.\n"
         "                         There are false positives with this option. Each result\n"
