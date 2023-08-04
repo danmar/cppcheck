@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
+#include <sys/stat.h>
 #include <utility>
 
 #include <simplecpp.h>
@@ -264,6 +265,13 @@ bool Path::fileExists(const std::string &file)
 {
     std::ifstream f(file.c_str());
     return f.is_open();
+}
+
+
+bool Path::directoryExists(const std::string &path)
+{
+    struct stat info;
+    return stat(path.c_str(), &info) == 0 && (info.st_mode & S_IFDIR);
 }
 
 std::string Path::join(std::string path1, std::string path2) {

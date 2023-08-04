@@ -285,10 +285,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
-                // TODO: bail out when the folder does not exist? will silently do nothing
                 mSettings.buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(mSettings.buildDir, '/'))
                     mSettings.buildDir.pop_back();
+
+                if (!Path::directoryExists(mSettings.buildDir)) {
+                    printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
+                    return false;
+                }
             }
 
             // Show --debug output after the first simplifications

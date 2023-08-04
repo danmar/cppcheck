@@ -188,6 +188,13 @@ public:
     static bool fileExists(const std::string &file);
 
     /**
+     * @brief Checks if a directory exists
+     * @param path Path to be checked
+     * @return true if given path is a directory
+     */
+    static bool directoryExists(const std::string &path);
+
+    /**
      * join 2 paths with '/' separators
      */
     static std::string join(std::string path1, std::string path2);
