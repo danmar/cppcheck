@@ -10,6 +10,7 @@ import re
 import signal
 import tarfile
 import shlex
+import copy
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
@@ -746,7 +747,8 @@ class LibraryIncludes:
         print('Detecting library usage...')
         libraries = ['posix', 'gnu']
 
-        library_includes_re = self.__library_includes_re
+        # explicitly copy as assignments in python are references
+        library_includes_re = copy.copy(self.__library_includes_re)
 
         def has_include(filedata):
             lib_del = []
