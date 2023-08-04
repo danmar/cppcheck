@@ -10,12 +10,13 @@ import re
 import signal
 import tarfile
 import shlex
+import copy
 
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.46"
+CLIENT_VERSION = "1.3.47"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -746,7 +747,8 @@ class LibraryIncludes:
         print('Detecting library usage...')
         libraries = ['posix', 'gnu']
 
-        library_includes_re = self.__library_includes_re
+        # explicitly copy as assignments in python are references
+        library_includes_re = copy.copy(self.__library_includes_re)
 
         def has_include(filedata):
             lib_del = []
