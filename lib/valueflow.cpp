@@ -7157,10 +7157,9 @@ static void valueFlowForLoop(TokenList &tokenlist, const SymbolDatabase& symbold
 struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, ValueFlow::Value> values;
     std::unordered_map<nonneg int, const Variable*> vars;
-    SymbolDatabase& symboldatabase;
 
-    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList& t, const Settings* set, SymbolDatabase& s)
-        : ValueFlowAnalyzer(t, set), values(), vars(), symboldatabase(s) {
+    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList& t, const Settings* set)
+        : ValueFlowAnalyzer(t, set), values(), vars() {
         for (const auto& p:args) {
             values[p.first->declarationId()] = p.second;
             vars[p.first->declarationId()] = p.first;
@@ -7356,14 +7355,13 @@ bool productParams(const Settings* settings, const std::unordered_map<Key, std::
 }
 
 static void valueFlowInjectParameter(TokenList& tokenlist,
-                                     SymbolDatabase& symboldatabase,
                                      ErrorLogger* errorLogger,
                                      const Settings& settings,
                                      const Scope* functionScope,
                                      const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
 {
     const bool r = productParams(&settings, vars, [&](const std::unordered_map<const Variable*, ValueFlow::Value>& arg) {
-        MultiValueFlowAnalyzer a(arg, tokenlist, &settings, symboldatabase);
+        MultiValueFlowAnalyzer a(arg, tokenlist, &settings);
         valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, settings);
     });
     if (!r) {
@@ -7611,7 +7609,7 @@ static void valueFlowSubFunction(TokenList& tokenlist, SymbolDatabase& symboldat
 
                 argvars[argvar] = argvalues;
             }
-            valueFlowInjectParameter(tokenlist, symboldatabase, errorLogger, settings, calledFunctionScope, argvars);
+            valueFlowInjectParameter(tokenlist, errorLogger, settings, calledFunctionScope, argvars);
         }
     }
 }
