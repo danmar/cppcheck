@@ -1770,6 +1770,6 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
     // Evaluate expression
     tokenList->createAst();
     Token* expr = tokenList->front()->astOperand1();
-    ValueFlow::valueFlowConstantFoldAST(expr, settings);
+    ValueFlow::valueFlowConstantFoldAST(expr, *settings);
     return {tokenList, expr};
 }

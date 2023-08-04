@@ -58,7 +58,7 @@ private:
             return;
         }
 
-        CheckStl checkStl(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckStl checkStl(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkStl.erase();
         checkStl.if_find();
         checkStl.checkFindInsert();

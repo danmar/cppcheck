@@ -166,7 +166,7 @@ private:
 public:
 
 
-    static void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings);
+    static void getErrorMessages(ErrorLogger *errorLogger, const Settings &settings);
 
     /**
      * dump all directives present in source file

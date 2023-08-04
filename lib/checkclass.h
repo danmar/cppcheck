@@ -70,7 +70,7 @@ private:
         if (tokenizer.isC())
             return;
 
-        CheckClass checkClass(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckClass checkClass(&tokenizer, &tokenizer.getSettings(), errorLogger);
 
         // can't be a simplified check .. the 'sizeof' is used.
         checkClass.checkMemset();

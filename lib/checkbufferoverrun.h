@@ -67,7 +67,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckBufferOverrun checkBufferOverrun(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckBufferOverrun checkBufferOverrun(&tokenizer, &tokenizer.getSettings(), errorLogger);
         checkBufferOverrun.arrayIndex();
         checkBufferOverrun.pointerArithmetic();
         checkBufferOverrun.bufferOverflow();

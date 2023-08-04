@@ -50,7 +50,7 @@ private:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckString checkString(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckString checkString(&tokenizer, &tokenizer.getSettings(), errorLogger);
 
         // Checks
         checkString.strPlusChar();

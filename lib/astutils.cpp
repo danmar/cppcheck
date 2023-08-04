@@ -303,6 +303,9 @@ Library::Container::Yield astFunctionYield(const Token* tok, const Settings* set
     if (!tok)
         return Library::Container::Yield::NO_YIELD;
 
+    if (!settings)
+        return Library::Container::Yield::NO_YIELD;
+
     const auto* function = settings->library.getFunction(tok);
     if (!function)
         return Library::Container::Yield::NO_YIELD;

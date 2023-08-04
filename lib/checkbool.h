@@ -50,7 +50,7 @@ private:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckBool checkBool(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckBool checkBool(&tokenizer, &tokenizer.getSettings(), errorLogger);
 
         // Checks
         checkBool.checkComparisonOfBoolExpressionWithInt();

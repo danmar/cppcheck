@@ -48,7 +48,7 @@ private:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckVaarg check(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckVaarg check(&tokenizer, &tokenizer.getSettings(), errorLogger);
         check.va_start_argument();
         check.va_list_usage();
     }

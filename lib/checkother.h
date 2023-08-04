@@ -69,7 +69,7 @@ private:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckOther checkOther(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckOther checkOther(&tokenizer, &tokenizer.getSettings(), errorLogger);
 
         // Checks
         checkOther.warningOldStylePointerCast();

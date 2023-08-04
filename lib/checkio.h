@@ -53,7 +53,7 @@ private:
 
     /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckIO checkIO(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckIO checkIO(&tokenizer, &tokenizer.getSettings(), errorLogger);
 
         checkIO.checkWrongPrintfScanfArguments();
         checkIO.checkCoutCerrMisusage();

@@ -501,7 +501,7 @@ unsigned int CppCheck::checkClang(const std::string &path)
         ValueFlow::setValues(tokenizer.list,
                              const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
                              this,
-                             &mSettings,
+                             mSettings,
                              &s_timerResults);
         if (mSettings.debugnormal)
             tokenizer.printDebugOutput(1);
@@ -1677,7 +1677,7 @@ void CppCheck::getErrorMessages(ErrorLogger &errorlogger)
     for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it)
         (*it)->getErrorMessages(&errorlogger, &s);
 
-    Preprocessor::getErrorMessages(&errorlogger, &s);
+    Preprocessor::getErrorMessages(&errorlogger, s);
 }
 
 void CppCheck::analyseClangTidy(const FileSettings &fileSettings)

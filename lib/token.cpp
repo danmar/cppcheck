@@ -846,7 +846,7 @@ nonneg int Token::getStrArraySize(const Token *tok)
     return sizeofstring;
 }
 
-nonneg int Token::getStrSize(const Token *tok, const Settings *settings)
+nonneg int Token::getStrSize(const Token *tok, const Settings &settings)
 {
     assert(tok != nullptr && tok->tokType() == eString);
     nonneg int sizeofType = 1;
@@ -2006,7 +2006,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     return ret;
 }
 
-const Token *Token::getValueTokenMinStrSize(const Settings *settings, MathLib::bigint* path) const
+const Token *Token::getValueTokenMinStrSize(const Settings &settings, MathLib::bigint* path) const
 {
     if (!mImpl->mValues)
         return nullptr;

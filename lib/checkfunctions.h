@@ -60,7 +60,7 @@ private:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckFunctions checkFunctions(&tokenizer, tokenizer.getSettings(), errorLogger);
+        CheckFunctions checkFunctions(&tokenizer, &tokenizer.getSettings(), errorLogger);
 
         checkFunctions.checkIgnoredReturnValue();
         checkFunctions.checkMissingReturn();  // Missing "return" in exit path

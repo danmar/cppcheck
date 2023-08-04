@@ -54,7 +54,7 @@ private:
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        Check64BitPortability check64BitPortability(&tokenizer, tokenizer.getSettings(), errorLogger);
+        Check64BitPortability check64BitPortability(&tokenizer, &tokenizer.getSettings(), errorLogger);
         check64BitPortability.pointerassignment();
     }
 

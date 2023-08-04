@@ -37,7 +37,7 @@
 std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg)
 {
     const SymbolDatabase *symbolDatabase = tokenizer->getSymbolDatabase();
-    const Settings *settings = tokenizer->getSettings();
+    const Settings &settings = tokenizer->getSettings();
 
     std::ostringstream ostr;
     for (const Scope *scope : symbolDatabase->functionScopes) {
@@ -81,8 +81,8 @@ std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg
         ostr << std::endl;
     }
 
-    if (!settings->buildDir.empty()) {
-        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings->buildDir, tokenizer->list.getSourceFilePath(), cfg);
+    if (!settings.buildDir.empty()) {
+        std::string filename = AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, tokenizer->list.getSourceFilePath(), cfg);
         const std::string::size_type pos = filename.rfind(".a");
         if (pos != std::string::npos) {
             filename[pos+1] = 's';

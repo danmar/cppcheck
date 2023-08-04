@@ -607,7 +607,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     if (escape) {
                         if (getPointerDepth(tok) < getPointerDepth(tokvalue))
                             continue;
-                        if (!ValueFlow::isLifetimeBorrowed(tok, mSettings))
+                        if (!ValueFlow::isLifetimeBorrowed(tok, *mSettings))
                             continue;
                         if (tokvalue->exprId() == tok->exprId() && !(tok->variable() && tok->variable()->isArray()) &&
                             !astIsContainerView(tok->astParent()))
@@ -640,7 +640,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                     } else if (tok->variable() && tok->variable()->declarationId() == tok->varId()) {
                         var = tok->variable();
                     }
-                    if (!ValueFlow::isLifetimeBorrowed(tok, mSettings))
+                    if (!ValueFlow::isLifetimeBorrowed(tok, *mSettings))
                         continue;
                     const Token* nextTok = nextAfterAstRightmostLeaf(tok->astTop());
                     if (!nextTok)

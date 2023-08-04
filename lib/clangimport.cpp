@@ -1525,7 +1525,7 @@ static void setTypes(TokenList &tokenList)
 
 static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDatabase)
 {
-    const Settings * const settings = tokenizer.getSettings();
+    const Settings & settings = tokenizer.getSettings();
 
     for (const Scope& scope : symbolDatabase->scopeList) {
         if (!scope.definedType)
@@ -1537,15 +1537,15 @@ static void setValues(const Tokenizer &tokenizer, const SymbolDatabase *symbolDa
                 return v * dim.num;
             });
             if (var.valueType())
-                typeSize += mul * var.valueType()->typeSize(settings->platform, true);
+                typeSize += mul * var.valueType()->typeSize(settings.platform, true);
         }
         scope.definedType->sizeOf = typeSize;
     }
 
     for (auto *tok = const_cast<Token*>(tokenizer.tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            ValueType vt = ValueType::parseDecl(tok->tokAt(2), *settings);
-            const int sz = vt.typeSize(settings->platform, true);
+            ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings);
+            const int sz = vt.typeSize(settings.platform, true);
             if (sz <= 0)
                 continue;
             long long mul = 1;
@@ -1574,7 +1574,7 @@ void clangimport::parseClangAstDump(Tokenizer &tokenizer, std::istream &f)
     symbolDatabase->scopeList.back().check = symbolDatabase;
 
     clangimport::Data data;
-    data.mSettings = tokenizer.getSettings();
+    data.mSettings = &tokenizer.getSettings();
     data.mSymbolDatabase = symbolDatabase;
     std::string line;
     std::vector<AstNodePtr> tree;

@@ -1604,7 +1604,7 @@ namespace {
                     if (child->exprId() > 0 && pm->hasValue(child->exprId())) {
                         ValueFlow::Value& v = pm->at(child->exprId());
                         if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
-                            if (ValueFlow::isContainerSizeChanged(child, v.indirect, settings))
+                            if (ValueFlow::isContainerSizeChanged(child, v.indirect, *settings))
                                 v = unknown();
                         } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
                             if (isVariableChanged(child, v.indirect, settings, true))
