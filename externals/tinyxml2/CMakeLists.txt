@@ -18,6 +18,5 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options_safe(tinyxml2_objs -Wno-zero-as-null-pointer-constant)
     target_compile_options_safe(tinyxml2_objs -Wno-format-nonliteral)
     target_compile_options_safe(tinyxml2_objs -Wno-old-style-cast)
-    target_compile_options_safe(tinyxml2_objs -Wno-double-promotion)
 endif()
 

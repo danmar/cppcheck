@@ -84,6 +84,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-shorten-64-to-32)
    add_compile_options_safe(-Wno-zero-as-null-pointer-constant) # TODO: enable when warnings are fixed in in simplecpp and tinyxml2
    add_compile_options_safe(-Wno-implicit-int-conversion)
+   add_compile_options_safe(-Wno-double-promotion)
    add_compile_options_safe(-Wno-shadow-field)
    add_compile_options_safe(-Wno-shadow-uncaptured-local)
    add_compile_options_safe(-Wno-implicit-float-conversion)
