@@ -92,4 +92,31 @@ public:
     static std::string getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression = nullptr);
 };
 
+/* designated initialization helper
+    Usage:
+    struct S
+    {
+        int i;
+    };
+
+    const auto s = dinit(S,
+        $.i = 1
+    );
+ */
+#define dinit(T, ...) \
+    ([&] { T ${}; __VA_ARGS__; return $; }())
+
+#if (defined(__GNUC__) && (__GNUC__ >= 5)) || defined(__clang__)
+// work around Clang compilation error
+// error: default member initializer for 'y' needed within definition of enclosing class 'X' outside of member functions
+// work around GCC compilation error
+// error: default member initializer for ‘x::y::z’ required before the end of its enclosing class
+// see https://stackoverflow.com/questions/53408962
+#define DINIT_NOEXCEPT noexcept
+#else
+// work around GCC 4.8 compilation error
+// error: function 'x()' defaulted on its first declaration with an exception-specification that differs from the implicit declaration 'x()'
+#define DINIT_NOEXCEPT
+#endif
+
 #endif // helpersH

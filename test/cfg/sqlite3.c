@@ -46,7 +46,7 @@ void resourceLeak_sqlite3_open()
     // TODO: cppcheck-suppress resourceLeak
 }
 
-void ignoredReturnValue(char * buf)
+void ignoredReturnValue(const char * buf)
 {
     // cppcheck-suppress leakReturnValNotUsed
     sqlite3_malloc(10);
