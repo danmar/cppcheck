@@ -43,7 +43,7 @@ void nullPointer()
 
 void PyMem_Malloc_memleak()
 {
-    char * pBuf1 = PyMem_Malloc(1);
+    const char * pBuf1 = PyMem_Malloc(1);
     printf("%p", pBuf1);
     // cppcheck-suppress memleak
 }
@@ -58,7 +58,7 @@ void PyMem_Malloc_mismatchAllocDealloc()
 
 void PyMem_New_memleak()
 {
-    char * pBuf1 = PyMem_New(char, 5);
+    const char * pBuf1 = PyMem_New(char, 5);
     printf("%p", pBuf1);
     // cppcheck-suppress memleak
 }

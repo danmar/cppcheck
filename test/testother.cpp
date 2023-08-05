@@ -3020,7 +3020,10 @@ private:
               "void ah();\n"
               "void an();\n"
               "void h();");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:131]: (style) Variable 'tm' can be declared as pointer to const\n"
+                      "[test.cpp:136]: (style) Variable 'af' can be declared as pointer to const\n"
+                      "[test.cpp:137]: (style) Variable 'ag' can be declared as pointer to const\n",
+                      errout.str());
 
         check("class C\n"
               "{\n"
@@ -3792,6 +3795,11 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
+
+        check("size_t f(char* p) {\n" // #11842
+              "    return strlen(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {

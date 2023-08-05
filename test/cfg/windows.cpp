@@ -82,7 +82,7 @@ unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned ch
     return _mbscat(src, src);
 }
 
-unsigned char * overlappingWriteFunction__memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
+unsigned char * overlappingWriteFunction__memccpy(const unsigned char *src, unsigned char *dest, int c, size_t count)
 {
     // No warning shall be shown:
     (void)_memccpy(dest, src, c, count);
@@ -117,22 +117,22 @@ SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
     return SystemInfo;
 }
 
-void uninitvar__putenv(char * envstr)
+void uninitvar__putenv(const char * envstr)
 {
     // No warning is expected
     (void)_putenv(envstr);
 
-    char * p;
+    const char * p;
     // cppcheck-suppress uninitvar
     (void)_putenv(p);
 }
 
-void nullPointer__putenv(char * envstr)
+void nullPointer__putenv(const char * envstr)
 {
     // No warning is expected
     (void)_putenv(envstr);
 
-    char * p=NULL;
+    const char * p=NULL;
     // cppcheck-suppress nullPointer
     (void)_putenv(p);
 }
@@ -763,6 +763,7 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     lstrcat(buf, "test");
     buf[0] = '\0';
+    // cppcheck-suppress constVariable
     char buf2[2];
     // cppcheck-suppress lstrcatCalled
     // cppcheck-suppress uninitvar
@@ -992,7 +993,7 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
 unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned char *strSource)
 {
     unsigned char *uninit_deststr;
-    unsigned char *uninit_srcstr1, *uninit_srcstr2;
+    const unsigned char *uninit_srcstr1, *uninit_srcstr2;
     // cppcheck-suppress uninitvar
     (void)_mbscat(uninit_deststr,uninit_srcstr1);
     // cppcheck-suppress uninitvar
@@ -1019,7 +1020,7 @@ error_t uninitvar_mbscat_s(unsigned char *strDestination, size_t numberOfElement
 {
     unsigned char *uninit_strDestination;
     size_t uninit_numberOfElements;
-    unsigned char *uninit_strSource;
+    const unsigned char *uninit_strSource;
 
     // cppcheck-suppress uninitvar
     (void)_mbscat_s(uninit_strDestination, numberOfElements, strSource);
@@ -1077,7 +1078,7 @@ error_t nullPointer__strncpy_s_l(char *strDest, size_t numberOfElements, const c
     return _strncpy_s_l(strDest, numberOfElements, strSource, count, locale);
 }
 
-void GetShortPathName_validCode(TCHAR* lpszPath)
+void GetShortPathName_validCode(const TCHAR* lpszPath)
 {
     long length = GetShortPathName(lpszPath, NULL, 0);
     if (length == 0) {
