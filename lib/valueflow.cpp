@@ -3219,7 +3219,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 
     Action isAliasModified(const Token* tok, int indirect) const override {
-        if (value.isSymbolicValue() && tok->astParent() && tok->astParent()->isIncDecOp() && Token::Match(value.tokvalue->astParent(), "%cop%"))
+        if (value.isSymbolicValue() && tok->exprId() == value.tokvalue->exprId())
             indirect = 0;
         return SingleValueFlowAnalyzer::isAliasModified(tok, indirect);
     }

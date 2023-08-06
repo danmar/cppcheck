@@ -2837,10 +2837,9 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
                     if (vt->type == ValueType::ITERATOR)
                         ++indirect;
                 }
-                if (Token::Match(tok->astParent(), "%cop%") && tok2->astParent() && tok2->astParent()->isIncDecOp())
-                    indirect = 0;
-                if (isExpressionChangedAt(tok, tok2, indirect, global, settings, cpp, depth))
-                    return true;
+                for (int i = 0; i <= indirect; ++i)
+                    if (isExpressionChangedAt(tok, tok2, i, global, settings, cpp, depth))
+                        return true;
             }
         }
         return false;
