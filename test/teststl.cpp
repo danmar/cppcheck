@@ -3033,8 +3033,7 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:4] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:9]: (error, inconclusive) Using iterator to local container 'vec' that may be invalid.\n"
-            "[test.cpp:4] -> [test.cpp:9]: (warning) Either the condition 'it!=vec.end()' is redundant or there is possible dereference of an invalid iterator: it.\n",
+            "[test.cpp:4] -> [test.cpp:6] -> [test.cpp:3] -> [test.cpp:9]: (error, inconclusive) Using iterator to local container 'vec' that may be invalid.\n",
             errout.str());
     }
 
