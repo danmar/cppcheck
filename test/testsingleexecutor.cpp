@@ -61,21 +61,13 @@ private:
         return std::to_string(i);
     }
 
-    struct CheckOptions
-    {
-        CheckOptions() DINIT_NOEXCEPT = default;
-        SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
-        const char* plistOutput = nullptr;
-        std::vector<std::string> filesList;
-    };
-
-    void check(int files, int result, const std::string &data, const CheckOptions &opt = {}) {
+    void check(int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE, const char* const plistOutput = nullptr, const std::vector<std::string>& filesList = {}) {
         errout.str("");
         output.str("");
         settings.project.fileSettings.clear();
 
         std::map<std::string, std::size_t> filemap;
-        if (opt.filesList.empty()) {
+        if (filesList.empty()) {
             for (int i = 1; i <= files; ++i) {
                 const std::string s = fprefix() + "_" + zpad3(i) + ".cpp";
                 filemap[s] = data.size();
@@ -87,7 +79,7 @@ private:
             }
         }
         else {
-            for (const auto& f : opt.filesList)
+            for (const auto& f : filesList)
             {
                 filemap[f] = data.size();
                 if (useFS) {
@@ -98,9 +90,9 @@ private:
             }
         }
 
-        settings.showtime = opt.showtime;
-        if (opt.plistOutput)
-            settings.plistOutput = opt.plistOutput;
+        settings.showtime = showtime;
+        if (plistOutput)
+            settings.plistOutput = plistOutput;
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
         CppCheck cppcheck(*this, true, [](std::string,std::vector<std::string>,std::string,std::string&){
             return false;
@@ -160,7 +152,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions, $.showtime = SHOWTIME_MODES::SHOWTIME_SUMMARY));
+              "}", SHOWTIME_MODES::SHOWTIME_SUMMARY);
     }
 
     void many_files_plist() {
@@ -172,7 +164,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions, $.plistOutput = plistOutput));
+              "}", SHOWTIME_MODES::SHOWTIME_NONE, plistOutput);
     }
 
     void no_errors_more_files() {
@@ -233,7 +225,7 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}",
-              dinit(CheckOptions, $.filesList = files));
+              SHOWTIME_MODES::SHOWTIME_NONE, nullptr, files);
         // TODO: filter out the "files checked" messages
         ASSERT_EQUALS("Checking " + fprefix() + "_2.cpp ...\n"
                       "1/4 files checked 25% done\n"
