@@ -2578,8 +2578,9 @@ struct ValueFlowAnalyzer : Analyzer {
                     ++indirect;
             }
         }
-        if (isVariableChanged(tok, indirect, getSettings(), isCPP()))
-            return Action::Invalid;
+        for (int i = 0; i <= indirect; ++i)
+            if (isVariableChanged(tok, i, getSettings(), isCPP()))
+                return Action::Invalid;
         return Action::None;
     }
 
