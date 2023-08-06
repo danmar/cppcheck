@@ -119,4 +119,14 @@ public:
 #define DINIT_NOEXCEPT
 #endif
 
+// Default construct object to avoid bug in clang
+struct default_
+{
+    template<class T>
+    operator T() const
+    {
+        return T{};
+    }
+};
+
 #endif // helpersH
