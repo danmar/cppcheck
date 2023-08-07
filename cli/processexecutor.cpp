@@ -61,8 +61,8 @@ enum class Color;
 using std::memset;
 
 
-ProcessExecutor::ProcessExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
-    : Executor(files, settings, errorLogger)
+ProcessExecutor::ProcessExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+    : Executor(files, settings, suppressions, errorLogger)
 {
     assert(mSettings.jobs > 1);
 }
@@ -391,7 +391,7 @@ void ProcessExecutor::reportInternalChildErr(const std::string &childname, const
                               "cppcheckError",
                               Certainty::normal);
 
-    if (!mSettings.nomsg.isSuppressed(errmsg))
+    if (!mSuppressions.isSuppressed(errmsg))
         mErrorLogger.reportErr(errmsg);
 }
 
