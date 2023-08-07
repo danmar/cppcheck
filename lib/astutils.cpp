@@ -2348,7 +2348,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         indirect++;
 
     const bool deref = tok->astParent() && tok->astParent()->isUnaryOp("*");
-    if (deref)
+    if (deref && indirect > 0)
         indirect--;
 
     int argnr;
@@ -2580,6 +2580,8 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     }
 
     const Token *parent = tok2->astParent();
+    while (Token::Match(parent, ".|::"))
+        parent = parent->astParent();
     if (parent && parent->tokType() == Token::eIncDecOp && (indirect == 0 || tok2 != tok))
         return true;
 
