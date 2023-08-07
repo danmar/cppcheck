@@ -58,7 +58,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data, CheckOptions opt = default_{}) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, CheckOptions opt = make_default_obj{}) {
         errout.str("");
         output.str("");
 
