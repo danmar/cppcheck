@@ -129,6 +129,7 @@ public:
         } else {
             // Read file from a file
             result = fileChecker.check(*file);
+            // TODO: call analyseClangTidy()?
         }
         return result;
     }

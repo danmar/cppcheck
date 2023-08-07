@@ -61,7 +61,7 @@ unsigned int SingleExecutor::check()
                 processedsize += i->second;
                 if (!mSettings.quiet)
                     reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                // TODO: call analyseClangTidy()
+                // TODO: call analyseClangTidy()?
                 c++;
             }
         }
@@ -92,7 +92,7 @@ unsigned int SingleExecutor::check()
                 processedsize += i->second;
                 if (!mSettings.quiet)
                     reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                // TODO: call analyseClangTidy()
+                // TODO: call analyseClangTidy()?
                 c++;
             }
         }

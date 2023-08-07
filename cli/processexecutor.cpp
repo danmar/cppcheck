@@ -280,9 +280,11 @@ unsigned int ProcessExecutor::check()
 
                 if (iFileSettings != mSettings.project.fileSettings.end()) {
                     resultOfCheck = fileChecker.check(*iFileSettings);
+                    // TODO: call analyseClangTidy()
                 } else {
                     // Read file from a file
                     resultOfCheck = fileChecker.check(iFile->first);
+                    // TODO: call analyseClangTidy()?
                 }
 
                 pipewriter.writeEnd(std::to_string(resultOfCheck));
