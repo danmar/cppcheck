@@ -1149,7 +1149,7 @@ void Tokenizer::simplifyTypedefCpp()
             return;
 
         if (maxTime > 0 && std::time(nullptr) > maxTime) {
-            if (mSettings.debugwarnings) {
+            if (mErrorLogger && mSettings.debugwarnings) {
                 ErrorMessage::FileLocation loc;
                 loc.setfile(list.getFiles()[0]);
                 ErrorMessage errmsg({std::move(loc)},
@@ -3408,6 +3408,7 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
 
     if (doValueFlow) {
+        assert(mErrorLogger);
         if (mTimerResults) {
             Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings.showtime, mTimerResults);
             ValueFlow::setValues(list, *mSymbolDatabase, *mErrorLogger, mSettings, mTimerResults);
@@ -6069,7 +6070,8 @@ void Tokenizer::dump(std::ostream &out) const
     out << outs;
     outs.clear();
 
-    mSymbolDatabase->printXml(out);
+    if (mSymbolDatabase)
+        mSymbolDatabase->printXml(out);
 
     containers.erase(nullptr);
     if (!containers.empty()) {
