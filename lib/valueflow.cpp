@@ -4252,7 +4252,7 @@ static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::ve
         if (vt) {
             if (vt->pointer > 0 &&
                 std::none_of(args.begin(), args.end(), [vt](const Token* arg) {
-                    return arg->valueType() && arg->valueType()->type == vt->type;
+                return arg->valueType() && arg->valueType()->type == vt->type;
             }))
                 return false;
             if (vt->pointer > 0)
