@@ -69,7 +69,7 @@ private:
         std::vector<std::string> filesList;
     };
 
-    void check(int files, int result, const std::string &data, CheckOptions opt = default_{}) {
+    void check(int files, int result, const std::string &data, CheckOptions opt = make_default_obj{}) {
         errout.str("");
         output.str("");
         settings.project.fileSettings.clear();

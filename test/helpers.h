@@ -120,10 +120,11 @@ public:
 #endif
 
 // Default construct object to avoid bug in clang
-struct default_
+// error: default member initializer for 'y' needed within definition of enclosing class 'X' outside of member functions
+struct make_default_obj
 {
     template<class T>
-    operator T() const
+    operator T() const // NOLINT
     {
         return T{};
     }
