@@ -278,6 +278,7 @@ TESTOBJ =     test/fixture.o \
               test/testboost.o \
               test/testbufferoverrun.o \
               test/testcharvar.o \
+              test/testcheck.o \
               test/testclangimport.o \
               test/testclass.o \
               test/testcmdlineparser.o \
@@ -705,6 +706,9 @@ test/testbufferoverrun.o: test/testbufferoverrun.cpp externals/simplecpp/simplec
 
 test/testcharvar.o: test/testcharvar.cpp lib/check.h lib/checkother.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testcharvar.cpp
+
+test/testcheck.o: test/testcheck.cpp lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h test/fixture.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testcheck.cpp
 
 test/testclangimport.o: test/testclangimport.cpp lib/check.h lib/clangimport.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h test/fixture.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ test/testclangimport.cpp
