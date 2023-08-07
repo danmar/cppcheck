@@ -3346,8 +3346,10 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
 
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::setValueType", mSettings->showtime, mTimerResults);
+        mSymbolDatabase->setValueTypeInTokenList(false);
         mSymbolDatabase->setValueTypeInTokenList(true);
     } else {
+        mSymbolDatabase->setValueTypeInTokenList(false);
         mSymbolDatabase->setValueTypeInTokenList(true);
     }
 
