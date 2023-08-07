@@ -349,7 +349,7 @@ private:
         return false;
     }
 
-    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, float value, float diff) {
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, double value, double diff) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -565,7 +565,7 @@ private:
     void valueFlowNumber() {
         ASSERT_EQUALS(123, valueOfTok("x=123;", "123").intvalue);
         ASSERT_EQUALS_DOUBLE(192.0, valueOfTok("x=0x0.3p10;", "0x0.3p10").floatValue, 1e-5); // 3 * 16^-1 * 2^10 = 192
-        ASSERT(std::fabs(valueOfTok("x=0.5;", "0.5").floatValue - 0.5f) < 0.1f);
+        ASSERT(std::fabs(valueOfTok("x=0.5;", "0.5").floatValue - 0.5) < 0.1);
         ASSERT_EQUALS(10, valueOfTok("enum {A=10,B=15}; x=A+0;", "+").intvalue);
         ASSERT_EQUALS(0, valueOfTok("x=false;", "false").intvalue);
         ASSERT_EQUALS(1, valueOfTok("x=true;", "true").intvalue);
@@ -3491,7 +3491,7 @@ private:
     void valueFlowForwardCompoundAssign() {
         const char *code;
 
-        code = "void f() {\n"
+        code = "int f() {\n"
                "    int x = 123;\n"
                "    x += 43;\n"
                "    return x;\n"
@@ -3501,19 +3501,26 @@ private:
                       "3,Compound assignment '+=', assigned value is 166\n",
                       getErrorPathForX(code, 4U));
 
-        code = "void f() {\n"
+        code = "int f() {\n"
                "    int x = 123;\n"
                "    x /= 0;\n" // don't crash when evaluating x/=0
                "    return x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
 
-        code = "void f() {\n"
-               "    float x = 123.45;\n"
+        code = "float f() {\n"
+               "    float x = 123.45f;\n"
                "    x += 67;\n"
                "    return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45F + 67, 0.01F));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, (double)123.45f + 67, 0.01));
+
+        code = "double f() {\n"
+               "    double x = 123.45;\n"
+               "    x += 67;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45 + 67, 0.01));
 
         code = "void f() {\n"
                "    int x = 123;\n"
@@ -3522,7 +3529,7 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 61));
 
-        code = "void f() {\n"
+        code = "int f() {\n"
                "    int x = 123;\n"
                "    x <<= 1;\n"
                "    return x;\n"

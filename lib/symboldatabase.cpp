@@ -6367,8 +6367,12 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             if (it != typeScope->varlist.end())
                 var = &*it;
         }
-        if (var)
+        if (var) {
             setValueType(parent, *var);
+            return;
+        }
+        if (const Enumerator* enu = parent->astOperand2()->enumerator())
+            setValueType(parent, *enu);
         return;
     }
 

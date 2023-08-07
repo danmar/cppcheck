@@ -61,3 +61,14 @@ def test_missing_include_inline_suppr(tmpdir):
 
     _, _, stderr = cppcheck(args)
     assert stderr == ''
+
+def test_invalid_library(tmpdir):
+    args = ['--library=none', '--library=posix', '--library=none2', '--platform=native', 'file.c']
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 1
+    assert (stdout == "cppcheck: Failed to load library configuration file 'none'. File not found\n"
+                      "cppcheck: Failed to load library configuration file 'none2'. File not found\n")
+    assert stderr == ""
+
+# TODO: test missing std.cfg

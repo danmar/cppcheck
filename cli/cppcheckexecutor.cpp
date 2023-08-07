@@ -43,6 +43,7 @@
 #endif
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <functional>
@@ -65,6 +66,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+// TODO: do not directly write to stdout
 
 
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
@@ -281,13 +284,13 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, settings, *this);
+        SingleExecutor executor(cppcheck, mFiles, settings, settings.nomsg, *this);
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, settings, *this);
+        ThreadExecutor executor(mFiles, settings, settings.nomsg, *this);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, settings, *this);
+        ProcessExecutor executor(mFiles, settings, settings.nomsg, *this);
 #endif
         returnValue = executor.check();
     }
@@ -315,21 +318,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 
 bool CppCheckExecutor::loadLibraries(Settings& settings)
 {
-    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
-
-    const auto failed_lib = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&](const std::string& lib) {
-        return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
-    });
-    if (failed_lib != settings.libraries.end()) {
-        const std::string msg("Failed to load the library " + *failed_lib);
-        const std::list<ErrorMessage::FileLocation> callstack;
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
-        return false;
-    }
-
-    if (!std) {
-        const std::list<ErrorMessage::FileLocation> callstack;
+    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg")) {
         const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
@@ -341,12 +330,17 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
 #endif
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
+        std::cout << msg << " " << details << std::endl;
         return false;
     }
 
-    return true;
+    bool result = true;
+    for (const auto& lib : settings.libraries) {
+        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
+            result = false;
+        }
+    }
+    return result;
 }
 
 #ifdef _WIN32
@@ -419,6 +413,8 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
         reportOut(msg.toXML());
         return;
     }
+
+    assert(mSettings != nullptr);
 
     // Alert only about unique errors
     if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)

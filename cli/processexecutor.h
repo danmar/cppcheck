@@ -27,6 +27,7 @@
 
 class Settings;
 class ErrorLogger;
+class Suppressions;
 
 /// @addtogroup CLI
 /// @{
@@ -37,7 +38,7 @@ class ErrorLogger;
  */
 class ProcessExecutor : public Executor {
 public:
-    ProcessExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    ProcessExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
     ProcessExecutor(const ProcessExecutor &) = delete;
     ~ProcessExecutor() override;
     void operator=(const ProcessExecutor &) = delete;

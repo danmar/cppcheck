@@ -1925,10 +1925,9 @@ static void valueFlowImpossibleValues(TokenList& tokenList, const Settings* sett
     }
 }
 
-static void valueFlowEnumValue(SymbolDatabase * symboldatabase, const Settings * settings)
+static void valueFlowEnumValue(SymbolDatabase & symboldatabase, const Settings * settings)
 {
-
-    for (Scope & scope : symboldatabase->scopeList) {
+    for (Scope & scope : symboldatabase.scopeList) {
         if (scope.type != Scope::eEnum)
             continue;
         MathLib::bigint value = 0;
@@ -4038,7 +4037,7 @@ struct LifetimeStore {
             update = true;
         }
         if (update && forward)
-            forwardLifetime(tok, tokenlist, errorLogger, settings);
+            forwardLifetime(tok, &tokenlist, errorLogger, settings);
         return update;
     }
 
@@ -4133,7 +4132,7 @@ struct LifetimeStore {
             }
         }
         if (update && forward)
-            forwardLifetime(tok, tokenlist, errorLogger, settings);
+            forwardLifetime(tok, &tokenlist, errorLogger, settings);
         return update;
     }
 
@@ -4213,11 +4212,11 @@ private:
     void forwardLifetime(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
         if (mContext) {
             mContext->tok = tok;
-            mContext->tokenlist = &tokenlist;
+            mContext->tokenlist = tokenlist;
             mContext->errorLogger = errorLogger;
             mContext->settings = settings;
         }
-        valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+        valueFlowForwardLifetime(tok, *tokenlist, errorLogger, settings);
     }
 };
 
@@ -4730,7 +4729,7 @@ static bool isContainerOfPointers(const Token* tok, const Settings* settings)
     return vt.pointer > 0;
 }
 
-static void valueFlowLifetime(TokenList &tokenlist, SymbolDatabase* /*db*/, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowLifetime(TokenList &tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
         if (!tok->scope())
@@ -5061,11 +5060,11 @@ static const Token * findEndOfFunctionCallForParameter(const Token * parameterTo
     return nextAfterAstRightmostLeaf(parent);
 }
 
-static void valueFlowAfterMove(TokenList& tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowAfterMove(TokenList& tokenlist, const SymbolDatabase& symboldatabase, const Settings* settings)
 {
     if (!tokenlist.isCPP() || settings->standards.cpp < Standards::CPP11)
         return;
-    for (const Scope * scope : symboldatabase->functionScopes) {
+    for (const Scope * scope : symboldatabase.functionScopes) {
         if (!scope)
             continue;
         const Token * start = scope->bodyStart;
@@ -5200,9 +5199,9 @@ static const Scope* getLoopScope(const Token* tok)
 }
 
 //
-static void valueFlowConditionExpressions(TokenList &tokenlist, const SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings &settings)
+static void valueFlowConditionExpressions(TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger *errorLogger, const Settings &settings)
 {
-    for (const Scope * scope : symboldatabase->functionScopes) {
+    for (const Scope * scope : symboldatabase.functionScopes) {
         if (const Token* incompleteTok = findIncompleteVar(scope->bodyStart, scope->bodyEnd)) {
             if (incompleteTok->isIncompleteVar()) {
                 if (settings.debugwarnings)
@@ -5330,9 +5329,9 @@ static std::set<nonneg int> getVarIds(const Token* tok)
     return result;
 }
 
-static void valueFlowSymbolic(const TokenList& tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowSymbolic(const TokenList& tokenlist, const SymbolDatabase& symboldatabase, const Settings* settings)
 {
-    for (const Scope* scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : symboldatabase.functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "="))
                 continue;
@@ -5423,9 +5422,9 @@ static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 
 
 static ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
-static void valueFlowSymbolicOperators(const SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, const Settings* settings)
 {
-    for (const Scope* scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : symboldatabase.functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->hasKnownIntValue())
                 continue;
@@ -5534,9 +5533,9 @@ struct SymbolicInferModel : InferModel {
     }
 };
 
-static void valueFlowSymbolicInfer(const SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowSymbolicInfer(const SymbolDatabase& symboldatabase, const Settings* settings)
 {
-    for (const Scope* scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : symboldatabase.functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "-|%comp%"))
                 continue;
@@ -5814,12 +5813,12 @@ static bool intersects(const C1& c1, const C2& c2)
 }
 
 static void valueFlowAfterAssign(TokenList &tokenlist,
-                                 const SymbolDatabase* symboldatabase,
+                                 const SymbolDatabase& symboldatabase,
                                  ErrorLogger *errorLogger,
                                  const Settings *settings,
                                  const std::set<const Scope*>& skippedFunctions)
 {
-    for (const Scope * scope : symboldatabase->functionScopes) {
+    for (const Scope * scope : symboldatabase.functionScopes) {
         if (skippedFunctions.count(scope))
             continue;
         std::unordered_map<nonneg int, std::unordered_set<nonneg int>> backAssigns;
@@ -5951,11 +5950,11 @@ static std::vector<const Variable*> getVariables(const Token* tok)
 }
 
 static void valueFlowAfterSwap(TokenList& tokenlist,
-                               const SymbolDatabase* symboldatabase,
+                               const SymbolDatabase& symboldatabase,
                                ErrorLogger* errorLogger,
                                const Settings* settings)
 {
-    for (const Scope* scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : symboldatabase.functionScopes) {
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             if (!Token::simpleMatch(tok, "swap ("))
                 continue;
@@ -6123,12 +6122,12 @@ struct ConditionHandler {
     }
 
     void traverseCondition(const TokenList& tokenlist,
-                           const SymbolDatabase* symboldatabase,
+                           const SymbolDatabase& symboldatabase,
                            const Settings* settings,
                            const std::set<const Scope*>& skippedFunctions,
                            const std::function<void(const Condition& cond, Token* tok, const Scope* scope)>& f) const
     {
-        for (const Scope *scope : symboldatabase->functionScopes) {
+        for (const Scope *scope : symboldatabase.functionScopes) {
             if (skippedFunctions.count(scope))
                 continue;
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -6161,7 +6160,7 @@ struct ConditionHandler {
     }
 
     void beforeCondition(TokenList& tokenlist,
-                         const SymbolDatabase* symboldatabase,
+                         const SymbolDatabase& symboldatabase,
                          ErrorLogger* errorLogger,
                          const Settings* settings,
                          const std::set<const Scope*>& skippedFunctions) const {
@@ -6309,7 +6308,7 @@ struct ConditionHandler {
     }
 
     void afterCondition(TokenList& tokenlist,
-                        const SymbolDatabase* symboldatabase,
+                        const SymbolDatabase& symboldatabase,
                         ErrorLogger* errorLogger,
                         const Settings* settings,
                         const std::set<const Scope*>& skippedFunctions) const {
@@ -6642,7 +6641,7 @@ protected:
 
 static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
                                TokenList& tokenlist,
-                               SymbolDatabase* symboldatabase,
+                               SymbolDatabase& symboldatabase,
                                ErrorLogger* errorLogger,
                                const Settings* settings,
                                const std::set<const Scope*>& skippedFunctions)
@@ -7065,9 +7064,9 @@ static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const
     }
 }
 
-static void valueFlowForLoop(TokenList &tokenlist, const SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowForLoop(TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
-    for (const Scope &scope : symboldatabase->scopeList) {
+    for (const Scope &scope : symboldatabase.scopeList) {
         if (scope.type != Scope::eFor)
             continue;
 
@@ -7141,10 +7140,9 @@ static void valueFlowForLoop(TokenList &tokenlist, const SymbolDatabase* symbold
 struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, ValueFlow::Value> values;
     std::unordered_map<nonneg int, const Variable*> vars;
-    SymbolDatabase* symboldatabase{};
 
-    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList& t, const Settings* set, SymbolDatabase* s)
-        : ValueFlowAnalyzer(t, set), symboldatabase(s) {
+    MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList& t, const Settings* set)
+        : ValueFlowAnalyzer(t, set) {
         for (const auto& p:args) {
             values[p.first->declarationId()] = p.second;
             vars[p.first->declarationId()] = p.first;
@@ -7340,14 +7338,13 @@ bool productParams(const Settings* settings, const std::unordered_map<Key, std::
 }
 
 static void valueFlowInjectParameter(TokenList& tokenlist,
-                                     SymbolDatabase* symboldatabase,
                                      ErrorLogger* errorLogger,
                                      const Settings& settings,
                                      const Scope* functionScope,
                                      const std::unordered_map<const Variable*, std::list<ValueFlow::Value>>& vars)
 {
     const bool r = productParams(&settings, vars, [&](const std::unordered_map<const Variable*, ValueFlow::Value>& arg) {
-        MultiValueFlowAnalyzer a(arg, tokenlist, &settings, symboldatabase);
+        MultiValueFlowAnalyzer a(arg, tokenlist, &settings);
         valueFlowGenericForward(const_cast<Token*>(functionScope->bodyStart), functionScope->bodyEnd, a, settings);
     });
     if (!r) {
@@ -7382,9 +7379,9 @@ static void valueFlowInjectParameter(const TokenList& tokenlist,
                      settings);
 }
 
-static void valueFlowSwitchVariable(TokenList &tokenlist, const SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowSwitchVariable(TokenList &tokenlist, const SymbolDatabase& symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
-    for (const Scope &scope : symboldatabase->scopeList) {
+    for (const Scope &scope : symboldatabase.scopeList) {
         if (scope.type != Scope::ScopeType::eSwitch)
             continue;
         if (!Token::Match(scope.classDef, "switch ( %var% ) {"))
@@ -7518,10 +7515,10 @@ IteratorRange<Iterator> MakeIteratorRange(Iterator start, Iterator last)
     return {start, last};
 }
 
-static void valueFlowSubFunction(TokenList& tokenlist, SymbolDatabase* symboldatabase,  ErrorLogger* errorLogger, const Settings& settings)
+static void valueFlowSubFunction(TokenList& tokenlist, SymbolDatabase& symboldatabase,  ErrorLogger* errorLogger, const Settings& settings)
 {
     int id = 0;
-    for (const Scope* scope : MakeIteratorRange(symboldatabase->functionScopes.crbegin(), symboldatabase->functionScopes.crend())) {
+    for (const Scope* scope : MakeIteratorRange(symboldatabase.functionScopes.crbegin(), symboldatabase.functionScopes.crend())) {
         const Function* function = scope->function;
         if (!function)
             continue;
@@ -7595,17 +7592,17 @@ static void valueFlowSubFunction(TokenList& tokenlist, SymbolDatabase* symboldat
 
                 argvars[argvar] = argvalues;
             }
-            valueFlowInjectParameter(tokenlist, symboldatabase, errorLogger, settings, calledFunctionScope, argvars);
+            valueFlowInjectParameter(tokenlist, errorLogger, settings, calledFunctionScope, argvars);
         }
     }
 }
 
-static void valueFlowFunctionDefaultParameter(const TokenList& tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowFunctionDefaultParameter(const TokenList& tokenlist, const SymbolDatabase& symboldatabase, const Settings* settings)
 {
     if (!tokenlist.isCPP())
         return;
 
-    for (const Scope* scope : symboldatabase->functionScopes) {
+    for (const Scope* scope : symboldatabase.functionScopes) {
         const Function* function = scope->function;
         if (!function)
             continue;
@@ -7930,7 +7927,7 @@ static Token* findStartToken(const Variable* var, Token* start, const Library* l
     return tok;
 }
 
-static void valueFlowUninit(TokenList& tokenlist, SymbolDatabase* /*symbolDatabase*/, const Settings* settings)
+static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
 {
     for (Token *tok = tokenlist.front(); tok; tok = tok->next()) {
         if (!tok->scope()->isExecutable())
@@ -8660,13 +8657,13 @@ static const Scope* getFunctionScope(const Scope* scope) {
 }
 
 static void valueFlowContainerSize(TokenList& tokenlist,
-                                   const SymbolDatabase* symboldatabase,
+                                   const SymbolDatabase& symboldatabase,
                                    ErrorLogger* /*errorLogger*/,
                                    const Settings* settings,
                                    const std::set<const Scope*>& skippedFunctions)
 {
     // declaration
-    for (const Variable *var : symboldatabase->variableList()) {
+    for (const Variable *var : symboldatabase.variableList()) {
         if (!var)
             continue;
         if (!var->scope() || !var->scope()->bodyEnd || !var->scope()->bodyStart)
@@ -8737,7 +8734,7 @@ static void valueFlowContainerSize(TokenList& tokenlist,
     }
 
     // after assignment
-    for (const Scope *functionScope : symboldatabase->functionScopes) {
+    for (const Scope *functionScope : symboldatabase.functionScopes) {
         for (Token* tok = const_cast<Token*>(functionScope->bodyStart); tok != functionScope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
                 Token* containerTok = tok->next();
@@ -8874,7 +8871,7 @@ struct ContainerConditionHandler : ConditionHandler {
     }
 };
 
-static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolDatabase& symboldatabase, const Settings* settings)
 {
     auto getBufferSizeFromAllocFunc = [&](const Token* funcTok) -> MathLib::bigint {
         MathLib::bigint sizeValue = -1;
@@ -8945,7 +8942,7 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
         return sizeValue;
     };
 
-    for (const Scope *functionScope : symboldatabase->functionScopes) {
+    for (const Scope *functionScope : symboldatabase.functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "[;{}] %var% ="))
                 continue;
@@ -8959,7 +8956,7 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
             if (!rhs)
                 continue;
 
-            const bool isNew = symboldatabase->isCPP() && rhs->str() == "new";
+            const bool isNew = symboldatabase.isCPP() && rhs->str() == "new";
             if (!isNew && !Token::Match(rhs->previous(), "%name% ("))
                 continue;
 
@@ -9043,9 +9040,9 @@ static bool getMinMaxValues(const std::string &typestr, const Settings *settings
     return getMinMaxValues(&vt, settings->platform, minvalue, maxvalue);
 }
 
-static void valueFlowSafeFunctions(TokenList& tokenlist, const SymbolDatabase* symboldatabase, const Settings* settings)
+static void valueFlowSafeFunctions(TokenList& tokenlist, const SymbolDatabase& symboldatabase, const Settings* settings)
 {
-    for (const Scope *functionScope : symboldatabase->functionScopes) {
+    for (const Scope *functionScope : symboldatabase.functionScopes) {
         if (!functionScope->bodyStart)
             continue;
         const Function *function = functionScope->function;
@@ -9098,12 +9095,12 @@ static void valueFlowSafeFunctions(TokenList& tokenlist, const SymbolDatabase* s
                     std::list<ValueFlow::Value> argValues;
                     argValues.emplace_back(0);
                     argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
-                    argValues.back().floatValue = isLow ? low : -1E25f;
+                    argValues.back().floatValue = isLow ? low : -1E25;
                     argValues.back().errorPath.emplace_back(arg.nameToken(), "Safe checks: Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
                     argValues.back().safe = true;
                     argValues.emplace_back(0);
                     argValues.back().valueType = ValueFlow::Value::ValueType::FLOAT;
-                    argValues.back().floatValue = isHigh ? high : 1E25f;
+                    argValues.back().floatValue = isHigh ? high : 1E25;
                     argValues.back().errorPath.emplace_back(arg.nameToken(), "Safe checks: Assuming argument has value " + MathLib::toString(argValues.back().floatValue));
                     argValues.back().safe = true;
                     valueFlowForward(const_cast<Token*>(functionScope->bodyStart->next()),
@@ -9199,14 +9196,14 @@ const ValueFlow::Value *ValueFlow::valueFlowConstantFoldAST(Token *expr, const S
 
 struct ValueFlowState {
     explicit ValueFlowState(TokenList& tokenlist,
-                            SymbolDatabase* symboldatabase = nullptr,
+                            SymbolDatabase& symboldatabase,
                             ErrorLogger* errorLogger = nullptr,
                             const Settings* settings = nullptr)
         : tokenlist(tokenlist), symboldatabase(symboldatabase), errorLogger(errorLogger), settings(settings)
     {}
 
     TokenList& tokenlist;
-    SymbolDatabase* symboldatabase = nullptr;
+    SymbolDatabase& symboldatabase;
     ErrorLogger* errorLogger = nullptr;
     const Settings* settings = nullptr;
     std::set<const Scope*> skippedFunctions = {};
@@ -9296,7 +9293,7 @@ struct ValueFlowPassRunner {
     void setSkippedFunctions()
     {
         if (state.settings->performanceValueFlowMaxIfCount > 0) {
-            for (const Scope* functionScope : state.symboldatabase->functionScopes) {
+            for (const Scope* functionScope : state.symboldatabase.functionScopes) {
                 int countIfScopes = 0;
                 std::vector<const Scope*> scopes{functionScope};
                 while (!scopes.empty()) {
@@ -9369,7 +9366,7 @@ ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool cpp, F r
     makeValueFlowPassAdaptor(#__VA_ARGS__,                                                                             \
                              cpp,                                                                                      \
                              [](TokenList& tokenlist,                                                                  \
-                                SymbolDatabase* symboldatabase,                                                        \
+                                SymbolDatabase& symboldatabase,                                                        \
                                 ErrorLogger* errorLogger,                                                              \
                                 const Settings* settings,                                                              \
                                 const std::set<const Scope*>& skippedFunctions) {                                      \
@@ -9385,7 +9382,7 @@ ValueFlowPassAdaptor<F> makeValueFlowPassAdaptor(const char* name, bool cpp, F r
 #define VFA_CPP(...) VALUEFLOW_ADAPTOR(true, __VA_ARGS__)
 
 void ValueFlow::setValues(TokenList& tokenlist,
-                          SymbolDatabase* symboldatabase,
+                          SymbolDatabase& symboldatabase,
                           ErrorLogger* errorLogger,
                           const Settings* settings,
                           TimerResultsIntf* timerResults)
@@ -9405,7 +9402,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowNumber(tokenlist, settings)),
         VFA(valueFlowGlobalStaticVar(tokenlist, settings)),
         VFA(valueFlowPointerAlias(tokenlist, settings)),
-        VFA(valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings)),
+        VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
         VFA(valueFlowSymbolic(tokenlist, symboldatabase, settings)),
         VFA(valueFlowBitAnd(tokenlist, settings)),
         VFA(valueFlowSameExpressions(tokenlist, settings)),
@@ -9428,9 +9425,9 @@ void ValueFlow::setValues(TokenList& tokenlist,
         VFA(valueFlowForLoop(tokenlist, symboldatabase, errorLogger, settings)),
         VFA(valueFlowSubFunction(tokenlist, symboldatabase, errorLogger, *settings)),
         VFA(valueFlowFunctionReturn(tokenlist, errorLogger, settings)),
-        VFA(valueFlowLifetime(tokenlist, symboldatabase, errorLogger, settings)),
+        VFA(valueFlowLifetime(tokenlist, errorLogger, settings)),
         VFA(valueFlowFunctionDefaultParameter(tokenlist, symboldatabase, settings)),
-        VFA(valueFlowUninit(tokenlist, symboldatabase, settings)),
+        VFA(valueFlowUninit(tokenlist, settings)),
         VFA_CPP(valueFlowAfterMove(tokenlist, symboldatabase, settings)),
         VFA_CPP(valueFlowSmartPointer(tokenlist, errorLogger, settings)),
         VFA_CPP(valueFlowIterators(tokenlist, settings)),

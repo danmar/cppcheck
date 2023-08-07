@@ -52,7 +52,7 @@ namespace ValueFlow {
 
     /// Perform valueflow analysis.
     void setValues(TokenList& tokenlist,
-                   SymbolDatabase* symboldatabase,
+                   SymbolDatabase& symboldatabase,
                    ErrorLogger* errorLogger,
                    const Settings* settings,
                    TimerResultsIntf* timerResults);
