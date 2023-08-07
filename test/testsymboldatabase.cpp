@@ -9420,7 +9420,7 @@ private:
         }
     }
 
-    void auto20() {        
+    void auto20() {
         GET_SYMBOL_DB("enum A { A0 };\n"
                       "enum B { B0 };\n"
                       "const int& g(A a);\n"
@@ -9433,7 +9433,7 @@ private:
         ASSERT_EQUALS(a->valueType()->type, ValueType::INT);
         const Token* g = Token::findsimplematch(a, "g ( B ::");
         ASSERT(g && g->function());
-        ASSERT_EQUALS(g->function()->tokenDef->linenr(), 4);        
+        ASSERT_EQUALS(g->function()->tokenDef->linenr(), 4);
     }
 
     void unionWithConstructor() {
