@@ -6812,6 +6812,14 @@ private:
                "    dummy_resource::log.clear();\n"
                "}\n";
         valueOfTok(code, "log");
+
+        code = "struct D : B<int> {\n"
+               "    D(int i, const std::string& s) : B<int>(i, s) {}\n"
+               "};\n"
+               "template<> struct B<int>::S {\n"
+               "    int j;\n"
+               "};\n";
+        valueOfTok(code, "B");
     }
 
     void valueFlowCrash() {

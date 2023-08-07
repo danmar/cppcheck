@@ -22,7 +22,6 @@
 #include "ctu.h"
 #include "errortypes.h"
 #include "standards.h"
-#include "library.h"
 #include "platform.h"
 #include "settings.h"
 #include "fixture.h"

@@ -26,7 +26,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -106,6 +105,7 @@ private:
         TEST_CASE(varScope32);      // #11441
         TEST_CASE(varScope33);
         TEST_CASE(varScope34);
+        TEST_CASE(varScope35);
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1634,6 +1634,37 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope35() { // #11845
+        check("void f(int err, const char* src) {\n"
+              "    const char* msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        msg = strcpy(buf, src);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char* g(char* dst, const char* src);\n"
+              "void f(int err, const char* src) {\n"
+              "    const char* msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        msg = g(buf, src);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char* g(char* dst, const char* src);\n"
+              "void f(int err, const char* src) {\n"
+              "    const char* msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        g(buf, src);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'buf' can be reduced.\n", errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
@@ -3754,6 +3785,13 @@ private:
               "    p = q;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int a[1]; };\n"
+              "void f(S* s) {\n"
+              "    if (s->a[0]) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {

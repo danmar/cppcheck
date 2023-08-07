@@ -20,7 +20,6 @@
 #include "checkuninitvar.h"
 #include "ctu.h"
 #include "errortypes.h"
-#include "library.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"

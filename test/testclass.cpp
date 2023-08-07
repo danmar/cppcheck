@@ -19,17 +19,19 @@
 #include "check.h"
 #include "checkclass.h"
 #include "errortypes.h"
-#include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
 #include <vector>
 
+#include <simplecpp.h>
 
 class TestClass : public TestFixture {
 public:
@@ -6061,7 +6063,7 @@ private:
                    "    int i{};\n"
                    "    S f() { return S{ &i }; }\n"
                    "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", errout.str());
 
         checkConst("struct S {\n"
                    "    explicit S(const int* p) : mp(p) {}\n"

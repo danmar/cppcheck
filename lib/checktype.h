@@ -84,8 +84,8 @@ private:
     void tooBigSignedBitwiseShiftError(const Token *tok, int lhsbits, const ValueFlow::Value &rhsbits);
     void integerOverflowError(const Token *tok, const ValueFlow::Value &value);
     void signConversionError(const Token *tok, const ValueFlow::Value *negativeValue, const bool constvalue);
-    void longCastAssignError(const Token *tok);
-    void longCastReturnError(const Token *tok);
+    void longCastAssignError(const Token *tok, const ValueType* src = nullptr, const ValueType* tgt = nullptr);
+    void longCastReturnError(const Token *tok, const ValueType* src = nullptr, const ValueType* tgt = nullptr);
     void floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {

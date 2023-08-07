@@ -24,7 +24,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
@@ -326,9 +325,19 @@ private:
 
     void longCastAssign() {
         const Settings settings = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsWin = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Win64).build();
+
+        const char code[] = "long f(int x, int y) {\n"
+                            "  const long ret = x * y;\n"
+                            "  return ret;\n"
+                            "}\n";
+        check(code, settings);
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        check(code, settingsWin);
+        ASSERT_EQUALS("", errout.str());
 
         check("long f(int x, int y) {\n"
-              "  const long ret = x * y;\n"
+              "  long ret = x * y;\n"
               "  return ret;\n"
               "}\n", settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) int result is assigned to long variable. If the variable is long to avoid loss of information, then you have loss of information.\n", errout.str());
@@ -352,21 +361,44 @@ private:
               "  return ret;\n"
               "}\n", settings);
         ASSERT_EQUALS("", errout.str());
+
+        check("double g(float f) {\n"
+              "    return f * f;\n"
+              "}\n", settings);
+        ASSERT_EQUALS("[test.cpp:2]: (style) float result is returned as double value. If the return value is double to avoid loss of information, then you have loss of information.\n",
+                      errout.str());
+
+        check("void f(int* p) {\n" // #11862
+              "    long long j = *(p++);\n"
+              "}\n", settings);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void longCastReturn() {
-        const Settings settings = settingsBuilder().severity(Severity::style).build();
+        const Settings settings = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsWin = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Win64).build();
 
-        check("long f(int x, int y) {\n"
-              "  return x * y;\n"
-              "}\n", settings);
+        const char code[] = "long f(int x, int y) {\n"
+                            "  return x * y;\n"
+                            "}\n";
+        check(code, settings);
         ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
+        check(code, settingsWin);
+        ASSERT_EQUALS("", errout.str());
+
+        const char code2[] = "long long f(int x, int y) {\n"
+                             "  return x * y;\n"
+                             "}\n";
+        check(code2, settings);
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout.str());
+        check(code2, settingsWin);
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long long value. If the return value is long long to avoid loss of information, then you have loss of information.\n", errout.str());
 
         // typedef
         check("size_t f(int x, int y) {\n"
               "  return x * y;\n"
               "}\n", settings);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) int result is returned as long value. If the return value is long to avoid loss of information, then you have loss of information.\n", errout.str());
     }
 
     // This function ensure that test works with different compilers. Floats can

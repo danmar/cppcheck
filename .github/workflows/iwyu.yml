@@ -10,17 +10,21 @@ permissions:
 jobs:
   iwyu:
 
+    strategy:
+      matrix:
+        image: ["fedora:latest"] # "debian:unstable" / "archlinux:latest"
+
     runs-on: ubuntu-22.04
 
     container:
-      image: "archlinux:latest"
+      image: "fedora:latest"
 
     steps:
       - uses: actions/checkout@v3
 
       # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
       - name: Install missing software on debian/ubuntu
-        if: false
+        if: contains(matrix.image, 'debian')
         run: |
           apt-get update
           apt-get install -y cmake g++ make libpcre3-dev
@@ -29,19 +33,29 @@ jobs:
           ln -s ../x86_64-linux-gnu/qt5 /usr/include/qt
 
       - name: Install missing software on archlinux
+        if: contains(matrix.image, 'archlinux')
         run: |
           set -x
           pacman -Sy
           pacman -S cmake make gcc qt5-base qt5-tools qt5-charts pcre wget --noconfirm
           pacman-key --init
-          pacman-key --recv-key FBA220DFC880C036 --keyserver keyserver.ubuntu.com
-          pacman-key --lsign-key FBA220DFC880C036
+          pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
+          pacman-key --lsign-key 3056513887B78AEB 
           pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' --noconfirm
           echo "[chaotic-aur]" >> /etc/pacman.conf
           echo "Include = /etc/pacman.d/chaotic-mirrorlist" >> /etc/pacman.conf
           pacman -Sy
           pacman -S include-what-you-use --noconfirm
           ln -s iwyu-tool /usr/sbin/iwyu_tool
+
+      # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
+      - name: Install missing software on Fedora
+        if: contains(matrix.image, 'fedora')
+        run: |
+          dnf install -y cmake gcc-c++ qt5-qtbase-devel qt5-linguist qt5-qttools-devel qt5-qtcharts-devel pcre-devel
+          dnf install -y wget iwyu
+          ln -s iwyu_tool.py /usr/bin/iwyu_tool
+          ln -s qt5 /usr/include/qt
 
       - name: Prepare CMake
         run: |
@@ -107,6 +121,7 @@ jobs:
 
       - name: Install clang
         run: |
+          sudo apt-get purge --auto-remove llvm python3-lldb-14 llvm-14
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
           sudo ./llvm.sh 17
