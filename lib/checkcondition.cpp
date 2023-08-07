@@ -981,7 +981,7 @@ T getvalue3(const T value1, const T value2)
 template<>
 double getvalue3(const double value1, const double value2)
 {
-    return (value1 + value2) / 2.0f;
+    return (value1 + value2) / 2.0;
 }
 
 
