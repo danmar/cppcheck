@@ -277,8 +277,9 @@ void invalidFunctionArg(const wxString &str)
 void uninitvar(wxWindow &w)
 {
     wxLogLevel logLevelUninit;
+    // cppcheck-suppress constVariable
     char cBufUninit[10];
-    char *pcUninit;
+    const char *pcUninit;
     bool uninitBool;
     // cppcheck-suppress uninitvar
     wxLogGeneric(logLevelUninit, "test");

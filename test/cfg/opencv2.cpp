@@ -11,7 +11,7 @@
 #include <opencv2/opencv.hpp>
 
 
-void validCode(char* argStr)
+void validCode(const char* argStr)
 {
     cv::Mat image;
     image = cv::imread(argStr, cv::IMREAD_COLOR);

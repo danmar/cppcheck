@@ -4331,7 +4331,7 @@ std::vector<const Function*> Function::getOverloadedFunctions() const
              it != scope->functionMap.end() && it->first == tokenDef->str();
              ++it) {
             const Function* func = it->second;
-            if (isMemberFunction == func->isStatic())
+            if (isMemberFunction && isMemberFunction == func->isStatic())
                 continue;
             result.push_back(func);
         }

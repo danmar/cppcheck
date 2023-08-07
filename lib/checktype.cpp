@@ -317,7 +317,7 @@ void CheckType::checkLongCast()
 
     // Assignments..
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (tok->str() != "=" || !Token::Match(tok->astOperand2(), "*|<<"))
+        if (tok->str() != "=" || !Token::Match(tok->astOperand2(), "*|<<") || tok->astOperand2()->isUnaryOp("*"))
             continue;
 
         if (tok->astOperand2()->hasKnownIntValue()) {

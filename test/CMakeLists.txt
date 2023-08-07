@@ -35,6 +35,10 @@ if (BUILD_TESTS)
         target_compile_definitions(testrunner PRIVATE CPPCHECKLIB_IMPORT SIMPLECPP_IMPORT)
         target_link_libraries(testrunner cppcheck-core)
     endif()
+    if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+        # $ is used in dinit() dessignated initialization helper
+        target_compile_options_safe(testrunner -Wno-dollar-in-identifier-extension)
+    endif()
 
     if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
         target_precompile_headers(testrunner PRIVATE precompiled.h)

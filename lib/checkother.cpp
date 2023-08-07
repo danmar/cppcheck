@@ -1645,13 +1645,20 @@ void CheckOther::checkConstPointer()
             if (Token::simpleMatch(parent, "=") && parent->astOperand1() == tok)
                 continue;
             if (const Token* ftok = getTokenArgumentFunction(tok, argn)) {
-                if (ftok->function() && !parent->isCast()) {
-                    const Variable* argVar = ftok->function()->getArgumentVar(argn);
-                    if (argVar && argVar->valueType() && argVar->valueType()->isConst(vt->pointer)) {
-                        bool inconclusive{};
-                        if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
-                            continue;
+                if (ftok->function()) {
+                    const bool isCastArg = parent->isCast() && !ftok->function()->getOverloadedFunctions().empty(); // assume that cast changes the called function
+                    if (!isCastArg) {
+                        const Variable* argVar = ftok->function()->getArgumentVar(argn);
+                        if (argVar && argVar->valueType() && argVar->valueType()->isConst(vt->pointer)) {
+                            bool inconclusive{};
+                            if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                                continue;
+                        }
                     }
+                } else {
+                    const auto dir = mSettings->library.getArgDirection(ftok, argn + 1);
+                    if (dir == Library::ArgumentChecks::Direction::DIR_IN)
+                        continue;
                 }
             }
             else if (Token::simpleMatch(parent, "(")) {

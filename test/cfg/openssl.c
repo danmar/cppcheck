@@ -17,13 +17,13 @@ void valid_code(BIO * bio)
 }
 
 // Example for encrypting a string using IDEA (from https://www.openssl.org/docs/man1.1.1/man3/EVP_CIPHER_CTX_new.html)
-int valid_code_do_crypt(char *outfile)
+int valid_code_do_crypt(const char *outfile)
 {
     unsigned char outbuf[1024];
     int outlen, tmplen;
-    unsigned char key[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
-    unsigned char iv[] = {1,2,3,4,5,6,7,8};
-    char intext[] = "Some Crypto Text";
+    const unsigned char key[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+    const unsigned char iv[] = {1,2,3,4,5,6,7,8};
+    const char intext[] = "Some Crypto Text";
     EVP_CIPHER_CTX *ctx;
     FILE *out;
 
@@ -62,7 +62,7 @@ void invalidPrintfArgType_test(BIO * bio)
 
 void EVP_CIPHER_CTX_new_test()
 {
-    EVP_CIPHER_CTX * ctx = EVP_CIPHER_CTX_new();
+    const EVP_CIPHER_CTX * ctx = EVP_CIPHER_CTX_new();
     printf("%p", ctx);
     // cppcheck-suppress resourceLeak
 }

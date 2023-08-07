@@ -18,8 +18,11 @@
 
 from donate_cpu_lib import *
 
-def _test_library_includes(tmpdir, libs, content):
-    library_includes = LibraryIncludes()
+def _test_library_includes(tmpdir, libs, content, libinc_obj=None):
+    if libinc_obj is None:
+        library_includes = LibraryIncludes()
+    else:
+        library_includes = libinc_obj
 
     src_file = os.path.join(str(tmpdir), "file.cpp")
     with open(src_file, 'w') as f:
@@ -52,3 +55,10 @@ def test_library_includes(tmpdir):
     _test_library_includes(tmpdir, ['posix', 'gnu', 'opengl'], '#include\t  <GL/glut.h>')
     _test_library_includes(tmpdir, ['posix', 'gnu', 'nspr'], '#include\t"prtypes.h"')
     _test_library_includes(tmpdir, ['posix', 'gnu', 'lua'], '#include  \t<lua.h>')
+
+def test_match_multiple_time(tmpdir):
+    libinc = LibraryIncludes()
+
+    # there was a bug that we would only match each library once successfully
+    _test_library_includes(tmpdir, ['posix', 'gnu', 'zlib'], '#include <zlib.h>', libinc)
+    _test_library_includes(tmpdir, ['posix', 'gnu', 'zlib'], '#include <zlib.h>', libinc)
