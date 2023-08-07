@@ -4250,8 +4250,9 @@ static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::ve
     return std::any_of(vars.cbegin(), vars.cend(), [&](const Variable& var) {
         const ValueType* vt = var.valueType();
         if (vt) {
-            if (std::none_of(args.begin(), args.end(), [vt](const Token* arg) {
-                return arg->valueType() && arg->valueType()->type == vt->type;
+            if (vt->pointer > 0 &&
+                std::none_of(args.begin(), args.end(), [vt](const Token* arg) {
+                    return arg->valueType() && arg->valueType()->type == vt->type;
             }))
                 return false;
             if (vt->pointer > 0)
@@ -4268,7 +4269,7 @@ static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::ve
             if (vt->typeScope)
                 return hasBorrowingVariables(vt->typeScope->varlist, args, depth - 1);
         }
-        return false;
+        return true;
     });
 }
 
