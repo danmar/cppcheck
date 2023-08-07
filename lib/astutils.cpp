@@ -2346,6 +2346,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
     if (addressOf)
         indirect++;
+    
+    const bool deref = tok->astParent() && tok->astParent()->isUnaryOp("*");
+    if (deref)
+        indirect--;    
 
     int argnr;
     tok = getTokenArgumentFunction(tok, argnr);
