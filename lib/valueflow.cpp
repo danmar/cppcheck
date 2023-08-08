@@ -2564,19 +2564,22 @@ struct ValueFlowAnalyzer : Analyzer {
         return read;
     }
 
-    virtual Action isAliasModified(const Token* tok) const {
+    virtual Action isAliasModified(const Token* tok, int indirect = -1) const {
         // Lambda function call
         if (Token::Match(tok, "%var% ("))
             // TODO: Check if modified in the lambda function
             return Action::Invalid;
-        int indirect = 0;
-        if (const ValueType* vt = tok->valueType()) {
-            indirect = vt->pointer;
-            if (vt->type == ValueType::ITERATOR)
-                ++indirect;
+        if (indirect == -1) {
+            indirect = 0;
+            if (const ValueType* vt = tok->valueType()) {
+                indirect = vt->pointer;
+                if (vt->type == ValueType::ITERATOR)
+                    ++indirect;
+            }
         }
-        if (isVariableChanged(tok, indirect, getSettings(), isCPP()))
-            return Action::Invalid;
+        for (int i = 0; i <= indirect; ++i)
+            if (isVariableChanged(tok, i, getSettings(), isCPP()))
+                return Action::Invalid;
         return Action::None;
     }
 
@@ -3212,6 +3215,12 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
 
     bool isVariable() const override {
         return expr->varId() > 0;
+    }
+
+    Action isAliasModified(const Token* tok, int indirect) const override {
+        if (value.isSymbolicValue() && tok->exprId() == value.tokvalue->exprId())
+            indirect = 0;
+        return SingleValueFlowAnalyzer::isAliasModified(tok, indirect);
     }
 };
 

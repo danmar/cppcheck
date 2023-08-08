@@ -1587,9 +1587,10 @@ void CheckOther::checkConstPointer()
         if (std::find(nonConstPointers.cbegin(), nonConstPointers.cend(), var) != nonConstPointers.cend())
             continue;
         pointers.emplace_back(var);
-        const Token* const parent = tok->astParent();
+        const Token* parent = tok->astParent();
         enum Deref { NONE, DEREF, MEMBER } deref = NONE;
-        if (parent && parent->isUnaryOp("*"))
+        bool hasIncDec = false;
+        if (parent && (parent->isUnaryOp("*") || (hasIncDec = parent->isIncDecOp() && parent->astParent() && parent->astParent()->isUnaryOp("*"))))
             deref = DEREF;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = DEREF;
@@ -1600,7 +1601,7 @@ void CheckOther::checkConstPointer()
         else if (astIsRangeBasedForDecl(tok))
             continue;
         if (deref != NONE) {
-            const Token* const gparent = parent->astParent();
+            const Token* gparent = parent->astParent();
             if (deref == MEMBER) {
                 if (!gparent)
                     continue;
@@ -1613,6 +1614,10 @@ void CheckOther::checkConstPointer()
             }
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
+            if (hasIncDec) {
+                parent = gparent;
+                gparent = gparent ? gparent->astParent() : nullptr;
+            }
             int argn = -1;
             if (Token::simpleMatch(gparent, "return")) {
                 const Function* function = gparent->scope()->function;
@@ -1633,7 +1638,7 @@ void CheckOther::checkConstPointer()
                 continue;
             else if (const Token* ftok = getTokenArgumentFunction(parent, argn)) {
                 bool inconclusive{};
-                if (!isVariableChangedByFunctionCall(ftok, vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
+                if (!isVariableChangedByFunctionCall(ftok->next(), vt->pointer, var->declarationId(), mSettings, &inconclusive) && !inconclusive)
                     continue;
             }
         } else {
