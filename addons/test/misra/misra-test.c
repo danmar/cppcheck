@@ -1171,7 +1171,7 @@ static void misra_14_2_fn1(bool b) {
     g += 2;
     i2 ^= 2; // 14.2
     if (i2 == 2) {
-      g += g_arr[i2];
+      g += g_arr[i2]; // cppcheck-suppress legacyUninitvar
     }
     misra_14_2_init_value(&i2); // TODO: Fix false negative in function call
   }
