@@ -9459,7 +9459,6 @@ private:
                       "    std::vector<int> v1(1), v2(2);\n"
                       "    auto& v = b ? v1 : v2;\n"
                       "    v.push_back(1);\n"
-                      "    int& r = v[0];"
                       "    return v.size();\n"
                       "}\n");
         ASSERT_EQUALS("", errout.str());
