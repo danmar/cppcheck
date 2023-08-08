@@ -139,6 +139,8 @@ jobs:
       - name: Clean up deploy
         run: |
           del win_installer\files\addons\*.dll || exit /b !errorlevel!
+          del win_installer\files\addons\*.doxyfile || exit /b !errorlevel!
+          del win_installer\files\addons\*.md || exit /b !errorlevel!
           del win_installer\files\addons\*.pyd || exit /b !errorlevel!
           del win_installer\files\addons\base_library.zip || exit /b !errorlevel!
           rmdir /s /q win_installer\files\bearer || exit /b !errorlevel!
