@@ -158,7 +158,6 @@ std::string CTU::toString(const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsa
 
 CTU::FileInfo::CallBase::CallBase(const Tokenizer *tokenizer, const Token *callToken)
     : callId(getFunctionId(tokenizer, callToken->function()))
-    , callArgNr(0)
     , callFunctionName(callToken->next()->astOperand1()->expressionString())
     , location(CTU::FileInfo::Location(tokenizer, callToken))
 {}
@@ -166,7 +165,6 @@ CTU::FileInfo::CallBase::CallBase(const Tokenizer *tokenizer, const Token *callT
 CTU::FileInfo::NestedCall::NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken)
     : CallBase(tokenizer, callToken)
     , myId(getFunctionId(tokenizer, myFunction))
-    , myArgNr(0)
 {}
 
 static std::string readAttrString(const tinyxml2::XMLElement *e, const char *attr, bool *error)

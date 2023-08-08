@@ -72,19 +72,19 @@ namespace ValueFlow {
     bool isContainerSizeChanged(const Token* tok, int indirect, const Settings* settings = nullptr, int depth = 20);
 
     struct LifetimeToken {
-        const Token* token;
+        const Token* token{};
         Value::ErrorPath errorPath;
-        bool addressOf;
-        bool inconclusive;
+        bool addressOf{};
+        bool inconclusive{};
 
-        LifetimeToken() : token(nullptr), errorPath(), addressOf(false), inconclusive(false) {}
+        LifetimeToken() = default;
 
         LifetimeToken(const Token* token, Value::ErrorPath errorPath)
-            : token(token), errorPath(std::move(errorPath)), addressOf(false), inconclusive(false)
+            : token(token), errorPath(std::move(errorPath))
         {}
 
         LifetimeToken(const Token* token, bool addressOf, Value::ErrorPath errorPath)
-            : token(token), errorPath(std::move(errorPath)), addressOf(addressOf), inconclusive(false)
+            : token(token), errorPath(std::move(errorPath)), addressOf(addressOf)
         {}
 
         static std::vector<LifetimeToken> setAddressOf(std::vector<LifetimeToken> v, bool b) {

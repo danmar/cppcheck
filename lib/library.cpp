@@ -64,9 +64,6 @@ static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList
     }
 }
 
-Library::Library() : mAllocId(0)
-{}
-
 Library::Error Library::load(const char exename[], const char path[])
 {
     if (std::strchr(path,',') != nullptr) {

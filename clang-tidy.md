@@ -37,18 +37,16 @@ These are coding guidelines we do not follow. Some of the checks might be explic
 `modernize-use-auto`<br>
 `readability-uppercase-literal-suffix`<br>
 `readability-else-after-return`<br>
-`modernize-use-default-member-init`<br>
 `readability-identifier-length`<br>
 
-These do not relect the style we are (currently) enforcing.
+These do not reflect the style we are (currently) enforcing.
 
 `readability-function-size`<br>
 `readability-function-cognitive-complexity`<br>
 
-We are not interesting in the size/complexity of a function.
+We are not interested in the size/complexity of a function.
 
 `readability-magic-numbers`<br>
-`readability-redundant-member-init`<br>
 
 These do not (always) increase readability.
 
@@ -58,7 +56,7 @@ To be documented.
 
 `readability-implicit-bool-conversion`<br>
 
-This does not appear not to be useful as it is reported on very common code.
+This does not appear to be useful as it is reported on very common code.
 
 `bugprone-narrowing-conversions`<br>
 `performance-no-automatic-move`<br>

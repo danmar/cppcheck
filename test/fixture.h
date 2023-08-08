@@ -47,7 +47,7 @@ private:
     static std::size_t fails_counter;
     static std::size_t todos_counter;
     static std::size_t succeeded_todos_counter;
-    bool mVerbose;
+    bool mVerbose{};
     std::string mTemplateFormat;
     std::string mTemplateLocation;
     std::string mTestname;
@@ -55,7 +55,7 @@ private:
 protected:
     std::string exename;
     std::string testToRun;
-    bool quiet_tests;
+    bool quiet_tests{};
 
     virtual void run() = 0;
 

@@ -71,8 +71,7 @@ static const QString CPPCHECK("cppcheck");
 
 StatsDialog::StatsDialog(QWidget *parent)
     : QDialog(parent),
-    mUI(new Ui::StatsDialog),
-    mStatistics(nullptr)
+    mUI(new Ui::StatsDialog)
 {
     mUI->setupUi(this);
 

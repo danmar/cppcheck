@@ -3113,18 +3113,14 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
 
 struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     const Token* expr;
-    bool local;
-    bool unknown;
-    bool dependOnThis;
-    bool uniqueExprId;
+    bool local = true;
+    bool unknown{};
+    bool dependOnThis{};
+    bool uniqueExprId{};
 
     ExpressionAnalyzer(const Token* e, ValueFlow::Value val, const TokenList& t, const Settings* s)
         : SingleValueFlowAnalyzer(std::move(val), t, s),
-        expr(e),
-        local(true),
-        unknown(false),
-        dependOnThis(false),
-        uniqueExprId(false)
+        expr(e)
     {
 
         assert(e && e->exprId() != 0 && "Not a valid expression");
@@ -3240,7 +3236,7 @@ struct SameExpressionAnalyzer : ExpressionAnalyzer {
 };
 
 struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
-    bool isNot;
+    bool isNot{};
 
     OppositeExpressionAnalyzer(bool pIsNot, const Token* e, ValueFlow::Value val, const TokenList& t, const Settings* s)
         : ExpressionAnalyzer(e, std::move(val), t, s), isNot(pIsNot)
@@ -3942,23 +3938,21 @@ static void valueFlowForwardLifetime(Token * tok, TokenList &tokenlist, ErrorLog
 }
 
 struct LifetimeStore {
-    const Token *argtok;
+    const Token* argtok{};
     std::string message;
-    ValueFlow::Value::LifetimeKind type;
+    ValueFlow::Value::LifetimeKind type = ValueFlow::Value::LifetimeKind::Object;
     ErrorPath errorPath;
-    bool inconclusive;
-    bool forward;
+    bool inconclusive{};
+    bool forward = true;
 
     struct Context {
-        Token* tok;
-        TokenList* tokenlist;
-        ErrorLogger* errorLogger;
-        const Settings* settings;
+        Token* tok{};
+        TokenList* tokenlist{};
+        ErrorLogger* errorLogger{};
+        const Settings* settings{};
     };
 
-    LifetimeStore()
-        : argtok(nullptr), message(), type(), errorPath(), inconclusive(false), forward(true), mContext(nullptr)
-    {}
+    LifetimeStore() = default;
 
     LifetimeStore(const Token* argtok,
                   std::string message,
@@ -3967,10 +3961,7 @@ struct LifetimeStore {
         : argtok(argtok),
         message(std::move(message)),
         type(type),
-        errorPath(),
-        inconclusive(inconclusive),
-        forward(true),
-        mContext(nullptr)
+        inconclusive(inconclusive)
     {}
 
     template<class F>
@@ -4055,7 +4046,7 @@ struct LifetimeStore {
             update = true;
         }
         if (update && forward)
-            forwardLifetime(tok, tokenlist, errorLogger, settings);
+            forwardLifetime(tok, &tokenlist, errorLogger, settings);
         return update;
     }
 
@@ -4150,7 +4141,7 @@ struct LifetimeStore {
             }
         }
         if (update && forward)
-            forwardLifetime(tok, tokenlist, errorLogger, settings);
+            forwardLifetime(tok, &tokenlist, errorLogger, settings);
         return update;
     }
 
@@ -4226,15 +4217,15 @@ struct LifetimeStore {
     }
 
 private:
-    Context* mContext;
-    void forwardLifetime(Token* tok, TokenList& tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
+    Context* mContext{};
+    void forwardLifetime(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
         if (mContext) {
             mContext->tok = tok;
-            mContext->tokenlist = &tokenlist;
+            mContext->tokenlist = tokenlist;
             mContext->errorLogger = errorLogger;
             mContext->settings = settings;
         }
-        valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
+        valueFlowForwardLifetime(tok, *tokenlist, errorLogger, settings);
     }
 };
 
@@ -4660,12 +4651,6 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList& tokenlist, Error
 
 struct Lambda {
     explicit Lambda(const Token* tok)
-        : capture(nullptr),
-        arguments(nullptr),
-        returnTok(nullptr),
-        bodyTok(nullptr),
-        explicitCaptures(),
-        implicitCapture(LifetimeCapture::Undefined)
     {
         if (!Token::simpleMatch(tok, "[") || !tok->link())
             return;
@@ -4701,12 +4686,12 @@ struct Lambda {
         }
     }
 
-    const Token * capture;
-    const Token * arguments;
-    const Token * returnTok;
-    const Token * bodyTok;
+    const Token* capture{};
+    const Token* arguments{};
+    const Token* returnTok{};
+    const Token* bodyTok{};
     std::unordered_map<const Variable*, std::pair<const Token*, LifetimeCapture>> explicitCaptures;
-    LifetimeCapture implicitCapture;
+    LifetimeCapture implicitCapture = LifetimeCapture::Undefined;
 
     std::vector<const Token*> getCaptures() const {
         return getArguments(capture);
@@ -6047,7 +6032,7 @@ static void insertNegateKnown(std::list<ValueFlow::Value>& values, const std::li
 
 struct ConditionHandler {
     struct Condition {
-        const Token *vartok;
+        const Token* vartok{};
         std::list<ValueFlow::Value> true_values;
         std::list<ValueFlow::Value> false_values;
         bool inverted = false;
@@ -6109,8 +6094,6 @@ struct ConditionHandler {
 
             return ctx;
         }
-
-        Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
 
     virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const = 0;
@@ -7168,7 +7151,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, const Variable*> vars;
 
     MultiValueFlowAnalyzer(const std::unordered_map<const Variable*, ValueFlow::Value>& args, const TokenList& t, const Settings* set)
-        : ValueFlowAnalyzer(t, set), values(), vars() {
+        : ValueFlowAnalyzer(t, set) {
         for (const auto& p:args) {
             values[p.first->declarationId()] = p.second;
             vars[p.first->declarationId()] = p.first;

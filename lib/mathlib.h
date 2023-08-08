@@ -37,10 +37,10 @@ public:
     /** @brief value class */
     class value {
     private:
-        long long mIntValue;
-        double mDoubleValue;
+        long long mIntValue{};
+        double mDoubleValue{};
         enum class Type { INT, LONG, LONGLONG, FLOAT } mType;
-        bool mIsUnsigned;
+        bool mIsUnsigned{};
 
         void promote(const value &v);
 

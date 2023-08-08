@@ -502,7 +502,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
 
 namespace {
     struct ProjectConfiguration {
-        explicit ProjectConfiguration(const tinyxml2::XMLElement *cfg) : platform(Unknown) {
+        explicit ProjectConfiguration(const tinyxml2::XMLElement *cfg) {
             const char *a = cfg->Attribute("Include");
             if (a)
                 name = a;
@@ -524,7 +524,7 @@ namespace {
         }
         std::string name;
         std::string configuration;
-        enum { Win32, x64, Unknown } platform;
+        enum { Win32, x64, Unknown } platform = Unknown;
         std::string platformStr;
     };
 

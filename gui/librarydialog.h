@@ -56,7 +56,7 @@ private:
     Ui::LibraryDialog *mUi;
     CppcheckLibraryData mData;
     QString mFileName;
-    bool mIgnoreChanges;
+    bool mIgnoreChanges{};
 
     static QString getArgText(const CppcheckLibraryData::Function::Arg &arg);
     CppcheckLibraryData::Function *currentFunction();

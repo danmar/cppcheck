@@ -109,14 +109,10 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mApplications(new ApplicationList(this)),
     mTranslation(th),
     mUI(new Ui::MainWindow),
-    mScratchPad(nullptr),
-    mProjectFile(nullptr),
     mPlatformActions(new QActionGroup(this)),
     mCStandardActions(new QActionGroup(this)),
     mCppStandardActions(new QActionGroup(this)),
-    mSelectLanguageActions(new QActionGroup(this)),
-    mExiting(false),
-    mIsLogfileLoaded(false)
+    mSelectLanguageActions(new QActionGroup(this))
 {
     {
         Settings tempSettings;

@@ -32,7 +32,7 @@ class ValuePtr;
 struct Analyzer {
     struct Action {
 
-        Action() : mFlag(0) {}
+        Action() = default;
 
         template<class T,
                  REQUIRES("T must be convertible to unsigned int", std::is_convertible<T, unsigned int> ),
@@ -125,7 +125,7 @@ struct Analyzer {
         }
 
     private:
-        unsigned int mFlag;
+        unsigned int mFlag{};
     };
 
     enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };

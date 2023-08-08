@@ -64,15 +64,14 @@ namespace {
     // local struct used in setVarId
     // in order to store information about the scope
     struct VarIdScopeInfo {
-        VarIdScopeInfo()
-            : isExecutable(false), isStructInit(false), isEnum(false), startVarid(0) {}
+        VarIdScopeInfo() = default;
         VarIdScopeInfo(bool isExecutable, bool isStructInit, bool isEnum, nonneg int startVarid)
             : isExecutable(isExecutable), isStructInit(isStructInit), isEnum(isEnum), startVarid(startVarid) {}
 
-        const bool isExecutable;
-        const bool isStructInit;
-        const bool isEnum;
-        const nonneg int startVarid;
+        const bool isExecutable{};
+        const bool isStructInit{};
+        const bool isEnum{};
+        const nonneg int startVarid{};
     };
 }
 
@@ -162,12 +161,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger, const P
     list(settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
-    mSymbolDatabase(nullptr),
     mTemplateSimplifier(new TemplateSimplifier(*this)),
-    mVarId(0),
-    mUnnamedCount(0),
-    mCodeWithTemplates(false), //is there any templates?
-    mTimerResults(nullptr),
     mPreprocessor(preprocessor)
 {
     // make sure settings are specified
@@ -405,11 +399,10 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 
 namespace {
     struct Space {
-        Space() : bodyEnd(nullptr), bodyEnd2(nullptr), isNamespace(false) {}
         std::string className;
-        const Token * bodyEnd;  // for body contains typedef define
-        const Token * bodyEnd2; // for body contains typedef using
-        bool isNamespace;
+        const Token* bodyEnd{};  // for body contains typedef define
+        const Token* bodyEnd2{}; // for body contains typedef using
+        bool isNamespace{};
         std::set<std::string> recordTypes;
     };
 }
@@ -4022,9 +4015,9 @@ private:
     std::map<std::string, nonneg int> mVariableId;
     std::map<std::string, nonneg int> mVariableId_global;
     std::stack<std::vector<std::pair<std::string, nonneg int>>> mScopeInfo;
-    mutable nonneg int mVarId;
+    mutable nonneg int mVarId{};
 public:
-    VariableMap() : mVarId(0) {}
+    VariableMap() = default;
     void enterScope();
     bool leaveScope();
     void addVariable(const std::string& varname, bool globalNamespace);

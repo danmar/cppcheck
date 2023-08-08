@@ -49,10 +49,7 @@ static const int AST_MAX_DEPTH = 150;
 
 
 TokenList::TokenList(const Settings* settings) :
-    mTokensFrontBack(),
-    mSettings(settings),
-    mIsC(false),
-    mIsCpp(false)
+    mSettings(settings)
 {
     mTokensFrontBack.list = this;
 }
@@ -396,14 +393,14 @@ std::size_t TokenList::calculateHash() const
 
 struct AST_state {
     std::stack<Token*> op;
-    int depth;
-    int inArrayAssignment;
+    int depth{};
+    int inArrayAssignment{};
     bool cpp;
-    int assign;
-    bool inCase; // true from case to :
-    bool stopAtColon; // help to properly parse ternary operators
-    const Token *functionCallEndPar;
-    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
+    int assign{};
+    bool inCase{}; // true from case to :
+    bool stopAtColon{}; // help to properly parse ternary operators
+    const Token* functionCallEndPar{};
+    explicit AST_state(bool cpp) : cpp(cpp) {}
 };
 
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)

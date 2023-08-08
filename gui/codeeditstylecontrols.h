@@ -71,7 +71,7 @@ public slots:
     void changeWeight(int index);
 
 private:
-    QFont::Weight mWeight;
+    QFont::Weight mWeight = QFont::Normal;
 };
 
 #endif  //CODEEDITORSTYLECONTROLS_H

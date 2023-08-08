@@ -42,7 +42,6 @@ CodeEditorStyle::CodeEditorStyle(
     // cppcheck-suppress naming-varname - TODO: fix this
     QColor SymbFGColor, QColor SymbBGColor,
     const QFont::Weight& SymbWeight) :
-    mSystemTheme(false),
     widgetFGColor(std::move(CtrlFGColor)),
     widgetBGColor(std::move(CtrlBGColor)),
     highlightBGColor(std::move(HiLiBGColor)),

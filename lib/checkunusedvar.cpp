@@ -635,7 +635,7 @@ static bool isPartOfClassStructUnion(const Token* tok)
         if (tok->str() == "}" || tok->str() == ")")
             tok = tok->link();
         else if (tok->str() == "(")
-            return (false);
+            return false;
         else if (tok->str() == "{") {
             return (tok->strAt(-1) == "struct" || tok->strAt(-2) == "struct" || tok->strAt(-1) == "class" || tok->strAt(-2) == "class" || tok->strAt(-1) == "union" || tok->strAt(-2) == "union");
         }
