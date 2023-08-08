@@ -1114,3 +1114,7 @@ void invalidPrintfArgType_StructMember(double d) { // #9672
     // cppcheck-suppress invalidPrintfArgType_sint
     my_struct.st.Format("%d", d);
 }
+
+BOOL MyEnableWindow(HWND hWnd, BOOL bEnable) {
+    return EnableWindow(hWnd, bEnable);
+}
