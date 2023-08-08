@@ -63,7 +63,7 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() DINIT_NOEXCEPT = default;
+        CheckOptions() = default;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;

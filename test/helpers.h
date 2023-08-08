@@ -106,21 +106,9 @@ public:
 #define dinit(T, ...) \
     ([&] { T ${}; __VA_ARGS__; return $; }())
 
-#if (defined(__GNUC__) && (__GNUC__ >= 5)) || defined(__clang__)
-// work around Clang compilation error
-// error: default member initializer for 'y' needed within definition of enclosing class 'X' outside of member functions
-// work around GCC compilation error
-// error: default member initializer for ‘x::y::z’ required before the end of its enclosing class
-// see https://stackoverflow.com/questions/53408962
-#define DINIT_NOEXCEPT noexcept
-#else
-// work around GCC 4.8 compilation error
-// error: function 'x()' defaulted on its first declaration with an exception-specification that differs from the implicit declaration 'x()'
-#define DINIT_NOEXCEPT
-#endif
-
 // Default construct object to avoid bug in clang
 // error: default member initializer for 'y' needed within definition of enclosing class 'X' outside of member functions
+// see https://stackoverflow.com/questions/53408962
 struct make_default_obj
 {
     template<class T>
