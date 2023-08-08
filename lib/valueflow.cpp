@@ -4046,7 +4046,7 @@ struct LifetimeStore {
             update = true;
         }
         if (update && forward)
-            forwardLifetime(tok, &tokenlist, errorLogger, settings);
+            forwardLifetime(tok, tokenlist, errorLogger, settings);
         return update;
     }
 
@@ -4141,7 +4141,7 @@ struct LifetimeStore {
             }
         }
         if (update && forward)
-            forwardLifetime(tok, &tokenlist, errorLogger, settings);
+            forwardLifetime(tok, tokenlist, errorLogger, settings);
         return update;
     }
 
@@ -4218,14 +4218,14 @@ struct LifetimeStore {
 
 private:
     Context* mContext{};
-    void forwardLifetime(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
+    void forwardLifetime(Token* tok, TokenList& tokenlist, ErrorLogger* errorLogger, const Settings* settings) const {
         if (mContext) {
             mContext->tok = tok;
-            mContext->tokenlist = tokenlist;
+            mContext->tokenlist = &tokenlist;
             mContext->errorLogger = errorLogger;
             mContext->settings = settings;
         }
-        valueFlowForwardLifetime(tok, *tokenlist, errorLogger, settings);
+        valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
     }
 };
 
