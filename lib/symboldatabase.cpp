@@ -6552,6 +6552,13 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
                     setValueType(parent, *vt1);
                 return;
             }
+
+            if (vt1->pointer == 0U && vt2 && vt2->pointer == 0U) {
+                if (vt1->isTypeEqual(vt2)) {
+                    setValueType(parent, *vt1);
+                    return;
+                }
+            }
         }
 
         if (vt1->pointer != 0U) {
