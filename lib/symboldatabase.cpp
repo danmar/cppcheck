@@ -3850,12 +3850,9 @@ void SymbolDatabase::printOut(const char *title) const
             }
             std::cout << "        retType: " << func->retType << std::endl;
 
-            if (func->tokenDef->next()->valueType()) {
-                const ValueType * valueType = func->tokenDef->next()->valueType();
+            if (const ValueType* valueType = func->tokenDef->next()->valueType()) {
                 std::cout << "        valueType: " << valueType << std::endl;
-                if (valueType) {
-                    std::cout << "            " << valueType->str() << std::endl;
-                }
+                std::cout << "            " << valueType->str() << std::endl;
             }
 
             if (func->hasBody()) {

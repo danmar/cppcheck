@@ -510,6 +510,7 @@ private:
         TEST_CASE(auto17); // #11163
         TEST_CASE(auto18);
         TEST_CASE(auto19);
+        TEST_CASE(auto20);
 
         TEST_CASE(unionWithConstructor);
 
@@ -9435,6 +9436,22 @@ private:
             ASSERT_EQUALS(varTok->valueType()->constness, 0);
             ASSERT_EQUALS(varTok->valueType()->pointer, 1);
         }
+    }
+
+    void auto20() {
+        GET_SYMBOL_DB("enum A { A0 };\n"
+                      "enum B { B0 };\n"
+                      "const int& g(A a);\n"
+                      "const int& g(B b);\n"
+                      "void f() {\n"
+                      "    const auto& r = g(B::B0);\n"
+                      "}\n");
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT_EQUALS(a->valueType()->type, ValueType::INT);
+        const Token* g = Token::findsimplematch(a, "g ( B ::");
+        ASSERT(g && g->function());
+        ASSERT_EQUALS(g->function()->tokenDef->linenr(), 4);
     }
 
     void unionWithConstructor() {
