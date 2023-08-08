@@ -63,7 +63,7 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() DINIT_NOEXCEPT = default;
+        CheckOptions() = default;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
@@ -72,7 +72,7 @@ private:
         std::vector<std::string> args;
     };
 
-    void check(int files, int result, const std::string &data, const CheckOptions &opt = {}) {
+    void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
         output.str("");
         settings.project.fileSettings.clear();

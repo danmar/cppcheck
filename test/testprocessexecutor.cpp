@@ -48,7 +48,7 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() DINIT_NOEXCEPT = default;
+        CheckOptions() = default;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
@@ -58,7 +58,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions &opt = {}) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
         output.str("");
 
