@@ -2483,7 +2483,8 @@ private:
               "void g() {\n"
               "    f((uint8_t)new int());\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with new, f doesn't release it.\n",
+                      errout.str());
     }
 
     void missingAssignment() {
