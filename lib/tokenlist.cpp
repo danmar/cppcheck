@@ -330,10 +330,15 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
+// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
 void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 {
-    if (tokenList.cfront())
+    if (tokenList.cfront()) {
+        // this is a copy
+        // TODO: the same as TokenList.files - move that instead
+        // TODO: this points to mFiles when called from createTokens(std::istream &, const std::string&)
         mOrigFiles = mFiles = tokenList.cfront()->location.files;
+    }
     else
         mFiles.clear();
 
@@ -341,6 +346,7 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 
     for (const simplecpp::Token *tok = tokenList.cfront(); tok;) {
 
+        // TODO: move from TokenList
         std::string str = tok->str();
 
         // Float literal
