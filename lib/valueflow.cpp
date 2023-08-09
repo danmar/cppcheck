@@ -8816,11 +8816,12 @@ static void valueFlowContainerSize(TokenList& tokenlist,
                     size = 1;
                 else if (const ValueFlow::Value* v1 = valueTok->getKnownValue(ValueFlow::Value::ValueType::TOK))
                     size = Token::getStrLength(v1->tokvalue);
-                else if (const ValueFlow::Value* v2 = valueTok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+                else if (const ValueFlow::Value* v2 =
+                             valueTok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
                     size = v2->intvalue;
                 if (size == 0)
                     continue;
-                ValueFlow::Value value(size-1);
+                ValueFlow::Value value(size - 1);
                 value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                 value.bound = ValueFlow::Value::Bound::Lower;
                 value.setImpossible();
