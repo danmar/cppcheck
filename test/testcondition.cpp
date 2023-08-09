@@ -5017,12 +5017,12 @@ private:
         check("int f(std::string s) {\n"
               "    if (s.empty())\n"
               "        return -1;\n"
-              "    s += '\n';\n"
+              "    s += '\\n';\n"
               "    if (s.empty())\n"
               "        return -1;\n"
               "    return -1;\n"
               "}\n");
-        ASSERT_EQUALS("error", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 's.empty()' is always false\n", errout.str());
     }
 
     void alwaysTrueLoop()
