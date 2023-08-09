@@ -129,6 +129,7 @@ We run this separately via `clang-include-cleaner` in the `iwyu.yml` workflow as
 `performance-noexcept-swap`<br/>
 `bugprone-switch-missing-default-case`<br/>
 `bugprone-empty-catch`<br/>
+`performance-enum-size`<br/>
 
 To be evaluated (need to remove exclusion).
 
