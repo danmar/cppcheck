@@ -8806,6 +8806,29 @@ static void valueFlowContainerSize(TokenList& tokenlist,
                     value.setImpossible();
                     valueFlowForward(tok->linkAt(2), containerTok, value, tokenlist, settings);
                 }
+            } else if (Token::simpleMatch(tok, "+=") && astIsContainer(tok->astOperand1())) {
+                const Token* containerTok = tok->astOperand1();
+                const Token* valueTok = tok->astOperand2();
+                MathLib::bigint size = 0;
+                if (valueTok->tokType() == Token::eString)
+                    size = Token::getStrLength(valueTok);
+                else if (astIsGenericChar(tok) || valueTok->tokType() == Token::eChar)
+                    size = 1;
+                else if (const ValueFlow::Value* v1 = valueTok->getKnownValue(ValueFlow::Value::ValueType::TOK))
+                    size = Token::getStrLength(v1->tokvalue);
+                else if (const ValueFlow::Value* v2 =
+                             valueTok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+                    size = v2->intvalue;
+                if (size == 0)
+                    continue;
+                ValueFlow::Value value(size - 1);
+                value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+                value.bound = ValueFlow::Value::Bound::Lower;
+                value.setImpossible();
+                Token* next = nextAfterAstRightmostLeaf(tok);
+                if (!next)
+                    next = tok->next();
+                valueFlowForward(next, containerTok, value, tokenlist, settings);
             }
         }
     }
