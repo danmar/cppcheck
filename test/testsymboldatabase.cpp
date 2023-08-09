@@ -68,9 +68,8 @@ public:
 private:
     const Token* vartok{nullptr};
     const Token* typetok{nullptr};
-    // If there are unused templates, keep those
-    Settings settings1 = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
-    const Settings settings2 = settingsBuilder().checkUnusedTemplates().platform(cppcheck::Platform::Type::Unspecified).build();
+    Settings settings1 = settingsBuilder().library("std.cfg").build();
+    const Settings settings2 = settingsBuilder().platform(cppcheck::Platform::Type::Unspecified).build();
 
     void reset() {
         vartok = nullptr;

@@ -90,7 +90,7 @@ public:
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
-class CPPCHECKLIB Settings {
+class CPPCHECKLIB WARN_UNUSED Settings {
 private:
 
     /** @brief terminate checking */
