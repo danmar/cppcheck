@@ -319,7 +319,7 @@ protected:
     std::unique_ptr<TestFixture> impl;
 };
 
-#define TEST_CASE( NAME ) do { if (prepareTest(#NAME)) { setVerbose(false); try { NAME(); teardownTest(); } catch (const AssertFailedError&) {} catch (...) { assertNoThrowFail(__FILE__, __LINE__, false); } } } while (false)
+#define TEST_CASE( NAME ) do { if (prepareTest(#NAME)) { try { NAME(); teardownTest(); } catch (const AssertFailedError&) {} catch (...) { assertNoThrowFail(__FILE__, __LINE__, false); } } } while (false)
 
 #define ASSERT( CONDITION ) assert_(__FILE__, __LINE__, (CONDITION))
 #define ASSERT_MSG( CONDITION, MSG ) assert_(__FILE__, __LINE__, (CONDITION), MSG)
