@@ -62,7 +62,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check...
-        runChecks<CheckSizeof>(&tokenizer, &settings, this);
+        runChecks<CheckSizeof>(tokenizer, this);
     }
 
     void checkP(const char code[]) {
@@ -85,7 +85,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check...
-        runChecks<CheckSizeof>(&tokenizer, &settings, this);
+        runChecks<CheckSizeof>(tokenizer, this);
     }
 
     void sizeofsizeof() {

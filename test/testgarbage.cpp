@@ -296,7 +296,7 @@ private:
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().cbegin(); it != Check::instances().cend(); ++it) {
-            (*it)->runChecks(&tokenizer, &settings, this);
+            (*it)->runChecks(tokenizer, this);
         }
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);

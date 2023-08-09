@@ -56,7 +56,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -68,7 +68,7 @@ private:
         errout.str("");
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
     void checkP(const char code[], const char* filename = "test.cpp")
@@ -95,7 +95,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
     void run() override {

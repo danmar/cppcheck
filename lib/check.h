@@ -77,7 +77,7 @@ public:
     static std::list<Check *> &instances();
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) = 0;
+    virtual void runChecks(const Tokenizer &, ErrorLogger *) = 0;
 
     /** get error messages */
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;

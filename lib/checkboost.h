@@ -47,11 +47,11 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        if (!tokenizer->isCPP())
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        if (!tokenizer.isCPP())
             return;
 
-        CheckBoost checkBoost(tokenizer, settings, errorLogger);
+        CheckBoost checkBoost(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkBoost.checkBoostForeachModification();
     }
 

@@ -124,10 +124,10 @@ protected:
     }
 
     template<typename T>
-    static void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    static void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
     {
         T& check = getCheck<T>();
-        check.runChecks(tokenizer, settings, errorLogger);
+        check.runChecks(tokenizer, errorLogger);
     }
 
     class SettingsBuilder
