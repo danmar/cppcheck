@@ -30,8 +30,8 @@ jobs:
           sudo apt-get purge --auto-remove llvm python3-lldb-14 llvm-14
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 16
-          sudo apt-get install -y clang-tidy-16
+          sudo ./llvm.sh 17
+          sudo apt-get install -y clang-tidy-17
 
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v3
@@ -42,14 +42,14 @@ jobs:
 
       - name: Verify clang-tidy configuration
         run: |
-          clang-tidy-16 --verify-config
+          clang-tidy-17 --verify-config
 
       - name: Prepare CMake
         run: |
           cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DENABLE_CHECK_INTERNAL=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off
         env:
-          CC: clang-16
-          CXX: clang++-16
+          CC: clang-17
+          CXX: clang++-17
 
       - name: Prepare CMake dependencies
         run: |

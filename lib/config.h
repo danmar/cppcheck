@@ -79,6 +79,13 @@
 #  define UNUSED
 #endif
 
+// warn_unused
+#if (defined(__clang__) && (__clang_major__ >= 15))
+#  define WARN_UNUSED [[gnu::warn_unused]]
+#else
+#  define WARN_UNUSED
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 #include <string>

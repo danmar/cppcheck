@@ -55,8 +55,8 @@ public:
     };
 
     struct CPPCHECKLIB Suppression {
-        Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
-        Suppression(std::string id, std::string file, int line=NO_LINE) : errorId(std::move(id)), fileName(std::move(file)), lineNumber(line), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
+        Suppression() = default;
+        Suppression(std::string id, std::string file, int line=NO_LINE) : errorId(std::move(id)), fileName(std::move(file)), lineNumber(line) {}
 
         bool operator<(const Suppression &other) const {
             if (errorId != other.errorId)
@@ -103,12 +103,12 @@ public:
 
         std::string errorId;
         std::string fileName;
-        int lineNumber;
+        int lineNumber = NO_LINE;
         std::string symbolName;
-        std::size_t hash;
-        bool thisAndNextLine; // Special case for backwards compatibility: { // cppcheck-suppress something
-        bool matched;
-        bool checked; // for inline suppressions, checked or not
+        std::size_t hash{};
+        bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
+        bool matched{};
+        bool checked{}; // for inline suppressions, checked or not
 
         enum { NO_LINE = -1 };
     };

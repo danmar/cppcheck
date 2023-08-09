@@ -69,8 +69,7 @@ const QColor& SelectColorButton::getColor()
 }
 
 SelectFontWeightCombo::SelectFontWeightCombo(QWidget* parent) :
-    QComboBox(parent),
-    mWeight(QFont::Normal)
+    QComboBox(parent)
 {
     addItem(QObject::tr("Thin"),
             QVariant(static_cast<int>(QFont::Thin)));

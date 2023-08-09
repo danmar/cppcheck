@@ -146,10 +146,10 @@ private:
     Settings &mSettings;
     Suppressions &mSuppressions;
     Suppressions &mSuppressionsNoFail;
-    bool mShowHelp;
-    bool mShowVersion;
-    bool mShowErrorMessages;
-    bool mExitAfterPrint;
+    bool mShowHelp{};
+    bool mShowVersion{};
+    bool mShowErrorMessages{};
+    bool mExitAfterPrint{};
     std::string mVSConfig;
 };
 

@@ -53,7 +53,7 @@ namespace tinyxml2 {
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {}
+    CheckClass() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
@@ -195,7 +195,7 @@ public:
     static const std::set<std::string> stl_containers_not_const;
 
 private:
-    const SymbolDatabase *mSymbolDatabase;
+    const SymbolDatabase* mSymbolDatabase{};
 
     // Reporting errors..
     void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
@@ -330,16 +330,16 @@ private:
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     struct Usage {
-        explicit Usage(const Variable *var) : var(var), assign(false), init(false) {}
+        explicit Usage(const Variable *var) : var(var) {}
 
         /** Variable that this usage is for */
         const Variable *var;
 
         /** @brief has this variable been assigned? */
-        bool assign;
+        bool assign{};
 
         /** @brief has this variable been initialized? */
-        bool init;
+        bool init{};
     };
 
     static bool isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope);

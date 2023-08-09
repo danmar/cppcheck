@@ -86,14 +86,14 @@ private:
         bool isStdContainer(const Token *tok);
         bool isLibraryType(const Settings *settings) const;
 
-        const Variable *variableInfo;
-        const Token *typeToken;
-        const Function *functionInfo;
-        Token *tempToken;
-        bool element;
-        bool _template;
-        bool address;
-        bool isCPP;
+        const Variable* variableInfo{};
+        const Token* typeToken{};
+        const Function* functionInfo{};
+        Token* tempToken{};
+        bool element{};
+        bool _template{};
+        bool address{};
+        bool isCPP{};
     };
 
     void checkFormatString(const Token * const tok,

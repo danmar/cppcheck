@@ -391,10 +391,7 @@ CppCheck::CppCheck(ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
                    std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand)
     : mErrorLogger(errorLogger)
-    , mExitCode(0)
     , mUseGlobalSuppressions(useGlobalSuppressions)
-    , mTooManyConfigs(false)
-    , mSimplify(true)
     , mExecuteCommand(std::move(executeCommand))
 {}
 
@@ -545,7 +542,7 @@ unsigned int CppCheck::check(const std::string &path)
             tokenizer.list.appendFileIfNew(path);
             clangimport::parseClangAstDump(&tokenizer, ast);
             ValueFlow::setValues(tokenizer.list,
-                                 const_cast<SymbolDatabase*>(tokenizer.getSymbolDatabase()),
+                                 const_cast<SymbolDatabase&>(*tokenizer.getSymbolDatabase()),
                                  this,
                                  &mSettings,
                                  &s_timerResults);

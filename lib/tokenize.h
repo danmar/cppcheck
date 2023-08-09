@@ -698,7 +698,7 @@ private:
     ErrorLogger* const mErrorLogger;
 
     /** Symbol database that all checks etc can use */
-    SymbolDatabase *mSymbolDatabase;
+    SymbolDatabase* mSymbolDatabase{};
 
     TemplateSimplifier * const mTemplateSimplifier;
 
@@ -719,21 +719,21 @@ private:
     std::vector<TypedefInfo> mTypedefInfo;
 
     /** variable count */
-    nonneg int mVarId;
+    nonneg int mVarId{};
 
     /** unnamed count "Unnamed0", "Unnamed1", "Unnamed2", ... */
-    nonneg int mUnnamedCount;
+    nonneg int mUnnamedCount{};
 
     /**
      * was there any templates? templates that are "unused" are
      * removed from the token list
      */
-    bool mCodeWithTemplates;
+    bool mCodeWithTemplates{};
 
     /**
      * TimerResults
      */
-    TimerResults *mTimerResults;
+    TimerResults* mTimerResults{};
 
     const Preprocessor * const mPreprocessor;
 };

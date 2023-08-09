@@ -45,7 +45,7 @@ class ErrorItem;
 class ThreadResult : public QObject, public ErrorLogger {
     Q_OBJECT
 public:
-    ThreadResult();
+    ThreadResult() = default;
     ~ThreadResult() override;
 
     /**
@@ -142,25 +142,25 @@ protected:
      * @brief Max progress
      *
      */
-    quint64 mMaxProgress;
+    quint64 mMaxProgress{};
 
     /**
      * @brief Current progress
      *
      */
-    quint64 mProgress;
+    quint64 mProgress{};
 
     /**
      * @brief Current number of files checked
      *
      */
-    unsigned long mFilesChecked;
+    unsigned long mFilesChecked{};
 
     /**
      * @brief Total number of files
      *
      */
-    unsigned long mTotalFiles;
+    unsigned long mTotalFiles{};
 };
 /// @}
 #endif // THREADRESULT_H

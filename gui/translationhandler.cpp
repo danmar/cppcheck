@@ -42,8 +42,7 @@ static UNUSED void unused()
 
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
-    mCurrentLanguage("en"),
-    mTranslator(nullptr)
+    mCurrentLanguage("en")
 {
     // Add our available languages
     // Keep this list sorted

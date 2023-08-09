@@ -127,7 +127,7 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], Settings &settings, const char* filename = "test.cpp") {
+    void check(const char code[], const Settings &settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -154,7 +154,7 @@ private:
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
-        Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
         check(code, settings, filename);
     }
 
@@ -5655,7 +5655,7 @@ private:
     }
 
     void compareOutOfTypeRange() {
-        Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

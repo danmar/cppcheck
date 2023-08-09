@@ -58,7 +58,7 @@ class CPPCHECKLIB Library {
     friend class TestProcessExecutor; // For testing only
 
 public:
-    Library();
+    Library() = default;
 
     enum class ErrorCode { OK, FILE_NOT_FOUND, BAD_XML, UNKNOWN_ELEMENT, MISSING_ATTRIBUTE, BAD_ATTRIBUTE_VALUE, UNSUPPORTED_FORMAT, DUPLICATE_PLATFORM_TYPE, PLATFORM_TYPE_REDEFINED };
 
@@ -210,18 +210,7 @@ public:
 
     class Container {
     public:
-        Container()
-            : type_templateArgNo(-1),
-            size_templateArgNo(-1),
-            arrayLike_indexOp(false),
-            stdStringLike(false),
-            stdAssociativeLike(false),
-            opLessAllowed(true),
-            hasInitializerListConstructor(false),
-            unstableErase(false),
-            unstableInsert(false),
-            view(false)
-        {}
+        Container() = default;
 
         enum class Action {
             RESIZE,
@@ -259,17 +248,17 @@ public:
         };
         std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
-        int type_templateArgNo;
+        int type_templateArgNo = -1;
         std::vector<RangeItemRecordTypeItem> rangeItemRecordType;
-        int size_templateArgNo;
-        bool arrayLike_indexOp;
-        bool stdStringLike;
-        bool stdAssociativeLike;
-        bool opLessAllowed;
-        bool hasInitializerListConstructor;
-        bool unstableErase;
-        bool unstableInsert;
-        bool view;
+        int size_templateArgNo = -1;
+        bool arrayLike_indexOp{};
+        bool stdStringLike{};
+        bool stdAssociativeLike{};
+        bool opLessAllowed = true;
+        bool hasInitializerListConstructor{};
+        bool unstableErase{};
+        bool unstableInsert{};
+        bool view{};
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
@@ -298,47 +287,31 @@ public:
     const Container* detectIterator(const Token* typeStart) const;
     const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr, bool withoutStd = false) const;
 
-    class ArgumentChecks {
-    public:
-        ArgumentChecks() :
-            notbool(false),
-            notnull(false),
-            notuninit(-1),
-            formatstr(false),
-            strz(false),
-            optional(false),
-            variadic(false),
-            iteratorInfo(),
-            direction(Direction::DIR_UNKNOWN) {}
-
-        bool notbool;
-        bool notnull;
-        int notuninit;
-        bool formatstr;
-        bool strz;
-        bool optional;
-        bool variadic;
+    struct ArgumentChecks {
+        bool notbool{};
+        bool notnull{};
+        int notuninit = -1;
+        bool formatstr{};
+        bool strz{};
+        bool optional{};
+        bool variadic{};
         std::string valid;
 
-        class IteratorInfo {
-        public:
-            IteratorInfo() : container(0), it(false), first(false), last(false) {}
-
-            int container;
-            bool it;
-            bool first;
-            bool last;
+        struct IteratorInfo {
+            int container{};
+            bool it{};
+            bool first{};
+            bool last{};
         };
         IteratorInfo iteratorInfo;
 
-        class MinSize {
-        public:
+        struct MinSize {
             enum class Type { NONE, STRLEN, ARGVALUE, SIZEOF, MUL, VALUE };
-            MinSize(Type t, int a) : type(t), arg(a), arg2(0), value(0) {}
+            MinSize(Type t, int a) : type(t), arg(a) {}
             Type type;
             int arg;
-            int arg2;
-            long long value;
+            int arg2 = 0;
+            long long value = 0;
             std::string baseType;
         };
         std::vector<MinSize> minsizes;
@@ -349,36 +322,23 @@ public:
             DIR_INOUT,  ///< Input to called function, and output to caller. Data is passed by reference or address and is potentially modified.
             DIR_UNKNOWN ///< direction not known / specified
         };
-        Direction direction;
+        Direction direction = Direction::DIR_UNKNOWN;
     };
 
     struct Function {
         std::map<int, ArgumentChecks> argumentChecks; // argument nr => argument data
-        bool use;
-        bool leakignore;
-        bool isconst;
-        bool ispure;
-        UseRetValType useretval;
-        bool ignore;  // ignore functions/macros from a library (gtk, qt etc)
-        bool formatstr;
-        bool formatstr_scan;
-        bool formatstr_secure;
-        Container::Action containerAction;
-        Container::Yield containerYield;
+        bool use{};
+        bool leakignore{};
+        bool isconst{};
+        bool ispure{};
+        UseRetValType useretval = UseRetValType::NONE;
+        bool ignore{};  // ignore functions/macros from a library (gtk, qt etc)
+        bool formatstr{};
+        bool formatstr_scan{};
+        bool formatstr_secure{};
+        Container::Action containerAction = Container::Action::NO_ACTION;
+        Container::Yield containerYield = Container::Yield::NO_YIELD;
         std::string returnType;
-        Function()
-            : use(false),
-            leakignore(false),
-            isconst(false),
-            ispure(false),
-            useretval(UseRetValType::NONE),
-            ignore(false),
-            formatstr(false),
-            formatstr_scan(false),
-            formatstr_secure(false),
-            containerAction(Container::Action::NO_ACTION),
-            containerYield(Container::Yield::NO_YIELD)
-        {}
     };
 
     const Function *getFunction(const Token *ftok) const;
@@ -505,13 +465,6 @@ public:
     }
 
     struct PlatformType {
-        PlatformType()
-            : mSigned(false)
-            , mUnsigned(false)
-            , mLong(false)
-            , mPointer(false)
-            , mPtrPtr(false)
-            , mConstPtr(false) {}
         bool operator == (const PlatformType & type) const {
             return (mSigned == type.mSigned &&
                     mUnsigned == type.mUnsigned &&
@@ -525,12 +478,12 @@ public:
             return !(*this == type);
         }
         std::string mType;
-        bool mSigned;
-        bool mUnsigned;
-        bool mLong;
-        bool mPointer;
-        bool mPtrPtr;
-        bool mConstPtr;
+        bool mSigned{};
+        bool mUnsigned{};
+        bool mLong{};
+        bool mPointer{};
+        bool mPtrPtr{};
+        bool mConstPtr{};
     };
 
     struct Platform {
@@ -594,7 +547,7 @@ private:
     };
     class CodeBlock {
     public:
-        CodeBlock() : mOffset(0) {}
+        CodeBlock() = default;
 
         void setStart(const char* s) {
             mStart = s;
@@ -624,11 +577,11 @@ private:
     private:
         std::string mStart;
         std::string mEnd;
-        int mOffset;
+        int mOffset{};
         std::set<std::string> mBlocks;
     };
     enum class FalseTrueMaybe { False, True, Maybe };
-    int mAllocId;
+    int mAllocId{};
     std::set<std::string> mFiles;
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions

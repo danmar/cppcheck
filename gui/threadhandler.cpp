@@ -36,11 +36,7 @@
 #include <QVariant>
 
 ThreadHandler::ThreadHandler(QObject *parent) :
-    QObject(parent),
-    mScanDuration(0),
-    mRunningThreadCount(0),
-    mAnalyseWholeProgram(false)
-
+    QObject(parent)
 {
     setThreadCount(1);
 }
@@ -152,7 +148,10 @@ void ThreadHandler::setThreadCount(const int count)
 void ThreadHandler::removeThreads()
 {
     for (CheckThread* thread : mThreads) {
-        thread->terminate();
+        if (thread->isRunning()) {
+            thread->terminate();
+            thread->wait();
+        }
         disconnect(thread, &CheckThread::done,
                    this, &ThreadHandler::threadDone);
         disconnect(thread, &CheckThread::fileChecked,
