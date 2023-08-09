@@ -24,6 +24,8 @@
 #include "importproject.h"
 #include "suppressions.h"
 
+#include <atomic>
+
 #include <QList>
 #include <QObject>
 #include <QString>
@@ -118,9 +120,9 @@ protected:
     };
 
     /**
-     * @brief Thread's current execution state.
+     * @brief Thread's current execution state. Can be changed from outside
      */
-    State mState = Ready;
+    std::atomic<State> mState{Ready};
 
     ThreadResult &mResult;
     /**
