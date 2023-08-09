@@ -2485,6 +2485,14 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with new, f doesn't release it.\n",
                       errout.str());
+
+        check("void f(int i, T t);\n"
+              "void g(int i, U* u);\n"
+              "void h() {\n"
+              "    f(1, new int());\n"
+              "    g(1, new int());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
