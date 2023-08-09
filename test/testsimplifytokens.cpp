@@ -34,11 +34,10 @@ public:
 
 
 private:
-    // If there are unused templates, keep those
-    const Settings settings0 = settingsBuilder().severity(Severity::portability).checkUnusedTemplates().build();
-    const Settings settings1 = settingsBuilder().severity(Severity::style).checkUnusedTemplates().build();
-    const Settings settings_std = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
-    const Settings settings_windows = settingsBuilder().library("windows.cfg").severity(Severity::portability).checkUnusedTemplates().build();
+    const Settings settings0 = settingsBuilder().severity(Severity::portability).build();
+    const Settings settings1 = settingsBuilder().severity(Severity::style).build();
+    const Settings settings_std = settingsBuilder().library("std.cfg").build();
+    const Settings settings_windows = settingsBuilder().library("windows.cfg").severity(Severity::portability).build();
 
     void run() override {
         TEST_CASE(combine_strings);

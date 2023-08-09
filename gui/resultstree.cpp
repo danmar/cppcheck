@@ -81,19 +81,7 @@ static const int COLUMN_SINCE_DATE = 6;
 static const int COLUMN_TAGS       = 7;
 
 ResultsTree::ResultsTree(QWidget * parent) :
-    QTreeView(parent),
-    mSettings(nullptr),
-    mApplications(nullptr),
-    mContextItem(nullptr),
-    mShowFullPath(false),
-    mSaveFullPath(false),
-    mSaveAllErrors(true),
-    mShowErrorId(false),
-    mVisibleErrors(false),
-    mSelectionModel(nullptr),
-    mThread(nullptr),
-    mShowCppcheck(true),
-    mShowClang(true)
+    QTreeView(parent)
 {
     setModel(&mModel);
     translate(); // Adds columns to grid

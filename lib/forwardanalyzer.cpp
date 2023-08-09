@@ -51,15 +51,15 @@ struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
     enum class Terminate { None, Bail, Inconclusive };
     ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
-        : analyzer(analyzer), settings(settings), actions(Analyzer::Action::None), analyzeOnly(false), analyzeTerminate(false)
+        : analyzer(analyzer), settings(settings)
     {}
     ValuePtr<Analyzer> analyzer;
     const Settings& settings;
     Analyzer::Action actions;
-    bool analyzeOnly;
-    bool analyzeTerminate;
+    bool analyzeOnly{};
+    bool analyzeTerminate{};
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
-    std::vector<Token*> loopEnds = {};
+    std::vector<Token*> loopEnds;
 
     Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None) {
         if ((!analyzeOnly || analyzeTerminate) && t != Analyzer::Terminate::None)

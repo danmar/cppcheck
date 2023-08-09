@@ -35,7 +35,7 @@
 //---------------------------------------------------------------------------
 
 Check::Check(const std::string &aname)
-    : mTokenizer(nullptr), mSettings(nullptr), mErrorLogger(nullptr), mName(aname)
+    : mName(aname)
 {
     {
         const auto it = std::find_if(instances().begin(), instances().end(), [&](const Check *i) {

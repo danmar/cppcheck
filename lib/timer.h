@@ -43,12 +43,8 @@ public:
 };
 
 struct TimerResultsData {
-    std::clock_t mClocks;
-    long mNumberOfResults;
-
-    TimerResultsData()
-        : mClocks(0)
-        , mNumberOfResults(0) {}
+    std::clock_t mClocks{};
+    long mNumberOfResults{};
 
     double seconds() const {
         const double ret = (double)((unsigned long)mClocks) / (double)CLOCKS_PER_SEC;
@@ -81,10 +77,10 @@ public:
 
 private:
     const std::string mStr;
-    TimerResultsIntf* mTimerResults;
-    std::clock_t mStart;
-    const SHOWTIME_MODES mShowTimeMode;
-    bool mStopped;
+    TimerResultsIntf* mTimerResults{};
+    std::clock_t mStart = std::clock();
+    const SHOWTIME_MODES mShowTimeMode = SHOWTIME_MODES::SHOWTIME_FILE_TOTAL;
+    bool mStopped{};
 };
 //---------------------------------------------------------------------------
 #endif // timerH

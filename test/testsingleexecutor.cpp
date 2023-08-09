@@ -63,13 +63,16 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() DINIT_NOEXCEPT = default;
+        CheckOptions() = default;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
+        bool executeCommandCalled = false;
+        std::string exe;
+        std::vector<std::string> args;
     };
 
-    void check(int files, int result, const std::string &data, const CheckOptions &opt = {}) {
+    void check(int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
         output.str("");
         settings.project.fileSettings.clear();
@@ -101,9 +104,16 @@ private:
         settings.showtime = opt.showtime;
         if (opt.plistOutput)
             settings.plistOutput = opt.plistOutput;
+
+        bool executeCommandCalled = false;
+        std::string exe;
+        std::vector<std::string> args;
         // NOLINTNEXTLINE(performance-unnecessary-value-param)
-        CppCheck cppcheck(*this, true, [](std::string,std::vector<std::string>,std::string,std::string&){
-            return false;
+        CppCheck cppcheck(*this, true, [&executeCommandCalled, &exe, &args](std::string e,std::vector<std::string> a,std::string,std::string&){
+            executeCommandCalled = true;
+            exe = std::move(e);
+            args = std::move(a);
+            return true;
         });
         cppcheck.settings() = settings;
 
@@ -117,8 +127,15 @@ private:
             filemap.clear();
 
         // TODO: test with settings.project.fileSettings;
-        SingleExecutor executor(cppcheck, filemap, settings, *this);
+        SingleExecutor executor(cppcheck, filemap, settings, settings.nomsg, *this);
         ASSERT_EQUALS(result, executor.check());
+        ASSERT_EQUALS(opt.executeCommandCalled, executeCommandCalled);
+        ASSERT_EQUALS(opt.exe, exe);
+        ASSERT_EQUALS(opt.args.size(), args.size());
+        for (int i = 0; i < args.size(); ++i)
+        {
+            ASSERT_EQUALS(opt.args[i], args[i]);
+        }
     }
 
     void run() override {
@@ -131,6 +148,7 @@ private:
         TEST_CASE(one_error_less_files);
         TEST_CASE(one_error_several_files);
         TEST_CASE(markup);
+        TEST_CASE(clangTidy);
     }
 
     void many_files() {
@@ -246,7 +264,34 @@ private:
         settings = settingsOld;
     }
 
-    // TODO: test clang-tidy
+    void clangTidy() {
+        // TODO: we currently only invoke it with ImportProject::FileSettings
+        if (!useFS)
+            return;
+
+        const Settings settingsOld = settings;
+        settings.clangTidy = true;
+
+#ifdef _WIN32
+        const char exe[] = "clang-tidy.exe";
+#else
+        const char exe[] = "clang-tidy";
+#endif
+
+        const std::string file = fprefix() + "_001.cpp";
+        check(1, 0,
+              "int main()\n"
+              "{\n"
+              "  return 0;\n"
+              "}",
+              dinit(CheckOptions,
+                    $.executeCommandCalled = true,
+                        $.exe = exe,
+                        $.args = {"-quiet", "-checks=*,-clang-analyzer-*,-llvm*", file, "--"}));
+        ASSERT_EQUALS("Checking " + file + " ...\n", output.str());
+        settings = settingsOld;
+    }
+
     // TODO: test whole program analysis
 };
 

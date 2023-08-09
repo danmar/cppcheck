@@ -113,10 +113,6 @@ CmdLineParser::CmdLineParser(Settings &settings, Suppressions &suppressions, Sup
     : mSettings(settings)
     , mSuppressions(suppressions)
     , mSuppressionsNoFail(suppressionsNoFail)
-    , mShowHelp(false)
-    , mShowVersion(false)
-    , mShowErrorMessages(false)
-    , mExitAfterPrint(false)
 {}
 
 void CmdLineParser::printMessage(const std::string &message)

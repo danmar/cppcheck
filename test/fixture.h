@@ -47,7 +47,7 @@ private:
     static std::size_t fails_counter;
     static std::size_t todos_counter;
     static std::size_t succeeded_todos_counter;
-    bool mVerbose;
+    bool mVerbose{};
     std::string mTemplateFormat;
     std::string mTemplateLocation;
     std::string mTestname;
@@ -55,7 +55,7 @@ private:
 protected:
     std::string exename;
     std::string testToRun;
-    bool quiet_tests;
+    bool quiet_tests{};
 
     virtual void run() = 0;
 
@@ -130,7 +130,6 @@ protected:
         check.runChecks(tokenizer, settings, errorLogger);
     }
 
-    // TODO: bail out on redundant settings
     class SettingsBuilder
     {
     public:
@@ -138,41 +137,59 @@ protected:
         SettingsBuilder(const TestFixture &fixture, Settings settings) : fixture(fixture), settings(std::move(settings)) {}
 
         SettingsBuilder& severity(Severity::SeverityType sev, bool b = true) {
+            if (REDUNDANT_CHECK && settings.severity.isEnabled(sev) == b)
+                throw std::runtime_error("redundant setting: severity");
             settings.severity.setEnabled(sev, b);
             return *this;
         }
 
         SettingsBuilder& certainty(Certainty cert, bool b = true) {
+            if (REDUNDANT_CHECK && settings.certainty.isEnabled(cert) == b)
+                throw std::runtime_error("redundant setting: certainty");
             settings.certainty.setEnabled(cert, b);
             return *this;
         }
 
         SettingsBuilder& clang() {
+            if (REDUNDANT_CHECK && settings.clang)
+                throw std::runtime_error("redundant setting: clang");
             settings.clang = true;
             return *this;
         }
 
         SettingsBuilder& checkLibrary() {
+            if (REDUNDANT_CHECK && settings.checkLibrary)
+                throw std::runtime_error("redundant setting: checkLibrary");
             settings.checkLibrary = true;
             return *this;
         }
 
         SettingsBuilder& checkUnusedTemplates(bool b = true) {
+            if (REDUNDANT_CHECK && settings.checkUnusedTemplates == b)
+                throw std::runtime_error("redundant setting: checkUnusedTemplates");
             settings.checkUnusedTemplates = b;
             return *this;
         }
 
         SettingsBuilder& debugwarnings(bool b = true) {
+            if (REDUNDANT_CHECK && settings.debugwarnings == b)
+                throw std::runtime_error("redundant setting: debugwarnings");
             settings.debugwarnings = b;
             return *this;
         }
 
         SettingsBuilder& c(Standards::cstd_t std) {
+            // TODO: CLatest and C11 are the same - handle differently
+            //if (REDUNDANT_CHECK && settings.standards.c == std)
+            //    throw std::runtime_error("redundant setting: standards.c");
             settings.standards.c = std;
             return *this;
         }
 
         SettingsBuilder& cpp(Standards::cppstd_t std) {
+            // TODO: CPPLatest and CPP20 are the same - handle differently
+            //if (REDUNDANT_CHECK && settings.standards.cpp == std)
+            //    throw std::runtime_error("redundant setting: standards.cpp");
             settings.standards.cpp = std;
             return *this;
         }
@@ -184,11 +201,15 @@ protected:
         SettingsBuilder& platform(cppcheck::Platform::Type type);
 
         SettingsBuilder& checkConfiguration() {
+            if (REDUNDANT_CHECK && settings.checkConfiguration)
+                throw std::runtime_error("redundant setting: checkConfiguration");
             settings.checkConfiguration = true;
             return *this;
         }
 
         SettingsBuilder& checkHeaders(bool b = true) {
+            if (REDUNDANT_CHECK && settings.checkHeaders == b)
+                throw std::runtime_error("redundant setting: checkHeaders");
             settings.checkHeaders = b;
             return *this;
         }
@@ -199,6 +220,8 @@ protected:
     private:
         const TestFixture &fixture;
         Settings settings;
+
+        const bool REDUNDANT_CHECK = false;
     };
 
     SettingsBuilder settingsBuilder() const {

@@ -48,9 +48,9 @@ namespace tinyxml2 {
 
 
 struct VariableValue {
-    explicit VariableValue(MathLib::bigint val = 0) : value(val), notEqual(false) {}
+    explicit VariableValue(MathLib::bigint val = 0) : value(val) {}
     MathLib::bigint value;
-    bool notEqual;
+    bool notEqual{};
 };
 
 /// @addtogroup Checks

@@ -68,9 +68,8 @@ public:
 private:
     const Token* vartok{nullptr};
     const Token* typetok{nullptr};
-    // If there are unused templates, keep those
-    Settings settings1 = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
-    const Settings settings2 = settingsBuilder().checkUnusedTemplates().platform(cppcheck::Platform::Type::Unspecified).build();
+    Settings settings1 = settingsBuilder().library("std.cfg").build();
+    const Settings settings2 = settingsBuilder().platform(cppcheck::Platform::Type::Unspecified).build();
 
     void reset() {
         vartok = nullptr;
@@ -384,6 +383,7 @@ private:
         TEST_CASE(enum10); // #11001
         TEST_CASE(enum11);
         TEST_CASE(enum12);
+        TEST_CASE(enum13);
 
         TEST_CASE(sizeOfType);
 
@@ -509,6 +509,7 @@ private:
         TEST_CASE(auto17); // #11163
         TEST_CASE(auto18);
         TEST_CASE(auto19);
+        TEST_CASE(auto20);
 
         TEST_CASE(unionWithConstructor);
 
@@ -5701,6 +5702,23 @@ private:
         ASSERT_EQUALS(e->enumerator(), E0);
     }
 
+    void enum13() {
+        GET_SYMBOL_DB("struct S { enum E { E0, E1 }; };\n"
+                      "void f(bool b) {\n"
+                      "    auto e = b ? S::E0 : S::E1;\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* E1 = it->findEnumerator("E1");
+        ASSERT(E1 && E1->value_known);
+        ASSERT_EQUALS(E1->value, 1);
+        const Token* const a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        TODO_ASSERT(E1->scope == a->valueType()->typeScope);
+        ASSERT_EQUALS(a->valueType()->type, ValueType::INT);
+    }
+
     void sizeOfType() {
         // #7615 - crash in Symboldatabase::sizeOfType()
         GET_SYMBOL_DB("enum e;\n"
@@ -9417,6 +9435,22 @@ private:
             ASSERT_EQUALS(varTok->valueType()->constness, 0);
             ASSERT_EQUALS(varTok->valueType()->pointer, 1);
         }
+    }
+
+    void auto20() {
+        GET_SYMBOL_DB("enum A { A0 };\n"
+                      "enum B { B0 };\n"
+                      "const int& g(A a);\n"
+                      "const int& g(B b);\n"
+                      "void f() {\n"
+                      "    const auto& r = g(B::B0);\n"
+                      "}\n");
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT_EQUALS(a->valueType()->type, ValueType::INT);
+        const Token* g = Token::findsimplematch(a, "g ( B ::");
+        ASSERT(g && g->function());
+        ASSERT_EQUALS(g->function()->tokenDef->linenr(), 4);
     }
 
     void unionWithConstructor() {

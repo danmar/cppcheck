@@ -26,27 +26,10 @@
 
 namespace ValueFlow {
     Value::Value(const Token *c, long long val, Bound b)
-        : valueType(ValueType::INT),
-        bound(b),
+        : bound(b),
         intvalue(val),
-        tokvalue(nullptr),
-        floatValue(0.0),
         varvalue(val),
-        condition(c),
-        varId(0),
-        safe(false),
-        conditional(false),
-        macro(false),
-        defaultArg(false),
-        indirect(0),
-        moveKind(MoveKind::NonMovedVariable),
-        path(0),
-        wideintvalue(0),
-        subexpressions(),
-        capturetok(nullptr),
-        lifetimeKind(LifetimeKind::Object),
-        lifetimeScope(LifetimeScope::Local),
-        valueKind(ValueKind::Possible) {
+        condition(c) {
         errorPath.emplace_back(c, "Assuming that condition '" + c->expressionString() + "' is not redundant");
     }
 

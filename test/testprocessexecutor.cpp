@@ -48,7 +48,7 @@ private:
 
     struct CheckOptions
     {
-        CheckOptions() DINIT_NOEXCEPT = default;
+        CheckOptions() = default;
         SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE;
         const char* plistOutput = nullptr;
         std::vector<std::string> filesList;
@@ -58,7 +58,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions &opt = {}) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, const CheckOptions& opt = make_default_obj{}) {
         errout.str("");
         output.str("");
 
@@ -77,12 +77,13 @@ private:
             }
         }
 
-        settings.jobs = jobs;
-        settings.showtime = opt.showtime;
+        Settings s = settings;
+        s.jobs = jobs;
+        s.showtime = opt.showtime;
         if (opt.plistOutput)
-            settings.plistOutput = opt.plistOutput;
+            s.plistOutput = opt.plistOutput;
         // TODO: test with settings.project.fileSettings;
-        ProcessExecutor executor(filemap, settings, *this);
+        ProcessExecutor executor(filemap, s, s.nomsg, *this);
         std::vector<std::unique_ptr<ScopedFile>> scopedfiles;
         scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.cbegin(); i != filemap.cend(); ++i)
@@ -229,6 +230,9 @@ private:
                            output.str());*/
         settings = settingsOld;
     }
+
+    // TODO: test clang-tidy
+    // TODO: test whole program analysis
 };
 
 REGISTER_TEST(TestProcessExecutor)
