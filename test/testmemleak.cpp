@@ -2493,6 +2493,13 @@ private:
               "    g(1, new int());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(T t);\n"
+              "struct U {};\n"
+              "void g() {\n"
+              "    f(new U());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {

@@ -1004,7 +1004,8 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
                 const Variable* argvar = tok->function()->getArgumentVar(argnr);
                 if (!argvar || !argvar->valueType())
                     continue;
-                if (argvar->valueType()->typeSize(mSettings->platform, /*p*/ true) >= mSettings->platform.sizeof_pointer)
+                const MathLib::bigint argSize = argvar->valueType()->typeSize(mSettings->platform, /*p*/ true);
+                if (argSize <= 0 || argSize >= mSettings->platform.sizeof_pointer)
                     continue;
             }
             functionCallLeak(arg, arg->str(), functionName);
