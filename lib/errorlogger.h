@@ -133,7 +133,7 @@ public:
                  const std::string& msg,
                  const CWE &cwe,
                  Certainty certainty);
-    ErrorMessage(const ErrorPath &errorPath,
+    ErrorMessage(ErrorPath errorPath,
                  const TokenList *tokenList,
                  Severity::SeverityType severity,
                  const char id[],

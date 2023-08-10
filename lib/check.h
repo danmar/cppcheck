@@ -141,19 +141,19 @@ protected:
 
     /** report an error */
     void reportError(const Token *tok, const Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty) {
-        const std::list<const Token *> callstack(1, tok);
-        reportError(callstack, severity, id, msg, cwe, certainty);
+        std::list<const Token *> callstack(1, tok);
+        reportError(std::move(callstack), severity, id, msg, cwe, certainty);
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) {
-        reportError(callstack, severity, id, msg, CWE(0U), Certainty::normal);
+    void reportError(std::list<const Token *> callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg) {
+        reportError(std::move(callstack), severity, id, msg, CWE(0U), Certainty::normal);
     }
 
     /** report an error */
-    void reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty);
+    void reportError(std::list<const Token *> callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty certainty);
 
-    void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
+    void reportError(ErrorPath errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty);
 
     ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, std::string bug) const;
 
