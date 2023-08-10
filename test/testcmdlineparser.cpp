@@ -20,6 +20,7 @@
 #include "config.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "platform.h"
 #include "redirect.h"
 #include "settings.h"
@@ -608,12 +609,18 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: fails since the file is not found
     void includesFile() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--includes-file=fileThatDoesNotExist.txt", "file.cpp"};
-        TODO_ASSERT_EQUALS(true, false, parser->parseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS("", "cppcheck: error: unable to open includes file at 'fileThatDoesNotExist.txt'\n", GET_REDIRECT_OUTPUT);
+        ScopedFile file("includes.txt",
+                        "path/sub\n"
+                        "path2/sub1\n");
+        const char * const argv[] = {"cppcheck", "--includes-file=includes.txt", "file.cpp"};
+        ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(2, settings->includePaths.size());
+        auto it = settings->includePaths.cbegin();
+        ASSERT_EQUALS("path/sub/", *it++);
+        ASSERT_EQUALS("path2/sub1/", *it);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void includesFileNoFile() {
@@ -623,14 +630,19 @@ private:
         ASSERT_EQUALS("cppcheck: error: unable to open includes file at 'fileThatDoesNotExist.txt'\n", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: fails since the file is not found
     void configExcludesFile() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--config-excludes-file=fileThatDoesNotExist.txt", "file.cpp"};
-        settings->includePaths.clear();
-        TODO_ASSERT_EQUALS(true, false, parser->parseFromArgs(3, argv));
-        // TODO: add checks
-        TODO_ASSERT_EQUALS("", "cppcheck: error: unable to open config excludes file at 'fileThatDoesNotExist.txt'\n", GET_REDIRECT_OUTPUT);
+        ScopedFile file("excludes.txt",
+                        "path/sub\n"
+                        "path2/sub1\n");
+        const char * const argv[] = {"cppcheck", "--config-excludes-file=excludes.txt", "file.cpp"};
+        settings->configExcludePaths.clear();
+        ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(2, settings->configExcludePaths.size());
+        auto it = settings->configExcludePaths.cbegin();
+        ASSERT_EQUALS("path/sub/", *it++);
+        ASSERT_EQUALS("path2/sub1/", *it);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void configExcludesFileNoFile() {
@@ -897,11 +909,17 @@ private:
     }
 
     void exitcodeSuppressions() {
-        // TODO: Fails since cannot open the file
         REDIRECT;
+        ScopedFile file("suppr.txt",
+                        "uninitvar\n"
+                        "unusedFunction\n");
         const char * const argv[] = {"cppcheck", "--exitcode-suppressions=suppr.txt", "file.cpp"};
-        TODO_ASSERT_EQUALS(true, false, parser->parseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS("", "cppcheck: error: couldn't open the file: \"suppr.txt\".\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(2, settings->nofail.getSuppressions().size());
+        auto it = settings->nofail.getSuppressions().cbegin();
+        ASSERT_EQUALS("uninitvar", (*it++).errorId);
+        ASSERT_EQUALS("unusedFunction", (*it).errorId);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void exitcodeSuppressionsNoFile() {
@@ -911,14 +929,19 @@ private:
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: file does not exist
     void fileList() {
         REDIRECT;
+        ScopedFile file("files.txt",
+                        "file1.c\n"
+                        "file2.cpp\n");
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        TODO_ASSERT_EQUALS(true, false, parser->parseFromArgs(3, argv));
-        // TODO: settings are not being reset after each test
-        //TODO_ASSERT_EQUALS(4, 1, defparser->getPathNames().size());
-        TODO_ASSERT_EQUALS("", "cppcheck: error: couldn't open the file: \"files.txt\".\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(3, parser->getPathNames().size());
+        auto it = parser->getPathNames().cbegin();
+        ASSERT_EQUALS("file1.c", *it++);
+        ASSERT_EQUALS("file2.cpp", *it++);
+        ASSERT_EQUALS("file.cpp", *it);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void fileListNoFile() {
@@ -1226,11 +1249,17 @@ private:
     }
 
     void suppressions() {
-        // TODO: Fails because there is no suppr.txt file!
         REDIRECT;
+        ScopedFile file("suppr.txt",
+                        "uninitvar\n"
+                        "unusedFunction\n");
         const char * const argv[] = {"cppcheck", "--suppressions-list=suppr.txt", "file.cpp"};
-        TODO_ASSERT_EQUALS(true, false, parser->parseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS("", "cppcheck: error: couldn't open the file: \"suppr.txt\".\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(true, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(2, settings->nomsg.getSuppressions().size());
+        auto it = settings->nomsg.getSuppressions().cbegin();
+        ASSERT_EQUALS("uninitvar", (*it++).errorId);
+        ASSERT_EQUALS("unusedFunction", (*it).errorId);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void suppressionsNoFile1() {
