@@ -91,6 +91,8 @@ bool TestFixture::prepareTest(const char testname[])
     mTemplateFormat.clear();
     mTemplateLocation.clear();
 
+    prepareTestInternal();
+
     // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {
         // Tests will be executed - prepare them
