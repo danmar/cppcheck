@@ -22,6 +22,7 @@
 
 #include "check64bit.h"
 
+#include "checkimpl.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -38,9 +39,24 @@ static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Imple
 // Register this check class (by creating a static instance of it)
 namespace {
     Check64BitPortability instance;
+
+    class Check64BitPortabilityImpl : public CheckImpl {
+    public:
+        /** This constructor is used when running checks. */
+        Check64BitPortabilityImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : CheckImpl(tokenizer, settings, errorLogger) {}
+
+        /** Check for pointer assignment */
+        void pointerassignment();
+
+        void assignmentAddressToIntegerError(const Token *tok);
+        void assignmentIntegerToAddressError(const Token *tok);
+        void returnIntegerError(const Token *tok);
+        void returnPointerError(const Token *tok);
+    };
 }
 
-void Check64BitPortability::pointerassignment()
+void Check64BitPortabilityImpl::pointerassignment()
 {
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
@@ -118,7 +134,7 @@ void Check64BitPortability::pointerassignment()
     }
 }
 
-void Check64BitPortability::assignmentAddressToIntegerError(const Token *tok)
+void Check64BitPortabilityImpl::assignmentAddressToIntegerError(const Token *tok)
 {
     reportError(tok, Severity::portability,
                 "AssignmentAddressToInteger",
@@ -129,7 +145,7 @@ void Check64BitPortability::assignmentAddressToIntegerError(const Token *tok)
                 "way is to store addresses only in pointer types (or typedefs like uintptr_t).", CWE758, Certainty::normal);
 }
 
-void Check64BitPortability::assignmentIntegerToAddressError(const Token *tok)
+void Check64BitPortabilityImpl::assignmentIntegerToAddressError(const Token *tok)
 {
     reportError(tok, Severity::portability,
                 "AssignmentIntegerToAddress",
@@ -140,7 +156,7 @@ void Check64BitPortability::assignmentIntegerToAddressError(const Token *tok)
                 "way is to store addresses only in pointer types (or typedefs like uintptr_t).", CWE758, Certainty::normal);
 }
 
-void Check64BitPortability::returnPointerError(const Token *tok)
+void Check64BitPortabilityImpl::returnPointerError(const Token *tok)
 {
     reportError(tok, Severity::portability,
                 "CastAddressToIntegerAtReturn",
@@ -151,7 +167,7 @@ void Check64BitPortability::returnPointerError(const Token *tok)
                 "to 32-bit integer. The safe way is to always return an integer.", CWE758, Certainty::normal);
 }
 
-void Check64BitPortability::returnIntegerError(const Token *tok)
+void Check64BitPortabilityImpl::returnIntegerError(const Token *tok)
 {
     reportError(tok, Severity::portability,
                 "CastIntegerToAddressAtReturn",
@@ -160,4 +176,21 @@ void Check64BitPortability::returnIntegerError(const Token *tok)
                 "platforms and compilers. For example in 32-bit Windows and Linux they are same width, but in 64-bit Windows "
                 "and Linux they are of different width. In worst case you end up casting 64-bit integer down to 32-bit pointer. "
                 "The safe way is to always return a pointer.", CWE758, Certainty::normal);
+}
+
+
+/** @brief Run checks against the normal token list */
+void Check64BitPortability::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    Check64BitPortabilityImpl c(&tokenizer, tokenizer.getSettings(), errorLogger);
+    c.pointerassignment();
+}
+
+void Check64BitPortability::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    Check64BitPortabilityImpl c(nullptr, settings, errorLogger);
+    c.assignmentAddressToIntegerError(nullptr);
+    c.assignmentIntegerToAddressError(nullptr);
+    c.returnIntegerError(nullptr);
+    c.returnPointerError(nullptr);
 }

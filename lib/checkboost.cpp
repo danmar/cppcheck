@@ -18,20 +18,35 @@
 
 #include "checkboost.h"
 
+#include "checkimpl.h"
 #include "errortypes.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "tokenize.h"
 
 #include <vector>
+
+static const CWE CWE664(664);
 
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckBoost instance;
+
+    class CheckBoostImpl : public CheckImpl
+{
+public:
+    /** This constructor is used when running checks. */
+    CheckBoostImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+        : CheckImpl(tokenizer, settings, errorLogger) {}
+
+    /** @brief %Check for container modification while using the BOOST_FOREACH macro */
+    void checkBoostForeachModification();
+
+    void boostForeachError(const Token *tok);
+};
 }
 
-static const CWE CWE664(664);
-
-void CheckBoost::checkBoostForeachModification()
+void CheckBoostImpl::checkBoostForeachModification()
 {
     logChecker("CheckBoost::checkBoostForeachModification");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -58,9 +73,24 @@ void CheckBoost::checkBoostForeachModification()
     }
 }
 
-void CheckBoost::boostForeachError(const Token *tok)
+void CheckBoostImpl::boostForeachError(const Token *tok)
 {
     reportError(tok, Severity::error, "boostForeachError",
                 "BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.", CWE664, Certainty::normal
                 );
+}
+
+void CheckBoost::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    if (!tokenizer.isCPP())
+        return;
+
+    CheckBoostImpl checkBoost(&tokenizer, tokenizer.getSettings(), errorLogger);
+    checkBoost.checkBoostForeachModification();
+}
+
+void CheckBoost::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckBoostImpl c(nullptr, settings, errorLogger);
+    c.boostForeachError(nullptr);
 }

@@ -24,14 +24,12 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
-class Scope;
 class Settings;
-class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -42,35 +40,13 @@ class Token;
 
 class CPPCHECKLIB CheckAssert : public Check {
 public:
-    CheckAssert() : Check(myName()) {}
+    CheckAssert() : Check("Assert") {}
 
 private:
-    CheckAssert(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
-
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckAssert checkAssert(&tokenizer, tokenizer.getSettings(), errorLogger);
-        checkAssert.assertWithSideEffects();
-    }
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
-    void assertWithSideEffects();
-
-    void checkVariableAssignment(const Token* assignTok, const Scope *assertionScope);
-    static bool inSameScope(const Token* returnTok, const Token* assignTok);
-
-    void sideEffectInAssertError(const Token *tok, const std::string& functionName);
-    void assignmentInAssertError(const Token *tok, const std::string &varname);
-
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckAssert c(nullptr, settings, errorLogger);
-        c.sideEffectInAssertError(nullptr, "function");
-        c.assignmentInAssertError(nullptr, "var");
-    }
-
-    static std::string myName() {
-        return "Assert";
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     std::string classInfo() const override {
         return "Warn if there are side effects in assert statements (since this cause different behaviour in debug/release builds).\n";

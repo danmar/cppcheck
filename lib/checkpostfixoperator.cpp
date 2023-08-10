@@ -23,10 +23,12 @@
 
 #include "checkpostfixoperator.h"
 
+#include "checkimpl.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "tokenize.h"
 
 #include <vector>
 
@@ -38,12 +40,25 @@ namespace {
     CheckPostfixOperator instance;
 }
 
-
 // CWE ids used
 static const CWE CWE398(398U);   // Indicator of Poor Code Quality
 
+namespace {
+    class CheckPostfixOperatorImpl : public CheckImpl {
+    public:
+        /** This constructor is used when running checks. */
+        CheckPostfixOperatorImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : CheckImpl(tokenizer, settings, errorLogger) {}
 
-void CheckPostfixOperator::postfixOperator()
+        /** Check postfix operators */
+        void postfixOperator();
+
+        /** Report Error */
+        void postfixOperatorError(const Token *tok);
+    };
+}
+
+void CheckPostfixOperatorImpl::postfixOperator()
 {
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
@@ -77,7 +92,7 @@ void CheckPostfixOperator::postfixOperator()
 //---------------------------------------------------------------------------
 
 
-void CheckPostfixOperator::postfixOperatorError(const Token *tok)
+void CheckPostfixOperatorImpl::postfixOperatorError(const Token *tok)
 {
     reportError(tok, Severity::performance, "postfixOperator",
                 "Prefer prefix ++/-- operators for non-primitive types.\n"
@@ -86,4 +101,18 @@ void CheckPostfixOperator::postfixOperatorError(const Token *tok)
                 "post-increment/decrement. Post-increment/decrement usually "
                 "involves keeping a copy of the previous value around and "
                 "adds a little extra code.", CWE398, Certainty::normal);
+}
+
+
+void CheckPostfixOperator::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) {
+    if (tokenizer.isC())
+        return;
+
+    CheckPostfixOperatorImpl checkPostfixOperator(&tokenizer, tokenizer.getSettings(), errorLogger);
+    checkPostfixOperator.postfixOperator();
+}
+
+void CheckPostfixOperator::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    CheckPostfixOperatorImpl c(nullptr, settings, errorLogger);
+    c.postfixOperatorError(nullptr);
 }

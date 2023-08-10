@@ -21,6 +21,7 @@
 #include "checknullpointer.h"
 
 #include "astutils.h"
+#include "checkimpl.h"
 #include "ctu.h"
 #include "errorlogger.h"
 #include "errortypes.h"
@@ -40,16 +41,59 @@
 
 //---------------------------------------------------------------------------
 
-// CWE ids used:
-static const CWE CWE_NULL_POINTER_DEREFERENCE(476U);
-static const CWE CWE_INCORRECT_CALCULATION(682U);
-
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckNullPointer instance;
 }
 
+// CWE ids used:
+static const CWE CWE_NULL_POINTER_DEREFERENCE(476U);
+static const CWE CWE_INCORRECT_CALCULATION(682U);
+
 //---------------------------------------------------------------------------
+
+namespace {
+    class CheckNullPointerImpl : public CheckImpl {
+    public:
+        /** @brief This constructor is used when running checks. */
+        CheckNullPointerImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : CheckImpl(tokenizer, settings, errorLogger) {}
+
+        /**
+         * @brief parse a function call and extract information about variable usage
+         * @param tok first token
+         * @param var variables that the function read / write.
+         * @param library --library files data
+         */
+        static void parseFunctionCall(const Token &tok,
+                                      std::list<const Token *> &var,
+                                      const Library *library);
+
+        /** @brief possible null pointer dereference */
+        void nullPointer();
+
+        /** @brief dereferencing null constant (after Tokenizer::simplifyKnownVariables) */
+        void nullConstantDereference();
+
+        void nullPointerError(const Token *tok) {
+            ValueFlow::Value v(0);
+            v.setKnown();
+            nullPointerError(tok, emptyString, &v, false);
+        }
+        void nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value* value, bool inconclusive);
+
+        /**
+         * @brief Does one part of the check for nullPointer().
+         * Dereferencing a pointer and then checking if it's NULL..
+         */
+        void nullPointerByDeRefAndChec();
+
+        /** undefined null pointer arithmetic */
+        void arithmetic();
+        void pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
+        void redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive);
+    };
+}
 
 static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsigned int arg)
 {
@@ -62,7 +106,7 @@ static bool checkNullpointerFunctionCallPlausibility(const Function* func, unsig
  * @param var variables that the function read / write.
  * @param library --library files data
  */
-void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library)
+void CheckNullPointerImpl::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library)
 {
     if (Token::Match(&tok, "%name% ( )") || !tok.tokAt(2))
         return;
@@ -146,11 +190,6 @@ namespace {
  * @param unknown it is not known if there is a pointer dereference (could be reported as a debug message)
  * @return true => there is a dereference
  */
-bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
-{
-    return isPointerDeRef(tok, unknown, mSettings);
-}
-
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)
 {
     unknown = false;
@@ -165,7 +204,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         }
         if (ftok && ftok->previous()) {
             std::list<const Token *> varlist;
-            parseFunctionCall(*ftok->previous(), varlist, &settings->library);
+            CheckNullPointerImpl::parseFunctionCall(*ftok->previous(), varlist, &settings->library);
             if (std::find(varlist.cbegin(), varlist.cend(), tok) != varlist.cend()) {
                 return true;
             }
@@ -281,7 +320,7 @@ static bool isNullablePointer(const Token* tok, const Settings* settings)
     return false;
 }
 
-void CheckNullPointer::nullPointerByDeRefAndChec()
+void CheckNullPointerImpl::nullPointerByDeRefAndChec()
 {
     const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
 
@@ -308,7 +347,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
         // Pointer dereference.
         bool unknown = false;
-        if (!isPointerDeRef(tok,unknown)) {
+        if (!CheckNullPointer::isPointerDeRef(tok,unknown,mSettings)) {
             if (unknown)
                 nullPointerError(tok, tok->expressionString(), value, true);
             continue;
@@ -318,7 +357,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
     }
 }
 
-void CheckNullPointer::nullPointer()
+void CheckNullPointerImpl::nullPointer()
 {
     logChecker("CheckNullPointer::nullPointer");
     nullPointerByDeRefAndChec();
@@ -332,7 +371,7 @@ namespace {
 }
 
 /** Dereferencing null constant (simplified token list) */
-void CheckNullPointer::nullConstantDereference()
+void CheckNullPointerImpl::nullConstantDereference()
 {
     logChecker("CheckNullPointer::nullConstantDereference");
 
@@ -426,7 +465,7 @@ void CheckNullPointer::nullConstantDereference()
     }
 }
 
-void CheckNullPointer::nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)
+void CheckNullPointerImpl::nullPointerError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)
 {
     const std::string errmsgcond("$symbol:" + varname + '\n' + ValueFlow::eitherTheConditionIsRedundant(value ? value->condition : nullptr) + " or there is possible null pointer dereference: $symbol.");
     const std::string errmsgdefarg("$symbol:" + varname + "\nPossible null pointer dereference if the default parameter value is used: $symbol");
@@ -465,7 +504,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     }
 }
 
-void CheckNullPointer::arithmetic()
+void CheckNullPointerImpl::arithmetic()
 {
     logChecker("CheckNullPointer::arithmetic");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -512,7 +551,7 @@ static std::string arithmeticTypeString(const Token *tok)
     return "arithmetic";
 }
 
-void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive)
+void CheckNullPointerImpl::pointerArithmeticError(const Token* tok, const ValueFlow::Value *value, bool inconclusive)
 {
     std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
@@ -530,7 +569,7 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
                 inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive)
+void CheckNullPointerImpl::redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive)
 {
     std::string arithmetic = arithmeticTypeString(tok);
     std::string errmsg;
@@ -571,10 +610,9 @@ namespace {
     };
 }
 
-
 Check::FileInfo *CheckNullPointer::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, isUnsafeUsage);
+    const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsage = CTU::getUnsafeUsage(tokenizer, settings, ::isUnsafeUsage);
     if (unsafeUsage.empty())
         return nullptr;
 
@@ -601,9 +639,8 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
     bool foundErrors = false;
     (void)settings; // This argument is unused
 
-    CheckNullPointer dummy(nullptr, &settings, &errorLogger);
-    dummy.
-    logChecker("CheckNullPointer::analyseWholeProgram"); // unusedfunctions
+    CheckNullPointerImpl dummy(nullptr, &settings, &errorLogger);
+    //dummy.logChecker("CheckNullPointer::analyseWholeProgram"); // TODO
 
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
@@ -641,4 +678,24 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
     }
 
     return foundErrors;
+}
+
+/** @brief Run checks against the normal token list */
+void CheckNullPointer::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) {
+    CheckNullPointerImpl checkNullPointer(&tokenizer, tokenizer.getSettings(), errorLogger);
+    checkNullPointer.nullPointer();
+    checkNullPointer.arithmetic();
+    checkNullPointer.nullConstantDereference();
+}
+
+void CheckNullPointer::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const {
+    CheckNullPointerImpl c(nullptr, settings, errorLogger);
+    c.nullPointerError(nullptr, "pointer", nullptr, false);
+    c.pointerArithmeticError(nullptr, nullptr, false);
+    c.redundantConditionWarning(nullptr, nullptr, nullptr, false);
+}
+
+void CheckNullPointer::parseFunctionCall(const Token &tok, std::list<const Token *> &var, const Library *library)
+{
+    CheckNullPointerImpl::parseFunctionCall(tok, var, library);
 }

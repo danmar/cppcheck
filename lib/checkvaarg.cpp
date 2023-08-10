@@ -19,6 +19,7 @@
 #include "checkvaarg.h"
 
 #include "astutils.h"
+#include "checkimpl.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -47,7 +48,25 @@ static const CWE CWE664(664U);   // Improper Control of a Resource Through its L
 static const CWE CWE688(688U);   // Function Call With Incorrect Variable or Reference as Argument
 static const CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 
-void CheckVaarg::va_start_argument()
+namespace {
+    class CheckVaargImpl: public CheckImpl
+    {
+    public:
+        CheckVaargImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : CheckImpl(tokenizer, settings, errorLogger) {}
+
+        void va_start_argument();
+        void va_list_usage();
+
+        void wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName);
+        void referenceAs_va_start_error(const Token *tok, const std::string& paramName);
+        void va_end_missingError(const Token *tok, const std::string& varname);
+        void va_list_usedBeforeStartedError(const Token *tok, const std::string& varname);
+        void va_start_subsequentCallsError(const Token *tok, const std::string& varname);
+    };
+}
+
+void CheckVaargImpl::va_start_argument()
 {
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
@@ -81,13 +100,13 @@ void CheckVaarg::va_start_argument()
     }
 }
 
-void CheckVaarg::wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName)
+void CheckVaargImpl::wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName)
 {
     reportError(tok, Severity::warning,
                 "va_start_wrongParameter", "'" + paramIsName + "' given to va_start() is not last named argument of the function. Did you intend to pass '" + paramShouldName + "'?", CWE688, Certainty::normal);
 }
 
-void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string& paramName)
+void CheckVaargImpl::referenceAs_va_start_error(const Token *tok, const std::string& paramName)
 {
     reportError(tok, Severity::error,
                 "va_start_referencePassed", "Using reference '" + paramName + "' as parameter for va_start() results in undefined behaviour.", CWE758, Certainty::normal);
@@ -98,7 +117,7 @@ void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string&
 // Detect va_list usage after va_end()
 //---------------------------------------------------------------------------
 
-void CheckVaarg::va_list_usage()
+void CheckVaargImpl::va_list_usage()
 {
     if (mSettings->clang)
         return;
@@ -163,20 +182,37 @@ void CheckVaarg::va_list_usage()
     }
 }
 
-void CheckVaarg::va_end_missingError(const Token *tok, const std::string& varname)
+void CheckVaargImpl::va_end_missingError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
                 "va_end_missing", "va_list '" + varname + "' was opened but not closed by va_end().", CWE664, Certainty::normal);
 }
 
-void CheckVaarg::va_list_usedBeforeStartedError(const Token *tok, const std::string& varname)
+void CheckVaargImpl::va_list_usedBeforeStartedError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
                 "va_list_usedBeforeStarted", "va_list '" + varname + "' used before va_start() was called.", CWE664, Certainty::normal);
 }
 
-void CheckVaarg::va_start_subsequentCallsError(const Token *tok, const std::string& varname)
+void CheckVaargImpl::va_start_subsequentCallsError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
                 "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.", CWE664, Certainty::normal);
+}
+
+void CheckVaarg::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    CheckVaargImpl check(&tokenizer, tokenizer.getSettings(), errorLogger);
+    check.va_start_argument();
+    check.va_list_usage();
+}
+
+void CheckVaarg::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckVaargImpl c(nullptr, settings, errorLogger);
+    c.wrongParameterTo_va_start_error(nullptr, "arg1", "arg2");
+    c.referenceAs_va_start_error(nullptr, "arg1");
+    c.va_end_missingError(nullptr, "vl");
+    c.va_list_usedBeforeStartedError(nullptr, "vl");
+    c.va_start_subsequentCallsError(nullptr, "vl");
 }

@@ -1681,8 +1681,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizerCpp.tokenize(istr, "test.cpp"), file, line);
 
-        CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
-        checkOtherCpp.warningOldStylePointerCast();
+        CheckOther::warningOldStylePointerCast(&tokenizerCpp, &settings, this);
     }
 
     void oldStylePointerCast() {
@@ -1883,8 +1882,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        CheckOther checkOtherCpp(&tokenizer, &settings, this);
-        checkOtherCpp.invalidPointerCast();
+        CheckOther::invalidPointerCast(&tokenizer, &settings, this);
     }
 
 

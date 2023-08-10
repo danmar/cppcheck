@@ -24,13 +24,12 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Settings;
-class Token;
+class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -40,35 +39,13 @@ class Token;
 class CPPCHECKLIB CheckBoost : public Check {
 public:
     /** This constructor is used when registering the CheckClass */
-    CheckBoost() : Check(myName()) {}
+    CheckBoost() : Check("Boost usage") {}
 
 private:
-    /** This constructor is used when running checks. */
-    CheckBoost(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
-
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        if (!tokenizer.isCPP())
-            return;
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override;
 
-        CheckBoost checkBoost(&tokenizer, tokenizer.getSettings(), errorLogger);
-        checkBoost.checkBoostForeachModification();
-    }
-
-    /** @brief %Check for container modification while using the BOOST_FOREACH macro */
-    void checkBoostForeachModification();
-
-    void boostForeachError(const Token *tok);
-
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
-        CheckBoost c(nullptr, settings, errorLogger);
-        c.boostForeachError(nullptr);
-    }
-
-    static std::string myName() {
-        return "Boost usage";
-    }
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override;
 
     std::string classInfo() const override {
         return "Check for invalid usage of Boost:\n"

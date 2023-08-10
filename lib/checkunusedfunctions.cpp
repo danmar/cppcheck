@@ -21,6 +21,7 @@
 #include "checkunusedfunctions.h"
 
 #include "astutils.h"
+#include "checkimpl.h"
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"
@@ -55,6 +56,57 @@ namespace {
 }
 
 static const CWE CWE561(561U);   // Dead Code
+
+namespace {
+    class CheckUnusedFunctionsImpl : public CheckImpl {
+    public:
+        /** @brief This constructor is used when running checks. */
+        CheckUnusedFunctionsImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+            : CheckImpl(tokenizer, settings, errorLogger) {}
+
+        static void clear();
+
+        // Parse current tokens and determine..
+        // * Check what functions are used
+        // * What functions are declared
+        void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
+
+        // Return true if an error is reported.
+        bool check(ErrorLogger * const errorLogger, const Settings& settings) const;
+
+        std::string analyzerInfo() const;
+
+        /** @brief Combine and analyze all analyzerInfos for all TUs */
+        static void analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
+
+    private:
+        /**
+         * Dummy implementation, just to provide error for --errorlist
+         */
+        static void unusedFunctionError(ErrorLogger * const errorLogger,
+                                        const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
+                                        const std::string &funcname);
+
+        struct FunctionUsage {
+            std::string filename;
+            unsigned int lineNumber{};
+            unsigned int fileIndex{};
+            bool usedSameFile{};
+            bool usedOtherFile{};
+        };
+
+        std::unordered_map<std::string, FunctionUsage> mFunctions;
+
+        class FunctionDecl {
+        public:
+            explicit FunctionDecl(const Function *f);
+            std::string functionName;
+            unsigned int lineNumber;
+        };
+        std::list<FunctionDecl> mFunctionDecl;
+        std::set<std::string> mFunctionCalls;
+    };
+}
 
 static std::string stripTemplateParameters(const std::string& funcName) {
     std::string name = funcName;
@@ -383,9 +435,8 @@ bool CheckUnusedFunctions::analyseWholeProgram(const CTU::FileInfo *ctu, const s
 {
     (void)ctu;
     (void)fileInfo;
-    CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);
-    dummy.
-    logChecker("CheckUnusedFunctions::analyseWholeProgram"); // unusedFunctions
+    CheckUnusedFunctionsImpl dummy(nullptr, &settings, &errorLogger);
+    //dummy.logChecker("CheckUnusedFunctions::analyseWholeProgram"); // TODO
     return check(&errorLogger, settings);
 }
 
@@ -477,4 +528,8 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
             unusedFunctionError(errorLogger, loc.fileName, /*fileIndex*/ 0, loc.lineNumber, functionName);
         }
     }
+}
+
+void CheckUnusedFunctions::getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const {
+    unusedFunctionError(errorLogger, emptyString, 0, 0, "funcName");
 }

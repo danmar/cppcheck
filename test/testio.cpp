@@ -103,8 +103,7 @@ private:
 
         // Check..
         if (onlyFormatStr) {
-            CheckIO checkIO(&tokenizer, &settings1, this);
-            checkIO.checkWrongPrintfScanfArguments();
+            CheckIO::checkWrongPrintfScanfArguments(&tokenizer, &settings1, this);
             return;
         }
         runChecks<CheckIO>(tokenizer, this);

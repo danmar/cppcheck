@@ -53,8 +53,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check char variable usage..
-        Check64BitPortability check64BitPortability(&tokenizer, &settings, this);
-        check64BitPortability.pointerassignment();
+        runChecks<Check64BitPortability>(tokenizer, this);
     }
 
     void assignment() {

@@ -20,6 +20,7 @@
 #include "checkclass.h"
 
 #include "astutils.h"
+#include "checkimpl.h"
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
@@ -46,11 +47,6 @@ namespace CTU {
 
 //---------------------------------------------------------------------------
 
-// Register CheckClass..
-namespace {
-    CheckClass instance;
-}
-
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 static const CWE CWE404(404U);  // Improper Resource Shutdown or Release
 static const CWE CWE665(665U);  // Improper Initialization
@@ -58,6 +54,249 @@ static const CWE CWE758(758U);  // Reliance on Undefined, Unspecified, or Implem
 static const CWE CWE762(762U);  // Mismatched Memory Management Routines
 
 static const CWE CWE_ONE_DEFINITION_RULE(758U);
+
+// Register CheckClass..
+namespace {
+    CheckClass instance;
+
+    class CheckClassImpl : public CheckImpl
+    {
+    public:
+        /** @brief This constructor is used when running checks. */
+        CheckClassImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
+
+        /** @brief %Check that all class constructors are ok */
+        void constructors();
+
+        /** @brief %Check that constructors with single parameter are explicit,
+         *  if they has to be.*/
+        void checkExplicitConstructors();
+
+        /** @brief %Check that all private functions are called */
+        void privateFunctions();
+
+        /**
+         * @brief %Check that the memsets are valid.
+         * The 'memset' function can do dangerous things if used wrong. If it
+         * is used on STL containers for instance it will clear all its data
+         * and then the STL container may leak memory or worse have an invalid state.
+         * It can also overwrite the virtual table.
+         * Important: The checking doesn't work on simplified tokens list.
+         */
+        void checkMemset();
+        void checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::set<const Scope *> parsedTypes);
+
+        /** @brief 'operator=' should return reference to *this */
+        void operatorEqRetRefThis();    // Warning upon no "return *this;"
+
+        /** @brief 'operator=' should check for assignment to self */
+        void operatorEqToSelf();    // Warning upon no check for assignment to self
+
+        /** @brief The destructor in a base class should be virtual */
+        void virtualDestructor();
+
+        /** @brief warn for "this-x". The indented code may be "this->x"  */
+        void thisSubtraction();
+
+        /** @brief can member function be const? */
+        void checkConst();
+
+        /** @brief Check initializer list order */
+        void initializerListOrder();
+
+        /** @brief Suggest using initialization list */
+        void initializationListUsage();
+
+        /** @brief Check for initialization of a member with itself */
+        void checkSelfInitialization();
+
+        void copyconstructors();
+
+        /** @brief call of virtual function in constructor/destructor */
+        void checkVirtualFunctionCallInConstructor();
+
+        /** @brief Check duplicated inherited members */
+        void checkDuplInheritedMembers();
+
+        /** @brief Check that copy constructor and operator defined together */
+        void checkCopyCtorAndEqOperator();
+
+        /** @brief Check that the override keyword is used when overriding virtual functions */
+        void checkOverride();
+
+        /** @brief Check that the overriden function is not identical to the base function */
+        void checkUselessOverride();
+
+        /** @brief When "self pointer" is destroyed, 'this' might become invalid. */
+        void checkThisUseAfterFree();
+
+        /** @brief Unsafe class check - const reference member */
+        void checkUnsafeClassRefMember();
+
+        void noConstructorError(const Token *tok, const std::string &classname, bool isStruct);
+        void noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct);
+        //void copyConstructorMallocError(const Token *cctor, const Token *alloc, const std::string& var_name);
+        void copyConstructorShallowCopyError(const Token *tok, const std::string& varname);
+        void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
+        void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
+        void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
+        void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
+        void uninitVarError(const Token *tok, const std::string &classname, const std::string &varname);
+        void missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname);
+        void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
+        void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
+        void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type, bool isContainer = false);
+        void memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type);
+        void memsetErrorFloat(const Token *tok, const std::string &type);
+        void mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname);
+        void mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok);
+        void virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive);
+        void thisSubtractionError(const Token *tok);
+        void operatorEqRetRefThisError(const Token *tok);
+        void operatorEqShouldBeLeftUnimplementedError(const Token *tok);
+        void operatorEqMissingReturnStatementError(const Token *tok, bool error);
+        void operatorEqToSelfError(const Token *tok);
+        void checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic);
+        void checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic);
+        void initializerListError(const Token *tok1,const Token *tok2, const std::string & classname, const std::string &varname);
+        void suggestInitializationList(const Token *tok, const std::string& varname);
+        void selfInitializationError(const Token* tok, const std::string& varname);
+        void pureVirtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &purefuncname);
+        void virtualFunctionCallInConstructorError(const Function * scopeFunction, const std::list<const Token *> & tokStack, const std::string &funcname);
+        void duplInheritedMembersError(const Token* tok1, const Token* tok2, const std::string &derivedName, const std::string &baseName, const std::string &memberName, bool derivedIsStruct, bool baseIsStruct, bool isFunction = false);
+        void copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor);
+        void overrideError(const Function *funcInBase, const Function *funcInDerived);
+        void uselessOverrideError(const Function *funcInBase, const Function *funcInDerived, bool isSameCode = false);
+        void thisUseAfterFree(const Token *self, const Token *free, const Token *use);
+        void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
+        void checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase);
+
+        const SymbolDatabase* mSymbolDatabase{};
+
+        // operatorEqRetRefThis helper functions
+        void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last);
+        void checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>& analyzedFunctions);
+
+        // operatorEqToSelf helper functions
+        bool hasAllocation(const Function *func, const Scope* scope) const;
+        bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const;
+        bool hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const;
+        static bool hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart);
+        enum class Bool { TRUE, FALSE, BAILOUT };
+        static Bool isInverted(const Token *tok, const Token *rhs);
+        static const Token * getIfStmtBodyStart(const Token *tok, const Token *rhs);
+
+        // checkConst helper functions
+        bool isMemberVar(const Scope *scope, const Token *tok) const;
+        static bool isMemberFunc(const Scope *scope, const Token *tok);
+        static bool isConstMemberFunc(const Scope *scope, const Token *tok);
+        enum class MemberAccess { NONE, SELF, MEMBER };
+        bool checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const;
+
+        // constructors helper function
+        /** @brief Information about a member variable. Used when checking for uninitialized variables */
+        struct Usage {
+            explicit Usage(const Variable *var) : var(var) {}
+
+            /** Variable that this usage is for */
+            const Variable *var;
+
+            /** @brief has this variable been assigned? */
+            bool assign{};
+
+            /** @brief has this variable been initialized? */
+            bool init{};
+        };
+
+        static bool isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope);
+
+        /**
+         * @brief Create usage list that contains all scope members and also members
+         * of base classes without constructors.
+         * @param scope current class scope
+         */
+        static std::vector<Usage> createUsageList(const Scope *scope);
+
+        /**
+         * @brief assign a variable in the varlist
+         * @param usageList reference to usage vector
+         * @param varid id of variable to mark assigned
+         */
+        static void assignVar(std::vector<Usage> &usageList, nonneg int varid);
+
+        /**
+         * @brief assign a variable in the varlist
+         * @param usageList reference to usage vector
+         * @param vartok variable token
+         */
+        static void assignVar(std::vector<Usage> &usageList, const Token *vartok);
+
+        /**
+         * @brief initialize a variable in the varlist
+         * @param usageList reference to usage vector
+         * @param varid id of variable to mark initialized
+         */
+        static void initVar(std::vector<Usage> &usageList, nonneg int varid);
+
+        /**
+         * @brief set all variables in list assigned
+         * @param usageList reference to usage vector
+         */
+        static void assignAllVar(std::vector<Usage> &usageList);
+
+        /**
+         * @brief set all variable in list assigned, if visible from given scope
+         * @param usageList reference to usage vector
+         * @param scope scope from which usages must be visible
+         */
+        static void assignAllVarsVisibleFromScope(std::vector<Usage> &usageList, const Scope *scope);
+
+        /**
+         * @brief set all variables in list not assigned and not initialized
+         * @param usageList reference to usage vector
+         */
+        static void clearAllVar(std::vector<Usage> &usageList);
+
+        /**
+         * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
+         * @param func reference to the function that should be checked
+         * @param callstack the function doesn't look into recursive function calls.
+         * @param scope pointer to variable Scope
+         * @param usage reference to usage vector
+         */
+        void initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const;
+
+        /**
+         * @brief gives a list of tokens where virtual functions are called directly or indirectly
+         * @param function function to be checked
+         * @param virtualFunctionCallsMap map of results for already checked functions
+         * @return list of tokens where pure virtual functions are called
+         */
+        const std::list<const Token *> & getVirtualFunctionCalls(
+            const Function & function,
+            std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap);
+
+        /**
+         * @brief looks for the first virtual function call stack
+         * @param virtualFunctionCallsMap map of results obtained from getVirtualFunctionCalls
+         * @param callToken token where pure virtual function is called directly or indirectly
+         * @param[in,out] pureFuncStack list to append the stack
+         */
+        static void getFirstVirtualFunctionCallStack(
+            std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap,
+            const Token *callToken,
+            std::list<const Token *> & pureFuncStack);
+
+        static bool canNotCopy(const Scope *scope);
+
+        static bool canNotMove(const Scope *scope);
+
+        /**
+         * @brief Helper for checkThisUseAfterFree
+         */
+        bool checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken);
+    };
+}
 
 static const char * getFunctionTypeName(Function::Type type)
 {
@@ -114,8 +353,8 @@ static bool isVclTypeInit(const Type *type)
 }
 //---------------------------------------------------------------------------
 
-CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-    : Check(myName(), tokenizer, settings, errorLogger),
+CheckClassImpl::CheckClassImpl(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+    : CheckImpl(tokenizer, settings, errorLogger),
     mSymbolDatabase(tokenizer?tokenizer->getSymbolDatabase():nullptr)
 {}
 
@@ -123,7 +362,7 @@ CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, Err
 // ClassCheck: Check that all class constructors are ok.
 //---------------------------------------------------------------------------
 
-void CheckClass::constructors()
+void CheckClassImpl::constructors()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
@@ -334,7 +573,7 @@ void CheckClass::constructors()
     }
 }
 
-void CheckClass::checkExplicitConstructors()
+void CheckClassImpl::checkExplicitConstructors()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -403,7 +642,7 @@ static bool hasNonCopyableBase(const Scope *scope, bool *unknown)
     return false;
 }
 
-void CheckClass::copyconstructors()
+void CheckClassImpl::copyconstructors()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -535,7 +774,7 @@ void CheckClass::copyconstructors()
    }
  */
 
-void CheckClass::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
+void CheckClassImpl::copyConstructorShallowCopyError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::warning, "copyCtorPointerCopying",
                 "$symbol:" + varname + "\nValue of pointer '$symbol', which points to allocated memory, is copied in copy constructor instead of allocating new memory.", CWE398, Certainty::normal);
@@ -561,22 +800,22 @@ static std::string noMemberErrorMessage(const Scope *scope, const char function[
     return errmsg;
 }
 
-void CheckClass::noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
+void CheckClassImpl::noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
 {
     reportError(alloc, Severity::warning, "noCopyConstructor", noMemberErrorMessage(scope, "copy constructor", isdefault), CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckClass::noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
+void CheckClassImpl::noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive)
 {
     reportError(alloc, Severity::warning, "noOperatorEq", noMemberErrorMessage(scope, "operator=", isdefault), CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckClass::noDestructorError(const Scope *scope, bool isdefault, const Token *alloc)
+void CheckClassImpl::noDestructorError(const Scope *scope, bool isdefault, const Token *alloc)
 {
     reportError(alloc, Severity::warning, "noDestructor", noMemberErrorMessage(scope, "destructor", isdefault), CWE398, Certainty::normal);
 }
 
-bool CheckClass::canNotCopy(const Scope *scope)
+bool CheckClassImpl::canNotCopy(const Scope *scope)
 {
     bool constructor = false;
     bool publicAssign = false;
@@ -600,7 +839,7 @@ bool CheckClass::canNotCopy(const Scope *scope)
     return constructor && !(publicAssign || publicCopy);
 }
 
-bool CheckClass::canNotMove(const Scope *scope)
+bool CheckClassImpl::canNotMove(const Scope *scope)
 {
     bool constructor = false;
     bool publicAssign = false;
@@ -645,7 +884,7 @@ static void getAllVariableMembers(const Scope *scope, std::vector<const Variable
     }
 }
 
-std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
+std::vector<CheckClassImpl::Usage> CheckClassImpl::createUsageList(const Scope *scope)
 {
     std::vector<Usage> ret;
     std::vector<const Variable *> varlist;
@@ -657,7 +896,7 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
     return ret;
 }
 
-void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)
+void CheckClassImpl::assignVar(std::vector<Usage> &usageList, nonneg int varid)
 {
     auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
         return usage.var->declarationId() == varid;
@@ -666,7 +905,7 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)
         it->assign = true;
 }
 
-void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
+void CheckClassImpl::assignVar(std::vector<Usage> &usageList, const Token* vartok)
 {
     if (vartok->varId() > 0) {
         assignVar(usageList, vartok->varId());
@@ -680,7 +919,7 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
         it->assign = true;
 }
 
-void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
+void CheckClassImpl::initVar(std::vector<Usage> &usageList, nonneg int varid)
 {
     auto it = std::find_if(usageList.begin(), usageList.end(), [varid](const Usage& usage) {
         return usage.var->declarationId() == varid;
@@ -689,13 +928,13 @@ void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
         it->init = true;
 }
 
-void CheckClass::assignAllVar(std::vector<Usage> &usageList)
+void CheckClassImpl::assignAllVar(std::vector<Usage> &usageList)
 {
     for (Usage & i : usageList)
         i.assign = true;
 }
 
-void CheckClass::assignAllVarsVisibleFromScope(std::vector<Usage>& usageList, const Scope* scope)
+void CheckClassImpl::assignAllVarsVisibleFromScope(std::vector<Usage>& usageList, const Scope* scope)
 {
     for (Usage& usage : usageList) {
         if (usage.var->scope() == scope)
@@ -711,7 +950,7 @@ void CheckClass::assignAllVarsVisibleFromScope(std::vector<Usage>& usageList, co
     }
 }
 
-void CheckClass::clearAllVar(std::vector<Usage> &usageList)
+void CheckClassImpl::clearAllVar(std::vector<Usage> &usageList)
 {
     for (Usage & i : usageList) {
         i.assign = false;
@@ -719,7 +958,7 @@ void CheckClass::clearAllVar(std::vector<Usage> &usageList)
     }
 }
 
-bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope)
+bool CheckClassImpl::isBaseClassMutableMemberFunc(const Token *tok, const Scope *scope)
 {
     // Iterate through each base class...
     for (const Type::BaseInfo & i : scope->definedType->derivedFrom) {
@@ -746,7 +985,7 @@ bool CheckClass::isBaseClassMutableMemberFunc(const Token *tok, const Scope *sco
     return false;
 }
 
-void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const
+void CheckClassImpl::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage) const
 {
     if (!func.functionScope)
         return;
@@ -1074,7 +1313,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
     }
 }
 
-void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
+void CheckClassImpl::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
     // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
     const std::string message {"The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not declare a constructor although it has private member variables which likely require initialization."};
@@ -1082,14 +1321,14 @@ void CheckClass::noConstructorError(const Token *tok, const std::string &classna
     reportError(tok, Severity::style, "noConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
-void CheckClass::noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct)
+void CheckClassImpl::noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
     const std::string message(std::string(isStruct ? "Struct" : "Class") + " '$symbol' has a constructor with 1 argument that is not explicit.");
     const std::string verbose(message + " Such, so called \"Converting constructors\", should in general be explicit for type safety reasons as that prevents unintended implicit conversions.");
     reportError(tok, Severity::style, "noExplicitConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
-void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive)
+void CheckClassImpl::uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive)
 {
     std::string ctor;
     if (functionType == Function::eCopyConstructor)
@@ -1104,7 +1343,7 @@ void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type
     reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + '\n' + message + '\n' + verbose, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
+void CheckClassImpl::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
     const std::string message("Member variable '$symbol' is not initialized."); // report missing in-class initializer
     const std::string verbose {message + " Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior."};
@@ -1112,7 +1351,7 @@ void CheckClass::uninitVarError(const Token *tok, const std::string &classname, 
     reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
-void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname)
+void CheckClassImpl::missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname)
 {
     const std::string ctor(functionType == Function::Type::eCopyConstructor ? "copy" : "move");
     const std::string action(functionType == Function::Type::eCopyConstructor ? "copied?" : "moved?");
@@ -1122,7 +1361,7 @@ void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functio
     reportError(tok, Severity::warning, "missingMemberCopy", message, CWE398, Certainty::inconclusive);
 }
 
-void CheckClass::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
+void CheckClassImpl::operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive)
 {
     reportError(tok, Severity::warning, "operatorEqVarError", "$symbol:" + classname + "::" + varname + "\nMember variable '$symbol' is not assigned a value in '" + classname + "::operator='.", CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
@@ -1131,7 +1370,7 @@ void CheckClass::operatorEqVarError(const Token *tok, const std::string &classna
 // ClassCheck: Use initialization list instead of assignment
 //---------------------------------------------------------------------------
 
-void CheckClass::initializationListUsage()
+void CheckClassImpl::initializationListUsage()
 {
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
@@ -1211,7 +1450,7 @@ void CheckClass::initializationListUsage()
     }
 }
 
-void CheckClass::suggestInitializationList(const Token* tok, const std::string& varname)
+void CheckClassImpl::suggestInitializationList(const Token* tok, const std::string& varname)
 {
     reportError(tok, Severity::performance, "useInitializationList", "$symbol:" + varname + "\nVariable '$symbol' is assigned in constructor body. Consider performing initialization in initialization list.\n"
                 "When an object of a class is created, the constructors of all member variables are called consecutively "
@@ -1273,7 +1512,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
     return false; // Unused in this scope
 }
 
-void CheckClass::privateFunctions()
+void CheckClassImpl::privateFunctions()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -1329,7 +1568,7 @@ void CheckClass::privateFunctions()
     }
 }
 
-void CheckClass::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
+void CheckClassImpl::unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname)
 {
     reportError(tok, Severity::style, "unusedPrivateFunction", "$symbol:" + classname + "::" + funcname + "\nUnused private function: '$symbol'", CWE398, Certainty::normal);
 }
@@ -1348,7 +1587,7 @@ static const Scope* findFunctionOf(const Scope* scope)
     return nullptr;
 }
 
-void CheckClass::checkMemset()
+void CheckClassImpl::checkMemset()
 {
     logChecker("CheckClass::checkMemset");
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
@@ -1441,7 +1680,7 @@ void CheckClass::checkMemset()
     }
 }
 
-void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::set<const Scope *> parsedTypes)
+void CheckClassImpl::checkMemsetType(const Scope *start, const Token *tok, const Scope *type, bool allocation, std::set<const Scope *> parsedTypes)
 {
     // If type has been checked there is no need to check it again
     if (parsedTypes.find(type) != parsedTypes.end())
@@ -1507,7 +1746,7 @@ void CheckClass::checkMemsetType(const Scope *start, const Token *tok, const Sco
     }
 }
 
-void CheckClass::mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok)
+void CheckClassImpl::mallocOnClassWarning(const Token* tok, const std::string &memfunc, const Token* classTok)
 {
     std::list<const Token *> toks = { tok, classTok };
     reportError(toks, Severity::warning, "mallocOnClassWarning",
@@ -1517,7 +1756,7 @@ void CheckClass::mallocOnClassWarning(const Token* tok, const std::string &memfu
                 "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", CWE762, Certainty::normal);
 }
 
-void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname)
+void CheckClassImpl::mallocOnClassError(const Token* tok, const std::string &memfunc, const Token* classTok, const std::string &classname)
 {
     std::list<const Token *> toks = { tok, classTok };
     reportError(toks, Severity::error, "mallocOnClassError",
@@ -1528,7 +1767,7 @@ void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc
                 "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", CWE665, Certainty::normal);
 }
 
-void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type, bool isContainer)
+void CheckClassImpl::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type, bool isContainer)
 {
     const std::string typeStr = isContainer ? std::string() : (type + " that contains a ");
     const std::string msg = "$symbol:" + memfunc + "\n"
@@ -1540,14 +1779,14 @@ void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const
     reportError(tok, Severity::error, "memsetClass", msg, CWE762, Certainty::normal);
 }
 
-void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
+void CheckClassImpl::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
 {
     reportError(tok, Severity::error, "memsetClassReference",
                 "$symbol:" + memfunc +"\n"
                 "Using '" + memfunc + "' on " + type + " that contains a reference.", CWE665, Certainty::normal);
 }
 
-void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
+void CheckClassImpl::memsetErrorFloat(const Token *tok, const std::string &type)
 {
     reportError(tok, Severity::portability, "memsetClassFloat", "Using memset() on " + type + " which contains a floating point number.\n"
                 "Using memset() on " + type + " which contains a floating point number."
@@ -1562,7 +1801,7 @@ void CheckClass::memsetErrorFloat(const Token *tok, const std::string &type)
 // operator= should return a reference to *this
 //---------------------------------------------------------------------------
 
-void CheckClass::operatorEqRetRefThis()
+void CheckClassImpl::operatorEqRetRefThis()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -1581,13 +1820,13 @@ void CheckClass::operatorEqRetRefThis()
     }
 }
 
-void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last)
+void CheckClassImpl::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last)
 {
     std::set<const Function*> analyzedFunctions;
     checkReturnPtrThis(scope, func, tok, last, analyzedFunctions);
 }
 
-void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>& analyzedFunctions)
+void CheckClassImpl::checkReturnPtrThis(const Scope *scope, const Function *func, const Token *tok, const Token *last, std::set<const Function*>& analyzedFunctions)
 {
     bool foundReturn = false;
 
@@ -1673,17 +1912,17 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
     operatorEqMissingReturnStatementError(func->token, func->access == AccessControl::Public);
 }
 
-void CheckClass::operatorEqRetRefThisError(const Token *tok)
+void CheckClassImpl::operatorEqRetRefThisError(const Token *tok)
 {
     reportError(tok, Severity::style, "operatorEqRetRefThis", "'operator=' should return reference to 'this' instance.", CWE398, Certainty::normal);
 }
 
-void CheckClass::operatorEqShouldBeLeftUnimplementedError(const Token *tok)
+void CheckClassImpl::operatorEqShouldBeLeftUnimplementedError(const Token *tok)
 {
     reportError(tok, Severity::style, "operatorEqShouldBeLeftUnimplemented", "'operator=' should either return reference to 'this' instance or be declared private and left unimplemented.", CWE398, Certainty::normal);
 }
 
-void CheckClass::operatorEqMissingReturnStatementError(const Token *tok, bool error)
+void CheckClassImpl::operatorEqMissingReturnStatementError(const Token *tok, bool error)
 {
     if (error) {
         reportError(tok, Severity::error, "operatorEqMissingReturnStatement", "No 'return' statement in non-void function causes undefined behavior.", CWE398, Certainty::normal);
@@ -1706,7 +1945,7 @@ void CheckClass::operatorEqMissingReturnStatementError(const Token *tok, bool er
 // assignment to self.
 //---------------------------------------------------------------------------
 
-void CheckClass::operatorEqToSelf()
+void CheckClassImpl::operatorEqToSelf()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -1747,7 +1986,7 @@ void CheckClass::operatorEqToSelf()
     }
 }
 
-bool CheckClass::hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const
+bool CheckClassImpl::hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const
 {
     const Token *end;
     if (ifStatementScopeStart->str() == "{")
@@ -1757,12 +1996,12 @@ bool CheckClass::hasAllocationInIfScope(const Function *func, const Scope* scope
     return hasAllocation(func, scope, ifStatementScopeStart, end);
 }
 
-bool CheckClass::hasAllocation(const Function *func, const Scope* scope) const
+bool CheckClassImpl::hasAllocation(const Function *func, const Scope* scope) const
 {
     return hasAllocation(func, scope, func->functionScope->bodyStart, func->functionScope->bodyEnd);
 }
 
-bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const
+bool CheckClassImpl::hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const
 {
     if (!end)
         end = func->functionScope->bodyEnd;
@@ -1808,7 +2047,7 @@ static bool isFalseKeyword(const Token* tok)
  * Checks if self-assignment test is inverse
  * For example 'if (this == &rhs)'
  */
-CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
+CheckClassImpl::Bool CheckClassImpl::isInverted(const Token *tok, const Token *rhs)
 {
     bool res = true;
     for (const Token *itr = tok; itr && itr->str()!="("; itr=itr->astParent()) {
@@ -1837,7 +2076,7 @@ CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
     return Bool::FALSE;
 }
 
-const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
+const Token * CheckClassImpl::getIfStmtBodyStart(const Token *tok, const Token *rhs)
 {
     const Token *top = tok->astTop();
     if (Token::simpleMatch(top->link(), ") {")) {
@@ -1853,7 +2092,7 @@ const Token * CheckClass::getIfStmtBodyStart(const Token *tok, const Token *rhs)
     return nullptr;
 }
 
-bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart)
+bool CheckClassImpl::hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart)
 {
     if (!rhs)
         return false;
@@ -1887,7 +2126,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
     return false;
 }
 
-void CheckClass::operatorEqToSelfError(const Token *tok)
+void CheckClassImpl::operatorEqToSelfError(const Token *tok)
 {
     reportError(tok, Severity::warning, "operatorEqToSelf",
                 "'operator=' should check for assignment to self to avoid problems with dynamic memory.\n"
@@ -1899,7 +2138,7 @@ void CheckClass::operatorEqToSelfError(const Token *tok)
 // A destructor in a base class should be virtual
 //---------------------------------------------------------------------------
 
-void CheckClass::virtualDestructor()
+void CheckClassImpl::virtualDestructor()
 {
     // This error should only be given if:
     // * base class doesn't have virtual destructor
@@ -2034,7 +2273,7 @@ void CheckClass::virtualDestructor()
         virtualDestructorError(func->tokenDef, func->name(), emptyString, true);
 }
 
-void CheckClass::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)
+void CheckClassImpl::virtualDestructorError(const Token *tok, const std::string &Base, const std::string &Derived, bool inconclusive)
 {
     if (inconclusive) {
         if (mSettings->severity.isEnabled(Severity::warning))
@@ -2055,7 +2294,7 @@ void CheckClass::virtualDestructorError(const Token *tok, const std::string &Bas
 // warn for "this-x". The indented code may be "this->x"
 //---------------------------------------------------------------------------
 
-void CheckClass::thisSubtraction()
+void CheckClassImpl::thisSubtraction()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -2075,7 +2314,7 @@ void CheckClass::thisSubtraction()
     }
 }
 
-void CheckClass::thisSubtractionError(const Token *tok)
+void CheckClassImpl::thisSubtractionError(const Token *tok)
 {
     reportError(tok, Severity::warning, "thisSubtraction", "Suspicious pointer subtraction. Did you intend to write '->'?", CWE398, Certainty::normal);
 }
@@ -2084,7 +2323,7 @@ void CheckClass::thisSubtractionError(const Token *tok)
 // can member function be const?
 //---------------------------------------------------------------------------
 
-void CheckClass::checkConst()
+void CheckClassImpl::checkConst()
 {
     // This is an inconclusive check. False positives: #3322.
     if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
@@ -2203,7 +2442,7 @@ static const Token* getFuncTokFromThis(const Token* tok) {
     return Token::Match(tok, "%name% (") ? tok : nullptr;
 }
 
-bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
+bool CheckClassImpl::isMemberVar(const Scope *scope, const Token *tok) const
 {
     bool again = false;
 
@@ -2278,7 +2517,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
     return false;
 }
 
-bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
+bool CheckClassImpl::isMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function()) {
         for (const Function &func : scope->functionList) {
@@ -2319,7 +2558,7 @@ bool CheckClass::isMemberFunc(const Scope *scope, const Token *tok)
     return false;
 }
 
-bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
+bool CheckClassImpl::isConstMemberFunc(const Scope *scope, const Token *tok)
 {
     if (!tok->function())
         return false;
@@ -2346,7 +2585,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok)
 
 const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map", "std :: map|unordered_map <" }; // start pattern
 
-bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const
+bool CheckClassImpl::checkConstFunc(const Scope *scope, const Function *func, MemberAccess& memberAccessed) const
 {
     if (mTokenizer->hasIfdef(func->functionScope->bodyStart, func->functionScope->bodyEnd))
         return false;
@@ -2475,7 +2714,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
                 } else if (end->strAt(1) == "[") {
                     if (end->varId()) {
                         const Variable *var = end->variable();
-                        if (var && var->isStlType(stl_containers_not_const))
+                        if (var && var->isStlType(CheckClass::stl_containers_not_const))
                             return false;
                         const Token* assignTok = end->next()->astParent();
                         if (var && assignTok && assignTok->isAssignmentOp() && assignTok->astOperand1() && assignTok->astOperand1()->variable()) {
@@ -2590,12 +2829,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, Member
     return true;
 }
 
-void CheckClass::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic)
+void CheckClassImpl::checkConstError(const Token *tok, const std::string &classname, const std::string &funcname, bool suggestStatic)
 {
     checkConstError2(tok, nullptr, classname, funcname, suggestStatic);
 }
 
-void CheckClass::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic)
+void CheckClassImpl::checkConstError2(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &funcname, bool suggestStatic)
 {
     std::list<const Token *> toks{ tok1 };
     if (tok2)
@@ -2635,7 +2874,7 @@ namespace { // avoid one-definition-rule violation
     };
 }
 
-void CheckClass::initializerListOrder()
+void CheckClassImpl::initializerListOrder()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -2691,7 +2930,7 @@ void CheckClass::initializerListOrder()
     }
 }
 
-void CheckClass::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname)
+void CheckClassImpl::initializerListError(const Token *tok1, const Token *tok2, const std::string &classname, const std::string &varname)
 {
     std::list<const Token *> toks = { tok1, tok2 };
     reportError(toks, Severity::style, "initializerList",
@@ -2709,7 +2948,7 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
 // Check for self initialization in initialization list
 //---------------------------------------------------------------------------
 
-void CheckClass::checkSelfInitialization()
+void CheckClassImpl::checkSelfInitialization()
 {
     logChecker("CheckClass::checkSelfInitialization");
 
@@ -2738,7 +2977,7 @@ void CheckClass::checkSelfInitialization()
     }
 }
 
-void CheckClass::selfInitializationError(const Token* tok, const std::string& varname)
+void CheckClassImpl::selfInitializationError(const Token* tok, const std::string& varname)
 {
     reportError(tok, Severity::error, "selfInitialization", "$symbol:" + varname + "\nMember variable '$symbol' is initialized by itself.", CWE665, Certainty::normal);
 }
@@ -2748,7 +2987,7 @@ void CheckClass::selfInitializationError(const Token* tok, const std::string& va
 // Check for virtual function calls in constructor/destructor
 //---------------------------------------------------------------------------
 
-void CheckClass::checkVirtualFunctionCallInConstructor()
+void CheckClassImpl::checkVirtualFunctionCallInConstructor()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -2778,7 +3017,7 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
     }
 }
 
-const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Function & function,
+const std::list<const Token *> & CheckClassImpl::getVirtualFunctionCalls(const Function & function,
                                                                      std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap)
 {
     const std::map<const Function *, std::list<const Token *>>::const_iterator found = virtualFunctionCallsMap.find(&function);
@@ -2836,7 +3075,7 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
     return virtualFunctionCalls;
 }
 
-void CheckClass::getFirstVirtualFunctionCallStack(
+void CheckClassImpl::getFirstVirtualFunctionCallStack(
     std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap,
     const Token * callToken,
     std::list<const Token *> & pureFuncStack)
@@ -2856,7 +3095,7 @@ void CheckClass::getFirstVirtualFunctionCallStack(
     getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, firstCall, pureFuncStack);
 }
 
-void CheckClass::virtualFunctionCallInConstructorError(
+void CheckClassImpl::virtualFunctionCallInConstructorError(
     const Function * scopeFunction,
     const std::list<const Token *> & tokStack,
     const std::string &funcname)
@@ -2891,7 +3130,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
                 "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + std::to_string(lineNumber) + ". Dynamic binding is not used.", CWE(0U), Certainty::normal);
 }
 
-void CheckClass::pureVirtualFunctionCallInConstructorError(
+void CheckClassImpl::pureVirtualFunctionCallInConstructorError(
     const Function * scopeFunction,
     const std::list<const Token *> & tokStack,
     const std::string &purefuncname)
@@ -2916,7 +3155,7 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
 // Check for members hiding inherited members with the same name
 //---------------------------------------------------------------------------
 
-void CheckClass::checkDuplInheritedMembers()
+void CheckClassImpl::checkDuplInheritedMembers()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -2999,7 +3238,7 @@ static std::vector<DuplMemberFuncInfo> getDuplInheritedMemberFunctionsRecursive(
     return results;
 }
 
-void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
+void CheckClassImpl::checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase)
 {
     const auto resultsVar = getDuplInheritedMembersRecursive(typeCurrent, typeBase);
     for (const auto& r : resultsVar) {
@@ -3018,7 +3257,7 @@ void CheckClass::checkDuplInheritedMembersRecursive(const Type* typeCurrent, con
     }
 }
 
-void CheckClass::duplInheritedMembersError(const Token *tok1, const Token* tok2,
+void CheckClassImpl::duplInheritedMembersError(const Token *tok1, const Token* tok2,
                                            const std::string &derivedName, const std::string &baseName,
                                            const std::string &memberName, bool derivedIsStruct, bool baseIsStruct, bool isFunction)
 {
@@ -3046,7 +3285,7 @@ enum class CtorType {
     WITH_BODY
 };
 
-void CheckClass::checkCopyCtorAndEqOperator()
+void CheckClassImpl::checkCopyCtorAndEqOperator()
 {
     // This is disabled because of #8388
     // The message must be clarified. How is the behaviour different?
@@ -3099,7 +3338,7 @@ void CheckClass::checkCopyCtorAndEqOperator()
     }
 }
 
-void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor)
+void CheckClassImpl::copyCtorAndEqOperatorError(const Token *tok, const std::string &classname, bool isStruct, bool hasCopyCtor)
 {
     const std::string message = "$symbol:" + classname + "\n"
                                 "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' has '" +
@@ -3109,7 +3348,7 @@ void CheckClass::copyCtorAndEqOperatorError(const Token *tok, const std::string 
     reportError(tok, Severity::warning, "copyCtorAndEqOperator", message);
 }
 
-void CheckClass::checkOverride()
+void CheckClassImpl::checkOverride()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -3129,7 +3368,7 @@ void CheckClass::checkOverride()
     }
 }
 
-void CheckClass::overrideError(const Function *funcInBase, const Function *funcInDerived)
+void CheckClassImpl::overrideError(const Function *funcInBase, const Function *funcInDerived)
 {
     const std::string functionName = funcInDerived ? ((funcInDerived->isDestructor() ? "~" : "") + funcInDerived->name()) : "";
     const std::string funcType = (funcInDerived && funcInDerived->isDestructor()) ? "destructor" : "function";
@@ -3147,7 +3386,7 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
                 Certainty::normal);
 }
 
-void CheckClass::uselessOverrideError(const Function *funcInBase, const Function *funcInDerived, bool isSameCode)
+void CheckClassImpl::uselessOverrideError(const Function *funcInBase, const Function *funcInDerived, bool isSameCode)
 {
     const std::string functionName = funcInDerived ? ((funcInDerived->isDestructor() ? "~" : "") + funcInDerived->name()) : "";
     const std::string funcType = (funcInDerived && funcInDerived->isDestructor()) ? "destructor" : "function";
@@ -3209,7 +3448,7 @@ static bool compareTokenRanges(const Token* start1, const Token* end1, const Tok
     return isEqual;
 }
 
-void CheckClass::checkUselessOverride()
+void CheckClassImpl::checkUselessOverride()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
@@ -3268,7 +3507,7 @@ void CheckClass::checkUselessOverride()
     }
 }
 
-void CheckClass::checkThisUseAfterFree()
+void CheckClassImpl::checkThisUseAfterFree()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -3317,7 +3556,7 @@ void CheckClass::checkThisUseAfterFree()
     }
 }
 
-bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken)
+bool CheckClassImpl::checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken)
 {
     if (!func || !func->functionScope)
         return false;
@@ -3356,7 +3595,7 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
     return false;
 }
 
-void CheckClass::thisUseAfterFree(const Token *self, const Token *free, const Token *use)
+void CheckClassImpl::thisUseAfterFree(const Token *self, const Token *free, const Token *use)
 {
     std::string selfPointer = self ? self->str() : "ptr";
     const ErrorPath errorPath = { ErrorPathItem(self, "Assuming '" + selfPointer + "' is used as 'this'"), ErrorPathItem(free, "Delete '" + selfPointer + "', invalidating 'this'"), ErrorPathItem(use, "Call method when 'this' is invalid") };
@@ -3368,7 +3607,7 @@ void CheckClass::thisUseAfterFree(const Token *self, const Token *free, const To
                 CWE(0), Certainty::normal);
 }
 
-void CheckClass::checkUnsafeClassRefMember()
+void CheckClassImpl::checkUnsafeClassRefMember()
 {
     if (!mSettings->safeChecks.classes || !mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -3392,7 +3631,7 @@ void CheckClass::checkUnsafeClassRefMember()
     }
 }
 
-void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &varname)
+void CheckClassImpl::unsafeClassRefMemberError(const Token *tok, const std::string &varname)
 {
     reportError(tok, Severity::warning, "unsafeClassRefMember",
                 "$symbol:" + varname + "\n"
@@ -3542,9 +3781,8 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
 
     std::unordered_map<std::string, MyFileInfo::NameLoc> all;
 
-    CheckClass dummy(nullptr, &settings, &errorLogger);
-    dummy.
-    logChecker("CheckClass::analyseWholeProgram");
+    CheckClassImpl dummy(nullptr, &settings, &errorLogger);
+    //dummy.logChecker("CheckClass::analyseWholeProgram");
 
     for (const Check::FileInfo* fi1 : fileInfo) {
         const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);
@@ -3582,4 +3820,194 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
     return foundErrors;
 }
 
+void CheckClass::runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
+{
+    if (tokenizer.isC())
+        return;
 
+    CheckClassImpl checkClass(&tokenizer, tokenizer.getSettings(), errorLogger);
+
+    // can't be a simplified check .. the 'sizeof' is used.
+    checkClass.checkMemset();
+    checkClass.constructors();
+    checkClass.privateFunctions();
+    checkClass.operatorEqRetRefThis();
+    checkClass.thisSubtraction();
+    checkClass.operatorEqToSelf();
+    checkClass.initializerListOrder();
+    checkClass.initializationListUsage();
+    checkClass.checkSelfInitialization();
+    checkClass.virtualDestructor();
+    checkClass.checkConst();
+    checkClass.copyconstructors();
+    checkClass.checkVirtualFunctionCallInConstructor();
+    checkClass.checkDuplInheritedMembers();
+    checkClass.checkExplicitConstructors();
+    checkClass.checkCopyCtorAndEqOperator();
+    checkClass.checkOverride();
+    checkClass.checkUselessOverride();
+    checkClass.checkThisUseAfterFree();
+    checkClass.checkUnsafeClassRefMember();
+}
+
+void CheckClass::getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const
+{
+    CheckClassImpl c(nullptr, settings, errorLogger);
+    c.noConstructorError(nullptr, "classname", false);
+    c.noExplicitConstructorError(nullptr, "classname", false);
+    //c.copyConstructorMallocError(nullptr, 0, "var");
+    c.copyConstructorShallowCopyError(nullptr, "var");
+    c.noCopyConstructorError(nullptr, false, nullptr, false);
+    c.noOperatorEqError(nullptr, false, nullptr, false);
+    c.noDestructorError(nullptr, false, nullptr);
+    c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
+    c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
+    c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
+    c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
+    c.missingMemberCopyError(nullptr, Function::eConstructor, "classname", "varnamepriv");
+    c.operatorEqVarError(nullptr, "classname", emptyString, false);
+    c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
+    c.memsetError(nullptr, "memfunc", "classname", "class");
+    c.memsetErrorReference(nullptr, "memfunc", "class");
+    c.memsetErrorFloat(nullptr, "class");
+    c.mallocOnClassWarning(nullptr, "malloc", nullptr);
+    c.mallocOnClassError(nullptr, "malloc", nullptr, "std::string");
+    c.virtualDestructorError(nullptr, "Base", "Derived", false);
+    c.thisSubtractionError(nullptr);
+    c.operatorEqRetRefThisError(nullptr);
+    c.operatorEqMissingReturnStatementError(nullptr, true);
+    c.operatorEqShouldBeLeftUnimplementedError(nullptr);
+    c.operatorEqToSelfError(nullptr);
+    c.checkConstError(nullptr, "class", "function", false);
+    c.checkConstError(nullptr, "class", "function", true);
+    c.initializerListError(nullptr, nullptr, "class", "variable");
+    c.suggestInitializationList(nullptr, "variable");
+    c.selfInitializationError(nullptr, "var");
+    c.duplInheritedMembersError(nullptr, nullptr, "class", "class", "variable", false, false);
+    c.copyCtorAndEqOperatorError(nullptr, "class", false, false);
+    c.pureVirtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
+    c.virtualFunctionCallInConstructorError(nullptr, std::list<const Token *>(), "f");
+    c.overrideError(nullptr, nullptr);
+    c.thisUseAfterFree(nullptr, nullptr, nullptr);
+    c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
+}
+
+void CheckClass::checkCopyCtorAndEqOperator(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkCopyCtorAndEqOperator();
+}
+
+void CheckClass::checkExplicitConstructors(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkExplicitConstructors();
+}
+
+void CheckClass::checkDuplInheritedMembers(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkDuplInheritedMembers();
+}
+
+void CheckClass::copyconstructors(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.copyconstructors();
+}
+
+void CheckClass::operatorEqRetRefThis(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.operatorEqRetRefThis();
+}
+
+void CheckClass::operatorEqToSelf(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.operatorEqToSelf();
+}
+
+void CheckClass::virtualDestructor(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.virtualDestructor();
+}
+
+void CheckClass::checkMemset(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkMemset();
+}
+
+void CheckClass::thisSubtraction(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.thisSubtraction();
+}
+
+void CheckClass::checkConst(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkConst();
+}
+
+void CheckClass::initializerListOrder(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.initializerListOrder();
+}
+
+void CheckClass::initializationListUsage(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.initializationListUsage();
+}
+
+void CheckClass::checkSelfInitialization(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkSelfInitialization();
+}
+
+void CheckClass::checkVirtualFunctionCallInConstructor(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkVirtualFunctionCallInConstructor();
+}
+
+void CheckClass::checkOverride(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkOverride();
+}
+
+void CheckClass::checkUselessOverride(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkUselessOverride();
+}
+
+void CheckClass::checkUnsafeClassRefMember(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkUnsafeClassRefMember();
+}
+
+void CheckClass::checkThisUseAfterFree(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.checkThisUseAfterFree();
+}
+
+void CheckClass::constructors(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.constructors();
+}
+
+void CheckClass::privateFunctions(Tokenizer* tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+{
+    CheckClassImpl c(tokenizer, settings, errorLogger);
+    c.privateFunctions();
+}
