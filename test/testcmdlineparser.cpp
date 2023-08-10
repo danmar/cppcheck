@@ -73,7 +73,10 @@ private:
         TEST_CASE(debugwarnings);
         TEST_CASE(forceshort);
         TEST_CASE(forcelong);
-        TEST_CASE(relativePaths);
+        TEST_CASE(relativePaths1);
+        TEST_CASE(relativePaths2);
+        TEST_CASE(relativePaths3);
+        TEST_CASE(relativePaths4);
         TEST_CASE(quietshort);
         TEST_CASE(quietlong);
         TEST_CASE(defines_noarg);
@@ -83,7 +86,13 @@ private:
         TEST_CASE(defines2);
         TEST_CASE(defines3);
         TEST_CASE(defines4);
-        TEST_CASE(enforceLanguage);
+        TEST_CASE(enforceLanguage1);
+        TEST_CASE(enforceLanguage2);
+        TEST_CASE(enforceLanguage3);
+        TEST_CASE(enforceLanguage4);
+        TEST_CASE(enforceLanguage5);
+        TEST_CASE(enforceLanguage6);
+        TEST_CASE(enforceLanguage7);
         TEST_CASE(includesnopath);
         TEST_CASE(includes);
         TEST_CASE(includesslash);
@@ -140,7 +149,8 @@ private:
         TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
         TEST_CASE(stdc99);
         TEST_CASE(stdcpp11);
-        TEST_CASE(stdunknown);
+        TEST_CASE(stdunknown1);
+        TEST_CASE(stdunknown2);
         TEST_CASE(platformWin64);
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
@@ -160,7 +170,9 @@ private:
         TEST_CASE(plistDoesNotExist);
         TEST_CASE(suppressionsOld);
         TEST_CASE(suppressions);
-        TEST_CASE(suppressionsNoFile);
+        TEST_CASE(suppressionsNoFile1);
+        TEST_CASE(suppressionsNoFile2);
+        TEST_CASE(suppressionsNoFile3);
         TEST_CASE(suppressionSingle);
         TEST_CASE(suppressionSingleFile);
         TEST_CASE(suppressionTwo);
@@ -361,38 +373,44 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    void relativePaths() {
+    void relativePaths1() {
         REDIRECT;
         settings->relativePaths = false;
-        const char * const argvs[] = {"cppcheck", "-rp", "file.cpp"};
-        ASSERT(parser->parseFromArgs(3, argvs));
+        const char * const argv[] = {"cppcheck", "-rp", "file.cpp"};
+        ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
 
-        CLEAR_REDIRECT_OUTPUT;
+    void relativePaths2() {
+        REDIRECT;
         settings->relativePaths = false;
-        const char * const argvl[] = {"cppcheck", "--relative-paths", "file.cpp"};
-        ASSERT(parser->parseFromArgs(3, argvl));
+        const char * const argv[] = {"cppcheck", "--relative-paths", "file.cpp"};
+        ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
 
-        CLEAR_REDIRECT_OUTPUT;
+    void relativePaths3() {
+        REDIRECT;
         settings->relativePaths = false;
         settings->basePaths.clear();
-        const char * const argvsp[] = {"cppcheck", "-rp=C:/foo;C:\\bar", "file.cpp"};
-        ASSERT(parser->parseFromArgs(3, argvsp));
+        const char * const argv[] = {"cppcheck", "-rp=C:/foo;C:\\bar", "file.cpp"};
+        ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
         ASSERT_EQUALS(2, settings->basePaths.size());
         ASSERT_EQUALS("C:/foo", settings->basePaths[0]);
         ASSERT_EQUALS("C:/bar", settings->basePaths[1]);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
 
-        CLEAR_REDIRECT_OUTPUT;
+    void relativePaths4() {
+        REDIRECT;
         settings->relativePaths = false;
         settings->basePaths.clear();
 
-        const char * const argvlp[] = {"cppcheck", "--relative-paths=C:/foo;C:\\bar", "file.cpp"};
-        ASSERT(parser->parseFromArgs(3, argvlp));
+        const char * const argv[] = {"cppcheck", "--relative-paths=C:/foo;C:\\bar", "file.cpp"};
+        ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(true, settings->relativePaths);
         ASSERT_EQUALS(2, settings->basePaths.size());
         ASSERT_EQUALS("C:/foo", settings->basePaths[0]);
@@ -478,57 +496,61 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    void enforceLanguage() {
+    void enforceLanguage1() {
         REDIRECT;
-        {
-            const char * const argv[] = {"cppcheck", "file.cpp"};
-            settings->enforcedLang = Settings::Language::None;
-            ASSERT(parser->parseFromArgs(2, argv));
-            ASSERT_EQUALS(Settings::Language::None, settings->enforcedLang);
-            ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
-        }
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char * const argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
-            settings->enforcedLang = Settings::Language::None;
-            ASSERT(parser->parseFromArgs(4, argv));
-            ASSERT_EQUALS(Settings::Language::CPP, settings->enforcedLang);
-            ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
-        }
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char * const argv[] = {"cppcheck", "-x"};
-            ASSERT(!parser->parseFromArgs(2, argv));
-            ASSERT_EQUALS("cppcheck: error: no language given to '-x' option.\n", GET_REDIRECT_OUTPUT);
-        }
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char * const argv[] = {"cppcheck", "-x", "--inconclusive", "file.cpp"};
-            ASSERT(!parser->parseFromArgs(4, argv));
-            ASSERT_EQUALS("cppcheck: error: no language given to '-x' option.\n", GET_REDIRECT_OUTPUT);
-        }
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char * const argv[] = {"cppcheck", "--language=c++", "file.cpp"};
-            settings->enforcedLang = Settings::Language::None;
-            ASSERT(parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(Settings::Language::CPP, settings->enforcedLang);
-            ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
-        }
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char * const argv[] = {"cppcheck", "--language=c", "file.cpp"};
-            settings->enforcedLang = Settings::Language::None;
-            ASSERT(parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(Settings::Language::C, settings->enforcedLang);
-            ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
-        }
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char * const argv[] = {"cppcheck", "--language=unknownLanguage", "file.cpp"};
-            ASSERT(!parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS("cppcheck: error: unknown language 'unknownLanguage' enforced.\n", GET_REDIRECT_OUTPUT);
-        }
+        const char * const argv[] = {"cppcheck", "file.cpp"};
+        settings->enforcedLang = Settings::Language::None;
+        ASSERT(parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS(Settings::Language::None, settings->enforcedLang);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void enforceLanguage2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-x", "c++", "file.cpp"};
+        settings->enforcedLang = Settings::Language::None;
+        ASSERT(parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS(Settings::Language::CPP, settings->enforcedLang);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void enforceLanguage3() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-x"};
+        ASSERT(!parser->parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: no language given to '-x' option.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void enforceLanguage4() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-x", "--inconclusive", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(4, argv));
+        ASSERT_EQUALS("cppcheck: error: no language given to '-x' option.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void enforceLanguage5() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--language=c++", "file.cpp"};
+        settings->enforcedLang = Settings::Language::None;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(Settings::Language::CPP, settings->enforcedLang);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void enforceLanguage6() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--language=c", "file.cpp"};
+        settings->enforcedLang = Settings::Language::None;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(Settings::Language::C, settings->enforcedLang);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void enforceLanguage7() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--language=unknownLanguage", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unknown language 'unknownLanguage' enforced.\n", GET_REDIRECT_OUTPUT);
     }
 
     void includesnopath() {
@@ -1034,19 +1056,18 @@ private:
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
-    void stdunknown() {
+    void stdunknown1() {
         REDIRECT;
-        {
-            const char *const argv[] = {"cppcheck", "--std=d++11", "file.cpp"};
-            ASSERT(!parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS("cppcheck: error: unknown --std value 'd++11'\n", GET_REDIRECT_OUTPUT);
-        }
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char *const argv[] = {"cppcheck", "--std=cplusplus11", "file.cpp"};
-            TODO_ASSERT(!parser->parseFromArgs(3, argv));
-            TODO_ASSERT_EQUALS("cppcheck: error: unknown --std value 'cplusplus11'\n", "", GET_REDIRECT_OUTPUT);
-        }
+        const char *const argv[] = {"cppcheck", "--std=d++11", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: unknown --std value 'd++11'\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void stdunknown2() {
+        REDIRECT;
+        const char *const argv[] = {"cppcheck", "--std=cplusplus11", "file.cpp"};
+        TODO_ASSERT(!parser->parseFromArgs(3, argv));
+        TODO_ASSERT_EQUALS("cppcheck: error: unknown --std value 'cplusplus11'\n", "", GET_REDIRECT_OUTPUT);
     }
 
     void platformWin64() {
@@ -1212,27 +1233,25 @@ private:
         TODO_ASSERT_EQUALS("", "cppcheck: error: couldn't open the file: \"suppr.txt\".\n", GET_REDIRECT_OUTPUT);
     }
 
-    void suppressionsNoFile() {
+    void suppressionsNoFile1() {
         REDIRECT;
-        {
-            const char * const argv[] = {"cppcheck", "--suppressions-list=", "file.cpp"};
-            ASSERT_EQUALS(false, parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(false, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
-        }
+        const char * const argv[] = {"cppcheck", "--suppressions-list=", "file.cpp"};
+        ASSERT_EQUALS(false, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(false, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
+    }
 
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char * const argv[] = {"cppcheck", "--suppressions-list=a.suppr,b.suppr", "file.cpp"};
-            ASSERT_EQUALS(false, parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(true, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
-        }
+    void suppressionsNoFile2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--suppressions-list=a.suppr,b.suppr", "file.cpp"};
+        ASSERT_EQUALS(false, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
+    }
 
-        CLEAR_REDIRECT_OUTPUT;
-        {
-            const char * const argv[] = {"cppcheck", "--suppressions-list=a.suppr b.suppr", "file.cpp"};
-            ASSERT_EQUALS(false, parser->parseFromArgs(3, argv));
-            ASSERT_EQUALS(true, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
-        }
+    void suppressionsNoFile3() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--suppressions-list=a.suppr b.suppr", "file.cpp"};
+        ASSERT_EQUALS(false, parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(true, GET_REDIRECT_OUTPUT.find("If you want to pass two files") != std::string::npos);
     }
 
     static Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &fileName, int lineNumber) {
