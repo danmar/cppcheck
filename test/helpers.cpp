@@ -65,18 +65,18 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
 ScopedFile::~ScopedFile() {
     const int remove_res = std::remove(mFullPath.c_str());
     if (remove_res != 0) {
-        std::cout << "ScopedFile(" << mFullPath + ") - could not delete file (" << remove_res << ")";
+        std::cout << "ScopedFile(" << mFullPath + ") - could not delete file (" << remove_res << ")" << std::endl;
     }
     if (!mPath.empty() && mPath != Path::getCurrentPath()) {
 #ifdef _WIN32
         if (!RemoveDirectoryA(mPath.c_str())) {
-            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << GetLastError() << ")";
+            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << GetLastError() << ")" << std::endl;
         }
 #else
         const int rmdir_res = rmdir(mPath.c_str());
         if (rmdir_res == -1) {
             const int err = errno;
-            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << err << ")";
+            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << err << ")" << std::endl;
         }
 #endif
     }
