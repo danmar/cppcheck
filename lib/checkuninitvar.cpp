@@ -1579,7 +1579,7 @@ static bool isLeafDot(const Token* tok)
     const Token * parent = tok->astParent();
     if (!Token::simpleMatch(parent, "."))
         return false;
-    if (parent->astOperand2() == tok)
+    if (parent->astOperand2() == tok && !Token::simpleMatch(parent->astParent(), "."))
         return true;
     return isLeafDot(parent);
 }

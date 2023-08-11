@@ -3142,11 +3142,14 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
             return getExprUsage(tok->astParent()->astParent(), indirect, settings);
     }
     if (indirect == 0) {
-        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") &&
+        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::Match(tok->astParent(), "=|>>") &&
             !tok->astParent()->isUnaryOp("&"))
             return ExprUsage::Used;
-        if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok))
+        if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok)) {
+            if (tok->astParent()->astOperand1() && tok->astParent()->astOperand1()->variable() && tok->astParent()->astOperand1()->variable()->isReference())
+                return ExprUsage::NotUsed;
             return ExprUsage::Used;
+        }
         // Function call or index
         if (((Token::simpleMatch(tok->astParent(), "(") && !tok->astParent()->isCast()) || (Token::simpleMatch(tok->astParent(), "[") && tok->valueType())) &&
             (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
