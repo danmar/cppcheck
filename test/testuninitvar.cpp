@@ -6127,6 +6127,18 @@ private:
                         "  int *q = 1 ? &y : 0;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(std::stringstream& ss) {\n" // #11805
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    ss >> *p;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    int& r = *p;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
