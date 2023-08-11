@@ -3295,6 +3295,12 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
         : SubExpressionAnalyzer(e, std::move(val), t, s), varname(std::move(varname))
     {}
 
+    bool match(const Token* tok) const override
+    {
+        return SubExpressionAnalyzer::match(tok) ||
+               (Token::simpleMatch(tok->astParent(), ".") && SubExpressionAnalyzer::match(tok->astParent()));
+    }
+
     bool submatch(const Token* tok, bool exact) const override
     {
         if (!Token::Match(tok, ". %var%"))
@@ -7965,6 +7971,7 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
         Token* start = findStartToken(var, tok->next(), &settings->library);
 
         std::map<Token*, ValueFlow::Value> partialReads;
+        Analyzer::Result result;
         if (const Scope* scope = var->typeScope()) {
             if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
                 continue;
@@ -7979,7 +7986,7 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
                     continue;
                 }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), tok, uninitValue, tokenlist, settings);
-                valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, *settings);
+                result = valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, *settings);
 
                 for (auto&& p : *analyzer.partialReads) {
                     Token* tok2 = p.first;
@@ -8009,7 +8016,8 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
         if (partial)
             continue;
 
-        valueFlowForward(start, tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
+        if (result.terminate != Analyzer::Terminate::Modified)
+            valueFlowForward(start, tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
     }
 }
 
