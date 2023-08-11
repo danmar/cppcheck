@@ -916,6 +916,11 @@ private:
               "int x = PC0   | UNARY;\n"
               "int y = UNARY | PC0;\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("#define MASK 0\n"
+              "#define SHIFT 1\n"
+              "int x = 1 | (MASK << SHIFT);\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
