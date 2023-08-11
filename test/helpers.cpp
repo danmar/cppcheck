@@ -41,6 +41,7 @@
 
 class Suppressions;
 
+// TODO: better path-only usage
 ScopedFile::ScopedFile(std::string name, const std::string &content, std::string path)
     : mName(std::move(name))
     , mPath(Path::toNativeSeparators(std::move(path)))
@@ -68,6 +69,7 @@ ScopedFile::~ScopedFile() {
         std::cout << "ScopedFile(" << mFullPath + ") - could not delete file (" << remove_res << ")" << std::endl;
     }
     if (!mPath.empty() && mPath != Path::getCurrentPath()) {
+        // TODO: remove all existing files
 #ifdef _WIN32
         if (!RemoveDirectoryA(mPath.c_str())) {
             std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << GetLastError() << ")" << std::endl;
