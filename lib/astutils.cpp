@@ -3149,7 +3149,7 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings,
             return ExprUsage::Used;
         if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
             const Token* const lhs  = parent->astOperand1();
-            if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs->variable()->nameToken())
+            if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs == lhs->variable()->nameToken())
                 return ExprUsage::NotUsed;
             return ExprUsage::Used;
         }
