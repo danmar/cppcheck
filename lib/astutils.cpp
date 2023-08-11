@@ -3129,30 +3129,32 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     return ExprUsage::Inconclusive;
 }
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    if (indirect > 0 && tok->astParent()) {
-        if (Token::Match(tok->astParent(), "%assign%") && astIsRHS(tok))
+    const Token* const parent = tok->astParent();
+    if (indirect > 0 && parent) {
+        if (Token::Match(parent, "%assign%") && astIsRHS(tok))
             return ExprUsage::NotUsed;
-        if (tok->astParent()->isConstOp())
+        if (parent->isConstOp())
             return ExprUsage::NotUsed;
-        if (tok->astParent()->isCast())
+        if (parent->isCast())
             return ExprUsage::NotUsed;
-        if (Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "?"))
-            return getExprUsage(tok->astParent()->astParent(), indirect, settings);
+        if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?"))
+            return getExprUsage(parent->astParent(), indirect, settings, cpp);
     }
     if (indirect == 0) {
-        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::Match(tok->astParent(), "=|>>") &&
-            !tok->astParent()->isUnaryOp("&"))
+        if (Token::Match(parent, "%cop%|%assign%|++|--") && parent->str() != "=" &&
+            !parent->isUnaryOp("&") &&
+            !(astIsRHS(tok) && isLikelyStreamRead(cpp, parent)))
             return ExprUsage::Used;
-        if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok)) {
-            if (tok->astParent()->astOperand1() && tok->astParent()->astOperand1()->variable() && tok->astParent()->astOperand1()->variable()->isReference())
+        if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
+            if (parent->astOperand1() && parent->astOperand1()->variable() && parent->astOperand1()->variable()->isReference())
                 return ExprUsage::NotUsed;
             return ExprUsage::Used;
         }
         // Function call or index
-        if (((Token::simpleMatch(tok->astParent(), "(") && !tok->astParent()->isCast()) || (Token::simpleMatch(tok->astParent(), "[") && tok->valueType())) &&
-            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
+        if (((Token::simpleMatch(parent, "(") && !parent->isCast()) || (Token::simpleMatch(parent, "[") && tok->valueType())) &&
+            (astIsLHS(tok) || Token::simpleMatch(parent, "( )")))
             return ExprUsage::Used;
     }
     return getFunctionUsage(tok, indirect, settings);

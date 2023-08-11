@@ -1643,7 +1643,7 @@ void CheckUninitVar::valueFlowUninit()
                     if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
                         continue;
                 }
-                const ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);
+                const ExprUsage usage = getExprUsage(tok, v->indirect, mSettings, mTokenizer->isCPP());
                 if (usage == ExprUsage::NotUsed || usage == ExprUsage::Inconclusive)
                     continue;
                 if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)

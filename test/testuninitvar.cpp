@@ -6184,6 +6184,13 @@ private:
                         "   return s->i;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int f(int i) {\n"
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    return i >> *p;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: *p\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

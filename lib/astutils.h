@@ -409,7 +409,7 @@ bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> sk
 
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings);
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp);
 
 const Variable *getLHSVariable(const Token *tok);
 
