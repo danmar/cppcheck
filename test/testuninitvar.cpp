@@ -6160,6 +6160,15 @@ private:
                         "    init(s2.s1.a);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S { int i; };\n" // #11731
+                        "void f(const S*& p);\n"
+                        "int g() {\n"
+                        "   const S* s;\n"
+                        "   f(s);\n"
+                        "   return s->i;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
