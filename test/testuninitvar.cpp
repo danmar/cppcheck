@@ -6235,7 +6235,7 @@ private:
                         "    int * x = &s1.x;\n"
                         "    s2.x = *x;\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:10]: (error) Uninitialized variable: *x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Uninitialized variable: *x\n", errout.str());
 
         valueFlowUninit("void f(bool * x) {\n"
                         "    *x = false;\n"
@@ -7252,7 +7252,7 @@ private:
                         "    A a;\n"
                         "    x.push_back(a);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: a.j\n", errout.str());
 
         valueFlowUninit("struct S { struct T { int* p; } t[2]; };\n" // #11018
                         "void f() {\n"
