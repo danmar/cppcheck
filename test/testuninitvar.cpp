@@ -4787,6 +4787,21 @@ private:
                        "  }\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct S { int x; };\n"
+                       "S h() {\n"
+                       "    S s;\n"
+                       "    S& r = s;\n"
+                       "    r.x = 0;\n"
+                       "    return s;\n"
+                       "}\n"
+                       "S i() {\n"
+                       "    S s;\n"
+                       "    S& r{ s };\n"
+                       "    r.x = 0;\n"
+                       "    return s;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {

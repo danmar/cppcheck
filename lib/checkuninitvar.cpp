@@ -709,8 +709,10 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     if (!membervar.empty()) {
                         if (!suppressErrors && Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar && Token::Match(tok->next()->astParent(), "%cop%|return|throw|?"))
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
-                        else if (mTokenizer->isCPP() && !suppressErrors && Token::Match(tok, "%name%") && Token::Match(tok->astParent(), "return|throw|?"))
-                            uninitStructMemberError(tok, tok->str() + "." + membervar);
+                        else if (mTokenizer->isCPP() && !suppressErrors && Token::Match(tok, "%name%") && Token::Match(tok->astParent(), "return|throw|?")) {
+                            if (std::any_of(tok->values().cbegin(), tok->values().cend(), std::mem_fn(&ValueFlow::Value::isUninitValue)))
+                                uninitStructMemberError(tok, tok->str() + "." + membervar);
+                        }
                     }
 
                     // Use variable
@@ -1488,8 +1490,10 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
     if (!isPointer && !Token::simpleMatch(tok->astParent(), ".") && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
         return true;
 
-    if (!isPointer && Token::Match(tok->previous(), "= %name% ;"))
-        return true;
+    if (!isPointer && Token::Match(tok->previous(), "= %name% ;")) {
+        const Token* lhs = tok->previous()->astOperand1();
+        return !(lhs && lhs->variable() && lhs->variable()->isReference() && lhs == lhs->variable()->nameToken());
+    }
 
     // = *(&var);
     if (!isPointer &&
