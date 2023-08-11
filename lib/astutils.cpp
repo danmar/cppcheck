@@ -259,6 +259,16 @@ bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
+bool astIsContainerString(const Token *tok)
+{
+    if(!tok)
+        return false;
+    if(!tok->valueType())
+        return false;
+    const Library::Container* container = tok->valueType()->container;
+    return container->stdStringLike;
+}
+
 static const Token* getContainerFunction(const Token* tok)
 {
     if (!tok || !tok->valueType() || !tok->valueType()->container)

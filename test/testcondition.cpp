@@ -5023,6 +5023,13 @@ private:
               "    return -1;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Condition 's.empty()' is always false\n", errout.str());
+
+        check("void f(std::string& p) {\n"
+              "    const std::string d{ \"abc\" };\n"
+              "    p += d;\n"
+              "    if(p.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 's.empty()' is always false\n", errout.str());
     }
 
     void alwaysTrueLoop()
