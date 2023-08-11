@@ -3148,7 +3148,8 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings,
             !(astIsRHS(tok) && isLikelyStreamRead(cpp, parent)))
             return ExprUsage::Used;
         if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
-            if (parent->astOperand1() && parent->astOperand1()->variable() && parent->astOperand1()->variable()->isReference())
+            const Token* const lhs  = parent->astOperand1();
+            if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs->variable()->nameToken())
                 return ExprUsage::NotUsed;
             return ExprUsage::Used;
         }
