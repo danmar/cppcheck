@@ -6191,7 +6191,7 @@ private:
                         "    return i >> *p;\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: *p\n", errout.str());
-        
+
         valueFlowUninit("void f(int& x) {\n"
                         "    int i;\n"
                         "    x = i;\n"
