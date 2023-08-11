@@ -1,8 +1,12 @@
 release notes for cppcheck-2.12
 
 New checks:
+- uselessOverride finds overriding functions that either duplicate code from or delegate back to the base class implementation
 
 Improved checking:
+- truncLongCastAssignment and truncLongCastReturn check additional types, including float/double/long double
+- duplInheritedMember also reports duplicated member functions
+- constParameter*/constVariable* checks find more instances of pointers/references that can be const, e.g. when calling library functions
 
 GUI:
 
