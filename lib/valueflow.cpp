@@ -694,13 +694,13 @@ static void setTokenValue(Token* tok,
             v.valueType = ValueFlow::Value::ValueType::INT;
             v.bound = ValueFlow::Value::Bound::Point;
             if (value.isImpossible()) {
-                if (value.intvalue == 0) 
+                if (value.intvalue == 0)
                     v.setKnown();
-                else if ((value.bound == ValueFlow::Value::Bound::Upper && value.intvalue > 0) || (value.bound == ValueFlow::Value::Bound::Lower && value.intvalue < 0)) {
+                else if ((value.bound == ValueFlow::Value::Bound::Upper && value.intvalue > 0) ||
+                         (value.bound == ValueFlow::Value::Bound::Lower && value.intvalue < 0)) {
                     v.intvalue = 0;
                     v.setKnown();
-                }
-                else
+                } else
                     v.setPossible();
             } else {
                 v.intvalue = !v.intvalue;
@@ -8654,7 +8654,7 @@ static void valueFlowContainerSetTokValue(TokenList& tokenlist, const Settings* 
     ValueFlow::Value value;
     value.valueType = ValueFlow::Value::ValueType::TOK;
     value.tokvalue = initList;
-    if(astIsContainerString(tok) && Token::simpleMatch(initList, "{") && Token::Match(initList->astOperand2(), "%str%")) {
+    if (astIsContainerString(tok) && Token::simpleMatch(initList, "{") && Token::Match(initList->astOperand2(), "%str%")) {
         value.tokvalue = initList->astOperand2();
     }
     value.setKnown();
@@ -8678,8 +8678,7 @@ static MathLib::bigint valueFlowGetStrLength(const Token* tok)
         return Token::getStrLength(tok);
     else if (astIsGenericChar(tok) || tok->tokType() == Token::eChar)
         return 1;
-    else if (const ValueFlow::Value* v2 =
-                 tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+    else if (const ValueFlow::Value* v2 = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
         return v2->intvalue;
     else if (const ValueFlow::Value* v1 = tok->getKnownValue(ValueFlow::Value::ValueType::TOK))
         return valueFlowGetStrLength(v1->tokvalue);
