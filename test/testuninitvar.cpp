@@ -4787,6 +4787,21 @@ private:
                        "  }\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct S { int x; };\n"
+                       "S h() {\n"
+                       "    S s;\n"
+                       "    S& r = s;\n"
+                       "    r.x = 0;\n"
+                       "    return s;\n"
+                       "}\n"
+                       "S i() {\n"
+                       "    S s;\n"
+                       "    S& r{ s };\n"
+                       "    r.x = 0;\n"
+                       "    return s;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {
@@ -6169,6 +6184,19 @@ private:
                         "   return s->i;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int f(int i) {\n"
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    return i >> *p;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: *p\n", errout.str());
+
+        valueFlowUninit("void f(int& x) {\n"
+                        "    int i;\n"
+                        "    x = i;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
