@@ -5442,6 +5442,8 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                 const Token* arg = tok->next()->astOperand2();
                 if (!arg)
                     continue;
+                if (arg->exprId() == 0)
+                    continue;
                 ValueFlow::Value c = inferCondition(">=", arg, 0);
                 if (!c.isKnown())
                     continue;
