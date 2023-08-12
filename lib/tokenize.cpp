@@ -8843,8 +8843,11 @@ void Tokenizer::simplifyAttribute()
 
                     // check if after variable name
                     if (Token::Match(after, ";|=")) {
-                        if (Token::Match(tok->previous(), "%type%"))
-                            vartok = tok->previous();
+                        Token *prev = tok->previous();
+                        while (Token::simpleMatch(prev, "]"))
+                            prev = prev->link()->previous();
+                        if (Token::Match(prev, "%type%"))
+                            vartok = prev;
                     }
 
                     // check if before variable name
