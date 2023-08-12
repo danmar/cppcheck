@@ -2429,10 +2429,11 @@ struct ValueFlowAnalyzer : Analyzer {
         return settings;
     }
 
-    bool matchLifetime(const Token* tok) const {
+    bool matchLifetime(const Token* tok) const
+    {
         if (match(tok))
             return true;
-        if(astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
+        if (astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
             return match(tok->astParent());
         return false;
     }
