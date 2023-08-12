@@ -266,6 +266,8 @@ bool astIsContainerString(const Token* tok)
     if (!tok->valueType())
         return false;
     const Library::Container* container = tok->valueType()->container;
+    if (!container)
+        return false;
     return container->stdStringLike;
 }
 
