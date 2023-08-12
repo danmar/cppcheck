@@ -2429,7 +2429,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return settings;
     }
 
-    bool matchEqual(const Token* tok) const {
+    bool matchLifetime(const Token* tok) const {
         if (match(tok))
             return true;
         if(astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
@@ -2810,7 +2810,7 @@ struct ValueFlowAnalyzer : Analyzer {
                     return Action::None;
                 lifeTok = v.tokvalue;
             }
-            if (lifeTok && matchEqual(lifeTok)) {
+            if (lifeTok && matchLifetime(lifeTok)) {
                 Action a = Action::Read;
                 if (isModified(tok).isModified())
                     a = Action::Invalid;
