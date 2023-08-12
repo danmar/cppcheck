@@ -5029,7 +5029,15 @@ private:
               "    p += d;\n"
               "    if(p.empty()) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 's.empty()' is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'p.empty()' is always false\n", errout.str());
+
+        check("bool f(int i, FILE* fp) {\n"
+              "  std::string s = \"abc\";\n"
+              "  s += std::to_string(i);\n"
+              "  s += \"\\n\";\n"
+              "  return fwrite(s.c_str(), 1, s.length(), fp) == s.length();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueLoop()
