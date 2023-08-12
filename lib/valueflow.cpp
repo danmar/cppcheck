@@ -7973,7 +7973,6 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
         Token* start = findStartToken(var, tok->next(), &settings->library);
 
         std::map<Token*, ValueFlow::Value> partialReads;
-        Analyzer::Result result;
         if (const Scope* scope = var->typeScope()) {
             if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
                 continue;
@@ -7988,7 +7987,7 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
                     continue;
                 }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), tok, uninitValue, tokenlist, settings);
-                result = valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, *settings);
+                valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, *settings);
 
                 for (auto&& p : *analyzer.partialReads) {
                     Token* tok2 = p.first;
@@ -8018,8 +8017,7 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
         if (partial)
             continue;
 
-        if (result.terminate != Analyzer::Terminate::Modified)
-            valueFlowForward(start, tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
+        valueFlowForward(start, tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
     }
 }
 
