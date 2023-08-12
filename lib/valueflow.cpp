@@ -2429,6 +2429,14 @@ struct ValueFlowAnalyzer : Analyzer {
         return settings;
     }
 
+    bool matchEqual(const Token* tok) const {
+        if (match(tok))
+            return true;
+        if(astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
+            return match(tok->astParent());
+        return false;
+    }
+
     struct ConditionState {
         bool dependent = true;
         bool unknown = true;
@@ -2802,7 +2810,7 @@ struct ValueFlowAnalyzer : Analyzer {
                     return Action::None;
                 lifeTok = v.tokvalue;
             }
-            if (lifeTok && match(lifeTok)) {
+            if (lifeTok && matchEqual(lifeTok)) {
                 Action a = Action::Read;
                 if (isModified(tok).isModified())
                     a = Action::Invalid;
@@ -3294,12 +3302,6 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
     MemberExpressionAnalyzer(std::string varname, const Token* e, ValueFlow::Value val, const TokenList& t, const Settings* s)
         : SubExpressionAnalyzer(e, std::move(val), t, s), varname(std::move(varname))
     {}
-
-    bool match(const Token* tok) const override
-    {
-        return SubExpressionAnalyzer::match(tok) ||
-               (Token::simpleMatch(tok->astParent(), ".") && SubExpressionAnalyzer::match(tok->astParent()));
-    }
 
     bool submatch(const Token* tok, bool exact) const override
     {
