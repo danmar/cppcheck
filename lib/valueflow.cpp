@@ -2829,7 +2829,8 @@ struct ValueFlowAnalyzer : Analyzer {
                 if (inconclusiveRef && a.isModified())
                     return Action::Inconclusive;
                 return a;
-            } else if (la.isRead()) {
+            } 
+            if (la.isRead()) {
                 return isAliasModified(tok);
             }
             return Action::None;
