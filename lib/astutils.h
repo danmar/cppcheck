@@ -149,6 +149,7 @@ bool astIsContainer(const Token *tok);
 
 bool astIsContainerView(const Token* tok);
 bool astIsContainerOwned(const Token* tok);
+bool astIsContainerString(const Token* tok);
 
 Library::Container::Action astContainerAction(const Token* tok, const Token** ftok = nullptr);
 Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok = nullptr);

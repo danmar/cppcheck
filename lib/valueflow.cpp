@@ -696,7 +696,11 @@ static void setTokenValue(Token* tok,
             if (value.isImpossible()) {
                 if (value.intvalue == 0)
                     v.setKnown();
-                else
+                else if ((value.bound == ValueFlow::Value::Bound::Upper && value.intvalue > 0) ||
+                         (value.bound == ValueFlow::Value::Bound::Lower && value.intvalue < 0)) {
+                    v.intvalue = 0;
+                    v.setKnown();
+                } else
                     v.setPossible();
             } else {
                 v.intvalue = !v.intvalue;
@@ -8660,6 +8664,9 @@ static void valueFlowContainerSetTokValue(TokenList& tokenlist, const Settings* 
     ValueFlow::Value value;
     value.valueType = ValueFlow::Value::ValueType::TOK;
     value.tokvalue = initList;
+    if (astIsContainerString(tok) && Token::simpleMatch(initList, "{") && Token::Match(initList->astOperand2(), "%str%")) {
+        value.tokvalue = initList->astOperand2();
+    }
     value.setKnown();
     Token* start = initList->link() ? initList->link() : initList->next();
     if (tok->variable() && tok->variable()->isConst()) {
@@ -8673,6 +8680,19 @@ static const Scope* getFunctionScope(const Scope* scope) {
     while (scope && scope->type != Scope::ScopeType::eFunction)
         scope = scope->nestedIn;
     return scope;
+}
+
+static MathLib::bigint valueFlowGetStrLength(const Token* tok)
+{
+    if (tok->tokType() == Token::eString)
+        return Token::getStrLength(tok);
+    if (astIsGenericChar(tok) || tok->tokType() == Token::eChar)
+        return 1;
+    if (const ValueFlow::Value* v2 = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+        return v2->intvalue;
+    if (const ValueFlow::Value* v1 = tok->getKnownValue(ValueFlow::Value::ValueType::TOK))
+        return valueFlowGetStrLength(v1->tokvalue);
+    return 0;
 }
 
 static void valueFlowContainerSize(TokenList& tokenlist,
@@ -8819,21 +8839,12 @@ static void valueFlowContainerSize(TokenList& tokenlist,
             } else if (Token::simpleMatch(tok, "+=") && astIsContainer(tok->astOperand1())) {
                 const Token* containerTok = tok->astOperand1();
                 const Token* valueTok = tok->astOperand2();
-                MathLib::bigint size = 0;
-                if (valueTok->tokType() == Token::eString)
-                    size = Token::getStrLength(valueTok);
-                else if (astIsGenericChar(tok) || valueTok->tokType() == Token::eChar)
-                    size = 1;
-                else if (const ValueFlow::Value* v1 = valueTok->getKnownValue(ValueFlow::Value::ValueType::TOK))
-                    size = Token::getStrLength(v1->tokvalue);
-                else if (const ValueFlow::Value* v2 =
-                             valueTok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
-                    size = v2->intvalue;
+                MathLib::bigint size = valueFlowGetStrLength(valueTok);
                 if (size == 0)
                     continue;
                 ValueFlow::Value value(size - 1);
                 value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-                value.bound = ValueFlow::Value::Bound::Lower;
+                value.bound = ValueFlow::Value::Bound::Upper;
                 value.setImpossible();
                 Token* next = nextAfterAstRightmostLeaf(tok);
                 if (!next)
