@@ -2139,7 +2139,7 @@ void CheckOther::checkMisusedScopedObject()
         return;
 
     auto getConstructorTok = [](const Token* tok, std::string& typeStr) -> const Token* {
-        if (!Token::Match(tok, "[;{}] %name%"))
+        if (!Token::Match(tok, "[;{}] %name%") || tok->next()->isKeyword())
             return nullptr;
         tok = tok->next();
         typeStr.clear();
