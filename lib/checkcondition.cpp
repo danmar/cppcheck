@@ -290,6 +290,17 @@ static bool inBooleanFunction(const Token *tok)
     return false;
 }
 
+static bool isOperandExpanded(const Token *tok)
+{
+    if (tok->isExpandedMacro() || tok->isEnumerator())
+        return true;
+    if (tok->astOperand1() && isOperandExpanded(tok->astOperand1()))
+        return true;
+    if (tok->astOperand2() && isOperandExpanded(tok->astOperand2()))
+        return true;
+    return false;
+}
+
 void CheckCondition::checkBadBitmaskCheck()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -320,9 +331,6 @@ void CheckCondition::checkBadBitmaskCheck()
             if (!isZero1 && !isZero2)
                 continue;
 
-            auto isOperandExpanded = [](const Token *op) {
-                return op->isExpandedMacro() || op->isEnumerator();
-            };
             if (!tok->isExpandedMacro() &&
                 !(isZero1 && isOperandExpanded(tok->astOperand1())) &&
                 !(isZero2 && isOperandExpanded(tok->astOperand2())))
@@ -981,7 +989,7 @@ T getvalue3(const T value1, const T value2)
 template<>
 double getvalue3(const double value1, const double value2)
 {
-    return (value1 + value2) / 2.0f;
+    return (value1 + value2) / 2.0;
 }
 
 

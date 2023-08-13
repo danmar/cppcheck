@@ -23,7 +23,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
 
 class TestBoost : public TestFixture {

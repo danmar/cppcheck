@@ -635,7 +635,7 @@ static bool isPartOfClassStructUnion(const Token* tok)
         if (tok->str() == "}" || tok->str() == ")")
             tok = tok->link();
         else if (tok->str() == "(")
-            return (false);
+            return false;
         else if (tok->str() == "{") {
             return (tok->strAt(-1) == "struct" || tok->strAt(-2) == "struct" || tok->strAt(-1) == "class" || tok->strAt(-2) == "class" || tok->strAt(-1) == "union" || tok->strAt(-2) == "union");
         }
@@ -1691,8 +1691,8 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
             }
             // check if global variable is changed
             if (bodyVariable->isGlobal() || (pointersToGlobals.find(bodyVariable) != pointersToGlobals.end())) {
-                const int depth = 20;
-                if (isVariableChanged(bodyToken, depth, mSettings, mTokenizer->isCPP())) {
+                const int indirect = bodyVariable->isArray() ? bodyVariable->dimensions().size() : bodyVariable->isPointer();
+                if (isVariableChanged(bodyToken, indirect, mSettings, mTokenizer->isCPP())) {
                     return false;
                 }
                 // check if pointer to global variable assigned to another variable (another_var = &global_var)

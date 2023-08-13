@@ -25,7 +25,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -128,7 +127,7 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], Settings &settings, const char* filename = "test.cpp") {
+    void check(const char code[], const Settings &settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -155,7 +154,7 @@ private:
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
-        Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
         check(code, settings, filename);
     }
 
@@ -916,6 +915,11 @@ private:
         check("enum precedence { PC0, UNARY };\n"
               "int x = PC0   | UNARY;\n"
               "int y = UNARY | PC0;\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("#define MASK 0\n"
+              "#define SHIFT 1\n"
+              "int x = 1 | (MASK << SHIFT);\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5014,6 +5018,31 @@ private:
               "    if(!s.empty()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::string s) {\n"
+              "    if (s.empty())\n"
+              "        return -1;\n"
+              "    s += '\\n';\n"
+              "    if (s.empty())\n"
+              "        return -1;\n"
+              "    return -1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 's.empty()' is always false\n", errout.str());
+
+        check("void f(std::string& p) {\n"
+              "    const std::string d{ \"abc\" };\n"
+              "    p += d;\n"
+              "    if(p.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'p.empty()' is always false\n", errout.str());
+
+        check("bool f(int i, FILE* fp) {\n"
+              "  std::string s = \"abc\";\n"
+              "  s += std::to_string(i);\n"
+              "  s += \"\\n\";\n"
+              "  return fwrite(s.c_str(), 1, s.length(), fp) == s.length();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueLoop()
@@ -5646,7 +5675,7 @@ private:
     }
 
     void compareOutOfTypeRange() {
-        Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

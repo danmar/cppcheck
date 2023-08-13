@@ -30,7 +30,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <iterator>
@@ -206,10 +205,10 @@ static std::vector<std::string> splitString(const std::string &line)
 namespace clangimport {
     struct Data {
         struct Decl {
-            explicit Decl(Scope *scope) : def(nullptr), enumerator(nullptr), function(nullptr), scope(scope), var(nullptr) {}
-            Decl(Token *def, Variable *var) : def(def), enumerator(nullptr), function(nullptr), scope(nullptr), var(var) {}
-            Decl(Token *def, Function *function) : def(def), enumerator(nullptr), function(function), scope(nullptr), var(nullptr) {}
-            Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator), function(nullptr), scope(nullptr), var(nullptr) {}
+            explicit Decl(Scope *scope) : scope(scope) {}
+            Decl(Token *def, Variable *var) : def(def), var(var) {}
+            Decl(Token *def, Function *function) : def(def), function(function) {}
+            Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator) {}
             void ref(Token *tok) const {
                 if (enumerator)
                     tok->enumerator(enumerator);
@@ -220,11 +219,11 @@ namespace clangimport {
                     tok->varId(var->declarationId());
                 }
             }
-            Token *def;
-            Enumerator *enumerator;
-            Function *function;
-            Scope *scope;
-            Variable *var;
+            Token* def{};
+            Enumerator* enumerator{};
+            Function* function{};
+            Scope* scope{};
+            Variable* var{};
         };
 
         const Settings *mSettings = nullptr;

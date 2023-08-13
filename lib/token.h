@@ -27,6 +27,7 @@
 #include "utils.h"
 #include "vfvalue.h"
 
+#include <cassert>
 #include <cstdint>
 #include <cstddef>
 #include <functional>
@@ -38,7 +39,7 @@
 #include <utility>
 #include <vector>
 
-class Enumerator;
+struct Enumerator;
 class Function;
 class Scope;
 class Settings;
@@ -53,48 +54,48 @@ class Token;
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
  */
 struct TokensFrontBack {
-    Token *front;
-    Token *back;
-    const TokenList* list;
+    Token *front{};
+    Token* back{};
+    const TokenList* list{};
 };
 
 struct ScopeInfo2 {
     ScopeInfo2(std::string name_, const Token *bodyEnd_, std::set<std::string> usingNamespaces_ = std::set<std::string>()) : name(std::move(name_)), bodyEnd(bodyEnd_), usingNamespaces(std::move(usingNamespaces_)) {}
     std::string name;
-    const Token * const bodyEnd;
+    const Token* const bodyEnd{};
     std::set<std::string> usingNamespaces;
 };
 
 enum class TokenDebug { None, ValueFlow, ValueType };
 
 struct TokenImpl {
-    nonneg int mVarId;
-    nonneg int mFileIndex;
-    nonneg int mLineNumber;
-    nonneg int mColumn;
-    nonneg int mExprId;
+    nonneg int mVarId{};
+    nonneg int mFileIndex{};
+    nonneg int mLineNumber{};
+    nonneg int mColumn{};
+    nonneg int mExprId{};
 
     /**
      * A value from 0-100 that provides a rough idea about where in the token
      * list this token is located.
      */
-    nonneg int mProgressValue;
+    nonneg int mProgressValue{};
 
     /**
      * Token index. Position in token list
      */
-    nonneg int mIndex;
+    nonneg int mIndex{};
 
     /** Bitfield bit count. */
-    unsigned char mBits;
+    unsigned char mBits{};
 
     // AST..
-    Token *mAstOperand1;
-    Token *mAstOperand2;
-    Token *mAstParent;
+    Token* mAstOperand1{};
+    Token* mAstOperand2{};
+    Token* mAstParent{};
 
     // symbol database information
-    const Scope *mScope;
+    const Scope* mScope{};
     union {
         const Function *mFunction;
         const Variable *mVariable;
@@ -103,60 +104,38 @@ struct TokenImpl {
     };
 
     // original name like size_t
-    std::string* mOriginalName;
+    std::string* mOriginalName{};
 
     // ValueType
-    ValueType *mValueType;
+    ValueType* mValueType{};
 
     // ValueFlow
-    std::list<ValueFlow::Value>* mValues;
+    std::list<ValueFlow::Value>* mValues{};
     static const std::list<ValueFlow::Value> mEmptyValueList;
 
     // Pointer to a template in the template simplifier
-    std::set<TemplateSimplifier::TokenAndName*>* mTemplateSimplifierPointers;
+    std::set<TemplateSimplifier::TokenAndName*>* mTemplateSimplifierPointers{};
 
     // Pointer to the object representing this token's scope
     std::shared_ptr<ScopeInfo2> mScopeInfo;
 
     // __cppcheck_in_range__
     struct CppcheckAttributes {
-        enum Type {LOW,HIGH} type;
-        MathLib::bigint value;
-        struct CppcheckAttributes *next;
+        enum Type { LOW, HIGH } type = LOW;
+        MathLib::bigint value{};
+        CppcheckAttributes* next{};
     };
-    struct CppcheckAttributes *mCppcheckAttributes;
+    CppcheckAttributes* mCppcheckAttributes{};
 
     // For memoization, to speed up parsing of huge arrays #8897
-    enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
+    enum class Cpp11init { UNKNOWN, CPP11INIT, NOINIT } mCpp11init = Cpp11init::UNKNOWN;
 
-    TokenDebug mDebug;
+    TokenDebug mDebug{};
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint &value) const;
 
-    TokenImpl()
-        : mVarId(0),
-        mFileIndex(0),
-        mLineNumber(0),
-        mColumn(0),
-        mExprId(0),
-        mProgressValue(0),
-        mIndex(0),
-        mBits(0),
-        mAstOperand1(nullptr),
-        mAstOperand2(nullptr),
-        mAstParent(nullptr),
-        mScope(nullptr),
-        mFunction(nullptr),   // Initialize whole union
-        mOriginalName(nullptr),
-        mValueType(nullptr),
-        mValues(nullptr),
-        mTemplateSimplifierPointers(nullptr),
-        mScopeInfo(nullptr),
-        mCppcheckAttributes(nullptr),
-        mCpp11init(Cpp11init::UNKNOWN),
-        mDebug(TokenDebug::None)
-    {}
+    TokenImpl() : mFunction(nullptr) {}
 
     ~TokenImpl();
 };
@@ -176,7 +155,7 @@ struct TokenImpl {
  */
 class CPPCHECKLIB Token {
 private:
-    TokensFrontBack* mTokensFrontBack;
+    TokensFrontBack* mTokensFrontBack{};
 
 public:
     Token(const Token &) = delete;
@@ -1301,9 +1280,9 @@ private:
 
     std::string mStr;
 
-    Token *mNext;
-    Token *mPrevious;
-    Token *mLink;
+    Token* mNext{};
+    Token* mPrevious{};
+    Token* mLink{};
 
     enum : uint64_t {
         fIsUnsigned             = (1ULL << 0),
@@ -1355,11 +1334,11 @@ private:
         efIsUnique = efMaxSize - 2,
     };
 
-    Token::Type mTokType;
+    Token::Type mTokType = eNone;
 
-    uint64_t mFlags;
+    uint64_t mFlags{};
 
-    TokenImpl *mImpl;
+    TokenImpl* mImpl{};
 
     /**
      * Get specified flag state.

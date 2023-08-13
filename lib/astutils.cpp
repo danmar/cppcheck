@@ -259,6 +259,18 @@ bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
+bool astIsContainerString(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!tok->valueType())
+        return false;
+    const Library::Container* container = tok->valueType()->container;
+    if (!container)
+        return false;
+    return container->stdStringLike;
+}
+
 static const Token* getContainerFunction(const Token* tok)
 {
     if (!tok || !tok->valueType() || !tok->valueType()->container)
@@ -2195,7 +2207,7 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
     argn = -1;
     {
         T* parent = tok->astParent();
-        if (parent && parent->isUnaryOp("&"))
+        if (parent && (parent->isUnaryOp("&") || parent->isIncDecOp()))
             parent = parent->astParent();
         while (parent && parent->isCast())
             parent = parent->astParent();
@@ -2203,7 +2215,7 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
             parent = parent->astParent();
 
         // passing variable to subfunction?
-        if (Token::Match(parent, "[[(,{]"))
+        if (Token::Match(parent, "[*[(,{]"))
             ;
         else if (Token::simpleMatch(parent, ":")) {
             while (Token::Match(parent, "[?:]"))
@@ -2354,6 +2366,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     if (addressOf)
         indirect++;
 
+    const bool deref = tok->astParent() && tok->astParent()->isUnaryOp("*");
+    if (deref && indirect > 0)
+        indirect--;
+
     int argnr;
     tok = getTokenArgumentFunction(tok, argnr);
     if (!tok)
@@ -2462,7 +2478,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
            (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
 
-    if (tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
+    if (indirect == 0 && tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
         return true;
 
     auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) {
@@ -2585,7 +2601,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     const Token *parent = tok2->astParent();
     while (Token::Match(parent, ".|::"))
         parent = parent->astParent();
-    if (parent && parent->tokType() == Token::eIncDecOp)
+    if (parent && parent->tokType() == Token::eIncDecOp && (indirect == 0 || tok2 != tok))
         return true;
 
     // structured binding, nonconst reference variable in lhs
@@ -2622,7 +2638,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (indirect > 0) {
         // check for `*(ptr + 1) = new_value` case
         parent = tok2->astParent();
-        while (parent && parent->isArithmeticalOp() && parent->isBinaryOp()) {
+        while (parent && ((parent->isArithmeticalOp() && parent->isBinaryOp()) || parent->isIncDecOp())) {
             parent = parent->astParent();
         }
         if (Token::simpleMatch(parent, "*")) {
@@ -2846,8 +2862,9 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
                     if (vt->type == ValueType::ITERATOR)
                         ++indirect;
                 }
-                if (isExpressionChangedAt(tok, tok2, indirect, global, settings, cpp, depth))
-                    return true;
+                for (int i = 0; i <= indirect; ++i)
+                    if (isExpressionChangedAt(tok, tok2, i, global, settings, cpp, depth))
+                        return true;
             }
         }
         return false;
@@ -3131,27 +3148,33 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     return ExprUsage::Inconclusive;
 }
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    if (indirect > 0 && tok->astParent()) {
-        if (Token::Match(tok->astParent(), "%assign%") && astIsRHS(tok))
+    const Token* const parent = tok->astParent();
+    if (indirect > 0 && parent) {
+        if (Token::Match(parent, "%assign%") && astIsRHS(tok))
             return ExprUsage::NotUsed;
-        if (tok->astParent()->isConstOp())
+        if (parent->isConstOp())
             return ExprUsage::NotUsed;
-        if (tok->astParent()->isCast())
+        if (parent->isCast())
             return ExprUsage::NotUsed;
-        if (Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "?"))
-            return getExprUsage(tok->astParent()->astParent(), indirect, settings);
+        if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?"))
+            return getExprUsage(parent->astParent(), indirect, settings, cpp);
     }
     if (indirect == 0) {
-        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") &&
-            !tok->astParent()->isUnaryOp("&"))
+        if (Token::Match(parent, "%cop%|%assign%|++|--") && parent->str() != "=" &&
+            !parent->isUnaryOp("&") &&
+            !(astIsRHS(tok) && isLikelyStreamRead(cpp, parent)))
             return ExprUsage::Used;
-        if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok))
+        if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
+            const Token* const lhs  = parent->astOperand1();
+            if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs == lhs->variable()->nameToken())
+                return ExprUsage::NotUsed;
             return ExprUsage::Used;
+        }
         // Function call or index
-        if (((Token::simpleMatch(tok->astParent(), "(") && !tok->astParent()->isCast()) || (Token::simpleMatch(tok->astParent(), "[") && tok->valueType())) &&
-            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
+        if (((Token::simpleMatch(parent, "(") && !parent->isCast()) || (Token::simpleMatch(parent, "[") && tok->valueType())) &&
+            (astIsLHS(tok) || Token::simpleMatch(parent, "( )")))
             return ExprUsage::Used;
     }
     return getFunctionUsage(tok, indirect, settings);

@@ -20,7 +20,6 @@
 #include "checkuninitvar.h"
 #include "ctu.h"
 #include "errortypes.h"
-#include "library.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
@@ -4788,6 +4787,21 @@ private:
                        "  }\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("struct S { int x; };\n"
+                       "S h() {\n"
+                       "    S s;\n"
+                       "    S& r = s;\n"
+                       "    r.x = 0;\n"
+                       "    return s;\n"
+                       "}\n"
+                       "S i() {\n"
+                       "    S s;\n"
+                       "    S& r{ s };\n"
+                       "    r.x = 0;\n"
+                       "    return s;\n"
+                       "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {
@@ -6128,6 +6142,61 @@ private:
                         "  int *q = 1 ? &y : 0;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(std::stringstream& ss) {\n" // #11805
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    ss >> *p;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    int& r = *p;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(std::stringstream& ss) {\n" // #11805
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    ss >> *p;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    int& r = *p;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S1 { char a[10]; };\n" // #11804
+                        "struct S2 { struct S1 s1; };\n"
+                        "void init(char* c);\n"
+                        "void f() {\n"
+                        "    struct S2 s2;\n"
+                        "    init(s2.s1.a);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S { int i; };\n" // #11731
+                        "void f(const S*& p);\n"
+                        "int g() {\n"
+                        "   const S* s;\n"
+                        "   f(s);\n"
+                        "   return s->i;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("int f(int i) {\n"
+                        "    int x;\n"
+                        "    int* p = &x;\n"
+                        "    return i >> *p;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: *p\n", errout.str());
+
+        valueFlowUninit("void f(int& x) {\n"
+                        "    int i;\n"
+                        "    x = i;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
@@ -6140,7 +6209,7 @@ private:
                         "    memcpy(wcsin, x, sizeof(wcsstruct));\n" // <- warning
                         "    x->wcsprm = NULL;\n" // <- no warning
                         "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: x.wcsprm\n", errout.str());
 
         valueFlowUninit("struct wcsstruct {\n"
                         "    int *wcsprm;\n"
@@ -6223,7 +6292,7 @@ private:
                         "    int * x = &s1.x;\n"
                         "    struct S s2 = {*x, 0};\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:9]: (error) Uninitialized variable: *x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: *x\n", errout.str());
 
         valueFlowUninit("struct S {\n"
                         "  int x;\n"
@@ -6236,7 +6305,7 @@ private:
                         "    int * x = &s1.x;\n"
                         "    s2.x = *x;\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:10]: (error) Uninitialized variable: *x\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Uninitialized variable: *x\n", errout.str());
 
         valueFlowUninit("void f(bool * x) {\n"
                         "    *x = false;\n"
@@ -6856,7 +6925,7 @@ private:
                         "    int a = ab.a;\n"
                         "    int b = ab.b;\n"
                         "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab.b\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab.b\n", errout.str());
 
         // STL class member
         valueFlowUninit("struct A {\n"
@@ -6968,7 +7037,7 @@ private:
                         "    memcpy(in, s, sizeof(S));\n"
                         "    s->p = NULL;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n",
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s.p\n",
                       errout.str());
 
         valueFlowUninit("struct S {\n" // #11321
@@ -7229,7 +7298,7 @@ private:
                         "    A::B b;\n"
                         "    x.push_back(b);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: b\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: b.i\n", errout.str());
 
         valueFlowUninit("struct A {\n"
                         "    struct B {\n"
@@ -7253,7 +7322,7 @@ private:
                         "    A a;\n"
                         "    x.push_back(a);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: a.j\n", errout.str());
 
         valueFlowUninit("struct S { struct T { int* p; } t[2]; };\n" // #11018
                         "void f() {\n"
@@ -7273,6 +7342,15 @@ private:
                         "    int y = x < (1, s.i);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: s.i\n", errout.str());
+
+        valueFlowUninit("struct S { int x; };\n" // #11353
+                        "struct S f() {\n"
+                        "    struct S s;\n"
+                        "    int* p = &s.x;\n"
+                        "    *p = 0;\n"
+                        "    return s;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu_(const char* file, int line, const char code[]) {

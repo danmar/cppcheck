@@ -39,9 +39,8 @@ const char Settings::SafeChecks::XmlClasses[] = "class-public";
 const char Settings::SafeChecks::XmlExternalFunctions[] = "external-functions";
 const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
-Settings::Settings() : maxCtuDepth(10), maxTemplateRecursion(100) {}
+Settings::Settings() : maxCtuDepth(10) {}
 cppcheck::Platform::Platform() {}
-Library::Library() {}
 ImportProject::ImportProject() {}
 bool ImportProject::sourceFileExists(const std::string & /*file*/) {
     return true;

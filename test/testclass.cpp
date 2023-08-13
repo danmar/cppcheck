@@ -19,17 +19,19 @@
 #include "check.h"
 #include "checkclass.h"
 #include "errortypes.h"
-#include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "fixture.h"
 #include "tokenize.h"
 
 #include <list>
+#include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
 #include <vector>
 
+#include <simplecpp.h>
 
 class TestClass : public TestFixture {
 public:
@@ -37,7 +39,7 @@ public:
 
 private:
     Settings settings0 = settingsBuilder().severity(Severity::style).library("std.cfg").build();
-    Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
+    const Settings settings1 = settingsBuilder().severity(Severity::warning).library("std.cfg").build();
 
     void run() override {
         TEST_CASE(virtualDestructor1);      // Base class not found => no error

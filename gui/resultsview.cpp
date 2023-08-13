@@ -67,7 +67,6 @@
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
-    mShowNoErrorsMessage(true),
     mUI(new Ui::ResultsView),
     mStatistics(new CheckStatistics(this))
 {

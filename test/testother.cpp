@@ -26,7 +26,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -3021,7 +3020,10 @@ private:
               "void ah();\n"
               "void an();\n"
               "void h();");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:131]: (style) Variable 'tm' can be declared as pointer to const\n"
+                      "[test.cpp:136]: (style) Variable 'af' can be declared as pointer to const\n"
+                      "[test.cpp:137]: (style) Variable 'ag' can be declared as pointer to const\n",
+                      errout.str());
 
         check("class C\n"
               "{\n"
@@ -3792,6 +3794,17 @@ private:
               "    if (s->a[0]) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("size_t f(char* p) {\n" // #11842
+              "    return strlen(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
+
+        check("void f(int* p) {\n" // #11862
+              "    long long j = *(p++);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n",
                       errout.str());
     }
 
@@ -5635,6 +5648,12 @@ private:
                       "[test.cpp:6]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n"
                       "[test.cpp:9]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n",
                       errout.str());
+
+        check("struct S { int i; };\n"
+              "namespace {\n"
+              "    S s() { return ::S{42}; }\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testMisusedScopeObjectAssignment() { // #11371
@@ -8121,7 +8140,7 @@ private:
               "void packed_object_info(struct object_info *oi) {\n"
               "  if (*oi->typep < 0);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'oi' can be declared as pointer to const\n", errout.str());
     }
 
     void checkSuspiciousSemicolon1() {

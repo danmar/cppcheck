@@ -149,6 +149,7 @@ bool astIsContainer(const Token *tok);
 
 bool astIsContainerView(const Token* tok);
 bool astIsContainerOwned(const Token* tok);
+bool astIsContainerString(const Token* tok);
 
 Library::Container::Action astContainerAction(const Token* tok, const Token** ftok = nullptr);
 Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok = nullptr);
@@ -409,7 +410,7 @@ bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> sk
 
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings);
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp);
 
 const Variable *getLHSVariable(const Token *tok);
 

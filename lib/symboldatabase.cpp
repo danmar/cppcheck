@@ -42,6 +42,7 @@
 #include <initializer_list>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
@@ -2085,8 +2086,7 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
     mAccess(access_),
     mFlags(0),
     mType(type_),
-    mScope(scope_),
-    mValueType(nullptr)
+    mScope(scope_)
 {
     if (!mTypeStartToken && mTypeEndToken) {
         mTypeStartToken = mTypeEndToken;
@@ -2134,14 +2134,12 @@ Variable::Variable(const Token *name_, const std::string &clangType, const Token
 }
 
 Variable::Variable(const Variable &var, const Scope *scope)
-    : mValueType(nullptr)
 {
     *this = var;
     mScope = scope;
 }
 
 Variable::Variable(const Variable &var)
-    : mValueType(nullptr)
 {
     *this = var;
 }
@@ -2400,20 +2398,7 @@ Function::Function(const Tokenizer *mTokenizer,
                    const Token *tokArgDef)
     : tokenDef(tokDef),
     argDef(tokArgDef),
-    token(nullptr),
-    arg(nullptr),
-    retDef(nullptr),
-    retType(nullptr),
-    functionScope(nullptr),
-    nestedIn(scope),
-    initArgCount(0),
-    type(eFunction),
-    noexceptArg(nullptr),
-    throwArg(nullptr),
-    templateDef(nullptr),
-    functionPointerUsage(nullptr),
-    access(AccessControl::Public),
-    mFlags(0)
+    nestedIn(scope)
 {
     // operator function
     if (::isOperator(tokenDef)) {
@@ -2518,22 +2503,7 @@ Function::Function(const Tokenizer *mTokenizer,
 }
 
 Function::Function(const Token *tokenDef, const std::string &clangType)
-    : tokenDef(tokenDef),
-    argDef(nullptr),
-    token(nullptr),
-    arg(nullptr),
-    retDef(nullptr),
-    retType(nullptr),
-    functionScope(nullptr),
-    nestedIn(nullptr),
-    initArgCount(0),
-    type(eFunction),
-    noexceptArg(nullptr),
-    throwArg(nullptr),
-    templateDef(nullptr),
-    functionPointerUsage(nullptr),
-    access(AccessControl::Public),
-    mFlags(0)
+    : tokenDef(tokenDef)
 {
     // operator function
     if (::isOperator(tokenDef)) {
@@ -3490,16 +3460,28 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
     return tok2;
 }
 
-const std::string& Type::name() const
+std::string Type::name() const
 {
-    const Token* next = classDef->next();
+    const Token* start = classDef->next();
     if (classScope && classScope->enumClass && isEnumType())
-        return next->strAt(1);
-    if (next->str() == "class")
-        return next->strAt(1);
-    if (next->isName())
-        return next->str();
-    return emptyString;
+        start = start->tokAt(1);
+    else if (start->str() == "class")
+        start = start->tokAt(1);
+    else if (!start->isName())
+        return emptyString;
+    const Token* next = start;
+    while (Token::Match(next, "::|<|>|(|)|[|]|*|&|&&|%name%")) {
+        if (Token::Match(next, "<|(|[") && next->link())
+            next = next->link();
+        next = next->next();
+    }
+    std::string result;
+    for (const Token* tok = start; tok != next; tok = tok->next()) {
+        if (!result.empty())
+            result += ' ';
+        result += tok->str();
+    }
+    return result;
 }
 
 void SymbolDatabase::debugMessage(const Token *tok, const std::string &type, const std::string &msg) const
@@ -3868,12 +3850,9 @@ void SymbolDatabase::printOut(const char *title) const
             }
             std::cout << "        retType: " << func->retType << std::endl;
 
-            if (func->tokenDef->next()->valueType()) {
-                const ValueType * valueType = func->tokenDef->next()->valueType();
+            if (const ValueType* valueType = func->tokenDef->next()->valueType()) {
                 std::cout << "        valueType: " << valueType << std::endl;
-                if (valueType) {
-                    std::cout << "            " << valueType->str() << std::endl;
-                }
+                std::cout << "            " << valueType->str() << std::endl;
             }
 
             if (func->hasBody()) {
@@ -4349,7 +4328,7 @@ std::vector<const Function*> Function::getOverloadedFunctions() const
              it != scope->functionMap.end() && it->first == tokenDef->str();
              ++it) {
             const Function* func = it->second;
-            if (isMemberFunction == func->isStatic())
+            if (isMemberFunction && isMemberFunction == func->isStatic())
                 continue;
             result.push_back(func);
         }
@@ -4448,14 +4427,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
     check(check_),
     classDef(classDef_),
     nestedIn(nestedIn_),
-    numConstructors(0),
-    numCopyOrMoveConstructors(0),
-    type(type_),
-    definedType(nullptr),
-    functionOf(nullptr),
-    function(nullptr),
-    enumType(nullptr),
-    enumClass(false)
+    type(type_)
 {
     setBodyStartEnd(start_);
 }
@@ -4463,16 +4435,7 @@ Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *
 Scope::Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_) :
     check(check_),
     classDef(classDef_),
-    bodyStart(nullptr),
-    bodyEnd(nullptr),
-    nestedIn(nestedIn_),
-    numConstructors(0),
-    numCopyOrMoveConstructors(0),
-    definedType(nullptr),
-    functionOf(nullptr),
-    function(nullptr),
-    enumType(nullptr),
-    enumClass(false)
+    nestedIn(nestedIn_)
 {
     const Token *nameTok = classDef;
     if (!classDef) {
@@ -6401,8 +6364,12 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
             if (it != typeScope->varlist.end())
                 var = &*it;
         }
-        if (var)
+        if (var) {
             setValueType(parent, *var);
+            return;
+        }
+        if (const Enumerator* enu = parent->astOperand2()->enumerator())
+            setValueType(parent, *enu);
         return;
     }
 

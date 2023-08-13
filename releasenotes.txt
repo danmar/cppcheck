@@ -1,11 +1,19 @@
 release notes for cppcheck-2.12
 
 New checks:
+- uselessOverride finds overriding functions that either duplicate code from or delegate back to the base class implementation
 
 Improved checking:
+- truncLongCastAssignment and truncLongCastReturn check additional types, including float/double/long double
+- duplInheritedMember also reports duplicated member functions
+- constParameter*/constVariable* checks find more instances of pointers/references that can be const, e.g. when calling library functions
 
 GUI:
 
 Changed interface:
 
+Deprecations:
+- The qmake build system has been deprecated and will be removed in a future version.
+
 Other:
+- "USE_QT6=On" will no longer fallback to Qt5 when Qt6 is not found.

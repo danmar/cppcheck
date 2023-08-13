@@ -44,11 +44,9 @@ public:
     TestTokenizer() : TestFixture("TestTokenizer") {}
 
 private:
-    // If there are unused templates, keep those
-    const Settings settings0 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
-    const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").checkUnusedTemplates().build();
-    const Settings settings2 = settingsBuilder().library("qt.cfg").checkUnusedTemplates().build();
-    const Settings settings_windows = settingsBuilder().library("windows.cfg").checkUnusedTemplates().build();
+    const Settings settings0 = settingsBuilder().library("qt.cfg").build();
+    const Settings settings1 = settingsBuilder().library("qt.cfg").library("std.cfg").build();
+    const Settings settings_windows = settingsBuilder().library("windows.cfg").build();
 
     void run() override {
         TEST_CASE(tokenize1);
@@ -522,7 +520,7 @@ private:
     std::string tokenizeDebugListing_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
-        const Settings settings = settingsBuilder(settings2).c(Standards::C89).cpp(Standards::CPP03).build();
+        const Settings settings = settingsBuilder(settings0).c(Standards::C89).cpp(Standards::CPP03).build();
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -946,7 +944,7 @@ private:
         }
 
         {
-            const Settings s = settingsBuilder().checkUnusedTemplates().build();
+            const Settings s;
             ASSERT_EQUALS("; template < typename T , u_int uBAR = 0 >\n"
                           "class Foo {\n"
                           "public:\n"

@@ -92,4 +92,30 @@ public:
     static std::string getcode(Preprocessor &preprocessor, const std::string &filedata, const std::string &cfg, const std::string &filename, Suppressions *inlineSuppression = nullptr);
 };
 
+/* designated initialization helper
+    Usage:
+    struct S
+    {
+        int i;
+    };
+
+    const auto s = dinit(S,
+        $.i = 1
+    );
+ */
+#define dinit(T, ...) \
+    ([&] { T ${}; __VA_ARGS__; return $; }())
+
+// Default construct object to avoid bug in clang
+// error: default member initializer for 'y' needed within definition of enclosing class 'X' outside of member functions
+// see https://stackoverflow.com/questions/53408962
+struct make_default_obj
+{
+    template<class T>
+    operator T() const // NOLINT
+    {
+        return T{};
+    }
+};
+
 #endif // helpersH

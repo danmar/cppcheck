@@ -33,7 +33,6 @@
 #include <cctype>
 #include <climits>
 #include <cstdio>
-#include <cstdint>
 #include <cstring>
 #include <functional>
 #include <iostream>
@@ -57,12 +56,7 @@ namespace {
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
 
 Token::Token(TokensFrontBack *tokensFrontBack) :
-    mTokensFrontBack(tokensFrontBack),
-    mNext(nullptr),
-    mPrevious(nullptr),
-    mLink(nullptr),
-    mTokType(eNone),
-    mFlags(0)
+    mTokensFrontBack(tokensFrontBack)
 {
     mImpl = new TokenImpl();
 }

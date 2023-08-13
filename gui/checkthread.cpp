@@ -84,10 +84,8 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
 
 
 CheckThread::CheckThread(ThreadResult &result) :
-    mState(Ready),
     mResult(result),
-    mCppcheck(result, true, executeCommand),
-    mAnalyseWholeProgram(false)
+    mCppcheck(result, true, executeCommand)
 {
     //ctor
 }

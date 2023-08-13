@@ -46,7 +46,7 @@ public:
     /**
      * Constructor
      */
-    CppCheckExecutor();
+    CppCheckExecutor() = default;
     CppCheckExecutor(const CppCheckExecutor &) = delete;
     void operator=(const CppCheckExecutor&) = delete;
 
@@ -154,7 +154,7 @@ private:
     /**
      * Pointer to current settings; set while check() is running for reportError().
      */
-    const Settings* mSettings;
+    const Settings* mSettings{};
 
     /**
      * Used to filter out duplicate error messages.
@@ -169,7 +169,7 @@ private:
     /**
      * Report progress time
      */
-    std::time_t mLatestProgressOutputTime;
+    std::time_t mLatestProgressOutputTime{};
 
     /**
      * Output file name for exception handler
@@ -179,12 +179,7 @@ private:
     /**
      * Error output
      */
-    std::ofstream *mErrorOutput;
-
-    /**
-     * Has --errorlist been given?
-     */
-    bool mShowAllErrors;
+    std::ofstream* mErrorOutput{};
 };
 
 #endif // CPPCHECKEXECUTOR_H

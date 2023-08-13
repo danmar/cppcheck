@@ -60,11 +60,9 @@ enum class AccessControl { Public, Protected, Private, Global, Namespace, Argume
  * @brief Array dimension information.
  */
 struct Dimension {
-    Dimension() : tok(nullptr), num(0), known(true) {}
-
-    const Token *tok;    ///< size token
-    MathLib::bigint num; ///< (assumed) dimension length when size is a number, 0 if not known
-    bool known;          ///< Known size
+    const Token* tok{};    ///< size token
+    MathLib::bigint num{}; ///< (assumed) dimension length when size is a number, 0 if not known
+    bool known = true;     ///< Known size
 };
 
 /** @brief Information about a class type. */
@@ -75,18 +73,14 @@ public:
     const Scope* enclosingScope;
     enum class NeedInitialization {
         Unknown, True, False
-    } needInitialization;
+    } needInitialization = NeedInitialization::Unknown;
 
-    class BaseInfo {
-    public:
-        BaseInfo() :
-            type(nullptr), nameTok(nullptr), access(AccessControl::Public), isVirtual(false) {}
-
+    struct BaseInfo {
         std::string name;
-        const Type* type;
-        const Token* nameTok;
-        AccessControl access;  // public/protected/private
-        bool isVirtual;
+        const Type* type{};
+        const Token* nameTok{};
+        AccessControl access{};  // public/protected/private
+        bool isVirtual{};
         // allow ordering within containers
         bool operator<(const BaseInfo& rhs) const {
             return this->type < rhs.type;
@@ -94,29 +88,22 @@ public:
     };
 
     struct FriendInfo {
-        FriendInfo() :
-            nameStart(nullptr), nameEnd(nullptr), type(nullptr) {}
-
-        const Token* nameStart;
-        const Token* nameEnd;
-        const Type* type;
+        const Token* nameStart{};
+        const Token* nameEnd{};
+        const Type* type{};
     };
 
     std::vector<BaseInfo> derivedFrom;
     std::vector<FriendInfo> friendList;
 
-    const Token * typeStart;
-    const Token * typeEnd;
-    MathLib::bigint sizeOf;
+    const Token* typeStart{};
+    const Token* typeEnd{};
+    MathLib::bigint sizeOf{};
 
     explicit Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
         classDef(classDef_),
         classScope(classScope_),
-        enclosingScope(enclosingScope_),
-        needInitialization(NeedInitialization::Unknown),
-        typeStart(nullptr),
-        typeEnd(nullptr),
-        sizeOf(0) {
+        enclosingScope(enclosingScope_) {
         if (classDef_ && classDef_->str() == "enum")
             needInitialization = NeedInitialization::True;
         else if (classDef_ && classDef_->str() == "using") {
@@ -131,7 +118,7 @@ public:
         }
     }
 
-    const std::string& name() const;
+    std::string name() const;
 
     const std::string& type() const {
         return classDef ? classDef->str() : emptyString;
@@ -167,15 +154,14 @@ public:
     bool isDerivedFrom(const std::string & ancestor) const;
 };
 
-class CPPCHECKLIB Enumerator {
-public:
-    explicit Enumerator(const Scope * scope_) : scope(scope_), name(nullptr), value(0), start(nullptr), end(nullptr), value_known(false) {}
+struct CPPCHECKLIB Enumerator {
+    explicit Enumerator(const Scope * scope_) : scope(scope_) {}
     const Scope * scope;
-    const Token * name;
-    MathLib::bigint value;
-    const Token * start;
-    const Token * end;
-    bool value_known;
+    const Token* name{};
+    MathLib::bigint value{};
+    const Token* start{};
+    const Token* end{};
+    bool value_known{};
 };
 
 /** @brief Information about a member variable. */
@@ -238,8 +224,7 @@ public:
         mAccess(access_),
         mFlags(0),
         mType(type_),
-        mScope(scope_),
-        mValueType(nullptr) {
+        mScope(scope_) {
         evaluate(settings);
     }
 
@@ -699,7 +684,7 @@ private:
     /** @brief pointer to scope this variable is in */
     const Scope *mScope;
 
-    const ValueType *mValueType;
+    const ValueType* mValueType{};
 
     /** @brief array dimensions */
     std::vector<Dimension> mDimensions;
@@ -914,22 +899,22 @@ public:
     }
     bool isSafe(const Settings *settings) const;
 
-    const Token *tokenDef;            ///< function name token in class definition
-    const Token *argDef;              ///< function argument start '(' in class definition
-    const Token *token;               ///< function name token in implementation
-    const Token *arg;                 ///< function argument start '('
-    const Token *retDef;              ///< function return type token
-    const ::Type *retType;            ///< function return type
-    const Scope *functionScope;       ///< scope of function body
-    const Scope* nestedIn;            ///< Scope the function is declared in
+    const Token* tokenDef{};          ///< function name token in class definition
+    const Token* argDef{};            ///< function argument start '(' in class definition
+    const Token* token{};             ///< function name token in implementation
+    const Token* arg{};               ///< function argument start '('
+    const Token* retDef{};            ///< function return type token
+    const ::Type* retType{};          ///< function return type
+    const Scope* functionScope{};     ///< scope of function body
+    const Scope* nestedIn{};          ///< Scope the function is declared in
     std::vector<Variable> argumentList; ///< argument list
-    nonneg int initArgCount;        ///< number of args with default values
-    Type type;                        ///< constructor, destructor, ...
-    const Token *noexceptArg;         ///< noexcept token
-    const Token *throwArg;            ///< throw token
-    const Token *templateDef;         ///< points to 'template <' before function
-    const Token *functionPointerUsage; ///< function pointer usage
-    AccessControl access;             ///< public/protected/private
+    nonneg int initArgCount{};        ///< number of args with default values
+    Type type = eFunction;            ///< constructor, destructor, ...
+    const Token* noexceptArg{};       ///< noexcept token
+    const Token* throwArg{};          ///< throw token
+    const Token* templateDef{};       ///< points to 'template <' before function
+    const Token* functionPointerUsage{}; ///< function pointer usage
+    AccessControl access{};           ///< public/protected/private
 
     bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
@@ -959,7 +944,7 @@ private:
     /** Recursively determine if this function overrides a virtual function in a base class */
     const Function * getOverriddenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const;
 
-    unsigned int mFlags;
+    unsigned int mFlags{};
 
     void isInline(bool state) {
         setFlag(fIsInline, state);
@@ -1039,31 +1024,31 @@ public:
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_);
     Scope(const SymbolDatabase *check_, const Token *classDef_, const Scope *nestedIn_, ScopeType type_, const Token *start_);
 
-    const SymbolDatabase *check;
+    const SymbolDatabase* check{};
     std::string className;
-    const Token *classDef;   ///< class/struct/union/namespace token
-    const Token *bodyStart;  ///< '{' token
-    const Token *bodyEnd;    ///< '}' token
+    const Token* classDef{};   ///< class/struct/union/namespace token
+    const Token* bodyStart{};  ///< '{' token
+    const Token* bodyEnd{};    ///< '}' token
     std::list<Function> functionList;
     std::multimap<std::string, const Function *> functionMap;
     std::list<Variable> varlist;
-    const Scope *nestedIn;
+    const Scope* nestedIn{};
     std::vector<Scope *> nestedList;
-    nonneg int numConstructors;
-    nonneg int numCopyOrMoveConstructors;
+    nonneg int numConstructors{};
+    nonneg int numCopyOrMoveConstructors{};
     std::vector<UsingInfo> usingList;
-    ScopeType type;
-    Type* definedType;
+    ScopeType type{};
+    Type* definedType{};
     std::map<std::string, Type*> definedTypesMap;
     std::vector<const Token *> bodyStartList;
 
     // function specific fields
-    const Scope *functionOf; ///< scope this function belongs to
-    Function *function; ///< function info for this function
+    const Scope* functionOf{}; ///< scope this function belongs to
+    Function* function{}; ///< function info for this function
 
     // enum specific fields
-    const Token * enumType;
-    bool enumClass;
+    const Token* enumType{};
+    bool enumClass{};
 
     std::vector<Enumerator> enumeratorList;
 
@@ -1224,7 +1209,7 @@ enum class Reference {
 /** Value type */
 class CPPCHECKLIB ValueType {
 public:
-    enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
+    enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign = UNKNOWN_SIGN;
     enum Type {
         UNKNOWN_TYPE,
         POD,
@@ -1245,80 +1230,42 @@ public:
         FLOAT,
         DOUBLE,
         LONGDOUBLE
-    } type;
-    nonneg int bits;                           ///< bitfield bitcount
-    nonneg int pointer;                        ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
-    nonneg int constness;                      ///< bit 0=data, bit 1=*, bit 2=**
+    } type = UNKNOWN_TYPE;
+    nonneg int bits{};                         ///< bitfield bitcount
+    nonneg int pointer{};                      ///< 0=>not pointer, 1=>*, 2=>**, 3=>***, etc
+    nonneg int constness{};                    ///< bit 0=data, bit 1=*, bit 2=**
     Reference reference = Reference::None;     ///< Is the outermost indirection of this type a reference or rvalue
     ///< reference or not? pointer=2, Reference=LValue would be a T**&
-    const Scope* typeScope;                    ///< if the type definition is seen this point out the type scope
-    const ::Type* smartPointerType;            ///< Smart pointer type
-    const Token* smartPointerTypeToken;        ///< Smart pointer type token
-    const Library::SmartPointer* smartPointer; ///< Smart pointer
-    const Library::Container* container;       ///< If the type is a container defined in a cfg file, this is the used
+    const Scope* typeScope{};                  ///< if the type definition is seen this point out the type scope
+    const ::Type* smartPointerType{};          ///< Smart pointer type
+    const Token* smartPointerTypeToken{};      ///< Smart pointer type token
+    const Library::SmartPointer* smartPointer{}; ///< Smart pointer
+    const Library::Container* container{};     ///< If the type is a container defined in a cfg file, this is the used
     ///< container
-    const Token* containerTypeToken; ///< The container type token. the template argument token that defines the
+    const Token* containerTypeToken{}; ///< The container type token. the template argument token that defines the
     ///< container element type.
     std::string originalTypeName;    ///< original type name as written in the source code. eg. this might be "uint8_t"
     ///< when type is CHAR.
     ErrorPath debugPath; ///< debug path to the type
 
-    ValueType()
-        : sign(UNKNOWN_SIGN),
-        type(UNKNOWN_TYPE),
-        bits(0),
-        pointer(0U),
-        constness(0U),
-        typeScope(nullptr),
-        smartPointerType(nullptr),
-        smartPointerTypeToken(nullptr),
-        smartPointer(nullptr),
-        container(nullptr),
-        containerTypeToken(nullptr),
-        debugPath()
-    {}
+    ValueType() = default;
     ValueType(enum Sign s, enum Type t, nonneg int p)
         : sign(s),
         type(t),
-        bits(0),
-        pointer(p),
-        constness(0U),
-        typeScope(nullptr),
-        smartPointerType(nullptr),
-        smartPointerTypeToken(nullptr),
-        smartPointer(nullptr),
-        container(nullptr),
-        containerTypeToken(nullptr),
-        debugPath()
+        pointer(p)
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
         : sign(s),
         type(t),
-        bits(0),
         pointer(p),
-        constness(c),
-        typeScope(nullptr),
-        smartPointerType(nullptr),
-        smartPointerTypeToken(nullptr),
-        smartPointer(nullptr),
-        container(nullptr),
-        containerTypeToken(nullptr),
-        debugPath()
+        constness(c)
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, std::string otn)
         : sign(s),
         type(t),
-        bits(0),
         pointer(p),
         constness(c),
-        typeScope(nullptr),
-        smartPointerType(nullptr),
-        smartPointerTypeToken(nullptr),
-        smartPointer(nullptr),
-        container(nullptr),
-        containerTypeToken(nullptr),
-        originalTypeName(std::move(otn)),
-        debugPath()
+        originalTypeName(std::move(otn))
     {}
 
     static ValueType parseDecl(const Token *type, const Settings &settings, bool isCpp);

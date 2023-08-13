@@ -34,16 +34,13 @@
 #include <string>
 
 #include <QByteArray>
-#include <QChar>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
 #include <QDialogButtonBox>
 #include <QDir>
-#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QFileInfoList>
 #include <QFlags>
 #include <QLabel>
 #include <QLineEdit>

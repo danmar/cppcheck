@@ -37,8 +37,7 @@
 
 const int MathLib::bigint_bits = 64;
 
-MathLib::value::value(const std::string &s) :
-    mIntValue(0), mDoubleValue(0), mIsUnsigned(false)
+MathLib::value::value(const std::string &s)
 {
     if (MathLib::isFloat(s)) {
         mType = MathLib::value::Type::FLOAT;

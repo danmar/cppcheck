@@ -34,7 +34,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iterator>
 #include <utility>
@@ -1056,12 +1055,9 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
     // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
-    reportError(tok, Severity::style, "noConstructor",
-                "$symbol:" + classname + "\n" +
-                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not declare a constructor although it has private member variables which likely require initialization.\n"
-                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not declare a constructor "
-                "although it has private member variables. Member variables of builtin types are left "
-                "uninitialized when the class is instantiated. That may cause bugs or undefined behavior.", CWE398, Certainty::normal);
+    const std::string message {"The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not declare a constructor although it has private member variables which likely require initialization."};
+    const std::string verbose {message + " Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior."};
+    reportError(tok, Severity::style, "noConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
 void CheckClass::noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct)
@@ -1082,14 +1078,16 @@ void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type
     if (derived)
         message += " Maybe it should be initialized directly in the class " + classname + "?";
     std::string id = std::string("uninit") + (derived ? "Derived" : "") + "MemberVar" + (isprivate ? "Private" : "");
-    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + "\n" + message, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    const std::string verbose {message + " Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior."};
+    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + '\n' + message + '\n' + verbose, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
     const std::string message("Member variable '$symbol' is not initialized."); // report missing in-class initializer
+    const std::string verbose {message + " Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior."};
     const std::string id = std::string("uninitMemberVarPrivate");
-    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + "\n" + message, CWE398, Certainty::normal);
+    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
 void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname)

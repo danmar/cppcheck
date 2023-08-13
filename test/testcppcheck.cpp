@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "check.h"
 #include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
@@ -45,31 +44,7 @@ private:
     };
 
     void run() override {
-        TEST_CASE(instancesSorted);
-        TEST_CASE(classInfoFormat);
         TEST_CASE(getErrorMessages);
-    }
-
-    void instancesSorted() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
-            std::list<Check *>::const_iterator j = i;
-            ++j;
-            if (j != Check::instances().cend()) {
-                ASSERT_EQUALS(true, (*i)->name() < (*j)->name());
-            }
-        }
-    }
-
-    void classInfoFormat() const {
-        for (std::list<Check *>::const_iterator i = Check::instances().cbegin(); i != Check::instances().cend(); ++i) {
-            const std::string info = (*i)->classInfo();
-            if (!info.empty()) {
-                ASSERT('\n' != info[0]);         // No \n in the beginning
-                ASSERT('\n' == info.back());     // \n at end
-                if (info.size() > 1)
-                    ASSERT('\n' != info[info.length()-2]); // Only one \n at end
-            }
-        }
     }
 
     void getErrorMessages() const {

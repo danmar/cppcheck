@@ -19,6 +19,7 @@
 #ifndef CMDLINE_PARSER_H
 #define CMDLINE_PARSER_H
 
+#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -145,10 +146,10 @@ private:
     Settings &mSettings;
     Suppressions &mSuppressions;
     Suppressions &mSuppressionsNoFail;
-    bool mShowHelp;
-    bool mShowVersion;
-    bool mShowErrorMessages;
-    bool mExitAfterPrint;
+    bool mShowHelp{};
+    bool mShowVersion{};
+    bool mShowErrorMessages{};
+    bool mExitAfterPrint{};
     std::string mVSConfig;
 };
 

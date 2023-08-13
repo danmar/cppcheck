@@ -31,12 +31,12 @@
 #include <algorithm>
 #include <cctype>
 #include <climits>
-#include <cstdlib>
 #include <cstring>
 #include <list>
 #include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
+#include <stdexcept>
 #include <string>
 
 #include <tinyxml2.h>
@@ -63,9 +63,6 @@ static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList
         }
     }
 }
-
-Library::Library() : mAllocId(0)
-{}
 
 Library::Error Library::load(const char exename[], const char path[])
 {

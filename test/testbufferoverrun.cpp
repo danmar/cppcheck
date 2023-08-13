@@ -22,7 +22,6 @@
 #include "ctu.h"
 #include "errortypes.h"
 #include "standards.h"
-#include "library.h"
 #include "platform.h"
 #include "settings.h"
 #include "fixture.h"
@@ -77,7 +76,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings = settingsBuilder(settings0).severity(Severity::style).severity(Severity::warning).severity(Severity::portability).severity(Severity::performance)
+        const Settings settings = settingsBuilder(settings0).severity(Severity::performance)
                                   .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
         // Raw tokens..

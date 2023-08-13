@@ -28,7 +28,6 @@
 #include "tokenize.h"
 
 #include <algorithm>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -969,11 +968,13 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 
         if (Token::simpleMatch(tok->next()->astParent(), "(")) // passed to another function
             continue;
-        if (!tok->isKeyword() && (mSettings->library.isNotLibraryFunction(tok) || !mSettings->library.isLeakIgnore(functionName)))
+        if (!tok->isKeyword() && !tok->function() && !mSettings->library.isLeakIgnore(functionName))
             continue;
 
         const std::vector<const Token *> args = getArguments(tok);
+        int argnr = -1;
         for (const Token* arg : args) {
+            ++argnr;
             if (arg->isOp() && !(tok->isKeyword() && arg->str() == "*")) // e.g. switch (*new int)
                 continue;
             while (arg->astOperand1()) {
@@ -984,10 +985,29 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
             const AllocType alloc = getAllocationType(arg, 0);
             if (alloc == No)
                 continue;
-            if ((alloc == New || alloc == NewArray) && arg->next() && !(arg->next()->isStandardType() || mSettings->library.detectContainerOrIterator(arg)))
-                continue;
+            if (alloc == New || alloc == NewArray) {
+                const Token* typeTok = arg->next();
+                bool bail = !typeTok->isStandardType() &&
+                            !mSettings->library.detectContainerOrIterator(typeTok) &&
+                            !mSettings->library.podtype(typeTok->expressionString());
+                if (bail && typeTok->type() && typeTok->type()->classScope &&
+                    typeTok->type()->classScope->numConstructors == 0 &&
+                    typeTok->type()->classScope->getDestructor() == nullptr) {
+                    bail = false;
+                }
+                if (bail)
+                    continue;
+            }
             if (isReopenStandardStream(arg))
                 continue;
+            if (tok->function()) {
+                const Variable* argvar = tok->function()->getArgumentVar(argnr);
+                if (!argvar || !argvar->valueType())
+                    continue;
+                const MathLib::bigint argSize = argvar->valueType()->typeSize(mSettings->platform, /*p*/ true);
+                if (argSize <= 0 || argSize >= mSettings->platform.sizeof_pointer)
+                    continue;
+            }
             functionCallLeak(arg, arg->str(), functionName);
         }
 

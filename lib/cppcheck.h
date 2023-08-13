@@ -217,15 +217,15 @@ private:
     /** @brief Current preprocessor configuration */
     std::string mCurrentConfig;
 
-    unsigned int mExitCode;
+    unsigned int mExitCode{};
 
     bool mUseGlobalSuppressions;
 
     /** Are there too many configs? */
-    bool mTooManyConfigs;
+    bool mTooManyConfigs{};
 
     /** Simplify code? true by default */
-    bool mSimplify;
+    bool mSimplify = true;
 
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;
