@@ -7009,8 +7009,7 @@ private:
                         "    memcpy(in, s, sizeof(S));\n"
                         "    s->p = NULL;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
 
         valueFlowUninit("struct S {\n" // #11321
                         "    int a = 0;\n"
