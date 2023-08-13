@@ -300,7 +300,7 @@ int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(Cpp
 {
     // determine stack vs. heap
     char stackVariable;
-    char *heapVariable=(char*)malloc(1);
+    char *heapVariable=static_cast<char*>(malloc(1));
     bStackBelowHeap = &stackVariable < heapVariable;
     free(heapVariable);
 
