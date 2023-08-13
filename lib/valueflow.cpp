@@ -2429,6 +2429,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return settings;
     }
 
+    // Returns Action::Match if its an exact match, return Action::Read if it partially matches the lifetime
     Action analyzeLifetime(const Token* tok) const
     {
         if (!tok)
