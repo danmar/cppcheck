@@ -2429,16 +2429,16 @@ struct ValueFlowAnalyzer : Analyzer {
         return settings;
     }
 
-    Action matchLifetime(const Token* tok) const
+    Action analyzeLifetime(const Token* tok) const
     {
         if (!tok)
             return Action::None;
         if (match(tok))
             return Action::Match;
-        if (Token::simpleMatch(tok, ".") && matchLifetime(tok->astOperand1()) != Action::None)
+        if (Token::simpleMatch(tok, ".") && analyzeLifetime(tok->astOperand1()) != Action::None)
             return Action::Read;
         if (astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
-            return matchLifetime(tok->astParent());
+            return analyzeLifetime(tok->astParent());
         return Action::None;
     }
 
@@ -2817,7 +2817,7 @@ struct ValueFlowAnalyzer : Analyzer {
             }
             if (!lifeTok)
                 return Action::None;
-            Action la = matchLifetime(lifeTok);
+            Action la = analyzeLifetime(lifeTok);
             if (la.matches()) {
                 Action a = Action::Read;
                 if (isModified(tok).isModified())
