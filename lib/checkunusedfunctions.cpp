@@ -357,7 +357,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else
-        reportError(errmsg);
+        Check::writeToErrorList(errmsg);
 }
 
 Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const

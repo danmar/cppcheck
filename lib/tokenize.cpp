@@ -10139,7 +10139,7 @@ void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else
-        Check::reportError(errmsg);
+        Check::writeToErrorList(errmsg);
 }
 
 void Tokenizer::setPodTypes()

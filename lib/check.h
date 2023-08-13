@@ -91,11 +91,11 @@ public:
     virtual std::string classInfo() const = 0;
 
     /**
-     * Write given error to errorlogger or to out stream in xml format.
+     * Write given error to stdout in xml format.
      * This is for for printout out the error list with --errorlist
      * @param errmsg Error message to write
      */
-    static void reportError(const ErrorMessage &errmsg);
+    static void writeToErrorList(const ErrorMessage &errmsg);
 
     /** Base class used for whole-program analysis */
     class CPPCHECKLIB FileInfo {
