@@ -18,6 +18,8 @@
 
 #include "keywords.h"
 
+#include <cassert>
+
 // see https://en.cppreference.com/w/c/keyword
 
 #define C90_KEYWORDS \
@@ -162,6 +164,7 @@ const std::unordered_set<std::string>& Keywords::getAll(Standards::cstd_t cStd)
         /*case Standards::cstd_t::C23:
             return c23_keywords_all;*/
     }
+    assert(false && "unreachable");
 }
 
 // cppcheck-suppress unusedFunction
@@ -181,6 +184,7 @@ const std::unordered_set<std::string>& Keywords::getAll(Standards::cppstd_t cppS
     case Standards::cppstd_t::CPP23:
         return cpp23_keywords_all;
     }
+    assert(false && "unreachable");
 }
 
 // cppcheck-suppress unusedFunction
@@ -197,6 +201,7 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cstd_t cStd)
         /*case Standards::cstd_t::C23:
             return c23_keywords_all;*/
     }
+    assert(false && "unreachable");
 }
 
 // cppcheck-suppress unusedFunction
@@ -217,5 +222,6 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cppstd_t cpp
     case Standards::cppstd_t::CPP23:
         return cpp23_keywords;
     }
+    assert(false && "unreachable");
 }
 
