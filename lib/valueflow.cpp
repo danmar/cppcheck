@@ -2429,13 +2429,17 @@ struct ValueFlowAnalyzer : Analyzer {
         return settings;
     }
 
-    bool matchLifetime(const Token* tok) const
+    Action matchLifetime(const Token* tok) const
     {
+        if (!tok)
+            return Action::None;
         if (match(tok))
-            return true;
+            return Action::Match;
+        if (Token::simpleMatch(tok, ".") && matchLifetime(tok->astOperand1()) != Action::None)
+            return Action::Read;
         if (astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
-            return match(tok->astParent());
-        return false;
+            return matchLifetime(tok->astParent());
+        return Action::None;
     }
 
     struct ConditionState {
@@ -2811,7 +2815,10 @@ struct ValueFlowAnalyzer : Analyzer {
                     return Action::None;
                 lifeTok = v.tokvalue;
             }
-            if (lifeTok && matchLifetime(lifeTok)) {
+            if (!lifeTok)
+                return Action::None;
+            Action la = matchLifetime(lifeTok);
+            if (la.matches()) {
                 Action a = Action::Read;
                 if (isModified(tok).isModified())
                     a = Action::Invalid;
@@ -2820,6 +2827,8 @@ struct ValueFlowAnalyzer : Analyzer {
                 if (inconclusiveRef && a.isModified())
                     return Action::Inconclusive;
                 return a;
+            } else if (la.isRead()) {
+                return isAliasModified(tok);
             }
             return Action::None;
 
