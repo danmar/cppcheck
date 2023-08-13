@@ -6925,7 +6925,7 @@ private:
                         "    int a = ab.a;\n"
                         "    int b = ab.b;\n"
                         "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab.b\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: ab.b\n", errout.str());
 
         // STL class member
         valueFlowUninit("struct A {\n"

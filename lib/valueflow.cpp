@@ -641,9 +641,10 @@ static void setTokenValue(Token* tok,
         }
     }
 
-    if (Token::simpleMatch(parent, "=") && astIsRHS(tok) && !value.isLifetimeValue()) {
+    if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
         setTokenValue(parent, std::move(value), settings);
-        return;
+        if (!value.isUninitValue())
+            return;
     }
 
     if (value.isContainerSizeValue() && astIsContainer(tok)) {
@@ -3342,6 +3343,8 @@ static std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
     case ValueFlow::Value::LifetimeKind::SubObject:
     case ValueFlow::Value::LifetimeKind::Address:
         if (astIsPointer(tok))
+            result = "pointer";
+        else if (Token::simpleMatch(tok, "=") && astIsPointer(tok->astOperand2()))
             result = "pointer";
         else
             result = "object";
