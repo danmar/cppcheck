@@ -8676,11 +8676,11 @@ static MathLib::bigint valueFlowGetStrLength(const Token* tok)
 {
     if (tok->tokType() == Token::eString)
         return Token::getStrLength(tok);
-    else if (astIsGenericChar(tok) || tok->tokType() == Token::eChar)
+    if (astIsGenericChar(tok) || tok->tokType() == Token::eChar)
         return 1;
-    else if (const ValueFlow::Value* v2 = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+    if (const ValueFlow::Value* v2 = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
         return v2->intvalue;
-    else if (const ValueFlow::Value* v1 = tok->getKnownValue(ValueFlow::Value::ValueType::TOK))
+    if (const ValueFlow::Value* v1 = tok->getKnownValue(ValueFlow::Value::ValueType::TOK))
         return valueFlowGetStrLength(v1->tokvalue);
     return 0;
 }
