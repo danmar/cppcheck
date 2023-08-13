@@ -90,32 +90,35 @@ public:
 
 private:
     // TODO: how to log file name in error?
-    void writeToPipe(PipeSignal type, const std::string &data) const
+    void writeToPipeInternal(PipeSignal type, const void* data, std::size_t to_write) const
     {
-        unsigned int len = static_cast<unsigned int>(data.length() + 1);
-        char *out = new char[len + 1 + sizeof(len)];
-        out[0] = static_cast<char>(type);
-        std::memcpy(&(out[1]), &len, sizeof(len));
-        std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
-
-        std::size_t bytes_to_write = len + 1 + sizeof(len);
-        ssize_t bytes_written = write(mWpipe, out, len + 1 + sizeof(len));
+        const ssize_t bytes_written = write(mWpipe, data, to_write);
         if (bytes_written <= 0) {
             const int err = errno;
-            delete[] out;
-            out = nullptr;
-            std::cerr << "#### ThreadExecutor::writeToPipe() error for type " << type << ": " << std::strerror(err) << std::endl;
+            std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": " << std::strerror(err) << std::endl;
             std::exit(EXIT_FAILURE);
         }
         // TODO: write until everything is written
-        if (bytes_written != bytes_to_write) {
-            delete[] out;
-            out = nullptr;
-            std::cerr << "#### ThreadExecutor::writeToPipe() error for type " << type << ": insufficient data written (expected: " << bytes_to_write << " / got: " << bytes_written << ")" << std::endl;
+        if (bytes_written != to_write) {
+            std::cerr << "#### ThreadExecutor::writeToPipeInternal() error for type " << type << ": insufficient data written (expected: " << to_write << " / got: " << bytes_written << ")" << std::endl;
             std::exit(EXIT_FAILURE);
         }
+    }
 
-        delete[] out;
+    void writeToPipe(PipeSignal type, const std::string &data) const
+    {
+        {
+            const char t = static_cast<char>(type);
+            writeToPipeInternal(type, &t, 1);
+        }
+
+        const unsigned int len = static_cast<unsigned int>(data.length() + 1);
+        {
+            static constexpr std::size_t l_size = sizeof(unsigned int);
+            writeToPipeInternal(type, &len, l_size);
+        }
+
+        writeToPipeInternal(type, data.c_str(), len);
     }
 
     const int mWpipe;
@@ -164,8 +167,8 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
 
     // Don't rely on incoming data being null-terminated.
     // Allocate +1 element and null-terminate the buffer.
-    char *buf = new char[len + 1];
-    char *data_start = buf;
+    std::string buf(len + 1, '\0');
+    char *data_start = &buf[0];
     bytes_to_read = len;
     do {
         bytes_read = read(rpipe, data_start, bytes_to_read);
@@ -177,13 +180,14 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         bytes_to_read -= bytes_read;
         data_start += bytes_read;
     } while (bytes_to_read != 0);
-    buf[len] = 0;
+    buf[len] = '\0';
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {
         // the first character is the color
         const Color c = static_cast<Color>(buf[0]);
-        mErrorLogger.reportOut(buf + 1, c);
+        // TODO: avoid string copy
+        mErrorLogger.reportOut(buf.substr(1), c);
     } else if (type == PipeWriter::REPORT_ERROR) {
         ErrorMessage msg;
         try {
@@ -200,7 +204,6 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         res = false;
     }
 
-    delete[] buf;
     return res;
 }
 

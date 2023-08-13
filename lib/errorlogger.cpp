@@ -227,35 +227,50 @@ Suppressions::ErrorMessage ErrorMessage::toSuppressionsErrorMessage() const
     return ret;
 }
 
+static void serializeString(std::string &oss, const std::string & str)
+{
+    oss += std::to_string(str.length());
+    oss += " ";
+    oss += str;
+}
 
 std::string ErrorMessage::serialize() const
 {
     // Serialize this message into a simple string
-    std::ostringstream oss;
-    oss << id.length() << " " << id;
-    oss << Severity::toString(severity).length() << " " << Severity::toString(severity);
-    oss << MathLib::toString(cwe.id).length() << " " << MathLib::toString(cwe.id);
-    oss << MathLib::toString(hash).length() << " " << MathLib::toString(hash);
-    oss << file0.size() << " " << file0;
+    std::string oss;
+    serializeString(oss, id);
+    serializeString(oss, Severity::toString(severity));
+    serializeString(oss, MathLib::toString(cwe.id));
+    serializeString(oss, MathLib::toString(hash));
+    serializeString(oss, file0);
     if (certainty == Certainty::inconclusive) {
         const std::string text("inconclusive");
-        oss << text.length() << " " << text;
+        serializeString(oss, text);
     }
 
     const std::string saneShortMessage = fixInvalidChars(mShortMessage);
     const std::string saneVerboseMessage = fixInvalidChars(mVerboseMessage);
 
-    oss << saneShortMessage.length() << " " << saneShortMessage;
-    oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
-    oss << callStack.size() << " ";
+    serializeString(oss, saneShortMessage);
+    serializeString(oss, saneVerboseMessage);
+    oss += std::to_string(callStack.size());
+    oss += " ";
 
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
-        std::ostringstream smallStream;
-        smallStream << (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
-        oss << smallStream.str().length() << " " << smallStream.str();
+        std::string frame;
+        frame += std::to_string((*loc).line);
+        frame += '\t';
+        frame += std::to_string((*loc).column);
+        frame += '\t';
+        frame += (*loc).getfile(false);
+        frame += '\t';
+        frame += loc->getOrigFile(false);
+        frame += '\t';
+        frame += loc->getinfo();
+        serializeString(oss, frame);
     }
 
-    return oss.str();
+    return oss;
 }
 
 void ErrorMessage::deserialize(const std::string &data)
