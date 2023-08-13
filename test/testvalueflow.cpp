@@ -7354,6 +7354,11 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "i");
+
+        code = "void f() {\n"
+               "    if (llabs(0x80000000ffffffffL) == 0x7fffffff00000001L) {}\n"
+               "}\n";
+        valueOfTok(code, "f");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577

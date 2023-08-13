@@ -5651,6 +5651,13 @@ private:
                               "    bool __attribute__((used)) test;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    char a[1] __attribute__((unused));\n"
+                              "    char b[1][2] __attribute__((unused));\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFunction() {
@@ -6197,6 +6204,12 @@ private:
 
         functionVariableUsage("int main() {\n"
                               "    [[maybe_unused]] [[anotherattribute]] const int* = 1;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] char a[1];\n"
+                              "    [[maybe_unused]] char b[1][2];\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
     }
