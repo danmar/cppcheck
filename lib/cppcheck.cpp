@@ -939,7 +939,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
 #ifdef HAVE_RULES
                 // handling of "simple" rules has been removed.
-                if (mSimplify && hasRule("simple"))
+                if (hasRule("simple"))
                     throw InternalError(nullptr, "Handling of \"simple\" rules has been removed in Cppcheck. Use --addon instead.");
 #endif
 
