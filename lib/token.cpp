@@ -2445,14 +2445,14 @@ const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path)
 {
     if (!mImpl->mValues)
         return nullptr;
-    return getCompareValue(*mImpl->mValues, condition, path, std::greater<>{});
+    return getCompareValue(*mImpl->mValues, condition, path, std::greater<MathLib::bigint>{});
 }
 
 const ValueFlow::Value* Token::getMinValue(bool condition, MathLib::bigint path) const
 {
     if (!mImpl->mValues)
         return nullptr;
-    return getCompareValue(*mImpl->mValues, condition, path, std::greater<>{});
+    return getCompareValue(*mImpl->mValues, condition, path, std::less<MathLib::bigint>{});
 }
 
 const ValueFlow::Value* Token::getMovedValue() const
