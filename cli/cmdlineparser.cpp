@@ -507,10 +507,16 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("argument to '-j' is not valid - " +  err + ".");
                     return false;
                 }
-                if (tmp > 10000) {
-                    // This limit is here just to catch typos. If someone has
-                    // need for more jobs, this value should be increased.
-                    printError("argument for '-j' is allowed to be 10000 at max.");
+                if (tmp == 0) {
+                    // TODO: implement get CPU logical core count and use that.
+                    // Usually, -j 0 would mean "use all available cores," but
+                    // if we get a 0, we just stall and don't do any work.
+                    printError("argument for '-j' must be greater than 0.");
+                    return false;
+                } else if (tmp > 1024) {
+                    // Almost nobody has 1024 logical cores, but somebody out
+                    // there does.
+                    printError("argument for '-j' is allowed to be 1024 at max.");
                     return false;
                 }
                 mSettings.jobs = tmp;
