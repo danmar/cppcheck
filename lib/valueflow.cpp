@@ -642,7 +642,7 @@ static void setTokenValue(Token* tok,
     }
 
     if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
-        setTokenValue(parent, std::move(value), settings);
+        setTokenValue(parent, value, settings);
         if (!value.isUninitValue())
             return;
     }
