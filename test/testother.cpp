@@ -5648,6 +5648,12 @@ private:
                       "[test.cpp:6]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n"
                       "[test.cpp:9]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n",
                       errout.str());
+
+        check("struct S { int i; };\n"
+              "namespace {\n"
+              "    S s() { return ::S{42}; }\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testMisusedScopeObjectAssignment() { // #11371
