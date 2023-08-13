@@ -710,7 +710,9 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                         if (!suppressErrors && Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar && Token::Match(tok->next()->astParent(), "%cop%|return|throw|?"))
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
                         else if (mTokenizer->isCPP() && !suppressErrors && Token::Match(tok, "%name%") && Token::Match(tok->astParent(), "return|throw|?")) {
-                            if (std::any_of(tok->values().cbegin(), tok->values().cend(), std::mem_fn(&ValueFlow::Value::isUninitValue)))
+                            if (std::any_of(tok->values().cbegin(), tok->values().cend(), [](const ValueFlow::Value& v) {
+                                return v.isUninitValue() && !v.isInconclusive();
+                            }))
                                 uninitStructMemberError(tok, tok->str() + "." + membervar);
                         }
                     }
