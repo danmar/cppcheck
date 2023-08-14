@@ -899,7 +899,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
-            // TODO: deprecate "--template <template>"
             // Output formatter
             else if (std::strcmp(argv[i], "--template") == 0 ||
                      std::strncmp(argv[i], "--template=", 11) == 0) {
@@ -907,6 +906,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (argv[i][10] == '=')
                     mSettings.templateFormat = argv[i] + 11;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
+                    printMessage("'--template <template>' is deprecated and will be removed in 2.13 - please use '--template=<template>' instead");
                     ++i;
                     mSettings.templateFormat = argv[i];
                 } else {
@@ -935,13 +935,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
-            // TODO: deprecate "--template-location <template>"
             else if (std::strcmp(argv[i], "--template-location") == 0 ||
                      std::strncmp(argv[i], "--template-location=", 20) == 0) {
                 // "--template-location format"
                 if (argv[i][19] == '=')
                     mSettings.templateLocation = argv[i] + 20;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
+                    printMessage("'--template-location <template>' is deprecated and will be removed in 2.13 - please use '--template-location=<template>' instead");
                     ++i;
                     mSettings.templateLocation = argv[i];
                 } else {
