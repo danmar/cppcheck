@@ -13,6 +13,8 @@ defaults:
   run:
     shell: cmd
 
+# TODO: choose/add a step to bail out on compiler warnings (maybe even the release build)
+
 jobs:
 
   build_qt:
