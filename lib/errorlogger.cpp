@@ -211,22 +211,6 @@ void ErrorMessage::setmsg(const std::string &msg)
     }
 }
 
-Suppressions::ErrorMessage ErrorMessage::toSuppressionsErrorMessage() const
-{
-    Suppressions::ErrorMessage ret;
-    ret.hash = hash;
-    ret.errorId = id;
-    if (!callStack.empty()) {
-        ret.setFileName(callStack.back().getfile(false));
-        ret.lineNumber = callStack.back().line;
-    } else {
-        ret.lineNumber = Suppressions::Suppression::NO_LINE;
-    }
-    ret.certainty = certainty;
-    ret.symbolNames = mSymbolNames;
-    return ret;
-}
-
 static void serializeString(std::string &oss, const std::string & str)
 {
     oss += std::to_string(str.length());
@@ -679,39 +663,6 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     }
 
     return result;
-}
-
-bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
-{
-    bool err = false;
-    // Report unmatched suppressions
-    for (const Suppressions::Suppression &s : unmatched) {
-        // don't report "unmatchedSuppression" as unmatched
-        if (s.errorId == "unmatchedSuppression")
-            continue;
-
-        // check if this unmatched suppression is suppressed
-        bool suppressed = false;
-        for (const Suppressions::Suppression &s2 : unmatched) {
-            if (s2.errorId == "unmatchedSuppression") {
-                if ((s2.fileName.empty() || s2.fileName == "*" || s2.fileName == s.fileName) &&
-                    (s2.lineNumber == Suppressions::Suppression::NO_LINE || s2.lineNumber == s.lineNumber)) {
-                    suppressed = true;
-                    break;
-                }
-            }
-        }
-
-        if (suppressed)
-            continue;
-
-        std::list<ErrorMessage::FileLocation> callStack;
-        if (!s.fileName.empty())
-            callStack.emplace_back(s.fileName, s.lineNumber, 0);
-        reportErr(ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
-        err = true;
-    }
-    return err;
 }
 
 std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)

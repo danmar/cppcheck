@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "errortypes.h"
-#include "suppressions.h"
 #include "color.h"
 
 #include <cstddef>
@@ -198,8 +197,6 @@ public:
         return mSymbolNames;
     }
 
-    Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
-
 private:
     static std::string fixInvalidChars(const std::string& raw);
 
@@ -249,13 +246,6 @@ public:
         (void)stage;
         (void)value;
     }
-
-    /**
-     * Report unmatched suppressions
-     * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
-     * @return true is returned if errors are reported
-     */
-    bool reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched);
 
     static std::string callStackToString(const std::list<ErrorMessage::FileLocation> &callStack);
 

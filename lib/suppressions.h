@@ -34,6 +34,7 @@
 
 class Tokenizer;
 class ErrorMessage;
+class ErrorLogger;
 enum class Certainty;
 
 /** @brief class for handling suppressions */
@@ -50,6 +51,8 @@ public:
         int lineNumber;
         Certainty certainty;
         std::string symbolNames;
+
+        static Suppressions::ErrorMessage fromErrorMessage(const ::ErrorMessage &msg);
     private:
         std::string mFileName;
     };
@@ -200,6 +203,13 @@ public:
      * @brief Marks Inline Suppressions as checked if source line is in the token stream
      */
     void markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer);
+
+    /**
+     * Report unmatched suppressions
+     * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
+     * @return true is returned if errors are reported
+     */
+    static bool reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched, ErrorLogger &errorLogger);
 
 private:
     /** @brief List of error which the user doesn't want to see. */
