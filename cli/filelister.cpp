@@ -192,9 +192,7 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
             if (!dir)
                 return "";
 
-            std::string new_path;
-            new_path.reserve(path.length() + 1 + sizeof(dir_result->d_name));// prealloc some memory to avoid constant new/deletes in loop
-            new_path += path;
+            std::string new_path = path;
             new_path += '/';
 
             while (struct dirent* dir_result = readdir(dir)) {
