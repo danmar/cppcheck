@@ -2415,23 +2415,38 @@ const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path) const
+template<class Compare>
+static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values,
+                                               bool condition,
+                                               MathLib::bigint path,
+                                               Compare compare)
 {
-    if (!mImpl->mValues)
-        return nullptr;
     const ValueFlow::Value* ret = nullptr;
-    for (const ValueFlow::Value& value : *mImpl->mValues) {
+    for (const ValueFlow::Value& value : values) {
         if (!value.isIntValue())
             continue;
         if (value.isImpossible())
             continue;
         if (path > -0 && value.path != 0 && value.path != path)
             continue;
-        if ((!ret || value.intvalue > ret->intvalue) &&
-            ((value.condition != nullptr) == condition))
+        if ((!ret || compare(value.intvalue, ret->intvalue)) && ((value.condition != nullptr) == condition))
             ret = &value;
     }
     return ret;
+}
+
+const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    return getCompareValue(*mImpl->mValues, condition, path, std::greater<MathLib::bigint>{});
+}
+
+const ValueFlow::Value* Token::getMinValue(bool condition, MathLib::bigint path) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    return getCompareValue(*mImpl->mValues, condition, path, std::less<MathLib::bigint>{});
 }
 
 const ValueFlow::Value* Token::getMovedValue() const

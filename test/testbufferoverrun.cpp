@@ -190,6 +190,7 @@ private:
         TEST_CASE(array_index_negative7);    // #5685
         TEST_CASE(array_index_negative8);    // #11651
         TEST_CASE(array_index_negative9);
+        TEST_CASE(array_index_negative10);
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -2334,6 +2335,20 @@ private:
               "    printf(\"%d\\n\", a[g(4)]);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Array 'a[3]' accessed at index -1, which is out of bounds.\n", errout.str());
+    }
+
+    // #11844
+    void array_index_negative10()
+    {
+        check("struct S { int a[4]; };\n"
+              "void f(S* p, int k) {\n"
+              "  int m = 3;\n"
+              "  if (k)\n"
+              "    m = 2;\n"
+              "  for (int j = m + 1; j <= 4; j++)\n"
+              "    p->a[j-1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_for_decr() {

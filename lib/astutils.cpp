@@ -900,9 +900,16 @@ bool extractForLoopValues(const Token *forToken,
     if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
     std::vector<MathLib::bigint> minInitValue = getMinValue(ValueFlow::makeIntegralInferModel(), initExpr->astOperand2()->values());
+    if (minInitValue.empty()) {
+        const ValueFlow::Value* v = initExpr->astOperand2()->getMinValue(true);
+        if (v)
+            minInitValue.push_back(v->intvalue);
+    }
+    if (minInitValue.empty())
+        return false;
     varid = initExpr->astOperand1()->varId();
     knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
-    initValue = minInitValue.empty() ? 0 : minInitValue.front();
+    initValue = minInitValue.front();
     partialCond = Token::Match(condExpr, "%oror%|&&");
     visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) {
         if (Token::Match(tok, "%oror%|&&"))
