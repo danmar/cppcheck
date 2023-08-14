@@ -513,7 +513,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     // if we get a 0, we just stall and don't do any work.
                     printError("argument for '-j' must be greater than 0.");
                     return false;
-                } else if (tmp > 1024) {
+                }
+                if (tmp > 1024) {
                     // Almost nobody has 1024 logical cores, but somebody out
                     // there does.
                     printError("argument for '-j' is allowed to be 1024 at max.");
