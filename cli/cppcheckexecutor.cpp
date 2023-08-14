@@ -140,7 +140,8 @@ private:
     /**
      * Used to filter out duplicate error messages.
      */
-    std::set<std::string> mShownErrors;
+    // TODO: store hashes instead of the full messages
+    std::unordered_set<std::string> mShownErrors;
 
     /**
      * Report progress time
@@ -390,6 +391,8 @@ void CppCheckExecutor::StdLogger::reportErr(const ErrorMessage &msg)
         return;
     }
 
+    // TODO: we generate a different message here then we log below
+    // TODO: there should be no need for verbose and default messages here
     // Alert only about unique errors
     if (!mShownErrors.insert(msg.toString(mSettings.verbose)).second)
         return;

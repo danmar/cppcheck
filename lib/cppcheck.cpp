@@ -1592,7 +1592,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         return;
     }
 
-    // TODO: there should be no need for the verbose messages here
+    // TODO: there should be no need for the verbose and default messages here
     std::string errmsg = msg.toString(mSettings.verbose);
     if (errmsg.empty())
         return;

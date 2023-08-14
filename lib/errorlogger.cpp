@@ -618,10 +618,12 @@ static void replaceColors(std::string& source) {
     replace(source, substitutionMap);
 }
 
+// TODO: remove default parameters
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
 {
     // Save this ErrorMessage in plain text.
 
+    // TODO: should never happen - remove this
     // No template is given
     // (not 100%) equivalent templateFormat: {callstack} ({severity}{inconclusive:, inconclusive}) {message}
     if (templateFormat.empty()) {
