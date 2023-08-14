@@ -192,29 +192,12 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
             if (!dir)
                 return "";
 
-            dirent * dir_result;
-            // make sure we reserve enough space for the readdir_r() buffer;
-            // according to POSIX:
-            //   The storage pointed to by entry shall be large enough for a
-            //   dirent with an array of char d_name members containing at
-            //   least {NAME_MAX}+1 elements.
-            // on some platforms, d_name is not a static sized-array but
-            // a pointer to space usually reserved right after the dirent
-            // struct; the union here allows to reserve the space and to
-            // provide a pointer to the right type that can be passed where
-            // needed without casts
-            union {
-                dirent entry;
-                char buf[sizeof(*dir_result) + (sizeof(dir_result->d_name) > 1 ? 0 : NAME_MAX + 1)];
-            } dir_result_buffer;
-            // TODO: suppress instead?
-            (void)dir_result_buffer.buf; // do not trigger cppcheck itself on the "unused buf"
             std::string new_path;
             new_path.reserve(path.length() + 1 + sizeof(dir_result->d_name));// prealloc some memory to avoid constant new/deletes in loop
             new_path += path;
             new_path += '/';
 
-            while ((SUPPRESS_DEPRECATED_WARNING(readdir_r(dir, &dir_result_buffer.entry, &dir_result)) == 0) && (dir_result != nullptr)) {
+            while (struct dirent* dir_result = readdir(dir)) {
                 if ((std::strcmp(dir_result->d_name, ".") == 0) ||
                     (std::strcmp(dir_result->d_name, "..") == 0))
                     continue;
