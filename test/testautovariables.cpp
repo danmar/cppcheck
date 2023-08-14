@@ -3647,6 +3647,19 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    explicit S(const char* p) { m = p; }\n"
+              "    void g();\n"
+              "    std::string m;\n"
+              "    int* t{};\n"
+              "};\n"
+              "void f(const std::stringstream& buffer) {\n"
+              "    S s(buffer.str().c_str());\n"
+              "    s.g();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeAggegrateConstructor() {
