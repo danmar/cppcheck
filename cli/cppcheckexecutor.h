@@ -43,6 +43,8 @@ class Settings;
  */
 class CppCheckExecutor : public ErrorLogger {
 public:
+    friend class TestSuppressions;
+
     /**
      * Constructor
      */
@@ -101,8 +103,6 @@ public:
      */
     static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
 
-    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
-
 protected:
 
     /**
@@ -123,6 +123,8 @@ protected:
     bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
 
 private:
+
+    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
 
     /**
      * Wrapper around check_internal
