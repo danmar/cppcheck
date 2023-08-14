@@ -142,6 +142,7 @@ private:
         TEST_CASE(jobs2);
         TEST_CASE(jobsMissingCount);
         TEST_CASE(jobsInvalid);
+        TEST_CASE(jobsNoJobs);
         TEST_CASE(jobsTooBig);
         TEST_CASE(maxConfigs);
         TEST_CASE(maxConfigsMissingCount);
@@ -1010,11 +1011,18 @@ private:
         ASSERT_EQUALS("cppcheck: error: argument to '-j' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
     }
 
+    void jobsNoJobs() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "-j0", "file.cpp"};
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument for '-j' must be greater than 0.\n", GET_REDIRECT_OUTPUT);
+    }
+
     void jobsTooBig() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "-j10001", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "-j1025", "file.cpp"};
         ASSERT(!parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("cppcheck: error: argument for '-j' is allowed to be 10000 at max.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: argument for '-j' is allowed to be 1024 at max.\n", GET_REDIRECT_OUTPUT);
     }
 
     void maxConfigs() {
