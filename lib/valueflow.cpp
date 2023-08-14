@@ -641,9 +641,10 @@ static void setTokenValue(Token* tok,
         }
     }
 
-    if (Token::simpleMatch(parent, "=") && astIsRHS(tok) && !value.isLifetimeValue()) {
-        setTokenValue(parent, std::move(value), settings);
-        return;
+    if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
+        setTokenValue(parent, value, settings);
+        if (!value.isUninitValue())
+            return;
     }
 
     if (value.isContainerSizeValue() && astIsContainer(tok)) {
@@ -2433,6 +2434,20 @@ struct ValueFlowAnalyzer : Analyzer {
         return settings;
     }
 
+    // Returns Action::Match if its an exact match, return Action::Read if it partially matches the lifetime
+    Action analyzeLifetime(const Token* tok) const
+    {
+        if (!tok)
+            return Action::None;
+        if (match(tok))
+            return Action::Match;
+        if (Token::simpleMatch(tok, ".") && analyzeLifetime(tok->astOperand1()) != Action::None)
+            return Action::Read;
+        if (astIsRHS(tok) && Token::simpleMatch(tok->astParent(), "."))
+            return analyzeLifetime(tok->astParent());
+        return Action::None;
+    }
+
     struct ConditionState {
         bool dependent = true;
         bool unknown = true;
@@ -2806,7 +2821,10 @@ struct ValueFlowAnalyzer : Analyzer {
                     return Action::None;
                 lifeTok = v.tokvalue;
             }
-            if (lifeTok && match(lifeTok)) {
+            if (!lifeTok)
+                return Action::None;
+            Action la = analyzeLifetime(lifeTok);
+            if (la.matches()) {
                 Action a = Action::Read;
                 if (isModified(tok).isModified())
                     a = Action::Invalid;
@@ -2815,6 +2833,9 @@ struct ValueFlowAnalyzer : Analyzer {
                 if (inconclusiveRef && a.isModified())
                     return Action::Inconclusive;
                 return a;
+            }
+            if (la.isRead()) {
+                return isAliasModified(tok);
             }
             return Action::None;
 
@@ -3299,12 +3320,6 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
         : SubExpressionAnalyzer(e, std::move(val), t, s), varname(std::move(varname))
     {}
 
-    bool match(const Token* tok) const override
-    {
-        return SubExpressionAnalyzer::match(tok) ||
-               (Token::simpleMatch(tok->astParent(), ".") && SubExpressionAnalyzer::match(tok->astParent()));
-    }
-
     bool submatch(const Token* tok, bool exact) const override
     {
         if (!Token::Match(tok, ". %var%"))
@@ -3333,6 +3348,8 @@ static std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
     case ValueFlow::Value::LifetimeKind::SubObject:
     case ValueFlow::Value::LifetimeKind::Address:
         if (astIsPointer(tok))
+            result = "pointer";
+        else if (Token::simpleMatch(tok, "=") && astIsPointer(tok->astOperand2()))
             result = "pointer";
         else
             result = "object";
@@ -7977,7 +7994,6 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
         Token* start = findStartToken(var, tok->next(), &settings->library);
 
         std::map<Token*, ValueFlow::Value> partialReads;
-        Analyzer::Result result;
         if (const Scope* scope = var->typeScope()) {
             if (Token::findsimplematch(scope->bodyStart, "union", scope->bodyEnd))
                 continue;
@@ -7992,7 +8008,7 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
                     continue;
                 }
                 MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), tok, uninitValue, tokenlist, settings);
-                result = valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, *settings);
+                valueFlowGenericForward(start, tok->scope()->bodyEnd, analyzer, *settings);
 
                 for (auto&& p : *analyzer.partialReads) {
                     Token* tok2 = p.first;
@@ -8022,8 +8038,7 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
         if (partial)
             continue;
 
-        if (result.terminate != Analyzer::Terminate::Modified)
-            valueFlowForward(start, tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
+        valueFlowForward(start, tok->scope()->bodyEnd, var->nameToken(), uninitValue, tokenlist, settings);
     }
 }
 

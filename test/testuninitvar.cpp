@@ -6209,7 +6209,7 @@ private:
                         "    memcpy(wcsin, x, sizeof(wcsstruct));\n" // <- warning
                         "    x->wcsprm = NULL;\n" // <- no warning
                         "}");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: x.wcsprm\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: x\n", errout.str());
 
         valueFlowUninit("struct wcsstruct {\n"
                         "    int *wcsprm;\n"
@@ -7037,8 +7037,7 @@ private:
                         "    memcpy(in, s, sizeof(S));\n"
                         "    s->p = NULL;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s.p\n",
-                      errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n", errout.str());
 
         valueFlowUninit("struct S {\n" // #11321
                         "    int a = 0;\n"
@@ -7298,7 +7297,7 @@ private:
                         "    A::B b;\n"
                         "    x.push_back(b);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: b.i\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: b\n", errout.str());
 
         valueFlowUninit("struct A {\n"
                         "    struct B {\n"
@@ -7322,7 +7321,7 @@ private:
                         "    A a;\n"
                         "    x.push_back(a);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: a.j\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: a\n", errout.str());
 
         valueFlowUninit("struct S { struct T { int* p; } t[2]; };\n" // #11018
                         "void f() {\n"
