@@ -195,7 +195,7 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
             std::string new_path = path;
             new_path += '/';
 
-            while (struct dirent* dir_result = readdir(dir)) {
+            while (const struct dirent* dir_result = readdir(dir)) {
                 if ((std::strcmp(dir_result->d_name, ".") == 0) ||
                     (std::strcmp(dir_result->d_name, "..") == 0))
                     continue;
