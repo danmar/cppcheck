@@ -11,7 +11,7 @@
 #
 # self check, fix critical issues:
 # make clean && make CXXFLAGS=-O2 MATCHCOMPILER=yes -j4
-# ./cppcheck -D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
+# ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --std=c++11 --library=cppcheck-lib --library=qt --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
 # Update translations
 #   lupdate gui.pro
@@ -82,7 +82,7 @@
 # 2. scp -i ../.ssh/osuosl_id_rsa tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
 #
 # self check, fix stylistic issues:
-# ./cppcheck -D__CPPCHECK__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
+# ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
 #
 # Set debug version (see 803eea912c9512c810a7e78d58bb927d89a6daa1)
 
