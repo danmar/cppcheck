@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Cppcheck - A tool for static C/C++ code analysis
  * Copyright (C) 2007-2023 Cppcheck team.
  *
@@ -311,12 +311,49 @@ void CheckClass::constructors()
                     // If constructor is not in scope then we maybe using a constructor from a different template specialization
                     if (!precedes(scope->bodyStart, func.tokenDef))
                         continue;
-                    const Scope *varType = var.typeScope();
-                    if (!varType || varType->type != Scope::eUnion) {
-                        const bool derived = scope != var.scope();
-                        if (func.type == Function::eConstructor &&
+                                  
+                        const Scope *varType = var.typeScope();
+                        bool skipUninitValidation = false;
+                        std::vector<const Token*> vec = func.functionScope->bodyStartList;
+                        for (auto item : vec) {
+                            bool valueIsStruct = true;
+                            // body
+                            auto next = item;
+                            while ((next = next->next()) != nullptr && !skipUninitValidation) {
+
+                                if (var.scope()->type != Scope::ScopeType::eStruct) {
+                                    valueIsStruct = false;
+                                    break; // will continue on next item in vec
+                                }
+
+                                // element's scope
+                                auto scope = next->scope();
+                                // looking only for functions
+                                if (scope && scope->type == Scope::eFunction) {
+                                    // checking if it's a constructor's scope by comparing classDefName and class name
+                                    if (scope->className.c_str() == scope->classDef->str()) {
+                                        auto current_token_str = next->str();
+                                        // Checking if the current token is a memsetter in the constructor and skips uninitialized
+                                        // member validation
+                                        if (!current_token_str.empty() && isTokenMemSetter(current_token_str)) {
+                                            skipUninitValidation = true;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            if (skipUninitValidation)
+                                break;
+                        }
+                        
+                        if (skipUninitValidation)
+                            continue;
+
+                       if (!varType || varType->type != Scope::eUnion) {
+                           const bool derived = scope != var.scope();
+                           if (func.type == Function::eConstructor &&
                             func.nestedIn && (func.nestedIn->numConstructors - func.nestedIn->numCopyOrMoveConstructors) > 1 &&
-                            func.argCount() == 0 && func.functionScope &&
+                            func.argCount() == 0 && func.functionScope &&                            
                             func.arg && func.arg->link()->next() == func.functionScope->bodyStart &&
                             func.functionScope->bodyStart->link() == func.functionScope->bodyStart->next()) {
                             // don't warn about user defined default constructor when there are other constructors
@@ -3337,6 +3374,18 @@ void CheckClass::checkUnsafeClassRefMember()
             }
         }
     }
+}
+
+bool CheckClass::isTokenMemSetter(const std::string token_str) const
+{
+    if (token_str.compare("SecureZeroMemory") == 0 ||
+        token_str.compare("SecureZeroMemoryThis") == 0 ||
+        token_str.compare("memset") == 0 ||
+        token_str.compare("ZeroMemory") == 0 ||
+        token_str.compare("memset_s") == 0) {
+        return true;
+    }
+    return false;
 }
 
 void CheckClass::unsafeClassRefMemberError(const Token *tok, const std::string &varname)

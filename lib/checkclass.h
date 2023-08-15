@@ -156,6 +156,9 @@ public:
     /** @brief Unsafe class check - const reference member */
     void checkUnsafeClassRefMember();
 
+    /** @brief Checks if the token is struct mem setter 
+    + skips uninitialized members validation if true*/
+    bool isTokenMemSetter(const std::string token_str) const;
 
     /* multifile checking; one definition rule violations */
     class MyFileInfo : public Check::FileInfo {
