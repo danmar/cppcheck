@@ -1182,13 +1182,15 @@ const Library::Container* Library::detectContainerInternal(const Token* typeStar
                 continue;
 
             const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str() + offset);
+            if (!matchedStartPattern)
+                break;
 
-            if (detect != ContainerOnly && matchedStartPattern && Token::Match(tok->link(), container.itEndPattern.c_str())) {
+            if (detect != ContainerOnly && Token::Match(tok->link(), container.itEndPattern.c_str())) {
                 if (isIterator)
                     *isIterator = true;
                 return &container;
             }
-            if (detect != IteratorOnly && matchedStartPattern && Token::Match(tok->link(), container.endPattern.c_str())) {
+            if (detect != IteratorOnly && Token::Match(tok->link(), container.endPattern.c_str())) {
                 if (isIterator)
                     *isIterator = false;
                 return &container;
