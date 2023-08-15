@@ -620,6 +620,7 @@ int multiCompareImpl(const Token *tok, const char *haystack, nonneg int varid)
     return -1;
 }
 
+// cppcheck-suppress unusedFunction - used in tests only
 int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid)
 {
     return multiCompareImpl(tok, haystack, varid);
