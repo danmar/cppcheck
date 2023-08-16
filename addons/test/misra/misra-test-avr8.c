@@ -1,5 +1,5 @@
 // To test:
-// ~/cppcheck/cppcheck --addon=misra --platform=avr8 misra-test-avr8.c
+// ~/cppcheck/cppcheck--dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test-avr8.c --std=c89 --platform=avr8 && python3 ../misra.py -verify misra/misra-test-avr8.c.dump
 
 static void misra_10_4(void)
 {
