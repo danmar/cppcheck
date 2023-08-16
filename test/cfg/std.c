@@ -4181,7 +4181,6 @@ void uninitvar_tolower(int character)
     // cppcheck-suppress uninitvar
     (void)tolower(c1);
 
-    // cppcheck-suppress unassignedVariable
     int c2;
     // cppcheck-suppress constVariablePointer
     int *pc=&c2;
@@ -4203,7 +4202,6 @@ void uninitvar_toupper(int character)
     // cppcheck-suppress uninitvar
     (void)toupper(c1);
 
-    // cppcheck-suppress unassignedVariable
     int c2;
     // cppcheck-suppress constVariablePointer
     int *pc=&c2;
