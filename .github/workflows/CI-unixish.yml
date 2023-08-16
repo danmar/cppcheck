@@ -85,6 +85,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install libxml2-utils qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
 
+      # TODO: move latest compiler to separate step
+      # TODO: bail out on warnings with latest GCC
       - name: Set up GCC
         uses: egor-tensin/setup-gcc@v1
         if: matrix.os == 'ubuntu-22.04'
@@ -93,9 +95,9 @@ jobs:
           platform: x64
 
       - name: Select compiler
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           echo "CXX=g++-13" >> $GITHUB_ENV
-        if: matrix.os == 'ubuntu-22.04'
 
       # coreutils contains "nproc"
       - name: Install missing software on macos
