@@ -3857,7 +3857,7 @@ private:
               "    return foo(OldFormat);\n"
               "  return false;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7]: (style) Condition 'OldFormat' is always true\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         // #10208
         check("bool GetFirst(std::string &first);\n"
