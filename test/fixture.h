@@ -241,7 +241,6 @@ public:
     const std::string classname;
 
     explicit TestFixture(const char * const _name);
-    ~TestFixture() override = default;
 
     static std::size_t runTests(const options& args);
 };

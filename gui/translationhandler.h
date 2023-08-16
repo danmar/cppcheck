@@ -63,7 +63,6 @@ class TranslationHandler : QObject {
     Q_OBJECT
 public:
     explicit TranslationHandler(QObject *parent = nullptr);
-    ~TranslationHandler() override = default;
 
     /**
      * @brief Get a list of available translations.

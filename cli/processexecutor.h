@@ -40,7 +40,6 @@ class ProcessExecutor : public Executor {
 public:
     ProcessExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
     ProcessExecutor(const ProcessExecutor &) = delete;
-    ~ProcessExecutor() override = default;
     void operator=(const ProcessExecutor &) = delete;
 
     unsigned int check() override;
