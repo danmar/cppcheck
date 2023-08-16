@@ -28,11 +28,6 @@
 #include <QFile>
 #include <QMutexLocker>
 
-ThreadResult::~ThreadResult()
-{
-    //dtor
-}
-
 void ThreadResult::reportOut(const std::string &outmsg, Color /*c*/)
 {
     emit log(QString::fromStdString(outmsg));

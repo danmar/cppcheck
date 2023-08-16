@@ -97,7 +97,7 @@ public:
     operator bool() const NOEXCEPT {
         return !!mPtr;
     }
-    ~ValuePtr() {}
+    ~ValuePtr() = default;
 
 private:
     std::shared_ptr<T> mPtr;

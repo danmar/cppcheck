@@ -36,7 +36,7 @@ class ErrorItem;
 class PrintableReport : public Report {
 public:
     PrintableReport();
-    ~PrintableReport() override;
+    ~PrintableReport() override = default;
 
     /**
      * @brief Create the report (file).

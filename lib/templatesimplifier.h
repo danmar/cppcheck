@@ -48,7 +48,7 @@ class CPPCHECKLIB TemplateSimplifier {
 
 public:
     explicit TemplateSimplifier(Tokenizer &tokenizer);
-    ~TemplateSimplifier();
+    ~TemplateSimplifier() = default;
 
     std::string dump() const {
         return mDump;

@@ -63,7 +63,6 @@ This does not appear to be useful as it is reported on very common code.
 
 It was decided not to apply these.
 
-`modernize-use-equals-default`<br/>
 `modernize-loop-convert`<br/>
 
 These might change the behavior of code which might not be intended (need to file an upstream issue)

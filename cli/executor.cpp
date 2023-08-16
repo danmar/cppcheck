@@ -31,9 +31,6 @@ Executor::Executor(const std::map<std::string, std::size_t> &files, const Settin
     : mFiles(files), mSettings(settings), mSuppressions(suppressions), mErrorLogger(errorLogger)
 {}
 
-Executor::~Executor()
-{}
-
 bool Executor::hasToLog(const ErrorMessage &msg)
 {
     if (!mSuppressions.isSuppressed(msg))

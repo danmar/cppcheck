@@ -46,9 +46,6 @@ ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, 
     assert(mSettings.jobs > 1);
 }
 
-ThreadExecutor::~ThreadExecutor()
-{}
-
 class SyncLogForwarder : public ErrorLogger
 {
 public:

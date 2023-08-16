@@ -45,7 +45,6 @@ Checks: >
         -modernize-replace-auto-ptr,
         -modernize-return-braced-init-list,
         -modernize-use-auto,
-        -modernize-use-equals-default,
         -modernize-use-trailing-return-type,
         -performance-avoid-endl,
         -performance-inefficient-string-concatenation,

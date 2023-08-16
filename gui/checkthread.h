@@ -46,7 +46,7 @@ class CheckThread : public QThread {
     Q_OBJECT
 public:
     explicit CheckThread(ThreadResult &result);
-    ~CheckThread() override;
+    ~CheckThread() override = default;
 
     /**
      * @brief Set settings for cppcheck

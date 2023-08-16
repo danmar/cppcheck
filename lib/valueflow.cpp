@@ -6676,7 +6676,7 @@ struct ConditionHandler {
             }
         });
     }
-    virtual ~ConditionHandler() {}
+    virtual ~ConditionHandler() = default;
     ConditionHandler(const ConditionHandler&) = default;
 protected:
     ConditionHandler() = default;
@@ -9291,7 +9291,7 @@ struct ValueFlowPass {
     virtual void run(const ValueFlowState& state) const = 0;
     // Returns true if pass needs C++
     virtual bool cpp() const = 0;
-    virtual ~ValueFlowPass() noexcept {}
+    virtual ~ValueFlowPass() noexcept = default;
 };
 
 struct ValueFlowPassRunner {
