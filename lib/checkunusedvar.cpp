@@ -704,7 +704,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (i->isArray() && i->nameToken()->previous()->str() == "&")
                 type = Variables::referenceArray;
             else if (i->isArray())
-                type = (i->dimensions().size() == 1U) ? Variables::array : Variables::pointerArray;
+                type = Variables::array;
             else if (i->isReference() && !(i->valueType() && i->valueType()->type == ValueType::UNKNOWN_TYPE && Token::simpleMatch(i->typeStartToken(), "auto")))
                 type = Variables::reference;
             else if (i->nameToken()->previous()->str() == "*" && i->nameToken()->strAt(-2) == "*")
@@ -1069,13 +1069,15 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         } else if (Token::Match(tok, "[(,] & %var% [,)]")) {
             variables.eraseAll(tok->tokAt(2)->varId());
         } else if (Token::Match(tok, "[(,] (") &&
-                   Token::Match(tok->next()->link(), ") %var% [,)]")) {
+                   Token::Match(tok->next()->link(), ") %var% [,)[]")) {
             variables.use(tok->next()->link()->next()->varId(), tok);   // use = read + write
-        } else if (Token::Match(tok, "[(,] *| %var% =")) {
-            tok = tok->next();
-            if (tok->str() == "*")
-                tok = tok->next();
-            variables.use(tok->varId(), tok);
+        } else if (Token::Match(tok, "[(,] *| *| %var%")) {
+            const Token* vartok = tok->next();
+            while (vartok->str() == "*")
+                vartok = vartok->next();
+            if (!(vartok->variable() && vartok == vartok->variable()->nameToken()) &&
+                !(tok->str() == "(" && !Token::Match(tok->previous(), "%name%")))
+                variables.use(vartok->varId(), vartok);
         }
 
         // function
