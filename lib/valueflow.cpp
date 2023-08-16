@@ -4256,13 +4256,14 @@ private:
     }
 };
 
-static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::vector<const Token*>& args, int depth = 10)
+static bool hasBorrowingVariables(const std::list<Variable>& vars, const std::vector<const Token*>& args/*, std::set<const Scope*>& scopes*/, int depth = 10)
 {
     if (depth < 0)
-        return false;
+        return true;
     return std::any_of(vars.cbegin(), vars.cend(), [&](const Variable& var) {
-        const ValueType* vt = var.valueType();
-        if (vt) {
+        if (var.isStatic())
+            return false;
+        if (const ValueType* vt = var.valueType()) {
             if (vt->pointer > 0 &&
                 std::none_of(args.begin(), args.end(), [vt](const Token* arg) {
                 return arg->valueType() && arg->valueType()->type == vt->type;
