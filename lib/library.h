@@ -282,7 +282,7 @@ public:
         static Yield yieldFrom(const std::string& yieldName);
         static Action actionFrom(const std::string& actionName);
     };
-    std::map<std::string, Container> containers;
+    std::unordered_map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart) const;
     const Container* detectIterator(const Token* typeStart) const;
     const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr, bool withoutStd = false) const;
