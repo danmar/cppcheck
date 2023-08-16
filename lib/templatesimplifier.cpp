@@ -3356,7 +3356,7 @@ void TemplateSimplifier::replaceTemplateUsage(
         std::set<TemplateSimplifier::TokenAndName*>* pointers = nameTok->templateSimplifierPointers();
 
         // check if instantiation matches token instantiation from pointer
-        if (pointers && pointers->size()) {
+        if (pointers && !pointers->empty()) {
             // check full name
             if (instantiation.fullName() != (*pointers->begin())->fullName()) {
                 // FIXME:  fallback to just matching name
