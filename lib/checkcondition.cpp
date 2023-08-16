@@ -1457,6 +1457,8 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
 }
 
 static bool isBooleanFuncArg(const Token* tok) {
+    if (tok->variable() && tok->variable()->valueType() && tok->variable()->valueType()->type == ValueType::BOOL)
+        return false;
     int argn{};
     const Token* ftok = getTokenArgumentFunction(tok, argn);
     if (!ftok)
