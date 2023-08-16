@@ -37,7 +37,7 @@ enum class SHOWTIME_MODES {
 
 class CPPCHECKLIB TimerResultsIntf {
 public:
-    virtual ~TimerResultsIntf() {}
+    virtual ~TimerResultsIntf() = default;
 
     virtual void addResults(const std::string& str, std::clock_t clocks) = 0;
 };
@@ -54,7 +54,7 @@ struct TimerResultsData {
 
 class CPPCHECKLIB TimerResults : public TimerResultsIntf {
 public:
-    TimerResults() {}
+    TimerResults() = default;
 
     void showResults(SHOWTIME_MODES mode) const;
     void addResults(const std::string& str, std::clock_t clocks) override;

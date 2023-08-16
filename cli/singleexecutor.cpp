@@ -37,9 +37,6 @@ SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, s
     assert(mSettings.jobs == 1);
 }
 
-SingleExecutor::~SingleExecutor()
-{}
-
 // TODO: markup handling is not performed with multiple jobs
 unsigned int SingleExecutor::check()
 {

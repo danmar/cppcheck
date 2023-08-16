@@ -91,9 +91,6 @@ ResultsTree::ResultsTree(QWidget * parent) :
     connect(this, &ResultsTree::doubleClicked, this, &ResultsTree::quickStartApplication);
 }
 
-ResultsTree::~ResultsTree()
-{}
-
 void ResultsTree::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Enter || event->key() == Qt::Key_Return) {

@@ -67,9 +67,6 @@ ProcessExecutor::ProcessExecutor(const std::map<std::string, std::size_t> &files
     assert(mSettings.jobs > 1);
 }
 
-ProcessExecutor::~ProcessExecutor()
-{}
-
 class PipeWriter : public ErrorLogger {
 public:
     enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', CHILD_END='5'};

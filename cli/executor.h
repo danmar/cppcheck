@@ -40,7 +40,7 @@ class Suppressions;
 class Executor {
 public:
     Executor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
-    virtual ~Executor();
+    virtual ~Executor() = default;
 
     Executor(const Executor &) = delete;
     void operator=(const Executor &) = delete;

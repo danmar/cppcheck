@@ -284,9 +284,6 @@ TemplateSimplifier::TemplateSimplifier(Tokenizer &tokenizer)
     mErrorLogger(mTokenizer.mErrorLogger)
 {}
 
-TemplateSimplifier::~TemplateSimplifier()
-{}
-
 void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
 {
     // check for more complicated syntax errors when using templates..

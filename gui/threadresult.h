@@ -46,7 +46,6 @@ class ThreadResult : public QObject, public ErrorLogger {
     Q_OBJECT
 public:
     ThreadResult() = default;
-    ~ThreadResult() override;
 
     /**
      * @brief Get next unprocessed file

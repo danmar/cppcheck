@@ -62,9 +62,6 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     addTranslation("Swedish", "cppcheck_sv");
 }
 
-TranslationHandler::~TranslationHandler()
-{}
-
 bool TranslationHandler::setLanguage(const QString &code)
 {
     bool failure = false;

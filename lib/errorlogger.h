@@ -219,8 +219,8 @@ private:
  */
 class CPPCHECKLIB ErrorLogger {
 public:
-    ErrorLogger() {}
-    virtual ~ErrorLogger() {}
+    ErrorLogger() = default;
+    virtual ~ErrorLogger() = default;
 
     /**
      * Information about progress is directed here.

@@ -184,7 +184,7 @@ struct Analyzer {
     virtual bool invalid() const {
         return false;
     }
-    virtual ~Analyzer() {}
+    virtual ~Analyzer() = default;
     Analyzer(const Analyzer&) = default;
 protected:
     Analyzer() = default;

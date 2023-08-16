@@ -30,7 +30,7 @@ class QIODevice;
 
 class CppcheckLibraryData {
 public:
-    CppcheckLibraryData();
+    CppcheckLibraryData() = default;
 
     struct Container {
         QString id;
