@@ -3231,7 +3231,10 @@ class MisraChecker:
                 if token.str == '{':
                     token = token.link
 
-                if cppcheckdata.simpleMatch(token, "[ ]"):
+                # skip function pointer parameter types
+                if token.astOperand1 is None:
+                    pass
+                elif cppcheckdata.simpleMatch(token, "[ ]"):
                     self.reportError(token, 18, 7)
                     break
                 token = token.next
