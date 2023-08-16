@@ -3857,7 +3857,7 @@ private:
               "    return foo(OldFormat);\n"
               "  return false;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7]: (style) Condition 'OldFormat' is always true\n", errout.str());
 
         // #10208
         check("bool GetFirst(std::string &first);\n"
@@ -4512,6 +4512,17 @@ private:
               "    a = \"x\";\n"
               "    if (a == \"x\") {}\n"
               "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'a==\"x\"' is always true\n", errout.str());
+
+        check("void g(bool);\n"
+              "void f() {\n"
+              "    int i = 5;\n"
+              "    int* p = &i;\n"
+              "    g(i == 7);\n"
+              "    g(p == nullptr);\n"
+              "    g(p);\n"
+              "    g(&i);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'a==\"x\"' is always true\n", errout.str());
     }

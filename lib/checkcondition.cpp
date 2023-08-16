@@ -1456,6 +1456,17 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
                 errmsg, CWE398, Certainty::normal);
 }
 
+static bool isBooleanFuncArg(const Token* tok) {
+    int argn{};
+    const Token* ftok = getTokenArgumentFunction(tok, argn);
+    if (!ftok)
+        return false;
+    std::vector<const Variable*> argvars = getArgumentVars(ftok, argn);
+    if (argvars.size() != 1)
+        return false;
+    return !argvars[0]->isReference() && argvars[0]->valueType() && argvars[0]->valueType()->type == ValueType::BOOL;
+}
+
 void CheckCondition::alwaysTrueFalse()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -1466,7 +1477,7 @@ void CheckCondition::alwaysTrueFalse()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
                 continue;
-            if (!tok->hasKnownIntValue())
+            if (!tok->hasKnownBoolValue())
                 continue;
             if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
                 const Function* f = tok->previous()->function();
@@ -1490,6 +1501,8 @@ void CheckCondition::alwaysTrueFalse()
                 else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
                          Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astParent()->astParent()->previous();
+                else if (isBooleanFuncArg(tok))
+                    condition = tok;
                 else
                     continue;
             }
@@ -1580,14 +1593,17 @@ void CheckCondition::alwaysTrueFalse()
             if (hasSizeof)
                 continue;
 
-            alwaysTrueFalseError(tok, condition, &tok->values().front());
+            auto it = std::find_if(tok->values().begin(), tok->values().end(), [](const ValueFlow::Value& v) {
+                return v.isIntValue();
+            });
+            alwaysTrueFalseError(tok, condition, &*it);
         }
     }
 }
 
 void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value)
 {
-    const bool alwaysTrue = value && (value->intvalue != 0);
+    const bool alwaysTrue = value && (value->intvalue != 0 || value->isImpossible());
     const std::string expr = tok ? tok->expressionString() : std::string("x");
     const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return value" : "Condition");
     const std::string errmsg = conditionStr + " '" + expr + "' is always " + (alwaysTrue ? "true" : "false");
