@@ -2376,7 +2376,7 @@ bool Token::hasKnownBoolValue() const
     if (!mImpl->mValues)
         return false;
     return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
-        return value.isIntValue() && (value.isKnown() || value.intvalue == 0 && value.isImpossible());
+        return value.isIntValue() && (value.isKnown() || (value.intvalue == 0 && value.isImpossible()));
     });
 }
 
