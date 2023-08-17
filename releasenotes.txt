@@ -23,3 +23,4 @@ Other:
 - Multiple "--project" options are now prohibited. These would have overlapped each other and lead to unexpected behavior. Please use separate runs with a single "--project" option instead.
 - "--project" can also no longer be used in conjunction with additional source files.
 - If a addon cannot be found it will bail out immediately instead of continously writing errors and failing the analysis at the end.
+- Added CMake option "BUILD_MANPAGE" which adds the "man" target which will build the manpage. This requires xsltproc and the docbook XSLs to be installed.
