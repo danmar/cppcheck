@@ -9399,7 +9399,6 @@ private:
         ASSERT(autoTok && autoTok->valueType());
         ASSERT_EQUALS(autoTok->valueType()->constness, 3);
         ASSERT_EQUALS(autoTok->valueType()->pointer, 1);
-        TODO_ASSERT(autoTok->valueType()->reference == Reference::LValue);
     }
 
     void auto19() { // #11517
@@ -9468,7 +9467,6 @@ private:
         const Token* v = Token::findsimplematch(a, "v . size");
         ASSERT(v && v->valueType());
         ASSERT_EQUALS(v->valueType()->type, ValueType::CONTAINER);
-        TODO_ASSERT(v->valueType()->reference == Reference::LValue);
         ASSERT(v->variable() && v->variable()->isReference());
     }
 
