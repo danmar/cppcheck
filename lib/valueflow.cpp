@@ -132,7 +132,7 @@ static void bailoutInternal(const std::string& type, TokenList &tokenlist, Error
         function = "(valueFlow)";
     std::list<ErrorMessage::FileLocation> callstack(1, ErrorMessage::FileLocation(tok, &tokenlist));
     ErrorMessage errmsg(callstack, tokenlist.getSourceFilePath(), Severity::debug,
-                        Path::stripDirectoryPart(file) + ":" + MathLib::toString(line) + ":" + function + " bailout: " + what, type, Certainty::normal);
+                        Path::stripDirectoryPart(file) + ":" + std::to_string(line) + ":" + function + " bailout: " + what, type, Certainty::normal);
     errorLogger->reportErr(errmsg);
 }
 
@@ -169,7 +169,7 @@ static void setSourceLocation(ValueFlow::Value& v,
     std::string file = ctx.file_name();
     if (file.empty())
         return;
-    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
+    std::string s = Path::stripDirectoryPart(file) + ":" + std::to_string(ctx.line()) + ": " + ctx.function_name() +
                     " => " + local.function_name() + ": " + debugString(v);
     v.debugPath.emplace_back(tok, std::move(s));
 }
@@ -7613,7 +7613,7 @@ static void valueFlowSubFunction(TokenList& tokenlist, SymbolDatabase& symboldat
 
                 // Error path..
                 for (ValueFlow::Value &v : argvalues) {
-                    const std::string nr = MathLib::toString(argnr + 1) + getOrdinalText(argnr + 1);
+                    const std::string nr = std::to_string(argnr + 1) + getOrdinalText(argnr + 1);
 
                     v.errorPath.emplace_back(argtok,
                                              "Calling function '" +
@@ -9038,7 +9038,7 @@ static void valueFlowDynamicBufferSize(const TokenList& tokenlist, const SymbolD
                 continue;
 
             ValueFlow::Value value(sizeValue);
-            value.errorPath.emplace_back(tok->tokAt(2), "Assign " + tok->strAt(1) + ", buffer with size " + MathLib::toString(sizeValue));
+            value.errorPath.emplace_back(tok->tokAt(2), "Assign " + tok->strAt(1) + ", buffer with size " + std::to_string(sizeValue));
             value.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
             value.setKnown();
             valueFlowForward(const_cast<Token*>(rhs), functionScope->bodyEnd, tok->next(), std::move(value), tokenlist, settings);
@@ -9189,12 +9189,12 @@ static void valueFlowSafeFunctions(TokenList& tokenlist, const SymbolDatabase& s
             std::list<ValueFlow::Value> argValues;
             if (isLow) {
                 argValues.emplace_back(low);
-                argValues.back().errorPath.emplace_back(arg.nameToken(), std::string(safeLow ? "Safe checks: " : "") + "Assuming argument has value " + MathLib::toString(low));
+                argValues.back().errorPath.emplace_back(arg.nameToken(), std::string(safeLow ? "Safe checks: " : "") + "Assuming argument has value " + std::to_string(low));
                 argValues.back().safe = safeLow;
             }
             if (isHigh) {
                 argValues.emplace_back(high);
-                argValues.back().errorPath.emplace_back(arg.nameToken(), std::string(safeHigh ? "Safe checks: " : "") + "Assuming argument has value " + MathLib::toString(high));
+                argValues.back().errorPath.emplace_back(arg.nameToken(), std::string(safeHigh ? "Safe checks: " : "") + "Assuming argument has value " + std::to_string(high));
                 argValues.back().safe = safeHigh;
             }
 

@@ -1571,7 +1571,7 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
 
     out << strindent << "<token str=\"" << tok->str() << '\"';
     if (tok->varId())
-        out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
+        out << " varId=\"" << tok->varId() << '\"';
     if (tok->variable())
         out << " variable=\"" << tok->variable() << '\"';
     if (tok->function())

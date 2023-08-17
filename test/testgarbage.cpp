@@ -311,7 +311,7 @@ private:
         } catch (InternalError& e) {
             if (e.id != "syntaxError")
                 return "";
-            return "[test.cpp:" + MathLib::toString(e.token->linenr()) + "] " + e.errorMessage;
+            return "[test.cpp:" + std::to_string(e.token->linenr()) + "] " + e.errorMessage;
         }
         return "";
     }

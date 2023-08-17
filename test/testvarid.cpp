@@ -2122,7 +2122,7 @@ private:
     }
 
     static std::string getLine(const std::string &code, int lineNumber) {
-        std::string nr = MathLib::toString(lineNumber);
+        std::string nr = std::to_string(lineNumber);
         const std::string::size_type pos1 = code.find('\n' + nr + ": ");
         if (pos1 == std::string::npos)
             return "";

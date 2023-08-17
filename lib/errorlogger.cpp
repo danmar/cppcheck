@@ -240,8 +240,8 @@ std::string ErrorMessage::serialize() const
     std::string oss;
     serializeString(oss, id);
     serializeString(oss, Severity::toString(severity));
-    serializeString(oss, MathLib::toString(cwe.id));
-    serializeString(oss, MathLib::toString(hash));
+    serializeString(oss, std::to_string(cwe.id));
+    serializeString(oss, std::to_string(hash));
     serializeString(oss, file0);
     if (certainty == Certainty::inconclusive) {
         const std::string text("inconclusive");
@@ -461,7 +461,7 @@ std::string ErrorMessage::toXML() const
     if (cwe.id)
         printer.PushAttribute("cwe", cwe.id);
     if (hash)
-        printer.PushAttribute("hash", MathLib::toString(hash).c_str());
+        printer.PushAttribute("hash", std::to_string(hash).c_str());
     if (certainty == Certainty::inconclusive)
         printer.PushAttribute("inconclusive", "true");
 
@@ -624,14 +624,14 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         pos1 = result.find("{inconclusive:", pos1);
     }
     findAndReplace(result, "{severity}", Severity::toString(severity));
-    findAndReplace(result, "{cwe}", MathLib::toString(cwe.id));
+    findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
     if (!callStack.empty()) {
         if (result.find("{callstack}") != std::string::npos)
             findAndReplace(result, "{callstack}", ErrorLogger::callStackToString(callStack));
         findAndReplace(result, "{file}", callStack.back().getfile());
-        findAndReplace(result, "{line}", MathLib::toString(callStack.back().line));
-        findAndReplace(result, "{column}", MathLib::toString(callStack.back().column));
+        findAndReplace(result, "{line}", std::to_string(callStack.back().line));
+        findAndReplace(result, "{column}", std::to_string(callStack.back().column));
         if (result.find("{code}") != std::string::npos) {
             const std::string::size_type pos = result.find('\r');
             const char *endl;
@@ -660,8 +660,8 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
             std::string text = templateLocation;
 
             findAndReplace(text, "{file}", fileLocation.getfile());
-            findAndReplace(text, "{line}", MathLib::toString(fileLocation.line));
-            findAndReplace(text, "{column}", MathLib::toString(fileLocation.column));
+            findAndReplace(text, "{line}", std::to_string(fileLocation.line));
+            findAndReplace(text, "{column}", std::to_string(fileLocation.column));
             findAndReplace(text, "{info}", fileLocation.getinfo().empty() ? mShortMessage : fileLocation.getinfo());
             if (text.find("{code}") != std::string::npos) {
                 const std::string::size_type pos = text.find('\r');

@@ -356,11 +356,11 @@ std::string Suppressions::Suppression::getText() const
     if (!fileName.empty())
         ret += " fileName=" + fileName;
     if (lineNumber != NO_LINE)
-        ret += " lineNumber=" + MathLib::toString(lineNumber);
+        ret += " lineNumber=" + std::to_string(lineNumber);
     if (!symbolName.empty())
         ret += " symbolName=" + symbolName;
     if (hash > 0)
-        ret += " hash=" + MathLib::toString(hash);
+        ret += " hash=" + std::to_string(hash);
     if (ret.compare(0,1," ")==0)
         return ret.substr(1);
     return ret;

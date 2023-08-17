@@ -74,9 +74,7 @@ public:
     /** @brief for conversion of numeric literals - for atoi-like conversions please use strToInt() */
     static biguint toULongNumber(const std::string & str);
 
-    template<class T> static std::string toString(T value) {
-        return std::to_string(value);
-    }
+    template<class T> static std::string toString(T value) = delete;
     /** @brief for conversion of numeric literals */
     static double toDoubleNumber(const std::string & str);
 
@@ -147,7 +145,7 @@ MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator<<(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator>>(const MathLib::value &v1, const MathLib::value &v2);
 
-template<> CPPCHECKLIB std::string MathLib::toString<double>(double value); // Declare specialization to avoid linker problems
+template<> CPPCHECKLIB std::string MathLib::toString<double>(double value);
 
 /// @}
 //---------------------------------------------------------------------------

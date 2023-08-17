@@ -448,7 +448,7 @@ static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
             if (Token::Match(tok1->next(), "%type%"))
                 name = tok1->next()->str();
             else // create a unique name
-                name = "Unnamed" + MathLib::toString((*unnamedCount)++);
+                name = "Unnamed" + std::to_string((*unnamedCount)++);
             tok->next()->insertToken(name);
         } else
             return nullptr;
@@ -2920,7 +2920,7 @@ bool Tokenizer::simplifyUsing()
                 if (structEnd->strAt(2) == ";")
                     newName = name;
                 else
-                    newName = "Unnamed" + MathLib::toString(mUnnamedCount++);
+                    newName = "Unnamed" + std::to_string(mUnnamedCount++);
                 TokenList::copyTokens(structEnd->next(), tok, start);
                 structEnd->tokAt(5)->insertToken(newName, emptyString);
                 start->insertToken(newName, emptyString);
@@ -3737,7 +3737,7 @@ void Tokenizer::arraySize()
         Token* endStmt{};
         if (const Token* strTok = getStrTok(tok, addlength, &endStmt)) {
             const int sz = Token::getStrArraySize(strTok);
-            tok->next()->insertToken(MathLib::toString(sz));
+            tok->next()->insertToken(std::to_string(sz));
             tok = endStmt;
         }
 
@@ -3767,7 +3767,7 @@ void Tokenizer::arraySize()
             }
 
             if (sz != 0)
-                tok->insertToken(MathLib::toString(sz));
+                tok->insertToken(std::to_string(sz));
 
             tok = end->next() ? end->next() : end;
         }
@@ -3899,7 +3899,7 @@ void Tokenizer::simplifyCaseRange()
                 tok->insertToken("case");
                 for (MathLib::bigint i = end-1; i > start; i--) {
                     tok->insertToken(":");
-                    tok->insertToken(MathLib::toString(i));
+                    tok->insertToken(std::to_string(i));
                     tok->insertToken("case");
                 }
             }
@@ -5785,7 +5785,7 @@ void Tokenizer::printDebugOutput(int simplification) const
                 reportError(var->typeStartToken(),
                             Severity::debug,
                             "debug",
-                            "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + MathLib::toString(var->typeStartToken()->linenr()));
+                            "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + std::to_string(var->typeStartToken()->linenr()));
             }
         }
     }
@@ -5861,9 +5861,9 @@ void Tokenizer::dump(std::ostream &out) const
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
-            out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
+            out << " varId=\"" << tok->varId() << '\"';
         if (tok->exprId() > 0)
-            out << " exprId=\"" << MathLib::toString(tok->exprId()) << '\"';
+            out << " exprId=\"" << tok->exprId() << '\"';
         if (tok->variable())
             out << " variable=\"" << tok->variable() << '\"';
         if (tok->function())
@@ -8592,14 +8592,14 @@ void Tokenizer::simplifyStructDecl()
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
             if (Token::Match(tok->next()->link(), "} const| *|&| const| %type% ,|;|[|(|{|=")) {
-                tok->insertToken("Anonymous" + MathLib::toString(count++));
+                tok->insertToken("Anonymous" + std::to_string(count++));
             }
         }
         // check for derived anonymous class/struct
         else if (cpp && Token::Match(tok, "class|struct :")) {
             const Token *tok1 = Token::findsimplematch(tok, "{");
             if (tok1 && Token::Match(tok1->link(), "} const| *|&| const| %type% ,|;|[|(|{")) {
-                tok->insertToken("Anonymous" + MathLib::toString(count++));
+                tok->insertToken("Anonymous" + std::to_string(count++));
             }
         }
         // check for anonymous enum
@@ -8612,7 +8612,7 @@ void Tokenizer::simplifyStructDecl()
                 start->next()->link()->deleteThis();
                 start->next()->deleteThis();
             }
-            tok->insertToken("Anonymous" + MathLib::toString(count++));
+            tok->insertToken("Anonymous" + std::to_string(count++));
         }
     }
 
@@ -9850,7 +9850,7 @@ void Tokenizer::simplifyOperatorName()
             tok->insertToken("(");
             str->insertToken(")");
             Token::createMutualLinks(tok->next(), str->next());
-            str->insertToken(MathLib::toString(Token::getStrLength(str)));
+            str->insertToken(std::to_string(Token::getStrLength(str)));
             str->insertToken(",");
         }
     }
