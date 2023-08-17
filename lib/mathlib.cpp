@@ -1059,7 +1059,7 @@ std::string MathLib::add(const std::string & first, const std::string & second)
     return (value(first) + value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString(toLongNumber(first) + toLongNumber(second)) + intsuffix(first, second);
+        return std::to_string(toLongNumber(first) + toLongNumber(second)) + intsuffix(first, second);
     }
 
     double d1 = toDoubleNumber(first);
@@ -1081,7 +1081,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     return (value(first) - value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString(toLongNumber(first) - toLongNumber(second)) + intsuffix(first, second);
+        return std::to_string(toLongNumber(first) - toLongNumber(second)) + intsuffix(first, second);
     }
 
     if (first == second)
@@ -1112,7 +1112,7 @@ std::string MathLib::divide(const std::string &first, const std::string &second)
             throw InternalError(nullptr, "Internal Error: Division by zero");
         if (a == std::numeric_limits<bigint>::min() && std::abs(b)<=1)
             throw InternalError(nullptr, "Internal Error: Division overflow");
-        return toString(toLongNumber(first) / b) + intsuffix(first, second);
+        return std::to_string(toLongNumber(first) / b) + intsuffix(first, second);
     }
     if (isNullValue(second)) {
         if (isNullValue(first))
@@ -1129,7 +1129,7 @@ std::string MathLib::multiply(const std::string &first, const std::string &secon
     return (value(first) * value(second)).str();
 #else
     if (MathLib::isInt(first) && MathLib::isInt(second)) {
-        return toString(toLongNumber(first) * toLongNumber(second)) + intsuffix(first, second);
+        return std::to_string(toLongNumber(first) * toLongNumber(second)) + intsuffix(first, second);
     }
     return toString(toDoubleNumber(first) * toDoubleNumber(second));
 #endif
@@ -1144,7 +1144,7 @@ std::string MathLib::mod(const std::string &first, const std::string &second)
         const bigint b = toLongNumber(second);
         if (b == 0)
             throw InternalError(nullptr, "Internal Error: Division by zero");
-        return toString(toLongNumber(first) % b) + intsuffix(first, second);
+        return std::to_string(toLongNumber(first) % b) + intsuffix(first, second);
     }
     return toString(std::fmod(toDoubleNumber(first),toDoubleNumber(second)));
 #endif
@@ -1169,13 +1169,13 @@ std::string MathLib::calculate(const std::string &first, const std::string &seco
         return MathLib::mod(first, second);
 
     case '&':
-        return MathLib::toString(MathLib::toLongNumber(first) & MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return std::to_string(MathLib::toLongNumber(first) & MathLib::toLongNumber(second)) + intsuffix(first,second);
 
     case '|':
-        return MathLib::toString(MathLib::toLongNumber(first) | MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return std::to_string(MathLib::toLongNumber(first) | MathLib::toLongNumber(second)) + intsuffix(first,second);
 
     case '^':
-        return MathLib::toString(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second)) + intsuffix(first,second);
+        return std::to_string(MathLib::toLongNumber(first) ^ MathLib::toLongNumber(second)) + intsuffix(first,second);
 
     default:
         throw InternalError(nullptr, std::string("Unexpected action '") + action + "' in MathLib::calculate(). Please report this to Cppcheck developers.");

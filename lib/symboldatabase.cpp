@@ -7637,7 +7637,7 @@ void ValueType::setDebugPath(const Token* tok, SourceLocation ctx, SourceLocatio
     std::string file = ctx.file_name();
     if (file.empty())
         return;
-    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
+    std::string s = Path::stripDirectoryPart(file) + ":" + std::to_string(ctx.line()) + ": " + ctx.function_name() +
                     " => " + local.function_name();
     debugPath.emplace_back(tok, std::move(s));
 }

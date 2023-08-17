@@ -385,9 +385,9 @@ std::size_t TokenList::calculateHash() const
 {
     std::string hashData;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        hashData += MathLib::toString(tok->flags());
-        hashData += MathLib::toString(tok->varId());
-        hashData += MathLib::toString(tok->tokType());
+        hashData += std::to_string(tok->flags());
+        hashData += std::to_string(tok->varId());
+        hashData += std::to_string(tok->tokType());
         hashData += tok->str();
         hashData += tok->originalName();
     }

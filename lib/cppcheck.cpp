@@ -807,7 +807,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             const std::list<Directive> &directives = preprocessor.getDirectives();
             for (const Directive &dir : directives) {
                 if (dir.str.compare(0,8,"#define ") == 0 || dir.str.compare(0,9,"#include ") == 0)
-                    code += "#line " + MathLib::toString(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
+                    code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             Tokenizer tokenizer2(&mSettings, this);
             std::istringstream istr2(code);
@@ -945,7 +945,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
-                configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + MathLib::toString(o.location.line) + "] " + o.msg);
+                configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
                 --checkCount; // don't count invalid configurations
                 continue;
 

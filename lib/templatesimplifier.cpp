@@ -2483,17 +2483,17 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
                 }
 
                 else if (Token::Match(tok->next(), "( %type% * )")) {
-                    tok->str(MathLib::toString(mTokenizer.sizeOfType(tok->tokAt(3))));
+                    tok->str(std::to_string(mTokenizer.sizeOfType(tok->tokAt(3))));
                     tok->deleteNext(4);
                     again = true;
                 } else if (Token::simpleMatch(tok->next(), "( * )")) {
-                    tok->str(MathLib::toString(mTokenizer.sizeOfType(tok->tokAt(2))));
+                    tok->str(std::to_string(mTokenizer.sizeOfType(tok->tokAt(2))));
                     tok->deleteNext(3);
                     again = true;
                 } else if (Token::Match(tok->next(), "( %type% )")) {
                     const unsigned int size = mTokenizer.sizeOfType(tok->tokAt(2));
                     if (size > 0) {
-                        tok->str(MathLib::toString(size));
+                        tok->str(std::to_string(size));
                         tok->deleteNext(3);
                         again = true;
                     }
@@ -2678,7 +2678,7 @@ bool TemplateSimplifier::simplifyCalculations(Token* frontToken, const Token *ba
 
         if (validTokenEnd(bounded, tok, backToken, 3) &&
             Token::Match(tok->previous(), "(|&&|%oror% %char% %comp% %num% &&|%oror%|)")) {
-            tok->str(MathLib::toString(MathLib::toLongNumber(tok->str())));
+            tok->str(std::to_string(MathLib::toLongNumber(tok->str())));
         }
 
         if (validTokenEnd(bounded, tok, backToken, 5) &&
@@ -3085,7 +3085,7 @@ bool TemplateSimplifier::simplifyTemplateInstantiations(
                                               Severity::information,
                                               "templateRecursion",
                                               "TemplateSimplifier: max template recursion ("
-                                              + MathLib::toString(mSettings.maxTemplateRecursion)
+                                              + std::to_string(mSettings.maxTemplateRecursion)
                                               + ") reached for template '"+typeForNewName+"'. You might want to limit Cppcheck recursion.",
                                               Certainty::normal);
                     mErrorLogger->reportErr(errmsg);
