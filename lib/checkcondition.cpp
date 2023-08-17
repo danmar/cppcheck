@@ -1456,19 +1456,6 @@ void CheckCondition::clarifyConditionError(const Token *tok, bool assign, bool b
                 errmsg, CWE398, Certainty::normal);
 }
 
-static bool isBooleanFuncArg(const Token* tok) {
-    if (tok->variable() && tok->variable()->valueType() && tok->variable()->valueType()->type == ValueType::BOOL)
-        return false;
-    int argn{};
-    const Token* ftok = getTokenArgumentFunction(tok, argn);
-    if (!ftok)
-        return false;
-    std::vector<const Variable*> argvars = getArgumentVars(ftok, argn);
-    if (argvars.size() != 1)
-        return false;
-    return !argvars[0]->isReference() && argvars[0]->valueType() && argvars[0]->valueType()->type == ValueType::BOOL;
-}
-
 void CheckCondition::alwaysTrueFalse()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
