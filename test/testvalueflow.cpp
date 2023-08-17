@@ -6616,7 +6616,7 @@ private:
                "  if (a.empty() && b.empty()) {}\n"
                "  else if (a.empty() == false && b.empty() == false) {}\n"
                "}\n";
-        ASSERT("" != isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0));
+        ASSERT(!isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0).empty());
 
         code = "bool g(std::vector<int>& v) {\n"
                "    v.push_back(1);\n"

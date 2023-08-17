@@ -1921,6 +1921,7 @@ private:
         ASSERT_EQUALS(10, db->variableList().size() - 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->dimensions().size() == 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(2) != nullptr);
+        // NOLINTNEXTLINE(readability-container-size-empty)
         ASSERT_EQUALS(true, db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->dimensions().size() == 0);
         ASSERT_EQUALS(true, db->getVariableFromVarId(4) != nullptr);
         ASSERT_EQUALS(true, db->getVariableFromVarId(5) != nullptr);
