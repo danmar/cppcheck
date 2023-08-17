@@ -1649,7 +1649,7 @@ bool MainWindow::loadLastResults()
     const QString &lastResults = getLastResults();
     if (lastResults.isEmpty())
         return false;
-    if (!QFileInfo(lastResults).exists())
+    if (!QFileInfo::exists(lastResults))
         return false;
     mUI->mResults->readErrorsXml(lastResults);
     mUI->mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
@@ -1916,7 +1916,7 @@ void MainWindow::updateMRUMenuItems()
     // Do a sanity check - remove duplicates and non-existing projects
     int removed = projects.removeDuplicates();
     for (int i = projects.size() - 1; i >= 0; i--) {
-        if (!QFileInfo(projects[i]).exists()) {
+        if (!QFileInfo::exists(projects[i])) {
             projects.removeAt(i);
             removed++;
         }

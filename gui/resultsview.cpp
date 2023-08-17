@@ -383,7 +383,7 @@ void ResultsView::readErrorsXml(const QString &filename)
     QString dir;
     if (!errors.isEmpty() && !errors[0].errorPath.isEmpty()) {
         QString relativePath = QFileInfo(filename).canonicalPath();
-        if (QFileInfo(relativePath + '/' + errors[0].errorPath[0].file).exists())
+        if (QFileInfo::exists(relativePath + '/' + errors[0].errorPath[0].file))
             dir = relativePath;
     }
 
@@ -432,7 +432,7 @@ void ResultsView::updateDetails(const QModelIndex &index)
     const int lineNumber = data["line"].toInt();
 
     QString filepath = data["file"].toString();
-    if (!QFileInfo(filepath).exists() && QFileInfo(mUI->mTree->getCheckDirectory() + '/' + filepath).exists())
+    if (!QFileInfo::exists(filepath) && QFileInfo::exists(mUI->mTree->getCheckDirectory() + '/' + filepath))
         filepath = mUI->mTree->getCheckDirectory() + '/' + filepath;
 
     QStringList symbols;
