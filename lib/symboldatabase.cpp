@@ -2214,6 +2214,7 @@ void Variable::evaluate(const Settings* settings)
 
     const Library * const lib = &settings->library;
 
+    // TODO: ValueType::parseDecl() is also performing a container lookup
     bool isContainer = false;
     if (mNameToken)
         setFlag(fIsArray, arrayDimensions(settings, isContainer));
@@ -2275,7 +2276,7 @@ void Variable::evaluate(const Settings* settings)
         setFlag(fIsClass, !lib->podtype(strtype) && !mTypeStartToken->isStandardType() && !isEnumType() && !isPointer() && !isReference() && strtype != "...");
         setFlag(fIsStlType, Token::simpleMatch(mTypeStartToken, "std ::"));
         setFlag(fIsStlString, ::isStlStringType(mTypeStartToken));
-        setFlag(fIsSmartPointer, lib->isSmartPointer(mTypeStartToken));
+        setFlag(fIsSmartPointer, mTypeStartToken->isCpp() && lib->isSmartPointer(mTypeStartToken));
     }
     if (mAccess == AccessControl::Argument) {
         tok = mNameToken;
@@ -3558,7 +3559,7 @@ bool Type::isDerivedFrom(const std::string & ancestor) const
 bool Variable::arrayDimensions(const Settings* settings, bool& isContainer)
 {
     isContainer = false;
-    const Library::Container* container = settings->library.detectContainer(mTypeStartToken);
+    const Library::Container* container = (mTypeStartToken && mTypeStartToken->isCpp()) ? settings->library.detectContainer(mTypeStartToken) : nullptr;
     if (container && container->arrayLike_indexOp && container->size_templateArgNo > 0) {
         const Token* tok = Token::findsimplematch(mTypeStartToken, "<");
         if (tok) {
@@ -6991,7 +6992,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             }
 
             // Construct smart pointer
-            else if (mSettings.library.isSmartPointer(start)) {
+            else if (mIsCpp && mSettings.library.isSmartPointer(start)) {
                 ValueType valuetype;
                 if (parsedecl(start, &valuetype, mDefaultSignedness, mSettings, mIsCpp)) {
                     setValueType(tok, valuetype);
@@ -7066,7 +7067,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                         }
                     }
                 }
-                if (tok->astParent() && Token::Match(tok->astOperand1(), "%name%|::")) {
+                if (mIsCpp && tok->astParent() && Token::Match(tok->astOperand1(), "%name%|::")) {
                     const Token *typeStartToken = tok->astOperand1();
                     while (typeStartToken && typeStartToken->str() == "::")
                         typeStartToken = typeStartToken->astOperand1();
