@@ -1335,10 +1335,10 @@ private:
 
     void templates() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--template", "{file}:{line},{severity},{id},{message}", "--template-location={file}:{line}:{column} {info}", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--template={file}:{line},{severity},{id},{message}", "--template-location={file}:{line}:{column} {info}", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT(parser->parseFromArgs(5, argv));
+        ASSERT(parser->parseFromArgs(4, argv));
         ASSERT_EQUALS("{file}:{line},{severity},{id},{message}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column} {info}", settings->templateLocation);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1346,10 +1346,10 @@ private:
 
     void templatesGcc() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--template", "gcc", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--template=gcc", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT(parser->parseFromArgs(4, argv));
+        ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: warning: {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("{file}:{line}:{column}: note: {info}\n{code}", settings->templateLocation);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1357,10 +1357,10 @@ private:
 
     void templatesVs() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--template", "vs", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--template=vs", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT(parser->parseFromArgs(4, argv));
+        ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}({line}): {severity}: {message}", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1368,10 +1368,10 @@ private:
 
     void templatesEdit() {
         REDIRECT;
-        const char * const argv[] = {"cppcheck", "--template", "edit", "file.cpp"};
+        const char * const argv[] = {"cppcheck", "--template=edit", "file.cpp"};
         settings->templateFormat.clear();
         settings->templateLocation.clear();
-        ASSERT(parser->parseFromArgs(4, argv));
+        ASSERT(parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file} +{line}: {severity}: {message}", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
@@ -1439,7 +1439,9 @@ private:
         ASSERT(!parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("file.cpp", settings->templateFormat);
         ASSERT_EQUALS("", settings->templateLocation);
-        TODO_ASSERT_EQUALS("cppcheck: error: argument to '--template' is missing.\n", "cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
+        TODO_ASSERT_EQUALS("cppcheck: error: argument to '--template' is missing.\n",
+                           "cppcheck: '--template <template>' is deprecated and will be removed in 2.13 - please use '--template=<template>' instead\n"
+                           "cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
     }
 
     // will use the default
@@ -1462,7 +1464,7 @@ private:
         ASSERT_EQUALS("cppcheck: error: argument to '--template-location' is missing.\n", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: will not error out as he next option does not start with a "-"
+    // TODO: will not error out as the next option does not start with a "-"
     void templateLocationInvalid2() {
         REDIRECT;
         settings->templateFormat.clear();
@@ -1471,7 +1473,9 @@ private:
         ASSERT(!parser->parseFromArgs(3, argv));
         ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
         ASSERT_EQUALS("file.cpp", settings->templateLocation);
-        TODO_ASSERT_EQUALS("", "cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
+        TODO_ASSERT_EQUALS("",
+                           "cppcheck: '--template-location <template>' is deprecated and will be removed in 2.13 - please use '--template-location=<template>' instead\n"
+                           "cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
     }
 
     // will use the default
