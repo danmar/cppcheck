@@ -7359,6 +7359,17 @@ private:
                "    if (llabs(0x80000000ffffffffL) == 0x7fffffff00000001L) {}\n"
                "}\n";
         valueOfTok(code, "f");
+
+        code = "struct T {\n"
+               "    T();\n"
+               "    static T a[6][64];\n"
+               "    static T b[2][64];\n"
+               "    static T c[64][64];\n"
+               "    static T d[2][64];\n"
+               "    static T e[64];\n"
+               "    static T f[64];\n"
+               "};\n";
+        valueOfTok(code, "(");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
