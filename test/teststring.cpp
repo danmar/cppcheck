@@ -750,6 +750,13 @@ private:
               "    f(\"abc\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Conversion of string literal \"abc\" to bool always evaluates to true.\n", errout.str());
+
+        check("void g(bool);\n"
+              "    void f(std::map<std::string, std::vector<int>>&m) {\n"
+              "    if (m.count(\"abc\"))\n"
+              "        g(m[\"abc\"][0] ? true : false);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deadStrcmp() {
