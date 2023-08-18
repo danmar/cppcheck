@@ -673,7 +673,7 @@ void CheckFunctions::returnLocalStdMove()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         // Expect return by-value
-        if (Function::returnsReference(scope->function, true))
+        if (Function::returnsReference(scope->function, /*unknown*/ true, /*includeRValueRef*/ true))
             continue;
         const auto rets = Function::findReturns(scope->function);
         for (const Token* ret : rets) {
