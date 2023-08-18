@@ -2219,7 +2219,7 @@ void Variable::evaluate(const Settings* settings)
         setFlag(fIsArray, arrayDimensions(settings, isContainer));
 
     if (mTypeStartToken)
-        setValueType(ValueType::parseDecl(mTypeStartToken,*settings, true)); // TODO: set isCpp
+        setValueType(ValueType::parseDecl(mTypeStartToken,*settings, mTypeStartToken->isCpp()));
 
     const Token* tok = mTypeStartToken;
     while (tok && tok->previous() && tok->previous()->isName())

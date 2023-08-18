@@ -630,7 +630,7 @@ void clangimport::AstNode::setValueType(Token *tok)
         if (!decl.front())
             break;
 
-        const ValueType valueType = ValueType::parseDecl(decl.front(), *mData->mSettings, true); // TODO: set isCpp
+        const ValueType valueType = ValueType::parseDecl(decl.front(), *mData->mSettings, decl.front()->isCpp());
         if (valueType.type != ValueType::Type::UNKNOWN_TYPE) {
             tok->setValueType(new ValueType(valueType));
             break;
