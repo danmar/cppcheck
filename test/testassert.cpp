@@ -44,7 +44,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check..
-        runChecks<CheckAssert>(&tokenizer, &settings, this);
+        runChecks<CheckAssert>(tokenizer, this);
     }
 
     void run() override {

@@ -26,13 +26,13 @@
 #include "config.h"
 #include "mathlib.h"
 #include "errortypes.h"
+#include "tokenize.h"
 
 #include <set>
 #include <string>
 
 class Settings;
 class Token;
-class Tokenizer;
 class ErrorLogger;
 class ValueType;
 
@@ -56,8 +56,8 @@ public:
     CheckCondition(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckCondition checkCondition(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckCondition checkCondition(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkCondition.multiCondition();
         checkCondition.clarifyCondition();   // not simplified because ifAssign
         checkCondition.multiCondition2();

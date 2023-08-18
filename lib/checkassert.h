@@ -24,6 +24,7 @@
 
 #include "check.h"
 #include "config.h"
+#include "tokenize.h"
 
 #include <string>
 
@@ -31,7 +32,6 @@ class ErrorLogger;
 class Scope;
 class Settings;
 class Token;
-class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -48,8 +48,8 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckAssert checkAssert(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckAssert checkAssert(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkAssert.assertWithSideEffects();
     }
 

@@ -28,6 +28,7 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "tokenize.h"
 #include "vfvalue.h"
 
 #include <list>
@@ -42,7 +43,6 @@ namespace tinyxml2 {
 class ErrorLogger;
 class Settings;
 class Token;
-class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -66,8 +66,8 @@ public:
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckBufferOverrun checkBufferOverrun(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkBufferOverrun.arrayIndex();
         checkBufferOverrun.pointerArithmetic();
         checkBufferOverrun.bufferOverflow();

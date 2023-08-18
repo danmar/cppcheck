@@ -44,7 +44,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
-        runChecks<CheckAutoVariables>(&tokenizer, &settings1, this);
+        runChecks<CheckAutoVariables>(tokenizer, this);
     }
 
     void run() override {
