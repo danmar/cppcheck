@@ -294,7 +294,7 @@ void CheckString::checkIncorrectStringCompare()
                 incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
             } else if (tok->str() == "?" && Token::Match(tok->astOperand1(), "%str%|%char%")) {
                 incorrectStringBooleanError(tok->astOperand1(), tok->astOperand1()->str());
-            } else if (Token::Match(tok, "%str%") && isUsedAsBool(tok) && isBooleanFuncArg(tok))
+            } else if (Token::Match(tok, "%str%") && isUsedAsBool(tok))
                 incorrectStringBooleanError(tok, tok->str());
         }
     }
