@@ -4514,6 +4514,21 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'a==\"x\"' is always true\n", errout.str());
+
+        check("void g(bool);\n"
+              "void f() {\n"
+              "    int i = 5;\n"
+              "    int* p = &i;\n"
+              "    g(i == 7);\n"
+              "    g(p == nullptr);\n"
+              "    g(p);\n"
+              "    g(&i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'i==7' is always false\n"
+                      "[test.cpp:6]: (style) Condition 'p==nullptr' is always false\n"
+                      "[test.cpp:7]: (style) Condition 'p' is always true\n"
+                      "[test.cpp:8]: (style) Condition '&i' is always true\n",
+                      errout.str());
     }
 
     void alwaysTrueSymbolic()

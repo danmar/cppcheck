@@ -743,6 +743,13 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Conversion of char literal '\\0' to bool always evaluates to false.\n"
                       "[test.cpp:3]: (warning) Conversion of char literal L'\\0' to bool always evaluates to false.\n", errout.str());
+
+        check("void f(bool b);\n" // #9450
+              "void f(std::string s);\n"
+              "void g() {\n"
+              "    f(\"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Conversion of string literal \"abc\" to bool always evaluates to true.\n", errout.str());
     }
 
     void deadStrcmp() {

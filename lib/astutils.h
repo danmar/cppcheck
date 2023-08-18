@@ -252,9 +252,14 @@ bool isStructuredBindingVariable(const Variable* var);
 const Token* isInLoopCondition(const Token* tok);
 
 /**
- * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
+ * Is token used as boolean, that is to say cast to a bool, or used as a condition in a if/while/for
  */
 CPPCHECKLIB bool isUsedAsBool(const Token * const tok);
+
+/**
+ * Is token passed to a function taking a bool argument
+ */
+CPPCHECKLIB bool isBooleanFuncArg(const Token* tok);
 
 /**
  * Are two conditions opposite

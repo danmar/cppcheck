@@ -292,8 +292,10 @@ void CheckString::checkIncorrectStringCompare()
                 incorrectStringBooleanError(tok->next(), tok->strAt(1));
             } else if (Token::Match(tok, "if|while ( %str%|%char% )") && !tok->tokAt(2)->getValue(0)) {
                 incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
-            } else if (tok->str() == "?" && Token::Match(tok->astOperand1(), "%str%|%char%"))
+            } else if (tok->str() == "?" && Token::Match(tok->astOperand1(), "%str%|%char%")) {
                 incorrectStringBooleanError(tok->astOperand1(), tok->astOperand1()->str());
+            } else if (Token::Match(tok, "%str%") && isBooleanFuncArg(tok))
+                incorrectStringBooleanError(tok, tok->str());
         }
     }
 }
