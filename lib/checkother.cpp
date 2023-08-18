@@ -3674,13 +3674,9 @@ void CheckOther::checkKnownArgument()
                 tok2 = tok2->astOperand2();
             if (isVariableExpression(tok2))
                 continue;
-            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(),
-                                 true,
-                                 tok->astOperand1(),
-                                 tok->astOperand2(),
-                                 mSettings->library,
-                                 true,
-                                 true))
+            if (tok->isComparisonOp() &&
+                isSameExpression(
+                    mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
             // ensure that there is a integer variable in expression with unknown value
             std::string varexpr;
