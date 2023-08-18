@@ -1484,6 +1484,9 @@ public:
     void setTokenDebug(TokenDebug td) {
         mImpl->mDebug = td;
     }
+
+    /** defaults to C++ if it cannot be determined */
+    bool isCpp() const;
 };
 
 Token* findTypeEnd(Token* tok);

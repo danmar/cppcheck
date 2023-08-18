@@ -2586,3 +2586,11 @@ Token* findLambdaEndScope(Token* tok)
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
 }
+
+bool Token::isCpp() const
+{
+    if (mTokensFrontBack && mTokensFrontBack->list) {
+        return mTokensFrontBack->list->isCPP();
+    }
+    return true; // assume C++ by default
+}
