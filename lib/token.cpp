@@ -424,7 +424,13 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->mStr : emptyString;
 }
 
-static int multiComparePercent(const Token *tok, const char*& haystack, nonneg int varid)
+static
+#if defined(__GNUC__)
+// GCC does not inline this by itself
+// need to use the old syntax since the C++11 [[xxx:always_inline]] cannot be used here
+inline __attribute__((always_inline))
+#endif
+int multiComparePercent(const Token *tok, const char*& haystack, nonneg int varid)
 {
     ++haystack;
     // Compare only the first character of the string for optimization reasons
@@ -556,7 +562,12 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
     return 0xFFFF;
 }
 
-int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid)
+static
+#if defined(__GNUC__)
+// need to use the old syntax since the C++11 [[xxx:always_inline]] cannot be used here
+inline __attribute__((always_inline))
+#endif
+int multiCompareImpl(const Token *tok, const char *haystack, nonneg int varid)
 {
     const char *needle = tok->str().c_str();
     const char *needlePointer = needle;
@@ -607,6 +618,12 @@ int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid
         return 1;
 
     return -1;
+}
+
+// cppcheck-suppress unusedFunction - used in tests only
+int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid)
+{
+    return multiCompareImpl(tok, haystack, varid);
 }
 
 bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_len)
@@ -730,7 +747,7 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
         else {
-            const int res = multiCompare(tok, p, varid);
+            const int res = multiCompareImpl(tok, p, varid);
             if (res == 0) {
                 // Empty alternative matches, use the same token on next round
                 while (*p && *p != ' ')
