@@ -55,7 +55,7 @@ Check::Check(const std::string &aname)
         instances().insert(it, this);
 }
 
-void Check::reportError(const ErrorMessage &errmsg)
+void Check::writeToErrorList(const ErrorMessage &errmsg)
 {
     std::cout << errmsg.toXML() << std::endl;
 }
@@ -67,7 +67,7 @@ void Check::reportError(const std::list<const Token *> &callstack, Severity::Sev
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else
-        reportError(errmsg);
+        writeToErrorList(errmsg);
 }
 
 void Check::reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty certainty)
@@ -76,7 +76,7 @@ void Check::reportError(const ErrorPath &errorPath, Severity::SeverityType sever
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else
-        reportError(errmsg);
+        writeToErrorList(errmsg);
 }
 
 bool Check::wrongData(const Token *tok, const char *str)
