@@ -3228,7 +3228,7 @@ void CheckClass::checkThisUseAfterFree()
         for (const Variable &var : classScope->varlist) {
             // Find possible "self pointer".. pointer/smartpointer member variable of "self" type.
             if (var.valueType() && var.valueType()->smartPointerType != classScope->definedType && var.valueType()->typeScope != classScope) {
-                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), *mSettings, true); // this is only called for C++
+                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), *mSettings);
                 if (valueType.smartPointerType != classScope->definedType)
                     continue;
             }

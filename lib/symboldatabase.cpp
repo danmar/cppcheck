@@ -2219,7 +2219,7 @@ void Variable::evaluate(const Settings* settings)
         setFlag(fIsArray, arrayDimensions(settings, isContainer));
 
     if (mTypeStartToken)
-        setValueType(ValueType::parseDecl(mTypeStartToken,*settings, mTypeStartToken->isCpp()));
+        setValueType(ValueType::parseDecl(mTypeStartToken,*settings));
 
     const Token* tok = mTypeStartToken;
     while (tok && tok->previous() && tok->previous()->isName())
@@ -5653,7 +5653,7 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
             return tok1->valueType()->typeScope->findFunction(tok, tok1->valueType()->constness == 1);
         if (tok1 && Token::Match(tok1->previous(), "%name% (") && tok1->previous()->function() &&
             tok1->previous()->function()->retDef) {
-            ValueType vt = ValueType::parseDecl(tok1->previous()->function()->retDef, mSettings, mIsCpp);
+            ValueType vt = ValueType::parseDecl(tok1->previous()->function()->retDef, mSettings);
             if (vt.typeScope)
                 return vt.typeScope->findFunction(tok, vt.constness == 1);
         } else if (Token::Match(tok1, "%var% .")) {
@@ -5667,7 +5667,7 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
         } else if (Token::simpleMatch(tok->previous()->astOperand1(), "(")) {
             const Token *castTok = tok->previous()->astOperand1();
             if (castTok->isCast()) {
-                ValueType vt = ValueType::parseDecl(castTok->next(),mSettings, mIsCpp);
+                ValueType vt = ValueType::parseDecl(castTok->next(),mSettings);
                 if (vt.typeScope)
                     return vt.typeScope->findFunction(tok, vt.constness == 1);
             }
@@ -5697,7 +5697,7 @@ const Function* SymbolDatabase::findFunction(const Token* const tok) const
     }
     // Check for constructor
     if (Token::Match(tok, "%name% (|{")) {
-        ValueType vt = ValueType::parseDecl(tok, mSettings, mIsCpp);
+        ValueType vt = ValueType::parseDecl(tok, mSettings);
         if (vt.typeScope)
             return vt.typeScope->findFunction(tok, false);
     }
@@ -7216,7 +7216,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 functionScope = functionScope->nestedIn;
             if (functionScope && functionScope->type == Scope::eFunction && functionScope->function &&
                 functionScope->function->retDef) {
-                ValueType vt = ValueType::parseDecl(functionScope->function->retDef, mSettings, mIsCpp);
+                ValueType vt = ValueType::parseDecl(functionScope->function->retDef, mSettings);
                 setValueType(tok, vt);
                 if (Token::simpleMatch(tok, "return {"))
                     setValueType(tok->next(), vt);
@@ -7314,10 +7314,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
     createSymbolDatabaseSetVariablePointers();
 }
 
-ValueType ValueType::parseDecl(const Token *type, const Settings &settings, bool isCpp)
+ValueType ValueType::parseDecl(const Token *type, const Settings &settings)
 {
     ValueType vt;
-    parsedecl(type, &vt, settings.platform.defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings, isCpp);
+    parsedecl(type, &vt, settings.platform.defaultSign == 'u' ? Sign::UNSIGNED : Sign::SIGNED, settings, type->isCpp());
     return vt;
 }
 
