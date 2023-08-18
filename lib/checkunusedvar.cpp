@@ -1359,7 +1359,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
                 const Token* vnt = var->nameToken();
                 bool error = false;
-                if (vnt->next()->isSplittedVarDeclEq()) {
+                if (vnt->next()->isSplittedVarDeclEq() || (!var->isReference() && vnt->next()->str() == "=")) {
                     const Token* nextStmt = vnt->tokAt(2);
                     if (nextStmt->isExpandedMacro()) {
                         const Token* parent = nextStmt;
