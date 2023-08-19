@@ -1879,7 +1879,6 @@ private:
               "    return a % 5 > 5;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:7]: (style) Return value 'a%5>5' is always false\n"
             "[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
@@ -1894,7 +1893,6 @@ private:
               "        b2 = x.a % 5 == 5;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3]: (style) Condition 'x[593]%5<=5' is always true\n"
             "[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n",
@@ -3223,7 +3221,8 @@ private:
               "  A(x++ == 1);\n"
               "  A(x++ == 2);\n"
               "}");
-        TODO_ASSERT_EQUALS("function argument is always true? however is code really weird/suspicious?", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x++==1' is always false\n"
+                            "[test.cpp:4]: (style) Condition 'x++==2' is always false\n", errout.str());
 
         check("bool foo(int bar) {\n"
               "  bool ret = false;\n"
@@ -4229,7 +4228,8 @@ private:
               "		if (w) {}\n"
               "	}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'v<2' is always true\n"
+          "[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
 
         check("void f(double d) {\n" // #10792
               "    if (d != 0) {\n"
@@ -4514,6 +4514,17 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'a==\"x\"' is always true\n", errout.str());
+
+        check("void g(bool);\n"
+              "void f() {\n"
+              "    int i = 5;\n"
+              "    int* p = &i;\n"
+              "    g(i == 7);\n"
+              "    g(p == nullptr);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'i==7' is always false\n"
+                      "[test.cpp:6]: (style) Condition 'p==nullptr' is always false\n",
+                      errout.str());
     }
 
     void alwaysTrueSymbolic()
