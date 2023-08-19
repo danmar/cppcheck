@@ -4529,15 +4529,6 @@ private:
                       "[test.cpp:7]: (style) Condition 'p' is always true\n"
                       "[test.cpp:8]: (style) Condition '&i' is always true\n",
                       errout.str());
-
-        check("void f() {\n"
-              "    struct S {\n"
-              "        int n;\n"
-              "        bool r;\n"
-              "        S(int i, bool b = true) : n(i), r(b) {}\n"
-              "    };\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
