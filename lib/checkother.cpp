@@ -3686,8 +3686,7 @@ void CheckOther::checkKnownArgument()
             // ensure that there is a integer variable in expression with unknown value
             const Token* vartok = findAstNode(tok, [](const Token* child) {
                 if (Token::Match(child, "%var%|.|[")) {
-                    return astIsIntegral(child, false) && !astIsPointer(child) &&
-                    child->values().empty();
+                    return astIsIntegral(child, false) && !astIsPointer(child) && child->values().empty();
                 }
                 return false;
             });
