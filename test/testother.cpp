@@ -11379,6 +11379,9 @@ private:
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'a.x' converted to bool is always true.\n", errout.str());
+
+        check("void f(bool* b) { if (b) *b = true; }");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

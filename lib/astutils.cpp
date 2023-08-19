@@ -1441,6 +1441,8 @@ bool isUsedAsBool(const Token* const tok, const Settings* settings)
         return false;
     if (Token::simpleMatch(parent, "["))
         return false;
+    if (parent->isUnaryOp("*"))
+        return false;
     if (Token::simpleMatch(parent, ".")) {
         if (astIsRHS(tok))
             return isUsedAsBool(parent, settings);
