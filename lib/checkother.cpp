@@ -3752,6 +3752,10 @@ void CheckOther::checkKnownPointerToBool()
                 continue;
             if (tok->astParent() && Token::Match(tok->astParent()->previous(), "if|while|switch|sizeof ("))
                 continue;
+            if (tok->isExpandedMacro())
+                continue;
+            if (findParent(tok, [](const Token* parent) { return parent->isExpandedMacro(); }))
+                continue;
             if (!isUsedAsBool(tok, mSettings))
                 continue;
             const ValueFlow::Value& value = tok->values().front();
