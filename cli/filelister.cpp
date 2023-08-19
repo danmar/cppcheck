@@ -41,23 +41,6 @@
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
 // of called functions. Thus, we explicitly call *A versions of the functions.
 
-static BOOL myIsDirectory(const std::string& path)
-{
-// See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
-    return PathIsDirectoryA(path.c_str());
-}
-
-static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
-{
-    HANDLE hFind = FindFirstFileA(path.c_str(), findData);
-    return hFind;
-}
-
-static BOOL myFileExists(const std::string& path)
-{
-    return PathFileExistsA(path.c_str()) && !PathIsDirectoryA(path.c_str());
-}
-
 std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
 {
     return addFiles(files, path, extra, true, ignored);
@@ -75,7 +58,7 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     std::string searchPattern = cleanedPath;
 
     // The user wants to check all files in a dir
-    const bool checkAllFilesInDir = (myIsDirectory(cleanedPath) != FALSE);
+    const bool checkAllFilesInDir = Path::isDirectory(cleanedPath);
 
     if (checkAllFilesInDir) {
         const char c = cleanedPath.back();
@@ -100,7 +83,7 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     }
 
     WIN32_FIND_DATAA ffd;
-    HANDLE hFind = myFindFirstFile(searchPattern, &ffd);
+    HANDLE hFind = FindFirstFileA(searchPattern.c_str(), &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
         return "";
 
@@ -142,17 +125,6 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     FindClose(hFind);
     return "";
 }
-
-bool FileLister::isDirectory(const std::string &path)
-{
-    return (myIsDirectory(path) != FALSE);
-}
-
-bool FileLister::fileExists(const std::string &path)
-{
-    return (myFileExists(path) != FALSE);
-}
-
 
 #else
 
@@ -204,9 +176,9 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                 new_path += dir_result->d_name;
 
 #if defined(_DIRENT_HAVE_D_TYPE) || defined(_BSD_SOURCE)
-                const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && FileLister::isDirectory(new_path)));
+                const bool path_is_directory = (dir_result->d_type == DT_DIR || (dir_result->d_type == DT_UNKNOWN && Path::isDirectory(new_path)));
 #else
-                const bool path_is_directory = FileLister::isDirectory(new_path);
+                const bool path_is_directory = Path::isDirectory(new_path);
 #endif
                 if (path_is_directory) {
                     if (recursive && !ignored.match(new_path)) {
@@ -250,18 +222,6 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     }
 
     return "";
-}
-
-bool FileLister::isDirectory(const std::string &path)
-{
-    struct stat file_stat;
-    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFDIR);
-}
-
-bool FileLister::fileExists(const std::string &path)
-{
-    struct stat file_stat;
-    return (stat(path.c_str(), &file_stat) != -1 && (file_stat.st_mode & S_IFMT) == S_IFREG);
 }
 
 #endif

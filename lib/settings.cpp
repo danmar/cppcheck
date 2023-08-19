@@ -45,7 +45,7 @@ void Settings::loadCppcheckCfg()
 {
     std::string fileName = Path::getPathFromFilename(exename) + "cppcheck.cfg";
 #ifdef FILESDIR
-    if (Path::fileExists(FILESDIR "/cppcheck.cfg"))
+    if (Path::isFile(FILESDIR "/cppcheck.cfg"))
         fileName = FILESDIR "/cppcheck.cfg";
 #endif
 

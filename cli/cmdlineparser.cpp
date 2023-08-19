@@ -285,7 +285,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (endsWith(mSettings.buildDir, '/'))
                     mSettings.buildDir.pop_back();
 
-                if (!Path::directoryExists(mSettings.buildDir)) {
+                if (!Path::isDirectory(mSettings.buildDir)) {
                     printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
                     return false;
                 }
@@ -452,7 +452,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     path = Path::fromNativeSeparators(path);
                     path = Path::simplifyPath(path);
 
-                    if (FileLister::isDirectory(path)) {
+                    if (Path::isDirectory(path)) {
                         // If directory name doesn't end with / or \, add it
                         if (!endsWith(path, '/'))
                             path += '/';
@@ -651,7 +651,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings.plistOutput += '/';
 
                 const std::string plistOutput = Path::toNativeSeparators(mSettings.plistOutput);
-                if (!FileLister::isDirectory(plistOutput)) {
+                if (!Path::isDirectory(plistOutput)) {
                     std::string message("plist folder does not exist: \"");
                     message += plistOutput;
                     message += "\".";

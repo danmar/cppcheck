@@ -42,15 +42,8 @@ private:
             }
         }
 
-        TEST_CASE(isDirectory);
         TEST_CASE(recursiveAddFiles);
         TEST_CASE(excludeFile);
-        TEST_CASE(fileExists);
-    }
-
-    void isDirectory() const {
-        ASSERT_EQUALS(false, FileLister::isDirectory("readme.txt"));
-        ASSERT_EQUALS(true, FileLister::isDirectory("lib"));
     }
 
     void recursiveAddFiles() const {
@@ -87,11 +80,6 @@ private:
         std::string err = FileLister::recursiveAddFiles(files, "lib/token.cpp", matcher);
         ASSERT(err.empty());
         ASSERT(files.empty());
-    }
-
-    void fileExists() const {
-        ASSERT_EQUALS(false, FileLister::fileExists("lib"));
-        ASSERT_EQUALS(true, FileLister::fileExists("readme.txt"));
     }
 };
 

@@ -39,6 +39,8 @@ private:
         TEST_CASE(is_cpp);
         TEST_CASE(get_path_from_filename);
         TEST_CASE(join);
+        TEST_CASE(isDirectory);
+        TEST_CASE(isFile);
     }
 
     void removeQuotationMarks() const {
@@ -154,6 +156,16 @@ private:
         ASSERT_EQUALS("a/b", Path::join("a", "b"));
         ASSERT_EQUALS("a/b", Path::join("a/", "b"));
         ASSERT_EQUALS("/b", Path::join("a", "/b"));
+    }
+
+    void isDirectory() const {
+        ASSERT_EQUALS(false, Path::isDirectory("readme.txt"));
+        ASSERT_EQUALS(true, Path::isDirectory("lib"));
+    }
+
+    void isFile() const {
+        ASSERT_EQUALS(false, Path::isFile("lib"));
+        ASSERT_EQUALS(true, Path::isFile("readme.txt"));
     }
 };
 
