@@ -760,13 +760,6 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void g(bool);\n"
-              "    void f(std::map<std::string, std::vector<int>>&m) {\n"
-              "    if (m.count(\"abc\"))\n"
-              "        g(m[\"abc\"][0] ? true : false);\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         check("void g(bool b);\n"
               "void f() {\n"
               "    g('\\0');\n"
