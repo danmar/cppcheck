@@ -1466,7 +1466,7 @@ void CheckCondition::alwaysTrueFalse()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
                 continue;
-            if (!tok->hasKnownBoolValue())
+            if (!tok->hasKnownIntValue())
                 continue;
             if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
                 const Function* f = tok->previous()->function();
@@ -1490,8 +1490,6 @@ void CheckCondition::alwaysTrueFalse()
                 else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
                          Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astParent()->astParent()->previous();
-                else if (isBooleanFuncArg(tok))
-                    condition = tok;
                 else
                     continue;
             }
@@ -1581,11 +1579,8 @@ void CheckCondition::alwaysTrueFalse()
             });
             if (hasSizeof)
                 continue;
-
-            auto it = std::find_if(tok->values().begin(), tok->values().end(), [](const ValueFlow::Value& v) {
-                return v.isIntValue();
-            });
-            alwaysTrueFalseError(tok, condition, &*it);
+            
+            alwaysTrueFalseError(tok, condition, &tok->values().front());
         }
     }
 }

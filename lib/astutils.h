@@ -254,7 +254,7 @@ const Token* isInLoopCondition(const Token* tok);
 /**
  * Is token used as boolean, that is to say cast to a bool, or used as a condition in a if/while/for
  */
-CPPCHECKLIB bool isUsedAsBool(const Token * const tok);
+CPPCHECKLIB bool isUsedAsBool(const Token * const tok, const Settings* settings = nullptr);
 
 /**
  * Is token passed to a function taking a bool argument

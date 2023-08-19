@@ -6843,7 +6843,8 @@ static void valueFlowInferCondition(TokenList& tokenlist,
                 }
             }
         } else if (Token::Match(tok->astParent(), "?|&&|!|%oror%") ||
-                   Token::Match(tok->astParent()->previous(), "if|while (")) {
+                   Token::Match(tok->astParent()->previous(), "if|while (") || 
+                   (astIsPointer(tok) && isUsedAsBool(tok, settings))) {
             std::vector<ValueFlow::Value> result = infer(IntegralInferModel{}, "!=", tok->values(), 0);
             if (result.size() != 1)
                 continue;
