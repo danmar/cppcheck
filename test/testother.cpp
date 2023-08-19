@@ -11349,7 +11349,7 @@ private:
                       errout.str());
 
         check("void f() {\n"
-              "    int* x = nullptr;\n"
+              "    const int* x = nullptr;\n"
               "    std::empty(x);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
