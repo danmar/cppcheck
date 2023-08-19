@@ -696,10 +696,9 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
             return {*tok->astParent()->astOperand1()->valueType()};
         return {};
     }
-    const Token* ftok{};
     if (Token::Match(tok->astParent(), "(|{|,")) {
         int argn = -1;
-        ftok = getTokenArgumentFunction(tok, argn);
+        const Token* ftok = getTokenArgumentFunction(tok, argn);
         const Token* typeTok = nullptr;
         if (ftok && argn >= 0) {
             if (ftok->function()) {
@@ -745,7 +744,7 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
     if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
         *parent = tok->astParent();
     }
-    if (!ftok && tok->astParent()->valueType())
+    if (tok->astParent()->valueType())
         return {*tok->astParent()->valueType()};
     return {};
 }
