@@ -3712,11 +3712,7 @@ void CheckOther::checkKnownArgument()
             strTolower(funcname);
             if (funcname.find("assert") != std::string::npos)
                 continue;
-            knownArgumentError(tok,
-                               ftok,
-                               &tok->values().front(),
-                               vartok->expressionString(),
-                               isVariableExprHidden(vartok));
+            knownArgumentError(tok, ftok, &tok->values().front(), vartok->expressionString(), isVariableExprHidden(vartok));
         }
     }
 }
