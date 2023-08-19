@@ -3647,17 +3647,23 @@ void CheckOther::checkKnownArgument()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::simpleMatch(tok->astParent(), "("))
-                continue;
-            if (!Token::Match(tok->astParent()->previous(), "%name%"))
-                continue;
-            if (Token::Match(tok->astParent()->previous(), "if|while|switch|sizeof"))
-                continue;
-            if (tok == tok->astParent()->previous())
-                continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (tok->tokType() == Token::eIncDecOp)
+            if (Token::Match(tok, "++|--|%assign%"))
+                continue;
+            if (!Token::Match(tok->astParent(), "(|{|,"))
+                continue;
+            if (tok->astParent()->isCast())
+                continue;
+            int argn = -1;
+            const Token* ftok = getTokenArgumentFunction(tok, argn);
+            if (!ftok)
+                continue;
+            if (ftok->isCast())
+                continue;
+            if (Token::Match(ftok, "if|while|switch|sizeof"))
+                continue;
+            if (tok == tok->astParent()->previous())
                 continue;
             if (isConstVarExpression(tok))
                 continue;
@@ -3667,6 +3673,10 @@ void CheckOther::checkKnownArgument()
             if (isCPPCast(tok2))
                 tok2 = tok2->astOperand2();
             if (isVariableExpression(tok2))
+                continue;
+            if (tok->isComparisonOp() &&
+                isSameExpression(
+                    mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
             // ensure that there is a integer variable in expression with unknown value
             std::string varexpr;
@@ -3706,7 +3716,7 @@ void CheckOther::checkKnownArgument()
             strTolower(funcname);
             if (funcname.find("assert") != std::string::npos)
                 continue;
-            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr, isVariableExprHidden);
+            knownArgumentError(tok, ftok, &tok->values().front(), varexpr, isVariableExprHidden);
         }
     }
 }
