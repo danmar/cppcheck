@@ -2,6 +2,7 @@ Release Notes for Cppcheck 2.12
 
 New checks:
 - uselessOverride finds overriding functions that either duplicate code from or delegate back to the base class implementation
+- knownPointerToBool finds pointer to bool conversions that are always true or false
 
 Improved checking:
 - truncLongCastAssignment and truncLongCastReturn check additional types, including float/double/long double
