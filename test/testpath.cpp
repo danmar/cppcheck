@@ -18,6 +18,7 @@
 
 #include "path.h"
 #include "fixture.h"
+#include "helpers.h"
 
 #include <string>
 #include <vector>
@@ -159,13 +160,21 @@ private:
     }
 
     void isDirectory() const {
-        ASSERT_EQUALS(false, Path::isDirectory("readme.txt"));
-        ASSERT_EQUALS(true, Path::isDirectory("lib"));
+        ScopedFile file("testpath.txt", "", "testpath");
+        ScopedFile file2("testpath2.txt", "");
+        ASSERT_EQUALS(false, Path::isDirectory("testpath.txt"));
+        ASSERT_EQUALS(true, Path::isDirectory("testpath"));
+        ASSERT_EQUALS(false, Path::isDirectory("testpath/testpath.txt"));
+        ASSERT_EQUALS(false, Path::isDirectory("testpath2.txt"));
     }
 
     void isFile() const {
-        ASSERT_EQUALS(false, Path::isFile("lib"));
-        ASSERT_EQUALS(true, Path::isFile("readme.txt"));
+        ScopedFile file("testpath.txt", "", "testpath");
+        ScopedFile file2("testpath2.txt", "");
+        ASSERT_EQUALS(false, Path::isFile("testpath"));
+        ASSERT_EQUALS(false, Path::isFile("testpath.txt"));
+        ASSERT_EQUALS(true, Path::isFile("testpath/testpath.txt"));
+        ASSERT_EQUALS(true, Path::isFile("testpath2.txt"));
     }
 };
 
