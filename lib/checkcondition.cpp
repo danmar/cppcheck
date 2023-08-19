@@ -1494,7 +1494,7 @@ void CheckCondition::alwaysTrueFalse()
                 else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
                          Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astParent()->astParent()->previous();
-                else if (Token::Match(tok, "%comp%")) 
+                else if (Token::Match(tok, "%comp%"))
                     condition = tok;
                 else
                     continue;

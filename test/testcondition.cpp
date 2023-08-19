@@ -3222,7 +3222,8 @@ private:
               "  A(x++ == 2);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x++==1' is always false\n"
-                            "[test.cpp:4]: (style) Condition 'x++==2' is always false\n", errout.str());
+                      "[test.cpp:4]: (style) Condition 'x++==2' is always false\n",
+                      errout.str());
 
         check("bool foo(int bar) {\n"
               "  bool ret = false;\n"
@@ -4229,7 +4230,8 @@ private:
               "	}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'v<2' is always true\n"
-          "[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
+                      "[test.cpp:5]: (style) Condition 'w' is always true\n",
+                      errout.str());
 
         check("void f(double d) {\n" // #10792
               "    if (d != 0) {\n"
