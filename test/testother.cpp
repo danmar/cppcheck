@@ -11382,6 +11382,18 @@ private:
 
         check("void f(bool* b) { if (b) *b = true; }");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+                "    int* x = nullptr;\n"
+                "    return bool(x);\n"
+                "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
+
+        check("bool f() {\n"
+                "    int* x = nullptr;\n"
+                "    return bool{x};\n"
+                "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
     }
 };
 
