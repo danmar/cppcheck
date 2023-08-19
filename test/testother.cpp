@@ -10907,6 +10907,14 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&0x01)>>7)' to function g is always 0. It does not matter what value 'x' has.\n", errout.str());
 
+        check("void g(int, int);\n"
+              "void f(int x) {\n"
+              "   g(x, (x & 0x01) >> 7);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Argument '(x&0x01)>>7' to function g is always 0. It does not matter what value 'x' has.\n",
+            errout.str());
+
         check("void g(int);\n"
               "void f(int x) {\n"
               "    g(0);\n"
