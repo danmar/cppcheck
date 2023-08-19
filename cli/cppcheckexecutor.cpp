@@ -261,11 +261,11 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
     bool err = false;
     if (settings.useSingleJob()) {
         for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
-            err |= errorLogger.reportUnmatchedSuppressions(
-                settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled));
+            err |= Suppressions::reportUnmatchedSuppressions(
+                settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled), errorLogger);
         }
     }
-    err |= errorLogger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled));
+    err |= Suppressions::reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
     return err;
 }
 

@@ -1,4 +1,4 @@
-release notes for cppcheck-2.12
+Release Notes for Cppcheck 2.12
 
 New checks:
 - uselessOverride finds overriding functions that either duplicate code from or delegate back to the base class implementation
@@ -14,6 +14,8 @@ Changed interface:
 
 Deprecations:
 - The qmake build system has been deprecated and will be removed in a future version.
+- Command-line option '--template <template>' is deprecated and will be removed in 2.13 - please use '--template=<template>' instead.
+- Command-line option '--template-location <template>' is deprecated and will be removed in 2.13 - please use '--template-location=<template>' instead.
 
 Other:
 - "USE_QT6=On" will no longer fallback to Qt5 when Qt6 is not found.

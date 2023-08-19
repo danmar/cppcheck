@@ -224,9 +224,6 @@ private:
     /** Are there too many configs? */
     bool mTooManyConfigs{};
 
-    /** Simplify code? true by default */
-    bool mSimplify = true;
-
     /** File info used for whole program analysis */
     std::list<Check::FileInfo*> mFileInfo;
 

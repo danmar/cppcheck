@@ -154,6 +154,8 @@ struct TokenImpl {
  * The Token class also has other functions for management of token list, matching tokens, etc.
  */
 class CPPCHECKLIB Token {
+    friend class TestToken;
+
 private:
     TokensFrontBack* mTokensFrontBack{};
 
@@ -788,6 +790,7 @@ public:
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
     }
 
+private:
     /**
      * Needle is build from multiple alternatives. If one of
      * them is equal to haystack, return value is 1. If there
@@ -804,6 +807,7 @@ public:
      */
     static int multiCompare(const Token *tok, const char *haystack, nonneg int varid);
 
+public:
     nonneg int fileIndex() const {
         return mImpl->mFileIndex;
     }
@@ -1212,6 +1216,7 @@ public:
     }
 
     bool hasKnownIntValue() const;
+    bool hasKnownBoolValue() const;
     bool hasKnownValue() const;
     bool hasKnownValue(ValueFlow::Value::ValueType t) const;
     bool hasKnownSymbolicValue(const Token* tok) const;
@@ -1224,6 +1229,7 @@ public:
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
     const ValueFlow::Value* getMaxValue(bool condition, MathLib::bigint path = 0) const;
+    const ValueFlow::Value* getMinValue(bool condition, MathLib::bigint path = 0) const;
 
     const ValueFlow::Value* getMovedValue() const;
 
@@ -1478,6 +1484,9 @@ public:
     void setTokenDebug(TokenDebug td) {
         mImpl->mDebug = td;
     }
+
+    /** defaults to C++ if it cannot be determined */
+    bool isCpp() const;
 };
 
 Token* findTypeEnd(Token* tok);

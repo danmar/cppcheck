@@ -42,7 +42,7 @@
  */
 class Application {
 public:
-    Application() {}
+    Application() = default;
     Application(QString name, QString path, QString params);
 
     /**

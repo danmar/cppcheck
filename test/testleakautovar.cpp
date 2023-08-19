@@ -242,7 +242,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings1, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings & s) {
@@ -257,7 +257,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings0, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void assign1() {
@@ -2847,7 +2847,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void run() override {
@@ -2893,7 +2893,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void run() override {
@@ -2953,7 +2953,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.c"), file, line);
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void run() override {

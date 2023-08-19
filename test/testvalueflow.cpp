@@ -6616,7 +6616,7 @@ private:
                "  if (a.empty() && b.empty()) {}\n"
                "  else if (a.empty() == false && b.empty() == false) {}\n"
                "}\n";
-        ASSERT("" != isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0));
+        ASSERT(!isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0).empty());
 
         code = "bool g(std::vector<int>& v) {\n"
                "    v.push_back(1);\n"
@@ -7354,6 +7354,22 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "i");
+
+        code = "void f() {\n"
+               "    if (llabs(0x80000000ffffffffL) == 0x7fffffff00000001L) {}\n"
+               "}\n";
+        valueOfTok(code, "f");
+
+        code = "struct T {\n"
+               "    T();\n"
+               "    static T a[6][64];\n"
+               "    static T b[2][64];\n"
+               "    static T c[64][64];\n"
+               "    static T d[2][64];\n"
+               "    static T e[64];\n"
+               "    static T f[64];\n"
+               "};\n";
+        valueOfTok(code, "(");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577

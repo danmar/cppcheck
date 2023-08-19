@@ -39,7 +39,6 @@ class ErrorItem;
 class CsvReport : public Report {
 public:
     explicit CsvReport(const QString &filename);
-    ~CsvReport() override;
 
     /**
      * @brief Create the report (file).

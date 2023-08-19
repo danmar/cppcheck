@@ -2845,7 +2845,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
     }
 
     reportError(errorPath, Severity::style, "virtualCallInConstructor",
-                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + MathLib::toString(lineNumber) + ". Dynamic binding is not used.", CWE(0U), Certainty::normal);
+                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + std::to_string(lineNumber) + ". Dynamic binding is not used.", CWE(0U), Certainty::normal);
 }
 
 void CheckClass::pureVirtualFunctionCallInConstructorError(
@@ -3228,7 +3228,7 @@ void CheckClass::checkThisUseAfterFree()
         for (const Variable &var : classScope->varlist) {
             // Find possible "self pointer".. pointer/smartpointer member variable of "self" type.
             if (var.valueType() && var.valueType()->smartPointerType != classScope->definedType && var.valueType()->typeScope != classScope) {
-                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), *mSettings, true); // this is only called for C++
+                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), *mSettings);
                 if (valueType.smartPointerType != classScope->definedType)
                     continue;
             }

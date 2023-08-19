@@ -507,10 +507,17 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("argument to '-j' is not valid - " +  err + ".");
                     return false;
                 }
-                if (tmp > 10000) {
-                    // This limit is here just to catch typos. If someone has
-                    // need for more jobs, this value should be increased.
-                    printError("argument for '-j' is allowed to be 10000 at max.");
+                if (tmp == 0) {
+                    // TODO: implement get CPU logical core count and use that.
+                    // Usually, -j 0 would mean "use all available cores," but
+                    // if we get a 0, we just stall and don't do any work.
+                    printError("argument for '-j' must be greater than 0.");
+                    return false;
+                }
+                if (tmp > 1024) {
+                    // Almost nobody has 1024 logical cores, but somebody out
+                    // there does.
+                    printError("argument for '-j' is allowed to be 1024 at max.");
                     return false;
                 }
                 mSettings.jobs = tmp;
@@ -892,7 +899,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
-            // TODO: deprecate "--template <template>"
             // Output formatter
             else if (std::strcmp(argv[i], "--template") == 0 ||
                      std::strncmp(argv[i], "--template=", 11) == 0) {
@@ -900,6 +906,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (argv[i][10] == '=')
                     mSettings.templateFormat = argv[i] + 11;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
+                    printMessage("'--template <template>' is deprecated and will be removed in 2.13 - please use '--template=<template>' instead");
                     ++i;
                     mSettings.templateFormat = argv[i];
                 } else {
@@ -928,13 +935,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
-            // TODO: deprecate "--template-location <template>"
             else if (std::strcmp(argv[i], "--template-location") == 0 ||
                      std::strncmp(argv[i], "--template-location=", 20) == 0) {
                 // "--template-location format"
                 if (argv[i][19] == '=')
                     mSettings.templateLocation = argv[i] + 20;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
+                    printMessage("'--template-location <template>' is deprecated and will be removed in 2.13 - please use '--template-location=<template>' instead");
                     ++i;
                     mSettings.templateLocation = argv[i];
                 } else {

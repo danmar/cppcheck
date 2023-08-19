@@ -317,7 +317,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
         // Check..
-        runChecks<CheckOther>(&tokenizer, settings, this);
+        runChecks<CheckOther>(tokenizer, this);
 
         (void)runSimpleChecks; // TODO Remove this
     }
@@ -358,7 +358,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check..
-        runChecks<CheckOther>(&tokenizer, settings, this);
+        runChecks<CheckOther>(tokenizer, this);
     }
 
     void checkInterlockedDecrement(const char code[]) {
@@ -5648,6 +5648,12 @@ private:
                       "[test.cpp:6]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n"
                       "[test.cpp:9]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n",
                       errout.str());
+
+        check("struct S { int i; };\n"
+              "namespace {\n"
+              "    S s() { return ::S{42}; }\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testMisusedScopeObjectAssignment() { // #11371
@@ -10899,6 +10905,14 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&0x01)>>7)' to function g is always 0. It does not matter what value 'x' has.\n", errout.str());
 
+        check("void g(int, int);\n"
+              "void f(int x) {\n"
+              "   g(x, (x & 0x01) >> 7);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Argument '(x&0x01)>>7' to function g is always 0. It does not matter what value 'x' has.\n",
+            errout.str());
+
         check("void g(int);\n"
               "void f(int x) {\n"
               "    g(0);\n"
@@ -11284,6 +11298,12 @@ private:
               "    memcpy(&a[0], &a[4], 4u);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("_Bool a[10];\n" // #10350
+              "void foo() {\n"
+              "    memcpy(&a[5], &a[4], 2u * sizeof(a[0]));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in memcpy() is undefined behavior\n", errout.str());
 
         // wmemcpy
         check("void foo() {\n"

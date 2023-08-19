@@ -510,6 +510,7 @@ private:
         TEST_CASE(auto18);
         TEST_CASE(auto19);
         TEST_CASE(auto20);
+        TEST_CASE(auto21);
 
         TEST_CASE(unionWithConstructor);
 
@@ -1921,6 +1922,7 @@ private:
         ASSERT_EQUALS(10, db->variableList().size() - 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->dimensions().size() == 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(2) != nullptr);
+        // NOLINTNEXTLINE(readability-container-size-empty)
         ASSERT_EQUALS(true, db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->dimensions().size() == 0);
         ASSERT_EQUALS(true, db->getVariableFromVarId(4) != nullptr);
         ASSERT_EQUALS(true, db->getVariableFromVarId(5) != nullptr);
@@ -5715,8 +5717,7 @@ private:
         ASSERT_EQUALS(E1->value, 1);
         const Token* const a = Token::findsimplematch(tokenizer.tokens(), "auto");
         ASSERT(a && a->valueType());
-        TODO_ASSERT(E1->scope == a->valueType()->typeScope);
-        ASSERT_EQUALS(a->valueType()->type, ValueType::INT);
+        ASSERT(E1->scope == a->valueType()->typeScope);
     }
 
     void sizeOfType() {
@@ -9398,7 +9399,6 @@ private:
         ASSERT(autoTok && autoTok->valueType());
         ASSERT_EQUALS(autoTok->valueType()->constness, 3);
         ASSERT_EQUALS(autoTok->valueType()->pointer, 1);
-        TODO_ASSERT(autoTok->valueType()->reference == Reference::LValue);
     }
 
     void auto19() { // #11517
@@ -9451,6 +9451,23 @@ private:
         const Token* g = Token::findsimplematch(a, "g ( B ::");
         ASSERT(g && g->function());
         ASSERT_EQUALS(g->function()->tokenDef->linenr(), 4);
+    }
+
+    void auto21() {
+        GET_SYMBOL_DB("int f(bool b) {\n"
+                      "    std::vector<int> v1(1), v2(2);\n"
+                      "    auto& v = b ? v1 : v2;\n"
+                      "    v.push_back(1);\n"
+                      "    return v.size();\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT_EQUALS(a->valueType()->type, ValueType::CONTAINER);
+        const Token* v = Token::findsimplematch(a, "v . size");
+        ASSERT(v && v->valueType());
+        ASSERT_EQUALS(v->valueType()->type, ValueType::CONTAINER);
+        ASSERT(v->variable() && v->variable()->isReference());
     }
 
     void unionWithConstructor() {

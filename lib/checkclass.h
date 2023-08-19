@@ -59,11 +59,11 @@ public:
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        if (tokenizer->isC())
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        if (tokenizer.isC())
             return;
 
-        CheckClass checkClass(tokenizer, settings, errorLogger);
+        CheckClass checkClass(&tokenizer, tokenizer.getSettings(), errorLogger);
 
         // can't be a simplified check .. the 'sizeof' is used.
         checkClass.checkMemset();

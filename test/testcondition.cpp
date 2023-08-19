@@ -150,7 +150,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Run checks..
-        runChecks<CheckCondition>(&tokenizer, &settings, this);
+        runChecks<CheckCondition>(tokenizer, this);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
@@ -554,7 +554,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        runChecks<CheckCondition>(&tokenizer, &settings1, this);
+        runChecks<CheckCondition>(tokenizer, this);
     }
 
     void overlappingElseIfCondition() {
@@ -4514,6 +4514,21 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'a==\"x\"' is always true\n", errout.str());
+
+        check("void g(bool);\n"
+              "void f() {\n"
+              "    int i = 5;\n"
+              "    int* p = &i;\n"
+              "    g(i == 7);\n"
+              "    g(p == nullptr);\n"
+              "    g(p);\n"
+              "    g(&i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'i==7' is always false\n"
+                      "[test.cpp:6]: (style) Condition 'p==nullptr' is always false\n"
+                      "[test.cpp:7]: (style) Condition 'p' is always true\n"
+                      "[test.cpp:8]: (style) Condition '&i' is always true\n",
+                      errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -5028,6 +5043,21 @@ private:
               "    return -1;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Condition 's.empty()' is always false\n", errout.str());
+
+        check("void f(std::string& p) {\n"
+              "    const std::string d{ \"abc\" };\n"
+              "    p += d;\n"
+              "    if(p.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'p.empty()' is always false\n", errout.str());
+
+        check("bool f(int i, FILE* fp) {\n"
+              "  std::string s = \"abc\";\n"
+              "  s += std::to_string(i);\n"
+              "  s += \"\\n\";\n"
+              "  return fwrite(s.c_str(), 1, s.length(), fp) == s.length();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueLoop()

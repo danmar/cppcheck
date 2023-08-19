@@ -52,12 +52,12 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        if (!tokenizer->isCPP()) {
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        if (!tokenizer.isCPP()) {
             return;
         }
 
-        CheckStl checkStl(tokenizer, settings, errorLogger);
+        CheckStl checkStl(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkStl.erase();
         checkStl.if_find();
         checkStl.checkFindInsert();

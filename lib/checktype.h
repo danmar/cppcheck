@@ -24,6 +24,7 @@
 
 #include "check.h"
 #include "config.h"
+#include "tokenize.h"
 #include "vfvalue.h"
 
 #include <list>
@@ -32,7 +33,6 @@
 class ErrorLogger;
 class Settings;
 class Token;
-class Tokenizer;
 class ValueType;
 
 /// @addtogroup Checks
@@ -51,9 +51,9 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
         // These are not "simplified" because casts can't be ignored
-        CheckType checkType(tokenizer, settings, errorLogger);
+        CheckType checkType(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkType.checkTooBigBitwiseShift();
         checkType.checkIntegerOverflow();
         checkType.checkSignConversion();

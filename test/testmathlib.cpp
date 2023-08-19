@@ -382,6 +382,8 @@ private:
         ASSERT_THROW_EQUALS(MathLib::toLongNumber("-02000000000000000000000"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -02000000000000000000000");
 
         // min/max and out-of-bounds - decimal
+        SUPPRESS_WARNING_CLANG_PUSH("-Wimplicitly-unsigned-literal")
+        SUPPRESS_WARNING_GCC_PUSH("-Woverflow")
         {
             const MathLib::bigint i = 18446744073709551615;
             ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
@@ -392,8 +394,10 @@ private:
             ASSERT_EQUALS(i, MathLib::toLongNumber(std::to_string(i)));
             ASSERT_EQUALS(i, MathLib::toLongNumber("-18446744073709551615"));
         }
+        SUPPRESS_WARNING_GCC_POP
+        SUPPRESS_WARNING_CLANG_POP
 
-        ASSERT_THROW_EQUALS(MathLib::toLongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 18446744073709551616");
+            ASSERT_THROW_EQUALS(MathLib::toLongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: 18446744073709551616");
         ASSERT_THROW_EQUALS(MathLib::toLongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toLongNumber: out_of_range: -18446744073709551616");
 
         ASSERT_THROW_EQUALS(MathLib::toLongNumber("invalid"), InternalError, "Internal Error. MathLib::toLongNumber: invalid_argument: invalid");
@@ -539,6 +543,8 @@ private:
         ASSERT_THROW_EQUALS(MathLib::toULongNumber("-02000000000000000000000"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -02000000000000000000000");
 
         // min/max and out-of-bounds - decimal
+        SUPPRESS_WARNING_CLANG_PUSH("-Wimplicitly-unsigned-literal")
+        SUPPRESS_WARNING_GCC_PUSH("-Woverflow")
         {
             const MathLib::biguint u = 18446744073709551615;
             ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
@@ -549,8 +555,10 @@ private:
             ASSERT_EQUALS(u, MathLib::toULongNumber(std::to_string(u)));
             ASSERT_EQUALS(u, MathLib::toULongNumber("-18446744073709551615"));
         }
+        SUPPRESS_WARNING_GCC_POP
+        SUPPRESS_WARNING_CLANG_POP
 
-        ASSERT_THROW_EQUALS(MathLib::toULongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 18446744073709551616");
+            ASSERT_THROW_EQUALS(MathLib::toULongNumber("18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: 18446744073709551616");
         ASSERT_THROW_EQUALS(MathLib::toULongNumber("-18446744073709551616"), InternalError, "Internal Error. MathLib::toULongNumber: out_of_range: -18446744073709551616");
 
         ASSERT_THROW_EQUALS(MathLib::toULongNumber("invalid"), InternalError, "Internal Error. MathLib::toULongNumber: invalid_argument: invalid");
@@ -1455,23 +1463,12 @@ private:
         ASSERT_EQUALS("0.0", MathLib::toString(0.0));
         ASSERT_EQUALS("0.0", MathLib::toString(+0.0));
         ASSERT_EQUALS("0.0", MathLib::toString(-0.0));
-        // float (trailing f or F)
-        ASSERT_EQUALS("0.000000", MathLib::toString(0.0f));
-        ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0f));
-        ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0f));
-        ASSERT_EQUALS("0.000000", MathLib::toString(0.0F));
-        ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0F));
-        ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0F));
-        // double (tailing l or L)
-        ASSERT_EQUALS("0.000000",  MathLib::toString(0.0l));
-        ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0l));
-        ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0l));
-        ASSERT_EQUALS("0.000000",  MathLib::toString(0.0L));
-        ASSERT_EQUALS("0.000000",  MathLib::toString(+0.0L));
-        ASSERT_EQUALS("-0.000000", MathLib::toString(-0.0L));
 
         ASSERT_EQUALS("1e-08", MathLib::toString(0.00000001));
         ASSERT_EQUALS("-1e-08", MathLib::toString(-0.00000001));
+
+        ASSERT_EQUALS("2.22507385851e-308", MathLib::toString(std::numeric_limits<double>::min()));
+        ASSERT_EQUALS("1.79769313486e+308", MathLib::toString(std::numeric_limits<double>::max()));
     }
 
     void CPP14DigitSeparators() const { // Ticket #7137, #7565

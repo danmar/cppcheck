@@ -1039,7 +1039,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
             return false;
         op = invertOperatorForOperandSwap(comp->str());
         if (op1->enumerator() && op1->enumerator()->value_known)
-            value = MathLib::toString(op1->enumerator()->value);
+            value = std::to_string(op1->enumerator()->value);
         else
             value = op1->str();
         expr = op2;
@@ -1048,7 +1048,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
             return false;
         op = comp->str();
         if (op2->enumerator() && op2->enumerator()->value_known)
-            value = MathLib::toString(op2->enumerator()->value);
+            value = std::to_string(op2->enumerator()->value);
         else
             value = op2->str();
         expr = op1;
@@ -1466,7 +1466,7 @@ void CheckCondition::alwaysTrueFalse()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
                 continue;
-            if (!tok->hasKnownIntValue())
+            if (!tok->hasKnownBoolValue())
                 continue;
             if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
                 const Function* f = tok->previous()->function();
@@ -1490,6 +1490,8 @@ void CheckCondition::alwaysTrueFalse()
                 else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
                          Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astParent()->astParent()->previous();
+                else if (isBooleanFuncArg(tok))
+                    condition = tok;
                 else
                     continue;
             }
@@ -1580,14 +1582,17 @@ void CheckCondition::alwaysTrueFalse()
             if (hasSizeof)
                 continue;
 
-            alwaysTrueFalseError(tok, condition, &tok->values().front());
+            auto it = std::find_if(tok->values().begin(), tok->values().end(), [](const ValueFlow::Value& v) {
+                return v.isIntValue();
+            });
+            alwaysTrueFalseError(tok, condition, &*it);
         }
     }
 }
 
 void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value)
 {
-    const bool alwaysTrue = value && (value->intvalue != 0);
+    const bool alwaysTrue = value && (value->intvalue != 0 || value->isImpossible());
     const std::string expr = tok ? tok->expressionString() : std::string("x");
     const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return value" : "Condition");
     const std::string errmsg = conditionStr + " '" + expr + "' is always " + (alwaysTrue ? "true" : "false");

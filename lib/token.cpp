@@ -424,7 +424,13 @@ const std::string &Token::strAt(int index) const
     return tok ? tok->mStr : emptyString;
 }
 
-static int multiComparePercent(const Token *tok, const char*& haystack, nonneg int varid)
+static
+#if defined(__GNUC__)
+// GCC does not inline this by itself
+// need to use the old syntax since the C++11 [[xxx:always_inline]] cannot be used here
+inline __attribute__((always_inline))
+#endif
+int multiComparePercent(const Token *tok, const char*& haystack, nonneg int varid)
 {
     ++haystack;
     // Compare only the first character of the string for optimization reasons
@@ -556,7 +562,12 @@ static int multiComparePercent(const Token *tok, const char*& haystack, nonneg i
     return 0xFFFF;
 }
 
-int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid)
+static
+#if defined(__GNUC__)
+// need to use the old syntax since the C++11 [[xxx:always_inline]] cannot be used here
+inline __attribute__((always_inline))
+#endif
+int multiCompareImpl(const Token *tok, const char *haystack, nonneg int varid)
 {
     const char *needle = tok->str().c_str();
     const char *needlePointer = needle;
@@ -607,6 +618,12 @@ int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid
         return 1;
 
     return -1;
+}
+
+// cppcheck-suppress unusedFunction - used in tests only
+int Token::multiCompare(const Token *tok, const char *haystack, nonneg int varid)
+{
+    return multiCompareImpl(tok, haystack, varid);
 }
 
 bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_len)
@@ -730,7 +747,7 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
         else {
-            const int res = multiCompare(tok, p, varid);
+            const int res = multiCompareImpl(tok, p, varid);
             if (res == 0) {
                 // Empty alternative matches, use the same token on next round
                 while (*p && *p != ' ')
@@ -1571,7 +1588,7 @@ static void astStringXml(const Token *tok, nonneg int indent, std::ostream &out)
 
     out << strindent << "<token str=\"" << tok->str() << '\"';
     if (tok->varId())
-        out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
+        out << " varId=\"" << tok->varId() << '\"';
     if (tok->variable())
         out << " variable=\"" << tok->variable() << '\"';
     if (tok->function())
@@ -2371,6 +2388,15 @@ bool Token::hasKnownIntValue() const
     });
 }
 
+bool Token::hasKnownBoolValue() const
+{
+    if (!mImpl->mValues)
+        return false;
+    return std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [](const ValueFlow::Value& value) {
+        return value.isIntValue() && (value.isKnown() || (value.intvalue == 0 && value.isImpossible()));
+    });
+}
+
 bool Token::hasKnownValue() const
 {
     return mImpl->mValues && std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), std::mem_fn(&ValueFlow::Value::isKnown));
@@ -2415,23 +2441,38 @@ const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path) const
+template<class Compare>
+static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values,
+                                               bool condition,
+                                               MathLib::bigint path,
+                                               Compare compare)
 {
-    if (!mImpl->mValues)
-        return nullptr;
     const ValueFlow::Value* ret = nullptr;
-    for (const ValueFlow::Value& value : *mImpl->mValues) {
+    for (const ValueFlow::Value& value : values) {
         if (!value.isIntValue())
             continue;
         if (value.isImpossible())
             continue;
         if (path > -0 && value.path != 0 && value.path != path)
             continue;
-        if ((!ret || value.intvalue > ret->intvalue) &&
-            ((value.condition != nullptr) == condition))
+        if ((!ret || compare(value.intvalue, ret->intvalue)) && ((value.condition != nullptr) == condition))
             ret = &value;
     }
     return ret;
+}
+
+const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    return getCompareValue(*mImpl->mValues, condition, path, std::greater<MathLib::bigint>{});
+}
+
+const ValueFlow::Value* Token::getMinValue(bool condition, MathLib::bigint path) const
+{
+    if (!mImpl->mValues)
+        return nullptr;
+    return getCompareValue(*mImpl->mValues, condition, path, std::less<MathLib::bigint>{});
 }
 
 const ValueFlow::Value* Token::getMovedValue() const
@@ -2544,4 +2585,12 @@ Token* findLambdaEndScope(Token* tok)
 }
 const Token* findLambdaEndScope(const Token* tok) {
     return findLambdaEndScope(const_cast<Token*>(tok));
+}
+
+bool Token::isCpp() const
+{
+    if (mTokensFrontBack && mTokensFrontBack->list) {
+        return mTokensFrontBack->list->isCPP();
+    }
+    return true; // assume C++ by default
 }

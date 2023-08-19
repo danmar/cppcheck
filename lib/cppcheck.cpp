@@ -63,8 +63,7 @@
 #include <process.h>
 #endif
 
-#define PICOJSON_USE_INT64
-#include <picojson.h>
+#include "json.h"
 
 #include <simplecpp.h>
 
@@ -808,7 +807,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             const std::list<Directive> &directives = preprocessor.getDirectives();
             for (const Directive &dir : directives) {
                 if (dir.str.compare(0,8,"#define ") == 0 || dir.str.compare(0,9,"#include ") == 0)
-                    code += "#line " + MathLib::toString(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
+                    code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             Tokenizer tokenizer2(&mSettings, this);
             std::istringstream istr2(code);
@@ -940,13 +939,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 
 #ifdef HAVE_RULES
                 // handling of "simple" rules has been removed.
-                if (mSimplify && hasRule("simple"))
+                if (hasRule("simple"))
                     throw InternalError(nullptr, "Handling of \"simple\" rules has been removed in Cppcheck. Use --addon instead.");
 #endif
 
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
-                configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + MathLib::toString(o.location.line) + "] " + o.msg);
+                configurationError.push_back((mCurrentConfig.empty() ? "\'\'" : mCurrentConfig) + " : [" + o.location.file() + ':' + std::to_string(o.location.line) + "] " + o.msg);
                 --checkCount; // don't count invalid configurations
                 continue;
 
@@ -1022,7 +1021,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     // In jointSuppressionReport mode, unmatched suppressions are
     // collected after all files are processed
     if (!mSettings.useSingleJob() && (mSettings.severity.isEnabled(Severity::information) || mSettings.checkConfiguration)) {
-        reportUnmatchedSuppressions(mSettings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()));
+        Suppressions::reportUnmatchedSuppressions(mSettings.nomsg.getUnmatchedLocalSuppressions(filename, isUnusedFunctionCheckEnabled()), *this);
     }
 
     mErrorList.clear();
@@ -1096,7 +1095,7 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
             continue;
 
         Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
-        check->runChecks(&tokenizer, &mSettings, this);
+        check->runChecks(tokenizer, this);
     }
 
     if (mSettings.clang)
@@ -1598,7 +1597,7 @@ void CppCheck::reportErr(const ErrorMessage &msg)
         mAnalyzerInformation.reportErr(msg);
 
     // TODO: only convert if necessary
-    const Suppressions::ErrorMessage errorMessage = msg.toSuppressionsErrorMessage();
+    const auto errorMessage = Suppressions::ErrorMessage::fromErrorMessage(msg);
 
     if (mSettings.nomsg.isSuppressed(errorMessage, mUseGlobalSuppressions)) {
         return;

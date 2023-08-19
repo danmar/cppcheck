@@ -188,7 +188,7 @@ private:
 
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        runChecks<CheckStl>(&tokenizer, &settings1, this);
+        runChecks<CheckStl>(tokenizer, this);
     }
 
     void check_(const char* file, int line, const std::string& code, const bool inconclusive = false) {
@@ -206,7 +206,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        runChecks<CheckStl>(&tokenizer, &settings, this);
+        runChecks<CheckStl>(tokenizer, this);
     }
 
     void outOfBounds() {

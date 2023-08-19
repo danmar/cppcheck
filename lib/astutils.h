@@ -149,6 +149,7 @@ bool astIsContainer(const Token *tok);
 
 bool astIsContainerView(const Token* tok);
 bool astIsContainerOwned(const Token* tok);
+bool astIsContainerString(const Token* tok);
 
 Library::Container::Action astContainerAction(const Token* tok, const Token** ftok = nullptr);
 Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok = nullptr);
@@ -251,9 +252,14 @@ bool isStructuredBindingVariable(const Variable* var);
 const Token* isInLoopCondition(const Token* tok);
 
 /**
- * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
+ * Is token used as boolean, that is to say cast to a bool, or used as a condition in a if/while/for
  */
 CPPCHECKLIB bool isUsedAsBool(const Token * const tok);
+
+/**
+ * Is token passed to a function taking a bool argument
+ */
+CPPCHECKLIB bool isBooleanFuncArg(const Token* tok);
 
 /**
  * Are two conditions opposite
@@ -409,7 +415,7 @@ bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> sk
 
 enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings);
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp);
 
 const Variable *getLHSVariable(const Token *tok);
 

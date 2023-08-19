@@ -77,7 +77,7 @@ public:
     static std::list<Check *> &instances();
 
     /** run checks, the token list is not simplified */
-    virtual void runChecks(const Tokenizer *, const Settings *, ErrorLogger *) = 0;
+    virtual void runChecks(const Tokenizer &, ErrorLogger *) = 0;
 
     /** get error messages */
     virtual void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const = 0;
@@ -91,17 +91,17 @@ public:
     virtual std::string classInfo() const = 0;
 
     /**
-     * Write given error to errorlogger or to out stream in xml format.
+     * Write given error to stdout in xml format.
      * This is for for printout out the error list with --errorlist
      * @param errmsg Error message to write
      */
-    static void reportError(const ErrorMessage &errmsg);
+    static void writeToErrorList(const ErrorMessage &errmsg);
 
     /** Base class used for whole-program analysis */
     class CPPCHECKLIB FileInfo {
     public:
-        FileInfo() {}
-        virtual ~FileInfo() {}
+        FileInfo() = default;
+        virtual ~FileInfo() = default;
         virtual std::string toString() const {
             return std::string();
         }

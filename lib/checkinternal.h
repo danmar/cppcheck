@@ -26,12 +26,12 @@
 #include "config.h"
 #include "errortypes.h"
 #include "settings.h"
+#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Token;
-class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -47,11 +47,11 @@ public:
     CheckInternal(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        if (!settings->checks.isEnabled(Checks::internalCheck))
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        if (!tokenizer.getSettings()->checks.isEnabled(Checks::internalCheck))
             return;
 
-        CheckInternal checkInternal(tokenizer, settings, errorLogger);
+        CheckInternal checkInternal(&tokenizer, tokenizer.getSettings(), errorLogger);
 
         checkInternal.checkTokenMatchPatterns();
         checkInternal.checkTokenSimpleMatchPatterns();

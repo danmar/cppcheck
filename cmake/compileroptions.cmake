@@ -95,8 +95,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-suggest-override) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-suggest-destructor-override) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-extra-semi-stmt) # TODO: enable when warnings are fixed in in tinyxml2
-   add_compile_options_safe(-Wno-implicitly-unsigned-literal)
-   add_compile_options_safe(-Wno-tautological-type-limit-compare)
    add_compile_options(-Wno-disabled-macro-expansion)
    add_compile_options_safe(-Wno-bitwise-instead-of-logical)
 

@@ -314,6 +314,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("analyzer.h");
     libfiles_h.emplace_back("calculate.h");
     libfiles_h.emplace_back("config.h");
+    libfiles_h.emplace_back("json.h");
     libfiles_h.emplace_back("precompiled.h");
     libfiles_h.emplace_back("smallvector.h");
     libfiles_h.emplace_back("standards.h");

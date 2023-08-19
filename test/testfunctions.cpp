@@ -127,7 +127,7 @@ private:
                 errout << errline << "\n";
         }
 
-        runChecks<CheckFunctions>(&tokenizer, settings_, this);
+        runChecks<CheckFunctions>(tokenizer, this);
     }
 
     void prohibitedFunctions_posix() {

@@ -25,6 +25,7 @@
 #include "check.h"
 #include "config.h"
 #include "library.h"
+#include "tokenize.h"
 
 #include <map>
 #include <set>
@@ -34,7 +35,6 @@
 class ErrorLogger;
 class Settings;
 class Token;
-class Tokenizer;
 
 
 class CPPCHECKLIB VarInfo {
@@ -115,8 +115,8 @@ public:
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckLeakAutoVar checkLeakAutoVar(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkLeakAutoVar.check();
     }
 

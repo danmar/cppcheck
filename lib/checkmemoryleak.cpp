@@ -293,7 +293,7 @@ void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Sever
     if (mErrorLogger_)
         mErrorLogger_->reportErr(errmsg);
     else
-        Check::reportError(errmsg);
+        Check::writeToErrorList(errmsg);
 }
 
 void CheckMemoryLeak::memleakError(const Token *tok, const std::string &varname) const

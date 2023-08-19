@@ -16,31 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SINGLEEXECUTOR_H
-#define SINGLEEXECUTOR_H
+#ifndef jsonH
+#define jsonH
 
-#include "executor.h"
+SUPPRESS_WARNING_PUSH("-Wfloat-equal")
+SUPPRESS_WARNING_CLANG_PUSH("-Wtautological-type-limit-compare")
+SUPPRESS_WARNING_GCC_PUSH("-Wparentheses")
 
-#include <cstddef>
-#include <map>
-#include <string>
+#define PICOJSON_USE_INT64
+#include <picojson.h>
 
-class ErrorLogger;
-class Settings;
-class CppCheck;
-class Suppressions;
+SUPPRESS_WARNING_GCC_POP
+SUPPRESS_WARNING_CLANG_POP
+SUPPRESS_WARNING_POP
 
-class SingleExecutor : public Executor
-{
-public:
-    SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
-    SingleExecutor(const SingleExecutor &) = delete;
-    void operator=(const SingleExecutor &) = delete;
-
-    unsigned int check() override;
-
-private:
-    CppCheck &mCppcheck;
-};
-
-#endif // SINGLEEXECUTOR_H
+#endif // jsonH

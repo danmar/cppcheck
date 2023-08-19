@@ -25,13 +25,13 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
+#include "tokenize.h"
 
 #include <string>
 #include <set>
 
 class Settings;
 class Token;
-class Tokenizer;
 class ErrorLogger;
 class Variable;
 
@@ -54,8 +54,8 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckAutoVariables checkAutoVariables(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkAutoVariables.assignFunctionArg();
         checkAutoVariables.checkVarLifetime();
         checkAutoVariables.autoVariables();

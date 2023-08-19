@@ -2139,7 +2139,7 @@ void CheckOther::checkMisusedScopedObject()
         return;
 
     auto getConstructorTok = [](const Token* tok, std::string& typeStr) -> const Token* {
-        if (!Token::Match(tok, "[;{}] %name%"))
+        if (!Token::Match(tok, "[;{}] %name%") || tok->next()->isKeyword())
             return nullptr;
         tok = tok->next();
         typeStr.clear();
@@ -3388,7 +3388,7 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                const ExprUsage usage = getExprUsage(tok, 0, mSettings);
+                const ExprUsage usage = getExprUsage(tok, 0, mSettings, mTokenizer->isCPP());
                 if (usage == ExprUsage::Used)
                     accessOfMoved = true;
                 if (usage == ExprUsage::PassedByReference)
@@ -3518,7 +3518,7 @@ void CheckOther::funcArgNamesDifferent(const std::string & functionName, nonneg 
     std::list<const Token *> tokens = { declaration,definition };
     reportError(tokens, Severity::style, "funcArgNamesDifferent",
                 "$symbol:" + functionName + "\n"
-                "Function '$symbol' argument " + MathLib::toString(index + 1) + " names different: declaration '" +
+                "Function '$symbol' argument " + std::to_string(index + 1) + " names different: declaration '" +
                 (declaration ? declaration->str() : std::string("A")) + "' definition '" +
                 (definition ? definition->str() : std::string("B")) + "'.", CWE628, Certainty::inconclusive);
 }
@@ -3529,8 +3529,8 @@ void CheckOther::funcArgOrderDifferent(const std::string & functionName,
                                        const std::vector<const Token *> & definitions)
 {
     std::list<const Token *> tokens = {
-        declarations.size() ? declarations[0] ? declarations[0] : declaration : nullptr,
-        definitions.size() ? definitions[0] ? definitions[0] : definition : nullptr
+        !declarations.empty() ? declarations[0] ? declarations[0] : declaration : nullptr,
+        !definitions.empty() ? definitions[0] ? definitions[0] : definition : nullptr
     };
     std::string msg = "$symbol:" + functionName + "\nFunction '$symbol' argument order different: declaration '";
     for (int i = 0; i < declarations.size(); ++i) {
@@ -3647,17 +3647,23 @@ void CheckOther::checkKnownArgument()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::simpleMatch(tok->astParent(), "("))
-                continue;
-            if (!Token::Match(tok->astParent()->previous(), "%name%"))
-                continue;
-            if (Token::Match(tok->astParent()->previous(), "if|while|switch|sizeof"))
-                continue;
-            if (tok == tok->astParent()->previous())
-                continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (tok->tokType() == Token::eIncDecOp)
+            if (Token::Match(tok, "++|--|%assign%"))
+                continue;
+            if (!Token::Match(tok->astParent(), "(|{|,"))
+                continue;
+            if (tok->astParent()->isCast())
+                continue;
+            int argn = -1;
+            const Token* ftok = getTokenArgumentFunction(tok, argn);
+            if (!ftok)
+                continue;
+            if (ftok->isCast())
+                continue;
+            if (Token::Match(ftok, "if|while|switch|sizeof"))
+                continue;
+            if (tok == tok->astParent()->previous())
                 continue;
             if (isConstVarExpression(tok))
                 continue;
@@ -3667,6 +3673,10 @@ void CheckOther::checkKnownArgument()
             if (isCPPCast(tok2))
                 tok2 = tok2->astOperand2();
             if (isVariableExpression(tok2))
+                continue;
+            if (tok->isComparisonOp() &&
+                isSameExpression(
+                    mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
             // ensure that there is a integer variable in expression with unknown value
             std::string varexpr;
@@ -3706,7 +3716,7 @@ void CheckOther::checkKnownArgument()
             strTolower(funcname);
             if (funcname.find("assert") != std::string::npos)
                 continue;
-            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr, isVariableExprHidden);
+            knownArgumentError(tok, ftok, &tok->values().front(), varexpr, isVariableExprHidden);
         }
     }
 }

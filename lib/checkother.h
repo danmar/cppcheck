@@ -25,6 +25,7 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
+#include "tokenize.h"
 
 #include <string>
 #include <vector>
@@ -35,7 +36,6 @@ namespace ValueFlow {
 
 class Settings;
 class Token;
-class Tokenizer;
 class Function;
 class Variable;
 class ErrorLogger;
@@ -56,8 +56,8 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckOther checkOther(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckOther checkOther(&tokenizer, tokenizer.getSettings(), errorLogger);
 
         // Checks
         checkOther.warningOldStylePointerCast();

@@ -697,7 +697,7 @@ void MainWindow::analyzeFiles()
 
     QStringList selected = selectFilesToAnalyze(QFileDialog::ExistingFiles);
 
-    const QString file0 = (selected.size() ? selected[0].toLower() : QString());
+    const QString file0 = (!selected.empty() ? selected[0].toLower() : QString());
     if (file0.endsWith(".sln")
         || file0.endsWith(".vcxproj")
         || file0.endsWith(compile_commands_json)

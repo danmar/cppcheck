@@ -96,7 +96,7 @@ namespace ValueFlow {
     std::string Value::infoString() const {
         switch (valueType) {
         case ValueType::INT:
-            return MathLib::toString(intvalue);
+            return std::to_string(intvalue);
         case ValueType::TOK:
             return tokvalue->str();
         case ValueType::FLOAT:
@@ -107,19 +107,19 @@ namespace ValueFlow {
             return "<Uninit>";
         case ValueType::BUFFER_SIZE:
         case ValueType::CONTAINER_SIZE:
-            return "size=" + MathLib::toString(intvalue);
+            return "size=" + std::to_string(intvalue);
         case ValueType::ITERATOR_START:
-            return "start=" + MathLib::toString(intvalue);
+            return "start=" + std::to_string(intvalue);
         case ValueType::ITERATOR_END:
-            return "end=" + MathLib::toString(intvalue);
+            return "end=" + std::to_string(intvalue);
         case ValueType::LIFETIME:
             return "lifetime=" + tokvalue->str();
         case ValueType::SYMBOLIC:
             std::string result = "symbolic=" + tokvalue->expressionString();
             if (intvalue > 0)
-                result += "+" + MathLib::toString(intvalue);
+                result += "+" + std::to_string(intvalue);
             else if (intvalue < 0)
-                result += "-" + MathLib::toString(-intvalue);
+                result += "-" + std::to_string(-intvalue);
             return result;
         }
         throw InternalError(nullptr, "Invalid ValueFlow Value type");

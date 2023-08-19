@@ -259,6 +259,18 @@ bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
+bool astIsContainerString(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!tok->valueType())
+        return false;
+    const Library::Container* container = tok->valueType()->container;
+    if (!container)
+        return false;
+    return container->stdStringLike;
+}
+
 static const Token* getContainerFunction(const Token* tok)
 {
     if (!tok || !tok->valueType() || !tok->valueType()->container)
@@ -329,7 +341,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (!tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
+    if (!tok->varId() && tok->hasKnownIntValue() && std::to_string(tok->values().front().intvalue) == rhs)
         return true;
     return false;
 }
@@ -726,7 +738,7 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
         const ValueType* vtCont = contTok->valueType();
         if (!vtCont->containerTypeToken)
             return {};
-        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, *settings, true); // TODO: set isCpp
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, *settings);
         return {std::move(vtParent)};
     }
     if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
@@ -888,9 +900,16 @@ bool extractForLoopValues(const Token *forToken,
     if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
     std::vector<MathLib::bigint> minInitValue = getMinValue(ValueFlow::makeIntegralInferModel(), initExpr->astOperand2()->values());
+    if (minInitValue.empty()) {
+        const ValueFlow::Value* v = initExpr->astOperand2()->getMinValue(true);
+        if (v)
+            minInitValue.push_back(v->intvalue);
+    }
+    if (minInitValue.empty())
+        return false;
     varid = initExpr->astOperand1()->varId();
     knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
-    initValue = minInitValue.empty() ? 0 : minInitValue.front();
+    initValue = minInitValue.front();
     partialCond = Token::Match(condExpr, "%oror%|&&");
     visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) {
         if (Token::Match(tok, "%oror%|&&"))
@@ -1443,6 +1462,19 @@ bool isUsedAsBool(const Token* const tok)
 static bool astIsBoolLike(const Token* tok)
 {
     return astIsBool(tok) || isUsedAsBool(tok);
+}
+
+bool isBooleanFuncArg(const Token* tok) {
+    if (tok->variable() && tok->variable()->valueType() && tok->variable()->valueType()->type == ValueType::BOOL) // skip trivial case: bool passed as bool
+        return false;
+    int argn{};
+    const Token* ftok = getTokenArgumentFunction(tok, argn);
+    if (!ftok)
+        return false;
+    std::vector<const Variable*> argvars = getArgumentVars(ftok, argn);
+    if (argvars.size() != 1)
+        return false;
+    return !argvars[0]->isReference() && argvars[0]->valueType() && argvars[0]->valueType()->type == ValueType::BOOL;
 }
 
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
@@ -3129,30 +3161,33 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     return ExprUsage::Inconclusive;
 }
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    if (indirect > 0 && tok->astParent()) {
-        if (Token::Match(tok->astParent(), "%assign%") && astIsRHS(tok))
+    const Token* const parent = tok->astParent();
+    if (indirect > 0 && parent) {
+        if (Token::Match(parent, "%assign%") && astIsRHS(tok))
             return ExprUsage::NotUsed;
-        if (tok->astParent()->isConstOp())
+        if (parent->isConstOp())
             return ExprUsage::NotUsed;
-        if (tok->astParent()->isCast())
+        if (parent->isCast())
             return ExprUsage::NotUsed;
-        if (Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "?"))
-            return getExprUsage(tok->astParent()->astParent(), indirect, settings);
+        if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?"))
+            return getExprUsage(parent->astParent(), indirect, settings, cpp);
     }
     if (indirect == 0) {
-        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::Match(tok->astParent(), "=|>>") &&
-            !tok->astParent()->isUnaryOp("&"))
+        if (Token::Match(parent, "%cop%|%assign%|++|--") && parent->str() != "=" &&
+            !parent->isUnaryOp("&") &&
+            !(astIsRHS(tok) && isLikelyStreamRead(cpp, parent)))
             return ExprUsage::Used;
-        if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok)) {
-            if (tok->astParent()->astOperand1() && tok->astParent()->astOperand1()->variable() && tok->astParent()->astOperand1()->variable()->isReference())
+        if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
+            const Token* const lhs  = parent->astOperand1();
+            if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs == lhs->variable()->nameToken())
                 return ExprUsage::NotUsed;
             return ExprUsage::Used;
         }
         // Function call or index
-        if (((Token::simpleMatch(tok->astParent(), "(") && !tok->astParent()->isCast()) || (Token::simpleMatch(tok->astParent(), "[") && tok->valueType())) &&
-            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
+        if (((Token::simpleMatch(parent, "(") && !parent->isCast()) || (Token::simpleMatch(parent, "[") && tok->valueType())) &&
+            (astIsLHS(tok) || Token::simpleMatch(parent, "( )")))
             return ExprUsage::Used;
     }
     return getFunctionUsage(tok, indirect, settings);
