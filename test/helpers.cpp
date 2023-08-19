@@ -18,7 +18,9 @@
 
 #include "helpers.h"
 
+#include "filelister.h"
 #include "path.h"
+#include "pathmatch.h"
 #include "preprocessor.h"
 
 #include <cerrno>
@@ -26,6 +28,7 @@
 #include <iostream>
 #include <fstream> // IWYU pragma: keep
 #include <list>
+#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -69,7 +72,23 @@ ScopedFile::~ScopedFile() {
         std::cout << "ScopedFile(" << mFullPath + ") - could not delete file (" << remove_res << ")" << std::endl;
     }
     if (!mPath.empty() && mPath != Path::getCurrentPath()) {
-        // TODO: remove all existing files
+        // TODO: remove all files
+        // TODO: simplify the function call
+        // hack to be able to delete *.plist output files
+        std::map<std::string, std::size_t> files;
+        const std::string res = FileLister::addFiles(files, mPath, {".plist"}, false, PathMatch({}));
+        if (!res.empty()) {
+            std::cout << "ScopedFile(" << mPath + ") - generating file list failed (" << res << ")" << std::endl;
+        }
+        for (const auto &f : files)
+        {
+            const std::string &file = f.first;
+            const int rm_f_res = std::remove(file.c_str());
+            if (rm_f_res != 0) {
+                std::cout << "ScopedFile(" << mPath + ") - could not delete '" << file << "' (" << rm_f_res << ")" << std::endl;
+            }
+        }
+
 #ifdef _WIN32
         if (!RemoveDirectoryA(mPath.c_str())) {
             std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << GetLastError() << ")" << std::endl;
