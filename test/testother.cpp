@@ -11348,6 +11348,12 @@ private:
                       "[test.cpp:6]: (style) Pointer expression '&i' converted to bool is always true.\n",
                       errout.str());
 
+        check("void f() {\n"
+                "    int* x = nullptr;\n"
+                "    std::empty(x);\n"
+                "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct A { bool x; };\n"
                 "bool f(A* a) {\n"
                 "    if (a) {\n"
