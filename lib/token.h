@@ -154,6 +154,8 @@ struct TokenImpl {
  * The Token class also has other functions for management of token list, matching tokens, etc.
  */
 class CPPCHECKLIB Token {
+    friend class TestToken;
+
 private:
     TokensFrontBack* mTokensFrontBack{};
 
@@ -788,6 +790,7 @@ public:
         return const_cast<Token *>(findmatch(const_cast<const Token *>(startTok), pattern, end, varId));
     }
 
+private:
     /**
      * Needle is build from multiple alternatives. If one of
      * them is equal to haystack, return value is 1. If there
@@ -804,6 +807,7 @@ public:
      */
     static int multiCompare(const Token *tok, const char *haystack, nonneg int varid);
 
+public:
     nonneg int fileIndex() const {
         return mImpl->mFileIndex;
     }
@@ -1480,6 +1484,9 @@ public:
     void setTokenDebug(TokenDebug td) {
         mImpl->mDebug = td;
     }
+
+    /** defaults to C++ if it cannot be determined */
+    bool isCpp() const;
 };
 
 Token* findTypeEnd(Token* tok);

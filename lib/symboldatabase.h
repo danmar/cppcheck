@@ -1268,7 +1268,7 @@ public:
         originalTypeName(std::move(otn))
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings &settings, bool isCpp);
+    static ValueType parseDecl(const Token *type, const Settings &settings);
 
     static Type typeFromString(const std::string &typestr, bool longType);
 
