@@ -218,7 +218,7 @@ public:
     void checkShadowVariables();
 
     void checkKnownArgument();
-    
+
     void checkKnownPointerToBool();
 
     void checkComparePointers();
@@ -282,7 +282,7 @@ private:
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
     void shadowError(const Token *var, const Token *shadowed, std::string type);
     void knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr, bool isVariableExpressionHidden);
-    void knownPointerToBoolError(const Token *tok, const ValueFlow::Value *value);
+    void knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
 

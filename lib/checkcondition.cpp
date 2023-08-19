@@ -1579,7 +1579,7 @@ void CheckCondition::alwaysTrueFalse()
             });
             if (hasSizeof)
                 continue;
-            
+
             alwaysTrueFalseError(tok, condition, &tok->values().front());
         }
     }

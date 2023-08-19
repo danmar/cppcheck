@@ -3741,9 +3741,9 @@ void CheckOther::checkKnownPointerToBool()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *functionScope : symbolDatabase->functionScopes) {
-        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* functionScope : symbolDatabase->functionScopes) {
+        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
             if (!tok->hasKnownIntValue())
                 continue;
             if (!astIsPointer(tok))
@@ -3760,14 +3760,14 @@ void CheckOther::checkKnownPointerToBool()
     }
 }
 
-void CheckOther::knownPointerToBoolError(const Token *tok, const ValueFlow::Value *value)
+void CheckOther::knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value)
 {
     if (!tok) {
         reportError(tok, Severity::style, "knownPointerToBool", "Pointer expression 'p' converted to bool is always true.");
         return;
     }
     std::string cond = value->intvalue ? "true" : "false";
-    const std::string &expr = tok->expressionString();
+    const std::string& expr = tok->expressionString();
     std::string errmsg = "Pointer expression '" + expr + "' converted to bool is always " + cond + ".";
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath, Severity::style, "knownPointerToBool", errmsg, CWE570, Certainty::normal);

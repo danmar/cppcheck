@@ -290,7 +290,7 @@ private:
         TEST_CASE(checkOverlappingWrite);
 
         TEST_CASE(constVariableArrayMember); // #10371
-        
+
         TEST_CASE(knownPointerToBool);
     }
 
@@ -11335,7 +11335,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void knownPointerToBool() {
+    void knownPointerToBool()
+    {
         check("void g(bool);\n"
               "void f() {\n"
               "    int i = 5;\n"
