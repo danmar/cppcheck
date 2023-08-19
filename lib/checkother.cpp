@@ -3640,6 +3640,21 @@ static bool isVariableExpression(const Token* tok)
     return false;
 }
 
+static bool isVariableExprHidden(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!tok->astParent())
+        return false;
+    if (Token::simpleMatch(tok->astParent(), "*") && Token::simpleMatch(tok->astSibling(), "0"))
+        return true;
+    if (Token::simpleMatch(tok->astParent(), "&&") && Token::simpleMatch(tok->astSibling(), "false"))
+        return true;
+    if (Token::simpleMatch(tok->astParent(), "||") && Token::simpleMatch(tok->astSibling(), "true"))
+        return true;
+    return false;
+}
+
 void CheckOther::checkKnownArgument()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -3669,44 +3684,24 @@ void CheckOther::checkKnownArgument()
             if (isVariableExpression(tok2))
                 continue;
             // ensure that there is a integer variable in expression with unknown value
-            std::string varexpr;
-            bool isVariableExprHidden = false;  // Is variable expression explicitly hidden
-            auto setVarExpr = [&varexpr, &isVariableExprHidden](const Token *child) {
+            const Token* vartok = findAstNode(tok, [](const Token* child) {
                 if (Token::Match(child, "%var%|.|[")) {
-                    if (child->valueType() && child->valueType()->pointer == 0 && child->valueType()->isIntegral() && child->values().empty()) {
-                        varexpr = child->expressionString();
-                        return ChildrenToVisit::done;
-                    }
-                    return ChildrenToVisit::none;
+                    return child->valueType() && child->valueType()->pointer == 0 && child->valueType()->isIntegral() && child->values().empty();
                 }
-                if (Token::simpleMatch(child->previous(), "sizeof ("))
-                    return ChildrenToVisit::none;
-
-                // hide variable explicitly with 'x * 0' etc
-                if (!isVariableExprHidden) {
-                    if (Token::simpleMatch(child, "*") && (Token::simpleMatch(child->astOperand1(), "0") || Token::simpleMatch(child->astOperand2(), "0")))
-                        return ChildrenToVisit::none;
-                    if (Token::simpleMatch(child, "&&") && (Token::simpleMatch(child->astOperand1(), "false") || Token::simpleMatch(child->astOperand2(), "false")))
-                        return ChildrenToVisit::none;
-                    if (Token::simpleMatch(child, "||") && (Token::simpleMatch(child->astOperand1(), "true") || Token::simpleMatch(child->astOperand2(), "true")))
-                        return ChildrenToVisit::none;
-                }
-
-                return ChildrenToVisit::op1_and_op2;
-            };
-            visitAstNodes(tok, setVarExpr);
-            if (varexpr.empty()) {
-                isVariableExprHidden = true;
-                visitAstNodes(tok, setVarExpr);
-            }
-            if (varexpr.empty())
+                return false;
+            });
+            if (!vartok)
+                continue;
+            if (vartok->astSibling() && findAstNode(vartok->astSibling(), [](const Token* child) {
+                return Token::simpleMatch(child, "sizeof");
+            }))
                 continue;
             // ensure that function name does not contain "assert"
             std::string funcname = tok->astParent()->previous()->str();
             strTolower(funcname);
             if (funcname.find("assert") != std::string::npos)
                 continue;
-            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr, isVariableExprHidden);
+            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), vartok->expressionString(), isVariableExprHidden(vartok));
         }
     }
 }
