@@ -11347,6 +11347,24 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Pointer expression 'p' converted to bool is always true.\n"
                       "[test.cpp:6]: (style) Pointer expression '&i' converted to bool is always true.\n",
                       errout.str());
+
+        check("struct A { bool x; };\n"
+                "bool f(A* a) {\n"
+                "    if (a) {\n"
+                "        return a->x;\n"
+                "    }\n"
+                "    return false;\n"
+                "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int* x; };\n"
+                "bool f(A a) {\n"
+                "    if (a.x) {\n"
+                "        return a.x;\n"
+                "    }\n"
+                "    return false;\n"
+                "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'a.x' converted to bool is always true.\n", errout.str());
     }
 };
 

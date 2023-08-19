@@ -1434,13 +1434,18 @@ bool isUsedAsBool(const Token* const tok, const Settings* settings)
         return false;
     if (astIsBool(tok))
         return true;
-    if (Token::simpleMatch(tok->astParent(), "["))
-        return false;
     if (Token::Match(tok, "!|&&|%oror%|%comp%"))
         return true;
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
+    if (Token::simpleMatch(parent, "["))
+        return false;
+    if (Token::simpleMatch(parent, ".")) {
+        if (astIsRHS(tok))
+            return isUsedAsBool(parent, settings);
+        return false;
+    }
     if (Token::Match(parent, "&&|!|%oror%"))
         return true;
     if (parent->isCast())
