@@ -3686,13 +3686,15 @@ void CheckOther::checkKnownArgument()
             // ensure that there is a integer variable in expression with unknown value
             const Token* vartok = findAstNode(tok, [](const Token* child) {
                 if (Token::Match(child, "%var%|.|[")) {
-                    return child->valueType() && child->valueType()->pointer == 0 && child->valueType()->isIntegral() && child->values().empty();
+                    return child->valueType() && child->valueType()->pointer == 0 && child->valueType()->isIntegral() &&
+                    child->values().empty();
                 }
                 return false;
             });
             if (!vartok)
                 continue;
-            if (vartok->astSibling() && findAstNode(vartok->astSibling(), [](const Token* child) {
+            if (vartok->astSibling() &&
+                findAstNode(vartok->astSibling(), [](const Token* child) {
                 return Token::simpleMatch(child, "sizeof");
             }))
                 continue;
@@ -3701,7 +3703,11 @@ void CheckOther::checkKnownArgument()
             strTolower(funcname);
             if (funcname.find("assert") != std::string::npos)
                 continue;
-            knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), vartok->expressionString(), isVariableExprHidden(vartok));
+            knownArgumentError(tok,
+                               tok->astParent()->previous(),
+                               &tok->values().front(),
+                               vartok->expressionString(),
+                               isVariableExprHidden(vartok));
         }
     }
 }
@@ -3749,7 +3755,9 @@ void CheckOther::checkKnownPointerToBool()
                 continue;
             if (tok->isExpandedMacro())
                 continue;
-            if (findParent(tok, [](const Token* parent) { return parent->isExpandedMacro(); }))
+            if (findParent(tok, [](const Token* parent) {
+                return parent->isExpandedMacro();
+            }))
                 continue;
             if (!isUsedAsBool(tok, mSettings))
                 continue;
