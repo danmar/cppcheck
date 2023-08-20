@@ -67,12 +67,12 @@ public:
         checkCondition.checkPointerAdditionResultNotNull();
         checkCondition.checkDuplicateConditionalAssign();
         checkCondition.assignIf();
-        checkCondition.alwaysTrueFalse();
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
         checkCondition.checkModuloAlwaysTrueFalse();
         checkCondition.checkAssignmentInCondition();
         checkCondition.checkCompareValueOutOfTypeRange();
+        checkCondition.alwaysTrueFalse();
     }
 
     /** mismatching assignment / comparison */

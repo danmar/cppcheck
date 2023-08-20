@@ -1216,7 +1216,6 @@ public:
     }
 
     bool hasKnownIntValue() const;
-    bool hasKnownBoolValue() const;
     bool hasKnownValue() const;
     bool hasKnownValue(ValueFlow::Value::ValueType t) const;
     bool hasKnownSymbolicValue(const Token* tok) const;

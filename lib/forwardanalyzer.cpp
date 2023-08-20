@@ -488,7 +488,7 @@ struct ForwardTraversal {
             if (allAnalysis.isIncremental())
                 return Break(Analyzer::Terminate::Bail);
         } else if (allAnalysis.isModified()) {
-            std::vector<ForwardTraversal> ftv = tryForkScope(endBlock, /*isModified*/ true);
+            std::vector<ForwardTraversal> ftv = tryForkScope(endBlock, allAnalysis.isModified());
             bool forkContinue = true;
             for (ForwardTraversal& ft : ftv) {
                 if (condTok)

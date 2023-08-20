@@ -3640,6 +3640,21 @@ static bool isVariableExpression(const Token* tok)
     return false;
 }
 
+static bool isVariableExprHidden(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!tok->astParent())
+        return false;
+    if (Token::simpleMatch(tok->astParent(), "*") && Token::simpleMatch(tok->astSibling(), "0"))
+        return true;
+    if (Token::simpleMatch(tok->astParent(), "&&") && Token::simpleMatch(tok->astSibling(), "false"))
+        return true;
+    if (Token::simpleMatch(tok->astParent(), "||") && Token::simpleMatch(tok->astSibling(), "true"))
+        return true;
+    return false;
+}
+
 void CheckOther::checkKnownArgument()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
@@ -3679,44 +3694,25 @@ void CheckOther::checkKnownArgument()
                     mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
             // ensure that there is a integer variable in expression with unknown value
-            std::string varexpr;
-            bool isVariableExprHidden = false;  // Is variable expression explicitly hidden
-            auto setVarExpr = [&varexpr, &isVariableExprHidden](const Token *child) {
+            const Token* vartok = findAstNode(tok, [](const Token* child) {
                 if (Token::Match(child, "%var%|.|[")) {
-                    if (child->valueType() && child->valueType()->pointer == 0 && child->valueType()->isIntegral() && child->values().empty()) {
-                        varexpr = child->expressionString();
-                        return ChildrenToVisit::done;
-                    }
-                    return ChildrenToVisit::none;
+                    return astIsIntegral(child, false) && !astIsPointer(child) && child->values().empty();
                 }
-                if (Token::simpleMatch(child->previous(), "sizeof ("))
-                    return ChildrenToVisit::none;
-
-                // hide variable explicitly with 'x * 0' etc
-                if (!isVariableExprHidden) {
-                    if (Token::simpleMatch(child, "*") && (Token::simpleMatch(child->astOperand1(), "0") || Token::simpleMatch(child->astOperand2(), "0")))
-                        return ChildrenToVisit::none;
-                    if (Token::simpleMatch(child, "&&") && (Token::simpleMatch(child->astOperand1(), "false") || Token::simpleMatch(child->astOperand2(), "false")))
-                        return ChildrenToVisit::none;
-                    if (Token::simpleMatch(child, "||") && (Token::simpleMatch(child->astOperand1(), "true") || Token::simpleMatch(child->astOperand2(), "true")))
-                        return ChildrenToVisit::none;
-                }
-
-                return ChildrenToVisit::op1_and_op2;
-            };
-            visitAstNodes(tok, setVarExpr);
-            if (varexpr.empty()) {
-                isVariableExprHidden = true;
-                visitAstNodes(tok, setVarExpr);
-            }
-            if (varexpr.empty())
+                return false;
+            });
+            if (!vartok)
+                continue;
+            if (vartok->astSibling() &&
+                findAstNode(vartok->astSibling(), [](const Token* child) {
+                return Token::simpleMatch(child, "sizeof");
+            }))
                 continue;
             // ensure that function name does not contain "assert"
-            std::string funcname = tok->astParent()->previous()->str();
+            std::string funcname = ftok->str();
             strTolower(funcname);
             if (funcname.find("assert") != std::string::npos)
                 continue;
-            knownArgumentError(tok, ftok, &tok->values().front(), varexpr, isVariableExprHidden);
+            knownArgumentError(tok, ftok, &tok->values().front(), vartok->expressionString(), isVariableExprHidden(vartok));
         }
     }
 }
@@ -3745,6 +3741,48 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
 
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath, Severity::style, id, errmsg, CWE570, Certainty::normal);
+}
+
+void CheckOther::checkKnownPointerToBool()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* functionScope : symbolDatabase->functionScopes) {
+        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!tok->hasKnownIntValue())
+                continue;
+            if (!astIsPointer(tok))
+                continue;
+            if (Token::Match(tok->astParent(), "?|!|&&|%oror%|%comp%"))
+                continue;
+            if (tok->astParent() && Token::Match(tok->astParent()->previous(), "if|while|switch|sizeof ("))
+                continue;
+            if (tok->isExpandedMacro())
+                continue;
+            if (findParent(tok, [](const Token* parent) {
+                return parent->isExpandedMacro();
+            }))
+                continue;
+            if (!isUsedAsBool(tok, mSettings))
+                continue;
+            const ValueFlow::Value& value = tok->values().front();
+            knownPointerToBoolError(tok, &value);
+        }
+    }
+}
+
+void CheckOther::knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value)
+{
+    if (!tok) {
+        reportError(tok, Severity::style, "knownPointerToBool", "Pointer expression 'p' converted to bool is always true.");
+        return;
+    }
+    std::string cond = value->intvalue ? "true" : "false";
+    const std::string& expr = tok->expressionString();
+    std::string errmsg = "Pointer expression '" + expr + "' converted to bool is always " + cond + ".";
+    const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
+    reportError(errorPath, Severity::style, "knownPointerToBool", errmsg, CWE570, Certainty::normal);
 }
 
 void CheckOther::checkComparePointers()
