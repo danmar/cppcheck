@@ -290,6 +290,8 @@ private:
         TEST_CASE(checkOverlappingWrite);
 
         TEST_CASE(constVariableArrayMember); // #10371
+
+        TEST_CASE(knownPointerToBool);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -11339,6 +11341,73 @@ private:
               "    int m_Arr[1];\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void knownPointerToBool()
+    {
+        check("void g(bool);\n"
+              "void f() {\n"
+              "    int i = 5;\n"
+              "    int* p = &i;\n"
+              "    g(p);\n"
+              "    g(&i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Pointer expression 'p' converted to bool is always true.\n"
+                      "[test.cpp:6]: (style) Pointer expression '&i' converted to bool is always true.\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    const int* x = nullptr;\n"
+              "    std::empty(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { bool x; };\n"
+              "bool f(A* a) {\n"
+              "    if (a) {\n"
+              "        return a->x;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int* x; };\n"
+              "bool f(A a) {\n"
+              "    if (a.x) {\n"
+              "        return a.x;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'a.x' converted to bool is always true.\n", errout.str());
+
+        check("void f(bool* b) { if (b) *b = true; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+              "    int* x = nullptr;\n"
+              "    return bool(x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
+
+        check("bool f() {\n"
+              "    int* x = nullptr;\n"
+              "    return bool{x};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
+
+        check("struct A { A(bool); };\n"
+              "A f() {\n"
+              "    int* x = nullptr;\n"
+              "    return A(x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
+
+        check("struct A { A(bool); };\n"
+              "A f() {\n"
+              "    int* x = nullptr;\n"
+              "    return A{x};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
     }
 };
 
