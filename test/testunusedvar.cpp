@@ -6041,6 +6041,23 @@ private:
                               "    dostuff(*p);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    int p[5];\n"
+                              "    dostuff(*p);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    int p[5][5][5];\n"
+                              "    dostuff(**p);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #11872
+                              "    char v[1][2];\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: v\n", errout.str());
     }
 
     void localvarstring1() { // ticket #1597

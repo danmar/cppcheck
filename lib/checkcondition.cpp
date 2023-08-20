@@ -60,7 +60,7 @@ bool CheckCondition::diag(const Token* tok, bool insert)
         return false;
     const Token* parent = tok->astParent();
     bool hasParent = false;
-    while (Token::Match(parent, "&&|%oror%")) {
+    while (Token::Match(parent, "!|&&|%oror%")) {
         if (mCondDiags.count(parent) != 0) {
             hasParent = true;
             break;
@@ -410,6 +410,8 @@ void CheckCondition::comparison()
 
 void CheckCondition::comparisonError(const Token *tok, const std::string &bitop, MathLib::bigint value1, const std::string &op, MathLib::bigint value2, bool result)
 {
+    if (tok && (diag(tok) | diag(tok->astParent())))
+        return;
     std::ostringstream expression;
     expression << std::hex << "(X " << bitop << " 0x" << value1 << ") " << op << " 0x" << value2;
 
@@ -1370,6 +1372,8 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
 
 void CheckCondition::moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal)
 {
+    if (diag(tok))
+        return;
     reportError(tok, Severity::warning, "moduloAlwaysTrueFalse",
                 "Comparison of modulo result is predetermined, because it is always less than " + maxVal + ".", CWE398, Certainty::normal);
 }
@@ -1466,7 +1470,7 @@ void CheckCondition::alwaysTrueFalse()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
                 continue;
-            if (!tok->hasKnownBoolValue())
+            if (!tok->hasKnownIntValue())
                 continue;
             if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
                 const Function* f = tok->previous()->function();
@@ -1490,7 +1494,7 @@ void CheckCondition::alwaysTrueFalse()
                 else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
                          Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astParent()->astParent()->previous();
-                else if (isBooleanFuncArg(tok))
+                else if (Token::Match(tok, "%comp%"))
                     condition = tok;
                 else
                     continue;
@@ -1582,10 +1586,7 @@ void CheckCondition::alwaysTrueFalse()
             if (hasSizeof)
                 continue;
 
-            auto it = std::find_if(tok->values().begin(), tok->values().end(), [](const ValueFlow::Value& v) {
-                return v.isIntValue();
-            });
-            alwaysTrueFalseError(tok, condition, &*it);
+            alwaysTrueFalseError(tok, condition, &tok->values().front());
         }
     }
 }
