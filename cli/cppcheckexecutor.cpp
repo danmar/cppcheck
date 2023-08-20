@@ -276,7 +276,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
 
-    if (settings.reportProgress)
+    if (settings.reportProgress >= 0)
         mLatestProgressOutputTime = std::time(nullptr);
 
     if (!settings.outputFile.empty()) {
@@ -399,6 +399,7 @@ void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
         std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
+// TODO: remove filename parameter?
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
 {
     (void)filename;
@@ -406,9 +407,10 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     if (!mLatestProgressOutputTime)
         return;
 
-    // Report progress messages every 10 seconds
+    // Report progress messages every x seconds
     const std::time_t currentTime = std::time(nullptr);
-    if (currentTime >= (mLatestProgressOutputTime + 10)) {
+    if (currentTime >= (mLatestProgressOutputTime + mSettings->reportProgress))
+    {
         mLatestProgressOutputTime = currentTime;
 
         // format a progress message

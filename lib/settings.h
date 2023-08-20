@@ -267,7 +267,7 @@ public:
     bool relativePaths{};
 
     /** @brief --report-progress */
-    bool reportProgress{};
+    int reportProgress{-1};
 
     /** Rule */
     struct CPPCHECKLIB Rule {

@@ -91,3 +91,53 @@ def test_message_j(tmpdir):
     assert stdout == "Checking {} ...\n".format(test_file) # we were adding stray \0 characters at the end
 
 # TODO: test missing std.cfg
+
+
+def test_progress(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                int main(int argc)
+                {
+                }
+                """)
+
+    args = ['--report-progress=0', '--enable=all', '--inconclusive', '--platform=native', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    pos = stdout.find('\n')
+    assert(pos != -1)
+    pos += 1
+    assert stdout[:pos] == "Checking {} ...\n".format(test_file)
+    assert (stdout[pos:] ==
+            "progress: Tokenize (typedef) 0%\n"
+            "progress: Tokenize (typedef) 12%\n"
+            "progress: Tokenize (typedef) 25%\n"
+            "progress: Tokenize (typedef) 37%\n"
+            "progress: Tokenize (typedef) 50%\n"
+            "progress: Tokenize (typedef) 62%\n"
+            "progress: Tokenize (typedef) 75%\n"
+            "progress: Tokenize (typedef) 87%\n"
+            "progress: SymbolDatabase 0%\n"
+            "progress: SymbolDatabase 12%\n"
+            "progress: SymbolDatabase 87%\n"
+            )
+    assert stderr == ""
+
+
+def test_progress_j(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write("""
+                int main(int argc)
+                {
+                }
+                """)
+
+    args = ['--report-progress=0', '--enable=all', '--inconclusive', '-j2', '--disable=unusedFunction', '--platform=native', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    assert stdout == "Checking {} ...\n".format(test_file)
+    assert stderr == ""
