@@ -8707,10 +8707,12 @@ static MathLib::bigint valueFlowGetStrLength(const Token* tok)
         return Token::getStrLength(tok);
     if (astIsGenericChar(tok) || tok->tokType() == Token::eChar)
         return 1;
-    if (const ValueFlow::Value* v2 = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
-        return v2->intvalue;
-    if (const ValueFlow::Value* v1 = tok->getKnownValue(ValueFlow::Value::ValueType::TOK))
-        return valueFlowGetStrLength(v1->tokvalue);
+    if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+        return v->intvalue;
+    if (const ValueFlow::Value* v = tok->getKnownValue(ValueFlow::Value::ValueType::TOK)) {
+        if (v->tokvalue != tok)
+            return valueFlowGetStrLength(v->tokvalue);
+    }
     return 0;
 }
 

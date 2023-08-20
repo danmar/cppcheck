@@ -7397,6 +7397,18 @@ private:
                "    }\n"
                "}";
         valueOfTok(code, "path");
+
+        code = "struct S {\n"
+               "    std::string to_string() const {\n"
+               "        return { this->p , (size_t)this->n };\n"
+               "    }\n"
+               "    const char* p;\n"
+               "    int n;\n"
+               "};\n"
+               "void f(S s, std::string& str) {\n"
+               "    str += s.to_string();\n"
+               "}\n";
+        valueOfTok(code, "s");
     }
 
     void valueFlowUnknownMixedOperators() {
