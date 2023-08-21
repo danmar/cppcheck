@@ -4503,6 +4503,11 @@ void stdstring()
 
     // valid
     s.assign("a");
+
+#ifdef __cpp_lib_starts_ends_with
+    // cppcheck-suppress ignoredReturnValue
+    s.starts_with("abc");
+#endif
 }
 
 void stdvector()

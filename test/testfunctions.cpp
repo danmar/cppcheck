@@ -1808,6 +1808,12 @@ private:
               "    std::cout << p->msg;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string&& f() {\n" // #11881
+              "    std::string s;\n"
+              "    return std::move(s);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void negativeMemoryAllocationSizeError() { // #389

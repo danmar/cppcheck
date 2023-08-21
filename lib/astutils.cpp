@@ -1477,19 +1477,6 @@ static bool astIsBoolLike(const Token* tok)
     return astIsBool(tok) || isUsedAsBool(tok);
 }
 
-bool isBooleanFuncArg(const Token* tok) {
-    if (tok->variable() && tok->variable()->valueType() && tok->variable()->valueType()->type == ValueType::BOOL) // skip trivial case: bool passed as bool
-        return false;
-    int argn{};
-    const Token* ftok = getTokenArgumentFunction(tok, argn);
-    if (!ftok)
-        return false;
-    std::vector<const Variable*> argvars = getArgumentVars(ftok, argn);
-    if (argvars.size() != 1)
-        return false;
-    return !argvars[0]->isReference() && argvars[0]->valueType() && argvars[0]->valueType()->type == ValueType::BOOL;
-}
-
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors)
 {
     if (tok1 == nullptr && tok2 == nullptr)
