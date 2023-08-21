@@ -887,12 +887,12 @@ private:
         const char code[] = "_Pragma(\"abc\") int x;";
         const Settings s_c89 = settingsBuilder().c(Standards::C89).build();
         ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s_c89, false));
-        const Settings s_clatest = settingsBuilder().c(Standards::CLatest).build();
+        const Settings s_clatest;
         ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s_clatest, false));
 
         const Settings s_cpp03 = settingsBuilder().cpp(Standards::CPP03).build();
         ASSERT_EQUALS("_Pragma ( \"abc\" ) int x ;", tokenizeAndStringify(code, s_cpp03, true));
-        const Settings s_cpplatest = settingsBuilder().cpp(Standards::CPPLatest).build();
+        const Settings s_cpplatest;
         ASSERT_EQUALS("int x ;", tokenizeAndStringify(code, s_cpplatest, true));
     }
 
