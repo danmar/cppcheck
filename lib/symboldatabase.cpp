@@ -7686,7 +7686,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     }
 
     if (call->typeScope != nullptr || func->typeScope != nullptr) {
-        if (call->typeScope != func->typeScope)
+        if (call->typeScope != func->typeScope && !(call->typeScope->definedType && call->typeScope->definedType->isDerivedFrom(func->typeScope->className)))
             return ValueType::MatchResult::NOMATCH;
     }
 
