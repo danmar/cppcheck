@@ -37,10 +37,10 @@ struct Standards {
     enum Language { None, C, CPP };
 
     /** C code standard */
-    enum cstd_t { C89, C99, C11, CLatest = C11 } c = CLatest;
+    enum cstd_t { C89, C99, C11, CLatest = 99 } c = CLatest;
 
     /** C++ code standard */
-    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPPLatest = CPP23 } cpp = CPPLatest;
+    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPPLatest = 99 } cpp = CPPLatest;
 
     /** --std value given on command line */
     std::string stdValue;
@@ -68,6 +68,7 @@ struct Standards {
         case C99:
             return "c99";
         case C11:
+        case CLatest:
             return "c11";
         }
         return "";
@@ -106,6 +107,7 @@ struct Standards {
         case CPP20:
             return "c++20";
         case CPP23:
+        case CPPLatest:
             return "c++23";
         }
         return "";

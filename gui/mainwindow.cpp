@@ -451,6 +451,8 @@ void MainWindow::saveSettings() const
         mSettings->setValue(SETTINGS_STD_C, "C99");
     if (mUI->mActionC11->isChecked())
         mSettings->setValue(SETTINGS_STD_C, "C11");
+    if (mUI->mActionCLatest->isChecked())
+        mSettings->setValue(SETTINGS_STD_C, "Always Latest");
 
     if (mUI->mActionCpp03->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++03");
@@ -464,6 +466,8 @@ void MainWindow::saveSettings() const
         mSettings->setValue(SETTINGS_STD_CPP, "C++20");
     //if (mUI.mActionCpp23->isChecked())
     //    mSettings->setValue(SETTINGS_STD_CPP, "C++23");
+    if (mUI->mActionCppLatest->isChecked())
+        mSettings->setValue(SETTINGS_STD_CPP, "Always Latest");
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI->mToolBarMain->isVisible());
