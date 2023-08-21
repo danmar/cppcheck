@@ -5689,9 +5689,8 @@ private:
                               "{\n"
                               "    static int i = 0;\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -6305,6 +6304,15 @@ private:
                               "    const ::std::lock_guard g(m);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(const std::string& str, int i) {\n" // #11879
+                              "    const std::string s = str;\n"
+                              "    switch (i) {\n"
+                              "    default:\n"
+                              "        break;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
     }
 
     void localVarClass() {

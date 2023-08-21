@@ -41,22 +41,22 @@ void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)
     const QString lower = tool.toLower();
     switch (type) {
     case ShowTypes::ShowStyle:
-        ::addItem(mStyle, tool);
+        ::addItem(mStyle, lower);
         break;
     case ShowTypes::ShowWarnings:
-        ::addItem(mWarning, tool);
+        ::addItem(mWarning, lower);
         break;
     case ShowTypes::ShowPerformance:
-        ::addItem(mPerformance, tool);
+        ::addItem(mPerformance, lower);
         break;
     case ShowTypes::ShowPortability:
-        ::addItem(mPortability, tool);
+        ::addItem(mPortability, lower);
         break;
     case ShowTypes::ShowErrors:
-        ::addItem(mError, tool);
+        ::addItem(mError, lower);
         break;
     case ShowTypes::ShowInformation:
-        ::addItem(mInformation, tool);
+        ::addItem(mInformation, lower);
         break;
     case ShowTypes::ShowNone:
     default:
