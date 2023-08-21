@@ -512,6 +512,7 @@ private:
         TEST_CASE(auto19);
         TEST_CASE(auto20);
         TEST_CASE(auto21);
+        TEST_CASE(auto22);
 
         TEST_CASE(unionWithConstructor);
 
@@ -8412,7 +8413,7 @@ private:
             const Token* tok = tokenizer.tokens();
             tok = Token::findsimplematch(tok, "s .");
             ASSERT(tok && tok->valueType());
-            ASSERT_EQUALS("container(std :: set|unordered_set <)", tok->valueType()->str());
+            ASSERT_EQUALS("container(std :: set|unordered_set <) &", tok->valueType()->str());
         }
         {
             GET_SYMBOL_DB("void f(std::vector<int> v) {\n"
@@ -9485,6 +9486,22 @@ private:
         ASSERT(v && v->valueType());
         ASSERT_EQUALS(v->valueType()->type, ValueType::CONTAINER);
         ASSERT(v->variable() && v->variable()->isReference());
+    }
+
+    void auto22() {
+        GET_SYMBOL_DB("void f(std::vector<std::string>& v, bool b) {\n"
+                      "    auto& s = b ? v[0] : v[1];\n"
+                      "    s += \"abc\";\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT_EQUALS(a->valueType()->type, ValueType::CONTAINER);
+        const Token* s = Token::findsimplematch(a, "s +=");
+        ASSERT(s && s->valueType());
+        ASSERT_EQUALS(s->valueType()->type, ValueType::CONTAINER);
+        ASSERT(s->valueType()->reference == Reference::LValue);
+        ASSERT(s->variable() && s->variable()->isReference());
     }
 
     void unionWithConstructor() {

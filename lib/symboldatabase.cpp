@@ -6789,11 +6789,15 @@ static const Token* parsedecl(const Token* type,
             valuetype->constness = vt->constness;
             valuetype->originalTypeName = vt->originalTypeName;
             const bool hasConst = Token::simpleMatch(type->previous(), "const");
-            while (Token::Match(type, "%name%|*|&|::") && !type->variable()) {
+            while (Token::Match(type, "%name%|*|&|&&|::") && !type->variable()) {
                 if (type->str() == "*") {
                     valuetype->pointer = 1;
                     if (hasConst)
                         valuetype->constness = 1;
+                } else if (type->str() == "&") {
+                    valuetype->reference = Reference::LValue;
+                } else if (type->str() == "&&") {
+                    valuetype->reference = Reference::RValue;
                 }
                 if (type->str() == "const")
                     valuetype->constness |= (1 << valuetype->pointer);
