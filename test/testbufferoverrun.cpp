@@ -76,8 +76,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings = settingsBuilder(settings0).severity(Severity::performance)
-                                  .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
+        const Settings settings = settingsBuilder(settings0).severity(Severity::performance).certainty(Certainty::inconclusive).build();
 
         // Raw tokens..
         std::vector<std::string> files(1, filename);
