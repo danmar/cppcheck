@@ -109,7 +109,7 @@ private:
             writeToPipeInternal(type, &t, 1);
         }
 
-        const unsigned int len = static_cast<unsigned int>(data.length() + 1);
+        const unsigned int len = static_cast<unsigned int>(data.length());
         {
             static constexpr std::size_t l_size = sizeof(unsigned int);
             writeToPipeInternal(type, &len, l_size);
@@ -162,9 +162,7 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         std::exit(EXIT_FAILURE);
     }
 
-    // Don't rely on incoming data being null-terminated.
-    // Allocate +1 element and null-terminate the buffer.
-    std::string buf(len + 1, '\0');
+    std::string buf(len, '\0');
     char *data_start = &buf[0];
     bytes_to_read = len;
     do {
@@ -177,7 +175,6 @@ bool ProcessExecutor::handleRead(int rpipe, unsigned int &result, const std::str
         bytes_to_read -= bytes_read;
         data_start += bytes_read;
     } while (bytes_to_read != 0);
-    buf[len] = '\0';
 
     bool res = true;
     if (type == PipeWriter::REPORT_OUT) {

@@ -71,4 +71,15 @@ def test_invalid_library(tmpdir):
                       "cppcheck: Failed to load library configuration file 'none2'. File not found\n")
     assert stderr == ""
 
+
+def test_message_j(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.c')
+    with open(test_file, 'wt') as f:
+        f.write("")
+
+    args = ['-j2', '--platform=native', test_file]
+
+    _, stdout, _ = cppcheck(args)
+    assert stdout == "Checking {} ...\n".format(test_file) # we were adding stray \0 characters at the end
+
 # TODO: test missing std.cfg
