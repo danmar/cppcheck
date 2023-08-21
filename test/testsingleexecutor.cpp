@@ -182,7 +182,7 @@ private:
     }
 
     void many_files_plist() {
-        const char plistOutput[] = "plist/";
+        const std::string plistOutput = "plist_" + fprefix() + "/";
         ScopedFile plistFile("dummy", "", plistOutput);
 
         check(100, 100,
@@ -190,7 +190,7 @@ private:
               "{\n"
               "  char *a = malloc(10);\n"
               "  return 0;\n"
-              "}", dinit(CheckOptions, $.plistOutput = plistOutput));
+              "}", dinit(CheckOptions, $.plistOutput = plistOutput.c_str()));
     }
 
     void no_errors_more_files() {

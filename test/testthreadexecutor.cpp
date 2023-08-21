@@ -138,7 +138,7 @@ private:
     }
 
     void many_threads_plist() {
-        const char plistOutput[] = "plist/";
+        const char plistOutput[] = "plist_thread/";
         ScopedFile plistFile("dummy", "", plistOutput);
 
         check(16, 100, 100,
