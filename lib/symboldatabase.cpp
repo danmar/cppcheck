@@ -4353,13 +4353,13 @@ const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const
 // prevent recursion if base is the same except for different template parameters
 static bool isDerivedFromItself(const std::string& thisName, const std::string& baseName)
 {
-    const auto posThis = thisName.find('<');
-    if (posThis == std::string::npos)
+    const auto pos = thisName.find('<');
+    if (pos == std::string::npos)
         return false;
     const auto posBase = baseName.find('<');
-    if (posBase == std::string::npos)
+    if (posBase != pos)
         return false;
-    return posThis == posBase && thisName.compare(0, posThis, baseName);
+    return thisName.compare(0, pos, baseName, 0, pos) == 0;
 }
 
 const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const
