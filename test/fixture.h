@@ -193,17 +193,15 @@ protected:
         }
 
         SettingsBuilder& c(Standards::cstd_t std) {
-            // TODO: CLatest and C11 are the same - handle differently
-            //if (REDUNDANT_CHECK && settings.standards.c == std)
-            //    throw std::runtime_error("redundant setting: standards.c");
+            if (REDUNDANT_CHECK && settings.standards.c == std)
+                throw std::runtime_error("redundant setting: standards.c");
             settings.standards.c = std;
             return *this;
         }
 
         SettingsBuilder& cpp(Standards::cppstd_t std) {
-            // TODO: CPPLatest and CPP20 are the same - handle differently
-            //if (REDUNDANT_CHECK && settings.standards.cpp == std)
-            //    throw std::runtime_error("redundant setting: standards.cpp");
+            if (REDUNDANT_CHECK && settings.standards.cpp == std)
+                throw std::runtime_error("redundant setting: standards.cpp");
             settings.standards.cpp = std;
             return *this;
         }
