@@ -666,7 +666,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
                 mSettings.premiumArgs += "--" + p;
-                if (p == "misra-c-2012")
+                if (p == "misra-c-2012" || p == "misra-c-2023")
                     mSettings.addons.emplace("misra");
             }
 
@@ -1270,6 +1270,7 @@ void CmdLineParser::printHelp()
                   << "                          * cert-c-2016       Cert C 2016 checking\n"
                   << "                          * cert-c++-2016     Cert C++ 2016 checking (partial)\n"
                   << "                          * misra-c-2012      Misra C 2012\n"
+                  << "                          * misra-c-2023      Misra C 2023\n"
                   << "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
                   << "                         Other:\n"
                   << "                          * bughunting        Soundy analysis\n"

@@ -1439,6 +1439,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
         std::istringstream istr(results);
         std::string line;
 
+        const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
+
         while (std::getline(istr, line)) {
             if (line.compare(0,1,"{") != 0)
                 continue;
@@ -1470,6 +1472,8 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             }
 
             errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
+            if (misraC2023 && errmsg.id.compare(0, 12, "misra-c2012-") == 0)
+                errmsg.id = "misra-c2023-" + errmsg.id.substr(12);
             const std::string text = obj["message"].get<std::string>();
             errmsg.setmsg(text);
             const std::string severity = obj["severity"].get<std::string>();

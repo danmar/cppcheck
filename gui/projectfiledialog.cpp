@@ -58,6 +58,7 @@
 #include <QtCore>
 
 static const char ADDON_MISRA[]   = "misra";
+static const char CODING_STANDARD_MISRA_C_2023[] = "misra-c-2023";
 static const char CODING_STANDARD_MISRA_CPP_2008[] = "misra-cpp-2008";
 static const char CODING_STANDARD_CERT_C[] = "cert-c-2016";
 static const char CODING_STANDARD_CERT_CPP[] = "cert-cpp-2016";
@@ -370,15 +371,22 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     const QString dataDir = getDataDir();
     updateAddonCheckBox(mUI->mAddonThreadSafety, projectFile, dataDir, "threadsafety");
     updateAddonCheckBox(mUI->mAddonY2038, projectFile, dataDir, "y2038");
-    updateAddonCheckBox(mUI->mMisraC2012, projectFile, dataDir, ADDON_MISRA);
+
+    // Misra checkbox..
+    mUI->mMisraC->setText(mPremium ? "Misra C" : "Misra C 2012");
+    updateAddonCheckBox(mUI->mMisraC, projectFile, dataDir, ADDON_MISRA);
+    mUI->mMisraVersion->setEnabled(mUI->mMisraC->isChecked());
+    connect(mUI->mMisraC, &QCheckBox::toggled, mUI->mMisraVersion, &QComboBox::setEnabled);
 
     const QString &misraFile = settings.value(SETTINGS_MISRA_FILE, QString()).toString();
     mUI->mEditMisraFile->setText(misraFile);
+    mUI->mMisraVersion->setVisible(mPremium);
+    mUI->mMisraVersion->setCurrentIndex(projectFile->getCodingStandards().contains(CODING_STANDARD_MISRA_C_2023));
     if (mPremium) {
         mUI->mLabelMisraFile->setVisible(false);
         mUI->mEditMisraFile->setVisible(false);
         mUI->mBtnBrowseMisraFile->setVisible(false);
-    } else if (!mUI->mMisraC2012->isEnabled()) {
+    } else if (!mUI->mMisraC->isEnabled()) {
         mUI->mEditMisraFile->setEnabled(false);
         mUI->mBtnBrowseMisraFile->setEnabled(false);
     }
@@ -464,7 +472,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         addons << "threadsafety";
     if (mUI->mAddonY2038->isChecked())
         addons << "y2038";
-    if (mUI->mMisraC2012->isChecked())
+    if (mUI->mMisraC->isChecked())
         addons << ADDON_MISRA;
     projectFile->setAddons(addons);
     QStringList codingStandards;
@@ -472,6 +480,8 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         codingStandards << CODING_STANDARD_CERT_C;
     if (mUI->mCertCpp2016->isChecked())
         codingStandards << CODING_STANDARD_CERT_CPP;
+    if (mPremium && mUI->mMisraVersion->currentIndex() == 1)
+        codingStandards << CODING_STANDARD_MISRA_C_2023;
     if (mUI->mMisraCpp2008->isChecked())
         codingStandards << CODING_STANDARD_MISRA_CPP_2008;
     if (mUI->mAutosar->isChecked())
@@ -914,8 +924,8 @@ void ProjectFileDialog::browseMisraFile()
         mUI->mEditMisraFile->setText(fileName);
         settings.setValue(SETTINGS_MISRA_FILE, fileName);
 
-        mUI->mMisraC2012->setText("MISRA C 2012");
-        mUI->mMisraC2012->setEnabled(true);
-        updateAddonCheckBox(mUI->mMisraC2012, nullptr, getDataDir(), ADDON_MISRA);
+        mUI->mMisraC->setText("MISRA C 2012");
+        mUI->mMisraC->setEnabled(true);
+        updateAddonCheckBox(mUI->mMisraC, nullptr, getDataDir(), ADDON_MISRA);
     }
 }
