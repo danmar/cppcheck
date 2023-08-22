@@ -79,7 +79,7 @@ QString getDataDir()
     if (!dataDir.isEmpty())
         return dataDir;
     const QString appPath = QFileInfo(QCoreApplication::applicationFilePath()).canonicalPath();
-    if (QFileInfo(appPath + "/std.cfg").exists())
+    if (QFileInfo::exists(appPath + "/std.cfg"))
         return appPath;
     if (appPath.indexOf("/cppcheck/", 0, Qt::CaseInsensitive) > 0)
         return appPath.left(appPath.indexOf("/cppcheck/", 0, Qt::CaseInsensitive) + 9);
