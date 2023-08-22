@@ -87,8 +87,14 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
 
     WIN32_FIND_DATAA ffd;
     HANDLE hFind = FindFirstFileA(searchPattern.c_str(), &ffd);
-    if (INVALID_HANDLE_VALUE == hFind)
-        return "";
+    if (INVALID_HANDLE_VALUE == hFind) {
+        const DWORD err = GetLastError();
+        if (err == ERROR_FILE_NOT_FOUND) {
+            // no files matched
+            return "";
+        }
+        return "finding files failed (error: " + std::to_string(err) + ")";
+    }
 
     do {
         if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
@@ -125,8 +131,15 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
         }
     } while (FindNextFileA(hFind, &ffd) != FALSE);
 
+    std::string res;
+
+    const DWORD err = GetLastError();
+    // no more files matched
+    if (err != ERROR_NO_MORE_FILES)
+        res = "failed to get next file (error: " + std::to_string(err) + ")";
+
     FindClose(hFind);
-    return "";
+    return res;
 }
 
 #else
@@ -164,8 +177,10 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
     if (stat(path.c_str(), &file_stat) != -1) {
         if ((file_stat.st_mode & S_IFMT) == S_IFDIR) {
             DIR * dir = opendir(path.c_str());
-            if (!dir)
-                return "";
+            if (!dir) {
+                const int err = errno;
+                return "could not open directory '" + path + "' (errno: " + std::to_string(err) + ")";
+            }
 
             std::string new_path = path;
             new_path += '/';
@@ -196,8 +211,9 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                         if (stat(new_path.c_str(), &file_stat) != -1)
                             files[new_path] = file_stat.st_size;
                         else {
+                            const int err = errno;
                             closedir(dir);
-                            return "Can't stat " + new_path + " errno: " + std::to_string(errno);
+                            return "could not stat file '" + new_path + "' (errno: " + std::to_string(err) + ")";
                         }
                     }
                 }
