@@ -861,7 +861,7 @@ QString ResultsTree::askFileDir(const QString &file)
         return QString();
 
     // User selected root path
-    if (QFileInfo(dir + '/' + file).exists())
+    if (QFileInfo::exists(dir + '/' + file))
         mCheckPath = dir;
 
     // user selected checked folder
@@ -870,7 +870,7 @@ QString ResultsTree::askFileDir(const QString &file)
         QString folderName = file.mid(0, file.indexOf('/'));
         if (dir.indexOf('/' + folderName + '/'))
             dir = dir.mid(0, dir.lastIndexOf('/' + folderName + '/'));
-        if (QFileInfo(dir + '/' + file).exists())
+        if (QFileInfo::exists(dir + '/' + file))
             mCheckPath = dir;
     }
 
@@ -1018,7 +1018,6 @@ void ResultsTree::suppressSelectedIds()
     if (!mSelectionModel)
         return;
 
-    QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QSet<QString> selectedIds;
     for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);

@@ -709,6 +709,14 @@ static void misra_10_4(u32 x, s32 y) {
   if ('0' == buf[x]) // no-warning
   {
   }
+
+  const struct foo_s{
+    int t;
+    char buf[2];
+  } cmd = {0};
+  if ('\0' == cmd.buf[0]) //no-warning
+  {
+  }
 }
 
 static void misra_10_5(uint16_t x) {
@@ -1713,6 +1721,7 @@ struct {
 } r18_7_struct; // 8.4
 struct {
   uint16_t len;
+  int (*array_param_func_ptr)(char const *argv[], int argc); // no-warning
   uint8_t data_1[ 19 ];
   uint8_t data_2[   ]; // 18.7
 } r18_7_struct; // 8.4

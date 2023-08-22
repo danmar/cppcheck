@@ -466,9 +466,15 @@ def getEssentialTypeCategory(expr):
             return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
         return "enum<" + expr.valueType.typeScope.className + ">"
+    # Unwrap membership, dereferences and array indexing
     vartok = expr
-    while simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
-        vartok = vartok.astOperand1
+    while True:
+        if simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
+            vartok = vartok.astOperand1
+        elif simpleMatch(vartok, '.'):
+            vartok = vartok.astOperand2
+        else:
+            break
     if vartok and vartok.variable:
         typeToken = vartok.variable.typeStartToken
         while typeToken and typeToken.isName:
@@ -3231,7 +3237,10 @@ class MisraChecker:
                 if token.str == '{':
                     token = token.link
 
-                if cppcheckdata.simpleMatch(token, "[ ]"):
+                # skip function pointer parameter types
+                if token.astOperand1 is None:
+                    pass
+                elif cppcheckdata.simpleMatch(token, "[ ]"):
                     self.reportError(token, 18, 7)
                     break
                 token = token.next

@@ -137,7 +137,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
     mLineEditFilter->setClearButtonEnabled(true);
     mUI->mToolBarFilter->addWidget(mLineEditFilter);
-    connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
+    connect(mLineEditFilter, SIGNAL(textChanged(QString)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, &QLineEdit::returnPressed, this, &MainWindow::filterResults);
 
     connect(mUI->mActionPrint, SIGNAL(triggered()), mUI->mResults, SLOT(print()));
@@ -610,14 +610,14 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
     result.setFiles(QStringList(filename));
-    connect(&result, SIGNAL(progress(int,const QString&)),
-            mUI->mResults, SLOT(progress(int,const QString&)));
-    connect(&result, SIGNAL(error(const ErrorItem&)),
-            mUI->mResults, SLOT(error(const ErrorItem&)));
-    connect(&result, SIGNAL(log(const QString&)),
-            mUI->mResults, SLOT(log(const QString&)));
-    connect(&result, SIGNAL(debugError(const ErrorItem&)),
-            mUI->mResults, SLOT(debugError(const ErrorItem&)));
+    connect(&result, SIGNAL(progress(int,QString)),
+            mUI->mResults, SLOT(progress(int,QString)));
+    connect(&result, SIGNAL(error(ErrorItem)),
+            mUI->mResults, SLOT(error(ErrorItem)));
+    connect(&result, SIGNAL(log(QString)),
+            mUI->mResults, SLOT(log(QString)));
+    connect(&result, SIGNAL(debugError(ErrorItem)),
+            mUI->mResults, SLOT(debugError(ErrorItem)));
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true, nullptr);
@@ -1649,7 +1649,7 @@ bool MainWindow::loadLastResults()
     const QString &lastResults = getLastResults();
     if (lastResults.isEmpty())
         return false;
-    if (!QFileInfo(lastResults).exists())
+    if (!QFileInfo::exists(lastResults))
         return false;
     mUI->mResults->readErrorsXml(lastResults);
     mUI->mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
@@ -1916,7 +1916,7 @@ void MainWindow::updateMRUMenuItems()
     // Do a sanity check - remove duplicates and non-existing projects
     int removed = projects.removeDuplicates();
     for (int i = projects.size() - 1; i >= 0; i--) {
-        if (!QFileInfo(projects[i]).exists()) {
+        if (!QFileInfo::exists(projects[i])) {
             projects.removeAt(i);
             removed++;
         }
