@@ -5548,7 +5548,7 @@ static void valueFlowSymbolicOperators(const SymbolDatabase& symboldatabase, con
                     ValueFlow::Value v = value;
                     v.bound = ValueFlow::Value::Bound::Point;
                     v.valueType = ValueFlow::Value::ValueType::INT;
-                    v.errorPath.emplace_back(strlenTok, "Return index of string to the first element that is 0");
+                    v.errorPath.emplace_back(strlenTok, "Return index of first '\\0' character in string");
                     setTokenValue(tok, std::move(v), settings);
                 }
             }

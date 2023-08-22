@@ -4350,6 +4350,17 @@ const Function *Function::getOverriddenFunction(bool *foundAllBaseClasses) const
     return getOverriddenFunctionRecursive(nestedIn->definedType, foundAllBaseClasses);
 }
 
+// prevent recursion if base is the same except for different template parameters
+static bool isDerivedFromItself(const std::string& thisName, const std::string& baseName)
+{
+    if (thisName.back() != '>')
+        return false;
+    const auto pos = thisName.find('<');
+    if (pos == std::string::npos)
+        return false;
+    return thisName.compare(0, pos + 1, baseName, 0, pos + 1) == 0;
+}
+
 const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType, bool *foundAllBaseClasses) const
 {
     // check each base class
@@ -4402,7 +4413,7 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
             }
         }
 
-        if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies()) {
+        if (!derivedFromType->derivedFrom.empty() && !derivedFromType->hasCircularDependencies() && !isDerivedFromItself(baseType->classScope->className, i.name)) {
             // avoid endless recursion, see #5289 Crash: Stack overflow in isImplicitlyVirtual_rec when checking SVN and
             // #5590 with a loop within the class hierarchy.
             const Function *func = getOverriddenFunctionRecursive(derivedFromType, foundAllBaseClasses);

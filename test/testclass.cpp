@@ -183,6 +183,7 @@ private:
         TEST_CASE(const89);
         TEST_CASE(const90);
         TEST_CASE(const91);
+        TEST_CASE(const92);
 
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6652,6 +6653,20 @@ private:
                    "    return s.get<const int>();\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const92() { // #11886
+        checkConst("void g(int);\n"
+                   "template<int n>\n"
+                   "struct S : public S<n - 1> {\n"
+                   "    void f() {\n"
+                   "        g(n - 1);\n"
+                   "    }\n"
+                   "};\n"
+                   "template<>\n"
+                   "struct S<0> {};\n"
+                   "struct D : S<150> {};\n");
+        // don't hang
     }
 
     void const_handleDefaultParameters() {
