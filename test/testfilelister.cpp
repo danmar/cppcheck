@@ -34,6 +34,7 @@ public:
 private:
     void run() override {
         TEST_CASE(recursiveAddFiles);
+        TEST_CASE(recursiveAddFilesEmptyPath);
         TEST_CASE(excludeFile1);
         TEST_CASE(excludeFile2);
     }
@@ -76,6 +77,12 @@ private:
 
         // Make sure headers are not added..
         ASSERT(files.find(dirprefix + "lib/tokenize.h") == files.end());
+    }
+
+    void recursiveAddFilesEmptyPath() const {
+        std::map<std::string, std::size_t> files;
+        const std::string err = FileLister::recursiveAddFiles(files, "", PathMatch({}));
+        ASSERT_EQUALS("no path specified", err);
     }
 
     void excludeFile1() const {

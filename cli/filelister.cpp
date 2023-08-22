@@ -48,6 +48,9 @@ std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &fi
 
 std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
 {
+    if (path.empty())
+        return "no path specified";
+
     const std::string cleanedPath = Path::toNativeSeparators(path);
 
     // basedir is the base directory which is used to form pathnames.
@@ -213,15 +216,14 @@ std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &fi
 
 std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
 {
-    if (!path.empty()) {
-        std::string corrected_path = path;
-        if (endsWith(corrected_path, '/'))
-            corrected_path.erase(corrected_path.end() - 1);
+    if (path.empty())
+        return "no path specified";
 
-        return addFiles2(files, corrected_path, extra, recursive, ignored);
-    }
+    std::string corrected_path = path;
+    if (endsWith(corrected_path, '/'))
+        corrected_path.erase(corrected_path.end() - 1);
 
-    return "";
+    return addFiles2(files, corrected_path, extra, recursive, ignored);
 }
 
 #endif
