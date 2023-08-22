@@ -27,6 +27,7 @@
 #include <cstring>
 // fix NAME_MAX not found on macOS GCC8.1
 #include <climits>
+#include <memory>
 
 #ifdef _WIN32
 
@@ -95,6 +96,7 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
         }
         return "finding files failed (error: " + std::to_string(err) + ")";
     }
+    std::unique_ptr<void, decltype(&FindClose)> hFind_deleter(hFind, FindClose);
 
     do {
         if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
@@ -138,7 +140,6 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     if (err != ERROR_NO_MORE_FILES)
         res = "failed to get next file (error: " + std::to_string(err) + ")";
 
-    FindClose(hFind);
     return res;
 }
 
@@ -181,6 +182,7 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                 const int err = errno;
                 return "could not open directory '" + path + "' (errno: " + std::to_string(err) + ")";
             }
+            std::unique_ptr<DIR, decltype(&closedir)> dir_deleter(dir, closedir);
 
             std::string new_path = path;
             new_path += '/';
@@ -202,7 +204,6 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                     if (recursive && !ignored.match(new_path)) {
                         std::string err = addFiles2(files, new_path, extra, recursive, ignored);
                         if (!err.empty()) {
-                            closedir(dir);
                             return err;
                         }
                     }
@@ -212,13 +213,11 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
                             files[new_path] = file_stat.st_size;
                         else {
                             const int err = errno;
-                            closedir(dir);
                             return "could not stat file '" + new_path + "' (errno: " + std::to_string(err) + ")";
                         }
                     }
                 }
             }
-            closedir(dir);
         } else
             files[path] = file_stat.st_size;
     }
