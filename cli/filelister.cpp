@@ -99,48 +99,49 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
     std::unique_ptr<void, decltype(&FindClose)> hFind_deleter(hFind, FindClose);
 
     do {
-        if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
-            continue;
-
-        const char* ansiFfd = ffd.cFileName;
-        if (std::strchr(ansiFfd,'?')) {
-            ansiFfd = ffd.cAlternateFileName;
-        }
-
-        const std::string fname(basedir + ansiFfd);
-
-        if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
-            // File
-            if ((!checkAllFilesInDir || Path::acceptFile(fname, extra)) && !ignored.match(fname)) {
-                const std::string nativename = Path::fromNativeSeparators(fname);
-
-                // Limitation: file sizes are assumed to fit in a 'size_t'
-#ifdef _WIN64
-                files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
-#else
-                files[nativename] = ffd.nFileSizeLow;
-#endif
+        if (ffd.cFileName[0] != '.' && ffd.cFileName[0] != '\0')
+        {
+            const char* ansiFfd = ffd.cFileName;
+            if (std::strchr(ansiFfd,'?')) {
+                ansiFfd = ffd.cAlternateFileName;
             }
-        } else {
-            // Directory
-            if (recursive) {
-                if (!ignored.match(fname)) {
-                    std::string err = FileLister::recursiveAddFiles(files, fname, extra, ignored);
-                    if (!err.empty())
-                        return err;
+
+            const std::string fname(basedir + ansiFfd);
+
+            if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) {
+                // File
+                if ((!checkAllFilesInDir || Path::acceptFile(fname, extra)) && !ignored.match(fname)) {
+                    const std::string nativename = Path::fromNativeSeparators(fname);
+
+                    // Limitation: file sizes are assumed to fit in a 'size_t'
+#ifdef _WIN64
+                    files[nativename] = (static_cast<std::size_t>(ffd.nFileSizeHigh) << 32) | ffd.nFileSizeLow;
+#else
+                    files[nativename] = ffd.nFileSizeLow;
+#endif
+                }
+            } else {
+                // Directory
+                if (recursive) {
+                    if (!ignored.match(fname)) {
+                        std::string err = FileLister::recursiveAddFiles(files, fname, extra, ignored);
+                        if (!err.empty())
+                            return err;
+                    }
                 }
             }
         }
-    } while (FindNextFileA(hFind, &ffd) != FALSE);
 
-    std::string res;
+        if (!FindNextFileA(hFind, &ffd)) {
+            const DWORD err = GetLastError();
+            // no more files matched
+            if (err != ERROR_NO_MORE_FILES)
+                return "failed to get next file (error: " + std::to_string(err) + ")";
+            break;
+        }
+    } while (true);
 
-    const DWORD err = GetLastError();
-    // no more files matched
-    if (err != ERROR_NO_MORE_FILES)
-        res = "failed to get next file (error: " + std::to_string(err) + ")";
-
-    return res;
+    return "";
 }
 
 #else
