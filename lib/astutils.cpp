@@ -1901,7 +1901,7 @@ static bool functionModifiesArguments(const Function* f)
 
 bool isConstFunctionCall(const Token* ftok, const Library& library)
 {
-    if (isSizeOfEtc(ftok))
+    if (isUnevaluated(ftok))
         return true;
     if (!Token::Match(ftok, "%name% ("))
         return false;
@@ -3381,7 +3381,7 @@ bool isGlobalData(const Token *expr, bool cpp)
     return globalData || !var;
 }
 
-bool isSizeOfEtc(const Token *tok)
+bool isUnevaluated(const Token *tok)
 {
-    return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
+    return Token::Match(tok, "alignof|_Alignof|_alignof|__alignof|__alignof__|decltype|offsetof|sizeof|typeid|typeof|__typeof__ (");
 }

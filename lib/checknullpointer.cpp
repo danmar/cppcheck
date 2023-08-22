@@ -150,11 +150,6 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
     return isPointerDeRef(tok, unknown, mSettings);
 }
 
-static bool isUnevaluatedOperator(const Token* tok)
-{
-    return Token::Match(tok, "sizeof|decltype|typeid|typeof|alignof|_Alignof|_alignof|__alignof|__alignof__ (");
-}
-
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)
 {
     unknown = false;
@@ -192,7 +187,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
 
     // Dereferencing pointer..
     const Token* grandParent = parent->astParent();
-    if (parent->isUnaryOp("*") && !(grandParent && isUnevaluatedOperator(grandParent->previous()))) {
+    if (parent->isUnaryOp("*") && !(grandParent && isUnevaluated(grandParent->previous()))) {
         // declaration of function pointer
         if (tok->variable() && tok->variable()->nameToken() == tok)
             return false;
@@ -290,7 +285,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
     const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (isUnevaluatedOperator(tok)) {
+        if (isUnevaluated(tok)) {
             tok = tok->next()->link();
             continue;
         }
@@ -349,7 +344,7 @@ void CheckNullPointer::nullConstantDereference()
             tok = scope->function->token; // Check initialization list
 
         for (; tok != scope->bodyEnd; tok = tok->next()) {
-            if (isUnevaluatedOperator(tok))
+            if (isUnevaluated(tok))
                 tok = tok->next()->link();
 
             else if (Token::simpleMatch(tok, "* 0")) {
