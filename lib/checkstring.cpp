@@ -288,7 +288,9 @@ void CheckString::checkIncorrectStringCompare()
                         incorrectStringCompareError(tok->next(), "substr", end->strAt(1));
                     }
                 }
-            } else if (Token::Match(tok, "%str%|%char%") && isUsedAsBool(tok))
+            } else if (Token::Match(tok, "%str%|%char%") &&
+                       !(tok->astParent() && tok->astParent()->isExpandedMacro()) &&
+                       isUsedAsBool(tok))
                 incorrectStringBooleanError(tok, tok->str());
         }
     }
