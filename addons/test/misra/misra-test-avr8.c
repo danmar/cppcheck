@@ -1,15 +1,15 @@
 // To test:
-// ~/cppcheck/cppcheck--dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test-avr8.c --std=c89 --platform=avr8 && python3 ../misra.py -verify misra/misra-test-avr8.c.dump
+// ~/cppcheck/cppcheck--dump -DDUMMY --suppress=uninitvar misra/misra-test-avr8.c --std=c89 --platform=avr8 && python3 ../misra.py -verify misra/misra-test-avr8.c.dump
 
 static void misra_10_4(void)
 {
     // #10480
-    const char buf[1] = {'f'};
+    const char buf1[1] = {a};
     const char c = '0';
-    x = buf[0] - c;
+    x = buf1[0] - c;
 
-    const char buf[2] = {0};
-    x = 'a' == buf[0]; // no-warning
+    const char buf2[2] = {x,y};
+    x = 'a' == buf2[0]; // no-warning
 
     typedef struct  {
       int t;
