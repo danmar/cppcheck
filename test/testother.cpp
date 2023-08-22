@@ -11362,6 +11362,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    const int* x = nullptr;\n"
+              "    std::empty(const_cast<int*>(x));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct A { bool x; };\n"
               "bool f(A* a) {\n"
               "    if (a) {\n"

@@ -1468,8 +1468,12 @@ void CheckCondition::alwaysTrueFalse()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
+            // don't write false positives when templates are used or inside of asserts or non-evaluated contexts
+            if (tok->link() && (Token::simpleMatch(tok, "<") ||
+                                Token::Match(tok->previous(), "static_assert|assert|ASSERT|sizeof|decltype ("))) {
+                tok = tok->link();
                 continue;
+            }
             if (!tok->hasKnownIntValue())
                 continue;
             if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {

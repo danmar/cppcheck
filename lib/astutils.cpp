@@ -743,7 +743,8 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
         return {std::move(vtParent)};
     }
     // The return type of a function is not the parent valuetype
-    if (Token::simpleMatch(tok->astParent(), "(") && ftok && !tok->isCast() && ftok->tokType() != Token::eType)
+    if (Token::simpleMatch(tok->astParent(), "(") && ftok && !tok->astParent()->isCast() &&
+        ftok->tokType() != Token::eType)
         return {};
     if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
         *parent = tok->astParent();
