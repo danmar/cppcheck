@@ -1713,6 +1713,7 @@ struct {
 } r18_7_struct; // 8.4
 struct {
   uint16_t len;
+  int (*array_param_func_ptr)(char const *argv[], int argc); // no-warning
   uint8_t data_1[ 19 ];
   uint8_t data_2[   ]; // 18.7
 } r18_7_struct; // 8.4
