@@ -67,6 +67,18 @@
 #include <windows.h>
 #endif
 
+static const std::set<std::string> criticalErrors{
+    "cppcheckError",
+    "cppcheckLimit",
+    "internalAstError",
+    "instantiationError",
+    "internalError",
+    "preprocessorErrorDirective",
+    "syntaxError",
+    "unknownMacro"
+};
+
+
 class XMLErrorMessagesLogger : public ErrorLogger
 {
     void reportOut(const std::string & outmsg, Color /*c*/ = Color::Reset) override
@@ -296,6 +308,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.project.fileSettings);
     }
 
+    std::set<std::string> criticalErrors;
     unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
         // Single process
@@ -324,6 +337,17 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 
     if (settings.xml) {
         reportErr(ErrorMessage::getXMLFooter());
+    }
+
+    if (!mCriticalErrors.empty()) {
+        std::string err;
+        for (const std::string& id: mCriticalErrors)
+            err += "," + id;
+        reportOut("Checking was not successful. Checking was aborted because of critical errors (" + err.substr(1) + ").", Color::FgRed);
+    }
+
+    if (settings.terminated()) {
+        reportOut("Checking was not successful. Checking was stopped.", Color::FgRed);
     }
 
     if (returnValue)
@@ -427,6 +451,9 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     assert(mSettings != nullptr);
+
+    if (criticalErrors.count(msg.id))
+        mCriticalErrors.insert(msg.id);
 
     // Alert only about unique errors
     if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)

@@ -47,7 +47,7 @@
       <widget class="QComboBox" name="mCodingStandard">
        <item>
         <property name="text">
-         <string>Misra C 2023</string>
+         <string>Misra C</string>
         </property>
        </item>
        <item>

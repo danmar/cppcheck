@@ -176,6 +176,17 @@ public:
      */
     void translate();
 
+    /**
+     * @brief This function should be called when analysis is stopped
+     */
+    void stopAnalysis();
+
+    /**
+     * @brief Are there successful results?
+     * @return true if analysis finished without critical errors etc
+     */
+    bool isSuccess() const;
+
     void disableProgressbar();
 
     /**
@@ -340,7 +351,11 @@ public slots:
      */
     void logCopyComplete();
 
-protected:
+private:
+
+    void handleCriticalError(const ErrorItem& item);
+    bool mHasCriticalError = false;
+
     /**
      * @brief Should we show a "No errors found dialog" every time no errors were found?
      */
@@ -349,6 +364,11 @@ protected:
     Ui::ResultsView *mUI;
 
     CheckStatistics *mStatistics;
+
+    /**
+     * Set to true when checking finish successfully. Set to false whenever analysis starts.
+     */
+    bool mSuccess = false;
 
 private slots:
     /**

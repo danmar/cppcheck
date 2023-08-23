@@ -1017,6 +1017,20 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         }
     }
 
+    if (!mSettings.severity.isEnabled(Severity::style)) {
+        std::string std;
+        if (mSettings.premiumArgs.find("misra") != std::string::npos || mSettings.addons.count("misra"))
+            std = "misra";
+        else if (mSettings.premiumArgs.find("autosar") != std::string::npos)
+            std = "autosar";
+        else if (mSettings.premiumArgs.find("cert") != std::string::npos)
+            std = "cert";
+        if (!std.empty()) {
+            printError("When " + std + " is used, you must enable style messages: --enable=style");
+            return false;
+        }
+    }
+
     mSettings.loadCppcheckCfg();
 
     // Default template format..

@@ -90,6 +90,7 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 {
     mUI->mProgress->setMinimum(0);
     mUI->mProgress->setVisible(false);
+    mUI->mLabelCriticalErrors->setVisible(false);
 
     CodeEditorStyle theStyle(CodeEditorStyle::loadSettings(settings));
     mUI->mCode->setStyle(theStyle);
@@ -120,6 +121,8 @@ void ResultsView::clear(bool results)
     mUI->mProgress->setMaximum(PROGRESS_MAX);
     mUI->mProgress->setValue(0);
     mUI->mProgress->setFormat("%p%");
+
+    mUI->mLabelCriticalErrors->setVisible(false);
 }
 
 void ResultsView::clear(const QString &filename)
@@ -145,6 +148,8 @@ void ResultsView::progress(int value, const QString& description)
 
 void ResultsView::error(const ErrorItem &item)
 {
+    handleCriticalError(item);
+
     if (mUI->mTree->addErrorItem(item)) {
         emit gotResults();
         mStatistics->addItem(item.tool(), ShowTypes::SeverityToShowType(item.severity));
@@ -285,6 +290,8 @@ void ResultsView::checkingStarted(int count)
 
 void ResultsView::checkingFinished()
 {
+    mSuccess = !mUI->mLabelCriticalErrors->isVisible();
+
     mUI->mProgress->setVisible(false);
     mUI->mProgress->setFormat("%p%");
 
@@ -377,6 +384,7 @@ void ResultsView::readErrorsXml(const QString &filename)
     }
 
     for (const ErrorItem& item : errors) {
+        handleCriticalError(item);
         mUI->mTree->addErrorItem(item);
     }
 
@@ -505,4 +513,37 @@ void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
     contextMenu.addAction(tr("Copy complete Log"), this, SLOT(logCopyComplete()));
 
     contextMenu.exec(globalPos);
+}
+
+void ResultsView::stopAnalysis()
+{
+    mUI->mLabelCriticalErrors->setText(tr("Analysis was stopped"));
+    mUI->mLabelCriticalErrors->setVisible(true);
+}
+
+void ResultsView::handleCriticalError(const ErrorItem &item)
+{
+    const QSet<QString> criticalErrors{
+        "cppcheckError",
+        "cppcheckLimit",
+        "internalAstError",
+        "instantiationError",
+        "internalError",
+        "preprocessorErrorDirective",
+        "syntaxError",
+        "unknownMacro"
+    };
+
+    if (criticalErrors.contains(item.errorId)) {
+        QString msg = tr("There was a critical error with id '%1'").arg(item.errorId);
+        if (!item.file0.isEmpty())
+            msg += ", " + tr("when checking %1").arg(item.file0);
+        msg += ". " + tr("Analysis was aborted.");
+        mUI->mLabelCriticalErrors->setText(msg);
+        mUI->mLabelCriticalErrors->setVisible(true);
+    }
+}
+
+bool ResultsView::isSuccess() const {
+    return mSuccess && !mUI->mLabelCriticalErrors->isVisible();
 }
