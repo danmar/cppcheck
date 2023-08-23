@@ -1455,7 +1455,7 @@ bool isUsedAsBool(const Token* const tok, const Settings* settings)
         return isUsedAsBool(parent);
     if (parent->isUnaryOp("*"))
         return isUsedAsBool(parent);
-    if (Token::Match(parent, "==|!=") && tok->astSibling()->hasKnownIntValue() &&
+    if (Token::Match(parent, "==|!=") && (tok->astSibling()->isNumber() || tok->astSibling()->isLiteral()) && tok->astSibling()->hasKnownIntValue() &&
         tok->astSibling()->values().front().intvalue == 0)
         return true;
     if (parent->str() == "(" && astIsRHS(tok) && Token::Match(parent->astOperand1(), "if|while"))

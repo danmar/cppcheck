@@ -792,6 +792,13 @@ private:
               "    g(2, !\"def\");\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Conversion of string literal \"def\" to bool always evaluates to true.\n", errout.str());
+
+        check("bool f(const char *p) {\n"
+              "    if (*p == '\\0')\n"
+              "        return *p == '\\0';\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deadStrcmp() {
