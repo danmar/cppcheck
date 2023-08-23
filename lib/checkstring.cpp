@@ -246,6 +246,21 @@ void CheckString::strPlusCharError(const Token *tok)
     reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic. A value of type '" + charType +"' is added to a string literal.", CWE665, Certainty::normal);
 }
 
+static bool isMacroUsage(const Token* tok)
+{
+    if (const Token* parent = tok->astParent()) {
+        if (parent->isExpandedMacro())
+            return true;
+        if (parent->isUnaryOp("!")) {
+            int argn{};
+            const Token* ftok = getTokenArgumentFunction(parent, argn);
+            if (ftok && !ftok->function())
+                return true;
+        }
+    }
+    return false;
+}
+
 //---------------------------------------------------------------------------
 // Implicit casts of string literals to bool
 // Comparing string literal with strlen() with wrong length
@@ -288,9 +303,9 @@ void CheckString::checkIncorrectStringCompare()
                         incorrectStringCompareError(tok->next(), "substr", end->strAt(1));
                     }
                 }
-            } else if (Token::Match(tok, "%str%|%char%") &&
-                       !(tok->astParent() && tok->astParent()->isExpandedMacro()) &&
-                       isUsedAsBool(tok))
+            } else if (Token::Match(tok, "%str%|%char%") &&                       
+                       isUsedAsBool(tok) &&
+                       !isMacroUsage(tok))
                 incorrectStringBooleanError(tok, tok->str());
         }
     }
