@@ -99,19 +99,19 @@ namespace {
         std::string runScript;
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
-            if (Path::fileExists(fileName))
+            if (Path::isFile(fileName))
                 return fileName;
 
             const std::string exepath = Path::getPathFromFilename(exename);
-            if (Path::fileExists(exepath + fileName))
+            if (Path::isFile(exepath + fileName))
                 return exepath + fileName;
-            if (Path::fileExists(exepath + "addons/" + fileName))
+            if (Path::isFile(exepath + "addons/" + fileName))
                 return exepath + "addons/" + fileName;
 
 #ifdef FILESDIR
-            if (Path::fileExists(FILESDIR + ("/" + fileName)))
+            if (Path::isFile(FILESDIR + ("/" + fileName)))
                 return FILESDIR + ("/" + fileName);
-            if (Path::fileExists(FILESDIR + ("/addons/" + fileName)))
+            if (Path::isFile(FILESDIR + ("/addons/" + fileName)))
                 return FILESDIR + ("/addons/" + fileName);
 #endif
             return "";

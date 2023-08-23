@@ -137,7 +137,7 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
              iter != settings.includePaths.end();
              ) {
             const std::string path(Path::toNativeSeparators(*iter));
-            if (FileLister::isDirectory(path))
+            if (Path::isDirectory(path))
                 ++iter;
             else {
                 // If the include path is not found, warn user and remove the non-existing path from the list.

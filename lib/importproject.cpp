@@ -1367,5 +1367,5 @@ void ImportProject::printError(const std::string &message)
 
 bool ImportProject::sourceFileExists(const std::string &file)
 {
-    return Path::fileExists(file);
+    return Path::isFile(file);
 }
