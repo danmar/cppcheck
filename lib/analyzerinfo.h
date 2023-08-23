@@ -49,6 +49,7 @@ class ErrorMessage;
  */
 class CPPCHECKLIB AnalyzerInformation {
 public:
+    AnalyzerInformation();
     ~AnalyzerInformation();
 
     static void writeFilesTxt(const std::string &buildDir, const std::list<std::string> &sourcefiles, const std::string &userDefines, const std::list<ImportProject::FileSettings> &fileSettings);

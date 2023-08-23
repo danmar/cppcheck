@@ -89,7 +89,19 @@ class XMLErrorMessagesLogger : public ErrorLogger
 
 CppCheckExecutor::~CppCheckExecutor()
 {
-    delete mErrorOutput;
+    if (mErrorOutput) {
+        try
+        {
+            mErrorOutput->close();
+        }
+        catch (const std::ios_base::failure&)
+        {
+            // TODO report error
+            assert(false);
+        }
+
+        delete mErrorOutput;
+    }
 }
 
 bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* const argv[])
@@ -280,7 +292,9 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         mLatestProgressOutputTime = std::time(nullptr);
 
     if (!settings.outputFile.empty()) {
-        mErrorOutput = new std::ofstream(settings.outputFile);
+        mErrorOutput = new std::ofstream();
+        mErrorOutput->exceptions(std::ios_base::failbit | std::ios_base::badbit);
+        mErrorOutput->open(settings.outputFile);
     }
 
     if (settings.xml) {

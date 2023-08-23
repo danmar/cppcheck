@@ -23,13 +23,27 @@
 #include "utils.h"
 
 #include <tinyxml2.h>
+#include <cassert>
 #include <cstring>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 
+AnalyzerInformation::AnalyzerInformation()
+{
+    mOutputStream.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+}
+
 AnalyzerInformation::~AnalyzerInformation()
 {
-    close();
+    try
+    {
+        close();
+    }
+    catch (const std::ios_base::failure&)
+    {
+        // TODO: Report error
+        assert(false);
+    }
 }
 
 static std::string getFilename(const std::string &fullpath)
@@ -49,7 +63,9 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
     std::map<std::string, unsigned int> fileCount;
 
     const std::string filesTxt(buildDir + "/files.txt");
-    std::ofstream fout(filesTxt);
+    std::ofstream fout;
+    fout.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+    fout.open(filesTxt);
     for (const std::string &f : sourcefiles) {
         const std::string afile = getFilename(f);
         fout << afile << ".a" << (++fileCount[afile]) << "::" << Path::simplifyPath(Path::fromNativeSeparators(f)) << '\n';
@@ -65,7 +81,6 @@ void AnalyzerInformation::writeFilesTxt(const std::string &buildDir, const std::
 
 void AnalyzerInformation::close()
 {
-    mAnalyzerInfoFile.clear();
     if (mOutputStream.is_open()) {
         mOutputStream << "</analyzerinfo>\n";
         mOutputStream.close();
@@ -139,12 +154,8 @@ bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::st
         return false;
 
     mOutputStream.open(mAnalyzerInfoFile);
-    if (mOutputStream.is_open()) {
-        mOutputStream << "<?xml version=\"1.0\"?>\n";
-        mOutputStream << "<analyzerinfo hash=\"" << hash << "\">\n";
-    } else {
-        mAnalyzerInfoFile.clear();
-    }
+    mOutputStream << "<?xml version=\"1.0\"?>\n";
+    mOutputStream << "<analyzerinfo hash=\"" << hash << "\">\n";
 
     return true;
 }

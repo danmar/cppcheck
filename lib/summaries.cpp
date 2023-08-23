@@ -86,7 +86,9 @@ std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg
         const std::string::size_type pos = filename.rfind(".a");
         if (pos != std::string::npos) {
             filename[pos+1] = 's';
-            std::ofstream fout(filename);
+            std::ofstream fout;
+            fout.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+            fout.open(filename);
             fout << ostr.str();
         }
     }
