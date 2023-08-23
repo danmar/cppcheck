@@ -3555,7 +3555,7 @@ private:
               "    if (handle) return 1;\n"
               "    else return 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'handle!=0', second condition is always false\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'handle!=nullptr', second condition is always false\n", errout.str());
 
         check("void f(void* x, void* y) {\n"
               "    if (x == nullptr && y == nullptr)\n"
