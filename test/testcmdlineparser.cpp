@@ -148,7 +148,11 @@ private:
         TEST_CASE(maxConfigsMissingCount);
         TEST_CASE(maxConfigsInvalid);
         TEST_CASE(maxConfigsTooSmall);
-        TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
+        TEST_CASE(reportProgress1);
+        TEST_CASE(reportProgress2);
+        TEST_CASE(reportProgress3);
+        TEST_CASE(reportProgress4);
+        TEST_CASE(reportProgress5);
         TEST_CASE(stdc99);
         TEST_CASE(stdcpp11);
         TEST_CASE(stdunknown1);
@@ -1060,12 +1064,46 @@ private:
         ASSERT_EQUALS("cppcheck: error: argument to '--max-configs=' must be greater than 0.\n", GET_REDIRECT_OUTPUT);
     }
 
-    void reportProgressTest() {
+    void reportProgress1() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--report-progress", "file.cpp"};
-        settings->reportProgress = false;
+        settings->reportProgress = -1;
         ASSERT(parser->parseFromArgs(3, argv));
-        ASSERT(settings->reportProgress);
+        ASSERT_EQUALS(10, settings->reportProgress);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void reportProgress2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--report-progress=", "file.cpp"};
+        settings->reportProgress = -1;
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--report-progress=' is not valid - not an integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void reportProgress3() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--report-progress=-1", "file.cpp"};
+        settings->reportProgress = -1;
+        ASSERT(!parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: argument to '--report-progress=' needs to be a positive integer.\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void reportProgress4() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--report-progress=0", "file.cpp"};
+        settings->reportProgress = -1;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(0, settings->reportProgress);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
+    void reportProgress5() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--report-progress=1", "file.cpp"};
+        settings->reportProgress = -1;
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(1, settings->reportProgress);
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
