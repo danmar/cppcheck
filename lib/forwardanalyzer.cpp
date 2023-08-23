@@ -143,7 +143,7 @@ struct ForwardTraversal {
             // Traverse the parameters of the function before escaping
             traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
-        } else if (isUnevaluated(tok)) {
+        } else if (isUnevaluated(tok->previous())) {
             if (out)
                 *out = tok->link();
             return Progress::Skip;
@@ -825,10 +825,6 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    static bool isUnevaluated(const Token* tok) {
-        return Token::Match(tok->previous(), "sizeof|decltype (");
-    }
-
     static bool isFunctionCall(const Token* tok)
     {
         if (!Token::simpleMatch(tok, "("))
@@ -839,7 +835,7 @@ struct ForwardTraversal {
             return false;
         if (Token::simpleMatch(tok->link(), ") {"))
             return false;
-        if (isUnevaluated(tok))
+        if (isUnevaluated(tok->previous()))
             return false;
         return Token::Match(tok->previous(), "%name%|)|]|>");
     }

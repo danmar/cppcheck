@@ -427,6 +427,6 @@ CPPCHECKLIB bool isNullOperand(const Token *expr);
 
 bool isGlobalData(const Token *expr, bool cpp);
 
-bool isSizeOfEtc(const Token *tok);
+bool isUnevaluated(const Token *tok);
 
 #endif // astutilsH
