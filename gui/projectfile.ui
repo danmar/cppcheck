@@ -806,11 +806,42 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_20">
           <item>
-           <widget class="QCheckBox" name="mMisraC2012">
-            <property name="text">
-             <string>Misra C 2012</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QCheckBox" name="mMisraC">
+              <property name="text">
+               <string>Misra C</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="mMisraVersion">
+              <item>
+               <property name="text">
+                <string>2012</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2023</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_4">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
           <item>
            <layout class="QHBoxLayout" name="mLayoutMisraRuleTexts">
