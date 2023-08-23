@@ -303,7 +303,7 @@ void CheckString::checkIncorrectStringCompare()
                         incorrectStringCompareError(tok->next(), "substr", end->strAt(1));
                     }
                 }
-            } else if (Token::Match(tok, "%str%|%char%") &&                       
+            } else if (Token::Match(tok, "%str%|%char%") &&
                        isUsedAsBool(tok) &&
                        !isMacroUsage(tok))
                 incorrectStringBooleanError(tok, tok->str());
