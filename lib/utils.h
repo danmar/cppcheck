@@ -337,4 +337,9 @@ static inline std::string ptr_to_string(const void* p)
 #endif
 }
 
+static inline std::string bool_to_string(bool b)
+{
+    return b ? "true" : "false";
+}
+
 #endif
