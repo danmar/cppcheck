@@ -92,7 +92,7 @@ static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 namespace {
     class FilesDeleter {
     public:
-        FilesDeleter() {}
+        FilesDeleter() = default;
         ~FilesDeleter() {
             for (const std::string& fileName: mFilenames)
                 std::remove(fileName.c_str());
