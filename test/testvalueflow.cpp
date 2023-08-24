@@ -5129,6 +5129,13 @@ private:
         value = valueOfTok(code, "1");
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT_EQUALS(false, value.isKnown());
+
+        code = "void f(char c, struct T* t) {\n" // #11894
+               "    (*t->func)(&c, 1, t->ptr);\n"
+               "}\n";
+        value = valueOfTok(code, ", 1");
+        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT_EQUALS(false, value.isKnown());
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {
