@@ -4427,8 +4427,11 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
 
 const Variable* Function::getArgumentVar(nonneg int num) const
 {
-    if (num < argumentList.size())
-        return &argumentList[num];
+    if (num < argumentList.size()) {
+        auto it = argumentList.begin();
+        std::advance(it, num);
+        return &*it;
+    }
     return nullptr;
 }
 

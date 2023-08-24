@@ -1373,7 +1373,6 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         function->nestedIn = nestedIn;
     function->argDef = par1;
     // Function arguments
-    function->argumentList.reserve(children.size());
     for (int i = 0; i < children.size(); ++i) {
         AstNodePtr child = children[i];
         if (child->nodeType != ParmVarDecl)

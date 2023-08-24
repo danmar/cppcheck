@@ -907,7 +907,7 @@ public:
     const ::Type* retType{};          ///< function return type
     const Scope* functionScope{};     ///< scope of function body
     const Scope* nestedIn{};          ///< Scope the function is declared in
-    std::vector<Variable> argumentList; ///< argument list
+    std::list<Variable> argumentList; ///< argument list, must remain list due to clangimport usage!
     nonneg int initArgCount{};        ///< number of args with default values
     Type type = eFunction;            ///< constructor, destructor, ...
     const Token* noexceptArg{};       ///< noexcept token

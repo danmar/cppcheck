@@ -67,7 +67,9 @@ void CheckVaarg::va_start_argument()
                 if (var && var->isReference())
                     referenceAs_va_start_error(param2, var->name());
                 if (var && var->index() + 2 < function->argCount() && printWarnings) {
-                    wrongParameterTo_va_start_error(tok, var->name(), function->argumentList[function->argumentList.size()-2].name());
+                    auto it = function->argumentList.end();
+                    std::advance(it, -2);
+                    wrongParameterTo_va_start_error(tok, var->name(), it->name());
                 }
                 tok = tok->linkAt(1);
             }
