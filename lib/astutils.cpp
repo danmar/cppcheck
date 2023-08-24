@@ -3149,7 +3149,7 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     } else if (ftok->isControlFlowKeyword()) {
         return ExprUsage::Used;
     } else if (ftok->str() == "{") {
-        return ExprUsage::Used;
+        return indirect == 0 ? ExprUsage::Used : ExprUsage::Inconclusive;
     } else {
         const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
         if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)

@@ -6197,6 +6197,12 @@ private:
                         "    x = i;\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: i\n", errout.str());
+
+        valueFlowUninit("void f() {\n" // #11890
+                        "    int x;\n"
+                        "    int* a[] = { &x };\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
