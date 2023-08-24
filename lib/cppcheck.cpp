@@ -88,6 +88,23 @@ static TimerResults s_timerResults;
 // CWE ids used
 static const CWE CWE398(398U);  // Indicator of Poor Code Quality
 
+// File deleter
+namespace {
+    class FilesDeleter {
+    public:
+        FilesDeleter() {}
+        ~FilesDeleter() {
+            for (const std::string& fileName: mFilenames)
+                std::remove(fileName.c_str());
+        }
+        void addFile(const std::string& fileName) {
+            mFilenames.push_back(fileName);
+        }
+    private:
+        std::vector<std::string> mFilenames;
+    };
+}
+
 namespace {
     struct AddonInfo {
         std::string name;
@@ -631,6 +648,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
 {
     mExitCode = 0;
 
+    FilesDeleter filesDeleter;
+
     if (Settings::terminated())
         return mExitCode;
 
@@ -774,6 +793,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if (fdump.is_open()) {
             fdump << dumpProlog.str();
             dumpProlog.str("");
+            if (!mSettings.dump)
+                filesDeleter.addFile(dumpFile);
         }
 
         // Get directives
@@ -1404,8 +1425,6 @@ void CppCheck::executeAddons(const std::string& dumpFile)
     if (!dumpFile.empty()) {
         std::vector<std::string> f{dumpFile};
         executeAddons(f);
-        if (!mSettings.dump)
-            std::remove(dumpFile.c_str());
     }
 }
 
@@ -1414,10 +1433,13 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
     if (mSettings.addons.empty() || files.empty())
         return;
 
+    FilesDeleter filesDeleter;
+
     std::string fileList;
 
     if (files.size() >= 2 || endsWith(files[0], ".ctu-info")) {
         fileList = Path::getPathFromFilename(files[0]) + FILELIST;
+        filesDeleter.addFile(fileList);
         std::ofstream fout(fileList);
         for (const std::string& f: files)
             fout << f << std::endl;
@@ -1487,9 +1509,6 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             reportErr(errmsg);
         }
     }
-
-    if (!fileList.empty())
-        std::remove(fileList.c_str());
 }
 
 void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files)
