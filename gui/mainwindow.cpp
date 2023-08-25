@@ -1020,11 +1020,10 @@ Settings MainWindow::getCppcheckSettings()
                 premiumArgs += " --bughunting";
             if (mProjectFile->getCertIntPrecision() > 0)
                 premiumArgs += " --cert-c-int-precision=" + QString::number(mProjectFile->getCertIntPrecision());
-            if (mProjectFile->getAddons().contains("misra"))
-                premiumArgs += " --misra-c-2012";
-            for (const QString& c: mProjectFile->getCodingStandards()) {
+            for (const QString& c: mProjectFile->getCodingStandards())
                 premiumArgs += " --" + c;
-            }
+            if (!premiumArgs.contains("misra") && mProjectFile->getAddons().contains("misra"))
+                premiumArgs += " --misra-c-2012";
             result.premiumArgs = premiumArgs.mid(1).toStdString();
         }
     }
@@ -1495,16 +1494,24 @@ void MainWindow::save()
 
 void MainWindow::complianceReport()
 {
-    if (isCppcheckPremium() && mProjectFile && mProjectFile->getAddons().contains("misra")) {
-        QTemporaryFile tempResults;
-        tempResults.open();
-        tempResults.close();
-
-        mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
-
-        ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
-        dlg.exec();
+    if (!mUI->mResults->isSuccess()) {
+        QMessageBox m(QMessageBox::Critical,
+                      "Cppcheck",
+                      tr("Cannot generate a compliance report right now, an analysis must finish successfully. Try to reanalyze the code and ensure there are no critical errors."),
+                      QMessageBox::Ok,
+                      this);
+        m.exec();
+        return;
     }
+
+    QTemporaryFile tempResults;
+    tempResults.open();
+    tempResults.close();
+
+    mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
+
+    ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
+    dlg.exec();
 }
 
 void MainWindow::resultsAdded()
@@ -1574,6 +1581,7 @@ void MainWindow::aboutToShowViewMenu()
 void MainWindow::stopAnalysis()
 {
     mThread->stop();
+    mUI->mResults->stopAnalysis();
     mUI->mResults->disableProgressbar();
     const QString &lastResults = getLastResults();
     if (!lastResults.isEmpty()) {

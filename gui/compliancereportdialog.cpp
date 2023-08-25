@@ -191,13 +191,7 @@ void ComplianceReportDialog::save()
                      "--project-version=" + projectVersion,
                      "--output-file=" + outFile};
 
-    if (std.startsWith("misra-c-")) {
-        args << "--misra-c"
-             << "--compliant=misra-c2012-1.1"
-             << "--compliant=misra-c2012-1.2";
-    } else {
-        args << ("--" + std);
-    }
+    args << ("--" + std);
 
     if (files)
         args << "--files=" + tempFiles.fileName();
