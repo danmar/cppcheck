@@ -164,11 +164,6 @@ private:
     std::set<std::string> mShownErrors;
 
     /**
-     * @brief Critical errors that has been reported.
-     */
-    std::set<std::string> mCriticalErrors;
-
-    /**
      * Filename associated with size of file
      */
     std::map<std::string, std::size_t> mFiles;
