@@ -353,8 +353,11 @@ public slots:
 
 private:
 
+    /**
+     * If provided ErrorItem is a critical error then display warning message
+     * in the resultsview
+     */
     void handleCriticalError(const ErrorItem& item);
-    bool mHasCriticalError = false;
 
     /**
      * @brief Should we show a "No errors found dialog" every time no errors were found?
