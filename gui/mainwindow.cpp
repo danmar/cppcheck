@@ -1496,7 +1496,7 @@ void MainWindow::complianceReport()
 {
     if (!mUI->mResults->isSuccess()) {
         QMessageBox m(QMessageBox::Critical,
-                      tr("Cppcheck"),
+                      "Cppcheck",
                       tr("Cannot generate a compliance report right now, an analysis must finish successfully. Try to reanalyze the code and ensure there are no critical errors."),
                       QMessageBox::Ok,
                       this);
