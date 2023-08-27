@@ -253,6 +253,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings.checkLibrary = true;
             }
 
+            else if (std::strncmp(argv[i], "--checkers-report=", 18) == 0)
+                mSettings.checkersReportFilename = argv[i] + 18;
+
             else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
                 if (!parseNumberArg(argv[i], 18, mSettings.checksMaxTime, true))
                     return false;
@@ -1115,6 +1118,8 @@ void CmdLineParser::printHelp()
         "                         The default choice is 'normal'.\n"
         "    --check-library      Show information messages when library files have\n"
         "                         incomplete info.\n"
+        "    --checkers-report=<file>\n"
+        "                         Write a report of all the active checkers to the given file.\n"
         "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
         "                         parser. Takes the executable as optional parameter and\n"
         "                         defaults to `clang`. Cppcheck will run the given Clang\n"

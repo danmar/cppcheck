@@ -527,18 +527,7 @@ void ResultsView::stopAnalysis()
 
 void ResultsView::handleCriticalError(const ErrorItem &item)
 {
-    const QSet<QString> criticalErrors{
-        "cppcheckError",
-        "cppcheckLimit",
-        "internalAstError",
-        "instantiationError",
-        "internalError",
-        "preprocessorErrorDirective",
-        "syntaxError",
-        "unknownMacro"
-    };
-
-    if (criticalErrors.contains(item.errorId)) {
+    if (ErrorLogger::isCriticalErrorId(item.errorId.toStdString())) {
         QString msg = tr("There was a critical error with id '%1'").arg(item.errorId);
         if (!item.file0.isEmpty())
             msg += ", " + tr("when checking %1").arg(item.file0);

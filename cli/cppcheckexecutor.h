@@ -154,6 +154,11 @@ private:
     bool loadLibraries(Settings& settings);
 
     /**
+     * @brief Write the checkers report
+     */
+    void writeCheckersReport(const Settings& settings) const;
+
+    /**
      * Pointer to current settings; set while check() is running for reportError().
      */
     const Settings* mSettings{};
@@ -182,6 +187,16 @@ private:
      * Error output
      */
     std::ofstream* mErrorOutput{};
+
+    /**
+     * Checkers that has been executed
+     */
+    std::set<std::string> mActiveCheckers;
+
+    /**
+     * True if there are critical errors
+     */
+    std::string mCriticalErrors;
 };
 
 #endif // CPPCHECKEXECUTOR_H

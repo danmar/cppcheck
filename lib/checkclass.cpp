@@ -131,6 +131,8 @@ void CheckClass::constructors()
     if (!printStyle && !printWarnings)
         return;
 
+    logChecker("CheckClass::checkConstructors"); // style,warning
+
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         if (mSettings->hasLib("vcl") && isVclTypeInit(scope->definedType))
@@ -338,6 +340,8 @@ void CheckClass::checkExplicitConstructors()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckClass::checkExplicitConstructors"); // style
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         // Do not perform check, if the class/struct has not any constructors
         if (scope->numConstructors == 0)
@@ -404,6 +408,8 @@ void CheckClass::copyconstructors()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckClass::checkCopyConstructors"); // warning
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         std::map<int, const Token*> allocatedVars;
@@ -1115,6 +1121,8 @@ void CheckClass::initializationListUsage()
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
+    logChecker("CheckClass::initializationListUsage"); // performance
+
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         // Check every constructor
         if (!scope->function || !scope->function->isConstructor())
@@ -1255,6 +1263,8 @@ void CheckClass::privateFunctions()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckClass::privateFunctions"); // style
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // do not check borland classes with properties..
@@ -1325,6 +1335,7 @@ static const Scope* findFunctionOf(const Scope* scope)
 
 void CheckClass::checkMemset()
 {
+    logChecker("CheckClass::checkMemset");
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -1541,6 +1552,8 @@ void CheckClass::operatorEqRetRefThis()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckClass::operatorEqRetRefThis"); // style
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
@@ -1682,6 +1695,8 @@ void CheckClass::operatorEqToSelf()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckClass::operatorEqToSelf"); // warning
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         // skip classes with multiple inheritance
@@ -1881,6 +1896,8 @@ void CheckClass::virtualDestructor()
 
     std::list<const Function *> inconclusiveErrors;
 
+    logChecker("CheckClass::virtualDestructor");
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // Skip base classes (unless inconclusive)
@@ -2028,6 +2045,8 @@ void CheckClass::thisSubtraction()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckClass::thisSubtraction"); // warning
+
     const Token *tok = mTokenizer->tokens();
     for (;;) {
         tok = Token::findmatch(tok, "this - %name%");
@@ -2058,6 +2077,8 @@ void CheckClass::checkConst()
 
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckClass::checkConst"); // style,inconclusive
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         for (const Function &func : scope->functionList) {
@@ -2609,6 +2630,8 @@ void CheckClass::initializerListOrder()
     if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
+    logChecker("CheckClass::initializerListOrder"); // style,inconclusive
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // iterate through all member functions looking for constructors
@@ -2671,6 +2694,8 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
 
 void CheckClass::checkSelfInitialization()
 {
+    logChecker("CheckClass::checkSelfInitialization");
+
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         const Function* function = scope->function;
         if (!function || !function->isConstructor())
@@ -2710,6 +2735,7 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+    logChecker("CheckClass::checkVirtualFunctionCallInConstructor"); // warning
     std::map<const Function *, std::list<const Token *>> virtualFunctionCallsMap;
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         if (scope->function == nullptr || !scope->function->hasBody() ||
@@ -2878,6 +2904,8 @@ void CheckClass::checkDuplInheritedMembers()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckClass::checkDuplInheritedMembers"); // warning
+
     // Iterate over all classes
     for (const Type &classIt : mSymbolDatabase->typeList) {
         // Iterate over the parent classes
@@ -3009,6 +3037,8 @@ void CheckClass::checkCopyCtorAndEqOperator()
     if ((true) || !mSettings->severity.isEnabled(Severity::warning)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
+    // logChecker
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         const bool hasNonStaticVars = std::any_of(scope->varlist.begin(), scope->varlist.end(), [](const Variable& var) {
@@ -3068,6 +3098,7 @@ void CheckClass::checkOverride()
         return;
     if (mSettings->standards.cpp < Standards::CPP11)
         return;
+    logChecker("CheckClass::checkMissingOverride"); // style,c++03
     for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
         if (!classScope->definedType || classScope->definedType->derivedFrom.empty())
             continue;
@@ -3166,6 +3197,8 @@ void CheckClass::checkUselessOverride()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckClass::checkUselessOverride"); // style
+
     for (const Scope* classScope : mSymbolDatabase->classAndStructScopes) {
         if (!classScope->definedType || classScope->definedType->derivedFrom.size() != 1)
             continue;
@@ -3222,6 +3255,8 @@ void CheckClass::checkThisUseAfterFree()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckClass::checkThisUseAfterFree"); // warning
 
     for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
 
@@ -3320,6 +3355,7 @@ void CheckClass::checkUnsafeClassRefMember()
 {
     if (!mSettings->safeChecks.classes || !mSettings->severity.isEnabled(Severity::warning))
         return;
+    logChecker("CheckClass::checkUnsafeClassRefMember"); // warning,safeChecks
     for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
         for (const Function &func : classScope->functionList) {
             if (!func.hasBody() || !func.isConstructor())
@@ -3466,6 +3502,10 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
     (void)settings; // This argument is unused
 
     std::unordered_map<std::string, MyFileInfo::NameLoc> all;
+
+    CheckClass dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckClass::analyseWholeProgram");
 
     for (const Check::FileInfo* fi1 : fileInfo) {
         const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);

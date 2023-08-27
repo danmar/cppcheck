@@ -60,6 +60,8 @@ void CheckType::checkTooBigBitwiseShift()
     if (mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
         return;
 
+    logChecker("CheckType::checkTooBigBitwiseShift"); // platform
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         // C++ and macro: OUT(x<<y)
         if (mTokenizer->isCPP() && Token::Match(tok, "[;{}] %name% (") && Token::simpleMatch(tok->linkAt(2), ") ;") && tok->next()->isUpperCaseName() && !tok->next()->function())
@@ -164,6 +166,8 @@ void CheckType::checkIntegerOverflow()
     if (mSettings->platform.type == cppcheck::Platform::Type::Unspecified || mSettings->platform.int_bit >= MathLib::bigint_bits)
         return;
 
+    logChecker("CheckType::checkIntegerOverflow"); // platform
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isArithmeticalOp())
             continue;
@@ -234,6 +238,8 @@ void CheckType::checkSignConversion()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckType::checkSignConversion"); // warning
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isArithmeticalOp() || Token::Match(tok,"+|-"))
@@ -314,6 +320,8 @@ void CheckType::checkLongCast()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckType::checkLongCast"); // style
 
     // Assignments..
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -415,6 +423,8 @@ void CheckType::longCastReturnError(const Token *tok, const ValueType* src, cons
 
 void CheckType::checkFloatToIntegerOverflow()
 {
+    logChecker("CheckType::checkFloatToIntegerOverflow");
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         const ValueType *vtint, *vtfloat;
 

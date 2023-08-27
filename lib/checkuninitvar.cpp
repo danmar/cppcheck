@@ -93,6 +93,8 @@ bool CheckUninitVar::diag(const Token* tok)
 
 void CheckUninitVar::check()
 {
+    logChecker("CheckUninitVar::check");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     std::set<std::string> arrayTypeDefs;
@@ -1592,6 +1594,8 @@ static bool isLeafDot(const Token* tok)
 
 void CheckUninitVar::valueFlowUninit()
 {
+    logChecker("CheckUninitVar::valueFlowUninit");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     std::unordered_set<nonneg int> ids;

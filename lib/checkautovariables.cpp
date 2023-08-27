@@ -213,6 +213,8 @@ void CheckAutoVariables::assignFunctionArg()
     if (!printStyle && !printWarning)
         return;
 
+    logChecker("CheckAutoVariables::assignFunctionArg"); // style,warning
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -261,6 +263,8 @@ static bool hasOverloadedAssignment(const Token* tok, bool c, bool& inconclusive
 
 void CheckAutoVariables::autoVariables()
 {
+    logChecker("CheckAutoVariables::autoVariables");
+
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -674,6 +678,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
 
 void CheckAutoVariables::checkVarLifetime()
 {
+    logChecker("CheckAutoVariables::checkVarLifetime");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         if (!scope->function)

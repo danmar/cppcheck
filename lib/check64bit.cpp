@@ -46,6 +46,8 @@ void Check64BitPortability::pointerassignment()
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
 
+    logChecker("Check64BitPortability::pointerassignment"); // portability
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Check return values

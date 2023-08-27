@@ -27,6 +27,7 @@
 
 #include <cstddef>
 #include <list>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -263,6 +264,13 @@ public:
                "</dict>\r\n"
                "</plist>";
     }
+
+    static bool isCriticalErrorId(const std::string& id) {
+        return mCriticalErrorIds.count(id) != 0;
+    }
+
+private:
+    static const std::set<std::string> mCriticalErrorIds;
 };
 
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */

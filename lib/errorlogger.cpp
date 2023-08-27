@@ -39,6 +39,17 @@
 
 #include <tinyxml2.h>
 
+const std::set<std::string> ErrorLogger::mCriticalErrorIds{
+    "cppcheckError",
+    "cppcheckLimit",
+    "internalAstError",
+    "instantiationError",
+    "internalError",
+    "preprocessorErrorDirective",
+    "syntaxError",
+    "unknownMacro"
+};
+
 ErrorMessage::ErrorMessage()
     : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {}
