@@ -366,41 +366,41 @@ static bool isMisraRuleActive(const std::string& rule, int amendment, const std:
 
 void CppCheckExecutor::writeCheckersReport(const Settings& settings) const
 {
-    if (settings.checkersReportFilename.empty()) {
-        if (!settings.quiet) {
-            int activeCheckers = 0;
-            int totalCheckers = 0;
-            for (const auto& checkReq: checkers::allCheckers) {
+    if (!settings.quiet) {
+        int activeCheckers = 0;
+        int totalCheckers = 0;
+        for (const auto& checkReq: checkers::allCheckers) {
+            if (mActiveCheckers.count(checkReq.first) > 0)
+                ++activeCheckers;
+            ++totalCheckers;
+        }
+        if (isCppcheckPremium(settings)) {
+            for (const auto& checkReq: checkers::premiumCheckers) {
                 if (mActiveCheckers.count(checkReq.first) > 0)
                     ++activeCheckers;
                 ++totalCheckers;
             }
-            if (isCppcheckPremium(settings)) {
-                for (const auto& checkReq: checkers::premiumCheckers) {
-                    if (mActiveCheckers.count(checkReq.first) > 0)
-                        ++activeCheckers;
-                    ++totalCheckers;
-                }
-            }
-            if (mSettings->premiumArgs.find("misra-c-") != std::string::npos || mSettings->addons.count("misra")) {
-                for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
-                    const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
-                    const std::string severity = getMisraRuleSeverity(rule);
-                    const bool active = isMisraRuleActive(rule, info.amendment, severity, settings);
-                    if (active)
-                        ++activeCheckers;
-                    ++totalCheckers;
-                }
-            }
-
-            const std::string extra = settings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
-            if (mCriticalErrors.empty())
-                std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
-            else
-                std::cout << "Active checkers: There was critical errors" << extra << std::endl;
         }
-        return;
+        if (mSettings->premiumArgs.find("misra-c-") != std::string::npos || mSettings->addons.count("misra")) {
+            for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
+                const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
+                const std::string severity = getMisraRuleSeverity(rule);
+                const bool active = isMisraRuleActive(rule, info.amendment, severity, settings);
+                if (active)
+                    ++activeCheckers;
+                ++totalCheckers;
+            }
+        }
+
+        const std::string extra = settings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
+        if (mCriticalErrors.empty())
+            std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
+        else
+            std::cout << "Active checkers: There was critical errors" << extra << std::endl;
     }
+
+    if (settings.checkersReportFilename.empty())
+        return;
 
     std::ofstream fout(settings.checkersReportFilename);
     if (!fout.is_open())

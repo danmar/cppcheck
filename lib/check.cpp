@@ -28,7 +28,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstring>
 #include <iostream>
 #include <stdexcept>
 #include <utility>
