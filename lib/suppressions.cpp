@@ -305,7 +305,7 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
     std::istringstream iss(comment.substr(2));
     std::string word;
     iss >> word;
-    if (word != "cppcheck-suppress")
+    if (word.rfind("cppcheck-suppress", 0) != 0)
         return false;
     iss >> errorId;
     if (!iss)

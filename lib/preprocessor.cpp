@@ -81,9 +81,11 @@ namespace {
     };
 }
 
-static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<BadInlineSuppression> &bad)
+static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std::list<Suppressions::Suppression> &inlineSuppressions, std::list<unsigned int> &lineOffset, std::list<BadInlineSuppression> &bad)
 {
     const std::string cppchecksuppress("cppcheck-suppress");
+    const std::string cppchecksuppressoffset("cppcheck-suppress-offset-");
+    unsigned int computedLineOffset = 0;
 
     const std::string &comment = tok->str();
     if (comment.size() < cppchecksuppress.size())
@@ -96,10 +98,29 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     if (comment.substr(pos1, cppchecksuppress.size()) != cppchecksuppress)
         return false;
 
-    // skip spaces after "cppcheck-suppress"
-    const std::string::size_type pos2 = comment.find_first_not_of(' ', pos1+cppchecksuppress.size());
+    // check if it has a line offset
+    const std::string::size_type pos_end_comment = comment.find_first_of(" [", pos1+cppchecksuppress.size());
+    
+    // skip spaces after "cppcheck-suppress" and its possible offset
+    const std::string::size_type pos2 = comment.find_first_not_of(' ', pos_end_comment);
     if (pos2 == std::string::npos)
         return false;
+
+    // determine error suppress offset value if specified
+    if (pos_end_comment >= (pos1 + cppchecksuppressoffset.size() + 1)) {
+        if (comment.substr(pos1, cppchecksuppressoffset.size()) != cppchecksuppressoffset)
+            return false;
+
+        const std::string::size_type pos_offset = pos1 + cppchecksuppressoffset.size();
+        const std::string suppress_offset_string = comment.substr(pos_offset, pos_end_comment-pos_offset);
+
+        const std::string::size_type pos_last_number = suppress_offset_string.find_first_not_of("0123456789");
+
+        if (pos_last_number != std::string::npos)
+            return false;
+
+        computedLineOffset = std::stoi(suppress_offset_string);
+    }
 
     if (comment[pos2] == '[') {
         // multi suppress format
@@ -108,6 +129,9 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
 
         if (!errmsg.empty())
             bad.emplace_back(tok->location, std::move(errmsg));
+
+        for (size_t ii = 0; ii < suppressions.size(); ++ii)
+            lineOffset.push_back(computedLineOffset);
 
         std::copy_if(suppressions.cbegin(), suppressions.cend(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
             return !s.errorId.empty();
@@ -119,8 +143,10 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!s.parseComment(comment, &errmsg))
             return false;
 
-        if (!s.errorId.empty())
+        if (!s.errorId.empty()) {
             inlineSuppressions.push_back(std::move(s));
+            lineOffset.push_back(computedLineOffset);
+        }
 
         if (!errmsg.empty())
             bad.emplace_back(tok->location, std::move(errmsg));
@@ -136,14 +162,15 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, const Sett
             continue;
 
         std::list<Suppressions::Suppression> inlineSuppressions;
-        if (!parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad))
+        std::list<unsigned int> lineOffset;
+        if (!parseInlineSuppressionCommentToken(tok, inlineSuppressions, lineOffset, bad))
             continue;
 
         if (!sameline(tok->previous, tok)) {
             // find code after comment..
             tok = tok->next;
             while (tok && tok->comment) {
-                parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad);
+                parseInlineSuppressionCommentToken(tok, inlineSuppressions, lineOffset, bad);
                 tok = tok->next;
             }
             if (!tok)
@@ -177,7 +204,8 @@ static void addinlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         // Add the suppressions.
         for (Suppressions::Suppression &suppr : inlineSuppressions) {
             suppr.fileName = relativeFilename;
-            suppr.lineNumber = tok->location.line;
+            suppr.lineNumber = tok->location.line + lineOffset.front();
+            lineOffset.pop_front();
             suppr.thisAndNextLine = thisAndNextLine;
             suppressions.addSuppression(std::move(suppr));
         }

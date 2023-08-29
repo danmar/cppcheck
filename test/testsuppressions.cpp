@@ -286,10 +286,31 @@ private:
                                         ""));
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
 
+        // check to make sure the appropriate error is present
+        ASSERT_EQUALS(1, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "    int b;\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n"
+                      "[test.cpp:5]: (error) Uninitialized variable: b\n", errout.str());
+
         // suppress uninitvar globally
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
                                         "    int a;\n"
                                         "    a++;\n"
+                                        "}\n",
+                                        "uninitvar"));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar globally
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "    int b;\n"
+                                        "    b++;\n"
                                         "}\n",
                                         "uninitvar"));
         ASSERT_EQUALS("", errout.str());
@@ -359,10 +380,63 @@ private:
                                         ""));
         ASSERT_EQUALS("", errout.str());
 
+        // suppress uninitvar inline with offset
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-offset-0 uninitvar\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline with offset
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    // cppcheck-suppress-offset-1 uninitvar\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline with offset
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    // cppcheck-suppress-offset-2 uninitvar\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-offset-2 uninitvar\n"
+                                        "    a++;\n"
+                                        "    int b;\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline with offset
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    // cppcheck-suppress-offset-1 uninitvar\n"
+                                        "    // cppcheck-suppress-offset-3 uninitvar\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "    int b;\n"
+                                        "    b++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
         // suppress uninitvar inline
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
                                         "    int a;\n"
                                         "    // cppcheck-suppress uninitvar\n"
+                                        "\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+
+        // suppress uninitvar inline
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    // cppcheck-suppress-offset-0 uninitvar\n"
                                         "\n"
                                         "    a++;\n"
                                         "}\n",
@@ -379,8 +453,34 @@ private:
 
         // suppress uninitvar inline
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;// cppcheck-suppress-offset-1 uninitvar\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
                                         "    int a;\n"
                                         "    /* cppcheck-suppress uninitvar */\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    /* cppcheck-suppress-offset-0 uninitvar */\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    /* cppcheck-suppress-offset-1 uninitvar */\n"
+                                        "    int a;\n"
                                         "    a++;\n"
                                         "}\n",
                                         ""));
@@ -416,6 +516,24 @@ private:
         // suppress uninitvar inline
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
                                         "    int a;\n"
+                                        "    // cppcheck-suppress-offset-0[uninitvar]\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    // cppcheck-suppress-offset-1[uninitvar]\n"
+                                        "    int a;\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
                                         "    // cppcheck-suppress[uninitvar]\n"
                                         "    a++;\n"
                                         "\n"
@@ -436,6 +554,24 @@ private:
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
                                         "    int a;\n"
                                         "    /* cppcheck-suppress[uninitvar]*/\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    int a;\n"
+                                        "    /* cppcheck-suppress-offset-0[uninitvar]*/\n"
+                                        "    a++;\n"
+                                        "}\n",
+                                        ""));
+        ASSERT_EQUALS("", errout.str());
+
+        // suppress uninitvar inline
+        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
+                                        "    /* cppcheck-suppress-offset-1[uninitvar]*/\n"
+                                        "    int a;\n"
                                         "    a++;\n"
                                         "}\n",
                                         ""));
