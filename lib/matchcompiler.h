@@ -27,7 +27,7 @@ namespace MatchCompiler {
     template<unsigned int n>
     class ConstString {
     public:
-        typedef const char(&StringRef)[n];
+        using StringRef = const char (&)[n];
         explicit ConstString(StringRef s)
             : _s(s) {}
 
