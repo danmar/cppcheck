@@ -352,6 +352,14 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 #endif
         for (const char* py_exe : py_exes) {
             std::string out;
+#ifdef _MSC_VER
+            // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
+            const std::string cmd = std::string(py_exe) + " --version >NUL";
+            if (system(cmd.c_str()) != 0) {
+                // TODO: get more detailed error?
+                break;
+            }
+#endif
             if (executeCommand(py_exe, split("--version"), redirect, out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
                 pythonExe = py_exe;
                 break;
