@@ -629,7 +629,7 @@ static void setTokenValue(Token* tok,
     if (!parent)
         return;
 
-    if (!isInitList && Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
+    if (!isInitList && Token::simpleMatch(parent, ",") && !parent->isInitComma() && astIsRHS(tok)) {
         const Token* callParent = findParent(parent, [](const Token* p) {
             return !Token::simpleMatch(p, ",");
         });
@@ -9465,6 +9465,18 @@ void ValueFlow::setValues(TokenList& tokenlist,
 {
     for (Token* tok = tokenlist.front(); tok; tok = tok->next())
         tok->clearValueFlow();
+
+    // commas in init..
+    for (Token* tok = tokenlist.front(); tok; tok = tok->next()) {
+        if (tok->str() != "{" || !tok->astOperand1())
+            continue;
+        for (Token* tok2 = tok->next(); tok2 != tok->link(); tok2 = tok2->next()) {
+            if (tok2->link() && Token::Match(tok2, "[{[(<]"))
+                tok2 = tok->link()->next();
+            else if (tok2->str() == ",")
+                tok2->isInitComma(true);
+        }
+    }
 
     ValueFlowPassRunner runner{ValueFlowState{tokenlist, symboldatabase, errorLogger, settings}, timerResults};
     runner.run_once({

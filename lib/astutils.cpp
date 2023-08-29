@@ -1465,6 +1465,8 @@ bool isUsedAsBool(const Token* const tok, const Settings* settings)
     if (isForLoopCondition(tok))
         return true;
     if (!Token::Match(parent, "%cop%")) {
+        if (parent->str() == "," && parent->isInitComma())
+            return false;
         std::vector<ValueType> vtParents = getParentValueTypes(tok, settings);
         return std::any_of(vtParents.cbegin(), vtParents.cend(), [&](const ValueType& vt) {
             return vt.pointer == 0 && vt.type == ValueType::BOOL;
