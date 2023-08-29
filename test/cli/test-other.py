@@ -182,10 +182,9 @@ def test_execute_addon_failure_2(tmpdir):
     args = ['--addon=naming', '--addon-python=python5.x', test_file]
 
     _, _, stderr = cppcheck(args)
-    # /tmp/pytest-of-sshuser/pytest-202/test_execute_addon_failure_20/test.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute 'python5.x /mnt/s/GitHub/cppcheck-fw/addons/runaddon.py /mnt/s/GitHub/cppcheck-fw/addons/naming.py --cli /tmp/pytest-of-sshuser/pytest-202/test_execute_addon_failure_20/test.cpp.7439.dump'. sh: 1: python5.x: not found [internalError]\n\n^\n
-    # C:\\Users\\runneradmin\\AppData\\Local\\Temp\\pytest-of-runneradmin\\pytest-1\\test_execute_addon_failure_20\\test.cp...lure_20\\test.cpp.4232.dump'. 'python5.x' is not recognized as an internal or external command, [internalError]\n\n^\n
-    # /private/var/folders/24/8k48jl6d249_n_qfxwsl6xvm0000gn/T/pytest-of-runner/pytest-0/test_execute_addon_failure_20/test...er/pytest-0/test_execute_addon_failure_20/test.cpp.6323.dump'. sh: python5.x: command not found [internalError]\n\n^\n
-    assert stderr.startswith('{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute \'python5.x '.format(test_file))
+    # /tmp/pytest-of-sshuser/pytest-215/test_execute_addon_failure_20/test.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'naming' (command: 'python5.x /mnt/s/GitHub/cppcheck-fw/addons/runaddon.py /mnt/s/GitHub/cppcheck-fw/addons/naming.py --cli /tmp/pytest-of-sshuser/pytest-215/test_execute_addon_failure_20/test.cpp.7306.dump'). Exitcode is nonzero. [internalError]\n\n^\n
+    # "C:\\Users\\Quotenjugendlicher\\AppData\\Local\\Temp\\pytest-of-Quotenjugendlicher\\pytest-15\\test_execute_addon_failure_20\\test.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon (command: 'python5.x S:\\GitHub\\cppcheck-fw\\bin\\debug\\addons\\runaddon.py S:\\GitHub\\cppcheck-fw\\bin\\debug\\addons\\naming.py --cli C:\\Users\\Quotenjugendlicher\\AppData\\Local\\Temp\\pytest-of-Quotenjugendlicher\\pytest-15\\test_execute_addon_failure_20\\test.cpp.9892.dump'). Exitcode is nonzero. [internalError]\n\n^\n
+    assert stderr.startswith('{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon \'naming\' (command: \'python5.x '.format(test_file))
     assert stderr.endswith(' [internalError]\n\n^\n')
 
 

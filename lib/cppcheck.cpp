@@ -381,7 +381,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 
     std::string result;
     if (!executeCommand(pythonExe, split(args), redirect, result)) {
-        std::string message("Failed to execute addon (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
+        std::string message("Failed to execute addon '" + addonInfo.name + "' (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
         if (result.size() > 2) {
             message = message + "\n" + message + "\nOutput:\n" + result;
             message.resize(message.find_last_not_of("\n\r"));

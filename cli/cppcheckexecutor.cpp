@@ -692,6 +692,12 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
 {
     output_.clear();
 
+#ifdef _WIN32
+    // Extra quoutes are needed in windows if filename has space
+    if (exe.find(" ") != std::string::npos)
+        exe = "\"" + exe + "\"";
+#endif
+
     std::string joinedArgs;
     for (const std::string &arg : args) {
         if (!joinedArgs.empty())
@@ -702,21 +708,34 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
             joinedArgs += arg;
     }
 
+    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
+
 #ifdef _WIN32
-    // Extra quoutes are needed in windows if filename has space
-    if (exe.find(" ") != std::string::npos)
-        exe = "\"" + exe + "\"";
-    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+    FILE* p = _popen(cmd.c_str(), "r");
 #else
-    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    FILE *p = popen(cmd.c_str(), "r");
 #endif
-    if (!pipe)
+    if (!p) {
+        // TODO: read errno
         return false;
+    }
     char buffer[1024];
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+    while (fgets(buffer, sizeof(buffer), p) != nullptr)
         output_ += buffer;
+
+#ifdef _WIN32
+    const int res = _pclose(p);
+#else
+    const int res = pclose(p);
+#endif
+    if (res == -1) { // error occured
+        // TODO: read errno
+        return false;
+    }
+    if (res != 0) { // process failed
+        // TODO: need to get error details
+        return false;
+    }
     return true;
 }
 
