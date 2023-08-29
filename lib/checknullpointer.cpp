@@ -319,6 +319,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
 void CheckNullPointer::nullPointer()
 {
+    logChecker("CheckNullPointer::nullPointer");
     nullPointerByDeRefAndChec();
 }
 
@@ -332,6 +333,8 @@ namespace {
 /** Dereferencing null constant (simplified token list) */
 void CheckNullPointer::nullConstantDereference()
 {
+    logChecker("CheckNullPointer::nullConstantDereference");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -464,6 +467,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 
 void CheckNullPointer::arithmetic()
 {
+    logChecker("CheckNullPointer::aithmetic");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -587,6 +591,10 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
         return false;
     bool foundErrors = false;
     (void)settings; // This argument is unused
+
+    CheckNullPointer dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckNullPointer::analyseWholeProgram"); // unusedfunctions
 
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 

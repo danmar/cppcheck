@@ -373,6 +373,9 @@ bool CheckUnusedFunctions::analyseWholeProgram(const CTU::FileInfo *ctu, const s
 {
     (void)ctu;
     (void)fileInfo;
+    CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckUnusedFunctions::analyseWholeProgram"); // unusedFunctions
     return check(&errorLogger, settings);
 }
 

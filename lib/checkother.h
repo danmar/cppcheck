@@ -64,7 +64,7 @@ public:
         checkOther.invalidPointerCast();
         checkOther.checkCharVariable();
         checkOther.checkRedundantAssignment();
-        checkOther.checkRedundantAssignmentInSwitch();
+        checkOther.redundantBitwiseOperationInSwitchError();
         checkOther.checkSuspiciousCaseInSwitch();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
@@ -150,8 +150,8 @@ public:
     /** @brief copying to memory or assigning to a variable twice */
     void checkRedundantAssignment();
 
-    /** @brief %Check for assigning to the same variable twice in a switch statement*/
-    void checkRedundantAssignmentInSwitch();
+    /** @brief %Check for redundant bitwise operation in switch statement*/
+    void redundantBitwiseOperationInSwitchError();
 
     /** @brief %Check for code like 'case A||B:'*/
     void checkSuspiciousCaseInSwitch();

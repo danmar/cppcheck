@@ -1605,6 +1605,11 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
+    if (msg.severity == Severity::none && msg.id == "logChecker") {
+        mErrorLogger.reportErr(msg);
+        return;
+    }
+
     if (!mSettings.library.reportErrors(msg.file0))
         return;
 

@@ -422,8 +422,10 @@ static bool ifvar(const Token *tok, nonneg int varid, const std::string &comp, c
 //     a = malloc(10); a = realloc(a, 100);
 //---------------------------------------------------------------------------
 
-void CheckMemoryLeakInFunction::checkReallocUsage() const
+void CheckMemoryLeakInFunction::checkReallocUsage()
 {
+    logChecker("CheckMemoryLeakInFunction::checkReallocUsage");
+
     // only check functions
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -498,6 +500,8 @@ void CheckMemoryLeakInFunction::checkReallocUsage() const
 
 void CheckMemoryLeakInClass::check()
 {
+    logChecker("CheckMemoryLeakInClass::check");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // only check classes and structures
@@ -675,10 +679,12 @@ void CheckMemoryLeakInClass::publicAllocationError(const Token *tok, const std::
 }
 
 
-void CheckMemoryLeakStructMember::check() const
+void CheckMemoryLeakStructMember::check()
 {
     if (mSettings->clang)
         return;
+
+    logChecker("CheckMemoryLeakStructMember::check");
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
@@ -922,6 +928,8 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable* const vari
 
 void CheckMemoryLeakNoVar::check()
 {
+    logChecker("CheckMemoryLeakNoVar::check");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // only check functions

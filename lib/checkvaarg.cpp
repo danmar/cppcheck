@@ -51,6 +51,8 @@ void CheckVaarg::va_start_argument()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
+    logChecker("CheckVaarg::va_start_argument");
+
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* function = scope->function;
@@ -98,6 +100,9 @@ void CheckVaarg::va_list_usage()
 {
     if (mSettings->clang)
         return;
+
+    logChecker("CheckVaarg::va_list_usage"); // notclang
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || var->isPointer() || var->isReference() || var->isArray() || !var->scope() || var->typeStartToken()->str() != "va_list")

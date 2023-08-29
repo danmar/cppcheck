@@ -280,6 +280,8 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
 
 void CheckBufferOverrun::arrayIndex()
 {
+    logChecker("CheckBufferOverrun::arrayIndex");
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "[")
             continue;
@@ -461,6 +463,8 @@ void CheckBufferOverrun::pointerArithmetic()
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
 
+    logChecker("CheckBufferOverrun::pointerArithmetic"); // portability
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "+|-"))
             continue;
@@ -626,6 +630,8 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
 
 void CheckBufferOverrun::bufferOverflow()
 {
+    logChecker("CheckBufferOverrun::bufferOverflow");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -691,6 +697,8 @@ void CheckBufferOverrun::arrayIndexThenCheck()
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
 
+    logChecker("CheckBufferOverrun::arrayIndexThenCheck");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -746,6 +754,9 @@ void CheckBufferOverrun::stringNotZeroTerminated()
     // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
     if (!mSettings->severity.isEnabled(Severity::warning) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
+
+    logChecker("CheckBufferOverrun::stringNotZeroTerminated"); // warning,inconclusive
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -809,6 +820,8 @@ void CheckBufferOverrun::argumentSize()
     // Check '%type% x[10]' arguments
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckBufferOverrun::argumentSize"); // warning
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
@@ -957,6 +970,10 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
     bool foundErrors = false;
     (void)settings; // This argument is unused
 
+    CheckBufferOverrun dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckBufferOverrun::analyseWholeProgram");
+
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (const Check::FileInfo* fi1 : fileInfo) {
@@ -1015,6 +1032,7 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
 
 void CheckBufferOverrun::objectIndex()
 {
+    logChecker("CheckBufferOverrun::objectIndex");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
@@ -1122,6 +1140,7 @@ static bool isVLAIndex(const Token* tok)
 
 void CheckBufferOverrun::negativeArraySize()
 {
+    logChecker("CheckBufferOverrun::negativeArraySize");
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->isArray())

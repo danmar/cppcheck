@@ -66,6 +66,8 @@ void CheckIO::checkCoutCerrMisusage()
     if (mTokenizer->isC())
         return;
 
+    logChecker("CheckIO::checkCoutCerrMisusage"); // c
+
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -127,6 +129,8 @@ void CheckIO::checkFileUsage()
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
     std::map<int, Filepointer> filepointers;
+
+    logChecker("CheckIO::checkFileUsage");
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
@@ -520,6 +524,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const bool isWindows = mSettings->platform.isWindows();
+
+    logChecker("CheckIO::checkWrongPrintfScanfArguments");
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {

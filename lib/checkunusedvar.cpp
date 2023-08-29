@@ -1154,6 +1154,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     if (!mSettings->severity.isEnabled(Severity::style) && !mSettings->checkLibrary)
         return;
 
+    logChecker("CheckUnusedVar::checkFunctionVariableUsage"); // style
+
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -1439,6 +1441,8 @@ void CheckUnusedVar::checkStructMemberUsage()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckUnusedVar::checkStructMemberUsage"); // style
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 

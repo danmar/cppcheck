@@ -125,3 +125,9 @@ ErrorPath Check::getErrorPath(const Token* errtok, const ValueFlow::Value* value
     }
     return errorPath;
 }
+
+void Check::logChecker(const char id[])
+{
+    reportError(nullptr, Severity::none, "logChecker", id);
+}
+

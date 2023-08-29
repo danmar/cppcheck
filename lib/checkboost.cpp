@@ -33,6 +33,7 @@ static const CWE CWE664(664);
 
 void CheckBoost::checkBoostForeachModification()
 {
+    logChecker("CheckBoost::checkBoostForeachModification");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {

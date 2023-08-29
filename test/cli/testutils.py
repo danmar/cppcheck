@@ -72,4 +72,6 @@ def cppcheck(args):
     comm = p.communicate()
     stdout = comm[0].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
     stderr = comm[1].decode(encoding='utf-8', errors='ignore').replace('\r\n', '\n')
+    if stdout.find('\nActive checkers:') > 0:
+        stdout = stdout[:1 + stdout.find('\nActive checkers:')]
     return p.returncode, stdout, stderr

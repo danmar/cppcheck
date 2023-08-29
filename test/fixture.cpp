@@ -379,6 +379,8 @@ void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
 
 void TestFixture::reportErr(const ErrorMessage &msg)
 {
+    if (msg.severity == Severity::none && msg.id == "logChecker")
+        return;
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
     if (errout.str().find(errormessage) == std::string::npos)
         errout << errormessage << std::endl;

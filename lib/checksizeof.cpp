@@ -50,6 +50,8 @@ void CheckSizeof::checkSizeofForNumericParameter()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckSizeof::checkSizeofForNumericParameter"); // warning
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -77,6 +79,9 @@ void CheckSizeof::checkSizeofForArrayParameter()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckSizeof::checkSizeofForArrayParameter"); // warning
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -115,6 +120,8 @@ void CheckSizeof::checkSizeofForPointerSize()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckSizeof::checkSizeofForPointerSize"); // warning
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -282,6 +289,8 @@ void CheckSizeof::sizeofsizeof()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckSizeof::sizeofsizeof"); // warning
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof (| sizeof")) {
             sizeofsizeofError(tok);
@@ -305,6 +314,8 @@ void CheckSizeof::sizeofCalculation()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckSizeof::sizeofCalculation"); // warning
 
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
 
@@ -350,6 +361,8 @@ void CheckSizeof::sizeofFunction()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckSizeof::sizeofFunction"); // warning
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
 
@@ -390,6 +403,8 @@ void CheckSizeof::suspiciousSizeofCalculation()
 {
     if (!mSettings->severity.isEnabled(Severity::warning) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
+
+    logChecker("CheckSizeof::suspiciousSizeofCalculation"); // warning,inconclusive
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
@@ -432,6 +447,8 @@ void CheckSizeof::sizeofVoid()
 {
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
+
+    logChecker("CheckSizeof::sizeofVoid"); // portability
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof ( void )")) {
