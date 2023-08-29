@@ -46,7 +46,7 @@ namespace MatchCompiler {
     }
 
     template<>
-    inline bool equalN<0>(const char[], const char[])
+    inline bool equalN<0>(const char /*s1*/[], const char /*s2*/[])
     {
         return true;
     }
