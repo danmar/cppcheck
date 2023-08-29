@@ -199,6 +199,26 @@ def test_build_dir_dump_output():
         assert(len(filelist) == 0)
 
 
+def test_checkers_report():
+    with tempfile.TemporaryDirectory() as tempdir:
+        filename = os.path.join(tempdir, '1.txt')
+        args = f'--checkers-report={filename} helloworld'
+
+        cppcheck(args.split())
+
+        with open(filename, 'rt') as f:
+            data = f.read()
+            assert 'No   CheckAutoVariables::assignFunctionArg' in data
+            assert 'Yes  CheckAutoVariables::autoVariables' in data
+
+        args = '--enable=style ' + args
+        cppcheck(args.split())
+        with open(filename, 'rt') as f:
+            data = f.read()
+            # checker has been activated by --enable=style
+            assert 'Yes  CheckAutoVariables::assignFunctionArg' in data
+
+
 def __test_missing_include_system(use_j):
     args = ['--enable=missingInclude', '--suppress=zerodiv', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', 'helloworld']
     if use_j:
