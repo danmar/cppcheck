@@ -9472,7 +9472,7 @@ void ValueFlow::setValues(TokenList& tokenlist,
             continue;
         for (Token* tok2 = tok->next(); tok2 != tok->link(); tok2 = tok2->next()) {
             if (tok2->link() && Token::Match(tok2, "[{[(<]"))
-                tok2 = tok->link()->next();
+                tok2 = tok2->link();
             else if (tok2->str() == ",")
                 tok2->isInitComma(true);
         }
