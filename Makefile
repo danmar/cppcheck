@@ -200,6 +200,7 @@ LIBOBJ =      $(libcppdir)/analyzerinfo.o \
               $(libcppdir)/checkbufferoverrun.o \
               $(libcppdir)/checkclass.o \
               $(libcppdir)/checkcondition.o \
+              $(libcppdir)/checkersreport.o \
               $(libcppdir)/checkexceptionsafety.o \
               $(libcppdir)/checkfunctions.o \
               $(libcppdir)/checkinternal.o \
@@ -488,6 +489,9 @@ $(libcppdir)/checkclass.o: lib/checkclass.cpp externals/tinyxml2/tinyxml2.h lib/
 $(libcppdir)/checkcondition.o: lib/checkcondition.cpp lib/astutils.h lib/check.h lib/checkcondition.h lib/checkother.h lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/smallvector.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkcondition.cpp
 
+$(libcppdir)/checkersreport.o: lib/checkersreport.cpp lib/checkers.h lib/checkersreport.h lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
+	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkersreport.cpp
+
 $(libcppdir)/checkexceptionsafety.o: lib/checkexceptionsafety.cpp lib/check.h lib/checkexceptionsafety.h lib/config.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/sourcelocation.h lib/standards.h lib/suppressions.h lib/symboldatabase.h lib/templatesimplifier.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/vfvalue.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $(libcppdir)/checkexceptionsafety.cpp
 
@@ -638,7 +642,7 @@ $(libcppdir)/vfvalue.o: lib/vfvalue.cpp lib/config.h lib/errortypes.h lib/mathli
 cli/cmdlineparser.o: cli/cmdlineparser.cpp cli/cmdlineparser.h cli/cppcheckexecutor.h cli/filelister.h externals/tinyxml2/tinyxml2.h lib/check.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/timer.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/cmdlineparser.cpp
 
-cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cmdlineparser.h cli/cppcheckexecutor.h cli/cppcheckexecutorseh.h cli/cppcheckexecutorsig.h cli/executor.h cli/filelister.h cli/processexecutor.h cli/singleexecutor.h cli/threadexecutor.h lib/analyzerinfo.h lib/check.h lib/checkers.h lib/checkunusedfunctions.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
+cli/cppcheckexecutor.o: cli/cppcheckexecutor.cpp cli/cmdlineparser.h cli/cppcheckexecutor.h cli/cppcheckexecutorseh.h cli/cppcheckexecutorsig.h cli/executor.h cli/filelister.h cli/processexecutor.h cli/singleexecutor.h cli/threadexecutor.h lib/analyzerinfo.h lib/check.h lib/checkers.h lib/checkersreport.h lib/checkunusedfunctions.h lib/color.h lib/config.h lib/cppcheck.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/path.h lib/pathmatch.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/utils.h
 	$(CXX) ${INCLUDE_FOR_CLI} $(CPPFLAGS) $(CXXFLAGS) -c -o $@ cli/cppcheckexecutor.cpp
 
 cli/cppcheckexecutorseh.o: cli/cppcheckexecutorseh.cpp cli/cppcheckexecutor.h cli/cppcheckexecutorseh.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/utils.h

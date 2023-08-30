@@ -540,6 +540,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     }
     mThread->setProject(p);
     mThread->check(checkSettings);
+    mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrary, const bool checkConfiguration)
@@ -603,6 +604,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
 
     mThread->setCheckFiles(true);
     mThread->check(checkSettings);
+    mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::analyzeCode(const QString& code, const QString& filename)
@@ -1208,7 +1210,9 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     // considered in "Modified Files Check"  performed after "Selected Files Check"
     // TODO: Should we store per file CheckStartTime?
     QDateTime saveCheckStartTime = mThread->getCheckStartTime();
-    mThread->check(getCppcheckSettings());
+    const Settings& checkSettings = getCppcheckSettings();
+    mThread->check(checkSettings);
+    mUI->mResults->setCheckSettings(checkSettings);
     mThread->setCheckStartTime(saveCheckStartTime);
 }
 
@@ -1232,7 +1236,9 @@ void MainWindow::reAnalyze(bool all)
         qDebug() << "Rechecking project file" << mProjectFile->getFilename();
 
     mThread->setCheckFiles(all);
-    mThread->check(getCppcheckSettings());
+    const Settings& checkSettings = getCppcheckSettings();
+    mThread->check(checkSettings);
+    mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::clearResults()

@@ -19,6 +19,7 @@
 #include "resultsview.h"
 
 #include "checkstatistics.h"
+#include "checkersreport.h"
 #include "codeeditor.h"
 #include "codeeditorstyle.h"
 #include "common.h"
@@ -68,7 +69,8 @@
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
     mUI(new Ui::ResultsView),
-    mStatistics(new CheckStatistics(this))
+    mStatistics(new CheckStatistics(this)),
+    mCheckSettings(nullptr)
 {
     mUI->setupUi(this);
 
@@ -105,6 +107,7 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 ResultsView::~ResultsView()
 {
     delete mUI;
+    delete mCheckSettings;
 }
 
 void ResultsView::clear(bool results)
@@ -116,6 +119,8 @@ void ResultsView::clear(bool results)
     mUI->mDetails->setText(QString());
 
     mStatistics->clear();
+    delete mCheckSettings;
+    mCheckSettings = nullptr;
 
     //Clear the progressbar
     mUI->mProgress->setMaximum(PROGRESS_MAX);
@@ -150,6 +155,11 @@ void ResultsView::progress(int value, const QString& description)
 
 void ResultsView::error(const ErrorItem &item)
 {
+    if (item.severity == Severity::none && (item.errorId == "logChecker" || item.errorId.endsWith("-logChecker"))) {
+        mStatistics->addChecker(item.message);
+        return;
+    }
+
     handleCriticalError(item);
 
     if (mUI->mTree->addErrorItem(item)) {
@@ -282,6 +292,13 @@ QString ResultsView::getCheckDirectory()
     return mUI->mTree->getCheckDirectory();
 }
 
+void ResultsView::setCheckSettings(const Settings &settings)
+{
+    delete mCheckSettings;
+    mCheckSettings = new Settings;
+    *mCheckSettings = settings;
+}
+
 void ResultsView::checkingStarted(int count)
 {
     mSuccess = true;
@@ -295,6 +312,13 @@ void ResultsView::checkingFinished()
 {
     mUI->mProgress->setVisible(false);
     mUI->mProgress->setFormat("%p%");
+
+    {
+        Settings checkSettings;
+        const std::set<std::string> activeCheckers = mStatistics->getActiveCheckers();
+        CheckersReport checkersReport(mCheckSettings ? *mCheckSettings : checkSettings, activeCheckers);
+        mStatistics->setCheckersReport(QString::fromStdString(checkersReport.getReport(mCriticalErrors.toStdString())));
+    }
 
     // TODO: Items can be mysteriously hidden when checking is finished, this function
     // call should be redundant but it "unhides" the wrongly hidden items.
@@ -528,6 +552,11 @@ void ResultsView::stopAnalysis()
 void ResultsView::handleCriticalError(const ErrorItem &item)
 {
     if (ErrorLogger::isCriticalErrorId(item.errorId.toStdString())) {
+        if (!mCriticalErrors.contains(item.errorId)) {
+            if (!mCriticalErrors.isEmpty())
+                mCriticalErrors += ",";
+            mCriticalErrors += item.errorId;
+        }
         QString msg = tr("There was a critical error with id '%1'").arg(item.errorId);
         if (!item.file0.isEmpty())
             msg += ", " + tr("when checking %1").arg(item.file0);

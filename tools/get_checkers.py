@@ -44,22 +44,22 @@ print('static std::map<std::string, std::string> premiumCheckers{')
 
 premium_checkers = """
 $ grep logChecker *.cpp | sed 's/.*logChecker/logChecker/'
-logChecker("CheckBufferOverrun::addressOfPointerArithmetic"); // warning
-logChecker("CheckBufferOverrun::negativeBufferSizeCheckedNonZero"); // warning
-logChecker("CheckBufferOverrun::negativeBufferSizeCheckedNonZero"); // warning
-logChecker("CheckHang::infiniteLoop");
-logChecker("CheckHang::infiniteLoopContinue");
-logChecker("CheckOther::arrayPointerComparison"); // style
-logChecker("CheckOther::knownResult"); // style
-logChecker("CheckOther::lossOfPrecision"); // style
-logChecker("CheckOther::pointerCast"); // style
-logChecker("CheckOther::reassignInLoop"); // style
-logChecker("CheckOther::unreachableCode"); // style
-logChecker("CheckStrictAlias::strictAliasCondition"); // warning
-logChecker("CheckUninitVar::uninitvar");
-logChecker("CheckUninitVar::uninitmember");
-logChecker("CheckUnusedVar::unreadVariable"); // style
-logChecker("CheckUnusedVar::unusedPrivateMember"); // style
+logChecker("PremiumCheckBufferOverrun::addressOfPointerArithmetic"); // warning
+logChecker("PremiumCheckBufferOverrun::negativeBufferSizeCheckedNonZero"); // warning
+logChecker("PremiumCheckBufferOverrun::negativeBufferSizeCheckedNonZero"); // warning
+logChecker("PremiumCheckHang::infiniteLoop");
+logChecker("PremiumCheckHang::infiniteLoopContinue");
+logChecker("PremiumCheckOther::arrayPointerComparison"); // style
+logChecker("PremiumCheckOther::knownResult"); // style
+logChecker("PremiumCheckOther::lossOfPrecision"); // style
+logChecker("PremiumCheckOther::pointerCast"); // style
+logChecker("PremiumCheckOther::reassignInLoop"); // style
+logChecker("PremiumCheckOther::unreachableCode"); // style
+logChecker("PremiumCheckStrictAlias::strictAliasCondition"); // warning
+logChecker("PremiumCheckUninitVar::uninitvar");
+logChecker("PremiumCheckUninitVar::uninitmember");
+logChecker("PremiumCheckUnusedVar::unreadVariable"); // style
+logChecker("PremiumCheckUnusedVar::unusedPrivateMember"); // style
 """
 
 for line in premium_checkers.split('\n'):
