@@ -174,7 +174,7 @@ while True:
             print('Stopping. Thank you!')
             sys.exit(0)
     try:
-        cppcheck_versions = lib.try_retry(lib.get_cppcheck_versions, max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
+        cppcheck_versions, build_opts, cppcheck_opts, timeout_s = lib.try_retry(lib.get_cppcheck_options, max_tries=3, sleep_duration=30.0, sleep_factor=1.0)
     except Exception as e:
         print('Failed to get cppcheck versions from server ({}), retry later'.format(e))
         sys.exit(1)
@@ -195,11 +195,11 @@ while True:
             print('Failed to update Cppcheck-{} ({}), retry later'.format(ver, e))
             sys.exit(1)
         if ver == 'main':
-            if (has_changes or not lib.has_binary(current_cppcheck_dir)) and not lib.compile_cppcheck(current_cppcheck_dir):
+            if (has_changes or not lib.has_binary(current_cppcheck_dir)) and not lib.compile_cppcheck(current_cppcheck_dir, build_opts):
                 print('Failed to compile Cppcheck-{}, retry later'.format(ver))
                 sys.exit(1)
         else:
-            if not lib.compile_version(current_cppcheck_dir):
+            if not lib.compile_version(current_cppcheck_dir, build_opts):
                 print('Failed to compile Cppcheck-{}, retry later'.format(ver))
                 sys.exit(1)
     if package_urls:
@@ -257,7 +257,7 @@ while True:
                     return None
 
             client_version_head = get_client_version_head()
-        c, errout, info, t, cppcheck_options, timing_info = lib.scan_package(tree_path, source_path, libraries, capture_callstack)
+        c, errout, info, t, cppcheck_options, timing_info = lib.scan_package(tree_path, source_path, libraries, cppcheck_opts, timeout_s, capture_callstack)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)

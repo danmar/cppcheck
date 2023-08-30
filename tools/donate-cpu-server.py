@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.46"
+SERVER_VERSION = "1.4.0"
 
 OLD_VERSION = '2.12.0'
 
@@ -1281,9 +1281,66 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
         if cmd.startswith('GET /'):
             newThread = HttpClientThread(connection, cmd, resultPath, latestResults)
             newThread.start()
-        elif cmd == 'GetCppcheckVersions\n':
-            reply = 'head ' + OLD_VERSION
-            print_ts('GetCppcheckVersions: ' + reply)
+        elif cmd == 'GetCppcheckData\n':
+            data = read_data(connection, cmd, pos_nl, max_data_size=8 * 1024, check_done=False, cmd_name='write_nodata')
+            if data is None:
+                continue
+
+            # TODO: move all fields here so are they properly documented in one place
+            # TODO: add server version?
+            reply_obj = {
+                'v': 1, # version of the response object
+                'err': None, # provide an error to show within the client
+                'note': None, # provide a note to show within the client
+                'timeout': 30 * 60 # overall analysis timeout is seconds
+            }
+
+            # TODO
+            try:
+                from packaging.version import Version
+                Version(data)
+            except Exception as e:
+                reply_obj.err = 'invalid client version: {}'.format(e)
+                pass
+
+            if reply_obj.err is None:
+                # TODO: read/extend this from a configuration file
+                cppcheck_opts = [
+                    '--enable=style,information',
+                    '--inconclusive',
+                    '--template=daca2',
+                    # TODO: temporarily disabled timing information - use --showtime=top5_summary when next version is released
+                    # '--showtime=top5',
+                    '--check-library',
+                    '--platform=unix64',
+                    # suppressions
+                    '--inline-suppr',
+                    '--suppress=unmatchedSuppression',
+                    # user provided defines
+                    '-D__GNUC__',
+                    # debug warnings and suppressions
+                    '--debug-warnings',
+                    '--suppress=autoNoType',
+                    '--suppress=bailoutUninitVar',
+                    '--suppress=symbolDatabaseWarning',
+                    '--suppress=valueFlowBailout',
+                    # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
+                    '--disable=missingInclude'
+                ]
+
+                reply_data = {
+                    'versions': ['head', OLD_VERSION], # the versions to check with
+                    'build_opts': { # the build flags
+                        'make': ['MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'],
+                        'mingw32-make': ['MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'],
+                        'msbuild.exe': ['/property:Configuration=Release;Platform=x64']
+                    },
+                    'cppcheck_opts': ' '.join(cppcheck_opts) # the check options
+                }
+                reply_obj.update(reply_data)
+
+            reply = json.dumps(reply_obj)
+            print_ts('GetCppcheckData: ' + reply)
             connection.send(reply.encode('utf-8', 'ignore'))
             connection.close()
         elif cmd == 'get\n':
