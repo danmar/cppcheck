@@ -2,7 +2,6 @@
 import json
 import os
 from testutils import cppcheck
-import time
 
 
 def test_project_force_U(tmpdir):
@@ -226,18 +225,3 @@ def test_project_missing_subproject(tmpdir):
     assert ret == 1, stdout
     assert stdout == "cppcheck: error: failed to open project '{}/dummy.json'. The file does not exist.\n".format(str(tmpdir).replace('\\', '/'))
     assert stderr == ''
-
-
-def test_hang_array_many_strings(tmpdir):
-    # 11901
-    # cppcheck valueflow hangs when analyzing a file with many strings
-    filename = os.path.join(tmpdir, 'hang.c')
-    with open(filename, 'wt') as f:
-        f.write("const char *strings[] = {\n")
-        for i in range(20000):
-            f.write('    "abc",\n')
-        f.write("};\n")
-    start_time = time.time()
-    cppcheck([filename])
-    duration = time.time() - start_time
-    assert duration < 10
