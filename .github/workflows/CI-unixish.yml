@@ -334,6 +334,7 @@ jobs:
         run: |
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
+          python3 -m pip install pytest-timeout
 
       - name: Build cppcheck
         run: |

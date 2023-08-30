@@ -605,7 +605,6 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
 static void setTokenValue(Token* tok,
                           ValueFlow::Value value,
                           const Settings* settings,
-                          bool isInitList = false,
                           SourceLocation loc = SourceLocation::current())
 {
     // Skip setting values that are too big since its ambiguous
@@ -629,7 +628,7 @@ static void setTokenValue(Token* tok,
     if (!parent)
         return;
 
-    if (!isInitList && Token::simpleMatch(parent, ",") && astIsRHS(tok)) {
+    if (Token::simpleMatch(parent, ",") && !parent->isInitComma() && astIsRHS(tok)) {
         const Token* callParent = findParent(parent, [](const Token* p) {
             return !Token::simpleMatch(p, ",");
         });
@@ -947,7 +946,7 @@ static void setTokenValue(Token* tok,
                     if (Token::simpleMatch(parent, "-") && value2.bound == result.bound &&
                         value2.bound != ValueFlow::Value::Bound::Point)
                         result.invertBound();
-                    setTokenValue(parent, result, settings, isInitList);
+                    setTokenValue(parent, result, settings);
                 }
             }
         }
@@ -1131,7 +1130,7 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
 static bool getMinMaxValues(const ValueType* vt, const cppcheck::Platform& platform, MathLib::bigint& minValue, MathLib::bigint& maxValue);
 
 // Handle various constants..
-static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp, bool isInitList = false)
+static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp)
 {
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
         try {
@@ -1145,7 +1144,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             ValueFlow::Value value(signedValue);
             if (!tok->isTemplateArg())
                 value.setKnown();
-            setTokenValue(tok, std::move(value), settings, isInitList);
+            setTokenValue(tok, std::move(value), settings);
         } catch (const std::exception & /*e*/) {
             // Bad character literal
         }
@@ -1155,17 +1154,17 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         value.floatValue = MathLib::toDoubleNumber(tok->str());
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings, isInitList);
+        setTokenValue(tok, std::move(value), settings);
     } else if (tok->enumerator() && tok->enumerator()->value_known) {
         ValueFlow::Value value(tok->enumerator()->value);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings, isInitList);
+        setTokenValue(tok, std::move(value), settings);
     } else if (tok->str() == "NULL" || (cpp && tok->str() == "nullptr")) {
         ValueFlow::Value value(0);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok, std::move(value), settings, isInitList);
+        setTokenValue(tok, std::move(value), settings);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         if (tok->next()->astOperand2() && !tok->next()->astOperand2()->isLiteral() && tok->next()->astOperand2()->valueType() &&
             (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
@@ -1333,17 +1332,17 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         ValueFlow::Value value(0);
         if (!tok->isTemplateArg())
             value.setKnown();
-        setTokenValue(tok->next(), std::move(value), settings, isInitList);
+        setTokenValue(tok->next(), std::move(value), settings);
     } else if (Token::Match(tok, "%name% = {") && tok->variable() &&
                (tok->variable()->isPointer() || (tok->variable()->valueType() && tok->variable()->valueType()->isIntegral()))) {
         if (Token::simpleMatch(tok->tokAt(3), "}")) {
             ValueFlow::Value value(0);
             value.setKnown();
-            setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+            setTokenValue(tok->tokAt(2), std::move(value), settings);
         } else if (tok->tokAt(2)->astOperand1() && tok->tokAt(2)->astOperand1()->hasKnownIntValue()) {
             ValueFlow::Value value(tok->tokAt(2)->astOperand1()->getKnownIntValue());
             value.setKnown();
-            setTokenValue(tok->tokAt(2), std::move(value), settings, isInitList);
+            setTokenValue(tok->tokAt(2), std::move(value), settings);
         }
     }
     return tok->next();
@@ -1351,16 +1350,8 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
 
 static void valueFlowNumber(TokenList &tokenlist, const Settings* settings)
 {
-    bool isInitList = false;
-    const Token* endInit{};
     for (Token *tok = tokenlist.front(); tok;) {
-        if (!isInitList && tok->str() == "{" && (Token::simpleMatch(tok->astOperand1(), ",") || Token::simpleMatch(tok->astOperand2(), ","))) {
-            isInitList = true;
-            endInit = tok->link();
-        }
-        tok = valueFlowSetConstantValue(tok, settings, tokenlist.isCPP(), isInitList);
-        if (isInitList && tok == endInit)
-            isInitList = false;
+        tok = valueFlowSetConstantValue(tok, settings, tokenlist.isCPP());
     }
 
     if (tokenlist.isCPP()) {
@@ -9465,6 +9456,18 @@ void ValueFlow::setValues(TokenList& tokenlist,
 {
     for (Token* tok = tokenlist.front(); tok; tok = tok->next())
         tok->clearValueFlow();
+
+    // commas in init..
+    for (Token* tok = tokenlist.front(); tok; tok = tok->next()) {
+        if (tok->str() != "{" || !tok->astOperand1())
+            continue;
+        for (Token* tok2 = tok->next(); tok2 != tok->link(); tok2 = tok2->next()) {
+            if (tok2->link() && Token::Match(tok2, "[{[(<]"))
+                tok2 = tok2->link();
+            else if (tok2->str() == ",")
+                tok2->isInitComma(true);
+        }
+    }
 
     ValueFlowPassRunner runner{ValueFlowState{tokenlist, symboldatabase, errorLogger, settings}, timerResults};
     runner.run_once({

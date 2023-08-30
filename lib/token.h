@@ -684,6 +684,13 @@ public:
         setFlag(fIsFinalType, b);
     }
 
+    bool isInitComma() const {
+        return getFlag(fIsInitComma);
+    }
+    void isInitComma(bool b) {
+        setFlag(fIsInitComma, b);
+    }
+
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -1307,14 +1314,14 @@ private:
         fIsAttributePacked      = (1ULL << 15), // __attribute__((packed))
         fIsAttributeExport      = (1ULL << 16), // __attribute__((__visibility__("default"))), __declspec(dllexport)
         fIsAttributeMaybeUnused = (1ULL << 17), // [[maybe_unsed]]
-        fIsControlFlowKeyword   = (1ULL << 18), // if/switch/while/...
-        fIsOperatorKeyword      = (1ULL << 19), // operator=, etc
-        fIsComplex              = (1ULL << 20), // complex/_Complex type
-        fIsEnumType             = (1ULL << 21), // enumeration type
-        fIsName                 = (1ULL << 22),
-        fIsLiteral              = (1ULL << 23),
-        fIsTemplateArg          = (1ULL << 24),
-        fIsAttributeNodiscard   = (1ULL << 25), // __attribute__ ((warn_unused_result)), [[nodiscard]]
+        fIsAttributeNodiscard   = (1ULL << 18), // __attribute__ ((warn_unused_result)), [[nodiscard]]
+        fIsControlFlowKeyword   = (1ULL << 19), // if/switch/while/...
+        fIsOperatorKeyword      = (1ULL << 20), // operator=, etc
+        fIsComplex              = (1ULL << 21), // complex/_Complex type
+        fIsEnumType             = (1ULL << 22), // enumeration type
+        fIsName                 = (1ULL << 23),
+        fIsLiteral              = (1ULL << 24),
+        fIsTemplateArg          = (1ULL << 25),
         fAtAddress              = (1ULL << 26), // @ 0x4000
         fIncompleteVar          = (1ULL << 27),
         fConstexpr              = (1ULL << 28),
@@ -1331,6 +1338,7 @@ private:
         fIsAtomic               = (1ULL << 39), // Is this a _Atomic declaration
         fIsSimplifiedTypedef    = (1ULL << 40),
         fIsFinalType            = (1ULL << 41), // Is this a type with final specifier
+        fIsInitComma            = (1ULL << 42), // Is this comma located inside some {..}. i.e: {1,2,3,4}
     };
 
     enum : uint64_t {
