@@ -3,7 +3,6 @@
 
 import os
 import pytest
-import time
 
 from testutils import cppcheck
 
@@ -145,16 +144,13 @@ def test_progress_j(tmpdir):
 
 
 @pytest.mark.timeout(10)
-def test_hang_array_many_strings(tmpdir):
+def test_slow_array_many_strings(tmpdir):
     # 11901
-    # cppcheck valueflow hangs when analyzing a file with many strings
+    # cppcheck valueflow takes a long time when analyzing a file with many strings
     filename = os.path.join(tmpdir, 'hang.c')
     with open(filename, 'wt') as f:
         f.write("const char *strings[] = {\n")
         for i in range(20000):
             f.write('    "abc",\n')
         f.write("};\n")
-    start_time = time.time()
-    cppcheck([filename])
-    duration = time.time() - start_time
-    assert duration < 10
+    cppcheck([filename]) # should not take more than ~1 second
