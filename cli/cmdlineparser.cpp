@@ -1280,7 +1280,8 @@ void CmdLineParser::printHelp()
         "                         <file> also defines the configuration(s) that are checked.\n"
         "                         To increase the number of configurations checked,\n"
         "                         --force can be used in combination with this option.\n"
-        "                         --max-configs has no effect in combination with this option.\n"
+        // TODO: is the following line true for a target or globally, i.e. if a target has a -D, no configs are checked even for other targets?
+        "                         --max-configs does not have any effect if any preprocessor macro is found in <file>.\n"
         "    --project-configuration=<config>\n"
         "                         If used together with a Visual Studio Solution (*.sln)\n"
         "                         or Visual Studio Project (*.vcxproj) you can limit\n"
