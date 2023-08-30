@@ -315,7 +315,7 @@ class InitializerParser:
                                 self.ed.parent.setInitialized(isDesignated)
                             self.ed.parent.initializeChildren()
                     else:
-                        if self.root != None and self.ed.parent != self.root:
+                        if self.root is not None and self.ed.parent != self.root:
                             # Check if token is correct value type for self.root.children[?]
                             child = self.root.getChildByValueElement(self.ed)
                             if self.token.valueType:
