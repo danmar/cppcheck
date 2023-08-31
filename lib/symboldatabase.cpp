@@ -5688,21 +5688,25 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         return matches[0];
 
     // Prioritize matches in derived scopes
-    const Function* ret = nullptr;
-    for (int i = 0; i < fallback1Func.size(); ++i) {
-        if (std::find(matches.cbegin(), matches.cend(), fallback1Func[i]) == matches.cend())
-            continue;
-        if (this == fallback1Func[i]->nestedIn) {
-            if (!ret)
-                ret = fallback1Func[i];
-            else {
-                ret = nullptr;
-                break;
+    for (const auto& fb : { fallback1Func, fallback2Func }) {
+        const Function* ret = nullptr;
+        for (int i = 0; i < fb.size(); ++i) {
+            if (std::find(matches.cbegin(), matches.cend(), fb[i]) == matches.cend())
+                continue;
+            if (this == fb[i]->nestedIn) {
+                if (!ret)
+                    ret = fb[i];
+                else {
+                    ret = nullptr;
+                    break;
+                }
             }
         }
+        if (ret)
+            return ret;
     }
 
-    return ret;
+    return nullptr;
 }
 
 //---------------------------------------------------------------------------
