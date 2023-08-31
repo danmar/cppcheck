@@ -731,36 +731,36 @@ std::string ErrorMessage::FileLocation::stringify() const
 
 std::string ErrorLogger::toxml(const std::string &str)
 {
-    std::ostringstream xml;
+    std::string xml;
     for (const unsigned char c : str) {
         switch (c) {
         case '<':
-            xml << "&lt;";
+            xml += "&lt;";
             break;
         case '>':
-            xml << "&gt;";
+            xml += "&gt;";
             break;
         case '&':
-            xml << "&amp;";
+            xml += "&amp;";
             break;
         case '\"':
-            xml << "&quot;";
+            xml += "&quot;";
             break;
         case '\'':
-            xml << "&apos;";
+            xml += "&apos;";
             break;
         case '\0':
-            xml << "\\0";
+            xml += "\\0";
             break;
         default:
             if (c >= ' ' && c <= 0x7f)
-                xml << c;
+                xml += c;
             else
-                xml << 'x';
+                xml += 'x';
             break;
         }
     }
-    return xml.str();
+    return xml;
 }
 
 std::string ErrorLogger::plistHeader(const std::string &version, const std::vector<std::string> &files)

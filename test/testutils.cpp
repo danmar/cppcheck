@@ -22,6 +22,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 
@@ -36,6 +38,7 @@ private:
         TEST_CASE(isStringLiteral);
         TEST_CASE(isCharLiteral);
         TEST_CASE(strToInt);
+        TEST_CASE(ptrToString);
     }
 
     void isValidGlobPattern() const {
@@ -328,6 +331,58 @@ private:
             std::string err;
             ASSERT(!::strToInt("18446744073709551616", tmp, &err)); // ULLONG_MAX + 1
             ASSERT_EQUALS("out of range (stoull)", err);
+        }
+    }
+
+    void ptrToString() const
+    {
+        struct Dummy {};
+        // stack address
+        {
+            const Dummy d;
+            const Dummy* const dp = &d;
+            std::ostringstream oss;
+            oss << dp;
+            ASSERT_EQUALS(oss.str(), ptr_to_string(dp));
+        }
+        // highest address
+        {
+            // NOLINTNEXTLINE(performance-no-int-to-ptr)
+            const void* const p = reinterpret_cast<void*>(std::numeric_limits<uintptr_t>::max());
+            std::ostringstream oss;
+            oss << p;
+            ASSERT_EQUALS(oss.str(), ptr_to_string(p));
+        }
+        // same in-between address
+        {
+            const Dummy d;
+            const Dummy* dp = &d;
+            dp = dp - ((unsigned long long)dp / 2);
+            std::ostringstream oss;
+            oss << dp;
+            ASSERT_EQUALS(oss.str(), ptr_to_string(dp));
+        }
+        // lowest address
+        {
+            // NOLINTNEXTLINE(performance-no-int-to-ptr)
+            const void* const p = reinterpret_cast<void*>(std::numeric_limits<uintptr_t>::min() + 1);
+            std::ostringstream oss;
+            oss << p;
+            ASSERT_EQUALS(oss.str(), ptr_to_string(p));
+        }
+        // heap address
+        {
+            const auto dp = std::unique_ptr<Dummy>(new Dummy);
+            std::ostringstream oss;
+            oss << dp.get();
+            ASSERT_EQUALS(oss.str(), ptr_to_string(dp.get()));
+        }
+        // NULL pointer
+        {
+            const Dummy* const dp = nullptr;
+            std::ostringstream oss;
+            oss << dp;
+            ASSERT_EQUALS(oss.str(), ptr_to_string(dp));
         }
     }
 };

@@ -3615,26 +3615,50 @@ bool Variable::arrayDimensions(const Settings* settings, bool& isContainer)
     return arr;
 }
 
+static std::string scopeTypeToString(Scope::ScopeType type)
+{
+    switch (type) {
+    case Scope::ScopeType::eGlobal:
+        return "Global";
+    case Scope::ScopeType::eClass:
+        return "Class";
+    case Scope::ScopeType::eStruct:
+        return "Struct";
+    case Scope::ScopeType::eUnion:
+        return "Union";
+    case Scope::ScopeType::eNamespace:
+        return "Namespace";
+    case Scope::ScopeType::eFunction:
+        return "Function";
+    case Scope::ScopeType::eIf:
+        return "If";
+    case Scope::ScopeType::eElse:
+        return "Else";
+    case Scope::ScopeType::eFor:
+        return "For";
+    case Scope::ScopeType::eWhile:
+        return "While";
+    case Scope::ScopeType::eDo:
+        return "Do";
+    case Scope::ScopeType::eSwitch:
+        return "Switch";
+    case Scope::ScopeType::eTry:
+        return "Try";
+    case Scope::ScopeType::eCatch:
+        return "Catch";
+    case Scope::ScopeType::eUnconditional:
+        return "Unconditional";
+    case Scope::ScopeType::eLambda:
+        return "Lambda";
+    case Scope::ScopeType::eEnum:
+        return "Enum";
+    }
+    return "Unknown";
+}
+
 static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
 {
-    s << (type == Scope::eGlobal ? "Global" :
-          type == Scope::eClass ? "Class" :
-          type == Scope::eStruct ? "Struct" :
-          type == Scope::eUnion ? "Union" :
-          type == Scope::eNamespace ? "Namespace" :
-          type == Scope::eFunction ? "Function" :
-          type == Scope::eIf ? "If" :
-          type == Scope::eElse ? "Else" :
-          type == Scope::eFor ? "For" :
-          type == Scope::eWhile ? "While" :
-          type == Scope::eDo ? "Do" :
-          type == Scope::eSwitch ? "Switch" :
-          type == Scope::eTry ? "Try" :
-          type == Scope::eCatch ? "Catch" :
-          type == Scope::eUnconditional ? "Unconditional" :
-          type == Scope::eLambda ? "Lambda" :
-          type == Scope::eEnum ? "Enum" :
-          "Unknown");
+    s << scopeTypeToString(type);
     return s;
 }
 
@@ -4010,137 +4034,223 @@ void SymbolDatabase::printOut(const char *title) const
 
 void SymbolDatabase::printXml(std::ostream &out) const
 {
-    out << std::setiosflags(std::ios::boolalpha);
+    std::string outs;
 
     std::set<const Variable *> variables;
 
     // Scopes..
-    out << "  <scopes>" << std::endl;
+    outs += "  <scopes>\n";
     for (std::list<Scope>::const_iterator scope = scopeList.cbegin(); scope != scopeList.cend(); ++scope) {
-        out << "    <scope";
-        out << " id=\"" << &*scope << "\"";
-        out << " type=\"" << scope->type << "\"";
-        if (!scope->className.empty())
-            out << " className=\"" << ErrorLogger::toxml(scope->className) << "\"";
-        if (scope->bodyStart)
-            out << " bodyStart=\"" << scope->bodyStart << '\"';
-        if (scope->bodyEnd)
-            out << " bodyEnd=\"" << scope->bodyEnd << '\"';
-        if (scope->nestedIn)
-            out << " nestedIn=\"" << scope->nestedIn << "\"";
-        if (scope->function)
-            out << " function=\"" << scope->function << "\"";
-        if (scope->definedType)
-            out << " definedType=\"" << scope->definedType << "\"";
+        outs += "    <scope";
+        outs += " id=\"";
+        outs += ptr_to_string(&*scope);
+        outs += "\"";
+        outs += " type=\"";
+        outs += scopeTypeToString(scope->type);
+        outs += "\"";
+        if (!scope->className.empty()) {
+            outs += " className=\"";
+            outs += ErrorLogger::toxml(scope->className);
+            outs += "\"";
+        }
+        if (scope->bodyStart) {
+            outs += " bodyStart=\"";
+            outs += ptr_to_string(scope->bodyStart);
+            outs += '\"';
+        }
+        if (scope->bodyEnd) {
+            outs += " bodyEnd=\"";
+            outs += ptr_to_string(scope->bodyEnd);
+            outs += '\"';
+        }
+        if (scope->nestedIn) {
+            outs += " nestedIn=\"";
+            outs += ptr_to_string(scope->nestedIn);
+            outs += "\"";
+        }
+        if (scope->function) {
+            outs += " function=\"";
+            outs += ptr_to_string(scope->function);
+            outs += "\"";
+        }
+        if (scope->definedType) {
+            outs += " definedType=\"";
+            outs += ptr_to_string(scope->definedType);
+            outs += "\"";
+        }
         if (scope->functionList.empty() && scope->varlist.empty())
-            out << "/>" << std::endl;
+            outs += "/>\n";
         else {
-            out << '>' << std::endl;
+            outs += ">\n";
             if (!scope->functionList.empty()) {
-                out << "      <functionList>" << std::endl;
+                outs += "      <functionList>\n";
                 for (std::list<Function>::const_iterator function = scope->functionList.cbegin(); function != scope->functionList.cend(); ++function) {
-                    out << "        <function id=\"" << &*function
-                        << "\" token=\"" << function->token
-                        << "\" tokenDef=\"" << function->tokenDef
-                        << "\" name=\"" << ErrorLogger::toxml(function->name()) << '\"';
-                    out << " type=\"" << (function->type == Function::eConstructor? "Constructor" :
-                                          function->type == Function::eCopyConstructor ? "CopyConstructor" :
-                                          function->type == Function::eMoveConstructor ? "MoveConstructor" :
-                                          function->type == Function::eOperatorEqual ? "OperatorEqual" :
-                                          function->type == Function::eDestructor ? "Destructor" :
-                                          function->type == Function::eFunction ? "Function" :
-                                          function->type == Function::eLambda ? "Lambda" :
-                                          "Unknown") << '\"';
+                    outs += "        <function id=\"";
+                    outs += ptr_to_string(&*function);
+                    outs += "\" token=\"";
+                    outs += ptr_to_string(function->token);
+                    outs += "\" tokenDef=\"";
+                    outs += ptr_to_string(function->tokenDef);
+                    outs += "\" name=\"";
+                    outs += ErrorLogger::toxml(function->name());
+                    outs += '\"';
+                    outs += " type=\"";
+                    outs += (function->type == Function::eConstructor? "Constructor" :
+                             function->type == Function::eCopyConstructor ? "CopyConstructor" :
+                             function->type == Function::eMoveConstructor ? "MoveConstructor" :
+                             function->type == Function::eOperatorEqual ? "OperatorEqual" :
+                             function->type == Function::eDestructor ? "Destructor" :
+                             function->type == Function::eFunction ? "Function" :
+                             function->type == Function::eLambda ? "Lambda" :
+                             "Unknown");
+                    outs += '\"';
                     if (function->nestedIn->definedType) {
                         if (function->hasVirtualSpecifier())
-                            out << " hasVirtualSpecifier=\"true\"";
+                            outs += " hasVirtualSpecifier=\"true\"";
                         else if (function->isImplicitlyVirtual())
-                            out << " isImplicitlyVirtual=\"true\"";
+                            outs += " isImplicitlyVirtual=\"true\"";
                     }
-                    if (function->access == AccessControl::Public || function->access == AccessControl::Protected || function->access == AccessControl::Private)
-                        out << " access=\"" << accessControlToString(function->access) << "\"";
+                    if (function->access == AccessControl::Public || function->access == AccessControl::Protected || function->access == AccessControl::Private) {
+                        outs += " access=\"";
+                        outs += accessControlToString(function->access);
+                        outs +="\"";
+                    }
                     if (function->isInlineKeyword())
-                        out << " isInlineKeyword=\"true\"";
+                        outs += " isInlineKeyword=\"true\"";
                     if (function->isStatic())
-                        out << " isStatic=\"true\"";
+                        outs += " isStatic=\"true\"";
                     if (function->isAttributeNoreturn())
-                        out << " isAttributeNoreturn=\"true\"";
-                    if (const Function* overriddenFunction = function->getOverriddenFunction())
-                        out << " overriddenFunction=\"" << overriddenFunction << "\"";
+                        outs += " isAttributeNoreturn=\"true\"";
+                    if (const Function* overriddenFunction = function->getOverriddenFunction()) {
+                        outs += " overriddenFunction=\"";
+                        outs += ptr_to_string(overriddenFunction);
+                        outs += "\"";
+                    }
                     if (function->argCount() == 0U)
-                        out << "/>" << std::endl;
+                        outs += "/>\n";
                     else {
-                        out << ">" << std::endl;
+                        outs += ">\n";
                         for (unsigned int argnr = 0; argnr < function->argCount(); ++argnr) {
                             const Variable *arg = function->getArgumentVar(argnr);
-                            out << "          <arg nr=\"" << argnr+1 << "\" variable=\"" << arg << "\"/>" << std::endl;
+                            outs += "          <arg nr=\"";
+                            outs += std::to_string(argnr+1);
+                            outs += "\" variable=\"";
+                            outs += ptr_to_string(arg);
+                            outs += "\"/>\n";
                             variables.insert(arg);
                         }
-                        out << "        </function>" << std::endl;
+                        outs += "        </function>\n";
                     }
                 }
-                out << "      </functionList>" << std::endl;
+                outs += "      </functionList>\n";
             }
             if (!scope->varlist.empty()) {
-                out << "      <varlist>" << std::endl;
-                for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var)
-                    out << "        <var id=\""   << &*var << "\"/>" << std::endl;
-                out << "      </varlist>" << std::endl;
+                outs += "      <varlist>\n";
+                for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
+                    outs += "        <var id=\"";
+                    outs += ptr_to_string(&*var);
+                    outs += "\"/>\n";
+                }
+                outs += "      </varlist>\n";
             }
-            out << "    </scope>" << std::endl;
+            outs += "    </scope>\n";
         }
     }
-    out << "  </scopes>" << std::endl;
+    outs += "  </scopes>\n";
 
     if (!typeList.empty()) {
-        out << "  <types>\n";
+        outs += "  <types>\n";
         for (const Type& type:typeList) {
-            out << "    <type id=\"" << &type << "\" classScope=\"" << type.classScope << "\"";
+            outs += "    <type id=\"";
+            outs += ptr_to_string(&type);
+            outs += "\" classScope=\"";
+            outs += ptr_to_string(type.classScope);
+            outs += "\"";
             if (type.derivedFrom.empty()) {
-                out << "/>\n";
+                outs += "/>\n";
                 continue;
             }
-            out << ">\n";
+            outs += ">\n";
             for (const Type::BaseInfo& baseInfo: type.derivedFrom) {
-                out << "      <derivedFrom"
-                    << " access=\"" << accessControlToString(baseInfo.access) << "\""
-                    << " type=\""   << baseInfo.type << "\""
-                    << " isVirtual=\"" << (baseInfo.isVirtual ? "true" : "false") << "\""
-                    << " nameTok=\"" << baseInfo.nameTok << "\""
-                    << "/>\n";
+                outs += "      <derivedFrom";
+                outs += " access=\"";
+                outs += accessControlToString(baseInfo.access);
+                outs += "\"";
+                outs += " type=\"";
+                outs += ptr_to_string(baseInfo.type);
+                outs += "\"";
+                outs += " isVirtual=\"";
+                outs += bool_to_string(baseInfo.isVirtual);
+                outs += "\"";
+                outs += " nameTok=\"";
+                outs += ptr_to_string(baseInfo.nameTok);
+                outs += "\"";
+                outs += "/>\n";
             }
-            out << "    </type>\n";
+            outs += "    </type>\n";
         }
-        out << "  </types>\n";
+        outs += "  </types>\n";
     }
 
     // Variables..
     for (const Variable *var : mVariableList)
         variables.insert(var);
-    out << "  <variables>" << std::endl;
+    outs += "  <variables>\n";
     for (const Variable *var : variables) {
         if (!var)
             continue;
-        out << "    <var id=\""   << var << '\"';
-        out << " nameToken=\""      << var->nameToken() << '\"';
-        out << " typeStartToken=\"" << var->typeStartToken() << '\"';
-        out << " typeEndToken=\""   << var->typeEndToken() << '\"';
-        out << " access=\""         << accessControlToString(var->mAccess) << '\"';
-        out << " scope=\""          << var->scope() << '\"';
-        if (var->valueType())
-            out << " constness=\""      << var->valueType()->constness << '\"';
-        out << " isArray=\""        << var->isArray() << '\"';
-        out << " isClass=\""        << var->isClass() << '\"';
-        out << " isConst=\""        << var->isConst() << '\"';
-        out << " isExtern=\""       << var->isExtern() << '\"';
-        out << " isPointer=\""      << var->isPointer() << '\"';
-        out << " isReference=\""    << var->isReference() << '\"';
-        out << " isStatic=\""       << var->isStatic() << '\"';
-        out << " isVolatile=\""     << var->isVolatile() << '\"';
-        out << "/>" << std::endl;
+        outs += "    <var id=\"";
+        outs += ptr_to_string(var);
+        outs += '\"';
+        outs += " nameToken=\"";
+        outs += ptr_to_string(var->nameToken());
+        outs += '\"';
+        outs += " typeStartToken=\"";
+        outs += ptr_to_string(var->typeStartToken());
+        outs += '\"';
+        outs += " typeEndToken=\"";
+        outs += ptr_to_string(var->typeEndToken());
+        outs += '\"';
+        outs += " access=\"";
+        outs += accessControlToString(var->mAccess);
+        outs += '\"';
+        outs += " scope=\"";
+        outs += ptr_to_string(var->scope());
+        outs += '\"';
+        if (var->valueType()) {
+            outs += " constness=\"";
+            outs += std::to_string(var->valueType()->constness);
+            outs += '\"';
+        }
+        outs += " isArray=\"";
+        outs += bool_to_string(var->isArray());
+        outs += '\"';
+        outs += " isClass=\"";
+        outs += bool_to_string(var->isClass());
+        outs += '\"';
+        outs += " isConst=\"";
+        outs += bool_to_string(var->isConst());
+        outs += '\"';
+        outs += " isExtern=\"";
+        outs += bool_to_string(var->isExtern());
+        outs += '\"';
+        outs += " isPointer=\"";
+        outs += bool_to_string(var->isPointer());
+        outs += '\"';
+        outs += " isReference=\"";
+        outs += bool_to_string(var->isReference());
+        outs += '\"';
+        outs += " isStatic=\"";
+        outs += bool_to_string(var->isStatic());
+        outs += '\"';
+        outs += " isVolatile=\"";
+        outs += bool_to_string(var->isVolatile());
+        outs += '\"';
+        outs += "/>\n";
     }
-    out << "  </variables>" << std::endl;
-    out << std::resetiosflags(std::ios::boolalpha);
+    outs += "  </variables>\n";
+
+    out << outs;
 }
 
 //---------------------------------------------------------------------------
@@ -7443,64 +7553,67 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings &sett
 
 std::string ValueType::dump() const
 {
-    std::ostringstream ret;
+    std::string ret;
     switch (type) {
     case UNKNOWN_TYPE:
         return "";
     case NONSTD:
-        ret << "valueType-type=\"nonstd\"";
+        ret += "valueType-type=\"nonstd\"";
         break;
     case POD:
-        ret << "valueType-type=\"pod\"";
+        ret += "valueType-type=\"pod\"";
         break;
     case RECORD:
-        ret << "valueType-type=\"record\"";
+        ret += "valueType-type=\"record\"";
         break;
     case SMART_POINTER:
-        ret << "valueType-type=\"smart-pointer\"";
+        ret += "valueType-type=\"smart-pointer\"";
         break;
-    case CONTAINER:
-        ret << "valueType-type=\"container\"";
-        ret << " valueType-containerId=\"" << container << "\"";
+    case CONTAINER: {
+        ret += "valueType-type=\"container\"";
+        ret += " valueType-containerId=\"";
+        ret += ptr_to_string(container);
+        ret += "\"";
         break;
+    }
     case ITERATOR:
-        ret << "valueType-type=\"iterator\"";
+        ret += "valueType-type=\"iterator\"";
         break;
     case VOID:
-        ret << "valueType-type=\"void\"";
+        ret += "valueType-type=\"void\"";
         break;
     case BOOL:
-        ret << "valueType-type=\"bool\"";
+        ret += "valueType-type=\"bool\"";
         break;
     case CHAR:
-        ret << "valueType-type=\"char\"";
+        ret += "valueType-type=\"char\"";
         break;
     case SHORT:
-        ret << "valueType-type=\"short\"";
+        ret += "valueType-type=\"short\"";
         break;
     case WCHAR_T:
-        ret << "valueType-type=\"wchar_t\"";
+        ret += "valueType-type=\"wchar_t\"";
         break;
     case INT:
-        ret << "valueType-type=\"int\"";
+        ret += "valueType-type=\"int\"";
         break;
     case LONG:
-        ret << "valueType-type=\"long\"";
+        ret += "valueType-type=\"long\"";
         break;
     case LONGLONG:
-        ret << "valueType-type=\"long long\"";
+        ret += "valueType-type=\"long long\"";
         break;
     case UNKNOWN_INT:
-        ret << "valueType-type=\"unknown int\"";
+        ret += "valueType-type=\"unknown int\"";
         break;
     case FLOAT:
-        ret << "valueType-type=\"float\"";
+        ret += "valueType-type=\"float\"";
         break;
     case DOUBLE:
-        ret << "valueType-type=\"double\"";
+        ret += "valueType-type=\"double\"";
         break;
     case LONGDOUBLE:
-        ret << "valueType-type=\"long double\"";
+        ret += "valueType-type=\"long double\"";
         break;
     }
 
@@ -7508,36 +7621,51 @@ std::string ValueType::dump() const
     case Sign::UNKNOWN_SIGN:
         break;
     case Sign::SIGNED:
-        ret << " valueType-sign=\"signed\"";
+        ret += " valueType-sign=\"signed\"";
         break;
     case Sign::UNSIGNED:
-        ret << " valueType-sign=\"unsigned\"";
+        ret += " valueType-sign=\"unsigned\"";
         break;
     }
 
-    if (bits > 0)
-        ret << " valueType-bits=\"" << bits << '\"';
+    if (bits > 0) {
+        ret += " valueType-bits=\"";
+        ret += std::to_string(bits);
+        ret += '\"';
+    }
 
-    if (pointer > 0)
-        ret << " valueType-pointer=\"" << pointer << '\"';
+    if (pointer > 0) {
+        ret += " valueType-pointer=\"";
+        ret += std::to_string(pointer);
+        ret += '\"';
+    }
 
-    if (constness > 0)
-        ret << " valueType-constness=\"" << constness << '\"';
+    if (constness > 0) {
+        ret += " valueType-constness=\"";
+        ret += std::to_string(constness);
+        ret += '\"';
+    }
 
     if (reference == Reference::None)
-        ret << " valueType-reference=\"None\"";
+        ret += " valueType-reference=\"None\"";
     else if (reference == Reference::LValue)
-        ret << " valueType-reference=\"LValue\"";
+        ret += " valueType-reference=\"LValue\"";
     else if (reference == Reference::RValue)
-        ret << " valueType-reference=\"RValue\"";
+        ret += " valueType-reference=\"RValue\"";
 
-    if (typeScope)
-        ret << " valueType-typeScope=\"" << typeScope << '\"';
+    if (typeScope) {
+        ret += " valueType-typeScope=\"";
+        ret += ptr_to_string(typeScope);
+        ret += '\"';
+    }
 
-    if (!originalTypeName.empty())
-        ret << " valueType-originalTypeName=\"" << ErrorLogger::toxml(originalTypeName) << '\"';
+    if (!originalTypeName.empty()) {
+        ret += " valueType-originalTypeName=\"";
+        ret += ErrorLogger::toxml(originalTypeName);
+        ret += '\"';
+    }
 
-    return ret.str();
+    return ret;
 }
 
 bool ValueType::isConst(nonneg int indirect) const

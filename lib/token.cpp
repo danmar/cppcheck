@@ -1695,119 +1695,171 @@ std::string Token::astStringZ3() const
 
 void Token::printValueFlow(bool xml, std::ostream &out) const
 {
+    std::string outs;
+
     int line = 0;
     if (xml)
-        out << "  <valueflow>" << std::endl;
+        outs += "  <valueflow>\n";
     else
-        out << "\n\n##Value flow" << std::endl;
+        outs += "\n\n##Value flow\n";
     for (const Token *tok = this; tok; tok = tok->next()) {
         const auto* const values = tok->mImpl->mValues;
         if (!values)
             continue;
         if (values->empty()) // Values might be removed by removeContradictions
             continue;
-        if (xml)
-            out << "    <values id=\"" << values << "\">" << std::endl;
-        else if (line != tok->linenr())
-            out << "Line " << tok->linenr() << std::endl;
+        if (xml) {
+            outs += "    <values id=\"";
+            outs += ptr_to_string(values);
+            outs +=  "\">";
+            outs += '\n';
+        }
+        else if (line != tok->linenr()) {
+            outs += "Line ";
+            outs += std::to_string(tok->linenr());
+            outs += '\n';
+        }
         line = tok->linenr();
         if (!xml) {
             ValueFlow::Value::ValueKind valueKind = values->front().valueKind;
             const bool same = std::all_of(values->begin(), values->end(), [&](const ValueFlow::Value& value) {
                 return value.valueKind == valueKind;
             });
-            out << "  " << tok->str() << " ";
+            outs += "  ";
+            outs += tok->str();
+            outs += " ";
             if (same) {
                 switch (valueKind) {
                 case ValueFlow::Value::ValueKind::Impossible:
                 case ValueFlow::Value::ValueKind::Known:
-                    out << "always ";
+                    outs += "always ";
                     break;
                 case ValueFlow::Value::ValueKind::Inconclusive:
-                    out << "inconclusive ";
+                    outs += "inconclusive ";
                     break;
                 case ValueFlow::Value::ValueKind::Possible:
-                    out << "possible ";
+                    outs += "possible ";
                     break;
                 }
             }
             if (values->size() > 1U)
-                out << '{';
+                outs += '{';
         }
         for (const ValueFlow::Value& value : *values) {
             if (xml) {
-                out << "      <value ";
+                outs += "      <value ";
                 switch (value.valueType) {
                 case ValueFlow::Value::ValueType::INT:
-                    if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED)
-                        out << "intvalue=\"" << (MathLib::biguint)value.intvalue << '\"';
-                    else
-                        out << "intvalue=\"" << value.intvalue << '\"';
+                    if (tok->valueType() && tok->valueType()->sign == ValueType::UNSIGNED) {
+                        outs += "intvalue=\"";
+                        outs += std::to_string(static_cast<MathLib::biguint>(value.intvalue));
+                        outs += '\"';
+                    }
+                    else {
+                        outs += "intvalue=\"";
+                        outs += std::to_string(value.intvalue);
+                        outs += '\"';
+                    }
                     break;
                 case ValueFlow::Value::ValueType::TOK:
-                    out << "tokvalue=\"" << value.tokvalue << '\"';
+                    outs +=  "tokvalue=\"";
+                    outs += ptr_to_string(value.tokvalue);
+                    outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::FLOAT:
-                    out << "floatvalue=\"" << value.floatValue << '\"';
+                    outs += "floatvalue=\"";
+                    outs += std::to_string(value.floatValue); // TODO: should this be MathLib::toString()?
+                    outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::MOVED:
-                    out << "movedvalue=\"" << ValueFlow::Value::toString(value.moveKind) << '\"';
+                    outs += "movedvalue=\"";
+                    outs += ValueFlow::Value::toString(value.moveKind);
+                    outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::UNINIT:
-                    out << "uninit=\"1\"";
+                    outs +=  "uninit=\"1\"";
                     break;
                 case ValueFlow::Value::ValueType::BUFFER_SIZE:
-                    out << "buffer-size=\"" << value.intvalue << "\"";
+                    outs += "buffer-size=\"";
+                    outs += std::to_string(value.intvalue);
+                    outs += "\"";
                     break;
                 case ValueFlow::Value::ValueType::CONTAINER_SIZE:
-                    out << "container-size=\"" << value.intvalue << '\"';
+                    outs += "container-size=\"";
+                    outs += std::to_string(value.intvalue);
+                    outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::ITERATOR_START:
-                    out << "iterator-start=\"" << value.intvalue << '\"';
+                    outs +=  "iterator-start=\"";
+                    outs += std::to_string(value.intvalue);
+                    outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::ITERATOR_END:
-                    out << "iterator-end=\"" << value.intvalue << '\"';
+                    outs +=  "iterator-end=\"";
+                    outs += std::to_string(value.intvalue);
+                    outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
-                    out << "lifetime=\"" << value.tokvalue << '\"';
-                    out << " lifetime-scope=\"" << ValueFlow::Value::toString(value.lifetimeScope) << "\"";
-                    out << " lifetime-kind=\"" << ValueFlow::Value::toString(value.lifetimeKind) << "\"";
+                    outs += "lifetime=\"";
+                    outs += ptr_to_string(value.tokvalue);
+                    outs += '\"';
+                    outs += " lifetime-scope=\"";
+                    outs += ValueFlow::Value::toString(value.lifetimeScope);
+                    outs += "\"";
+                    outs += " lifetime-kind=\"";
+                    outs += ValueFlow::Value::toString(value.lifetimeKind);
+                    outs += "\"";
                     break;
                 case ValueFlow::Value::ValueType::SYMBOLIC:
-                    out << "symbolic=\"" << value.tokvalue << '\"';
-                    out << " symbolic-delta=\"" << value.intvalue << '\"';
+                    outs += "symbolic=\"";
+                    outs += ptr_to_string(value.tokvalue);
+                    outs += '\"';
+                    outs += " symbolic-delta=\"";
+                    outs += std::to_string(value.intvalue);
+                    outs += '\"';
                     break;
                 }
-                out << " bound=\"" << ValueFlow::Value::toString(value.bound) << "\"";
-                if (value.condition)
-                    out << " condition-line=\"" << value.condition->linenr() << '\"';
+                outs += " bound=\"";
+                outs += ValueFlow::Value::toString(value.bound);
+                outs += "\"";
+                if (value.condition) {
+                    outs += " condition-line=\"";
+                    outs += std::to_string(value.condition->linenr());
+                    outs += '\"';
+                }
                 if (value.isKnown())
-                    out << " known=\"true\"";
+                    outs += " known=\"true\"";
                 else if (value.isPossible())
-                    out << " possible=\"true\"";
+                    outs += " possible=\"true\"";
                 else if (value.isImpossible())
-                    out << " impossible=\"true\"";
+                    outs += " impossible=\"true\"";
                 else if (value.isInconclusive())
-                    out << " inconclusive=\"true\"";
-                out << " path=\"" << value.path << "\"";
-                out << "/>" << std::endl;
+                    outs += " inconclusive=\"true\"";
+
+                outs += " path=\"";
+                outs += std::to_string(value.path);
+                outs += "\"";
+
+                outs += "/>\n";
             }
 
             else {
                 if (&value != &values->front())
-                    out << ",";
-                out << value.toString();
+                    outs += ",";
+                outs += value.toString();
             }
         }
         if (xml)
-            out << "    </values>" << std::endl;
+            outs += "    </values>\n";
         else if (values->size() > 1U)
-            out << '}' << std::endl;
+            outs += "}\n";
         else
-            out << std::endl;
+            outs += '\n';
     }
     if (xml)
-        out << "  </valueflow>" << std::endl;
+        outs += "  </valueflow>\n";
+
+    out << outs;
 }
 
 const ValueFlow::Value * Token::getValueLE(const MathLib::bigint val, const Settings *settings) const
