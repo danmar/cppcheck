@@ -3055,12 +3055,11 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     }
 
     bool isGlobal() const override {
-        for (const auto&p:getVars()) {
+        const auto& vars = getVars();
+        return std::any_of(vars.cbegin(), vars.cend(), [] (const std::pair<nonneg int, const Variable*>& p) {
             const Variable* var = p.second;
-            if (!var->isLocal() && !var->isArgument() && !var->isConst())
-                return true;
-        }
-        return false;
+            return !var->isLocal() && !var->isArgument() && !var->isConst();
+        });
     }
 
     bool lowerToPossible() override {
@@ -5839,6 +5838,7 @@ static bool intersects(const C1& c1, const C2& c2)
 {
     if (c1.size() > c2.size())
         return intersects(c2, c1);
+    // NOLINTNEXTLINE(readability-use-anyofallof) - TODO: fix if possible / also Cppcheck false negative
     for (auto&& x : c1) {
         if (c2.find(x) != c2.end())
             return true;

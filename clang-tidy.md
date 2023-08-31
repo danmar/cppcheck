@@ -87,9 +87,6 @@ We intentionally use this.
 
 Leads to lots of "false positives". This seem to enforce a coding guidelines of certain codebases.
 
-`readability-use-anyofallof`<br/>
-
-We currently don't even apply our own `useStlAlgorithm` findings.
 
 `bugprone-easily-swappable-parameters`<br/>
 
@@ -146,6 +143,15 @@ To be evaluated (need to remove exclusion).
 
 `cppcoreguidelines-missing-std-forward`<br/>
 `cppcoreguidelines-avoid-const-or-ref-data-members`<br/>
+`cppcoreguidelines-macro-usage`<br/>
+`cppcoreguidelines-pro-type-member-init`<br/>
+`cppcoreguidelines-pro-type-static-cast-downcast`<br/>
+`cppcoreguidelines-prefer-member-initializer`<br/>
+`cppcoreguidelines-misleading-capture-default-by-value`<br/>
+`bugprone-argument-comment.CommentBoolLiterals`<br/>
+`cert-err33-c`<br/>
+`google-readability-namespace-comments`<br/>
+`cppcoreguidelines-special-member-functions`<br/>
 
 To be evaluated (need to enable explicitly).
 

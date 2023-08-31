@@ -984,6 +984,7 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
 {
     if (tok->varId() == varid)
         return false;
+    // NOLINTNEXTLINE(readability-use-anyofallof) - TODO: fix this / also Cppcheck false negative
     for (const ValueFlow::Value &val : tok->values()) {
         if (!val.isLocalLifetimeValue())
             continue;
