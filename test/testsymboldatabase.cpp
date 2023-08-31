@@ -442,6 +442,7 @@ private:
         TEST_CASE(findFunction47);
         TEST_CASE(findFunction48);
         TEST_CASE(findFunction49); // #11888
+        TEST_CASE(findFunction50); // #11904 - method with same name and arguments in derived class
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -7302,6 +7303,15 @@ private:
         ASSERT(ftok && ftok->function());
         ASSERT(ftok->function()->name() == "f");
         ASSERT_EQUALS(4, ftok->function()->tokenDef->linenr());
+    }
+
+    void findFunction50() {
+        GET_SYMBOL_DB("struct B { B(); void init(unsigned int value); };\n"
+                      "struct D: B { D(); void init(unsigned int value); };\n"
+                      "D::D() { init(0); }\n"
+                      "void D::init(unsigned int value) {}\n");
+        const Token* call = Token::findsimplematch(tokenizer.tokens(), "init ( 0 ) ;");
+        ASSERT(call && call->function() && call->function()->functionScope);
     }
 
     void findFunctionContainer() {

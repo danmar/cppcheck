@@ -5467,7 +5467,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
     addMatchingFunctions(this);
 
-    // check in anonumous namespaces
+    // check in anonymous namespaces
     for (const Scope *nestedScope : nestedList) {
         if (nestedScope->type == eNamespace && nestedScope->className.empty())
             addMatchingFunctions(nestedScope);
@@ -5687,7 +5687,22 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     if (matches.size() == 1)
         return matches[0];
 
-    return nullptr;
+    // Prioritize matches in derived scopes
+    const Function* ret = nullptr;
+    for (int i = 0; i < fallback1Func.size(); ++i) {
+        if (std::find(matches.cbegin(), matches.cend(), fallback1Func[i]) == matches.cend())
+            continue;
+        if (this == fallback1Func[i]->nestedIn) {
+            if (!ret)
+                ret = fallback1Func[i];
+            else {
+                ret = nullptr;
+                break;
+            }
+        }
+    }
+
+    return ret;
 }
 
 //---------------------------------------------------------------------------
