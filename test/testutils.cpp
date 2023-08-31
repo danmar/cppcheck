@@ -336,9 +336,9 @@ private:
 
     void id_string() const
     {
-        ASSERT_EQUALS("1f", id_string_i(0xF1));
-        ASSERT_EQUALS("321", id_string_i(0x123));
-        ASSERT_EQUALS("0321", id_string_i(0x1230));
+        ASSERT_EQUALS("f1", id_string_i(0xF1));
+        ASSERT_EQUALS("123", id_string_i(0x123));
+        ASSERT_EQUALS("1230", id_string_i(0x1230));
     }
 };
 

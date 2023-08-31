@@ -284,7 +284,8 @@ static inline std::string id_string_i(std::uintptr_t l)
     char buf[buf_size];
 
     // needs to be signed so we don't underflow in padding loop
-    int idx = 0;
+    int idx = buf_size - 1;
+    buf[idx] = '\0';
 
     while (l != 0)
     {
@@ -298,11 +299,11 @@ static inline std::string id_string_i(std::uintptr_t l)
             // a-f
             c = 'a' + (temp - 10);
         }
-        buf[idx++] = c; // store in reverse order
+        buf[--idx] = c; // store in reverse order
         l = l / 16;
     }
-    buf[idx] = '\0';
-    return buf;
+
+    return &buf[idx];
 }
 
 static inline std::string id_string(const void* p)
