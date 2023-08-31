@@ -172,7 +172,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
                 break;
             if (word.find_first_not_of("+-*/%#;") == std::string::npos)
                 break;
-            if (word.compare(0, 11, "symbolName=") == 0) {
+            if (startsWith(word, "symbolName=")) {
                 s.symbolName = word.substr(11);
             } else {
                 if (errorMessage && errorMessage->empty())
@@ -316,7 +316,7 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
             break;
         if (word.find_first_not_of("+-*/%#;") == std::string::npos)
             break;
-        if (word.compare(0,11,"symbolName=")==0)
+        if (startsWith(word,"symbolName="))
             symbolName = word.substr(11);
         else if (errorMessage && errorMessage->empty())
             *errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
@@ -377,7 +377,7 @@ std::string Suppressions::Suppression::getText() const
         ret += " symbolName=" + symbolName;
     if (hash > 0)
         ret += " hash=" + std::to_string(hash);
-    if (ret.compare(0,1," ")==0)
+    if (startsWith(ret," "))
         return ret.substr(1);
     return ret;
 }

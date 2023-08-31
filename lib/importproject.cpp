@@ -156,7 +156,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
     for (const std::string &ipath : copyIn) {
         if (ipath.empty())
             continue;
-        if (ipath.compare(0,2,"%(")==0)
+        if (startsWith(ipath,"%("))
             continue;
         std::string s(Path::fromNativeSeparators(ipath));
         if (!found.insert(s).second)
@@ -298,9 +298,9 @@ void ImportProject::FileSettings::parseCommand(const std::string& command)
         if (F=='D') {
             std::string defval = readUntil(command, &pos, " ");
             defs += fval;
-            if (defval.size() >= 3 && defval.compare(0,2,"=\"")==0 && defval.back()=='\"')
+            if (defval.size() >= 3 && startsWith(defval,"=\"") && defval.back()=='\"')
                 defval = "=" + unescape(defval.substr(2, defval.size() - 3));
-            else if (defval.size() >= 5 && defval.compare(0, 3, "=\\\"") == 0 && endsWith(defval, "\\\""))
+            else if (defval.size() >= 5 && startsWith(defval, "=\\\"") && endsWith(defval, "\\\""))
                 defval = "=\"" + unescape(defval.substr(3, defval.size() - 5)) + "\"";
             if (!defval.empty())
                 defs += defval;
@@ -313,12 +313,12 @@ void ImportProject::FileSettings::parseCommand(const std::string& command)
                 i = unescape(i.substr(1, i.size() - 2));
             if (std::find(includePaths.cbegin(), includePaths.cend(), i) == includePaths.cend())
                 includePaths.push_back(std::move(i));
-        } else if (F=='s' && fval.compare(0,2,"td") == 0) {
+        } else if (F=='s' && startsWith(fval,"td")) {
             ++pos;
             const std::string stdval = readUntil(command, &pos, " ");
             standard = stdval;
             // TODO: use simplecpp::DUI::std instead of specifying it manually
-            if (standard.compare(0, 3, "c++") || standard.compare(0, 5, "gnu++")) {
+            if (startsWith(standard, "c++") || startsWith(standard, "gnu++")) {
                 const std::string stddef = simplecpp::getCppStdString(standard);
                 if (stddef.empty()) {
                     // TODO: log error
@@ -328,7 +328,7 @@ void ImportProject::FileSettings::parseCommand(const std::string& command)
                 defs += "__cplusplus=";
                 defs += stddef;
                 defs += ";";
-            } else if (standard.compare(0, 1, "c") || standard.compare(0, 3, "gnu")) {
+            } else if (startsWith(standard, "c") || startsWith(standard, "gnu")) {
                 const std::string stddef = simplecpp::getCStdString(standard);
                 if (stddef.empty()) {
                     // TODO: log error
@@ -473,7 +473,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
     bool found = false;
 
     while (std::getline(istr,line)) {
-        if (line.compare(0,8,"Project(")!=0)
+        if (!startsWith(line,"Project("))
             continue;
         const std::string::size_type pos = line.find(".vcxproj");
         if (pos == std::string::npos)
@@ -1302,7 +1302,7 @@ void ImportProject::selectOneVsConfig(cppcheck::Platform::Type platform)
         }
         const ImportProject::FileSettings &fs = *it;
         bool remove = false;
-        if (fs.cfg.compare(0,5,"Debug") != 0)
+        if (!startsWith(fs.cfg,"Debug"))
             remove = true;
         if (platform == cppcheck::Platform::Type::Win64 && fs.platformType != platform)
             remove = true;

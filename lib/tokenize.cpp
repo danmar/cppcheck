@@ -246,7 +246,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
             if (end)
                 end = end->next();
         } else if (end->str() == "(") {
-            if (tok->previous()->str().compare(0, 8, "operator")  == 0)
+            if (startsWith(tok->previous()->str(), "operator"))
                 // conversion operator
                 return false;
             if (tok->previous()->str() == "typedef")
@@ -8124,7 +8124,7 @@ static bool isNonMacro(const Token* tok)
         return true;
     if (cAlternativeTokens.count(tok->str()) > 0)
         return true;
-    if (tok->str().compare(0, 2, "__") == 0) // attribute/annotation
+    if (startsWith(tok->str(), "__")) // attribute/annotation
         return true;
     if (Token::simpleMatch(tok, "alignas ("))
         return true;
@@ -8236,7 +8236,7 @@ void Tokenizer::reportUnknownMacros() const
                 continue;
             if (cAlternativeTokens.count(tok->linkAt(2)->next()->str()) > 0)
                 continue;
-            if (tok->next()->str().compare(0, 2, "__") == 0) // attribute/annotation
+            if (startsWith(tok->next()->str(), "__")) // attribute/annotation
                 continue;
             unknownMacroError(tok->next());
         }
@@ -8990,7 +8990,7 @@ void Tokenizer::simplifyCppcheckAttribute()
         if (!tok->previous())
             continue;
         const std::string &attr = tok->previous()->str();
-        if (attr.compare(0, 11, "__cppcheck_") != 0) // TODO: starts_with("__cppcheck_")
+        if (!startsWith(attr, "__cppcheck_"))
             continue;
         if (attr.compare(attr.size()-2, 2, "__") != 0) // TODO: ends_with("__")
             continue;
@@ -8998,7 +8998,7 @@ void Tokenizer::simplifyCppcheckAttribute()
         Token *vartok = tok->link();
         while (Token::Match(vartok->next(), "%name%|*|&|::")) {
             vartok = vartok->next();
-            if (Token::Match(vartok, "%name% (") && vartok->str().compare(0,11,"__cppcheck_") == 0)
+            if (Token::Match(vartok, "%name% (") && startsWith(vartok->str(),"__cppcheck_"))
                 vartok = vartok->linkAt(1);
         }
 
@@ -10471,7 +10471,7 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
     assert(mPreprocessor);
 
     return std::any_of(mPreprocessor->getDirectives().cbegin(), mPreprocessor->getDirectives().cend(), [&](const Directive& d) {
-        return d.str.compare(0, 3, "#if") == 0 &&
+        return startsWith(d.str, "#if") &&
         d.linenr >= start->linenr() &&
         d.linenr <= end->linenr() &&
         start->fileIndex() < list.getFiles().size() &&

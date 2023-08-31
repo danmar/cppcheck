@@ -2407,7 +2407,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         return false; // not a function => variable not changed
     if (Token::simpleMatch(tok, "{") && isTrivialConstructor(tok))
         return false;
-    if (tok->isKeyword() && !isCPPCastKeyword(tok) && tok->str().compare(0,8,"operator") != 0)
+    if (tok->isKeyword() && !isCPPCastKeyword(tok) && !startsWith(tok->str(),"operator"))
         return false;
     // A functional cast won't modify the variable
     if (Token::Match(tok, "%type% (|{") && tok->tokType() == Token::eType && astIsPrimitive(tok->next()))

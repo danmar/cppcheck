@@ -360,7 +360,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
                 break;
             }
 #endif
-            if (executeCommand(py_exe, split("--version"), redirect, out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
+            if (executeCommand(py_exe, split("--version"), redirect, out) && startsWith(out, "Python ") && std::isdigit(out[7])) {
                 pythonExe = py_exe;
                 break;
             }
@@ -393,7 +393,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     std::istringstream istr(result);
     std::string line;
     while (std::getline(istr, line)) {
-        if (line.compare(0,9,"Checking ", 0, 9) != 0 && !line.empty() && line[0] != '{') {
+        if (!startsWith(line,"Checking ") && !line.empty() && line[0] != '{') {
             result.erase(result.find_last_not_of('\n') + 1, std::string::npos); // Remove trailing newlines
             throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result);
         }
@@ -834,7 +834,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             std::string code;
             const std::list<Directive> &directives = preprocessor.getDirectives();
             for (const Directive &dir : directives) {
-                if (dir.str.compare(0,8,"#define ") == 0 || dir.str.compare(0,9,"#include ") == 0)
+                if (startsWith(dir.str,"#define ") || startsWith(dir.str,"#include "))
                     code += "#line " + std::to_string(dir.linenr) + " \"" + dir.file + "\"\n" + dir.str + '\n';
             }
             Tokenizer tokenizer2(&mSettings, this);
@@ -883,7 +883,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 std::string codeWithoutCfg = preprocessor.getcode(tokens1, mCurrentConfig, files, true);
                 t.stop();
 
-                if (codeWithoutCfg.compare(0,5,"#file") == 0)
+                if (startsWith(codeWithoutCfg,"#file"))
                     codeWithoutCfg.insert(0U, "//");
                 std::string::size_type pos = 0;
                 while ((pos = codeWithoutCfg.find("\n#file",pos)) != std::string::npos)
@@ -1456,7 +1456,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
         const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
 
         while (std::getline(istr, line)) {
-            if (line.compare(0,1,"{") != 0)
+            if (!startsWith(line,"{"))
                 continue;
 
             picojson::value res;
@@ -1486,7 +1486,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             }
 
             errmsg.id = obj["addon"].get<std::string>() + "-" + obj["errorId"].get<std::string>();
-            if (misraC2023 && errmsg.id.compare(0, 12, "misra-c2012-") == 0)
+            if (misraC2023 && startsWith(errmsg.id, "misra-c2012-"))
                 errmsg.id = "misra-c2023-" + errmsg.id.substr(12);
             const std::string text = obj["message"].get<std::string>();
             errmsg.setmsg(text);

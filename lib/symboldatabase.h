@@ -27,6 +27,7 @@
 #include "mathlib.h"
 #include "sourcelocation.h"
 #include "token.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cctype>
@@ -1061,7 +1062,7 @@ public:
 
     bool isAnonymous() const {
         // TODO: Check if class/struct is anonymous
-        return className.size() > 9 && className.compare(0,9,"Anonymous") == 0 && std::isdigit(className[9]);
+        return className.size() > 9 && startsWith(className,"Anonymous") && std::isdigit(className[9]);
     }
 
     const Enumerator * findEnumerator(const std::string & name) const {
