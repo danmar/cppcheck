@@ -22,7 +22,7 @@
 #include <set>
 #include <string>
 
-class CheckersReport {
+class CPPCHECKLIB CheckersReport {
 public:
     CheckersReport(const Settings& settings, const std::set<std::string>& activeCheckers);
 
