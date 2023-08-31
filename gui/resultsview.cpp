@@ -69,8 +69,7 @@
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
     mUI(new Ui::ResultsView),
-    mStatistics(new CheckStatistics(this)),
-    mCheckSettings(nullptr)
+    mStatistics(new CheckStatistics(this))
 {
     mUI->setupUi(this);
 
