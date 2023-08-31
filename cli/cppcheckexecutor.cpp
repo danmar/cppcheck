@@ -20,6 +20,7 @@
 
 #include "analyzerinfo.h"
 #include "checkers.h"
+#include "checkersreport.h"
 #include "cmdlineparser.h"
 #include "color.h"
 #include "config.h"
@@ -337,60 +338,13 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     return 0;
 }
 
-static bool isCppcheckPremium(const Settings& settings) {
-    return (settings.cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0);
-}
-
-static std::string getMisraRuleSeverity(const std::string& rule) {
-    if (checkers::misraRuleSeverity.count(rule) > 0)
-        return checkers::misraRuleSeverity.at(rule);
-    return "style";
-}
-
-static bool isMisraRuleInconclusive(const std::string& rule) {
-    return rule == "8.3";
-}
-
-static bool isMisraRuleActive(const std::string& rule, int amendment, const std::string& severity, const Settings& settings) {
-    if (!isCppcheckPremium(settings) && amendment >= 3)
-        return false;
-    const bool inconclusive = isMisraRuleInconclusive(rule);
-    if (inconclusive && !settings.certainty.isEnabled(Certainty::inconclusive))
-        return false;
-    if (severity == "warning")
-        return settings.severity.isEnabled(Severity::warning);
-    if (severity == "style")
-        return settings.severity.isEnabled(Severity::style);
-    return true; // error severity
-}
-
 void CppCheckExecutor::writeCheckersReport(const Settings& settings) const
 {
+    CheckersReport checkersReport(settings, mActiveCheckers);
+
     if (!settings.quiet) {
-        int activeCheckers = 0;
-        int totalCheckers = 0;
-        for (const auto& checkReq: checkers::allCheckers) {
-            if (mActiveCheckers.count(checkReq.first) > 0)
-                ++activeCheckers;
-            ++totalCheckers;
-        }
-        if (isCppcheckPremium(settings)) {
-            for (const auto& checkReq: checkers::premiumCheckers) {
-                if (mActiveCheckers.count(checkReq.first) > 0)
-                    ++activeCheckers;
-                ++totalCheckers;
-            }
-        }
-        if (mSettings->premiumArgs.find("misra-c-") != std::string::npos || mSettings->addons.count("misra")) {
-            for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
-                const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
-                const std::string severity = getMisraRuleSeverity(rule);
-                const bool active = isMisraRuleActive(rule, info.amendment, severity, settings);
-                if (active)
-                    ++activeCheckers;
-                ++totalCheckers;
-            }
-        }
+        const int activeCheckers = checkersReport.getActiveCheckersCount();
+        const int totalCheckers = checkersReport.getAllCheckersCount();
 
         const std::string extra = settings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
         if (mCriticalErrors.empty())
@@ -403,111 +357,9 @@ void CppCheckExecutor::writeCheckersReport(const Settings& settings) const
         return;
 
     std::ofstream fout(settings.checkersReportFilename);
-    if (!fout.is_open())
-        return;
+    if (fout.is_open())
+        fout << checkersReport.getReport(mCriticalErrors);
 
-    fout << "Critical errors" << std::endl;
-    fout << "---------------" << std::endl;
-    if (!mCriticalErrors.empty()) {
-        fout << "There was critical errors (" << mCriticalErrors << ")" << std::endl;
-        fout << "All checking is skipped for a file with such error" << std::endl;
-    } else {
-        fout << "No critical errors, all files were checked." << std::endl;
-        fout << "Important: Analysis is still not guaranteed to be 'complete' it is possible there are false negatives." << std::endl;
-    }
-
-    fout << std::endl << std::endl;
-    fout << "Open source checkers" << std::endl;
-    fout << "--------------------" << std::endl;
-
-    int maxCheckerSize = 0;
-    for (const auto& checkReq: checkers::allCheckers) {
-        const std::string& checker = checkReq.first;
-        if (checker.size() > maxCheckerSize)
-            maxCheckerSize = checker.size();
-    }
-    for (const auto& checkReq: checkers::allCheckers) {
-        const std::string& checker = checkReq.first;
-        const bool active = mActiveCheckers.count(checkReq.first) > 0;
-        const std::string& req = checkReq.second;
-        fout << (active ? "Yes  " : "No   ") << checker;
-        if (!active && !req.empty())
-            fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" + req;
-        fout << std::endl;
-    }
-
-    const bool cppcheckPremium = isCppcheckPremium(settings);
-
-    if (cppcheckPremium) {
-        fout << std::endl << std::endl;
-        fout << "Premium checkers" << std::endl;
-        fout << "----------------" << std::endl;
-
-        maxCheckerSize = 0;
-        for (const auto& checkReq: checkers::premiumCheckers) {
-            const std::string& checker = checkReq.first;
-            if (checker.size() > maxCheckerSize)
-                maxCheckerSize = checker.size();
-        }
-        for (const auto& checkReq: checkers::premiumCheckers) {
-            const std::string& checker = checkReq.first;
-            std::string req = checkReq.second;
-            bool active = cppcheckPremium;
-            if (req == "warning")
-                active &= mSettings->severity.isEnabled(Severity::warning);
-            else if (req == "style")
-                active &= mSettings->severity.isEnabled(Severity::style);
-            fout << (active ? "Yes  " : "No   ") << checker;
-            if (!req.empty())
-                req = "premium," + req;
-            else
-                req = "premium";
-            if (!active)
-                fout << std::string(maxCheckerSize + 4 - checker.size(), ' ') << "require:" + req;
-            fout << std::endl;
-        }
-    }
-
-    int misra = 0;
-    if (mSettings->premiumArgs.find("misra-c-2012") != std::string::npos)
-        misra = 2012;
-    else if (mSettings->premiumArgs.find("misra-c-2023") != std::string::npos)
-        misra = 2023;
-    else if (mSettings->addons.count("misra"))
-        misra = 2012;
-
-    if (misra == 0) {
-        fout << std::endl << std::endl;
-        fout << "Misra C" << std::endl;
-        fout << "-------" << std::endl;
-        fout << "Misra is not enabled" << std::endl;
-    } else {
-        fout << std::endl << std::endl;
-        fout << "Misra C " << misra << std::endl;
-        fout << "------------" << std::endl;
-        for (const checkers::MisraInfo& info: checkers::misraC2012Rules) {
-            const std::string rule = std::to_string(info.a) + "." + std::to_string(info.b);
-            const std::string severity = getMisraRuleSeverity(rule);
-            const bool active = isMisraRuleActive(rule, info.amendment, severity, settings);
-            const bool inconclusive = isMisraRuleInconclusive(rule);
-            fout << (active ? "Yes  " : "No   ") << rule;
-            std::string extra;
-            if (misra == 2012 && info.amendment >= 1)
-                extra = " amendment:" + std::to_string(info.amendment);
-            std::string reqs;
-            if (info.amendment >= 3)
-                reqs += ",premium";
-            if (severity != "error")
-                reqs += "," + severity;
-            if (inconclusive)
-                reqs += ",inconclusive";
-            if (!active && !reqs.empty())
-                extra += " require:" + reqs.substr(1);
-            if (!extra.empty())
-                fout << std::string(7 - rule.size(), ' ') << extra;
-            fout << '\n';
-        }
-    }
 }
 
 bool CppCheckExecutor::loadLibraries(Settings& settings)
@@ -607,7 +459,7 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     assert(mSettings != nullptr);
 
-    if (msg.severity == Severity::none && msg.id == "logChecker") {
+    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         const std::string& checker = msg.shortMessage();
         mActiveCheckers.emplace(checker);
         return;

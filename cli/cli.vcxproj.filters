@@ -14,9 +14,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
-    <ClInclude Include="..\lib\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="cmdlineparser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -42,6 +39,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stacktrace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="singleexecutor.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -74,6 +74,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="stacktrace.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="singleexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

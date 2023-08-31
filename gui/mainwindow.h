@@ -193,7 +193,7 @@ public slots:
     /** @brief Slot for showing the library editor */
     void showLibraryEditor();
 
-protected slots:
+private slots:
 
     /** @brief Slot for checkthread's done signal */
     void analysisDone();

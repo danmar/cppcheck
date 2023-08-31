@@ -1492,9 +1492,11 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             errmsg.setmsg(text);
             const std::string severity = obj["severity"].get<std::string>();
             errmsg.severity = Severity::fromString(severity);
-            if (errmsg.severity == Severity::SeverityType::none)
-                continue;
-            if (!mSettings.severity.isEnabled(errmsg.severity))
+            if (errmsg.severity == Severity::SeverityType::none) {
+                if (!endsWith(errmsg.id, "-logChecker"))
+                    continue;
+            }
+            else if (!mSettings.severity.isEnabled(errmsg.severity))
                 continue;
             errmsg.file0 = ((files.size() == 1) ? files[0] : "");
 
@@ -1596,7 +1598,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && msg.id == "logChecker") {
+    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         mErrorLogger.reportErr(msg);
         return;
     }

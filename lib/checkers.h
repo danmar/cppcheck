@@ -206,22 +206,21 @@ namespace checkers {
 
 
     static std::map<std::string, std::string> premiumCheckers{
-        {"CheckBufferOverrun::addressOfPointerArithmetic","warning"},
-        {"CheckBufferOverrun::negativeBufferSizeCheckedNonZero","warning"},
-        {"CheckBufferOverrun::negativeBufferSizeCheckedNonZero","warning"},
-        {"CheckHang::infiniteLoop",""},
-        {"CheckHang::infiniteLoopContinue",""},
-        {"CheckOther::arrayPointerComparison","style"},
-        {"CheckOther::knownResult","style"},
-        {"CheckOther::lossOfPrecision","style"},
-        {"CheckOther::pointerCast","style"},
-        {"CheckOther::reassignInLoop","style"},
-        {"CheckOther::unreachableCode","style"},
-        {"CheckStrictAlias::strictAliasCondition","warning"},
-        {"CheckUninitVar::uninitvar",""},
-        {"CheckUninitVar::uninitmember",""},
-        {"CheckUnusedVar::unreadVariable","style"},
-        {"CheckUnusedVar::unusedPrivateMember","style"},
+        {"PremiumCheckBufferOverrun::addressOfPointerArithmetic","warning"},
+        {"PremiumCheckBufferOverrun::negativeBufferSizeCheckedNonZero","warning"},
+        {"PremiumCheckBufferOverrun::negativeBufferSizeCheckedNonZero","warning"},
+        {"PremiumCheckHang::infiniteLoop",""},
+        {"PremiumCheckHang::infiniteLoopContinue",""},
+        {"PremiumCheckOther::arrayPointerComparison","style"},
+        {"PremiumCheckOther::knownResult","style"},
+        {"PremiumCheckOther::lossOfPrecision","style"},
+        {"PremiumCheckOther::pointerCast","style"},
+        {"PremiumCheckOther::reassignInLoop","style"},
+        {"PremiumCheckOther::unreachableCode","style"},
+        {"PremiumCheckUninitVar::uninitvar",""},
+        {"PremiumCheckUninitVar::uninitmember",""},
+        {"PremiumCheckUnusedVar::unreadVariable","style"},
+        {"PremiumCheckUnusedVar::unusedPrivateMember","style"},
     };
 
 
