@@ -7306,12 +7306,23 @@ private:
     }
 
     void findFunction50() {
-        GET_SYMBOL_DB("struct B { B(); void init(unsigned int value); };\n"
-                      "struct D: B { D(); void init(unsigned int value); };\n"
-                      "D::D() { init(0); }\n"
-                      "void D::init(unsigned int value) {}\n");
-        const Token* call = Token::findsimplematch(tokenizer.tokens(), "init ( 0 ) ;");
-        ASSERT(call && call->function() && call->function()->functionScope);
+        {
+            GET_SYMBOL_DB("struct B { B(); void init(unsigned int value); };\n"
+                          "struct D: B { D(); void init(unsigned int value); };\n"
+                          "D::D() { init(0); }\n"
+                          "void D::init(unsigned int value) {}\n");
+            const Token* call = Token::findsimplematch(tokenizer.tokens(), "init ( 0 ) ;");
+            ASSERT(call && call->function() && call->function()->functionScope);
+        }
+
+        {
+            GET_SYMBOL_DB("struct B { B(); void init(unsigned int value); };\n"
+                          "struct D: B { D(); void init(unsigned int value); };\n"
+                          "D::D() { init(0ULL); }\n"
+                          "void D::init(unsigned int value) {}\n");
+            const Token* call = Token::findsimplematch(tokenizer.tokens(), "init ( 0ULL ) ;");
+            ASSERT(call && call->function() && call->function()->functionScope);
+        }
     }
 
     void findFunctionContainer() {
