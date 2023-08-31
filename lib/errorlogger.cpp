@@ -230,6 +230,32 @@ static void serializeString(std::string &oss, const std::string & str)
     oss += str;
 }
 
+ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename)
+{
+    if (internalError.token)
+        assert(tokenList != nullptr); // we need to make sure we can look up the provided token
+
+    std::list<ErrorMessage::FileLocation> locationList;
+    if (tokenList && internalError.token) {
+        ErrorMessage::FileLocation loc(internalError.token, tokenList);
+        locationList.push_back(std::move(loc));
+    } else {
+        ErrorMessage::FileLocation loc2(filename, 0, 0);
+        locationList.push_back(std::move(loc2));
+        if (tokenList && (filename != tokenList->getSourceFilePath())) {
+            ErrorMessage::FileLocation loc(tokenList->getSourceFilePath(), 0, 0);
+            locationList.push_back(std::move(loc));
+        }
+    }
+    ErrorMessage errmsg(std::move(locationList),
+                        tokenList ? tokenList->getSourceFilePath() : filename,
+                        Severity::error,
+                        internalError.errorMessage,
+                        internalError.id,
+                        Certainty::normal);
+    return errmsg;
+}
+
 std::string ErrorMessage::serialize() const
 {
     // Serialize this message into a simple string
