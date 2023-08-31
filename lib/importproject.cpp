@@ -436,9 +436,9 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
         return false;
     }
 
-    if (line.find("Microsoft Visual Studio Solution File") != 0) {
+    if (!startsWith(line, "Microsoft Visual Studio Solution File")) {
         // Skip BOM
-        if (!std::getline(istr, line) || line.find("Microsoft Visual Studio Solution File") != 0) {
+        if (!std::getline(istr, line) || !startsWith(line, "Microsoft Visual Studio Solution File")) {
             printError("Visual Studio solution file header not found");
             return false;
         }
