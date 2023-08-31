@@ -120,7 +120,6 @@ def test_rules_suppression(checker, capsys):
         assert found is None, 'Unexptected output:\n' + captured
         dump_remove(src)
 
-
 def test_arguments_regression():
     args_ok = ["-generate-table",
                "--rule-texts=./addons/test/assets/misra_rules_multiple_lines.txt",
