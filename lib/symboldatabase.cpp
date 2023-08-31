@@ -4043,7 +4043,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
     for (std::list<Scope>::const_iterator scope = scopeList.cbegin(); scope != scopeList.cend(); ++scope) {
         outs += "    <scope";
         outs += " id=\"";
-        outs += ptr_to_string(&*scope);
+        outs += id_string(&*scope);
         outs += "\"";
         outs += " type=\"";
         outs += scopeTypeToString(scope->type);
@@ -4055,27 +4055,27 @@ void SymbolDatabase::printXml(std::ostream &out) const
         }
         if (scope->bodyStart) {
             outs += " bodyStart=\"";
-            outs += ptr_to_string(scope->bodyStart);
+            outs += id_string(scope->bodyStart);
             outs += '\"';
         }
         if (scope->bodyEnd) {
             outs += " bodyEnd=\"";
-            outs += ptr_to_string(scope->bodyEnd);
+            outs += id_string(scope->bodyEnd);
             outs += '\"';
         }
         if (scope->nestedIn) {
             outs += " nestedIn=\"";
-            outs += ptr_to_string(scope->nestedIn);
+            outs += id_string(scope->nestedIn);
             outs += "\"";
         }
         if (scope->function) {
             outs += " function=\"";
-            outs += ptr_to_string(scope->function);
+            outs += id_string(scope->function);
             outs += "\"";
         }
         if (scope->definedType) {
             outs += " definedType=\"";
-            outs += ptr_to_string(scope->definedType);
+            outs += id_string(scope->definedType);
             outs += "\"";
         }
         if (scope->functionList.empty() && scope->varlist.empty())
@@ -4086,11 +4086,11 @@ void SymbolDatabase::printXml(std::ostream &out) const
                 outs += "      <functionList>\n";
                 for (std::list<Function>::const_iterator function = scope->functionList.cbegin(); function != scope->functionList.cend(); ++function) {
                     outs += "        <function id=\"";
-                    outs += ptr_to_string(&*function);
+                    outs += id_string(&*function);
                     outs += "\" token=\"";
-                    outs += ptr_to_string(function->token);
+                    outs += id_string(function->token);
                     outs += "\" tokenDef=\"";
-                    outs += ptr_to_string(function->tokenDef);
+                    outs += id_string(function->tokenDef);
                     outs += "\" name=\"";
                     outs += ErrorLogger::toxml(function->name());
                     outs += '\"';
@@ -4123,7 +4123,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         outs += " isAttributeNoreturn=\"true\"";
                     if (const Function* overriddenFunction = function->getOverriddenFunction()) {
                         outs += " overriddenFunction=\"";
-                        outs += ptr_to_string(overriddenFunction);
+                        outs += id_string(overriddenFunction);
                         outs += "\"";
                     }
                     if (function->argCount() == 0U)
@@ -4135,7 +4135,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                             outs += "          <arg nr=\"";
                             outs += std::to_string(argnr+1);
                             outs += "\" variable=\"";
-                            outs += ptr_to_string(arg);
+                            outs += id_string(arg);
                             outs += "\"/>\n";
                             variables.insert(arg);
                         }
@@ -4148,7 +4148,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                 outs += "      <varlist>\n";
                 for (std::list<Variable>::const_iterator var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
                     outs += "        <var id=\"";
-                    outs += ptr_to_string(&*var);
+                    outs += id_string(&*var);
                     outs += "\"/>\n";
                 }
                 outs += "      </varlist>\n";
@@ -4162,9 +4162,9 @@ void SymbolDatabase::printXml(std::ostream &out) const
         outs += "  <types>\n";
         for (const Type& type:typeList) {
             outs += "    <type id=\"";
-            outs += ptr_to_string(&type);
+            outs += id_string(&type);
             outs += "\" classScope=\"";
-            outs += ptr_to_string(type.classScope);
+            outs += id_string(type.classScope);
             outs += "\"";
             if (type.derivedFrom.empty()) {
                 outs += "/>\n";
@@ -4177,13 +4177,13 @@ void SymbolDatabase::printXml(std::ostream &out) const
                 outs += accessControlToString(baseInfo.access);
                 outs += "\"";
                 outs += " type=\"";
-                outs += ptr_to_string(baseInfo.type);
+                outs += id_string(baseInfo.type);
                 outs += "\"";
                 outs += " isVirtual=\"";
                 outs += bool_to_string(baseInfo.isVirtual);
                 outs += "\"";
                 outs += " nameTok=\"";
-                outs += ptr_to_string(baseInfo.nameTok);
+                outs += id_string(baseInfo.nameTok);
                 outs += "\"";
                 outs += "/>\n";
             }
@@ -4200,22 +4200,22 @@ void SymbolDatabase::printXml(std::ostream &out) const
         if (!var)
             continue;
         outs += "    <var id=\"";
-        outs += ptr_to_string(var);
+        outs += id_string(var);
         outs += '\"';
         outs += " nameToken=\"";
-        outs += ptr_to_string(var->nameToken());
+        outs += id_string(var->nameToken());
         outs += '\"';
         outs += " typeStartToken=\"";
-        outs += ptr_to_string(var->typeStartToken());
+        outs += id_string(var->typeStartToken());
         outs += '\"';
         outs += " typeEndToken=\"";
-        outs += ptr_to_string(var->typeEndToken());
+        outs += id_string(var->typeEndToken());
         outs += '\"';
         outs += " access=\"";
         outs += accessControlToString(var->mAccess);
         outs += '\"';
         outs += " scope=\"";
-        outs += ptr_to_string(var->scope());
+        outs += id_string(var->scope());
         outs += '\"';
         if (var->valueType()) {
             outs += " constness=\"";
@@ -7591,7 +7591,7 @@ std::string ValueType::dump() const
     case CONTAINER: {
         ret += "valueType-type=\"container\"";
         ret += " valueType-containerId=\"";
-        ret += ptr_to_string(container);
+        ret += id_string(container);
         ret += "\"";
         break;
     }
@@ -7674,7 +7674,7 @@ std::string ValueType::dump() const
 
     if (typeScope) {
         ret += " valueType-typeScope=\"";
-        ret += ptr_to_string(typeScope);
+        ret += id_string(typeScope);
         ret += '\"';
     }
 
