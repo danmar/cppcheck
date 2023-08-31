@@ -144,6 +144,19 @@ def test_progress_j(tmpdir):
 
 
 @pytest.mark.timeout(10)
+def test_slow_array_many_floats(tmpdir):
+    # 11649
+    # cppcheck valueflow takes a long time when an array has many floats
+    filename = os.path.join(tmpdir, 'hang.c')
+    with open(filename, 'wt') as f:
+        f.write("const float f[] = {\n")
+        for i in range(20000):
+            f.write('    13.6f,\n')
+        f.write("};\n")
+    cppcheck([filename]) # should not take more than ~1 second
+
+
+@pytest.mark.timeout(10)
 def test_slow_array_many_strings(tmpdir):
     # 11901
     # cppcheck valueflow takes a long time when analyzing a file with many strings
