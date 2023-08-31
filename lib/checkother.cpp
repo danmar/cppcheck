@@ -2785,7 +2785,7 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
 }
 void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result)
 {
-    const std::string strResult = result ? "true" : "false";
+    const std::string strResult = bool_to_string(result);
     const struct CWE cweResult = result ? CWE571 : CWE570;
 
     reportError(tok, Severity::warning, "comparisonFunctionIsAlwaysTrueOrFalse",
@@ -3854,7 +3854,7 @@ void CheckOther::knownPointerToBoolError(const Token* tok, const ValueFlow::Valu
         reportError(tok, Severity::style, "knownPointerToBool", "Pointer expression 'p' converted to bool is always true.");
         return;
     }
-    std::string cond = value->intvalue ? "true" : "false";
+    std::string cond = bool_to_string(value->intvalue);
     const std::string& expr = tok->expressionString();
     std::string errmsg = "Pointer expression '" + expr + "' converted to bool is always " + cond + ".";
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);

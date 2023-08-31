@@ -5965,10 +5965,10 @@ void Tokenizer::dump(std::ostream &out) const
             outs += "    <container id=\"";
             outs += id_string(c);
             outs += "\" array-like-index-op=\"";
-            outs += (c->arrayLike_indexOp ? "true" : "false");
+            outs += bool_to_string(c->arrayLike_indexOp);
             outs += "\" ";
             outs += "std-string-like=\"";
-            outs +=(c->stdStringLike ? "true" : "false");
+            outs += bool_to_string(c->stdStringLike);
             outs += "\"/>";
             outs += '\n';
         }

@@ -2953,7 +2953,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 std::string s = state ? "empty" : "not empty";
                 addErrorPath(tok, "Assuming container is " + s);
             } else {
-                std::string s = state ? "true" : "false";
+                std::string s = bool_to_string(state);
                 addErrorPath(tok, "Assuming condition is " + s);
             }
         }

@@ -328,7 +328,7 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
 {
     const bool charLiteral = isCharLiteral(string);
     const std::string literalType = charLiteral ? "char" : "string";
-    const std::string result = getCharLiteral(string) == "\\0" ? "false" : "true";
+    const std::string result = bool_to_string(getCharLiteral(string) != "\\0");
     reportError(tok,
                 Severity::warning,
                 charLiteral ? "incorrectCharBooleanError" : "incorrectStringBooleanError",
