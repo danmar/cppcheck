@@ -276,6 +276,9 @@ std::size_t getArrayLength(const T (& /*unused*/)[size])
  */
 static inline std::string id_string_i(std::uintptr_t l)
 {
+    if (!l)
+        return "0";
+
     static constexpr int ptr_size = sizeof(void*);
 
     // two characters of each byte / contains terminating \0

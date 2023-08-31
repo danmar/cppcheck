@@ -336,9 +336,13 @@ private:
 
     void id_string() const
     {
+        ASSERT_EQUALS("0", id_string_i(0));
         ASSERT_EQUALS("f1", id_string_i(0xF1));
         ASSERT_EQUALS("123", id_string_i(0x123));
         ASSERT_EQUALS("1230", id_string_i(0x1230));
+        if (sizeof(void*) == 8) {
+            ASSERT_EQUALS(std::string(16,'f'), id_string_i(~0ULL));
+        }
     }
 };
 
