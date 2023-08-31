@@ -38,7 +38,7 @@ private:
         TEST_CASE(isStringLiteral);
         TEST_CASE(isCharLiteral);
         TEST_CASE(strToInt);
-        TEST_CASE(ptrToString);
+        TEST_CASE(id_string);
     }
 
     void isValidGlobPattern() const {
@@ -334,56 +334,11 @@ private:
         }
     }
 
-    void ptrToString() const
+    void id_string() const
     {
-        struct Dummy {};
-        // stack address
-        {
-            const Dummy d;
-            const Dummy* const dp = &d;
-            std::ostringstream oss;
-            oss << dp;
-            ASSERT_EQUALS(oss.str(), ptr_to_string(dp));
-        }
-        // highest address
-        {
-            // NOLINTNEXTLINE(performance-no-int-to-ptr)
-            const void* const p = reinterpret_cast<void*>(std::numeric_limits<uintptr_t>::max());
-            std::ostringstream oss;
-            oss << p;
-            ASSERT_EQUALS(oss.str(), ptr_to_string(p));
-        }
-        // same in-between address
-        {
-            const Dummy d;
-            const Dummy* dp = &d;
-            dp = dp - ((unsigned long long)dp / 2);
-            std::ostringstream oss;
-            oss << dp;
-            ASSERT_EQUALS(oss.str(), ptr_to_string(dp));
-        }
-        // lowest address
-        {
-            // NOLINTNEXTLINE(performance-no-int-to-ptr)
-            const void* const p = reinterpret_cast<void*>(std::numeric_limits<uintptr_t>::min() + 1);
-            std::ostringstream oss;
-            oss << p;
-            ASSERT_EQUALS(oss.str(), ptr_to_string(p));
-        }
-        // heap address
-        {
-            const auto dp = std::unique_ptr<Dummy>(new Dummy);
-            std::ostringstream oss;
-            oss << dp.get();
-            ASSERT_EQUALS(oss.str(), ptr_to_string(dp.get()));
-        }
-        // NULL pointer
-        {
-            const Dummy* const dp = nullptr;
-            std::ostringstream oss;
-            oss << dp;
-            ASSERT_EQUALS(oss.str(), ptr_to_string(dp));
-        }
+        ASSERT_EQUALS("1f", id_string_i(0xF1));
+        ASSERT_EQUALS("321", id_string_i(0x123));
+        ASSERT_EQUALS("0321", id_string_i(0x1230));
     }
 };
 

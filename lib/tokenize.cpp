@@ -5806,7 +5806,7 @@ void Tokenizer::dump(std::ostream &out) const
     outs += '\n';
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
         outs += "    <token id=\"";
-        outs += ptr_to_string(tok);
+        outs += id_string(tok);
         outs += "\" file=\"";
         outs += ErrorLogger::toxml(list.file(tok));
         outs += "\" linenr=\"";
@@ -5820,7 +5820,7 @@ void Tokenizer::dump(std::ostream &out) const
         outs += '\"';
 
         outs += " scope=\"";
-        outs += ptr_to_string(tok->scope());
+        outs += id_string(tok->scope());
         outs += '\"';
         if (tok->isName()) {
             outs += " type=\"name\"";
@@ -5880,7 +5880,7 @@ void Tokenizer::dump(std::ostream &out) const
             outs += " isAttributeExport=\"true\"";
         if (tok->link()) {
             outs += " link=\"";
-            outs += ptr_to_string(tok->link());
+            outs += id_string(tok->link());
             outs += '\"';
         }
         if (tok->varId() > 0) {
@@ -5895,37 +5895,37 @@ void Tokenizer::dump(std::ostream &out) const
         }
         if (tok->variable()) {
             outs += " variable=\"";
-            outs += ptr_to_string(tok->variable());
+            outs += id_string(tok->variable());
             outs += '\"';
         }
         if (tok->function()) {
             outs += " function=\"";
-            outs += ptr_to_string(tok->function());
+            outs += id_string(tok->function());
             outs += '\"';
         }
         if (!tok->values().empty()) {
             outs += " values=\"";
-            outs += ptr_to_string(&tok->values());
+            outs += id_string(&tok->values());
             outs += '\"';
         }
         if (tok->type()) {
             outs += " type-scope=\"";
-            outs += ptr_to_string(tok->type()->classScope);
+            outs += id_string(tok->type()->classScope);
             outs += '\"';
         }
         if (tok->astParent()) {
             outs += " astParent=\"";
-            outs += ptr_to_string(tok->astParent());
+            outs += id_string(tok->astParent());
             outs += '\"';
         }
         if (tok->astOperand1()) {
             outs += " astOperand1=\"";
-            outs += ptr_to_string(tok->astOperand1());
+            outs += id_string(tok->astOperand1());
             outs += '\"';
         }
         if (tok->astOperand2()) {
             outs += " astOperand2=\"";
-            outs += ptr_to_string(tok->astOperand2());
+            outs += id_string(tok->astOperand2());
             outs += '\"';
         }
         if (!tok->originalName().empty()) {
@@ -5963,7 +5963,7 @@ void Tokenizer::dump(std::ostream &out) const
         outs += '\n';
         for (const Library::Container* c: containers) {
             outs += "    <container id=\"";
-            outs += ptr_to_string(c);
+            outs += id_string(c);
             outs += "\" array-like-index-op=\"";
             outs += (c->arrayLike_indexOp ? "true" : "false");
             outs += "\" ";

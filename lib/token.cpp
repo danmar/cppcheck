@@ -1710,7 +1710,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             continue;
         if (xml) {
             outs += "    <values id=\"";
-            outs += ptr_to_string(values);
+            outs += id_string(values);
             outs +=  "\">";
             outs += '\n';
         }
@@ -1763,7 +1763,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::TOK:
                     outs +=  "tokvalue=\"";
-                    outs += ptr_to_string(value.tokvalue);
+                    outs += id_string(value.tokvalue);
                     outs += '\"';
                     break;
                 case ValueFlow::Value::ValueType::FLOAT:
@@ -1801,7 +1801,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::LIFETIME:
                     outs += "lifetime=\"";
-                    outs += ptr_to_string(value.tokvalue);
+                    outs += id_string(value.tokvalue);
                     outs += '\"';
                     outs += " lifetime-scope=\"";
                     outs += ValueFlow::Value::toString(value.lifetimeScope);
@@ -1812,7 +1812,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
                     break;
                 case ValueFlow::Value::ValueType::SYMBOLIC:
                     outs += "symbolic=\"";
-                    outs += ptr_to_string(value.tokvalue);
+                    outs += id_string(value.tokvalue);
                     outs += '\"';
                     outs += " symbolic-delta=\"";
                     outs += std::to_string(value.intvalue);
