@@ -315,30 +315,7 @@ void ImportProject::FileSettings::parseCommand(const std::string& command)
                 includePaths.push_back(std::move(i));
         } else if (F=='s' && startsWith(fval,"td")) {
             ++pos;
-            const std::string stdval = readUntil(command, &pos, " ");
-            standard = stdval;
-            // TODO: use simplecpp::DUI::std instead of specifying it manually
-            if (startsWith(standard, "c++") || startsWith(standard, "gnu++")) {
-                const std::string stddef = simplecpp::getCppStdString(standard);
-                if (stddef.empty()) {
-                    // TODO: log error
-                    continue;
-                }
-
-                defs += "__cplusplus=";
-                defs += stddef;
-                defs += ";";
-            } else if (startsWith(standard, "c") || startsWith(standard, "gnu")) {
-                const std::string stddef = simplecpp::getCStdString(standard);
-                if (stddef.empty()) {
-                    // TODO: log error
-                    continue;
-                }
-
-                defs += "__STDC_VERSION__=";
-                defs += stddef;
-                defs += ";";
-            }
+            standard = readUntil(command, &pos, " ");
         } else if (F == 'i' && fval == "system") {
             ++pos;
             std::string isystem = readUntil(command, &pos, " ");
