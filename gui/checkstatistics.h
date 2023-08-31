@@ -80,7 +80,7 @@ public:
     QStringList getTools() const;
 
     void setCheckersReport(QString report) {
-        mCheckersReport = report;
+        mCheckersReport = std::move(report);
     }
     QString getCheckersReport() const {
         return mCheckersReport;
