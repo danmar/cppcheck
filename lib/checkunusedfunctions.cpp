@@ -33,7 +33,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <fstream> // IWYU pragma: keep
 #include <map>
@@ -358,7 +357,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else
-        reportError(errmsg);
+        Check::writeToErrorList(errmsg);
 }
 
 Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
@@ -374,6 +373,9 @@ bool CheckUnusedFunctions::analyseWholeProgram(const CTU::FileInfo *ctu, const s
 {
     (void)ctu;
     (void)fileInfo;
+    CheckUnusedFunctions dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckUnusedFunctions::analyseWholeProgram"); // unusedFunctions
     return check(&errorLogger, settings);
 }
 

@@ -133,6 +133,8 @@ static const Token* getContainerFromSize(const Library::Container* container, co
 
 void CheckStl::outOfBounds()
 {
+    logChecker("CheckStl::outOfBounds");
+
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
             const Library::Container *container = getLibraryContainer(tok);
@@ -203,14 +205,14 @@ void CheckStl::outOfBounds()
 static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string& containerName = emptyString)
 {
     if (indexValue.isIteratorStartValue())
-        return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
+        return "at position " + std::to_string(indexValue.intvalue) + " from the beginning";
     if (indexValue.isIteratorEndValue())
-        return "at position " + MathLib::toString(-indexValue.intvalue) + " from the end";
-    std::string indexString = MathLib::toString(indexValue.intvalue);
+        return "at position " + std::to_string(-indexValue.intvalue) + " from the end";
+    std::string indexString = std::to_string(indexValue.intvalue);
     if (indexValue.isSymbolicValue()) {
         indexString = containerName + ".size()";
         if (indexValue.intvalue != 0)
-            indexString += "+" + MathLib::toString(indexValue.intvalue);
+            indexString += "+" + std::to_string(indexValue.intvalue);
     }
     if (indexValue.bound == ValueFlow::Value::Bound::Lower)
         return "greater or equal to " + indexString;
@@ -242,11 +244,11 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
             errmsg = "Out of bounds access in expression '" + expression + "' because '$symbol' is empty.";
     } else if (indexValue) {
         if (containerSize->condition)
-            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol size can be " + MathLib::toString(containerSize->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
+            errmsg = ValueFlow::eitherTheConditionIsRedundant(containerSize->condition) + " or $symbol size can be " + std::to_string(containerSize->intvalue) + ". Expression '" + expression + "' cause access out of bounds.";
         else if (indexValue->condition)
             errmsg = ValueFlow::eitherTheConditionIsRedundant(indexValue->condition) + " or '" + index + "' can have the value " + indexValueString(*indexValue) + ". Expression '" + expression + "' cause access out of bounds.";
         else
-            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + MathLib::toString(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
+            errmsg = "Out of bounds access in '" + expression + "', if '$symbol' size is " + std::to_string(containerSize->intvalue) + " and '" + index + "' is " + indexValueString(*indexValue);
     } else {
         // should not happen
         return;
@@ -318,6 +320,7 @@ bool CheckStl::isContainerSizeGE(const Token * containerToken, const Token *expr
 
 void CheckStl::outOfBoundsIndexExpression()
 {
+    logChecker("CheckStl::outOfBoundsIndexExpression");
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
             if (!tok->isName() || !tok->valueType())
@@ -461,6 +464,8 @@ static bool isVector(const Token* tok)
 
 void CheckStl::iterators()
 {
+    logChecker("CheckStl::iterators");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Filling map of iterators id and their scope begin
@@ -763,6 +768,8 @@ struct ArgIteratorInfo {
 
 void CheckStl::mismatchingContainers()
 {
+    logChecker("CheckStl::misMatchingContainers");
+
     // Check if different containers are used in various calls of standard functions
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -821,6 +828,8 @@ void CheckStl::mismatchingContainers()
 
 void CheckStl::mismatchingContainerIterator()
 {
+    logChecker("CheckStl::misMatchingContainerIterator");
+
     // Check if different containers are used in various calls of standard functions
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -1062,6 +1071,7 @@ static const Token* endOfExpression(const Token* tok)
 
 void CheckStl::invalidContainer()
 {
+    logChecker("CheckStl::invalidContainer");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const Library& library = mSettings->library;
     InvalidContainerAnalyzer analyzer;
@@ -1204,6 +1214,8 @@ void CheckStl::invalidContainerReferenceError(const Token* tok, const Token* con
 
 void CheckStl::stlOutOfBounds()
 {
+    logChecker("CheckStl::stlOutOfBounds");
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Scan through all scopes..
@@ -1296,6 +1308,8 @@ void CheckStl::stlOutOfBoundsError(const Token *tok, const std::string &num, con
 
 void CheckStl::negativeIndex()
 {
+    logChecker("CheckStl::negativeIndex");
+
     // Negative index is out of bounds..
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -1332,6 +1346,8 @@ void CheckStl::negativeIndexError(const Token *tok, const ValueFlow::Value &inde
 
 void CheckStl::erase()
 {
+    logChecker("CheckStl::erase");
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
@@ -1395,6 +1411,8 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
 
 void CheckStl::stlBoundaries()
 {
+    logChecker("CheckStl::stlBoundaries");
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->scope() || !var->scope()->isExecutable())
@@ -1451,6 +1469,8 @@ void CheckStl::if_find()
     const bool printPerformance = mSettings->severity.isEnabled(Severity::performance);
     if (!printWarning && !printPerformance)
         return;
+
+    logChecker("CheckStl::if_find"); // warning,performance
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -1628,6 +1648,8 @@ void CheckStl::checkFindInsert()
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
+    logChecker("CheckStl::checkFindInsert"); // performance
+
     const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -1707,6 +1729,8 @@ void CheckStl::size()
     if (mSettings->standards.cpp >= Standards::CPP11)
         return;
 
+    logChecker("CheckStl::size"); // performance,c++03
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -1763,6 +1787,8 @@ void CheckStl::redundantCondition()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckStl::redundantCondition"); // style
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
@@ -1801,6 +1827,8 @@ void CheckStl::missingComparison()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckStl::missingComparison"); // warning
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -1897,6 +1925,8 @@ void CheckStl::string_c_str()
     const bool printPerformance = mSettings->severity.isEnabled(Severity::performance);
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    logChecker("CheckStl::string_c_str");
 
     // Find all functions that take std::string as argument
     struct StrArg {
@@ -2166,6 +2196,8 @@ void CheckStl::uselessCalls()
     if (!printPerformance && !printWarning)
         return;
 
+    logChecker("CheckStl::uselessCalls"); // performance,warning
+
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -2288,6 +2320,8 @@ void CheckStl::checkDereferenceInvalidIterator()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckStl::checkDereferenceInvalidIterator"); // warning
+
     // Iterate over "if", "while", and "for" conditions where there may
     // be an iterator that is dereferenced before being checked for validity.
     for (const Scope &scope : mTokenizer->getSymbolDatabase()->scopeList) {
@@ -2348,6 +2382,8 @@ void CheckStl::checkDereferenceInvalidIterator()
 void CheckStl::checkDereferenceInvalidIterator2()
 {
     const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
+
+    logChecker("CheckStl::checkDereferenceInvalidIterator2");
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
@@ -2806,6 +2842,8 @@ void CheckStl::useStlAlgorithm()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckStl::useStlAlgorithm"); // style
+
     auto checkAssignee = [](const Token* tok) {
         if (astIsBool(tok)) // std::accumulate is not a good fit for bool values, std::all/any/none_of return early
             return false;
@@ -3033,6 +3071,7 @@ void CheckStl::knownEmptyContainer()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+    logChecker("CheckStl::knownEmptyContainer"); // style
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
 
@@ -3110,7 +3149,7 @@ void CheckStl::checkMutexes()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
-
+    logChecker("CheckStl::checkMutexes"); // warning
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         std::set<nonneg int> checkedVars;
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {

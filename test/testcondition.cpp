@@ -25,7 +25,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -128,7 +127,7 @@ private:
         TEST_CASE(knownConditionIncrementLoop); // #9808
     }
 
-    void check(const char code[], Settings &settings, const char* filename = "test.cpp") {
+    void check(const char code[], const Settings &settings, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -151,11 +150,11 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Run checks..
-        runChecks<CheckCondition>(&tokenizer, &settings, this);
+        runChecks<CheckCondition>(tokenizer, this);
     }
 
     void check(const char code[], const char* filename = "test.cpp", bool inconclusive = false) {
-        Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
+        const Settings settings = settingsBuilder(settings0).certainty(Certainty::inconclusive, inconclusive).build();
         check(code, settings, filename);
     }
 
@@ -555,7 +554,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        runChecks<CheckCondition>(&tokenizer, &settings1, this);
+        runChecks<CheckCondition>(tokenizer, this);
     }
 
     void overlappingElseIfCondition() {
@@ -916,6 +915,11 @@ private:
         check("enum precedence { PC0, UNARY };\n"
               "int x = PC0   | UNARY;\n"
               "int y = UNARY | PC0;\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("#define MASK 0\n"
+              "#define SHIFT 1\n"
+              "int x = 1 | (MASK << SHIFT);\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1875,7 +1879,6 @@ private:
               "    return a % 5 > 5;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:7]: (style) Return value 'a%5>5' is always false\n"
             "[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
@@ -1890,7 +1893,6 @@ private:
               "        b2 = x.a % 5 == 5;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3]: (style) Condition 'x[593]%5<=5' is always true\n"
             "[test.cpp:2]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:3]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n"
             "[test.cpp:4]: (warning) Comparison of modulo result is predetermined, because it is always less than 5.\n",
@@ -3219,7 +3221,9 @@ private:
               "  A(x++ == 1);\n"
               "  A(x++ == 2);\n"
               "}");
-        TODO_ASSERT_EQUALS("function argument is always true? however is code really weird/suspicious?", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'x++==1' is always false\n"
+                      "[test.cpp:4]: (style) Condition 'x++==2' is always false\n",
+                      errout.str());
 
         check("bool foo(int bar) {\n"
               "  bool ret = false;\n"
@@ -3545,6 +3549,13 @@ private:
               "    else return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'handle!=0', second condition is always false\n", errout.str());
+
+        check("int f(void *handle) {\n"
+              "    if (handle != nullptr) return 0;\n"
+              "    if (handle) return 1;\n"
+              "    else return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Identical condition 'handle!=nullptr', second condition is always false\n", errout.str());
 
         check("void f(void* x, void* y) {\n"
               "    if (x == nullptr && y == nullptr)\n"
@@ -4225,7 +4236,9 @@ private:
               "		if (w) {}\n"
               "	}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'v<2' is always true\n"
+                      "[test.cpp:5]: (style) Condition 'w' is always true\n",
+                      errout.str());
 
         check("void f(double d) {\n" // #10792
               "    if (d != 0) {\n"
@@ -4510,6 +4523,23 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'a==\"x\"' is always true\n", errout.str());
+
+        check("void g(bool);\n"
+              "void f() {\n"
+              "    int i = 5;\n"
+              "    int* p = &i;\n"
+              "    g(i == 7);\n"
+              "    g(p == nullptr);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'i==7' is always false\n"
+                      "[test.cpp:6]: (style) Condition 'p==nullptr' is always false\n",
+                      errout.str());
+
+        check("enum E { E0, E1 };\n"
+              "void f() {\n"
+              "	static_assert(static_cast<int>(E::E1) == 1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -5012,6 +5042,31 @@ private:
               "    if(!b && s.size() != 1)\n"
               "        return;\n"
               "    if(!s.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::string s) {\n"
+              "    if (s.empty())\n"
+              "        return -1;\n"
+              "    s += '\\n';\n"
+              "    if (s.empty())\n"
+              "        return -1;\n"
+              "    return -1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 's.empty()' is always false\n", errout.str());
+
+        check("void f(std::string& p) {\n"
+              "    const std::string d{ \"abc\" };\n"
+              "    p += d;\n"
+              "    if(p.empty()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'p.empty()' is always false\n", errout.str());
+
+        check("bool f(int i, FILE* fp) {\n"
+              "  std::string s = \"abc\";\n"
+              "  s += std::to_string(i);\n"
+              "  s += \"\\n\";\n"
+              "  return fwrite(s.c_str(), 1, s.length(), fp) == s.length();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5646,7 +5701,7 @@ private:
     }
 
     void compareOutOfTypeRange() {
-        Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
+        const Settings settingsUnix64 = settingsBuilder().severity(Severity::style).platform(cppcheck::Platform::Type::Unix64).build();
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"

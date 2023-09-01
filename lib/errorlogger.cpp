@@ -30,7 +30,6 @@
 #include <array>
 #include <cassert>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iomanip>
 #include <sstream> // IWYU pragma: keep
@@ -40,10 +39,23 @@
 
 #include <tinyxml2.h>
 
+const std::set<std::string> ErrorLogger::mCriticalErrorIds{
+    "cppcheckError",
+    "cppcheckLimit",
+    "internalAstError",
+    "instantiationError",
+    "internalError",
+    "premium-internalError",
+    "preprocessorErrorDirective",
+    "syntaxError",
+    "unknownMacro"
+};
+
 ErrorMessage::ErrorMessage()
     : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {}
 
+// TODO: id and msg are swapped compared to other calls
 ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
@@ -58,7 +70,7 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
 }
 
 
-
+// TODO: id and msg are swapped compared to other calls
 ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, const CWE &cwe, Certainty certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
@@ -212,51 +224,76 @@ void ErrorMessage::setmsg(const std::string &msg)
     }
 }
 
-Suppressions::ErrorMessage ErrorMessage::toSuppressionsErrorMessage() const
+static void serializeString(std::string &oss, const std::string & str)
 {
-    Suppressions::ErrorMessage ret;
-    ret.hash = hash;
-    ret.errorId = id;
-    if (!callStack.empty()) {
-        ret.setFileName(callStack.back().getfile(false));
-        ret.lineNumber = callStack.back().line;
-    } else {
-        ret.lineNumber = Suppressions::Suppression::NO_LINE;
-    }
-    ret.certainty = certainty;
-    ret.symbolNames = mSymbolNames;
-    return ret;
+    oss += std::to_string(str.length());
+    oss += " ";
+    oss += str;
 }
 
+ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename)
+{
+    if (internalError.token)
+        assert(tokenList != nullptr); // we need to make sure we can look up the provided token
+
+    std::list<ErrorMessage::FileLocation> locationList;
+    if (tokenList && internalError.token) {
+        ErrorMessage::FileLocation loc(internalError.token, tokenList);
+        locationList.push_back(std::move(loc));
+    } else {
+        ErrorMessage::FileLocation loc2(filename, 0, 0);
+        locationList.push_back(std::move(loc2));
+        if (tokenList && (filename != tokenList->getSourceFilePath())) {
+            ErrorMessage::FileLocation loc(tokenList->getSourceFilePath(), 0, 0);
+            locationList.push_back(std::move(loc));
+        }
+    }
+    ErrorMessage errmsg(std::move(locationList),
+                        tokenList ? tokenList->getSourceFilePath() : filename,
+                        Severity::error,
+                        internalError.errorMessage,
+                        internalError.id,
+                        Certainty::normal);
+    return errmsg;
+}
 
 std::string ErrorMessage::serialize() const
 {
     // Serialize this message into a simple string
-    std::ostringstream oss;
-    oss << id.length() << " " << id;
-    oss << Severity::toString(severity).length() << " " << Severity::toString(severity);
-    oss << MathLib::toString(cwe.id).length() << " " << MathLib::toString(cwe.id);
-    oss << MathLib::toString(hash).length() << " " << MathLib::toString(hash);
-    oss << file0.size() << " " << file0;
+    std::string oss;
+    serializeString(oss, id);
+    serializeString(oss, Severity::toString(severity));
+    serializeString(oss, std::to_string(cwe.id));
+    serializeString(oss, std::to_string(hash));
+    serializeString(oss, file0);
     if (certainty == Certainty::inconclusive) {
         const std::string text("inconclusive");
-        oss << text.length() << " " << text;
+        serializeString(oss, text);
     }
 
     const std::string saneShortMessage = fixInvalidChars(mShortMessage);
     const std::string saneVerboseMessage = fixInvalidChars(mVerboseMessage);
 
-    oss << saneShortMessage.length() << " " << saneShortMessage;
-    oss << saneVerboseMessage.length() << " " << saneVerboseMessage;
-    oss << callStack.size() << " ";
+    serializeString(oss, saneShortMessage);
+    serializeString(oss, saneVerboseMessage);
+    oss += std::to_string(callStack.size());
+    oss += " ";
 
     for (std::list<ErrorMessage::FileLocation>::const_iterator loc = callStack.cbegin(); loc != callStack.cend(); ++loc) {
-        std::ostringstream smallStream;
-        smallStream << (*loc).line << '\t' << (*loc).column << '\t' << (*loc).getfile(false) << '\t' << loc->getOrigFile(false) << '\t' << loc->getinfo();
-        oss << smallStream.str().length() << " " << smallStream.str();
+        std::string frame;
+        frame += std::to_string((*loc).line);
+        frame += '\t';
+        frame += std::to_string((*loc).column);
+        frame += '\t';
+        frame += (*loc).getfile(false);
+        frame += '\t';
+        frame += loc->getOrigFile(false);
+        frame += '\t';
+        frame += loc->getinfo();
+        serializeString(oss, frame);
     }
 
-    return oss.str();
+    return oss;
 }
 
 void ErrorMessage::deserialize(const std::string &data)
@@ -447,7 +484,7 @@ std::string ErrorMessage::toXML() const
     if (cwe.id)
         printer.PushAttribute("cwe", cwe.id);
     if (hash)
-        printer.PushAttribute("hash", MathLib::toString(hash).c_str());
+        printer.PushAttribute("hash", std::to_string(hash).c_str());
     if (certainty == Certainty::inconclusive)
         printer.PushAttribute("inconclusive", "true");
 
@@ -610,14 +647,14 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
         pos1 = result.find("{inconclusive:", pos1);
     }
     findAndReplace(result, "{severity}", Severity::toString(severity));
-    findAndReplace(result, "{cwe}", MathLib::toString(cwe.id));
+    findAndReplace(result, "{cwe}", std::to_string(cwe.id));
     findAndReplace(result, "{message}", verbose ? mVerboseMessage : mShortMessage);
     if (!callStack.empty()) {
         if (result.find("{callstack}") != std::string::npos)
             findAndReplace(result, "{callstack}", ErrorLogger::callStackToString(callStack));
         findAndReplace(result, "{file}", callStack.back().getfile());
-        findAndReplace(result, "{line}", MathLib::toString(callStack.back().line));
-        findAndReplace(result, "{column}", MathLib::toString(callStack.back().column));
+        findAndReplace(result, "{line}", std::to_string(callStack.back().line));
+        findAndReplace(result, "{column}", std::to_string(callStack.back().column));
         if (result.find("{code}") != std::string::npos) {
             const std::string::size_type pos = result.find('\r');
             const char *endl;
@@ -646,8 +683,8 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
             std::string text = templateLocation;
 
             findAndReplace(text, "{file}", fileLocation.getfile());
-            findAndReplace(text, "{line}", MathLib::toString(fileLocation.line));
-            findAndReplace(text, "{column}", MathLib::toString(fileLocation.column));
+            findAndReplace(text, "{line}", std::to_string(fileLocation.line));
+            findAndReplace(text, "{column}", std::to_string(fileLocation.column));
             findAndReplace(text, "{info}", fileLocation.getinfo().empty() ? mShortMessage : fileLocation.getinfo());
             if (text.find("{code}") != std::string::npos) {
                 const std::string::size_type pos = text.find('\r');
@@ -665,39 +702,6 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     }
 
     return result;
-}
-
-bool ErrorLogger::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched)
-{
-    bool err = false;
-    // Report unmatched suppressions
-    for (const Suppressions::Suppression &s : unmatched) {
-        // don't report "unmatchedSuppression" as unmatched
-        if (s.errorId == "unmatchedSuppression")
-            continue;
-
-        // check if this unmatched suppression is suppressed
-        bool suppressed = false;
-        for (const Suppressions::Suppression &s2 : unmatched) {
-            if (s2.errorId == "unmatchedSuppression") {
-                if ((s2.fileName.empty() || s2.fileName == "*" || s2.fileName == s.fileName) &&
-                    (s2.lineNumber == Suppressions::Suppression::NO_LINE || s2.lineNumber == s.lineNumber)) {
-                    suppressed = true;
-                    break;
-                }
-            }
-        }
-
-        if (suppressed)
-            continue;
-
-        std::list<ErrorMessage::FileLocation> callStack;
-        if (!s.fileName.empty())
-            callStack.emplace_back(s.fileName, s.lineNumber, 0);
-        reportErr(ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
-        err = true;
-    }
-    return err;
 }
 
 std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLocation> &callStack)
@@ -754,36 +758,36 @@ std::string ErrorMessage::FileLocation::stringify() const
 
 std::string ErrorLogger::toxml(const std::string &str)
 {
-    std::ostringstream xml;
+    std::string xml;
     for (const unsigned char c : str) {
         switch (c) {
         case '<':
-            xml << "&lt;";
+            xml += "&lt;";
             break;
         case '>':
-            xml << "&gt;";
+            xml += "&gt;";
             break;
         case '&':
-            xml << "&amp;";
+            xml += "&amp;";
             break;
         case '\"':
-            xml << "&quot;";
+            xml += "&quot;";
             break;
         case '\'':
-            xml << "&apos;";
+            xml += "&apos;";
             break;
         case '\0':
-            xml << "\\0";
+            xml += "\\0";
             break;
         default:
             if (c >= ' ' && c <= 0x7f)
-                xml << c;
+                xml += c;
             else
-                xml << 'x';
+                xml += 'x';
             break;
         }
     }
-    return xml.str();
+    return xml;
 }
 
 std::string ErrorLogger::plistHeader(const std::string &version, const std::vector<std::string> &files)

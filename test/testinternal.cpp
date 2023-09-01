@@ -23,7 +23,6 @@
 #include "fixture.h"
 #include "settings.h"
 
-#include <list>
 #include <sstream>
 
 class TestInternal : public TestFixture {
@@ -60,7 +59,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        runChecks<CheckInternal>(&tokenizer, &settings, this);
+        runChecks<CheckInternal>(tokenizer, this);
     }
 
     void simplePatternInTokenMatch() {

@@ -24,13 +24,13 @@
 
 #include "check.h"
 #include "config.h"
+#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Settings;
 class Token;
-class Tokenizer;
 
 
 /// @addtogroup Checks
@@ -50,8 +50,8 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        Check64BitPortability check64BitPortability(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        Check64BitPortability check64BitPortability(&tokenizer, tokenizer.getSettings(), errorLogger);
         check64BitPortability.pointerassignment();
     }
 

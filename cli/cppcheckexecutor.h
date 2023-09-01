@@ -43,10 +43,12 @@ class Settings;
  */
 class CppCheckExecutor : public ErrorLogger {
 public:
+    friend class TestSuppressions;
+
     /**
      * Constructor
      */
-    CppCheckExecutor();
+    CppCheckExecutor() = default;
     CppCheckExecutor(const CppCheckExecutor &) = delete;
     void operator=(const CppCheckExecutor&) = delete;
 
@@ -101,8 +103,6 @@ public:
      */
     static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
 
-    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
-
 protected:
 
     /**
@@ -123,6 +123,8 @@ protected:
     bool parseFromArgs(Settings &settings, int argc, const char* const argv[]);
 
 private:
+
+    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
 
     /**
      * Wrapper around check_internal
@@ -152,9 +154,14 @@ private:
     bool loadLibraries(Settings& settings);
 
     /**
+     * @brief Write the checkers report
+     */
+    void writeCheckersReport(const Settings& settings) const;
+
+    /**
      * Pointer to current settings; set while check() is running for reportError().
      */
-    const Settings* mSettings;
+    const Settings* mSettings{};
 
     /**
      * Used to filter out duplicate error messages.
@@ -169,7 +176,7 @@ private:
     /**
      * Report progress time
      */
-    std::time_t mLatestProgressOutputTime;
+    std::time_t mLatestProgressOutputTime{};
 
     /**
      * Output file name for exception handler
@@ -179,12 +186,17 @@ private:
     /**
      * Error output
      */
-    std::ofstream *mErrorOutput;
+    std::ofstream* mErrorOutput{};
 
     /**
-     * Has --errorlist been given?
+     * Checkers that has been executed
      */
-    bool mShowAllErrors;
+    std::set<std::string> mActiveCheckers;
+
+    /**
+     * True if there are critical errors
+     */
+    std::string mCriticalErrors;
 };
 
 #endif // CPPCHECKEXECUTOR_H

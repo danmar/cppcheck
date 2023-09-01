@@ -92,7 +92,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mCurrentStyle = new CodeEditorStyle(CodeEditorStyle::loadSettings(&settings));
     manageStyleControls();
 
-    connect(mUI->mEditPythonPath, SIGNAL(textEdited(const QString&)),
+    connect(mUI->mEditPythonPath, SIGNAL(textEdited(QString)),
             this, SLOT(validateEditPythonPath()));
 
     connect(mUI->mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);

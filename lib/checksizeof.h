@@ -24,13 +24,13 @@
 
 #include "check.h"
 #include "config.h"
+#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Settings;
 class Token;
-class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -48,8 +48,8 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) override {
-        CheckSizeof checkSizeof(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer& tokenizer, ErrorLogger* errorLogger) override {
+        CheckSizeof checkSizeof(&tokenizer, tokenizer.getSettings(), errorLogger);
 
         // Checks
         checkSizeof.sizeofsizeof();

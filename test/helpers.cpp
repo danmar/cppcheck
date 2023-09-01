@@ -18,12 +18,17 @@
 
 #include "helpers.h"
 
+#include "filelister.h"
 #include "path.h"
+#include "pathmatch.h"
 #include "preprocessor.h"
 
+#include <cerrno>
 #include <cstdio>
 #include <iostream>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
+#include <list>
+#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
@@ -39,6 +44,7 @@
 
 class Suppressions;
 
+// TODO: better path-only usage
 ScopedFile::ScopedFile(std::string name, const std::string &content, std::string path)
     : mName(std::move(name))
     , mPath(Path::toNativeSeparators(std::move(path)))
@@ -63,18 +69,35 @@ ScopedFile::ScopedFile(std::string name, const std::string &content, std::string
 ScopedFile::~ScopedFile() {
     const int remove_res = std::remove(mFullPath.c_str());
     if (remove_res != 0) {
-        std::cout << "ScopedFile(" << mFullPath + ") - could not delete file (" << remove_res << ")";
+        std::cout << "ScopedFile(" << mFullPath + ") - could not delete file (" << remove_res << ")" << std::endl;
     }
     if (!mPath.empty() && mPath != Path::getCurrentPath()) {
+        // TODO: remove all files
+        // TODO: simplify the function call
+        // hack to be able to delete *.plist output files
+        std::map<std::string, std::size_t> files;
+        const std::string res = FileLister::addFiles(files, mPath, {".plist"}, false, PathMatch({}));
+        if (!res.empty()) {
+            std::cout << "ScopedFile(" << mPath + ") - generating file list failed (" << res << ")" << std::endl;
+        }
+        for (const auto &f : files)
+        {
+            const std::string &file = f.first;
+            const int rm_f_res = std::remove(file.c_str());
+            if (rm_f_res != 0) {
+                std::cout << "ScopedFile(" << mPath + ") - could not delete '" << file << "' (" << rm_f_res << ")" << std::endl;
+            }
+        }
+
 #ifdef _WIN32
         if (!RemoveDirectoryA(mPath.c_str())) {
-            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << GetLastError() << ")";
+            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << GetLastError() << ")" << std::endl;
         }
 #else
         const int rmdir_res = rmdir(mPath.c_str());
         if (rmdir_res == -1) {
             const int err = errno;
-            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << err << ")";
+            std::cout << "ScopedFile(" << mFullPath + ") - could not delete folder (" << err << ")" << std::endl;
         }
 #endif
     }

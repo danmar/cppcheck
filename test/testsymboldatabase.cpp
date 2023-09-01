@@ -68,9 +68,8 @@ public:
 private:
     const Token* vartok{nullptr};
     const Token* typetok{nullptr};
-    // If there are unused templates, keep those
-    Settings settings1 = settingsBuilder().library("std.cfg").checkUnusedTemplates().build();
-    const Settings settings2 = settingsBuilder().checkUnusedTemplates().platform(cppcheck::Platform::Type::Unspecified).build();
+    Settings settings1 = settingsBuilder().library("std.cfg").build();
+    const Settings settings2 = settingsBuilder().platform(cppcheck::Platform::Type::Unspecified).build();
 
     void reset() {
         vartok = nullptr;
@@ -384,6 +383,7 @@ private:
         TEST_CASE(enum10); // #11001
         TEST_CASE(enum11);
         TEST_CASE(enum12);
+        TEST_CASE(enum13);
 
         TEST_CASE(sizeOfType);
 
@@ -441,6 +441,8 @@ private:
         TEST_CASE(findFunction46);
         TEST_CASE(findFunction47);
         TEST_CASE(findFunction48);
+        TEST_CASE(findFunction49); // #11888
+        TEST_CASE(findFunction50); // #11904 - method with same name and arguments in derived class
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -509,6 +511,9 @@ private:
         TEST_CASE(auto17); // #11163
         TEST_CASE(auto18);
         TEST_CASE(auto19);
+        TEST_CASE(auto20);
+        TEST_CASE(auto21);
+        TEST_CASE(auto22);
 
         TEST_CASE(unionWithConstructor);
 
@@ -1920,6 +1925,7 @@ private:
         ASSERT_EQUALS(10, db->variableList().size() - 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(1) && db->getVariableFromVarId(1)->dimensions().size() == 1);
         ASSERT_EQUALS(true, db->getVariableFromVarId(2) != nullptr);
+        // NOLINTNEXTLINE(readability-container-size-empty)
         ASSERT_EQUALS(true, db->getVariableFromVarId(3) && db->getVariableFromVarId(3)->dimensions().size() == 0);
         ASSERT_EQUALS(true, db->getVariableFromVarId(4) != nullptr);
         ASSERT_EQUALS(true, db->getVariableFromVarId(5) != nullptr);
@@ -5701,6 +5707,22 @@ private:
         ASSERT_EQUALS(e->enumerator(), E0);
     }
 
+    void enum13() {
+        GET_SYMBOL_DB("struct S { enum E { E0, E1 }; };\n"
+                      "void f(bool b) {\n"
+                      "    auto e = b ? S::E0 : S::E1;\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* E1 = it->findEnumerator("E1");
+        ASSERT(E1 && E1->value_known);
+        ASSERT_EQUALS(E1->value, 1);
+        const Token* const a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT(E1->scope == a->valueType()->typeScope);
+    }
+
     void sizeOfType() {
         // #7615 - crash in Symboldatabase::sizeOfType()
         GET_SYMBOL_DB("enum e;\n"
@@ -7267,6 +7289,42 @@ private:
         ASSERT_EQUALS(1, typeTok->type()->classDef->linenr());
     }
 
+    void findFunction49() {
+        GET_SYMBOL_DB("struct B {};\n"
+                      "struct D : B {};\n"
+                      "void f(bool = false, bool = true);\n"
+                      "void f(B*, bool, bool = true);\n"
+                      "void g() {\n"
+                      "    D d;\n"
+                      "    f(&d, true);\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token* ftok = Token::findsimplematch(tokenizer.tokens(), "f ( &");
+        ASSERT(ftok && ftok->function());
+        ASSERT(ftok->function()->name() == "f");
+        ASSERT_EQUALS(4, ftok->function()->tokenDef->linenr());
+    }
+
+    void findFunction50() {
+        {
+            GET_SYMBOL_DB("struct B { B(); void init(unsigned int value); };\n"
+                          "struct D: B { D(); void init(unsigned int value); };\n"
+                          "D::D() { init(0); }\n"
+                          "void D::init(unsigned int value) {}\n");
+            const Token* call = Token::findsimplematch(tokenizer.tokens(), "init ( 0 ) ;");
+            ASSERT(call && call->function() && call->function()->functionScope);
+        }
+
+        {
+            GET_SYMBOL_DB("struct B { B(); void init(unsigned int value); };\n"
+                          "struct D: B { D(); void init(unsigned int value); };\n"
+                          "D::D() { init(0ULL); }\n"
+                          "void D::init(unsigned int value) {}\n");
+            const Token* call = Token::findsimplematch(tokenizer.tokens(), "init ( 0ULL ) ;");
+            ASSERT(call && call->function() && call->function()->functionScope);
+        }
+    }
+
     void findFunctionContainer() {
         {
             GET_SYMBOL_DB("void dostuff(std::vector<int> v);\n"
@@ -8376,7 +8434,7 @@ private:
             const Token* tok = tokenizer.tokens();
             tok = Token::findsimplematch(tok, "s .");
             ASSERT(tok && tok->valueType());
-            ASSERT_EQUALS("container(std :: set|unordered_set <)", tok->valueType()->str());
+            ASSERT_EQUALS("container(std :: set|unordered_set <) &", tok->valueType()->str());
         }
         {
             GET_SYMBOL_DB("void f(std::vector<int> v) {\n"
@@ -9380,7 +9438,6 @@ private:
         ASSERT(autoTok && autoTok->valueType());
         ASSERT_EQUALS(autoTok->valueType()->constness, 3);
         ASSERT_EQUALS(autoTok->valueType()->pointer, 1);
-        TODO_ASSERT(autoTok->valueType()->reference == Reference::LValue);
     }
 
     void auto19() { // #11517
@@ -9417,6 +9474,55 @@ private:
             ASSERT_EQUALS(varTok->valueType()->constness, 0);
             ASSERT_EQUALS(varTok->valueType()->pointer, 1);
         }
+    }
+
+    void auto20() {
+        GET_SYMBOL_DB("enum A { A0 };\n"
+                      "enum B { B0 };\n"
+                      "const int& g(A a);\n"
+                      "const int& g(B b);\n"
+                      "void f() {\n"
+                      "    const auto& r = g(B::B0);\n"
+                      "}\n");
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT_EQUALS(a->valueType()->type, ValueType::INT);
+        const Token* g = Token::findsimplematch(a, "g ( B ::");
+        ASSERT(g && g->function());
+        ASSERT_EQUALS(g->function()->tokenDef->linenr(), 4);
+    }
+
+    void auto21() {
+        GET_SYMBOL_DB("int f(bool b) {\n"
+                      "    std::vector<int> v1(1), v2(2);\n"
+                      "    auto& v = b ? v1 : v2;\n"
+                      "    v.push_back(1);\n"
+                      "    return v.size();\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT_EQUALS(a->valueType()->type, ValueType::CONTAINER);
+        const Token* v = Token::findsimplematch(a, "v . size");
+        ASSERT(v && v->valueType());
+        ASSERT_EQUALS(v->valueType()->type, ValueType::CONTAINER);
+        ASSERT(v->variable() && v->variable()->isReference());
+    }
+
+    void auto22() {
+        GET_SYMBOL_DB("void f(std::vector<std::string>& v, bool b) {\n"
+                      "    auto& s = b ? v[0] : v[1];\n"
+                      "    s += \"abc\";\n"
+                      "}\n");
+        ASSERT_EQUALS("", errout.str());
+        const Token* a = Token::findsimplematch(tokenizer.tokens(), "auto");
+        ASSERT(a && a->valueType());
+        ASSERT_EQUALS(a->valueType()->type, ValueType::CONTAINER);
+        const Token* s = Token::findsimplematch(a, "s +=");
+        ASSERT(s && s->valueType());
+        ASSERT_EQUALS(s->valueType()->type, ValueType::CONTAINER);
+        ASSERT(s->valueType()->reference == Reference::LValue);
+        ASSERT(s->variable() && s->variable()->isReference());
     }
 
     void unionWithConstructor() {

@@ -18,6 +18,7 @@
 
 #include "path.h"
 #include "fixture.h"
+#include "helpers.h"
 
 #include <string>
 #include <vector>
@@ -39,6 +40,8 @@ private:
         TEST_CASE(is_cpp);
         TEST_CASE(get_path_from_filename);
         TEST_CASE(join);
+        TEST_CASE(isDirectory);
+        TEST_CASE(isFile);
     }
 
     void removeQuotationMarks() const {
@@ -154,6 +157,24 @@ private:
         ASSERT_EQUALS("a/b", Path::join("a", "b"));
         ASSERT_EQUALS("a/b", Path::join("a/", "b"));
         ASSERT_EQUALS("/b", Path::join("a", "/b"));
+    }
+
+    void isDirectory() const {
+        ScopedFile file("testpath.txt", "", "testpath");
+        ScopedFile file2("testpath2.txt", "");
+        ASSERT_EQUALS(false, Path::isDirectory("testpath.txt"));
+        ASSERT_EQUALS(true, Path::isDirectory("testpath"));
+        ASSERT_EQUALS(false, Path::isDirectory("testpath/testpath.txt"));
+        ASSERT_EQUALS(false, Path::isDirectory("testpath2.txt"));
+    }
+
+    void isFile() const {
+        ScopedFile file("testpath.txt", "", "testpath");
+        ScopedFile file2("testpath2.txt", "");
+        ASSERT_EQUALS(false, Path::isFile("testpath"));
+        ASSERT_EQUALS(false, Path::isFile("testpath.txt"));
+        ASSERT_EQUALS(true, Path::isFile("testpath/testpath.txt"));
+        ASSERT_EQUALS(true, Path::isFile("testpath2.txt"));
     }
 };
 

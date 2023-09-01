@@ -24,6 +24,8 @@
 #include "importproject.h"
 #include "suppressions.h"
 
+#include <atomic>
+
 #include <QList>
 #include <QObject>
 #include <QString>
@@ -44,7 +46,6 @@ class CheckThread : public QThread {
     Q_OBJECT
 public:
     explicit CheckThread(ThreadResult &result);
-    ~CheckThread() override;
 
     /**
      * @brief Set settings for cppcheck
@@ -118,9 +119,9 @@ protected:
     };
 
     /**
-     * @brief Thread's current execution state.
+     * @brief Thread's current execution state. Can be changed from outside
      */
-    State mState;
+    std::atomic<State> mState{Ready};
 
     ThreadResult &mResult;
     /**
@@ -136,7 +137,7 @@ private:
     bool isSuppressed(const Suppressions::ErrorMessage &errorMessage) const;
 
     QStringList mFiles;
-    bool mAnalyseWholeProgram;
+    bool mAnalyseWholeProgram{};
     QStringList mAddonsAndTools;
     QStringList mClangIncludePaths;
     QList<Suppressions::Suppression> mSuppressions;

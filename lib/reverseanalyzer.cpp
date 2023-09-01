@@ -378,7 +378,7 @@ struct ReverseTraversal {
     static Token* isUnevaluated(Token* tok) {
         if (Token::Match(tok, ")|>") && tok->link()) {
             Token* start = tok->link();
-            if (Token::Match(start->previous(), "sizeof|decltype ("))
+            if (::isUnevaluated(start->previous()))
                 return start->previous();
             if (Token::simpleMatch(start, "<"))
                 return start;

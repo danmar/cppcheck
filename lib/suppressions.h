@@ -34,6 +34,7 @@
 
 class Tokenizer;
 class ErrorMessage;
+class ErrorLogger;
 enum class Certainty;
 
 /** @brief class for handling suppressions */
@@ -50,13 +51,15 @@ public:
         int lineNumber;
         Certainty certainty;
         std::string symbolNames;
+
+        static Suppressions::ErrorMessage fromErrorMessage(const ::ErrorMessage &msg);
     private:
         std::string mFileName;
     };
 
     struct CPPCHECKLIB Suppression {
-        Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
-        Suppression(std::string id, std::string file, int line=NO_LINE) : errorId(std::move(id)), fileName(std::move(file)), lineNumber(line), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
+        Suppression() = default;
+        Suppression(std::string id, std::string file, int line=NO_LINE) : errorId(std::move(id)), fileName(std::move(file)), lineNumber(line) {}
 
         bool operator<(const Suppression &other) const {
             if (errorId != other.errorId)
@@ -103,12 +106,12 @@ public:
 
         std::string errorId;
         std::string fileName;
-        int lineNumber;
+        int lineNumber = NO_LINE;
         std::string symbolName;
-        std::size_t hash;
-        bool thisAndNextLine; // Special case for backwards compatibility: { // cppcheck-suppress something
-        bool matched;
-        bool checked; // for inline suppressions, checked or not
+        std::size_t hash{};
+        bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
+        bool matched{};
+        bool checked{}; // for inline suppressions, checked or not
 
         enum { NO_LINE = -1 };
     };
@@ -200,6 +203,13 @@ public:
      * @brief Marks Inline Suppressions as checked if source line is in the token stream
      */
     void markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer);
+
+    /**
+     * Report unmatched suppressions
+     * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
+     * @return true is returned if errors are reported
+     */
+    static bool reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched, ErrorLogger &errorLogger);
 
 private:
     /** @brief List of error which the user doesn't want to see. */

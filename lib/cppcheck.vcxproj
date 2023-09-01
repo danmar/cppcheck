@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug-PCRE|Win32">
       <Configuration>Debug-PCRE</Configuration>
@@ -56,6 +56,7 @@
     <ClCompile Include="checkbufferoverrun.cpp" />
     <ClCompile Include="checkclass.cpp" />
     <ClCompile Include="checkcondition.cpp" />
+    <ClCompile Include="checkersreport.cpp" />
     <ClCompile Include="checkexceptionsafety.cpp" />
     <ClCompile Include="checkfunctions.cpp" />
     <ClCompile Include="checkinternal.cpp" />
@@ -122,6 +123,7 @@
     <ClInclude Include="checkbufferoverrun.h" />
     <ClInclude Include="checkclass.h" />
     <ClInclude Include="checkcondition.h" />
+    <ClInclude Include="checkersreport.h" />
     <ClInclude Include="checkexceptionsafety.h" />
     <ClInclude Include="checkfunctions.h" />
     <ClInclude Include="checkinternal.h" />
@@ -150,6 +152,7 @@
     <ClInclude Include="fwdanalysis.h" />
     <ClInclude Include="importproject.h" />
     <ClInclude Include="infer.h" />
+    <ClInclude Include="json.h" />
     <ClInclude Include="keywords.h" />
     <ClInclude Include="library.h" />
     <ClInclude Include="mathlib.h" />

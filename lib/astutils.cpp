@@ -259,6 +259,18 @@ bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
+bool astIsContainerString(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!tok->valueType())
+        return false;
+    const Library::Container* container = tok->valueType()->container;
+    if (!container)
+        return false;
+    return container->stdStringLike;
+}
+
 static const Token* getContainerFunction(const Token* tok)
 {
     if (!tok || !tok->valueType() || !tok->valueType()->container)
@@ -329,7 +341,7 @@ static bool match(const Token *tok, const std::string &rhs)
 {
     if (tok->str() == rhs)
         return true;
-    if (!tok->varId() && tok->hasKnownIntValue() && MathLib::toString(tok->values().front().intvalue) == rhs)
+    if (!tok->varId() && tok->hasKnownIntValue() && std::to_string(tok->values().front().intvalue) == rhs)
         return true;
     return false;
 }
@@ -684,9 +696,10 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
             return {*tok->astParent()->astOperand1()->valueType()};
         return {};
     }
+    const Token* ftok = nullptr;
     if (Token::Match(tok->astParent(), "(|{|,")) {
         int argn = -1;
-        const Token* ftok = getTokenArgumentFunction(tok, argn);
+        ftok = getTokenArgumentFunction(tok, argn);
         const Token* typeTok = nullptr;
         if (ftok && argn >= 0) {
             if (ftok->function()) {
@@ -726,9 +739,13 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
         const ValueType* vtCont = contTok->valueType();
         if (!vtCont->containerTypeToken)
             return {};
-        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, *settings, true); // TODO: set isCpp
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, *settings);
         return {std::move(vtParent)};
     }
+    // The return type of a function is not the parent valuetype
+    if (Token::simpleMatch(tok->astParent(), "(") && ftok && !tok->astParent()->isCast() &&
+        ftok->tokType() != Token::eType)
+        return {};
     if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
         *parent = tok->astParent();
     }
@@ -888,9 +905,16 @@ bool extractForLoopValues(const Token *forToken,
     if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
     std::vector<MathLib::bigint> minInitValue = getMinValue(ValueFlow::makeIntegralInferModel(), initExpr->astOperand2()->values());
+    if (minInitValue.empty()) {
+        const ValueFlow::Value* v = initExpr->astOperand2()->getMinValue(true);
+        if (v)
+            minInitValue.push_back(v->intvalue);
+    }
+    if (minInitValue.empty())
+        return false;
     varid = initExpr->astOperand1()->varId();
     knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
-    initValue = minInitValue.empty() ? 0 : minInitValue.front();
+    initValue = minInitValue.front();
     partialCond = Token::Match(condExpr, "%oror%|&&");
     visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) {
         if (Token::Match(tok, "%oror%|&&"))
@@ -960,6 +984,7 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
 {
     if (tok->varId() == varid)
         return false;
+    // NOLINTNEXTLINE(readability-use-anyofallof) - TODO: fix this / also Cppcheck false negative
     for (const ValueFlow::Value &val : tok->values()) {
         if (!val.isLocalLifetimeValue())
             continue;
@@ -1403,7 +1428,7 @@ static bool isForLoopIncrement(const Token* const tok)
            parent->astParent()->astParent()->astOperand1()->str() == "for";
 }
 
-bool isUsedAsBool(const Token* const tok)
+bool isUsedAsBool(const Token* const tok, const Settings* settings)
 {
     if (!tok)
         return false;
@@ -1416,13 +1441,22 @@ bool isUsedAsBool(const Token* const tok)
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
+    if (Token::simpleMatch(parent, "["))
+        return false;
+    if (parent->isUnaryOp("*"))
+        return false;
+    if (Token::simpleMatch(parent, ".")) {
+        if (astIsRHS(tok))
+            return isUsedAsBool(parent, settings);
+        return false;
+    }
     if (Token::Match(parent, "&&|!|%oror%"))
         return true;
     if (parent->isCast())
         return isUsedAsBool(parent);
     if (parent->isUnaryOp("*"))
         return isUsedAsBool(parent);
-    if (Token::Match(parent, "==|!=") && tok->astSibling()->hasKnownIntValue() &&
+    if (Token::Match(parent, "==|!=") && (tok->astSibling()->isNumber() || tok->astSibling()->isKeyword()) && tok->astSibling()->hasKnownIntValue() &&
         tok->astSibling()->values().front().intvalue == 0)
         return true;
     if (parent->str() == "(" && astIsRHS(tok) && Token::Match(parent->astOperand1(), "if|while"))
@@ -1432,7 +1466,9 @@ bool isUsedAsBool(const Token* const tok)
     if (isForLoopCondition(tok))
         return true;
     if (!Token::Match(parent, "%cop%")) {
-        std::vector<ValueType> vtParents = getParentValueTypes(tok);
+        if (parent->str() == "," && parent->isInitComma())
+            return false;
+        std::vector<ValueType> vtParents = getParentValueTypes(tok, settings);
         return std::any_of(vtParents.cbegin(), vtParents.cend(), [&](const ValueType& vt) {
             return vt.pointer == 0 && vt.type == ValueType::BOOL;
         });
@@ -1869,7 +1905,7 @@ static bool functionModifiesArguments(const Function* f)
 
 bool isConstFunctionCall(const Token* ftok, const Library& library)
 {
-    if (isSizeOfEtc(ftok))
+    if (isUnevaluated(ftok))
         return true;
     if (!Token::Match(ftok, "%name% ("))
         return false;
@@ -2188,7 +2224,7 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
     argn = -1;
     {
         T* parent = tok->astParent();
-        if (parent && parent->isUnaryOp("&"))
+        if (parent && (parent->isUnaryOp("&") || parent->isIncDecOp()))
             parent = parent->astParent();
         while (parent && parent->isCast())
             parent = parent->astParent();
@@ -2196,7 +2232,7 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
             parent = parent->astParent();
 
         // passing variable to subfunction?
-        if (Token::Match(parent, "[[(,{]"))
+        if (Token::Match(parent, "[*[(,{]"))
             ;
         else if (Token::simpleMatch(parent, ":")) {
             while (Token::Match(parent, "[?:]"))
@@ -2347,6 +2383,10 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     if (addressOf)
         indirect++;
 
+    const bool deref = tok->astParent() && tok->astParent()->isUnaryOp("*");
+    if (deref && indirect > 0)
+        indirect--;
+
     int argnr;
     tok = getTokenArgumentFunction(tok, argnr);
     if (!tok)
@@ -2455,7 +2495,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
            (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
 
-    if (tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
+    if (indirect == 0 && tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
         return true;
 
     auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) {
@@ -2578,7 +2618,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     const Token *parent = tok2->astParent();
     while (Token::Match(parent, ".|::"))
         parent = parent->astParent();
-    if (parent && parent->tokType() == Token::eIncDecOp)
+    if (parent && parent->tokType() == Token::eIncDecOp && (indirect == 0 || tok2 != tok))
         return true;
 
     // structured binding, nonconst reference variable in lhs
@@ -2615,7 +2655,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (indirect > 0) {
         // check for `*(ptr + 1) = new_value` case
         parent = tok2->astParent();
-        while (parent && parent->isArithmeticalOp() && parent->isBinaryOp()) {
+        while (parent && ((parent->isArithmeticalOp() && parent->isBinaryOp()) || parent->isIncDecOp())) {
             parent = parent->astParent();
         }
         if (Token::simpleMatch(parent, "*")) {
@@ -2839,8 +2879,9 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
                     if (vt->type == ValueType::ITERATOR)
                         ++indirect;
                 }
-                if (isExpressionChangedAt(tok, tok2, indirect, global, settings, cpp, depth))
-                    return true;
+                for (int i = 0; i <= indirect; ++i)
+                    if (isExpressionChangedAt(tok, tok2, i, global, settings, cpp, depth))
+                        return true;
             }
         }
         return false;
@@ -3111,7 +3152,7 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     } else if (ftok->isControlFlowKeyword()) {
         return ExprUsage::Used;
     } else if (ftok->str() == "{") {
-        return ExprUsage::Used;
+        return indirect == 0 ? ExprUsage::Used : ExprUsage::Inconclusive;
     } else {
         const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
         if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
@@ -3124,27 +3165,33 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
     return ExprUsage::Inconclusive;
 }
 
-ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings, bool cpp)
 {
-    if (indirect > 0 && tok->astParent()) {
-        if (Token::Match(tok->astParent(), "%assign%") && astIsRHS(tok))
+    const Token* const parent = tok->astParent();
+    if (indirect > 0 && parent) {
+        if (Token::Match(parent, "%assign%") && astIsRHS(tok))
             return ExprUsage::NotUsed;
-        if (tok->astParent()->isConstOp())
+        if (parent->isConstOp())
             return ExprUsage::NotUsed;
-        if (tok->astParent()->isCast())
+        if (parent->isCast())
             return ExprUsage::NotUsed;
-        if (Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "?"))
-            return getExprUsage(tok->astParent()->astParent(), indirect, settings);
+        if (Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "?"))
+            return getExprUsage(parent->astParent(), indirect, settings, cpp);
     }
     if (indirect == 0) {
-        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") &&
-            !tok->astParent()->isUnaryOp("&"))
+        if (Token::Match(parent, "%cop%|%assign%|++|--") && parent->str() != "=" &&
+            !parent->isUnaryOp("&") &&
+            !(astIsRHS(tok) && isLikelyStreamRead(cpp, parent)))
             return ExprUsage::Used;
-        if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok))
+        if (Token::simpleMatch(parent, "=") && astIsRHS(tok)) {
+            const Token* const lhs  = parent->astOperand1();
+            if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs == lhs->variable()->nameToken())
+                return ExprUsage::NotUsed;
             return ExprUsage::Used;
+        }
         // Function call or index
-        if (((Token::simpleMatch(tok->astParent(), "(") && !tok->astParent()->isCast()) || (Token::simpleMatch(tok->astParent(), "[") && tok->valueType())) &&
-            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
+        if (((Token::simpleMatch(parent, "(") && !parent->isCast()) || (Token::simpleMatch(parent, "[") && tok->valueType())) &&
+            (astIsLHS(tok) || Token::simpleMatch(parent, "( )")))
             return ExprUsage::Used;
     }
     return getFunctionUsage(tok, indirect, settings);
@@ -3338,7 +3385,7 @@ bool isGlobalData(const Token *expr, bool cpp)
     return globalData || !var;
 }
 
-bool isSizeOfEtc(const Token *tok)
+bool isUnevaluated(const Token *tok)
 {
-    return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
+    return Token::Match(tok, "alignof|_Alignof|_alignof|__alignof|__alignof__|decltype|offsetof|sizeof|typeid|typeof|__typeof__ (");
 }

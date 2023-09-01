@@ -28,6 +28,7 @@
 class Settings;
 class ErrorLogger;
 class ErrorMessage;
+class Suppressions;
 
 /// @addtogroup CLI
 /// @{
@@ -38,8 +39,8 @@ class ErrorMessage;
  */
 class Executor {
 public:
-    Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
-    virtual ~Executor();
+    Executor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
+    virtual ~Executor() = default;
 
     Executor(const Executor &) = delete;
     void operator=(const Executor &) = delete;
@@ -65,7 +66,8 @@ protected:
     bool hasToLog(const ErrorMessage &msg);
 
     const std::map<std::string, std::size_t> &mFiles;
-    Settings &mSettings;
+    const Settings &mSettings;
+    Suppressions &mSuppressions;
     ErrorLogger &mErrorLogger;
 
 private:

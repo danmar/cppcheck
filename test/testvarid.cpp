@@ -34,7 +34,7 @@ public:
     TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).checkUnusedTemplates().platform(cppcheck::Platform::Type::Unix64).build();
+    const Settings settings = settingsBuilder().c(Standards::C89).cpp(Standards::CPPLatest).platform(cppcheck::Platform::Type::Unix64).build();
     void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
@@ -2122,7 +2122,7 @@ private:
     }
 
     static std::string getLine(const std::string &code, int lineNumber) {
-        std::string nr = MathLib::toString(lineNumber);
+        std::string nr = std::to_string(lineNumber);
         const std::string::size_type pos1 = code.find('\n' + nr + ": ");
         if (pos1 == std::string::npos)
             return "";

@@ -27,6 +27,7 @@
 #include "ctu.h"
 #include "mathlib.h"
 #include "errortypes.h"
+#include "tokenize.h"
 #include "vfvalue.h"
 
 #include <list>
@@ -36,7 +37,6 @@
 
 class Scope;
 class Token;
-class Tokenizer;
 class Variable;
 class ErrorLogger;
 class Settings;
@@ -48,9 +48,9 @@ namespace tinyxml2 {
 
 
 struct VariableValue {
-    explicit VariableValue(MathLib::bigint val = 0) : value(val), notEqual(false) {}
+    explicit VariableValue(MathLib::bigint val = 0) : value(val) {}
     MathLib::bigint value;
-    bool notEqual;
+    bool notEqual{};
 };
 
 /// @addtogroup Checks
@@ -69,8 +69,8 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckUninitVar checkUninitVar(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkUninitVar.valueFlowUninit();
         checkUninitVar.check();
     }

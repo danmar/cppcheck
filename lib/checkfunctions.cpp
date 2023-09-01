@@ -58,6 +58,8 @@ void CheckFunctions::checkProhibitedFunctions()
 {
     const bool checkAlloca = mSettings->severity.isEnabled(Severity::warning) && ((mSettings->standards.c >= Standards::C99 && mTokenizer->isC()) || mSettings->standards.cpp >= Standards::CPP11);
 
+    logChecker("CheckFunctions::checkProhibitedFunctions");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -101,6 +103,7 @@ void CheckFunctions::checkProhibitedFunctions()
 //---------------------------------------------------------------------------
 void CheckFunctions::invalidFunctionUsage()
 {
+    logChecker("CheckFunctions::invalidFunctionUsage");
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -242,6 +245,8 @@ void CheckFunctions::checkIgnoredReturnValue()
     if (!mSettings->severity.isEnabled(Severity::warning) && !mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckFunctions::checkIgnoredReturnValue"); // style,warning
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -302,6 +307,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
 
 void CheckFunctions::checkMissingReturn()
 {
+    logChecker("CheckFunctions::checkMissingReturn");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         const Function *function = scope->function;
@@ -418,6 +424,11 @@ void CheckFunctions::checkMathFunctions()
     const bool styleC99 = mSettings->severity.isEnabled(Severity::style) && mSettings->standards.c != Standards::C89 && mSettings->standards.cpp != Standards::CPP03;
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
+    if (!styleC99 && !printWarnings)
+        return;
+
+    logChecker("CheckFunctions::checkMathFunctions"); // style,warning,c99,c++11
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -500,6 +511,8 @@ void CheckFunctions::memsetZeroBytes()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckFunctions::memsetZeroBytes"); // warning
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -538,6 +551,8 @@ void CheckFunctions::memsetInvalid2ndParam()
     const bool printWarning = mSettings->severity.isEnabled(Severity::warning);
     if (!printWarning && !printPortability)
         return;
+
+    logChecker("CheckFunctions::memsetInvalid2ndParam"); // warning,portability
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
@@ -670,10 +685,12 @@ void CheckFunctions::returnLocalStdMove()
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
+    logChecker("CheckFunctions::returnLocalStdMove"); // performance,c++11
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         // Expect return by-value
-        if (Function::returnsReference(scope->function, true))
+        if (Function::returnsReference(scope->function, /*unknown*/ true, /*includeRValueRef*/ true))
             continue;
         const auto rets = Function::findReturns(scope->function);
         for (const Token* ret : rets) {
@@ -703,6 +720,8 @@ void CheckFunctions::useStandardLibrary()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckFunctions::useStandardLibrary"); // style
 
     for (const Scope& scope: mTokenizer->getSymbolDatabase()->scopeList) {
         if (scope.type != Scope::ScopeType::eFor)

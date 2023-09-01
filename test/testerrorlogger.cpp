@@ -23,7 +23,6 @@
 #include "suppressions.h"
 #include "fixture.h"
 
-#include <iosfwd>
 #include <list>
 #include <string>
 
@@ -62,7 +61,6 @@ private:
         TEST_CASE(SerializeSanitize);
         TEST_CASE(SerializeFileLocation);
 
-        TEST_CASE(suppressUnmatchedSuppressions);
         TEST_CASE(substituteTemplateFormatStatic);
         TEST_CASE(substituteTemplateLocationStatic);
     }
@@ -424,64 +422,6 @@ private:
         ASSERT_EQUALS(654, msg2.callStack.front().line);
         ASSERT_EQUALS(33, msg2.callStack.front().column);
         ASSERT_EQUALS("abcd:/,", msg2.callStack.front().getinfo());
-    }
-
-    void suppressUnmatchedSuppressions() {
-        std::list<Suppressions::Suppression> suppressions;
-
-        // No unmatched suppression
-        errout.str("");
-        suppressions.clear();
-        reportUnmatchedSuppressions(suppressions);
-        ASSERT_EQUALS("", errout.str());
-
-        // suppress all unmatchedSuppression
-        errout.str("");
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "*", Suppressions::Suppression::NO_LINE);
-        reportUnmatchedSuppressions(suppressions);
-        ASSERT_EQUALS("", errout.str());
-
-        // suppress all unmatchedSuppression (corresponds to "--suppress=unmatchedSuppression")
-        errout.str("");
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "", Suppressions::Suppression::NO_LINE);
-        reportUnmatchedSuppressions(suppressions);
-        ASSERT_EQUALS("", errout.str());
-
-        // suppress all unmatchedSuppression in a.c
-        errout.str("");
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", Suppressions::Suppression::NO_LINE);
-        reportUnmatchedSuppressions(suppressions);
-        ASSERT_EQUALS("", errout.str());
-
-        // suppress unmatchedSuppression in a.c at line 10
-        errout.str("");
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", 10U);
-        reportUnmatchedSuppressions(suppressions);
-        ASSERT_EQUALS("", errout.str());
-
-        // don't suppress unmatchedSuppression when file is mismatching
-        errout.str("");
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "b.c", Suppressions::Suppression::NO_LINE);
-        reportUnmatchedSuppressions(suppressions);
-        ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
-
-        // don't suppress unmatchedSuppression when line is mismatching
-        errout.str("");
-        suppressions.clear();
-        suppressions.emplace_back("abc", "a.c", 10U);
-        suppressions.emplace_back("unmatchedSuppression", "a.c", 1U);
-        reportUnmatchedSuppressions(suppressions);
-        ASSERT_EQUALS("[a.c:10]: (information) Unmatched suppression: abc\n", errout.str());
     }
 
     void substituteTemplateFormatStatic() const

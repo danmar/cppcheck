@@ -230,7 +230,7 @@ protected:
      * @brief The previous scan duration in milliseconds.
      *
      */
-    int mScanDuration;
+    int mScanDuration{};
 
     /**
      * @brief Function to delete all threads
@@ -254,9 +254,9 @@ protected:
      * @brief The amount of threads currently running
      *
      */
-    int mRunningThreadCount;
+    int mRunningThreadCount{};
 
-    bool mAnalyseWholeProgram;
+    bool mAnalyseWholeProgram{};
 
     QStringList mAddonsAndTools;
     QList<Suppressions::Suppression> mSuppressions;

@@ -40,14 +40,11 @@
 
 enum class Color;
 
-ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
-    : Executor(files, settings, errorLogger)
+ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+    : Executor(files, settings, suppressions, errorLogger)
 {
     assert(mSettings.jobs > 1);
 }
-
-ThreadExecutor::~ThreadExecutor()
-{}
 
 class SyncLogForwarder : public ErrorLogger
 {
@@ -85,7 +82,7 @@ class ThreadData
 {
 public:
     ThreadData(ThreadExecutor &threadExecutor, ErrorLogger &errorLogger, const Settings &settings, const std::map<std::string, std::size_t> &files, const std::list<ImportProject::FileSettings> &fileSettings)
-        : mFiles(files), mFileSettings(fileSettings), mProcessedFiles(0), mProcessedSize(0), mSettings(settings), logForwarder(threadExecutor, errorLogger)
+        : mFiles(files), mFileSettings(fileSettings), mSettings(settings), logForwarder(threadExecutor, errorLogger)
     {
         mItNextFile = mFiles.begin();
         mItNextFileSettings = mFileSettings.begin();
@@ -129,6 +126,7 @@ public:
         } else {
             // Read file from a file
             result = fileChecker.check(*file);
+            // TODO: call analyseClangTidy()?
         }
         return result;
     }
@@ -147,10 +145,10 @@ private:
     const std::list<ImportProject::FileSettings> &mFileSettings;
     std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
 
-    std::size_t mProcessedFiles;
-    std::size_t mTotalFiles;
-    std::size_t mProcessedSize;
-    std::size_t mTotalFileSize;
+    std::size_t mProcessedFiles{};
+    std::size_t mTotalFiles{};
+    std::size_t mProcessedSize{};
+    std::size_t mTotalFileSize{};
 
     std::mutex mFileSync;
     const Settings &mSettings;

@@ -25,6 +25,7 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
+#include "tokenize.h"
 #include "vfvalue.h"
 
 #include <list>
@@ -34,7 +35,6 @@ class ErrorLogger;
 class Library;
 class Settings;
 class Token;
-class Tokenizer;
 
 namespace tinyxml2 {
     class XMLElement;
@@ -56,8 +56,8 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckNullPointer checkNullPointer(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckNullPointer checkNullPointer(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkNullPointer.nullPointer();
         checkNullPointer.arithmetic();
         checkNullPointer.nullConstantDereference();

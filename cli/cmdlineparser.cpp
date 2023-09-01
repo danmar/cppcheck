@@ -44,17 +44,12 @@
 #include <list>
 #include <set>
 #include <sstream> // IWYU pragma: keep
-#include <stdexcept>
 #include <unordered_set>
 #include <utility>
 
 #ifdef HAVE_RULES
 // xml is used for rules
 #include <tinyxml2.h>
-#endif
-
-#ifdef __linux__
-#include <unistd.h>
 #endif
 
 static bool addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
@@ -118,10 +113,6 @@ CmdLineParser::CmdLineParser(Settings &settings, Suppressions &suppressions, Sup
     : mSettings(settings)
     , mSuppressions(suppressions)
     , mSuppressionsNoFail(suppressionsNoFail)
-    , mShowHelp(false)
-    , mShowVersion(false)
-    , mShowErrorMessages(false)
-    , mExitAfterPrint(false)
 {}
 
 void CmdLineParser::printMessage(const std::string &message)
@@ -262,6 +253,9 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings.checkLibrary = true;
             }
 
+            else if (std::strncmp(argv[i], "--checkers-report=", 18) == 0)
+                mSettings.checkersReportFilename = argv[i] + 18;
+
             else if (std::strncmp(argv[i], "--checks-max-time=", 18) == 0) {
                 if (!parseNumberArg(argv[i], 18, mSettings.checksMaxTime, true))
                     return false;
@@ -290,10 +284,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             else if (std::strncmp(argv[i], "--cppcheck-build-dir=", 21) == 0) {
-                // TODO: bail out when the folder does not exist? will silently do nothing
                 mSettings.buildDir = Path::fromNativeSeparators(argv[i] + 21);
                 if (endsWith(mSettings.buildDir, '/'))
                     mSettings.buildDir.pop_back();
+
+                if (!Path::isDirectory(mSettings.buildDir)) {
+                    printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
+                    return false;
+                }
             }
 
             // Show --debug output after the first simplifications
@@ -457,7 +455,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     path = Path::fromNativeSeparators(path);
                     path = Path::simplifyPath(path);
 
-                    if (FileLister::isDirectory(path)) {
+                    if (Path::isDirectory(path)) {
                         // If directory name doesn't end with / or \, add it
                         if (!endsWith(path, '/'))
                             path += '/';
@@ -512,10 +510,17 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError("argument to '-j' is not valid - " +  err + ".");
                     return false;
                 }
-                if (tmp > 10000) {
-                    // This limit is here just to catch typos. If someone has
-                    // need for more jobs, this value should be increased.
-                    printError("argument for '-j' is allowed to be 10000 at max.");
+                if (tmp == 0) {
+                    // TODO: implement get CPU logical core count and use that.
+                    // Usually, -j 0 would mean "use all available cores," but
+                    // if we get a 0, we just stall and don't do any work.
+                    printError("argument for '-j' must be greater than 0.");
+                    return false;
+                }
+                if (tmp > 1024) {
+                    // Almost nobody has 1024 logical cores, but somebody out
+                    // there does.
+                    printError("argument for '-j' is allowed to be 1024 at max.");
                     return false;
                 }
                 mSettings.jobs = tmp;
@@ -649,7 +654,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings.plistOutput += '/';
 
                 const std::string plistOutput = Path::toNativeSeparators(mSettings.plistOutput);
-                if (!FileLister::isDirectory(plistOutput)) {
+                if (!Path::isDirectory(plistOutput)) {
                     std::string message("plist folder does not exist: \"");
                     message += plistOutput;
                     message += "\".";
@@ -664,7 +669,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings.premiumArgs += " ";
                 const std::string p(argv[i] + 10);
                 mSettings.premiumArgs += "--" + p;
-                if (p == "misra-c-2012")
+                if (p == "misra-c-2012" || p == "misra-c-2023")
                     mSettings.addons.emplace("misra");
             }
 
@@ -762,7 +767,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Report progress
             else if (std::strcmp(argv[i], "--report-progress") == 0) {
-                mSettings.reportProgress = true;
+                mSettings.reportProgress = 10;
+            }
+
+            else if (std::strncmp(argv[i], "--report-progress=", 18) == 0) {
+                int tmp;
+                if (!parseNumberArg(argv[i], 18, tmp, true))
+                    return false;
+                mSettings.reportProgress = tmp;
             }
 
 #ifdef HAVE_RULES
@@ -897,7 +909,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
-            // TODO: deprecate "--template <template>"
             // Output formatter
             else if (std::strcmp(argv[i], "--template") == 0 ||
                      std::strncmp(argv[i], "--template=", 11) == 0) {
@@ -905,6 +916,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (argv[i][10] == '=')
                     mSettings.templateFormat = argv[i] + 11;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
+                    printMessage("'--template <template>' is deprecated and will be removed in 2.13 - please use '--template=<template>' instead");
                     ++i;
                     mSettings.templateFormat = argv[i];
                 } else {
@@ -933,13 +945,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
-            // TODO: deprecate "--template-location <template>"
             else if (std::strcmp(argv[i], "--template-location") == 0 ||
                      std::strncmp(argv[i], "--template-location=", 20) == 0) {
                 // "--template-location format"
                 if (argv[i][19] == '=')
                     mSettings.templateLocation = argv[i] + 20;
                 else if ((i+1) < argc && argv[i+1][0] != '-') {
+                    printMessage("'--template-location <template>' is deprecated and will be removed in 2.13 - please use '--template-location=<template>' instead");
                     ++i;
                     mSettings.templateLocation = argv[i];
                 } else {
@@ -1106,6 +1118,8 @@ void CmdLineParser::printHelp()
         "                         The default choice is 'normal'.\n"
         "    --check-library      Show information messages when library files have\n"
         "                         incomplete info.\n"
+        "    --checkers-report=<file>\n"
+        "                         Write a report of all the active checkers to the given file.\n"
         "    --clang=<path>       Experimental: Use Clang parser instead of the builtin Cppcheck\n"
         "                         parser. Takes the executable as optional parameter and\n"
         "                         defaults to `clang`. Cppcheck will run the given Clang\n"
@@ -1268,6 +1282,7 @@ void CmdLineParser::printHelp()
                   << "                          * cert-c-2016       Cert C 2016 checking\n"
                   << "                          * cert-c++-2016     Cert C++ 2016 checking (partial)\n"
                   << "                          * misra-c-2012      Misra C 2012\n"
+                  << "                          * misra-c-2023      Misra C 2023\n"
                   << "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
                   << "                         Other:\n"
                   << "                          * bughunting        Soundy analysis\n"
@@ -1287,6 +1302,7 @@ void CmdLineParser::printHelp()
         "                         the configuration cppcheck should check.\n"
         "                         For example: '--project-configuration=Release|Win32'\n"
         "    -q, --quiet          Do not show progress reports.\n"
+        "                         Note that this option is not mutually exclusive with --verbose.\n"
         "    -rp=<paths>, --relative-paths=<paths>\n"
         "                         Use relative paths in output. When given, <paths> are\n"
         "                         used as base. You can separate multiple paths by ';'.\n"
@@ -1295,7 +1311,7 @@ void CmdLineParser::printHelp()
         "                         using e.g. ~ for home folder does not work. It is\n"
         "                         currently only possible to apply the base paths to\n"
         "                         files that are on a lower level in the directory tree.\n"
-        "    --report-progress    Report progress messages while checking a file.\n"
+        "    --report-progress    Report progress messages while checking a file (single job only).\n"
 #ifdef HAVE_RULES
     "    --rule=<rule>        Match regular expression.\n"
     "    --rule-file=<file>   Use given rule file. For more information, see:\n"
@@ -1371,6 +1387,7 @@ void CmdLineParser::printHelp()
     "                         hide certain #ifdef <ID> code paths from checking.\n"
     "                         Example: '-UDEBUG'\n"
     "    -v, --verbose        Output more detailed error information.\n"
+    "                         Note that this option is not mutually exclusive with --quiet.\n"
     "    --version            Print out version number.\n"
     "    --xml                Write results in xml format to error stream (stderr).\n"
     "\n"

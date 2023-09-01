@@ -20,13 +20,13 @@
 
 #include "errortypes.h"
 #include "options.h"
-#include "path.h"
 #include "redirect.h"
 
 #include <cstdio>
 #include <cctype>
 #include <exception>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 
@@ -79,10 +79,7 @@ std::size_t TestFixture::todos_counter = 0;
 std::size_t TestFixture::succeeded_todos_counter = 0;
 
 TestFixture::TestFixture(const char * const _name)
-    : mVerbose(false),
-    exename(),
-    quiet_tests(false),
-    classname(_name)
+    : classname(_name)
 {
     TestRegistry::theInstance().addTest(this);
 }
@@ -93,6 +90,8 @@ bool TestFixture::prepareTest(const char testname[])
     mVerbose = false;
     mTemplateFormat.clear();
     mTemplateLocation.clear();
+
+    prepareTestInternal();
 
     // Check if tests should be executed
     if (testToRun.empty() || testToRun == testname) {
@@ -380,6 +379,8 @@ void TestFixture::reportOut(const std::string & outmsg, Color /*c*/)
 
 void TestFixture::reportErr(const ErrorMessage &msg)
 {
+    if (msg.severity == Severity::none && msg.id == "logChecker")
+        return;
     const std::string errormessage(msg.toString(mVerbose, mTemplateFormat, mTemplateLocation));
     if (errout.str().find(errormessage) == std::string::npos)
         errout << errormessage << std::endl;
@@ -402,6 +403,8 @@ void TestFixture::setTemplateFormat(const std::string &templateFormat)
 }
 
 TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char lib[]) {
+    if (REDUNDANT_CHECK && std::find(settings.libraries.cbegin(), settings.libraries.cend(), lib) != settings.libraries.cend())
+        throw std::runtime_error("redundant setting: libraries (" + std::string(lib) + ")");
     // TODO: exename is not yet set
     LOAD_LIB_2_EXE(settings.library, lib, fixture.exename.c_str());
     // strip extension
@@ -417,6 +420,11 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::library(const char l
 TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(cppcheck::Platform::Type type)
 {
     const std::string platformStr = cppcheck::Platform::toString(type);
+
+    // TODO: the default platform differs between Windows and Linux
+    //if (REDUNDANT_CHECK && settings.platform.type == type)
+    //    throw std::runtime_error("redundant setting: platform (" + platformStr + ")");
+
     std::string errstr;
     // TODO: exename is not yet set
     if (!settings.platform.set(platformStr, errstr, {fixture.exename}))

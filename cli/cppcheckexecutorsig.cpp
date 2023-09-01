@@ -101,6 +101,7 @@ static const Signalmap_t listofsignals = {
  * but when ending up here something went terribly wrong anyway.
  * And all which is left is just printing some information and terminate.
  */
+// cppcheck-suppress constParameterCallback
 static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 {
     int type = -1;
@@ -119,7 +120,9 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
 
     const Signalmap_t::const_iterator it=listofsignals.find(signo);
     const char * const signame = (it==listofsignals.end()) ? "unknown" : it->second.c_str();
+#ifdef USE_UNIX_BACKTRACE_SUPPORT
     bool lowMem=false; // was low-memory condition detected? Be careful then! Avoid allocating much more memory then.
+#endif
     bool unexpectedSignal=true; // unexpected indicates program failure
     bool terminate=true; // exit process/thread
     const bool isAddressOnStack = IsAddressOnStack(info->si_addr);
@@ -135,7 +138,9 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
             " - out of memory or assertion?\n",
 #endif
             output);
+#ifdef USE_UNIX_BACKTRACE_SUPPORT
         lowMem=true;     // educated guess
+#endif
         break;
     case SIGBUS:
         fputs("Internal error: cppcheck received signal ", output);
@@ -296,7 +301,7 @@ int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(Cpp
 {
     // determine stack vs. heap
     char stackVariable;
-    char *heapVariable=(char*)malloc(1);
+    char *heapVariable=static_cast<char*>(malloc(1));
     bStackBelowHeap = &stackVariable < heapVariable;
     free(heapVariable);
 

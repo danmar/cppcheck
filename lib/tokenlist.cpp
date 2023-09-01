@@ -49,10 +49,7 @@ static const int AST_MAX_DEPTH = 150;
 
 
 TokenList::TokenList(const Settings* settings) :
-    mTokensFrontBack(),
-    mSettings(settings),
-    mIsC(false),
-    mIsCpp(false)
+    mSettings(settings)
 {
     mTokensFrontBack.list = this;
 }
@@ -333,10 +330,15 @@ bool TokenList::createTokens(std::istream &code, const std::string& file0)
 
 //---------------------------------------------------------------------------
 
+// NOLINTNEXTLINE(cppcoreguidelines-rvalue-reference-param-not-moved)
 void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 {
-    if (tokenList.cfront())
+    if (tokenList.cfront()) {
+        // this is a copy
+        // TODO: the same as TokenList.files - move that instead
+        // TODO: this points to mFiles when called from createTokens(std::istream &, const std::string&)
         mOrigFiles = mFiles = tokenList.cfront()->location.files;
+    }
     else
         mFiles.clear();
 
@@ -344,6 +346,7 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 
     for (const simplecpp::Token *tok = tokenList.cfront(); tok;) {
 
+        // TODO: move from TokenList
         std::string str = tok->str();
 
         // Float literal
@@ -382,9 +385,9 @@ std::size_t TokenList::calculateHash() const
 {
     std::string hashData;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        hashData += MathLib::toString(tok->flags());
-        hashData += MathLib::toString(tok->varId());
-        hashData += MathLib::toString(tok->tokType());
+        hashData += std::to_string(tok->flags());
+        hashData += std::to_string(tok->varId());
+        hashData += std::to_string(tok->tokType());
         hashData += tok->str();
         hashData += tok->originalName();
     }
@@ -396,14 +399,14 @@ std::size_t TokenList::calculateHash() const
 
 struct AST_state {
     std::stack<Token*> op;
-    int depth;
-    int inArrayAssignment;
+    int depth{};
+    int inArrayAssignment{};
     bool cpp;
-    int assign;
-    bool inCase; // true from case to :
-    bool stopAtColon; // help to properly parse ternary operators
-    const Token *functionCallEndPar;
-    explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
+    int assign{};
+    bool inCase{}; // true from case to :
+    bool stopAtColon{}; // help to properly parse ternary operators
+    const Token* functionCallEndPar{};
+    explicit AST_state(bool cpp) : cpp(cpp) {}
 };
 
 static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
@@ -909,7 +912,7 @@ static void compilePrecedence2(Token *&tok, AST_state& state)
             }
             compileBinOp(tok, state, compileScope);
         } else if (tok->str() == "[") {
-            if (state.cpp && isPrefixUnary(tok, state.cpp) && Token::Match(tok->link(), "] (|{|<")) { // Lambda
+            if (state.cpp && isPrefixUnary(tok, /*cpp*/ true) && Token::Match(tok->link(), "] (|{|<")) { // Lambda
                 // What we do here:
                 // - Nest the round bracket under the square bracket.
                 // - Nest what follows the lambda (if anything) with the lambda opening [

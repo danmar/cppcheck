@@ -16,14 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "helpers.h"
 #include "fixture.h"
-#include "settings.h"
 #include "utils.h"
 
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <memory>
+#include <sstream>
+#include <stdexcept>
 #include <string>
 
 class TestUtils : public TestFixture {
@@ -37,6 +38,7 @@ private:
         TEST_CASE(isStringLiteral);
         TEST_CASE(isCharLiteral);
         TEST_CASE(strToInt);
+        TEST_CASE(id_string);
     }
 
     void isValidGlobPattern() const {
@@ -329,6 +331,18 @@ private:
             std::string err;
             ASSERT(!::strToInt("18446744073709551616", tmp, &err)); // ULLONG_MAX + 1
             ASSERT_EQUALS("out of range (stoull)", err);
+        }
+    }
+
+    void id_string() const
+    {
+        ASSERT_EQUALS("0", id_string_i(0));
+        ASSERT_EQUALS("f1", id_string_i(0xF1));
+        ASSERT_EQUALS("123", id_string_i(0x123));
+        ASSERT_EQUALS("1230", id_string_i(0x1230));
+        ASSERT_EQUALS(std::string(8,'f'), id_string_i(0xffffffffU));
+        if (sizeof(void*) == 8) {
+            ASSERT_EQUALS(std::string(16,'f'), id_string_i(~0ULL));
         }
     }
 };

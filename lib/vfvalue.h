@@ -43,28 +43,11 @@ namespace ValueFlow
         using ErrorPath = std::list<ErrorPathItem>;
         enum class Bound { Upper, Lower, Point };
 
-        explicit Value(long long val = 0, Bound b = Bound::Point)
-            : valueType(ValueType::INT),
+        explicit Value(long long val = 0, Bound b = Bound::Point) :
             bound(b),
             intvalue(val),
-            tokvalue(nullptr),
-            floatValue(0.0),
             varvalue(val),
-            condition(nullptr),
-            varId(0U),
-            safe(false),
-            conditional(false),
-            macro(false),
-            defaultArg(false),
-            indirect(0),
-            moveKind(MoveKind::NonMovedVariable),
-            path(0),
-            wideintvalue(val),
-            subexpressions(),
-            capturetok(nullptr),
-            lifetimeKind(LifetimeKind::Object),
-            lifetimeScope(LifetimeScope::Local),
-            valueKind(ValueKind::Possible)
+            wideintvalue(val)
         {}
         Value(const Token* c, long long val, Bound b = Bound::Point);
 
@@ -220,7 +203,7 @@ namespace ValueFlow
             ITERATOR_START,
             ITERATOR_END,
             SYMBOLIC
-        } valueType;
+        } valueType = ValueType::INT;
         bool isIntValue() const {
             return valueType == ValueType::INT;
         }
@@ -275,57 +258,57 @@ namespace ValueFlow
         }
 
         /** The value bound  */
-        Bound bound;
+        Bound bound = Bound::Point;
 
         /** int value (or sometimes bool value?) */
-        long long intvalue;
+        long long intvalue{};
 
         /** token value - the token that has the value. this is used for pointer aliases, strings, etc. */
-        const Token *tokvalue;
+        const Token* tokvalue{};
 
         /** float value */
-        double floatValue;
+        double floatValue{};
 
         /** For calculated values - variable value that calculated value depends on */
-        long long varvalue;
+        long long varvalue{};
 
         /** Condition that this value depends on */
-        const Token *condition;
+        const Token* condition{};
 
         ErrorPath errorPath;
 
         ErrorPath debugPath;
 
         /** For calculated values - varId that calculated value depends on */
-        nonneg int varId;
+        nonneg int varId{};
 
         /** value relies on safe checking */
-        bool safe;
+        bool safe{};
 
         /** Conditional value */
-        bool conditional;
+        bool conditional{};
 
         /** Value is is from an expanded macro */
-        bool macro;
+        bool macro{};
 
         /** Is this value passed as default parameter to the function? */
-        bool defaultArg;
+        bool defaultArg{};
 
-        int indirect;
+        int indirect{};
 
         /** kind of moved  */
-        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
+        enum class MoveKind { NonMovedVariable, MovedVariable, ForwardedVariable } moveKind = MoveKind::NonMovedVariable;
 
         /** Path id */
-        MathLib::bigint path;
+        MathLib::bigint path{};
 
         /** int value before implicit truncation */
-        long long wideintvalue;
+        long long wideintvalue{};
 
         std::vector<std::string> subexpressions;
 
         // Set to where a lifetime is captured by value
-        const Token* capturetok;
+        const Token* capturetok{};
 
         enum class LifetimeKind {
             // Pointer points to a member of lifetime
@@ -338,9 +321,9 @@ namespace ValueFlow
             Iterator,
             // A pointer that holds the address of the lifetime
             Address
-        } lifetimeKind;
+        } lifetimeKind = LifetimeKind::Object;
 
-        enum class LifetimeScope { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope;
+        enum class LifetimeScope { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope = LifetimeScope::Local;
 
         static const char* toString(MoveKind moveKind);
         static const char* toString(LifetimeKind lifetimeKind);
@@ -357,7 +340,7 @@ namespace ValueFlow
             Inconclusive,
             /** Listed values are impossible */
             Impossible
-        } valueKind;
+        } valueKind = ValueKind::Possible;
 
         void setKnown() {
             valueKind = ValueKind::Known;

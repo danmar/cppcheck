@@ -26,7 +26,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -291,6 +290,8 @@ private:
         TEST_CASE(checkOverlappingWrite);
 
         TEST_CASE(constVariableArrayMember); // #10371
+
+        TEST_CASE(knownPointerToBool);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -318,7 +319,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
         // Check..
-        runChecks<CheckOther>(&tokenizer, settings, this);
+        runChecks<CheckOther>(tokenizer, this);
 
         (void)runSimpleChecks; // TODO Remove this
     }
@@ -359,7 +360,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check..
-        runChecks<CheckOther>(&tokenizer, settings, this);
+        runChecks<CheckOther>(tokenizer, this);
     }
 
     void checkInterlockedDecrement(const char code[]) {
@@ -1656,6 +1657,16 @@ private:
               "    printf(\"%d: %s\\n\", err, msg);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("char* g(char* dst, const char* src);\n"
+              "void f(int err, const char* src) {\n"
+              "    const char* msg = \"Success\";\n"
+              "    char buf[42];\n"
+              "    if (err != 0)\n"
+              "        g(buf, src);\n"
+              "    printf(\"%d: %s\\n\", err, msg);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'buf' can be reduced.\n", errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
@@ -3011,7 +3022,10 @@ private:
               "void ah();\n"
               "void an();\n"
               "void h();");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:131]: (style) Variable 'tm' can be declared as pointer to const\n"
+                      "[test.cpp:136]: (style) Variable 'af' can be declared as pointer to const\n"
+                      "[test.cpp:137]: (style) Variable 'ag' can be declared as pointer to const\n",
+                      errout.str());
 
         check("class C\n"
               "{\n"
@@ -3783,6 +3797,22 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 's' can be declared as pointer to const\n",
                       errout.str());
+
+        check("size_t f(char* p) {\n" // #11842
+              "    return strlen(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
+
+        check("void f(int* p) {\n" // #11862
+              "    long long j = *(p++);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void f(void *p, size_t nmemb, size_t size, int (*cmp)(const void *, const void *)) {\n"
+              "    qsort(p, nmemb, size, cmp);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -5625,6 +5655,12 @@ private:
                       "[test.cpp:6]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n"
                       "[test.cpp:9]: (style) Instance of 'std::scoped_lock' object is destroyed immediately.\n",
                       errout.str());
+
+        check("struct S { int i; };\n"
+              "namespace {\n"
+              "    S s() { return ::S{42}; }\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testMisusedScopeObjectAssignment() { // #11371
@@ -8111,7 +8147,7 @@ private:
               "void packed_object_info(struct object_info *oi) {\n"
               "  if (*oi->typep < 0);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'oi' can be declared as pointer to const\n", errout.str());
     }
 
     void checkSuspiciousSemicolon1() {
@@ -10876,6 +10912,14 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Argument '(int)((x&0x01)>>7)' to function g is always 0. It does not matter what value 'x' has.\n", errout.str());
 
+        check("void g(int, int);\n"
+              "void f(int x) {\n"
+              "   g(x, (x & 0x01) >> 7);\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:3]: (style) Argument '(x&0x01)>>7' to function g is always 0. It does not matter what value 'x' has.\n",
+            errout.str());
+
         check("void g(int);\n"
               "void f(int x) {\n"
               "    g(0);\n"
@@ -11262,6 +11306,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("_Bool a[10];\n" // #10350
+              "void foo() {\n"
+              "    memcpy(&a[5], &a[4], 2u * sizeof(a[0]));\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in memcpy() is undefined behavior\n", errout.str());
+
         // wmemcpy
         check("void foo() {\n"
               "    wchar_t a[10];\n"
@@ -11296,6 +11346,79 @@ private:
               "    int m_Arr[1];\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void knownPointerToBool()
+    {
+        check("void g(bool);\n"
+              "void f() {\n"
+              "    int i = 5;\n"
+              "    int* p = &i;\n"
+              "    g(p);\n"
+              "    g(&i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Pointer expression 'p' converted to bool is always true.\n"
+                      "[test.cpp:6]: (style) Pointer expression '&i' converted to bool is always true.\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    const int* x = nullptr;\n"
+              "    std::empty(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    const int* x = nullptr;\n"
+              "    std::empty(const_cast<int*>(x));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { bool x; };\n"
+              "bool f(A* a) {\n"
+              "    if (a) {\n"
+              "        return a->x;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int* x; };\n"
+              "bool f(A a) {\n"
+              "    if (a.x) {\n"
+              "        return a.x;\n"
+              "    }\n"
+              "    return false;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'a.x' converted to bool is always true.\n", errout.str());
+
+        check("void f(bool* b) { if (b) *b = true; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+              "    int* x = nullptr;\n"
+              "    return bool(x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
+
+        check("bool f() {\n"
+              "    int* x = nullptr;\n"
+              "    return bool{x};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
+
+        check("struct A { A(bool); };\n"
+              "A f() {\n"
+              "    int* x = nullptr;\n"
+              "    return A(x);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
+
+        check("struct A { A(bool); };\n"
+              "A f() {\n"
+              "    int* x = nullptr;\n"
+              "    return A{x};\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
     }
 };
 

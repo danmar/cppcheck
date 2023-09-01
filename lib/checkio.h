@@ -24,6 +24,7 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
+#include "tokenize.h"
 
 #include <ostream>
 #include <string>
@@ -31,7 +32,6 @@
 class Function;
 class Settings;
 class Token;
-class Tokenizer;
 class Variable;
 class ErrorLogger;
 
@@ -49,8 +49,8 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckIO checkIO(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckIO checkIO(&tokenizer, tokenizer.getSettings(), errorLogger);
 
         checkIO.checkWrongPrintfScanfArguments();
         checkIO.checkCoutCerrMisusage();
@@ -86,14 +86,14 @@ private:
         bool isStdContainer(const Token *tok);
         bool isLibraryType(const Settings *settings) const;
 
-        const Variable *variableInfo;
-        const Token *typeToken;
-        const Function *functionInfo;
-        Token *tempToken;
-        bool element;
-        bool _template;
-        bool address;
-        bool isCPP;
+        const Variable* variableInfo{};
+        const Token* typeToken{};
+        const Function* functionInfo{};
+        Token* tempToken{};
+        bool element{};
+        bool _template{};
+        bool address{};
+        bool isCPP{};
     };
 
     void checkFormatString(const Token * const tok,

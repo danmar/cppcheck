@@ -181,11 +181,18 @@ public:
     static std::string stripDirectoryPart(const std::string &file);
 
     /**
-     * @brief Checks if a File exists
-     * @param file Path to be checked if it is a File
-     * @return true if given path is a File
+     * @brief Checks if given path is a file
+     * @param path Path to be checked
+     * @return true if given path is a file
      */
-    static bool fileExists(const std::string &file);
+    static bool isFile(const std::string &path);
+
+    /**
+     * @brief Checks if a given path is a directory
+     * @param path Path to be checked
+     * @return true if given path is a directory
+     */
+    static bool isDirectory(const std::string &path);
 
     /**
      * join 2 paths with '/' separators

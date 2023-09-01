@@ -16,6 +16,7 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/checkbufferoverrun.h \
            $${PWD}/checkclass.h \
            $${PWD}/checkcondition.h \
+           $${PWD}/checkersreport.h \
            $${PWD}/checkexceptionsafety.h \
            $${PWD}/checkfunctions.h \
            $${PWD}/checkinternal.h \
@@ -44,6 +45,7 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/fwdanalysis.h \
            $${PWD}/importproject.h \
            $${PWD}/infer.h \
+           $${PWD}/json.h \
            $${PWD}/keywords.h \
            $${PWD}/library.h \
            $${PWD}/mathlib.h \
@@ -84,6 +86,7 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/checkbufferoverrun.cpp \
            $${PWD}/checkclass.cpp \
            $${PWD}/checkcondition.cpp \
+           $${PWD}/checkersreport.cpp \
            $${PWD}/checkexceptionsafety.cpp \
            $${PWD}/checkfunctions.cpp \
            $${PWD}/checkinternal.cpp \

@@ -82,7 +82,7 @@ namespace CTU {
                 : callId(std::move(callId)), callArgNr(callArgNr), callFunctionName(std::move(callFunctionName)), location(std::move(loc))
             {}
             CallBase(const Tokenizer *tokenizer, const Token *callToken);
-            virtual ~CallBase() {}
+            virtual ~CallBase() = default;
             CallBase(const CallBase&) = default;
             std::string callId;
             int callArgNr{};

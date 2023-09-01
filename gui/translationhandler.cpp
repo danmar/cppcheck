@@ -42,8 +42,7 @@ static UNUSED void unused()
 
 TranslationHandler::TranslationHandler(QObject *parent) :
     QObject(parent),
-    mCurrentLanguage("en"),
-    mTranslator(nullptr)
+    mCurrentLanguage("en")
 {
     // Add our available languages
     // Keep this list sorted
@@ -62,9 +61,6 @@ TranslationHandler::TranslationHandler(QObject *parent) :
     addTranslation("Spanish", "cppcheck_es");
     addTranslation("Swedish", "cppcheck_sv");
 }
-
-TranslationHandler::~TranslationHandler()
-{}
 
 bool TranslationHandler::setLanguage(const QString &code)
 {

@@ -645,11 +645,11 @@ static void misra_10_1_ternary(void)
 
     a = ui16 << ui16; // 10.6
     a = ui16 << (get_bool(42) ? ui16 : ui16);
-    a = ui16 << (get_bool(42) ? ui16 : (get_bool(34) ? ui16 : ui16)); // 10.4
-    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : ui16); // 10.4
-    a = ui16 << (get_bool(42) ? i16 : (get_bool(34) ? ui16 : ui16)); // 10.1
+    a = ui16 << (get_bool(42) ? ui16 : (get_bool(34) ? ui16 : ui16));
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : ui16);
+    a = ui16 << (get_bool(42) ? i16 : (get_bool(34) ? ui16 : ui16)); // 10.1 10.4
     a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : i16) : ui16); // 10.1 10.4
-    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : i16); // 10.1
+    a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui16) : i16); // 10.1 10.4
     a = ui16 << (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8); // 10.4
     a = ui16 << (get_bool(42) ? (get_bool(34) ? i16 : ui8) : ui8); // 10.1 10.4
     a = (get_bool(42) ? (get_bool(34) ? ui16 : ui8) : ui8) << ui16; // 10.4
@@ -707,6 +707,14 @@ static void misra_10_4(u32 x, s32 y) {
   // #10499
   const char buf[10] = {0};
   if ('0' == buf[x]) // no-warning
+  {
+  }
+
+  const struct foo_s{
+    int t;
+    char buf[2];
+  } cmd = {0};
+  if ('\0' == cmd.buf[0]) //no-warning
   {
   }
 }
@@ -1171,7 +1179,7 @@ static void misra_14_2_fn1(bool b) {
     g += 2;
     i2 ^= 2; // 14.2
     if (i2 == 2) {
-      g += g_arr[i2];
+      g += g_arr[i2]; // cppcheck-suppress legacyUninitvar
     }
     misra_14_2_init_value(&i2); // TODO: Fix false negative in function call
   }
@@ -1713,6 +1721,7 @@ struct {
 } r18_7_struct; // 8.4
 struct {
   uint16_t len;
+  int (*array_param_func_ptr)(char const *argv[], int argc); // no-warning
   uint8_t data_1[ 19 ];
   uint8_t data_2[   ]; // 18.7
 } r18_7_struct; // 8.4

@@ -30,11 +30,9 @@ class QIODevice;
 
 class CppcheckLibraryData {
 public:
-    CppcheckLibraryData();
+    CppcheckLibraryData() = default;
 
     struct Container {
-        Container() : access_arrayLike(false), size_templateParameter(-1) {}
-
         QString id;
         QString inherits;
         QString startPattern;
@@ -42,8 +40,8 @@ public:
         QString opLessAllowed;
         QString itEndPattern;
 
-        bool access_arrayLike;
-        int size_templateParameter;
+        bool access_arrayLike{};
+        int size_templateParameter = -1;
 
         struct {
             QString templateParameter;
@@ -72,21 +70,17 @@ public:
     };
 
     struct Function {
-        Function() : noreturn(Unknown), gccPure(false), gccConst(false),
-            leakignore(false), useretval(false) {}
-
         QString comments;
         QString name;
-        enum TrueFalseUnknown { False, True, Unknown } noreturn;
-        bool gccPure;
-        bool gccConst;
-        bool leakignore;
-        bool useretval;
+        enum TrueFalseUnknown { False, True, Unknown } noreturn = Unknown;
+        bool gccPure{};
+        bool gccConst{};
+        bool leakignore{};
+        bool useretval{};
         struct ReturnValue {
-            ReturnValue() : container(-1) {}
             QString type;
             QString value;
-            int container;
+            int container = -1;
             bool empty() const {
                 return type.isNull() && value.isNull() && container < 0;
             }
@@ -96,19 +90,16 @@ public:
             QString secure;
         } formatstr;
         struct Arg {
-            Arg() : nr(0), notbool(false), notnull(false), notuninit(false),
-                formatstr(false), strz(false) {}
-
             QString name;
-            unsigned int nr;
+            unsigned int nr{};
             static const unsigned int ANY;
             static const unsigned int VARIADIC;
             QString defaultValue;
-            bool notbool;
-            bool notnull;
-            bool notuninit;
-            bool formatstr;
-            bool strz;
+            bool notbool{};
+            bool notnull{};
+            bool notuninit{};
+            bool formatstr{};
+            bool strz{};
             QString valid;
             struct MinSize {
                 QString type;
@@ -117,8 +108,7 @@ public:
             };
             QList<struct MinSize> minsizes;
             struct Iterator {
-                Iterator() : container(-1) {}
-                int container;
+                int container = -1;
                 QString type;
             } iterator;
         };
@@ -147,26 +137,15 @@ public:
     struct MemoryResource {
         QString type; // "memory" or "resource"
         struct Alloc {
-            Alloc() :
-                isRealloc(false),
-                init(false),
-                arg(-1),        // -1: Has no optional "arg" attribute
-                reallocArg(-1)  // -1: Has no optional "realloc-arg" attribute
-            {}
-
-            bool isRealloc;
-            bool init;
-            int arg;
-            int reallocArg;
+            bool isRealloc{};
+            bool init{};
+            int arg = -1; // -1: Has no optional "realloc-arg" attribute
+            int reallocArg = -1; // -1: Has no optional "arg" attribute
             QString bufferSize;
             QString name;
         };
         struct Dealloc {
-            Dealloc() :
-                arg(-1)        // -1: Has no optional "arg" attribute
-            {}
-
-            int arg;
+            int arg = -1; // -1: Has no optional "arg" attribute
             QString name;
         };
 
@@ -193,11 +172,7 @@ public:
 
     struct Reflection {
         struct Call {
-            Call() :
-                arg {-1}    // -1: Mandatory "arg" attribute not available
-            {}
-
-            int arg;
+            int arg = -1; // -1: Mandatory "arg" attribute not available
             QString name;
         };
 
@@ -206,12 +181,8 @@ public:
 
     struct Markup {
         struct CodeBlocks {
-            CodeBlocks() :
-                offset {-1}
-            {}
-
             QStringList blocks;
-            int offset;
+            int offset = -1;
             QString start;
             QString end;
         };
@@ -223,8 +194,8 @@ public:
         };
 
         QString ext;
-        bool afterCode;
-        bool reportErrors;
+        bool afterCode{};
+        bool reportErrors{};
         QStringList keywords;
         QStringList importer;
         QList<CodeBlocks> codeBlocks;
@@ -232,12 +203,8 @@ public:
     };
 
     struct SmartPointer {
-        SmartPointer() :
-            unique {false}
-        {}
-
         QString name;
-        bool unique;
+        bool unique{};
     };
 
     struct Entrypoint {

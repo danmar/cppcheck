@@ -29,9 +29,6 @@ TxtReport::TxtReport(const QString &filename) :
     Report(filename)
 {}
 
-TxtReport::~TxtReport()
-{}
-
 bool TxtReport::create()
 {
     if (Report::create()) {

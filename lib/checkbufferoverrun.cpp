@@ -119,7 +119,7 @@ static int getMinFormatStringOutputLength(const std::vector<const Token*> &param
                 i_d_x_f_found = true;
                 parameterLength = 1;
                 if (inputArgNr < parameters.size() && parameters[inputArgNr]->hasKnownIntValue())
-                    parameterLength = MathLib::toString(parameters[inputArgNr]->getKnownIntValue()).length();
+                    parameterLength = std::to_string(parameters[inputArgNr]->getKnownIntValue()).length();
 
                 handleNextParameter = true;
                 break;
@@ -280,6 +280,8 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
 
 void CheckBufferOverrun::arrayIndex()
 {
+    logChecker("CheckBufferOverrun::arrayIndex");
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "[")
             continue;
@@ -362,7 +364,7 @@ void CheckBufferOverrun::arrayIndex()
 static std::string stringifyIndexes(const std::string& array, const std::vector<ValueFlow::Value>& indexValues)
 {
     if (indexValues.size() == 1)
-        return MathLib::toString(indexValues[0].intvalue);
+        return std::to_string(indexValues[0].intvalue);
 
     std::ostringstream ret;
     ret << array;
@@ -383,7 +385,7 @@ static std::string arrayIndexMessage(const Token* tok,
                                      const Token* condition)
 {
     auto add_dim = [](const std::string &s, const Dimension &dim) {
-        return s + "[" + MathLib::toString(dim.num) + "]";
+        return s + "[" + std::to_string(dim.num) + "]";
     };
     const std::string array = std::accumulate(dimensions.cbegin(), dimensions.cend(), tok->astOperand1()->expressionString(), add_dim);
 
@@ -461,6 +463,8 @@ void CheckBufferOverrun::pointerArithmetic()
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
 
+    logChecker("CheckBufferOverrun::pointerArithmetic"); // portability
+
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "+|-"))
             continue;
@@ -528,7 +532,7 @@ void CheckBufferOverrun::pointerArithmeticError(const Token *tok, const Token *i
 
     std::string errmsg;
     if (indexValue->condition)
-        errmsg = "Undefined behaviour, when '" + indexToken->expressionString() + "' is " + MathLib::toString(indexValue->intvalue) + " the pointer arithmetic '" + tok->expressionString() + "' is out of bounds.";
+        errmsg = "Undefined behaviour, when '" + indexToken->expressionString() + "' is " + std::to_string(indexValue->intvalue) + " the pointer arithmetic '" + tok->expressionString() + "' is out of bounds.";
     else
         errmsg = "Undefined behaviour, pointer arithmetic '" + tok->expressionString() + "' is out of bounds.";
 
@@ -626,6 +630,8 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
 
 void CheckBufferOverrun::bufferOverflow()
 {
+    logChecker("CheckBufferOverrun::bufferOverflow");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -691,6 +697,8 @@ void CheckBufferOverrun::arrayIndexThenCheck()
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
 
+    logChecker("CheckBufferOverrun::arrayIndexThenCheck");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -746,6 +754,9 @@ void CheckBufferOverrun::stringNotZeroTerminated()
     // this is currently 'inconclusive'. See TestBufferOverrun::terminateStrncpy3
     if (!mSettings->severity.isEnabled(Severity::warning) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
+
+    logChecker("CheckBufferOverrun::stringNotZeroTerminated"); // warning,inconclusive
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -809,6 +820,8 @@ void CheckBufferOverrun::argumentSize()
     // Check '%type% x[10]' arguments
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckBufferOverrun::argumentSize"); // warning
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
@@ -957,6 +970,10 @@ bool CheckBufferOverrun::analyseWholeProgram(const CTU::FileInfo *ctu, const std
     bool foundErrors = false;
     (void)settings; // This argument is unused
 
+    CheckBufferOverrun dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckBufferOverrun::analyseWholeProgram");
+
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 
     for (const Check::FileInfo* fi1 : fileInfo) {
@@ -992,13 +1009,13 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
     if (type == 1) {
         errorId = "ctuArrayIndex";
         if (unsafeUsage.value > 0)
-            errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue) + " and it is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
+            errmsg = "Array index out of bounds; '" + unsafeUsage.myArgumentName + "' buffer size is " + std::to_string(functionCall->callArgValue) + " and it is accessed at offset " + std::to_string(unsafeUsage.value) + ".";
         else
-            errmsg = "Array index out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + MathLib::toString(unsafeUsage.value) + ".";
+            errmsg = "Array index out of bounds; buffer '" + unsafeUsage.myArgumentName + "' is accessed at offset " + std::to_string(unsafeUsage.value) + ".";
         cwe = (unsafeUsage.value > 0) ? CWE_BUFFER_OVERRUN : CWE_BUFFER_UNDERRUN;
     } else {
         errorId = "ctuPointerArith";
-        errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + MathLib::toString(functionCall->callArgValue);
+        errmsg = "Pointer arithmetic overflow; '" + unsafeUsage.myArgumentName + "' buffer size is " + std::to_string(functionCall->callArgValue);
         cwe = CWE_POINTER_ARITHMETIC_OVERFLOW;
     }
 
@@ -1015,6 +1032,7 @@ bool CheckBufferOverrun::analyseWholeProgram1(const std::map<std::string, std::l
 
 void CheckBufferOverrun::objectIndex()
 {
+    logChecker("CheckBufferOverrun::objectIndex");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
@@ -1122,6 +1140,7 @@ static bool isVLAIndex(const Token* tok)
 
 void CheckBufferOverrun::negativeArraySize()
 {
+    logChecker("CheckBufferOverrun::negativeArraySize");
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || !var->isArray())

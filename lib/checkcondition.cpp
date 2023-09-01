@@ -60,7 +60,7 @@ bool CheckCondition::diag(const Token* tok, bool insert)
         return false;
     const Token* parent = tok->astParent();
     bool hasParent = false;
-    while (Token::Match(parent, "&&|%oror%")) {
+    while (Token::Match(parent, "!|&&|%oror%")) {
         if (mCondDiags.count(parent) != 0) {
             hasParent = true;
             break;
@@ -88,6 +88,8 @@ void CheckCondition::assignIf()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckCondition::assignIf"); // style
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() != "=")
@@ -290,10 +292,23 @@ static bool inBooleanFunction(const Token *tok)
     return false;
 }
 
+static bool isOperandExpanded(const Token *tok)
+{
+    if (tok->isExpandedMacro() || tok->isEnumerator())
+        return true;
+    if (tok->astOperand1() && isOperandExpanded(tok->astOperand1()))
+        return true;
+    if (tok->astOperand2() && isOperandExpanded(tok->astOperand2()))
+        return true;
+    return false;
+}
+
 void CheckCondition::checkBadBitmaskCheck()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckCondition::checkBadBitmaskCheck"); // style
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->str() == "|" && tok->astOperand1() && tok->astOperand2() && tok->astParent()) {
@@ -320,9 +335,6 @@ void CheckCondition::checkBadBitmaskCheck()
             if (!isZero1 && !isZero2)
                 continue;
 
-            auto isOperandExpanded = [](const Token *op) {
-                return op->isExpandedMacro() || op->isEnumerator();
-            };
             if (!tok->isExpandedMacro() &&
                 !(isZero1 && isOperandExpanded(tok->astOperand1())) &&
                 !(isZero2 && isOperandExpanded(tok->astOperand2())))
@@ -343,6 +355,8 @@ void CheckCondition::comparison()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckCondition::comparison"); // style
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!tok->isComparisonOp())
@@ -402,6 +416,8 @@ void CheckCondition::comparison()
 
 void CheckCondition::comparisonError(const Token *tok, const std::string &bitop, MathLib::bigint value1, const std::string &op, MathLib::bigint value2, bool result)
 {
+    if (tok && (diag(tok) | diag(tok->astParent())))
+        return;
     std::ostringstream expression;
     expression << std::hex << "(X " << bitop << " 0x" << value1 << ") " << op << " 0x" << value2;
 
@@ -460,6 +476,8 @@ void CheckCondition::duplicateCondition()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckCondition::duplicateCondition"); // style
+
     const SymbolDatabase *const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
@@ -508,6 +526,8 @@ void CheckCondition::multiCondition()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckCondition::multiCondition"); // style
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -594,6 +614,8 @@ void CheckCondition::multiCondition2()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckCondition::multiCondition2"); // warning
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -981,7 +1003,7 @@ T getvalue3(const T value1, const T value2)
 template<>
 double getvalue3(const double value1, const double value2)
 {
-    return (value1 + value2) / 2.0f;
+    return (value1 + value2) / 2.0;
 }
 
 
@@ -1031,7 +1053,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
             return false;
         op = invertOperatorForOperandSwap(comp->str());
         if (op1->enumerator() && op1->enumerator()->value_known)
-            value = MathLib::toString(op1->enumerator()->value);
+            value = std::to_string(op1->enumerator()->value);
         else
             value = op1->str();
         expr = op2;
@@ -1040,7 +1062,7 @@ static bool parseComparison(const Token *comp, bool &not1, std::string &op, std:
             return false;
         op = comp->str();
         if (op2->enumerator() && op2->enumerator()->value_known)
-            value = MathLib::toString(op2->enumerator()->value);
+            value = std::to_string(op2->enumerator()->value);
         else
             value = op2->str();
         expr = op1;
@@ -1103,6 +1125,8 @@ void CheckCondition::checkIncorrectLogicOperator()
     if (!printWarning && !printStyle)
         return;
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
+
+    logChecker("CheckCondition::checkIncorrectLogicOperator"); // style,warning
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -1337,6 +1361,8 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckCondition::checkModuloAlwaysTrueFalse"); // warning
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -1362,6 +1388,8 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
 
 void CheckCondition::moduloAlwaysTrueFalseError(const Token* tok, const std::string& maxVal)
 {
+    if (diag(tok))
+        return;
     reportError(tok, Severity::warning, "moduloAlwaysTrueFalse",
                 "Comparison of modulo result is predetermined, because it is always less than " + maxVal + ".", CWE398, Certainty::normal);
 }
@@ -1390,6 +1418,8 @@ void CheckCondition::clarifyCondition()
         return;
 
     const bool isC = mTokenizer->isC();
+
+    logChecker("CheckCondition::clarifyCondition"); // style
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -1453,11 +1483,17 @@ void CheckCondition::alwaysTrueFalse()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckCondition::alwaysTrueFalse"); // style
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
+            // don't write false positives when templates are used or inside of asserts or non-evaluated contexts
+            if (tok->link() && (Token::simpleMatch(tok, "<") ||
+                                Token::Match(tok->previous(), "static_assert|assert|ASSERT|sizeof|decltype ("))) {
+                tok = tok->link();
                 continue;
+            }
             if (!tok->hasKnownIntValue())
                 continue;
             if (Token::Match(tok->previous(), "%name% (") && tok->previous()->function()) {
@@ -1482,6 +1518,8 @@ void CheckCondition::alwaysTrueFalse()
                 else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
                          Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astParent()->astParent()->previous();
+                else if (Token::Match(tok, "%comp%"))
+                    condition = tok;
                 else
                     continue;
             }
@@ -1579,7 +1617,7 @@ void CheckCondition::alwaysTrueFalse()
 
 void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value)
 {
-    const bool alwaysTrue = value && (value->intvalue != 0);
+    const bool alwaysTrue = value && (value->intvalue != 0 || value->isImpossible());
     const std::string expr = tok ? tok->expressionString() : std::string("x");
     const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return value" : "Condition");
     const std::string errmsg = conditionStr + " '" + expr + "' is always " + (alwaysTrue ? "true" : "false");
@@ -1608,6 +1646,8 @@ void CheckCondition::checkInvalidTestForOverflow()
 
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckCondition::checkInvalidTestForOverflow"); // warning
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "<|<=|>=|>") || !tok->isBinaryOp())
@@ -1698,6 +1738,8 @@ void CheckCondition::checkPointerAdditionResultNotNull()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckCondition::checkPointerAdditionResultNotNull"); // warning
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
 
@@ -1742,6 +1784,8 @@ void CheckCondition::checkDuplicateConditionalAssign()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckCondition::checkDuplicateConditionalAssign"); // style
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
@@ -1820,6 +1864,8 @@ void CheckCondition::checkAssignmentInCondition()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckCondition::checkAssignmentInCondition"); // style
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -1868,6 +1914,8 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
     if (mSettings->platform.type == cppcheck::Platform::Type::Native ||
         mSettings->platform.type == cppcheck::Platform::Type::Unspecified)
         return;
+
+    logChecker("CheckCondition::checkCompareValueOutOfTypeRange"); // style,platform
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {

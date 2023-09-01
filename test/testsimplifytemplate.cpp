@@ -38,7 +38,7 @@ public:
 
 private:
     // If there are unused templates, keep those
-    const Settings settings = settingsBuilder().severity(Severity::portability).checkUnusedTemplates().build();
+    const Settings settings = settingsBuilder().severity(Severity::portability).build();
 
     void run() override {
         TEST_CASE(template1);

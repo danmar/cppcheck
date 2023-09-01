@@ -193,7 +193,7 @@ public slots:
     /** @brief Slot for showing the library editor */
     void showLibraryEditor();
 
-protected slots:
+private slots:
 
     /** @brief Slot for checkthread's done signal */
     void analysisDone();
@@ -437,10 +437,10 @@ private:
     QString mCurrentDirectory;
 
     /** @brief Scratchpad. */
-    ScratchPad* mScratchPad;
+    ScratchPad* mScratchPad{};
 
     /** @brief Project (file). */
-    ProjectFile *mProjectFile;
+    ProjectFile* mProjectFile{};
 
     /** @brief Filter field in the Filter toolbar. */
     QLineEdit* mLineEditFilter;
@@ -462,10 +462,10 @@ private:
      * If this is true then the cppcheck is waiting for check threads to exit
      * so that the application can be closed.
      */
-    bool mExiting;
+    bool mExiting{};
 
     /** @brief Set to true in case of loading log file. */
-    bool mIsLogfileLoaded;
+    bool mIsLogfileLoaded{};
 
     /**
      * @brief Project MRU menu actions.

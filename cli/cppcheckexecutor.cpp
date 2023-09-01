@@ -19,6 +19,8 @@
 #include "cppcheckexecutor.h"
 
 #include "analyzerinfo.h"
+#include "checkers.h"
+#include "checkersreport.h"
 #include "cmdlineparser.h"
 #include "color.h"
 #include "config.h"
@@ -43,6 +45,7 @@
 #endif
 
 #include <algorithm>
+#include <cassert>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <functional>
@@ -66,12 +69,25 @@
 #include <windows.h>
 #endif
 
+class XMLErrorMessagesLogger : public ErrorLogger
+{
+    void reportOut(const std::string & outmsg, Color /*c*/ = Color::Reset) override
+    {
+        std::cout << outmsg << std::endl;
+    }
+
+    void reportErr(const ErrorMessage &msg) override
+    {
+        reportOut(msg.toXML());
+    }
+
+    void reportProgress(const std::string & /*filename*/, const char /*stage*/[], const std::size_t /*value*/) override
+    {}
+};
+
+// TODO: do not directly write to stdout
 
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
-
-CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
-{}
 
 CppCheckExecutor::~CppCheckExecutor()
 {
@@ -98,9 +114,9 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
         }
 
         if (parser.getShowErrorMessages()) {
-            mShowAllErrors = true;
+            XMLErrorMessagesLogger xmlLogger;
             std::cout << ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName);
-            CppCheck::getErrorMessages(*this);
+            CppCheck::getErrorMessages(xmlLogger);
             std::cout << ErrorMessage::getXMLFooter() << std::endl;
         }
 
@@ -123,7 +139,7 @@ bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* c
              iter != settings.includePaths.end();
              ) {
             const std::string path(Path::toNativeSeparators(*iter));
-            if (FileLister::isDirectory(path))
+            if (Path::isDirectory(path))
                 ++iter;
             else {
                 // If the include path is not found, warn user and remove the non-existing path from the list.
@@ -247,11 +263,11 @@ bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedF
     bool err = false;
     if (settings.useSingleJob()) {
         for (std::map<std::string, std::size_t>::const_iterator i = files.cbegin(); i != files.cend(); ++i) {
-            err |= errorLogger.reportUnmatchedSuppressions(
-                settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled));
+            err |= Suppressions::reportUnmatchedSuppressions(
+                settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled), errorLogger);
         }
     }
-    err |= errorLogger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled));
+    err |= Suppressions::reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled), errorLogger);
     return err;
 }
 
@@ -262,7 +278,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
 
-    if (settings.reportProgress)
+    if (settings.reportProgress >= 0)
         mLatestProgressOutputTime = std::time(nullptr);
 
     if (!settings.outputFile.empty()) {
@@ -282,16 +298,19 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         AnalyzerInformation::writeFilesTxt(settings.buildDir, fileNames, settings.userDefines, settings.project.fileSettings);
     }
 
+    if (!settings.checkersReportFilename.empty())
+        std::remove(settings.checkersReportFilename.c_str());
+
     unsigned int returnValue = 0;
     if (settings.useSingleJob()) {
         // Single process
-        SingleExecutor executor(cppcheck, mFiles, settings, *this);
+        SingleExecutor executor(cppcheck, mFiles, settings, settings.nomsg, *this);
         returnValue = executor.check();
     } else {
 #if defined(THREADING_MODEL_THREAD)
-        ThreadExecutor executor(mFiles, settings, *this);
+        ThreadExecutor executor(mFiles, settings, settings.nomsg, *this);
 #elif defined(THREADING_MODEL_FORK)
-        ProcessExecutor executor(mFiles, settings, *this);
+        ProcessExecutor executor(mFiles, settings, settings.nomsg, *this);
 #endif
         returnValue = executor.check();
     }
@@ -312,28 +331,40 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         reportErr(ErrorMessage::getXMLFooter());
     }
 
+    writeCheckersReport(settings);
+
     if (returnValue)
         return settings.exitCode;
     return 0;
 }
 
-bool CppCheckExecutor::loadLibraries(Settings& settings)
+void CppCheckExecutor::writeCheckersReport(const Settings& settings) const
 {
-    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
+    CheckersReport checkersReport(settings, mActiveCheckers);
 
-    const auto failed_lib = std::find_if(settings.libraries.begin(), settings.libraries.end(), [&](const std::string& lib) {
-        return !tryLoadLibrary(settings.library, settings.exename, lib.c_str());
-    });
-    if (failed_lib != settings.libraries.end()) {
-        const std::string msg("Failed to load the library " + *failed_lib);
-        const std::list<ErrorMessage::FileLocation> callstack;
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
-        return false;
+    if (!settings.quiet) {
+        const int activeCheckers = checkersReport.getActiveCheckersCount();
+        const int totalCheckers = checkersReport.getAllCheckersCount();
+
+        const std::string extra = settings.verbose ? " (use --checkers-report=<filename> to see details)" : "";
+        if (mCriticalErrors.empty())
+            std::cout << "Active checkers: " << activeCheckers << "/" << totalCheckers << extra << std::endl;
+        else
+            std::cout << "Active checkers: There was critical errors" << extra << std::endl;
     }
 
-    if (!std) {
-        const std::list<ErrorMessage::FileLocation> callstack;
+    if (settings.checkersReportFilename.empty())
+        return;
+
+    std::ofstream fout(settings.checkersReportFilename);
+    if (fout.is_open())
+        fout << checkersReport.getReport(mCriticalErrors);
+
+}
+
+bool CppCheckExecutor::loadLibraries(Settings& settings)
+{
+    if (!tryLoadLibrary(settings.library, settings.exename, "std.cfg")) {
         const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
@@ -345,12 +376,17 @@ bool CppCheckExecutor::loadLibraries(Settings& settings)
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
 #endif
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
-        reportErr(errmsg);
+        std::cout << msg << " " << details << std::endl;
         return false;
     }
 
-    return true;
+    bool result = true;
+    for (const auto& lib : settings.libraries) {
+        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
+            result = false;
+        }
+    }
+    return result;
 }
 
 #ifdef _WIN32
@@ -394,6 +430,7 @@ void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
         std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
+// TODO: remove filename parameter?
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
 {
     (void)filename;
@@ -401,9 +438,10 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
     if (!mLatestProgressOutputTime)
         return;
 
-    // Report progress messages every 10 seconds
+    // Report progress messages every x seconds
     const std::time_t currentTime = std::time(nullptr);
-    if (currentTime >= (mLatestProgressOutputTime + 10)) {
+    if (currentTime >= (mLatestProgressOutputTime + mSettings->reportProgress))
+    {
         mLatestProgressOutputTime = currentTime;
 
         // format a progress message
@@ -419,14 +457,23 @@ void CppCheckExecutor::reportProgress(const std::string &filename, const char st
 
 void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
-    if (mShowAllErrors) {
-        reportOut(msg.toXML());
+    assert(mSettings != nullptr);
+
+    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
+        const std::string& checker = msg.shortMessage();
+        mActiveCheckers.emplace(checker);
         return;
     }
 
     // Alert only about unique errors
     if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
         return;
+
+    if (ErrorLogger::isCriticalErrorId(msg.id) && mCriticalErrors.find(msg.id) == std::string::npos) {
+        if (!mCriticalErrors.empty())
+            mCriticalErrors += ", ";
+        mCriticalErrors += msg.id;
+    }
 
     if (mSettings->xml)
         reportErr(msg.toXML());
@@ -497,6 +544,12 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
 {
     output_.clear();
 
+#ifdef _WIN32
+    // Extra quoutes are needed in windows if filename has space
+    if (exe.find(" ") != std::string::npos)
+        exe = "\"" + exe + "\"";
+#endif
+
     std::string joinedArgs;
     for (const std::string &arg : args) {
         if (!joinedArgs.empty())
@@ -507,21 +560,34 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
             joinedArgs += arg;
     }
 
+    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
+
 #ifdef _WIN32
-    // Extra quoutes are needed in windows if filename has space
-    if (exe.find(" ") != std::string::npos)
-        exe = "\"" + exe + "\"";
-    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
-    std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd.c_str(), "r"), _pclose);
+    FILE* p = _popen(cmd.c_str(), "r");
 #else
-    const std::string cmd = exe + " " + joinedArgs + " " + redirect;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    FILE *p = popen(cmd.c_str(), "r");
 #endif
-    if (!pipe)
+    if (!p) {
+        // TODO: read errno
         return false;
+    }
     char buffer[1024];
-    while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
+    while (fgets(buffer, sizeof(buffer), p) != nullptr)
         output_ += buffer;
+
+#ifdef _WIN32
+    const int res = _pclose(p);
+#else
+    const int res = pclose(p);
+#endif
+    if (res == -1) { // error occured
+        // TODO: read errno
+        return false;
+    }
+    if (res != 0) { // process failed
+        // TODO: need to get error details
+        return false;
+    }
     return true;
 }
 

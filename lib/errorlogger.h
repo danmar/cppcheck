@@ -23,11 +23,11 @@
 
 #include "config.h"
 #include "errortypes.h"
-#include "suppressions.h"
 #include "color.h"
 
 #include <cstddef>
 #include <list>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -198,7 +198,7 @@ public:
         return mSymbolNames;
     }
 
-    Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
+    static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename);
 
 private:
     static std::string fixInvalidChars(const std::string& raw);
@@ -219,8 +219,8 @@ private:
  */
 class CPPCHECKLIB ErrorLogger {
 public:
-    ErrorLogger() {}
-    virtual ~ErrorLogger() {}
+    ErrorLogger() = default;
+    virtual ~ErrorLogger() = default;
 
     /**
      * Information about progress is directed here.
@@ -250,13 +250,6 @@ public:
         (void)value;
     }
 
-    /**
-     * Report unmatched suppressions
-     * @param unmatched list of unmatched suppressions (from Settings::Suppressions::getUnmatched(Local|Global)Suppressions)
-     * @return true is returned if errors are reported
-     */
-    bool reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched);
-
     static std::string callStackToString(const std::list<ErrorMessage::FileLocation> &callStack);
 
     /**
@@ -273,6 +266,13 @@ public:
                "</dict>\r\n"
                "</plist>";
     }
+
+    static bool isCriticalErrorId(const std::string& id) {
+        return mCriticalErrorIds.count(id) != 0;
+    }
+
+private:
+    static const std::set<std::string> mCriticalErrorIds;
 };
 
 /** Replace substring. Example replaceStr("1,NR,3", "NR", "2") => "1,2,3" */

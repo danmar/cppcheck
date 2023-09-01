@@ -39,7 +39,7 @@ void unreachableCode_error(void) // #11197
 }
 #endif
 
-int nullPointer_gethostbyname2_r(const char* name, int af, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+int nullPointer_gethostbyname2_r(const char* name, int af, struct hostent* ret, const char* buf, size_t buflen, struct hostent** result, const int* h_errnop)
 {
     // cppcheck-suppress nullPointer
     (void) gethostbyname2_r(NULL, af, ret, buf, buflen, result, h_errnop);
@@ -54,7 +54,7 @@ int nullPointer_gethostbyname2_r(const char* name, int af, struct hostent* ret, 
     return gethostbyname2_r(name, af, ret, buf, buflen, result, h_errnop);
 }
 
-int nullPointer_gethostbyname_r(const char* name, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+int nullPointer_gethostbyname_r(const char* name, struct hostent* ret, const char* buf, size_t buflen, struct hostent** result, const int* h_errnop)
 {
     // cppcheck-suppress nullPointer
     (void) gethostbyname_r(NULL, ret, buf, buflen, result, h_errnop);
@@ -70,7 +70,7 @@ int nullPointer_gethostbyname_r(const char* name, struct hostent* ret, char* buf
 }
 
 
-int nullPointer_gethostbyaddr_r(const void* addr, socklen_t len, int type, struct hostent* ret, char* buf, size_t buflen, struct hostent** result, int* h_errnop)
+int nullPointer_gethostbyaddr_r(const void* addr, socklen_t len, int type, struct hostent* ret, const char* buf, size_t buflen, struct hostent** result, const int* h_errnop)
 {
     // cppcheck-suppress nullPointer
     (void) gethostbyaddr_r(NULL, len, type, ret, buf, buflen, result, h_errnop);
@@ -109,7 +109,7 @@ int nullPointer_getopt_long_only(int argc, char* const* argv, const char* optstr
     return getopt_long_only(argc, argv, optstring, longopts, longindex);
 }
 
-int nullPointer_getservent_r(struct servent *restrict result_buf, char *restrict buf, size_t buflen, struct servent **restrict result)
+int nullPointer_getservent_r(struct servent *restrict result_buf, const char *restrict buf, size_t buflen, struct servent **restrict result)
 {
     // cppcheck-suppress nullPointer
     (void) getservent_r(NULL, buf, buflen, result);
@@ -122,7 +122,7 @@ int nullPointer_getservent_r(struct servent *restrict result_buf, char *restrict
 
 void *bufferAccessOutOfBounds_memrchr(const void *s, int c, size_t n)
 {
-    char buf[42]={0};
+    const char buf[42]={0};
     (void)memrchr(buf,c,42);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)memrchr(buf,c,43);
@@ -275,7 +275,7 @@ int no_resourceLeak_mkostemp_02(char *template, int flags)
     return mkostemp(template, flags);
 }
 
-void valid_code(int argInt1, va_list valist_arg, int * parg)
+void valid_code(int argInt1, va_list valist_arg, const int * parg)
 {
     char *p;
 
@@ -283,9 +283,9 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
     if (__builtin_expect_with_probability(argInt1 + 1, 2, 0.5)) {}
     if (__glibc_unlikely(argInt1 != 0)) {}
     if (__glibc_likely(parg != NULL)) {}
-    void *ax1 = __builtin_assume_aligned(parg, 16);
+    const void *ax1 = __builtin_assume_aligned(parg, 16);
     printf("%p", ax1);
-    void *ax2 = __builtin_assume_aligned(parg, 32, 8);
+    const void *ax2 = __builtin_assume_aligned(parg, 32, 8);
     printf("%p", ax2);
 
     p = (char *)malloc(10);
@@ -316,7 +316,7 @@ void valid_code(int argInt1, va_list valist_arg, int * parg)
 
     if (__alignof__(int) == 4) {}
 
-    void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    const void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     printf("%p", p_mmap);
     munmap(p_mmap, 1);
 
@@ -368,7 +368,7 @@ void memleak_xmalloc()
 
 void memleak_mmap()
 {
-    void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
+    const void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     printf("%p", p_mmap);
     // cppcheck-suppress memleak
 }
@@ -391,7 +391,7 @@ void bufferAccessOutOfBounds__builtin_memset(void)
 
 void bufferAccessOutOfBounds()
 {
-    char buf[2] = "a";
+    const char buf[2] = "a";
     // This is valid
     sethostname(buf, 2);
     // cppcheck-suppress bufferAccessOutOfBounds

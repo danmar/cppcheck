@@ -13,6 +13,8 @@ defaults:
   run:
     shell: cmd
 
+# TODO: choose/add a step to bail out on compiler warnings (maybe even the release build)
+
 jobs:
 
   build_qt:
@@ -126,6 +128,7 @@ jobs:
           python -m pip install pip --upgrade || exit /b !errorlevel!
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
+          python -m pip install pytest-timeout || exit /b !errorlevel!
 
       - name: Run CMake
         if: false # TODO: enable

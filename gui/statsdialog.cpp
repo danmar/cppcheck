@@ -71,10 +71,13 @@ static const QString CPPCHECK("cppcheck");
 
 StatsDialog::StatsDialog(QWidget *parent)
     : QDialog(parent),
-    mUI(new Ui::StatsDialog),
-    mStatistics(nullptr)
+    mUI(new Ui::StatsDialog)
 {
     mUI->setupUi(this);
+
+    QFont font("courier");
+    font.setStyleHint(QFont::Monospace);
+    mUI->mCheckersReport->setFont(font);
 
     setWindowFlags(Qt::Window);
 
@@ -367,12 +370,14 @@ void StatsDialog::copyToClipboard()
 void StatsDialog::setStatistics(const CheckStatistics *stats)
 {
     mStatistics = stats;
-    mUI->mLblErrors->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowErrors)));
-    mUI->mLblWarnings->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowWarnings)));
-    mUI->mLblStyle->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowStyle)));
-    mUI->mLblPortability->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowPortability)));
-    mUI->mLblPerformance->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowPerformance)));
-    mUI->mLblInformation->setText(QString("%1").arg(stats->getCount(CPPCHECK,ShowTypes::ShowInformation)));
+    mUI->mLblErrors->setText(QString::number(stats->getCount(CPPCHECK,ShowTypes::ShowErrors)));
+    mUI->mLblWarnings->setText(QString::number(stats->getCount(CPPCHECK,ShowTypes::ShowWarnings)));
+    mUI->mLblStyle->setText(QString::number(stats->getCount(CPPCHECK,ShowTypes::ShowStyle)));
+    mUI->mLblPortability->setText(QString::number(stats->getCount(CPPCHECK,ShowTypes::ShowPortability)));
+    mUI->mLblPerformance->setText(QString::number(stats->getCount(CPPCHECK,ShowTypes::ShowPerformance)));
+    mUI->mLblInformation->setText(QString::number(stats->getCount(CPPCHECK,ShowTypes::ShowInformation)));
+    mUI->mLblActiveCheckers->setText(QString::number(stats->getNumberOfActiveCheckers()));
+    mUI->mCheckersReport->setPlainText(stats->getCheckersReport());
 }
 
 #ifdef QT_CHARTS_LIB

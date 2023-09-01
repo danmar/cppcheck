@@ -30,9 +30,6 @@ CsvReport::CsvReport(const QString &filename) :
     Report(filename)
 {}
 
-CsvReport::~CsvReport()
-{}
-
 bool CsvReport::create()
 {
     if (Report::create()) {

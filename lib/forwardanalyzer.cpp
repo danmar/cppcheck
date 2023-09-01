@@ -51,15 +51,15 @@ struct ForwardTraversal {
     enum class Progress { Continue, Break, Skip };
     enum class Terminate { None, Bail, Inconclusive };
     ForwardTraversal(const ValuePtr<Analyzer>& analyzer, const Settings& settings)
-        : analyzer(analyzer), settings(settings), actions(Analyzer::Action::None), analyzeOnly(false), analyzeTerminate(false)
+        : analyzer(analyzer), settings(settings)
     {}
     ValuePtr<Analyzer> analyzer;
     const Settings& settings;
     Analyzer::Action actions;
-    bool analyzeOnly;
-    bool analyzeTerminate;
+    bool analyzeOnly{};
+    bool analyzeTerminate{};
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
-    std::vector<Token*> loopEnds = {};
+    std::vector<Token*> loopEnds;
 
     Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None) {
         if ((!analyzeOnly || analyzeTerminate) && t != Analyzer::Terminate::None)
@@ -143,7 +143,7 @@ struct ForwardTraversal {
             // Traverse the parameters of the function before escaping
             traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
-        } else if (isUnevaluated(tok)) {
+        } else if (isUnevaluated(tok->previous())) {
             if (out)
                 *out = tok->link();
             return Progress::Skip;
@@ -825,10 +825,6 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    static bool isUnevaluated(const Token* tok) {
-        return Token::Match(tok->previous(), "sizeof|decltype (");
-    }
-
     static bool isFunctionCall(const Token* tok)
     {
         if (!Token::simpleMatch(tok, "("))
@@ -839,7 +835,7 @@ struct ForwardTraversal {
             return false;
         if (Token::simpleMatch(tok->link(), ") {"))
             return false;
-        if (isUnevaluated(tok))
+        if (isUnevaluated(tok->previous()))
             return false;
         return Token::Match(tok->previous(), "%name%|)|]|>");
     }

@@ -23,7 +23,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
 
 class TestBool : public TestFixture {
@@ -88,7 +87,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check...
-        runChecks<CheckBool>(&tokenizer, &settings, this);
+        runChecks<CheckBool>(tokenizer, this);
     }
 
 

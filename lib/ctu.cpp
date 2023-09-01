@@ -59,7 +59,7 @@ int CTU::maxCtuDepth = 2;
 
 std::string CTU::getFunctionId(const Tokenizer *tokenizer, const Function *function)
 {
-    return tokenizer->list.file(function->tokenDef) + ':' + MathLib::toString(function->tokenDef->linenr()) + ':' + MathLib::toString(function->tokenDef->column());
+    return tokenizer->list.file(function->tokenDef) + ':' + std::to_string(function->tokenDef->linenr()) + ':' + std::to_string(function->tokenDef->column());
 }
 
 CTU::FileInfo::Location::Location(const Tokenizer *tokenizer, const Token *tok)
@@ -158,7 +158,6 @@ std::string CTU::toString(const std::list<CTU::FileInfo::UnsafeUsage> &unsafeUsa
 
 CTU::FileInfo::CallBase::CallBase(const Tokenizer *tokenizer, const Token *callToken)
     : callId(getFunctionId(tokenizer, callToken->function()))
-    , callArgNr(0)
     , callFunctionName(callToken->next()->astOperand1()->expressionString())
     , location(CTU::FileInfo::Location(tokenizer, callToken))
 {}
@@ -166,7 +165,6 @@ CTU::FileInfo::CallBase::CallBase(const Tokenizer *tokenizer, const Token *callT
 CTU::FileInfo::NestedCall::NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken)
     : CallBase(tokenizer, callToken)
     , myId(getFunctionId(tokenizer, myFunction))
-    , myArgNr(0)
 {}
 
 static std::string readAttrString(const tinyxml2::XMLElement *e, const char *attr, bool *error)
@@ -581,7 +579,7 @@ std::list<ErrorMessage::FileLocation> CTU::FileInfo::getErrorPath(InvalidValueTy
         }
 
         ErrorMessage::FileLocation fileLoc(path[index]->location.fileName, path[index]->location.lineNumber, path[index]->location.column);
-        fileLoc.setinfo("Calling function " + path[index]->callFunctionName + ", " + MathLib::toString(path[index]->callArgNr) + getOrdinalText(path[index]->callArgNr) + " argument is " + value1);
+        fileLoc.setinfo("Calling function " + path[index]->callFunctionName + ", " + std::to_string(path[index]->callArgNr) + getOrdinalText(path[index]->callArgNr) + " argument is " + value1);
         locationList.push_back(std::move(fileLoc));
     }
 

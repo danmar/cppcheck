@@ -195,6 +195,8 @@ void CheckLeakAutoVar::check()
     if (mSettings->clang)
         return;
 
+    logChecker("CheckLeakAutoVar::check"); // notclang
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Local variables that are known to be non-zero.

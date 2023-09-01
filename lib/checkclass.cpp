@@ -34,7 +34,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iterator>
 #include <utility>
@@ -131,6 +130,8 @@ void CheckClass::constructors()
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
     if (!printStyle && !printWarnings)
         return;
+
+    logChecker("CheckClass::checkConstructors"); // style,warning
 
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
@@ -339,6 +340,8 @@ void CheckClass::checkExplicitConstructors()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckClass::checkExplicitConstructors"); // style
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         // Do not perform check, if the class/struct has not any constructors
         if (scope->numConstructors == 0)
@@ -405,6 +408,8 @@ void CheckClass::copyconstructors()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckClass::checkCopyConstructors"); // warning
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         std::map<int, const Token*> allocatedVars;
@@ -1056,12 +1061,9 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 void CheckClass::noConstructorError(const Token *tok, const std::string &classname, bool isStruct)
 {
     // For performance reasons the constructor might be intentionally missing. Therefore this is not a "warning"
-    reportError(tok, Severity::style, "noConstructor",
-                "$symbol:" + classname + "\n" +
-                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not declare a constructor although it has private member variables which likely require initialization.\n"
-                "The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not declare a constructor "
-                "although it has private member variables. Member variables of builtin types are left "
-                "uninitialized when the class is instantiated. That may cause bugs or undefined behavior.", CWE398, Certainty::normal);
+    const std::string message {"The " + std::string(isStruct ? "struct" : "class") + " '$symbol' does not declare a constructor although it has private member variables which likely require initialization."};
+    const std::string verbose {message + " Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior."};
+    reportError(tok, Severity::style, "noConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
 void CheckClass::noExplicitConstructorError(const Token *tok, const std::string &classname, bool isStruct)
@@ -1082,14 +1084,16 @@ void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type
     if (derived)
         message += " Maybe it should be initialized directly in the class " + classname + "?";
     std::string id = std::string("uninit") + (derived ? "Derived" : "") + "MemberVar" + (isprivate ? "Private" : "");
-    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + "\n" + message, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    const std::string verbose {message + " Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior."};
+    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + '\n' + message + '\n' + verbose, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
 {
     const std::string message("Member variable '$symbol' is not initialized."); // report missing in-class initializer
+    const std::string verbose {message + " Member variables of native types, pointers, or references are left uninitialized when the class is instantiated. That may cause bugs or undefined behavior."};
     const std::string id = std::string("uninitMemberVarPrivate");
-    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + "\n" + message, CWE398, Certainty::normal);
+    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
 void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname)
@@ -1116,6 +1120,8 @@ void CheckClass::initializationListUsage()
 {
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
+
+    logChecker("CheckClass::initializationListUsage"); // performance
 
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         // Check every constructor
@@ -1257,6 +1263,8 @@ void CheckClass::privateFunctions()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckClass::privateFunctions"); // style
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // do not check borland classes with properties..
@@ -1327,6 +1335,7 @@ static const Scope* findFunctionOf(const Scope* scope)
 
 void CheckClass::checkMemset()
 {
+    logChecker("CheckClass::checkMemset");
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -1543,6 +1552,8 @@ void CheckClass::operatorEqRetRefThis()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckClass::operatorEqRetRefThis"); // style
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         for (std::list<Function>::const_iterator func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             if (func->type == Function::eOperatorEqual && func->hasBody()) {
@@ -1684,6 +1695,8 @@ void CheckClass::operatorEqToSelf()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckClass::operatorEqToSelf"); // warning
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         // skip classes with multiple inheritance
@@ -1883,6 +1896,8 @@ void CheckClass::virtualDestructor()
 
     std::list<const Function *> inconclusiveErrors;
 
+    logChecker("CheckClass::virtualDestructor");
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // Skip base classes (unless inconclusive)
@@ -2030,6 +2045,8 @@ void CheckClass::thisSubtraction()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckClass::thisSubtraction"); // warning
+
     const Token *tok = mTokenizer->tokens();
     for (;;) {
         tok = Token::findmatch(tok, "this - %name%");
@@ -2060,6 +2077,8 @@ void CheckClass::checkConst()
 
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckClass::checkConst"); // style,inconclusive
 
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
         for (const Function &func : scope->functionList) {
@@ -2611,6 +2630,8 @@ void CheckClass::initializerListOrder()
     if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
+    logChecker("CheckClass::initializerListOrder"); // style,inconclusive
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         // iterate through all member functions looking for constructors
@@ -2673,6 +2694,8 @@ void CheckClass::initializerListError(const Token *tok1, const Token *tok2, cons
 
 void CheckClass::checkSelfInitialization()
 {
+    logChecker("CheckClass::checkSelfInitialization");
+
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         const Function* function = scope->function;
         if (!function || !function->isConstructor())
@@ -2712,6 +2735,7 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+    logChecker("CheckClass::checkVirtualFunctionCallInConstructor"); // warning
     std::map<const Function *, std::list<const Token *>> virtualFunctionCallsMap;
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
         if (scope->function == nullptr || !scope->function->hasBody() ||
@@ -2847,7 +2871,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
     }
 
     reportError(errorPath, Severity::style, "virtualCallInConstructor",
-                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + MathLib::toString(lineNumber) + ". Dynamic binding is not used.", CWE(0U), Certainty::normal);
+                "Virtual function '" + funcname + "' is called from " + scopeFunctionTypeName + " '" + constructorName + "' at line " + std::to_string(lineNumber) + ". Dynamic binding is not used.", CWE(0U), Certainty::normal);
 }
 
 void CheckClass::pureVirtualFunctionCallInConstructorError(
@@ -2879,6 +2903,8 @@ void CheckClass::checkDuplInheritedMembers()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckClass::checkDuplInheritedMembers"); // warning
 
     // Iterate over all classes
     for (const Type &classIt : mSymbolDatabase->typeList) {
@@ -3011,6 +3037,8 @@ void CheckClass::checkCopyCtorAndEqOperator()
     if ((true) || !mSettings->severity.isEnabled(Severity::warning)) // NOLINT(readability-simplify-boolean-expr)
         return;
 
+    // logChecker
+
     for (const Scope * scope : mSymbolDatabase->classAndStructScopes) {
 
         const bool hasNonStaticVars = std::any_of(scope->varlist.begin(), scope->varlist.end(), [](const Variable& var) {
@@ -3070,6 +3098,7 @@ void CheckClass::checkOverride()
         return;
     if (mSettings->standards.cpp < Standards::CPP11)
         return;
+    logChecker("CheckClass::checkMissingOverride"); // style,c++03
     for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
         if (!classScope->definedType || classScope->definedType->derivedFrom.empty())
             continue;
@@ -3168,6 +3197,8 @@ void CheckClass::checkUselessOverride()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckClass::checkUselessOverride"); // style
+
     for (const Scope* classScope : mSymbolDatabase->classAndStructScopes) {
         if (!classScope->definedType || classScope->definedType->derivedFrom.size() != 1)
             continue;
@@ -3225,12 +3256,14 @@ void CheckClass::checkThisUseAfterFree()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckClass::checkThisUseAfterFree"); // warning
+
     for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
 
         for (const Variable &var : classScope->varlist) {
             // Find possible "self pointer".. pointer/smartpointer member variable of "self" type.
             if (var.valueType() && var.valueType()->smartPointerType != classScope->definedType && var.valueType()->typeScope != classScope) {
-                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), *mSettings, true); // this is only called for C++
+                const ValueType valueType = ValueType::parseDecl(var.typeStartToken(), *mSettings);
                 if (valueType.smartPointerType != classScope->definedType)
                     continue;
             }
@@ -3322,6 +3355,7 @@ void CheckClass::checkUnsafeClassRefMember()
 {
     if (!mSettings->safeChecks.classes || !mSettings->severity.isEnabled(Severity::warning))
         return;
+    logChecker("CheckClass::checkUnsafeClassRefMember"); // warning,safeChecks
     for (const Scope * classScope : mSymbolDatabase->classAndStructScopes) {
         for (const Function &func : classScope->functionList) {
             if (!func.hasBody() || !func.isConstructor())
@@ -3468,6 +3502,10 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
     (void)settings; // This argument is unused
 
     std::unordered_map<std::string, MyFileInfo::NameLoc> all;
+
+    CheckClass dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckClass::analyseWholeProgram");
 
     for (const Check::FileInfo* fi1 : fileInfo) {
         const MyFileInfo *fi = dynamic_cast<const MyFileInfo*>(fi1);

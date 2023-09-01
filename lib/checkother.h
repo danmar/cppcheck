@@ -25,6 +25,7 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
+#include "tokenize.h"
 
 #include <string>
 #include <vector>
@@ -35,7 +36,6 @@ namespace ValueFlow {
 
 class Settings;
 class Token;
-class Tokenizer;
 class Function;
 class Variable;
 class ErrorLogger;
@@ -56,15 +56,15 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckOther checkOther(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckOther checkOther(&tokenizer, tokenizer.getSettings(), errorLogger);
 
         // Checks
         checkOther.warningOldStylePointerCast();
         checkOther.invalidPointerCast();
         checkOther.checkCharVariable();
         checkOther.checkRedundantAssignment();
-        checkOther.checkRedundantAssignmentInSwitch();
+        checkOther.redundantBitwiseOperationInSwitchError();
         checkOther.checkSuspiciousCaseInSwitch();
         checkOther.checkDuplicateBranch();
         checkOther.checkDuplicateExpression();
@@ -85,6 +85,7 @@ public:
         checkOther.checkFuncArgNamesDifferent();
         checkOther.checkShadowVariables();
         checkOther.checkKnownArgument();
+        checkOther.checkKnownPointerToBool();
         checkOther.checkComparePointers();
         checkOther.checkIncompleteStatement();
         checkOther.checkRedundantCopy();
@@ -149,8 +150,8 @@ public:
     /** @brief copying to memory or assigning to a variable twice */
     void checkRedundantAssignment();
 
-    /** @brief %Check for assigning to the same variable twice in a switch statement*/
-    void checkRedundantAssignmentInSwitch();
+    /** @brief %Check for redundant bitwise operation in switch statement*/
+    void redundantBitwiseOperationInSwitchError();
 
     /** @brief %Check for code like 'case A||B:'*/
     void checkSuspiciousCaseInSwitch();
@@ -218,6 +219,8 @@ public:
 
     void checkKnownArgument();
 
+    void checkKnownPointerToBool();
+
     void checkComparePointers();
 
     void checkModuloOfOne();
@@ -279,6 +282,7 @@ private:
     void funcArgOrderDifferent(const std::string & functionName, const Token * declaration, const Token * definition, const std::vector<const Token*> & declarations, const std::vector<const Token*> & definitions);
     void shadowError(const Token *var, const Token *shadowed, std::string type);
     void knownArgumentError(const Token *tok, const Token *ftok, const ValueFlow::Value *value, const std::string &varexpr, bool isVariableExpressionHidden);
+    void knownPointerToBoolError(const Token* tok, const ValueFlow::Value* value);
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
 
@@ -348,6 +352,7 @@ private:
         c.shadowError(nullptr, nullptr, "function");
         c.shadowError(nullptr, nullptr, "argument");
         c.knownArgumentError(nullptr, nullptr, nullptr, "x", false);
+        c.knownPointerToBoolError(nullptr, nullptr);
         c.comparePointersError(nullptr, nullptr, nullptr);
         c.redundantAssignmentError(nullptr, nullptr, "var", false);
         c.redundantInitializationError(nullptr, nullptr, "var", false);

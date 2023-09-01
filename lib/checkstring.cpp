@@ -54,6 +54,7 @@ static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, o
 //---------------------------------------------------------------------------
 void CheckString::stringLiteralWrite()
 {
+    logChecker("CheckString::stringLiteralWrite");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -98,6 +99,8 @@ void CheckString::checkAlwaysTrueOrFalseStringCompare()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckString::checkAlwaysTrueOrFalseStringCompare"); // warning
 
     for (const Token* tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (tok->isName() && tok->strAt(1) == "(" && Token::Match(tok, "memcmp|strncmp|strcmp|stricmp|strverscmp|bcmp|strcmpi|strcasecmp|strncasecmp|strncasecmp_l|strcasecmp_l|wcsncasecmp|wcscasecmp|wmemcmp|wcscmp|wcscasecmp_l|wcsncasecmp_l|wcsncmp|_mbscmp|_mbscmp_l|_memicmp|_memicmp_l|_stricmp|_wcsicmp|_mbsicmp|_stricmp_l|_wcsicmp_l|_mbsicmp_l")) {
@@ -166,6 +169,8 @@ void CheckString::checkSuspiciousStringCompare()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckString::checkSuspiciousStringCompare"); // warning
+
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -223,6 +228,7 @@ static bool isChar(const Variable* var)
 
 void CheckString::strPlusChar()
 {
+    logChecker("CheckString::strPlusChar");
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -246,6 +252,21 @@ void CheckString::strPlusCharError(const Token *tok)
     reportError(tok, Severity::error, "strPlusChar", "Unusual pointer arithmetic. A value of type '" + charType +"' is added to a string literal.", CWE665, Certainty::normal);
 }
 
+static bool isMacroUsage(const Token* tok)
+{
+    if (const Token* parent = tok->astParent()) {
+        if (parent->isExpandedMacro())
+            return true;
+        if (parent->isUnaryOp("!")) {
+            int argn{};
+            const Token* ftok = getTokenArgumentFunction(parent, argn);
+            if (ftok && !ftok->function())
+                return true;
+        }
+    }
+    return false;
+}
+
 //---------------------------------------------------------------------------
 // Implicit casts of string literals to bool
 // Comparing string literal with strlen() with wrong length
@@ -254,6 +275,8 @@ void CheckString::checkIncorrectStringCompare()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckString::checkIncorrectStringCompare"); // warning
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -288,12 +311,10 @@ void CheckString::checkIncorrectStringCompare()
                         incorrectStringCompareError(tok->next(), "substr", end->strAt(1));
                     }
                 }
-            } else if (Token::Match(tok, "&&|%oror%|( %str%|%char% &&|%oror%|)") && !Token::Match(tok, "( %str%|%char% )")) {
-                incorrectStringBooleanError(tok->next(), tok->strAt(1));
-            } else if (Token::Match(tok, "if|while ( %str%|%char% )") && !tok->tokAt(2)->getValue(0)) {
-                incorrectStringBooleanError(tok->tokAt(2), tok->strAt(2));
-            } else if (tok->str() == "?" && Token::Match(tok->astOperand1(), "%str%|%char%"))
-                incorrectStringBooleanError(tok->astOperand1(), tok->astOperand1()->str());
+            } else if (Token::Match(tok, "%str%|%char%") &&
+                       isUsedAsBool(tok) &&
+                       !isMacroUsage(tok))
+                incorrectStringBooleanError(tok, tok->str());
         }
     }
 }
@@ -322,6 +343,8 @@ void CheckString::overlappingStrcmp()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckString::overlappingStrcmp"); // warning
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -397,6 +420,8 @@ void CheckString::overlappingStrcmpError(const Token *eq0, const Token *ne0)
 //---------------------------------------------------------------------------
 void CheckString::sprintfOverlappingData()
 {
+    logChecker("CheckString::sprintfOverlappingData");
+
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {

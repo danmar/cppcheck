@@ -5651,6 +5651,13 @@ private:
                               "    bool __attribute__((used)) test;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo()\n"
+                              "{\n"
+                              "    char a[1] __attribute__((unused));\n"
+                              "    char b[1][2] __attribute__((unused));\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFunction() {
@@ -5682,9 +5689,8 @@ private:
                               "{\n"
                               "    static int i = 0;\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -6034,6 +6040,23 @@ private:
                               "    dostuff(*p);\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    int p[5];\n"
+                              "    dostuff(*p);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int foo() {\n"
+                              "    int p[5][5][5];\n"
+                              "    dostuff(**p);\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #11872
+                              "    char v[1][2];\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: v\n", errout.str());
     }
 
     void localvarstring1() { // ticket #1597
@@ -6199,6 +6222,12 @@ private:
                               "    [[maybe_unused]] [[anotherattribute]] const int* = 1;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int main() {\n"
+                              "    [[maybe_unused]] char a[1];\n"
+                              "    [[maybe_unused]] char b[1][2];\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarthrow() { // ticket #3687
@@ -6275,6 +6304,15 @@ private:
                               "    const ::std::lock_guard g(m);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(const std::string& str, int i) {\n" // #11879
+                              "    const std::string s = str;\n"
+                              "    switch (i) {\n"
+                              "    default:\n"
+                              "        break;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
     }
 
     void localVarClass() {

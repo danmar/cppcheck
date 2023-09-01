@@ -27,6 +27,7 @@
 
 class Settings;
 class ErrorLogger;
+class Suppressions;
 
 /// @addtogroup CLI
 /// @{
@@ -37,9 +38,8 @@ class ErrorLogger;
  */
 class ThreadExecutor : public Executor {
 public:
-    ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    ThreadExecutor(const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger);
     ThreadExecutor(const ThreadExecutor &) = delete;
-    ~ThreadExecutor() override;
     void operator=(const ThreadExecutor &) = delete;
 
     unsigned int check() override;

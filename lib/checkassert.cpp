@@ -44,6 +44,8 @@ void CheckAssert::assertWithSideEffects()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckAssert::assertWithSideEffects"); // warning
+
     for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "assert ("))
             continue;

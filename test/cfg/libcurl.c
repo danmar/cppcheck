@@ -41,21 +41,21 @@ void ignoredReturnValue(CURL * handle)
 
 void resourceLeak_curl_easy_init()
 {
-    CURL *curl = curl_easy_init();
+    const CURL *curl = curl_easy_init();
     printf("%p", curl);
     // cppcheck-suppress resourceLeak
 }
 
 void resourceLeak_curl_easy_duphandle(CURL * handle)
 {
-    CURL *curl = curl_easy_duphandle(handle);
+    const CURL *curl = curl_easy_duphandle(handle);
     printf("%p", curl);
     // cppcheck-suppress resourceLeak
 }
 
 void memleak_curl_easy_escape(CURL * handle)
 {
-    char * pStr = curl_easy_escape(handle, "a", 1);
+    const char * pStr = curl_easy_escape(handle, "a", 1);
     if (pStr)
         printf("%s", pStr);
     // cppcheck-suppress memleak
@@ -76,8 +76,8 @@ void nullPointer(CURL * handle)
 
 void uninitvar(CURL * handle)
 {
-    char * bufInit[10] = {0};
-    char * bufUninit;
+    const char * bufInit[10] = {0};
+    const char * bufUninit;
     size_t len;
 
     curl_easy_send(handle, bufInit, 10, &len);

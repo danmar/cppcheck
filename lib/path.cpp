@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
+#include <sys/stat.h>
 #include <utility>
 
 #include <simplecpp.h>
@@ -260,10 +261,26 @@ std::string Path::stripDirectoryPart(const std::string &file)
     return file;
 }
 
-bool Path::fileExists(const std::string &file)
+#ifdef _WIN32
+using mode_t = unsigned short;
+#endif
+
+static mode_t file_type(const std::string &path)
 {
-    std::ifstream f(file.c_str());
-    return f.is_open();
+    struct stat file_stat;
+    if (stat(path.c_str(), &file_stat) == -1)
+        return 0;
+    return file_stat.st_mode & S_IFMT;
+}
+
+bool Path::isFile(const std::string &path)
+{
+    return file_type(path) == S_IFREG;
+}
+
+bool Path::isDirectory(const std::string &path)
+{
+    return file_type(path) == S_IFDIR;
 }
 
 std::string Path::join(std::string path1, std::string path2) {

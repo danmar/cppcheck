@@ -93,6 +93,8 @@ bool CheckUninitVar::diag(const Token* tok)
 
 void CheckUninitVar::check()
 {
+    logChecker("CheckUninitVar::check");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     std::set<std::string> arrayTypeDefs;
@@ -607,7 +609,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         }
 
         // skip sizeof / offsetof
-        if (isSizeOfEtc(tok))
+        if (isUnevaluated(tok))
             tok = tok->linkAt(1);
 
         // for/while..
@@ -709,8 +711,12 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     if (!membervar.empty()) {
                         if (!suppressErrors && Token::Match(tok, "%name% . %name%") && tok->strAt(2) == membervar && Token::Match(tok->next()->astParent(), "%cop%|return|throw|?"))
                             uninitStructMemberError(tok, tok->str() + "." + membervar);
-                        else if (mTokenizer->isCPP() && !suppressErrors && Token::Match(tok, "%name%") && Token::Match(tok->astParent(), "return|throw|?"))
-                            uninitStructMemberError(tok, tok->str() + "." + membervar);
+                        else if (mTokenizer->isCPP() && !suppressErrors && Token::Match(tok, "%name%") && Token::Match(tok->astParent(), "return|throw|?")) {
+                            if (std::any_of(tok->values().cbegin(), tok->values().cend(), [](const ValueFlow::Value& v) {
+                                return v.isUninitValue() && !v.isInconclusive();
+                            }))
+                                uninitStructMemberError(tok, tok->str() + "." + membervar);
+                        }
                     }
 
                     // Use variable
@@ -720,7 +726,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     return true;
                 }
 
-                if (isSizeOfEtc(tok))
+                if (isUnevaluated(tok))
                     tok = tok->linkAt(1);
 
                 else if (tok->str() == "?") {
@@ -834,7 +840,7 @@ const Token* CheckUninitVar::checkExpr(const Token* tok, const Variable& var, co
 {
     if (!tok)
         return nullptr;
-    if (isSizeOfEtc(tok->previous()))
+    if (isUnevaluated(tok->previous()))
         return nullptr;
 
     if (tok->astOperand1()) {
@@ -887,7 +893,7 @@ bool CheckUninitVar::checkIfForWhileHead(const Token *startparentheses, const Va
             return true;
         }
         // skip sizeof / offsetof
-        if (isSizeOfEtc(tok))
+        if (isUnevaluated(tok))
             tok = tok->linkAt(1);
         if ((!isuninit || !membervar.empty()) && tok->str() == "&&")
             suppressErrors = true;
@@ -905,7 +911,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
     const Token *const end = start->link();
     for (const Token *tok = start->next(); tok != end; tok = tok->next()) {
         // skip sizeof / offsetof
-        if (isSizeOfEtc(tok)) {
+        if (isUnevaluated(tok)) {
             tok = tok->linkAt(1);
             continue;
         }
@@ -1027,7 +1033,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
                         varIsUsedInRhs = true;
                         return ChildrenToVisit::done;
                     }
-                    if (isSizeOfEtc(t->previous()))
+                    if (isUnevaluated(t->previous()))
                         return ChildrenToVisit::none;
                     return ChildrenToVisit::op1_and_op2;
                 });
@@ -1092,7 +1098,7 @@ void CheckUninitVar::checkRhs(const Token *tok, const Variable &var, Alloc alloc
             if (err)
                 uninitvarError(tok, var.nameToken()->str(), alloc);
             break;
-        } else if (isSizeOfEtc(tok))
+        } else if (isUnevaluated(tok))
             tok = tok->linkAt(1);
 
     }
@@ -1488,8 +1494,10 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
     if (!isPointer && !Token::simpleMatch(tok->astParent(), ".") && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
         return true;
 
-    if (!isPointer && Token::Match(tok->previous(), "= %name% ;"))
-        return true;
+    if (!isPointer && Token::Match(tok->previous(), "= %name% ;")) {
+        const Token* lhs = tok->previous()->astOperand1();
+        return !(lhs && lhs->variable() && lhs->variable()->isReference() && lhs == lhs->variable()->nameToken());
+    }
 
     // = *(&var);
     if (!isPointer &&
@@ -1579,13 +1587,15 @@ static bool isLeafDot(const Token* tok)
     const Token * parent = tok->astParent();
     if (!Token::simpleMatch(parent, "."))
         return false;
-    if (parent->astOperand2() == tok)
+    if (parent->astOperand2() == tok && !Token::simpleMatch(parent->astParent(), "."))
         return true;
     return isLeafDot(parent);
 }
 
 void CheckUninitVar::valueFlowUninit()
 {
+    logChecker("CheckUninitVar::valueFlowUninit");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     std::unordered_set<nonneg int> ids;
@@ -1593,7 +1603,7 @@ void CheckUninitVar::valueFlowUninit()
         // check every executable scope
         for (const Scope* scope : symbolDatabase->functionScopes) {
             for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-                if (isSizeOfEtc(tok)) {
+                if (isUnevaluated(tok)) {
                     tok = tok->linkAt(1);
                     continue;
                 }
@@ -1639,7 +1649,7 @@ void CheckUninitVar::valueFlowUninit()
                     if (!isleaf && Token::Match(tok->astParent(), ". %name%") && (tok->astParent()->next()->varId() || tok->astParent()->next()->isEnumerator()))
                         continue;
                 }
-                const ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);
+                const ExprUsage usage = getExprUsage(tok, v->indirect, mSettings, mTokenizer->isCPP());
                 if (usage == ExprUsage::NotUsed || usage == ExprUsage::Inconclusive)
                     continue;
                 if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)

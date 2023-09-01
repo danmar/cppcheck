@@ -26,7 +26,6 @@
 
 #include <list>
 #include <sstream> // IWYU pragma: keep
-#include <string>
 
 class TestMemleakInClass;
 class TestMemleakNoVar;
@@ -2456,6 +2455,50 @@ private:
               "void f(S* s, int N) {\n"
               "    s->p = s->p ? strcpy(new char[N], s->p) : nullptr;\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {};\n" // #11866
+              "void f(bool b);\n"
+              "void g() {\n"
+              "    f(new int());\n"
+              "    f(new std::vector<int>());\n"
+              "    f(new S());\n"
+              "    f(new tm());\n"
+              "    f(malloc(sizeof(S)));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Allocation with new, f doesn't release it.\n"
+                      "[test.cpp:5]: (error) Allocation with new, f doesn't release it.\n"
+                      "[test.cpp:6]: (error) Allocation with new, f doesn't release it.\n"
+                      "[test.cpp:7]: (error) Allocation with new, f doesn't release it.\n"
+                      "[test.cpp:8]: (error) Allocation with malloc, f doesn't release it.\n",
+                      errout.str());
+
+        check("void f(uintptr_t u);\n"
+              "void g() {\n"
+              "    f((uintptr_t)new int());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(uint8_t u);\n"
+              "void g() {\n"
+              "    f((uint8_t)new int());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Allocation with new, f doesn't release it.\n",
+                      errout.str());
+
+        check("void f(int i, T t);\n"
+              "void g(int i, U* u);\n"
+              "void h() {\n"
+              "    f(1, new int());\n"
+              "    g(1, new int());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(T t);\n"
+              "struct U {};\n"
+              "void g() {\n"
+              "    f(new U());\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

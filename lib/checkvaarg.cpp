@@ -51,6 +51,8 @@ void CheckVaarg::va_start_argument()
     const std::size_t functions = symbolDatabase->functionScopes.size();
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
+    logChecker("CheckVaarg::va_start_argument");
+
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope* scope = symbolDatabase->functionScopes[i];
         const Function* function = scope->function;
@@ -67,7 +69,9 @@ void CheckVaarg::va_start_argument()
                 if (var && var->isReference())
                     referenceAs_va_start_error(param2, var->name());
                 if (var && var->index() + 2 < function->argCount() && printWarnings) {
-                    wrongParameterTo_va_start_error(tok, var->name(), function->argumentList[function->argumentList.size()-2].name());
+                    auto it = function->argumentList.end();
+                    std::advance(it, -2);
+                    wrongParameterTo_va_start_error(tok, var->name(), it->name()); // cppcheck-suppress derefInvalidIterator // FP due to isVariableChangedByFunctionCall()
                 }
                 tok = tok->linkAt(1);
             }
@@ -96,6 +100,9 @@ void CheckVaarg::va_list_usage()
 {
     if (mSettings->clang)
         return;
+
+    logChecker("CheckVaarg::va_list_usage"); // notclang
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
         if (!var || var->isPointer() || var->isReference() || var->isArray() || !var->scope() || var->typeStartToken()->str() != "va_list")
