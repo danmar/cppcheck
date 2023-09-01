@@ -244,7 +244,7 @@ void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const s
     reportError(locations,
                 Severity::style,
                 "assignIfError",
-                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + bool_to_string(result) + ".", CWE398, Certainty::normal);
+                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(bool_to_string(result)) + ".", CWE398, Certainty::normal);
 }
 
 

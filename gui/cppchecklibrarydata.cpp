@@ -617,7 +617,7 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
         xmlWriter.writeEndElement();
     }
     if (function.noreturn != CppcheckLibraryData::Function::Unknown)
-        xmlWriter.writeTextElement("noreturn", QString::fromStdString(bool_to_string(function.noreturn == CppcheckLibraryData::Function::True)));
+        xmlWriter.writeTextElement("noreturn", bool_to_string(function.noreturn == CppcheckLibraryData::Function::True));
     if (function.leakignore)
         xmlWriter.writeEmptyElement("leak-ignore");
     // Argument info..
@@ -721,7 +721,7 @@ static void writeMemoryResource(QXmlStreamWriter &xmlWriter, const CppcheckLibra
         } else {
             xmlWriter.writeStartElement("alloc");
         }
-        xmlWriter.writeAttribute("init", QString::fromStdString(bool_to_string(alloc.init)));
+        xmlWriter.writeAttribute("init", bool_to_string(alloc.init));
         if (alloc.arg != -1) {
             xmlWriter.writeAttribute("arg", QString("%1").arg(alloc.arg));
         }

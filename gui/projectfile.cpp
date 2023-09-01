@@ -848,7 +848,7 @@ bool ProjectFile::write(const QString &filename)
     }
 
     xmlWriter.writeStartElement(CppcheckXml::AnalyzeAllVsConfigsElementName);
-    xmlWriter.writeCharacters(QString::fromStdString(bool_to_string(mAnalyzeAllVsConfigs)));
+    xmlWriter.writeCharacters(bool_to_string(mAnalyzeAllVsConfigs));
     xmlWriter.writeEndElement();
 
     if (clangParser) {
@@ -858,11 +858,11 @@ bool ProjectFile::write(const QString &filename)
     }
 
     xmlWriter.writeStartElement(CppcheckXml::CheckHeadersElementName);
-    xmlWriter.writeCharacters(QString::fromStdString(bool_to_string(mCheckHeaders)));
+    xmlWriter.writeCharacters(bool_to_string(mCheckHeaders));
     xmlWriter.writeEndElement();
 
     xmlWriter.writeStartElement(CppcheckXml::CheckUnusedTemplatesElementName);
-    xmlWriter.writeCharacters(QString::fromStdString(bool_to_string(mCheckUnusedTemplates)));
+    xmlWriter.writeCharacters(bool_to_string(mCheckUnusedTemplates));
     xmlWriter.writeEndElement();
 
     xmlWriter.writeStartElement(CppcheckXml::MaxCtuDepthElementName);
