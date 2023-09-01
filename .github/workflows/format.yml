@@ -35,6 +35,7 @@ jobs:
 
       - name: Uncrustify check
         run: |
+          ls -al ~
           ~/uncrustify/uncrustify -c .uncrustify.cfg -l CPP --no-backup --replace */*.cpp */*.h
           git diff
           git diff | diff - /dev/null &> /dev/null
