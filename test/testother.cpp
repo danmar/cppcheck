@@ -11035,14 +11035,14 @@ private:
 
         // #11894
         check("struct S {\n"
-                "    int *p, n;\n"
-                "};\n"
-                "S* g() {\n"
-                "    S* s = static_cast<S*>(calloc(1, sizeof(S)));\n"
-                "    s->n = 100;\n"
-                "    s->p = static_cast<int*>(malloc(s->n * sizeof(int)));\n"
-                "    return s;\n"
-                "}\n");
+              "    int *p, n;\n"
+              "};\n"
+              "S* g() {\n"
+              "    S* s = static_cast<S*>(calloc(1, sizeof(S)));\n"
+              "    s->n = 100;\n"
+              "    s->p = static_cast<int*>(malloc(s->n * sizeof(int)));\n"
+              "    return s;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // #11679
