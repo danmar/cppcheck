@@ -991,9 +991,9 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
                 // const method, assume it assigns all mutable members
                 else if (member->isConst()) {
-                    for (Usage& usage: usage) {
-                        if (usage.var->isMutable())
-                            usage.assign = true;
+                    for (Usage& i: usage) {
+                        if (i.var->isMutable())
+                            i.assign = true;
                     }
                 }
             }
