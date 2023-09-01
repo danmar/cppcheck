@@ -1005,15 +1005,15 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconcl
 {
     const ValueFlow::Value* value = nullptr;
     const Token* r = nullptr;
-    if(indirect)
+    if (indirect)
         *indirect = 1;
-    for(const ReferenceToken& ref:followAllReferences(tok)) {
+    for (const ReferenceToken& ref : followAllReferences(tok)) {
         const bool pointer = astIsPointer(ref.token);
         r = findAstNode(expr, [&](const Token* childTok) {
             if (childTok->exprId() == 0)
                 return false;
             if (ref.token != tok && expr->exprId() == childTok->exprId()) {
-                if(indirect)
+                if (indirect)
                     *indirect = 0;
                 return true;
             }
@@ -1035,7 +1035,7 @@ bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconcl
             }
             return false;
         });
-        if(r)
+        if (r)
             break;
     }
     if (!r && value && inconclusive)

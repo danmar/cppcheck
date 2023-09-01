@@ -6645,14 +6645,14 @@ private:
         ASSERT_EQUALS("values.size():0", isKnownContainerSizeValue(tokenValues(code, "a ["), 0));
 
         code = "void g(std::vector<int>* w) {\n"
-                "  std::vector<int> &r = *w;\n"
-                "  r.push_back(0);\n"
-                "}\n"
-                "int f() {\n"
-                "  std::vector<int> v;\n"
-                "  g(&v);\n"
-                "  return v[0];\n"
-                "}\n";
+               "  std::vector<int> &r = *w;\n"
+               "  r.push_back(0);\n"
+               "}\n"
+               "int f() {\n"
+               "  std::vector<int> v;\n"
+               "  g(&v);\n"
+               "  return v[0];\n"
+               "}\n";
         ASSERT(!isKnownContainerSizeValue(tokenValues(code, "v ["), 0).empty());
     }
 
