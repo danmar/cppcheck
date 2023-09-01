@@ -271,6 +271,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionCpp17->setActionGroup(mCppStandardActions);
     mUI->mActionCpp20->setActionGroup(mCppStandardActions);
     //mUI->mActionCpp23->setActionGroup(mCppStandardActions);
+    //mUI->mActionCpp26->setActionGroup(mCppStandardActions);
 
     mUI->mActionEnforceC->setActionGroup(mSelectLanguageActions);
     mUI->mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
@@ -381,6 +382,7 @@ void MainWindow::loadSettings()
     mUI->mActionCpp17->setChecked(standards.cpp == Standards::CPP17);
     mUI->mActionCpp20->setChecked(standards.cpp == Standards::CPP20);
     //mUI->mActionCpp23->setChecked(standards.cpp == Standards::CPP23);
+    //mUI->mActionCpp26->setChecked(standards.cpp == Standards::CPP26);
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
@@ -465,6 +467,8 @@ void MainWindow::saveSettings() const
         mSettings->setValue(SETTINGS_STD_CPP, "C++20");
     //if (mUI.mActionCpp23->isChecked())
     //    mSettings->setValue(SETTINGS_STD_CPP, "C++23");
+    //if (mUI.mActionCpp26->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_CPP, "C++26");
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI->mToolBarMain->isVisible());

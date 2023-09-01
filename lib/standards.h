@@ -40,7 +40,7 @@ struct Standards {
     enum cstd_t { C89, C99, C11, C17, C23, CLatest = C23 } c = CLatest;
 
     /** C++ code standard */
-    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPPLatest = CPP23 } cpp = CPPLatest;
+    enum cppstd_t { CPP03, CPP11, CPP14, CPP17, CPP20, CPP23, CPP26, CPPLatest = CPP26 } cpp = CPPLatest;
 
     /** --std value given on command line */
     std::string stdValue;
@@ -117,6 +117,8 @@ struct Standards {
             return "c++20";
         case CPP23:
             return "c++23";
+        case CPP26:
+            return "c++26";
         }
         return "";
     }
@@ -138,6 +140,9 @@ struct Standards {
         }
         if (std == "c++23") {
             return Standards::CPP23;
+        }
+        if (std == "c++26") {
+            return Standards::CPP26;
         }
         return Standards::CPPLatest;
     }

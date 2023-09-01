@@ -203,6 +203,7 @@
      <addaction name="mActionCpp17"/>
      <addaction name="mActionCpp20"/>
      <!--addaction name="mActionCpp23"/-->
+     <!--addaction name="mActionCpp26"/-->
     </widget>
     <widget class="QMenu" name="menuC_standard">
      <property name="title">
@@ -913,6 +914,17 @@
    </property>
    <property name="text">
     <string>C++23</string>
+   </property>
+  </action-->
+  <!--action name="mActionCpp26">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>C++26</string>
    </property>
   </action-->
   <action name="mActionComplianceReport">

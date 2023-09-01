@@ -148,6 +148,10 @@ static const std::unordered_set<std::string> cpp23_keywords;
 
 static const std::unordered_set<std::string> cpp23_keywords_all = cpp20_keywords_all;
 
+static const std::unordered_set<std::string> cpp26_keywords;
+
+static const std::unordered_set<std::string> cpp26_keywords_all = cpp23_keywords_all;
+
 // cppcheck-suppress unusedFunction
 const std::unordered_set<std::string>& Keywords::getAll(Standards::cstd_t cStd)
 {
@@ -182,6 +186,8 @@ const std::unordered_set<std::string>& Keywords::getAll(Standards::cppstd_t cppS
         return cpp20_keywords_all;
     case Standards::cppstd_t::CPP23:
         return cpp23_keywords_all;
+    case Standards::cppstd_t::CPP26:
+        return cpp26_keywords_all;
     }
     cppcheck::unreachable();
 }
@@ -221,6 +227,8 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cppstd_t cpp
         return cpp20_keywords;
     case Standards::cppstd_t::CPP23:
         return cpp23_keywords;
+    case Standards::cppstd_t::CPP26:
+        return cpp26_keywords;
     }
     cppcheck::unreachable();
 }
