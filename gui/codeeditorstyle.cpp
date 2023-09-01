@@ -41,6 +41,7 @@ CodeEditorStyle::CodeEditorStyle(
     QColor CmtFGColor, QFont::Weight CmtWeight,
     // cppcheck-suppress naming-varname - TODO: fix this
     QColor SymbFGColor, QColor SymbBGColor,
+    // cppcheck-suppress naming-varname - TODO: fix this
     QFont::Weight SymbWeight) :
     widgetFGColor(std::move(CtrlFGColor)),
     widgetBGColor(std::move(CtrlBGColor)),
