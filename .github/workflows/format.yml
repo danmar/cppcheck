@@ -21,7 +21,7 @@ jobs:
         with:
           path: |
             ~/uncrustify
-          key: ${{ runner.os }}-uncrustify
+          key: buildjet-${{ runner.os }}-uncrustify
 
       - name: build uncrustify
         if: steps.cache-uncrustify.outputs.cache-hit != 'true'
