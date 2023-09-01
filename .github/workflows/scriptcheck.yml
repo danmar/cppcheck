@@ -11,7 +11,7 @@ jobs:
   build:
 
     # 'ubuntu-22.04' removes Python 2.7, 3.6 and 3.6 so keep the previous LTS version
-    runs-on: ubuntu-20.04
+    runs-on: buildjet-2vcpu-ubuntu-2004
 
     steps:
       - uses: actions/checkout@v3

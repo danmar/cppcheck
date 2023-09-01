@@ -9,7 +9,7 @@ permissions:
 jobs:
   analyze:
     name: Analyze
-    runs-on: ubuntu-22.04
+    runs-on: buildjet-2vcpu-ubuntu-2204
 
     strategy:
       fail-fast: false

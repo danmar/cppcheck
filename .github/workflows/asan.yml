@@ -10,7 +10,7 @@ permissions:
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: buildjet-2vcpu-ubuntu-2204
 
     env:
       QT_VERSION: 5.15.2

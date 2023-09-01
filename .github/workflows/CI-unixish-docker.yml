@@ -15,7 +15,7 @@ jobs:
         image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.04"]
       fail-fast: false # Prefer quick result
 
-    runs-on: ubuntu-22.04
+    runs-on: buildjet-2vcpu-ubuntu-2204
 
     # TODO: is this actually applied to the guest?
     env:

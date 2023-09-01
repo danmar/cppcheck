@@ -14,7 +14,7 @@ jobs:
       matrix:
         image: ["fedora:latest"] # "debian:unstable" / "archlinux:latest"
 
-    runs-on: ubuntu-22.04
+    runs-on: buildjet-2vcpu-ubuntu-2204
 
     container:
       image: "fedora:latest"

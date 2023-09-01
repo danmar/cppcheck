@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [buildjet-2vcpu-ubuntu-2004, buildjet-2vcpu-ubuntu-2204, macos-11, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
