@@ -3662,7 +3662,7 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
     return s;
 }
 
-static std::string accessControlToString(const AccessControl& access)
+static std::string accessControlToString(AccessControl access)
 {
     switch (access) {
     case AccessControl::Public:
