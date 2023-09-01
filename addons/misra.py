@@ -1457,6 +1457,15 @@ class MisraChecker:
             cppcheckdata.reportSummary(dumpfile, 'MisraUsage', names)
 
 
+    def misra_1_2(self, cfg):
+        # gcc language extensions: https://gcc.gnu.org/onlinedocs/gcc/C-Extensions.html
+        for token in cfg.tokenlist:
+            if simpleMatch(token, '? :'):
+                self.reportError(token, 1, 2)
+            elif simpleMatch(token, '( {') and simpleMatch(token.next.link.previous, '; } )'):
+                self.reportError(token, 1, 2)
+
+
     def misra_1_4(self, cfg):
         for token in cfg.tokenlist:
             if token.str in ('_Atomic', '_Noreturn', '_Generic', '_Thread_local', '_Alignas', '_Alignof'):
@@ -4311,6 +4320,7 @@ class MisraChecker:
             if not self.settings.quiet:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
+            self.executeCheck(102, self.misra_1_2, cfg)
             if not path_premium_addon:
                 self.executeCheck(104, self.misra_1_4, cfg)
             self.executeCheck(202, self.misra_2_2, cfg)
