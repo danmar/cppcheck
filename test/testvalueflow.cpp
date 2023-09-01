@@ -6654,6 +6654,7 @@ private:
                "  return v[0];\n"
                "}\n";
         ASSERT(!isKnownContainerSizeValue(tokenValues(code, "v ["), 0).empty());
+        ASSERT(!isPossibleContainerSizeValue(tokenValues(code, "v ["), 0).empty());
     }
 
     void valueFlowContainerElement()
