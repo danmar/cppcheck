@@ -17,3 +17,4 @@ Deprecations:
 
 Other:
 - Added CMake option 'EXTERNALS_AS_SYSTEM' to treat external includes as 'SYSTEM' ones.
+- The minimum required compiler versions have been bumped to GCC 5.1 / Clang 3.5 / Visual Studio 2015
