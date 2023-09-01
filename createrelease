@@ -45,6 +45,7 @@
 #
 # Update the Makefile:
 # make dmake && ./dmake --release
+# Uppdatera CI så att dmake körs med --release
 # git commit -a -m "2.8: Updated Makefile"
 #
 # Tag:
