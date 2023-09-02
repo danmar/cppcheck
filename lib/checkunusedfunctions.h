@@ -54,10 +54,7 @@ public:
     CheckUnusedFunctions(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    static void clear() {
-        instance.mFunctions.clear();
-        instance.mFunctionCalls.clear();
-    }
+    static void clear();
 
     // Parse current tokens and determine..
     // * Check what functions are used
@@ -79,8 +76,6 @@ public:
     static void analyseWholeProgram(const Settings &settings, ErrorLogger * const errorLogger, const std::string &buildDir);
 
 private:
-    static CheckUnusedFunctions instance;
-
     void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const override {
         CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }

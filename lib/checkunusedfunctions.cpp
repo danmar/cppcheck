@@ -49,10 +49,10 @@ namespace CTU {
 
 //---------------------------------------------------------------------------
 
-
-
 // Register this check class
-CheckUnusedFunctions CheckUnusedFunctions::instance;
+namespace {
+    CheckUnusedFunctions instance;
+}
 
 static const struct CWE CWE561(561U);   // Dead Code
 
@@ -67,6 +67,12 @@ static std::string stripTemplateParameters(const std::string& funcName) {
 //---------------------------------------------------------------------------
 // FUNCTION USAGE - Check for unused functions etc
 //---------------------------------------------------------------------------
+
+void CheckUnusedFunctions::clear()
+{
+    instance.mFunctions.clear();
+    instance.mFunctionCalls.clear();
+}
 
 void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings)
 {
