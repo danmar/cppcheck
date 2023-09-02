@@ -251,6 +251,25 @@ static std::string make_vcxproj_cl_entry(const std::string& file, ClType type)
     return outstr;
 }
 
+static std::vector<std::string> prioritizelib(const std::vector<std::string>& libfiles)
+{
+    std::map<std::string, std::size_t> priorities;
+    std::size_t prio = libfiles.size();
+    for (const auto &l : libfiles) {
+        priorities.emplace(l, prio--);
+    }
+    priorities["lib/valueflow.cpp"] = 1000;
+    priorities["lib/tokenize.cpp"] = 900;
+    priorities["lib/symboldatabase.cpp"] = 800;
+    std::vector<std::string> libfiles_prio = libfiles;
+    std::sort(libfiles_prio.begin(), libfiles_prio.end(), [&](const std::string &l1, const std::string &l2) {
+        const auto p1 = priorities.find(l1);
+        const auto p2 = priorities.find(l2);
+        return (p1 != priorities.end() ? p1->second : 0) > (p2 != priorities.end() ? p2->second : 0);
+    });
+    return libfiles_prio;
+}
+
 int main(int argc, char **argv)
 {
     const bool release(argc >= 2 && std::string(argv[1]) == "--release");
@@ -262,6 +281,7 @@ int main(int argc, char **argv)
         std::cerr << err << std::endl;
         return EXIT_FAILURE;
     }
+    const std::vector<std::string> libfiles_prio = prioritizelib(libfiles);
 
     std::vector<std::string> extfiles;
     err = getCppFiles(extfiles, "externals/", true);
@@ -349,7 +369,7 @@ int main(int argc, char **argv)
         outstr += make_vcxproj_cl_entry(R"(..\externals\simplecpp\simplecpp.cpp)", Compile);
         outstr += make_vcxproj_cl_entry(R"(..\externals\tinyxml2\tinyxml2.cpp)", Compile);
 
-        for (const std::string &libfile: libfiles) {
+        for (const std::string &libfile: libfiles_prio) {
             const std::string l = libfile.substr(4);
             outstr += make_vcxproj_cl_entry(l, l == "check.cpp" ? Precompile : Compile);
         }
@@ -400,7 +420,7 @@ int main(int argc, char **argv)
                     fout1 << " \\\n" << std::string(11, ' ');
             }
             fout1 << "\n\nSOURCES += ";
-            for (const std::string &libfile : libfiles) {
+            for (const std::string &libfile : libfiles_prio) {
                 fout1 << "$${PWD}/" << libfile.substr(4);
                 if (libfile != libfiles.back())
                     fout1 << " \\\n" << std::string(11, ' ');
@@ -638,7 +658,7 @@ int main(int argc, char **argv)
     fout << "MAN_SOURCE=man/cppcheck.1.xml\n\n";
 
     fout << "\n###### Object Files\n\n";
-    fout << "LIBOBJ =      " << objfiles(libfiles) << "\n\n";
+    fout << "LIBOBJ =      " << objfiles(libfiles_prio) << "\n\n";
     fout << "EXTOBJ =      " << objfiles(extfiles) << "\n\n";
     fout << "CLIOBJ =      " << objfiles(clifiles) << "\n\n";
     fout << "TESTOBJ =     " << objfiles(testfiles) << "\n\n";
@@ -745,7 +765,7 @@ int main(int argc, char **argv)
 
     fout << "\n###### Build\n\n";
 
-    compilefiles(fout, libfiles, "${INCLUDE_FOR_LIB}");
+    compilefiles(fout, libfiles_prio, "${INCLUDE_FOR_LIB}");
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
     compilefiles(fout, extfiles, emptyString);
