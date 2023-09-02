@@ -3704,8 +3704,7 @@ static bool isVariableExpression(const Token* tok)
         return isVariableExpression(tok->astOperand1()) &&
                isVariableExpression(tok->astOperand2());
     if (Token::simpleMatch(tok, "["))
-        return isVariableExpression(tok->astOperand1()) &&
-               tok->astOperand2() && tok->astOperand2()->hasKnownIntValue();
+        return isVariableExpression(tok->astOperand1());
     return false;
 }
 
