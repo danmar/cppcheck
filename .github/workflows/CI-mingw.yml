@@ -47,8 +47,23 @@ jobs:
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
-      # MinGW will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
-      - name: Build all and run test
+      - name: Build cppcheck
+        run: |
+          export PATH="/mingw64/lib/ccache/bin:$PATH"
+          # set RDYNAMIC to work around broken MinGW detection
+          make VERBOSE=1 RDYNAMIC=-lshlwapi -j2 cppcheck
+        env:
+          LDFLAGS: -fuse-ld=lld # use lld for faster linking
+
+      - name: Build test
+        run: |
+          export PATH="/mingw64/lib/ccache/bin:$PATH"
+          # set RDYNAMIC to work around broken MinGW detection
+          make VERBOSE=1 RDYNAMIC=-lshlwapi -j2 testrunner
+        env:
+          LDFLAGS: -fuse-ld=lld # use lld for faster linking
+
+      - name: Run test
         run: |
           export PATH="/mingw64/lib/ccache/bin:$PATH"
           # set RDYNAMIC to work around broken MinGW detection
