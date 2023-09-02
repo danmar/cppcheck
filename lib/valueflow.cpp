@@ -8039,7 +8039,7 @@ static void valueFlowUninit(TokenList& tokenlist, const Settings* settings)
     }
 }
 
-static bool isContainerSizeChanged(nonneg int varId,
+static bool isContainerSizeChanged(const Token* expr,
                                    const Token* start,
                                    const Token* end,
                                    int indirect,
@@ -8088,7 +8088,7 @@ static bool isContainerSizeChangedByFunction(const Token* tok,
                 if (!arg->nameToken())
                     return false;
                 if (depth > 0)
-                    return isContainerSizeChanged(arg->declarationId(),
+                    return isContainerSizeChanged(arg->nameToken(),
                                                   scope->bodyStart,
                                                   scope->bodyEnd,
                                                   addressOf ? indirect + 1 : indirect,
@@ -8342,7 +8342,7 @@ bool ValueFlow::isContainerSizeChanged(const Token* tok, int indirect, const Set
     return isContainerSizeChangedByFunction(tok, indirect, settings, depth);
 }
 
-static bool isContainerSizeChanged(nonneg int varId,
+static bool isContainerSizeChanged(const Token* expr,
                                    const Token* start,
                                    const Token* end,
                                    int indirect,
@@ -8350,7 +8350,7 @@ static bool isContainerSizeChanged(nonneg int varId,
                                    int depth)
 {
     for (const Token *tok = start; tok != end; tok = tok->next()) {
-        if (tok->varId() != varId)
+        if (tok->exprId() != expr->exprId() && !isAliasOf(tok, expr))
             continue;
         if (ValueFlow::isContainerSizeChanged(tok, indirect, settings, depth))
             return true;
