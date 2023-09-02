@@ -31,6 +31,7 @@ jobs:
             packages: |
               gcc-g++
               python3
+              ccache
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -44,10 +45,15 @@ jobs:
           platform: ${{ matrix.arch }}
           packages: ${{ matrix.packages }}
 
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
       # Cygwin will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
       - name: Build all and run test
         run: |
-          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make VERBOSE=1 -j2 check
+          C:\cygwin\bin\bash.exe -l -c 'PATH=/usr/lib/ccache:$PATH cd %GITHUB_WORKSPACE% && make VERBOSE=1 -j2 check'
 
       - name: Extra test for misra
         run: |
