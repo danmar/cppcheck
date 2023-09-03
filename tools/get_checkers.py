@@ -43,27 +43,400 @@ print("};\n\n")
 print('static std::map<std::string, std::string> premiumCheckers{')
 
 premium_checkers = """
-$ grep logChecker *.cpp | sed 's/.*logChecker/logChecker/'
-logChecker("CheckBufferOverrun::addressOfPointerArithmetic"); // warning
-logChecker("CheckBufferOverrun::negativeBufferSizeCheckedNonZero"); // warning
-logChecker("CheckBufferOverrun::negativeBufferSizeCheckedNonZero"); // warning
-logChecker("CheckHang::infiniteLoop");
-logChecker("CheckHang::infiniteLoopContinue");
-logChecker("CheckOther::arrayPointerComparison"); // style
-logChecker("CheckOther::knownResult"); // style
-logChecker("CheckOther::lossOfPrecision"); // style
-logChecker("CheckOther::pointerCast"); // style
-logChecker("CheckOther::reassignInLoop"); // style
-logChecker("CheckOther::unreachableCode"); // style
-logChecker("CheckStrictAlias::strictAliasCondition"); // warning
-logChecker("CheckUninitVar::uninitvar");
-logChecker("CheckUninitVar::uninitmember");
-logChecker("CheckUnusedVar::unreadVariable"); // style
-logChecker("CheckUnusedVar::unusedPrivateMember"); // style
+$ grep logChecker src/*.cpp | sed 's/.*logChecker/logChecker/' | sort > 1.txt
+logChecker("Autosar: A0-1-3"); // style
+logChecker("Autosar: A0-4-2"); // style
+logChecker("Autosar: A0-4-4"); // style
+logChecker("Autosar: A10-1-1"); // style
+logChecker("Autosar: A11-0-2"); // style
+logChecker("Autosar: A11-3-1"); // style
+logChecker("Autosar: A13-2-1"); // style
+logChecker("Autosar: A13-2-3"); // style
+logChecker("Autosar: A13-5-2"); // style
+logChecker("Autosar: A13-5-5"); // style
+logChecker("Autosar: A15-1-2"); // style
+logChecker("Autosar: A15-3-5"); // style
+logChecker("Autosar: A16-6-1"); // style
+logChecker("Autosar: A16-7-1"); // style
+logChecker("Autosar: A18-0-3"); // style
+logChecker("Autosar: A18-1-1"); // style
+logChecker("Autosar: A18-1-2"); // style
+logChecker("Autosar: A18-1-3"); // style
+logChecker("Autosar: A18-5-1"); // style
+logChecker("Autosar: A18-9-1"); // style
+logChecker("Autosar: A2-11-1"); // style
+logChecker("Autosar: A2-13-1"); // style
+logChecker("Autosar: A2-13-3"); // style
+logChecker("Autosar: A2-13-5"); // style
+logChecker("Autosar: A2-13-6"); // style
+logChecker("Autosar: A2-5-2"); // style
+logChecker("Autosar: A3-1-3"); // style
+logChecker("Autosar: A3-1-4"); // style
+logChecker("Autosar: A3-3-1"); // style
+logChecker("Autosar: A4-10-1"); // style
+logChecker("Autosar: A4-7-1"); // style
+logChecker("Autosar: A5-0-2"); // style
+logChecker("Autosar: A5-0-3"); // style
+logChecker("Autosar: A5-0-4"); // style
+logChecker("Autosar: A5-1-1"); // style
+logChecker("Autosar: A5-1-2"); // style
+logChecker("Autosar: A5-1-3"); // style
+logChecker("Autosar: A5-16-1"); // style
+logChecker("Autosar: A5-1-6"); // style
+logChecker("Autosar: A5-1-7"); // style
+logChecker("Autosar: A5-2-1"); // style
+logChecker("Autosar: A5-2-4"); // style
+logChecker("Autosar: A6-5-3"); // style
+logChecker("Autosar: A7-1-4"); // style
+logChecker("Autosar: A7-1-6"); // style
+logChecker("Autosar: A7-1-7"); // style
+logChecker("Autosar: A8-4-1"); // style
+logChecker("Autosar: A8-5-3"); // style
+logChecker("Autosar: A9-3-1"); // style
+logChecker("Cert C: ARR30-C"); // warning
+logChecker("Cert C: ARR32-C"); // warning
+logChecker("Cert C: ARR37-C"); // warning
+logChecker("Cert C: ARR38-C");
+logChecker("Cert C: ARR39-C"); // warning
+logChecker("Cert C: CON30-C"); // style
+logChecker("Cert C: CON31-C"); // style
+logChecker("Cert C: CON32-C"); // style
+logChecker("Cert C: CON33-C"); // style
+logChecker("Cert C: CON34-C"); // warning
+logChecker("Cert C: CON35-C"); // warning
+logChecker("Cert C: CON36-C"); // style
+logChecker("Cert C: CON37-C"); // style
+logChecker("Cert C: CON38-C"); // warning
+logChecker("Cert C: CON39-C"); // warning
+logChecker("Cert C: CON40-C"); // warning
+logChecker("Cert C: CON41-C"); // style
+logChecker("Cert C++: CON51-CPP");
+logChecker("Cert C++: CON52-CPP"); // style
+logChecker("Cert C++: CON53-CPP"); // style
+logChecker("Cert C++: CON54-CPP"); // style
+logChecker("Cert C++: CON55-CPP"); // style
+logChecker("Cert C++: CON56-CPP");
+logChecker("Cert C++: CTR50-CPP");
+logChecker("Cert C++: CTR52-CPP");
+logChecker("Cert C++: CTR53-CPP");
+logChecker("Cert C++: CTR56-CPP"); // style
+logChecker("Cert C++: CTR57-CPP");
+logChecker("Cert C++: CTR58-CPP");
+logChecker("Cert C: DCL31-C"); // style
+logChecker("Cert C: DCL36-C"); // style
+logChecker("Cert C: DCL37-C"); // style
+logChecker("Cert C: DCL38-C"); // style
+logChecker("Cert C: DCL39-C"); // style
+logChecker("Cert C: DCL40-C"); // style
+logChecker("Cert C: DCL41-C"); // style
+logChecker("Cert C++: DCL50-CPP"); // style
+logChecker("Cert C++: DCL51-CPP"); // style
+logChecker("Cert C++: DCL52-CPP"); // style
+logChecker("Cert C++: DCL53-CPP"); // style
+logChecker("Cert C++: DCL54-CPP");
+logChecker("Cert C++: DCL56-CPP");
+logChecker("Cert C++: DCL58-CPP"); // style
+logChecker("Cert C++: DCL59-CPP"); // style
+logChecker("Cert C: ENV30-C"); // style
+logChecker("Cert C: ENV31-C"); // style
+logChecker("Cert C: ENV32-C"); // style
+logChecker("Cert C: ENV33-C"); // style
+logChecker("Cert C: ENV34-C"); // style
+logChecker("Cert C: ERR30-C"); // warning
+logChecker("Cert C: ERR32-C"); // warning
+logChecker("Cert C: ERR33-C"); // warning
+logChecker("Cert C++: ERR50-CPP");
+logChecker("Cert C++: ERR51-CPP"); // style
+logChecker("Cert C++: ERR52-CPP"); // style
+logChecker("Cert C++: ERR53-CPP");
+logChecker("Cert C++: ERR54-CPP");
+logChecker("Cert C++: ERR55-CPP");
+logChecker("Cert C++: ERR56-CPP");
+logChecker("Cert C++: ERR58-CPP");
+logChecker("Cert C++: ERR59-CPP"); // warning
+logChecker("Cert C++: ERR60-CPP"); // warning
+logChecker("Cert C++: ERR61-CPP"); // style
+logChecker("Cert C++: ERR62-CPP"); // style
+logChecker("Cert C: EXP32-C"); // warning
+logChecker("Cert C: EXP35-C");
+logChecker("Cert C: EXP36-C"); // style
+logChecker("Cert C: EXP37-C"); // style
+logChecker("Cert C: EXP39-C"); // style
+logChecker("Cert C: EXP40-C"); // style
+logChecker("Cert C: EXP42-C"); // style
+logChecker("Cert C: EXP43-C"); // style
+logChecker("Cert C: EXP45-C"); // warning
+logChecker("Cert C++: EXP50-CPP");
+logChecker("Cert C++: EXP51-CPP");
+logChecker("Cert C++: EXP55-CPP");
+logChecker("Cert C++: EXP56-CPP");
+logChecker("Cert C++: EXP57-CPP"); // style
+logChecker("Cert C++: EXP58-CPP"); // style
+logChecker("Cert C++: EXP59-CPP");
+logChecker("Cert C: FIO30-C"); // warning
+logChecker("Cert C: FIO32-C"); // style
+logChecker("Cert C: FIO34-C"); // style
+logChecker("Cert C: FIO37-C");
+logChecker("Cert C: FIO38-C"); // style
+logChecker("Cert C: FIO40-C"); // style
+logChecker("Cert C: FIO41-C"); // style
+logChecker("Cert C: FIO44-C"); // warning
+logChecker("Cert C: FIO45-C"); // warning
+logChecker("Cert C++: FIO51-CPP"); // style
+logChecker("Cert C: FLP30-C"); // warning
+logChecker("Cert C: FLP36-C"); // portability
+logChecker("Cert C: FLP37-C"); // style
+logChecker("Cert C: INT30-C"); // warning
+logChecker("Cert C: INT31-C"); // warning
+logChecker("Cert C: INT32-C"); // warning
+logChecker("Cert C: INT33-C"); // warning
+logChecker("Cert C: INT34-C"); // warning
+logChecker("Cert C: INT35-C"); // warning
+logChecker("Cert C: INT36-C"); // warning
+logChecker("Cert C++: INT50-CPP"); // style
+logChecker("Cert C: MEM33-C"); // style
+logChecker("Cert C: MEM35-C"); // warning
+logChecker("Cert C: MEM36-C"); // warning
+logChecker("Cert C++: MEM52-CPP");
+logChecker("Cert C++: MEM53-CPP");
+logChecker("Cert C++: MEM54-CPP");
+logChecker("Cert C++: MEM55-CPP");
+logChecker("Cert C++: MEM57-CPP"); // style
+logChecker("Cert C: MSC30-C"); // style
+logChecker("Cert C: MSC32-C"); // style
+logChecker("Cert C: MSC33-C"); // style
+logChecker("Cert C: MSC38-C"); // warning
+logChecker("Cert C: MSC39-C"); // warning
+logChecker("Cert C: MSC40-C"); // warning
+logChecker("Cert C++: MSC50-CPP"); // style
+logChecker("Cert C++: MSC51-CPP"); // style
+logChecker("Cert C++: MSC53-CPP");
+logChecker("Cert C++: MSC54-CPP"); // style
+logChecker("Cert C++: OOP51-CPP");
+logChecker("Cert C++: OOP55-CPP");
+logChecker("Cert C++: OOP56-CPP");
+logChecker("Cert C++: OOP57-CPP");
+logChecker("Cert C++: OOP58-CPP"); // style
+logChecker("Cert C: PRE31-C"); // style
+logChecker("Cert C: SIG30-C"); // style
+logChecker("Cert C: SIG31-C"); // warning
+logChecker("Cert C: SIG34-C"); // style
+logChecker("Cert C: SIG35-C"); // warning
+logChecker("Cert C: STR31-C"); // warning
+logChecker("Cert C: STR32-C"); // warning
+logChecker("Cert C: STR34-C"); // warning
+logChecker("Cert C: STR38-C"); // style
+logChecker("Cert C++: STR50-CPP");
+logChecker("Cert C++: STR53-CPP");
+logChecker("Misra C: 10.1"); // style
+logChecker("Misra C: 10.2"); // style
+logChecker("Misra C: 10.3"); // style
+logChecker("Misra C: 10.4"); // style
+logChecker("Misra C: 10.5"); // style
+logChecker("Misra C: 10.6"); // style
+logChecker("Misra C: 10.7"); // style
+logChecker("Misra C: 10.8"); // style
+logChecker("Misra C: 11.10"); // style
+logChecker("Misra C: 12.6");
+logChecker("Misra C: 1.5"); // style
+logChecker("Misra C: 17.10"); // style
+logChecker("Misra C: 17.11"); // style
+logChecker("Misra C: 17.12"); // style
+logChecker("Misra C: 17.9"); // style
+logChecker("Misra C: 18.10"); // style
+logChecker("Misra C: 18.9"); // style
+logChecker("Misra C: 21.12"); // style
+logChecker("Misra C: 21.22"); // style
+logChecker("Misra C: 21.23"); // style
+logChecker("Misra C: 21.24"); // style
+logChecker("Misra C: 21.25"); // warning
+logChecker("Misra C: 21.26"); // warning
+logChecker("Misra C: 22.11");
+logChecker("Misra C: 22.12"); // style
+logChecker("Misra C: 22.13"); // style
+logChecker("Misra C: 22.14"); // style
+logChecker("Misra C: 22.15"); // style
+logChecker("Misra C: 22.16"); // warning
+logChecker("Misra C: 22.17"); // warning
+logChecker("Misra C: 22.18"); // warning
+logChecker("Misra C: 22.19"); // warning
+logChecker("Misra C: 22.20"); // style
+logChecker("Misra C: 23.1"); // style
+logChecker("Misra C: 23.2"); // style
+logChecker("Misra C: 23.3"); // style
+logChecker("Misra C: 23.4"); // style
+logChecker("Misra C: 23.5"); // style
+logChecker("Misra C: 23.6"); // style
+logChecker("Misra C: 23.7"); // style
+logChecker("Misra C: 23.8"); // style
+logChecker("Misra C: 6.3"); // style
+logChecker("Misra C: 7.5"); // style
+logChecker("Misra C: 7.6"); // style
+logChecker("Misra C: 8.10"); // style
+logChecker("Misra C: 8.15"); // style
+logChecker("Misra C: 8.16"); // style
+logChecker("Misra C: 8.17"); // style
+logChecker("Misra C: 9.6"); // style
+logChecker("Misra C: 9.7");
+logChecker("Misra C++: M0-1-11"); // style
+logChecker("Misra C++: M0-1-12"); // style
+logChecker("Misra C++: M0-1-4"); // style
+logChecker("Misra C++: M0-1-5"); // style
+logChecker("Misra C++: M0-1-7"); // style
+logChecker("Misra C++: M0-1-8"); // style
+logChecker("Misra C++: M10-1-1"); // style
+logChecker("Misra C++: M10-1-2"); // style
+logChecker("Misra C++: M10-1-3"); // style
+logChecker("Misra C++: M10-2-1"); // style
+logChecker("Misra C++: M10-3-3"); // style
+logChecker("Misra C++: M11-0-1"); // style
+logChecker("Misra C++: M12-8-2"); // style
+logChecker("Misra C++: M14-5-1"); // warning
+logChecker("Misra C++: M14-5-2"); // warning
+logChecker("Misra C++: M14-5-3"); // warning
+logChecker("Misra C++: M14-6-1"); // warning
+logChecker("Misra C++: M14-7-1"); // style
+logChecker("Misra C++: M14-7-2"); // style
+logChecker("Misra C++: M15-0-3");
+logChecker("Misra C++: M15-1-1");
+logChecker("Misra C++: M15-1-2"); // style
+logChecker("Misra C++: M15-1-3"); // style
+logChecker("Misra C++: M15-3-2"); // warning
+logChecker("Misra C++: M15-3-3");
+logChecker("Misra C++: M15-4-1"); // style
+logChecker("Misra C++: M16-0-1"); // style
+logChecker("Misra C++: M16-0-2"); // style
+logChecker("Misra C++: M16-0-3"); // style
+logChecker("Misra C++: M16-0-4"); // style
+logChecker("Misra C++: M16-1-1"); // style
+logChecker("Misra C++: M16-2-1"); // style
+logChecker("Misra C++: M16-2-2"); // style
+logChecker("Misra C++: M16-2-3"); // style
+logChecker("Misra C++: M16-2-4"); // style
+logChecker("Misra C++: M16-2-5"); // style
+logChecker("Misra C++: M16-2-6"); // style
+logChecker("Misra C++: M16-3-1"); // style
+logChecker("Misra C++: M16-3-2"); // style
+logChecker("Misra C++: M17-0-1"); // style
+logChecker("Misra C++: M17-0-2"); // style
+logChecker("Misra C++: M17-0-3"); // style
+logChecker("Misra C++: M17-0-5"); // style
+logChecker("Misra C++: M18-0-1"); // style
+logChecker("Misra C++: M18-0-2"); // style
+logChecker("Misra C++: M18-0-3"); // style
+logChecker("Misra C++: M18-0-4"); // style
+logChecker("Misra C++: M18-0-5"); // style
+logChecker("Misra C++: M18-2-1"); // style
+logChecker("Misra C++: M18-4-1"); // style
+logChecker("Misra C++: M18-7-1"); // style
+logChecker("Misra C++: M19-3-1"); // style
+logChecker("Misra C++: M2-10-1"); // style
+logChecker("Misra C++: M2-10-3"); // style
+logChecker("Misra C++: M2-10-4"); // style
+logChecker("Misra C++: M2-10-5"); // style
+logChecker("Misra C++: M2-10-6"); // style
+logChecker("Misra C++: M2-13-4"); // style
+logChecker("Misra C++: M2-13-5"); // style
+logChecker("Misra C++: M27-0-1"); // style
+logChecker("Misra C++: M2-7-1"); // style
+logChecker("Misra C++: M2-7-2"); // style
+logChecker("Misra C++: M2-7-3"); // style
+logChecker("Misra C++: M3-1-1"); // style
+logChecker("Misra C++: M3-1-2"); // style
+logChecker("Misra C++: M3-1-3"); // style
+logChecker("Misra C++: M3-2-1");
+logChecker("Misra C++: M3-3-1"); // style
+logChecker("Misra C++: M3-3-2"); // style
+logChecker("Misra C++: M3-9-1"); // style
+logChecker("Misra C++: M3-9-2"); // style
+logChecker("Misra C++: M3-9-3"); // style
+logChecker("Misra C++: M4-10-1"); // style
+logChecker("Misra C++: M4-10-2"); // style
+logChecker("Misra C++: M4-5-1"); // style
+logChecker("Misra C++: M4-5-2"); // style
+logChecker("Misra C++: M4-5-3"); // style
+logChecker("Misra C++: M5-0-10"); // style
+logChecker("Misra C++: M5-0-11"); // style
+logChecker("Misra C++: M5-0-12"); // style
+logChecker("Misra C++: M5-0-14"); // style
+logChecker("Misra C++: M5-0-15"); // style
+logChecker("Misra C++: M5-0-20"); // style
+logChecker("Misra C++: M5-0-21"); // style
+logChecker("Misra C++: M5-0-2"); // style
+logChecker("Misra C++: M5-0-3"); // style
+logChecker("Misra C++: M5-0-4"); // style
+logChecker("Misra C++: M5-0-5"); // style
+logChecker("Misra C++: M5-0-6"); // style
+logChecker("Misra C++: M5-0-7"); // style
+logChecker("Misra C++: M5-0-8"); // style
+logChecker("Misra C++: M5-0-9"); // style
+logChecker("Misra C++: M5-2-10"); // style
+logChecker("Misra C++: M5-2-11"); // style
+logChecker("Misra C++: M5-2-12"); // style
+logChecker("Misra C++: M5-2-1"); // style
+logChecker("Misra C++: M5-2-2"); // style
+logChecker("Misra C++: M5-2-3"); // style
+logChecker("Misra C++: M5-2-5"); // style
+logChecker("Misra C++: M5-2-6"); // style
+logChecker("Misra C++: M5-2-7"); // style
+logChecker("Misra C++: M5-2-8"); // style
+logChecker("Misra C++: M5-2-9"); // style
+logChecker("Misra C++: M5-3-1"); // style
+logChecker("Misra C++: M5-3-2"); // style
+logChecker("Misra C++: M5-3-3"); // style
+logChecker("Misra C++: M6-2-3"); // style
+logChecker("Misra C++: M6-4-4"); // style
+logChecker("Misra C++: M6-4-6"); // style
+logChecker("Misra C++: M6-4-7"); // style
+logChecker("Misra C++: M6-4-8"); // style
+logChecker("Misra C++: M6-5-1"); // style
+logChecker("Misra C++: M6-5-2"); // style
+logChecker("Misra C++: M6-5-3"); // style
+logChecker("Misra C++: M6-5-4"); // style
+logChecker("Misra C++: M6-5-5"); // style
+logChecker("Misra C++: M6-5-6"); // style
+logChecker("Misra C++: M6-6-1"); // style
+logChecker("Misra C++: M6-6-3"); // style
+logChecker("Misra C++: M6-6-4"); // style
+logChecker("Misra C++: M6-6-5"); // style
+logChecker("Misra C++: M7-2-1"); // style
+logChecker("Misra C++: M7-3-1"); // style
+logChecker("Misra C++: M7-3-2"); // style
+logChecker("Misra C++: M7-3-3"); // style
+logChecker("Misra C++: M7-3-4"); // style
+logChecker("Misra C++: M7-3-5"); // style
+logChecker("Misra C++: M7-3-6"); // style
+logChecker("Misra C++: M7-4-2"); // style
+logChecker("Misra C++: M7-4-3"); // style
+logChecker("Misra C++: M7-5-3"); // style
+logChecker("Misra C++: M8-0-1"); // style
+logChecker("Misra C++: M8-3-1"); // style
+logChecker("Misra C++: M8-4-4"); // style
+logChecker("Misra C++: M9-3-1"); // style
+logChecker("Misra C++: M9-5-1"); // style
+logChecker("Misra C++: M9-6-2"); // style
+logChecker("Misra C++: M9-6-3"); // style
+logChecker("Misra C++: M9-6-4"); // style
+logChecker("PremiumCheckBufferOverrun::addressOfPointerArithmetic"); // warning
+logChecker("PremiumCheckBufferOverrun::negativeBufferSizeCheckedNonZero"); // warning
+logChecker("PremiumCheckBufferOverrun::negativeBufferSizeCheckedNonZero"); // warning
+logChecker("PremiumCheckHang::infiniteLoop");
+logChecker("PremiumCheckHang::infiniteLoopContinue");
+logChecker("PremiumCheckOther::arrayPointerComparison"); // style
+logChecker("PremiumCheckOther::knownResult"); // style
+logChecker("PremiumCheckOther::lossOfPrecision"); // style
+logChecker("PremiumCheckOther::pointerCast"); // style
+logChecker("PremiumCheckOther::reassignInLoop"); // style
+logChecker("PremiumCheckOther::unreachableCode"); // style
+logChecker("PremiumCheckStrictAlias::strictAliasCondition"); // warning
+logChecker("PremiumCheckUninitVar::uninitmember");
+logChecker("PremiumCheckUninitVar::uninitvar");
+logChecker("PremiumCheckUnusedVar::unreadVariable"); // style
+logChecker("PremiumCheckUnusedVar::unusedPrivateMember"); // style
 """
 
 for line in premium_checkers.split('\n'):
-    res = re.match(r'logChecker\("([:_a-zA-Z0-9]+)"\);.*', line)
+    res = re.match(r'logChecker\("([^"]+)"\);.*', line)
     if res is None:
         continue
     if line.find('//') > 0:

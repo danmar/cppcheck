@@ -2,7 +2,14 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: CI-unixish
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+    tags:
+      - '2.*'
+  pull_request:
 
 permissions:
   contents: read
@@ -334,6 +341,7 @@ jobs:
         run: |
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
+          python3 -m pip install pytest-timeout
 
       - name: Build cppcheck
         run: |

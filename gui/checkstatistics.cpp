@@ -65,6 +65,11 @@ void CheckStatistics::addItem(const QString &tool, ShowTypes::ShowType type)
     }
 }
 
+void CheckStatistics::addChecker(const QString &checker)
+{
+    mActiveCheckers.insert(checker.toStdString());
+}
+
 void CheckStatistics::clear()
 {
     mStyle.clear();
@@ -73,6 +78,8 @@ void CheckStatistics::clear()
     mPortability.clear();
     mInformation.clear();
     mError.clear();
+    mActiveCheckers.clear();
+    mCheckersReport.clear();
 }
 
 unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type) const

@@ -11033,12 +11033,38 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #11894
+        check("struct S {\n"
+              "    int *p, n;\n"
+              "};\n"
+              "S* g() {\n"
+              "    S* s = static_cast<S*>(calloc(1, sizeof(S)));\n"
+              "    s->n = 100;\n"
+              "    s->p = static_cast<int*>(malloc(s->n * sizeof(int)));\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #11679
         check("bool g(int);\n"
               "void h(int);\n"
               "int k(int a) { h(a); return 0; }\n"
               "void f(int i) {\n"
               "    if (g(k(i))) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11889
+        check("struct S {\n"
+              "    int a[5];\n"
+              "    void f(int i);\n"
+              "}\n"
+              "void g(int);\n"
+              "void S::f(int i) {\n"
+              "    if (a[i] == 1) {\n"
+              "        a[i] = 0;\n"
+              "        g(a[i]);\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

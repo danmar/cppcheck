@@ -66,8 +66,7 @@ Checks: >
         -readability-magic-numbers,
         -readability-redundant-access-specifiers,
         -readability-suspicious-call-argument,
-        -readability-uppercase-literal-suffix,
-        -readability-use-anyofallof
+        -readability-uppercase-literal-suffix
 WarningsAsErrors: '*'
 HeaderFilterRegex: '(cli|gui|lib|oss-fuzz|test|triage)\/[a-z]+\.h'
 CheckOptions:

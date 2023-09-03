@@ -29,6 +29,7 @@
 #include <QWidget>
 
 class ErrorItem;
+class Settings;
 class ApplicationList;
 class ThreadHandler;
 class QModelIndex;
@@ -135,6 +136,11 @@ public:
      */
 
     QString getCheckDirectory();
+
+    /**
+     * Set settings used in checking
+     */
+    void setCheckSettings(const Settings& settings);
 
     /**
      * @brief Inform the view that checking has started
@@ -368,10 +374,15 @@ private:
 
     CheckStatistics *mStatistics;
 
+    Settings* mCheckSettings = nullptr;
+
     /**
      * Set to true when checking finish successfully. Set to false whenever analysis starts.
      */
     bool mSuccess = false;
+
+    /** Critical error ids */
+    QString mCriticalErrors;
 
 private slots:
     /**

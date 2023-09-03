@@ -194,6 +194,12 @@
     <ClCompile Include="vfvalue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="checkersreport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="keywords.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="checkbufferoverrun.h">
@@ -404,6 +410,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vfvalue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keywords.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="checkersreport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="json.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

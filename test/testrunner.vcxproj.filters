@@ -256,6 +256,9 @@
     <ClCompile Include="testsingleexecutor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="testcheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">
     <ClInclude Include="options.h">

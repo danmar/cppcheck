@@ -315,8 +315,8 @@ static void createDumpFile(const Settings& settings,
         break;
     }
 
-    fdump << "<?xml version=\"1.0\"?>" << std::endl;
-    fdump << "<dumps" << language << ">" << std::endl;
+    fdump << "<?xml version=\"1.0\"?>\n";
+    fdump << "<dumps" << language << ">\n";
     fdump << "  <platform"
           << " name=\"" << settings.platform.toString() << '\"'
           << " char_bit=\"" << settings.platform.char_bit << '\"'
@@ -325,7 +325,7 @@ static void createDumpFile(const Settings& settings,
           << " long_bit=\"" << settings.platform.long_bit << '\"'
           << " long_long_bit=\"" << settings.platform.long_long_bit << '\"'
           << " pointer_bit=\"" << (settings.platform.sizeof_pointer * settings.platform.char_bit) << '\"'
-          << "/>\n";
+          << "/>" << '\n';
 }
 
 static std::string executeAddon(const AddonInfo &addonInfo,
@@ -352,6 +352,14 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 #endif
         for (const char* py_exe : py_exes) {
             std::string out;
+#ifdef _MSC_VER
+            // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
+            const std::string cmd = std::string(py_exe) + " --version >NUL";
+            if (system(cmd.c_str()) != 0) {
+                // TODO: get more detailed error?
+                break;
+            }
+#endif
             if (executeCommand(py_exe, split("--version"), redirect, out) && out.compare(0, 7, "Python ") == 0 && std::isdigit(out[7])) {
                 pythonExe = py_exe;
                 break;
@@ -373,7 +381,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
 
     std::string result;
     if (!executeCommand(pythonExe, split(args), redirect, result)) {
-        std::string message("Failed to execute addon (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
+        std::string message("Failed to execute addon '" + addonInfo.name + "' (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
         if (result.size() > 2) {
             message = message + "\n" + message + "\nOutput:\n" + result;
             message.resize(message.find_last_not_of("\n\r"));
@@ -571,16 +579,16 @@ unsigned int CppCheck::check(const std::string &path)
             std::string dumpFile;
             createDumpFile(mSettings, path, fdump, dumpFile);
             if (fdump.is_open()) {
-                fdump << "<dump cfg=\"\">" << std::endl;
+                fdump << "<dump cfg=\"\">\n";
                 for (const ErrorMessage& errmsg: compilerWarnings)
                     fdump << "  <clang-warning file=\"" << toxml(errmsg.callStack.front().getfile()) << "\" line=\"" << errmsg.callStack.front().line << "\" column=\"" << errmsg.callStack.front().column << "\" message=\"" << toxml(errmsg.shortMessage()) << "\"/>\n";
-                fdump << "  <standards>" << std::endl;
-                fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
-                fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
-                fdump << "  </standards>" << std::endl;
+                fdump << "  <standards>\n";
+                fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>\n";
+                fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>\n";
+                fdump << "  </standards>\n";
                 tokenizer.dump(fdump);
-                fdump << "</dump>" << std::endl;
-                fdump << "</dumps>" << std::endl;
+                fdump << "</dump>\n";
+                fdump << "</dumps>\n";
                 fdump.close();
             }
 
@@ -588,13 +596,12 @@ unsigned int CppCheck::check(const std::string &path)
             executeAddons(dumpFile);
 
         } catch (const InternalError &e) {
-            internalError(path, e.errorMessage);
-            mExitCode = 1; // e.g. reflect a syntax error
+            internalError(path, "Processing Clang AST dump failed: " + e.errorMessage);
         } catch (const TerminateException &) {
             // Analysis is terminated
             return mExitCode;
         } catch (const std::exception &e) {
-            internalError(path, e.what());
+            internalError(path, std::string("Processing Clang AST dump failed: ") + e.what());
         }
 
         return mExitCode;
@@ -975,22 +982,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 return mExitCode;
 
             } catch (const InternalError &e) {
-                std::list<ErrorMessage::FileLocation> locationList;
-                if (e.token) {
-                    locationList.emplace_back(e.token, &tokenizer.list);
-                } else {
-                    locationList.emplace_back(filename, 0, 0);
-                    if (filename != tokenizer.list.getSourceFilePath()) {
-                        locationList.emplace_back(tokenizer.list.getSourceFilePath(), 0, 0);
-                    }
-                }
-                ErrorMessage errmsg(std::move(locationList),
-                                    tokenizer.list.getSourceFilePath(),
-                                    Severity::error,
-                                    e.errorMessage,
-                                    e.id,
-                                    Certainty::normal);
-
+                ErrorMessage errmsg = ErrorMessage::fromInternalError(e, &tokenizer.list, filename);
                 reportErr(errmsg);
             }
         }
@@ -1026,12 +1018,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         // Analysis is terminated
         return mExitCode;
     } catch (const std::runtime_error &e) {
-        internalError(filename, e.what());
-    } catch (const std::bad_alloc &e) {
-        internalError(filename, e.what());
+        internalError(filename, std::string("Checking file failed: ") + e.what());
+    } catch (const std::bad_alloc &) {
+        internalError(filename, "Checking file failed: out of memory");
     } catch (const InternalError &e) {
-        internalError(filename, e.errorMessage);
-        mExitCode=1; // e.g. reflect a syntax error
+        internalError(filename, "Checking file failed: " + e.errorMessage);
     }
 
     if (!mSettings.buildDir.empty()) {
@@ -1050,9 +1041,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     return mExitCode;
 }
 
+// TODO: replace with ErrorMessage::fromInternalError()
 void CppCheck::internalError(const std::string &filename, const std::string &msg)
 {
-    const std::string fullmsg("Bailing out from checking since there was an internal error: " + msg);
+    const std::string fullmsg("Bailing out from analysis: " + msg);
 
     const ErrorMessage::FileLocation loc1(filename, 0, 0);
     std::list<ErrorMessage::FileLocation> callstack(1, loc1);
@@ -1500,9 +1492,11 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             errmsg.setmsg(text);
             const std::string severity = obj["severity"].get<std::string>();
             errmsg.severity = Severity::fromString(severity);
-            if (errmsg.severity == Severity::SeverityType::none)
-                continue;
-            if (!mSettings.severity.isEnabled(errmsg.severity))
+            if (errmsg.severity == Severity::SeverityType::none) {
+                if (!endsWith(errmsg.id, "-logChecker"))
+                    continue;
+            }
+            else if (!mSettings.severity.isEnabled(errmsg.severity))
                 continue;
             errmsg.file0 = ((files.size() == 1) ? files[0] : "");
 
@@ -1525,8 +1519,7 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     try {
         executeAddons(ctuInfoFiles);
     } catch (const InternalError& e) {
-        internalError("", "Internal error during whole program analysis: " + e.errorMessage);
-        mExitCode = 1;
+        internalError("", "Whole program analysis failed: " + e.errorMessage);
     }
 
     if (mSettings.buildDir.empty()) {
@@ -1605,7 +1598,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
-    if (msg.severity == Severity::none && msg.id == "logChecker") {
+    if (msg.severity == Severity::none && (msg.id == "logChecker" || endsWith(msg.id, "-logChecker"))) {
         mErrorLogger.reportErr(msg);
         return;
     }
