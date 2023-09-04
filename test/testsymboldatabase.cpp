@@ -5737,7 +5737,7 @@ private:
         ASSERT(B);
         TODO_ASSERT(B->value_known);
         const Token* const e = Token::findsimplematch(tokenizer.tokens(), "e >>");
-        ASSERT(e && e->valueType() );
+        ASSERT(e && e->valueType());
         ASSERT_EQUALS(e->valueType()->type, ValueType::Type::LONGLONG);
     }
 
