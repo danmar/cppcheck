@@ -165,6 +165,8 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
             return suppressions;
         }
 
+        const std::string SymbolNameString = "symbolName=";
+
         while (iss) {
             std::string word;
             iss >> word;
@@ -172,8 +174,8 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
                 break;
             if (word.find_first_not_of("+-*/%#;") == std::string::npos)
                 break;
-            if (word.compare(0, 11, "symbolName=") == 0) {
-                s.symbolName = word.substr(11);
+            if (word.compare(0, SymbolNameString.size(), SymbolNameString) == 0) {
+                s.symbolName = word.substr(SymbolNameString.size());
             } else {
                 if (errorMessage && errorMessage->empty())
                     *errorMessage = "Bad multi suppression '" + comment + "'. legal format is cppcheck-suppress[errorId, errorId symbolName=arr, ...]";
@@ -301,23 +303,29 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
 
     if (comment.compare(comment.size() - 2, 2, "*/") == 0)
         comment.erase(comment.size() - 2, 2);
+    
+    const std::string cppchecksuppress = "cppcheck-suppress";
 
     std::istringstream iss(comment.substr(2));
     std::string word;
     iss >> word;
-    if (word != "cppcheck-suppress")
+    if (word.substr(0, cppchecksuppress.size()) != cppchecksuppress)
         return false;
+
     iss >> errorId;
     if (!iss)
         return false;
+
+    const std::string SymbolNameString = "symbolName=";
+
     while (iss) {
         iss >> word;
         if (!iss)
             break;
         if (word.find_first_not_of("+-*/%#;") == std::string::npos)
             break;
-        if (word.compare(0,11,"symbolName=")==0)
-            symbolName = word.substr(11);
+        if (word.compare(0,SymbolNameString.size(),SymbolNameString)==0)
+            symbolName = word.substr(SymbolNameString.size());
         else if (errorMessage && errorMessage->empty())
             *errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
     }
@@ -332,10 +340,12 @@ bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &e
         return false;
     if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
         return false;
-    if (lineNumber != NO_LINE && lineNumber != errmsg.lineNumber) {
+    if (Suppressions::Type::unique == type && lineNumber != NO_LINE && lineNumber != errmsg.lineNumber) {
         if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
             return false;
     }
+    if (Suppressions::Type::block == type && (errmsg.lineNumber < lineBegin || errmsg.lineNumber > lineEnd))
+        return false;
     if (!symbolName.empty()) {
         for (std::string::size_type pos = 0; pos < errmsg.symbolNames.size();) {
             const std::string::size_type pos2 = errmsg.symbolNames.find('\n',pos);
@@ -385,15 +395,16 @@ std::string Suppressions::Suppression::getText() const
 bool Suppressions::isSuppressed(const Suppressions::ErrorMessage &errmsg, bool global)
 {
     const bool unmatchedSuppression(errmsg.errorId == "unmatchedSuppression");
+    bool return_value = false;
     for (Suppression &s : mSuppressions) {
         if (!global && !s.isLocal())
             continue;
         if (unmatchedSuppression && s.errorId != errmsg.errorId)
             continue;
         if (s.isMatch(errmsg))
-            return true;
+            return_value = true;
     }
-    return false;
+    return return_value;
 }
 
 bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg)
@@ -470,7 +481,15 @@ void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tok
             currLineNr = tok->linenr();
             currFileIdx = tok->fileIndex();
             for (auto &suppression : mSuppressions) {
-                if (!suppression.checked && (suppression.lineNumber == currLineNr) && (suppression.fileName == tokenizer.list.file(tok))) {
+                if (suppression.type == Suppressions::Type::unique) {
+                    if (!suppression.checked && (suppression.lineNumber == currLineNr) && (suppression.fileName == tokenizer.list.file(tok))) {
+                        suppression.checked = true;
+                    }
+                } else if (suppression.type == Suppressions::Type::block) {
+                    if ((!suppression.checked && (suppression.lineBegin <= currLineNr) && (suppression.lineEnd >= currLineNr) && suppression.fileName == tokenizer.list.file(tok))){
+                        suppression.checked = true;
+                    }
+                } else if (!suppression.checked && suppression.fileName == tokenizer.list.file(tok)) {
                     suppression.checked = true;
                 }
             }

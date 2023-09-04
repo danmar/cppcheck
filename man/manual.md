@@ -531,6 +531,26 @@ Suppressing multiple ids in one comment by using []:
 
     // cppcheck-suppress [aaaa, bbbb]
 
+Suppressing warnings `aaaa` on a block of code:
+
+    // cppcheck-suppress-begin aaaa
+    ...
+    // cppcheck-suppress-end aaaa
+
+Suppressing multiple ids on a block of code:
+
+    // cppcheck-suppress-begin [aaaa, bbbb]
+    ...
+    // cppcheck-suppress-end [aaaa, bbbb]
+
+Suppressing warnings `aaaa` for a whole file:
+
+    // cppcheck-suppress-file aaaa
+
+Suppressing multiple ids for a whole file:
+
+    // cppcheck-suppress-file [aaaa, bbbb]
+
 ### Comment before code or on same line
 
 The comment can be put before the code or at the same line as the code.

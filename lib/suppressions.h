@@ -41,6 +41,10 @@ enum class Certainty;
 class CPPCHECKLIB Suppressions {
 public:
 
+    enum class Type {
+        unique, file, block, blockBegin, blockEnd
+    };
+
     struct CPPCHECKLIB ErrorMessage {
         std::size_t hash;
         std::string errorId;
@@ -77,6 +81,26 @@ public:
             return false;
         }
 
+        bool operator==(const Suppression &other) const {
+            if (errorId != other.errorId)
+                return false;
+            if (lineNumber < other.lineNumber)
+                return false;
+            if (fileName != other.fileName)
+                return false;
+            if (symbolName != other.symbolName)
+                return false;
+            if (hash != other.hash)
+                return false;
+            if (type != other.type)
+                return false;
+            if (lineBegin != other.lineBegin)
+                return false;
+            if (lineEnd != other.lineEnd)
+                return false;
+            return true;
+        }
+
         /**
          * Parse inline suppression in comment
          * @param comment the full comment text
@@ -107,6 +131,9 @@ public:
         std::string errorId;
         std::string fileName;
         int lineNumber = NO_LINE;
+        int lineBegin = NO_LINE;
+        int lineEnd = NO_LINE;
+        Type type = Type::unique;
         std::string symbolName;
         std::size_t hash{};
         bool thisAndNextLine{}; // Special case for backwards compatibility: { // cppcheck-suppress something
