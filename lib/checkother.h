@@ -50,7 +50,6 @@ class CPPCHECKLIB CheckOther : public Check {
     friend class TestCharVar;
     friend class TestIncompleteStatement;
     friend class TestOther;
-    friend class TestFixture;
 
 public:
     /** @brief This constructor is used when registering the CheckClass */

@@ -39,8 +39,6 @@ class Token;
 /** @brief checks on usage of sizeof() operator */
 
 class CPPCHECKLIB CheckSizeof : public Check {
-    friend class TestFixture;
-
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckSizeof() : Check(myName()) {}

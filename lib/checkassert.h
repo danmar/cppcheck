@@ -41,8 +41,6 @@ class Token;
  */
 
 class CPPCHECKLIB CheckAssert : public Check {
-    friend class TestFixture;
-
 public:
     CheckAssert() : Check(myName()) {}
 

@@ -39,8 +39,6 @@ class Token;
 /** @brief checks dealing with suspicious usage of boolean type (not for evaluating conditions) */
 
 class CPPCHECKLIB CheckBool : public Check {
-    friend class TestFixture;
-
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckBool() : Check(myName()) {}

@@ -39,8 +39,6 @@ class Token;
 /** @brief Detect misusage of C-style strings and related standard functions */
 
 class CPPCHECKLIB CheckString : public Check {
-    friend class TestFixture;
-
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckString() : Check(myName()) {}

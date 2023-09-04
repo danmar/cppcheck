@@ -58,7 +58,6 @@ class Token;
  */
 class CPPCHECKLIB CheckBufferOverrun : public Check {
     friend class TestBufferOverrun;
-    friend class TestFixture;
 
 public:
     /** This constructor is used when registering the CheckClass */

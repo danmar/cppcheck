@@ -45,8 +45,6 @@ class Token;
  */
 
 class CPPCHECKLIB CheckExceptionSafety : public Check {
-    friend class TestFixture;
-
 public:
     /** This constructor is used when registering the CheckClass */
     CheckExceptionSafety() : Check(myName()) {}
