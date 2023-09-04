@@ -2539,7 +2539,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 
     // Check addressof
     if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
-        if (isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1))
+        if (isVariableChanged(tok2->astParent(), indirect + 1, settings, cpp, depth - 1))
             return true;
     } else {
         // If its already const then it cant be modified

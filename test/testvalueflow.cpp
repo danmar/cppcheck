@@ -7165,6 +7165,12 @@ private:
                "    (*printf)(\"%s %i\", strerror(errno), b ? 0 : 1);\n"
                "};\n";
         valueOfTok(code, "?");
+
+        code = "void f(int i) {\n" // #11914
+               "    int& r = i;\n"
+               "    int& q = (&r)[0];\n"
+               "}\n";
+        valueOfTok(code, "&");
     }
 
     void valueFlowHang() {
