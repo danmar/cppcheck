@@ -304,15 +304,40 @@ private:
                                         "uninitvar"));
         ASSERT_EQUALS("", errout.str());
 
-        ASSERT_EQUALS(0, (this->*check)("void f() {\n"
-                                        "    // cppcheck-suppress-file uninitvar\n"
+        (this->*check)("void f() {\n"
+                       "    // cppcheck-suppress-file uninitvar\n"
+                       "    int a;\n"
+                       "    a++;\n"
+                       "}\n",
+                       "");
+        ASSERT_EQUALS("[test.cpp:2]: (error) File suppression should be at the top of the file\n"
+                      "[test.cpp:4]: (error) Uninitialized variable: a\n", errout.str());
+
+        (this->*check)("void f() {\n"
+                       "    int a;\n"
+                       "    a++;\n"
+                       "}\n"
+                       "// cppcheck-suppress-file uninitvar\n",
+                       "");
+        ASSERT_EQUALS("[test.cpp:5]: (error) File suppression should be at the top of the file\n"
+                      "[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        ASSERT_EQUALS(0, (this->*check)("// cppcheck-suppress-file uninitvar\n"
+                                        "void f() {\n"
                                         "    int a;\n"
                                         "    a++;\n"
+                                        "    int b;\n"
+                                        "    b++;\n"
                                         "}\n",
                                         ""));
         ASSERT_EQUALS("", errout.str());
 
-        ASSERT_EQUALS(0, (this->*check)("// cppcheck-suppress-file uninitvar\n"
+        ASSERT_EQUALS(0, (this->*check)("/* Fake file description\n"
+                                        " * End\n"
+                                        " */\n"
+                                        "\n"
+                                        "// cppcheck-suppress-file uninitvar\n"
+                                        "\n"
                                         "void f() {\n"
                                         "    int a;\n"
                                         "    a++;\n"

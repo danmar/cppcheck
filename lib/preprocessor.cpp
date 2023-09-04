@@ -75,7 +75,7 @@ Preprocessor::~Preprocessor()
 
 namespace {
     struct BadInlineSuppression {
-        BadInlineSuppression(const std::string &file, const int line, std::string msg) : file(file), line(line), errmsg(std::move(msg)) {}
+        BadInlineSuppression(std::string file, const int line, std::string msg) : file(std::move(file)), line(line), errmsg(std::move(msg)) {}
         std::string file;
         int line;
         std::string errmsg;
@@ -169,9 +169,13 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
 {
     std::list<Suppressions::Suppression> inlineSuppressionsBlockBegin;
 
+    bool onlyComments = true;
+
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
-        if (!tok->comment)
+        if (!tok->comment) {
+            onlyComments = false;
             continue;
+        }
 
         std::list<Suppressions::Suppression> inlineSuppressions;
         if (!parseInlineSuppressionCommentToken(tok, inlineSuppressions, bad))
@@ -260,8 +264,11 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                 suppr.thisAndNextLine = thisAndNextLine;
                 suppr.lineNumber = tok->location.line;
                 suppressions.addSuppression(std::move(suppr));
-            } else {
-                suppressions.addSuppression(std::move(suppr));
+            } else if (Suppressions::Type::file == suppr.type) {
+                if (onlyComments)
+                    suppressions.addSuppression(std::move(suppr));
+                else
+                    bad.emplace_back(suppr.fileName, suppr.lineNumber, "File suppression should be at the top of the file");
             }
         }
     }
