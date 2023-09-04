@@ -57,8 +57,6 @@ class Token;
  * other function and pass a buffer and reads or writes too much data.
  */
 class CPPCHECKLIB CheckBufferOverrun : public Check {
-    friend class TestBufferOverrun;
-
 public:
     /** This constructor is used when registering the CheckClass */
     CheckBufferOverrun() : Check(myName()) {}
