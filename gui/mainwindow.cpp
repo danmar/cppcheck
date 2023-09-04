@@ -1806,6 +1806,7 @@ void MainWindow::newProjectFile()
     mProjectFile = new ProjectFile(this);
     mProjectFile->setActiveProject();
     mProjectFile->setFilename(filepath);
+    mProjectFile->setProjectName(filename.left(filename.indexOf(".")));
     mProjectFile->setBuildDir(filename.left(filename.indexOf(".")) + "-cppcheck-build-dir");
 
     ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
