@@ -44,8 +44,6 @@ namespace CTU {
 /// @{
 
 class CPPCHECKLIB CheckUnusedFunctions : public Check {
-    friend class TestUnusedFunctions;
-
 public:
     /** @brief This constructor is used when registering the CheckUnusedFunctions */
     CheckUnusedFunctions() : Check(myName()) {}
