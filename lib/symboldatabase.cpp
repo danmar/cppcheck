@@ -6771,6 +6771,18 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     }
 }
 
+static ValueType::Type getEnumType(const Scope* scope)
+{
+    ValueType::Type type = ValueType::Type::INT;
+    for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next())
+        if (const ValueType* vt = tok->valueType()) {
+            if ((vt->type > type && (vt->type == ValueType::Type::LONG || vt->type == ValueType::Type::LONGLONG))) {
+                type = vt->type;
+            }
+        }
+    return type;
+}
+
 static const Token* parsedecl(const Token* type,
                               ValueType* const valuetype,
                               ValueType::Sign defaultSignedness,
@@ -6804,7 +6816,7 @@ static const Token* parsedecl(const Token* type,
             else if (enum_type->isStandardType())
                 valuetype->fromLibraryType(enum_type->str(), settings);
         } else
-            valuetype->type = ValueType::Type::INT;
+            valuetype->type = getEnumType(valuetype->typeScope);
     } else
         valuetype->type = ValueType::Type::RECORD;
     bool par = false;
@@ -6951,8 +6963,7 @@ static const Token* parsedecl(const Token* type,
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
             if (type->type()->classScope->type == Scope::ScopeType::eEnum) {
-                valuetype->type = ValueType::Type::INT;
-                valuetype->sign = ValueType::Sign::SIGNED;
+                valuetype->type = getEnumType(type->type()->classScope);
             } else {
                 valuetype->type = ValueType::Type::RECORD;
             }

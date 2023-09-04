@@ -384,6 +384,7 @@ private:
         TEST_CASE(enum11);
         TEST_CASE(enum12);
         TEST_CASE(enum13);
+        TEST_CASE(enum14);
 
         TEST_CASE(sizeOfType);
 
@@ -5721,6 +5722,23 @@ private:
         const Token* const a = Token::findsimplematch(tokenizer.tokens(), "auto");
         ASSERT(a && a->valueType());
         ASSERT(E1->scope == a->valueType()->typeScope);
+    }
+
+    void enum14() {
+        GET_SYMBOL_DB("void f() {\n" // #11421
+                      "    enum E { A = 0, B = 0xFFFFFFFFFFFFFFFFull };\n"
+                      "    E e = B;\n"
+                      "    auto s = e >> 32;\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* B = it->findEnumerator("B");
+        ASSERT(B);
+        TODO_ASSERT(B->value_known);
+        const Token* const e = Token::findsimplematch(tokenizer.tokens(), "e >>");
+        ASSERT(e && e->valueType() );
+        ASSERT_EQUALS(e->valueType()->type, ValueType::Type::LONGLONG);
     }
 
     void sizeOfType() {
