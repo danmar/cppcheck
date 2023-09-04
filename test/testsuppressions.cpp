@@ -526,7 +526,6 @@ private:
                        "");
         ASSERT_EQUALS("[test.cpp:4]: (information) Unmatched suppression: uninitvar\n", errout.str());
 
-        
         // suppress block inline checks
         ASSERT_EQUALS(0, (this->*check)("void f() {\n"
                                         "    // cppcheck-suppress-begin uninitvar\n"
@@ -632,7 +631,7 @@ private:
                        "}\n",
                        "");
         ASSERT_EQUALS("", errout.str());
-    
+
         (this->*check)("void f() {\n"
                        "    // cppcheck-suppress-begin [uninitvar]\n"
                        "    int a;\n"

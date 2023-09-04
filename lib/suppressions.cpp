@@ -303,7 +303,7 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
 
     if (comment.compare(comment.size() - 2, 2, "*/") == 0)
         comment.erase(comment.size() - 2, 2);
-    
+
     const std::string cppchecksuppress = "cppcheck-suppress";
 
     std::istringstream iss(comment.substr(2));
@@ -486,7 +486,7 @@ void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tok
                         suppression.checked = true;
                     }
                 } else if (suppression.type == Suppressions::Type::block) {
-                    if ((!suppression.checked && (suppression.lineBegin <= currLineNr) && (suppression.lineEnd >= currLineNr) && suppression.fileName == tokenizer.list.file(tok))){
+                    if ((!suppression.checked && (suppression.lineBegin <= currLineNr) && (suppression.lineEnd >= currLineNr) && suppression.fileName == tokenizer.list.file(tok))) {
                         suppression.checked = true;
                     }
                 } else if (!suppression.checked && suppression.fileName == tokenizer.list.file(tok)) {

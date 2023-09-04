@@ -75,7 +75,7 @@ Preprocessor::~Preprocessor()
 
 namespace {
     struct BadInlineSuppression {
-        BadInlineSuppression(const std::string file, const int line, std::string msg) : file(file), line(line), errmsg(std::move(msg)) {}
+        BadInlineSuppression(const std::string &file, const int line, std::string msg) : file(file), line(line), errmsg(std::move(msg)) {}
         std::string file;
         int line;
         std::string errmsg;
@@ -99,23 +99,23 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
 
     // check if it has a prefix
     const std::string::size_type posEndComment = comment.find_first_of(" [", pos1+cppchecksuppress.size());
-    
+
     // skip spaces after "cppcheck-suppress" and its possible prefix
     const std::string::size_type pos2 = comment.find_first_not_of(' ', posEndComment);
     if (pos2 == std::string::npos)
         return false;
-    
+
     Suppressions::Type errorType = Suppressions::Type::unique;
 
-     // determine prefix if specified
-     if (posEndComment >= (pos1 + cppchecksuppress.size() + 1)) {
+    // determine prefix if specified
+    if (posEndComment >= (pos1 + cppchecksuppress.size() + 1)) {
         if (comment.at(pos1 + cppchecksuppress.size()) != '-')
             return false;
 
-        const unsigned int argumentLength = 
+        const unsigned int argumentLength =
             posEndComment - (pos1 + cppchecksuppress.size() + 1);
 
-        const std::string suppressTypeString = 
+        const std::string suppressTypeString =
             comment.substr(pos1 + cppchecksuppress.size() + 1, argumentLength);
 
         if ("file" == suppressTypeString) {
@@ -125,7 +125,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         } else if ("end" == suppressTypeString) {
             errorType = Suppressions::Type::blockEnd;
         } else {
-                return false;
+            return false;
         }
     }
 
@@ -136,7 +136,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
 
         for (Suppressions::Suppression &s : suppressions) {
             s.type = errorType;
-            s.lineNumber = tok->location.line; 
+            s.lineNumber = tok->location.line;
         }
 
         if (!errmsg.empty())
@@ -153,7 +153,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             return false;
 
         s.type = errorType;
-        s.lineNumber = tok->location.line; 
+        s.lineNumber = tok->location.line;
 
         if (!s.errorId.empty())
             inlineSuppressions.push_back(std::move(s));
@@ -196,6 +196,10 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
         if (inlineSuppressions.empty())
             continue;
 
+        // It should never happen
+        if (!tok)
+            continue;
+
         // Relative filename
         std::string relativeFilename(tok->location.file());
         if (settings.relativePaths) {
@@ -217,15 +221,15 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                 inlineSuppressionsBlockBegin.push_back(std::move(suppr));
             } else if (Suppressions::Type::blockEnd == suppr.type) {
                 bool throwError = true;
-                
-                if (inlineSuppressionsBlockBegin.size() > 0) {
+
+                if (!inlineSuppressionsBlockBegin.empty()) {
                     const Suppressions::Suppression lastBeginSuppression = inlineSuppressionsBlockBegin.back();
 
-                    for (Suppressions::Suppression &supprBegin : inlineSuppressionsBlockBegin)
+                    for (const Suppressions::Suppression &supprBegin : inlineSuppressionsBlockBegin)
                     {
                         if (lastBeginSuppression.lineNumber != supprBegin.lineNumber)
                             continue;
-                        
+
                         if (suppr.symbolName == supprBegin.symbolName && suppr.lineNumber > supprBegin.lineNumber) {
                             suppr.lineBegin = supprBegin.lineNumber;
                             suppr.lineEnd = suppr.lineNumber;
@@ -238,38 +242,33 @@ static void addInlineSuppressions(const simplecpp::TokenList &tokens, const Sett
                         }
                     }
                 }
-                
+
                 if (throwError) {
+                    // NOLINTNEXTLINE(bugprone-use-after-move) - moved only when thrownError is false
                     bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress End: No matching begin");
                 }
             } else if (Suppressions::Type::unique == suppr.type) {
-                if (!tok) {
-                    bad.emplace_back(suppr.fileName, suppr.lineNumber, "Unique suppress without matching code");
-                } else {
-                    // special handling when suppressing { warnings for backwards compatibility
-                    const bool thisAndNextLine = tok->previous &&
-                                                tok->previous->previous &&
-                                                tok->next &&
-                                                !sameline(tok->previous->previous, tok->previous) &&
-                                                tok->location.line + 1 == tok->next->location.line &&
-                                                tok->location.fileIndex == tok->next->location.fileIndex &&
-                                                tok->previous->str() == "{";
-                    
-                    suppr.thisAndNextLine = thisAndNextLine;
-                    suppr.lineNumber = tok->location.line;
-                    suppressions.addSuppression(std::move(suppr));
-                }
+                // special handling when suppressing { warnings for backwards compatibility
+                const bool thisAndNextLine = tok->previous &&
+                                             tok->previous->previous &&
+                                             tok->next &&
+                                             !sameline(tok->previous->previous, tok->previous) &&
+                                             tok->location.line + 1 == tok->next->location.line &&
+                                             tok->location.fileIndex == tok->next->location.fileIndex &&
+                                             tok->previous->str() == "{";
+
+                suppr.thisAndNextLine = thisAndNextLine;
+                suppr.lineNumber = tok->location.line;
+                suppressions.addSuppression(std::move(suppr));
             } else {
                 suppressions.addSuppression(std::move(suppr));
             }
         }
     }
 
-    if (inlineSuppressionsBlockBegin.size() > 0) {
-        for (Suppressions::Suppression &suppr : inlineSuppressionsBlockBegin) {
-            bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress Begin: No matching end");
-        }
-    }
+    std::for_each(inlineSuppressionsBlockBegin.begin(), inlineSuppressionsBlockBegin.end(), [&](const Suppressions::Suppression & suppr) {
+        bad.emplace_back(suppr.fileName, suppr.lineNumber, "Suppress Begin: No matching end");
+    });
 }
 
 void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens, Suppressions &suppressions)
