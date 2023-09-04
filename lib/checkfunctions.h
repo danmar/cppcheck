@@ -49,8 +49,6 @@ namespace ValueFlow {
  */
 
 class CPPCHECKLIB CheckFunctions : public Check {
-    friend class TestFunctions;
-
 public:
     /** This constructor is used when registering the CheckFunctions */
     CheckFunctions() : Check(myName()) {}
