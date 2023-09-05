@@ -25,13 +25,13 @@
 #include "mathlib.h"
 #include "standards.h"
 
+#include <array>
 #include <cstdint>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -54,7 +54,11 @@ class CPPCHECKLIB Library {
     friend struct LibraryHelper; // for testing
 
 public:
-    Library() = default;
+    Library();
+    ~Library();
+
+    Library(const Library& other);
+    Library& operator=(const Library& other);
 
     enum class ErrorCode : std::uint8_t {
         OK,
@@ -523,34 +527,10 @@ private:
         int mOffset{};
         std::set<std::string> mBlocks;
     };
-    std::unordered_map<std::string, Container> mContainers;
-    std::unordered_map<std::string, Function> mFunctions;
-    std::unordered_map<std::string, SmartPointer> mSmartPointers;
     enum class FalseTrueMaybe : std::uint8_t { False, True, Maybe };
-    int mAllocId{};
-    std::set<std::string> mFiles;
-    std::map<std::string, AllocFunc> mAlloc; // allocation functions
-    std::map<std::string, AllocFunc> mDealloc; // deallocation functions
-    std::map<std::string, AllocFunc> mRealloc; // reallocation functions
-    std::unordered_map<std::string, FalseTrueMaybe> mNoReturn; // is function noreturn?
-    std::map<std::string, std::string> mReturnValue;
-    std::map<std::string, std::string> mReturnValueType;
-    std::map<std::string, int> mReturnValueContainer;
-    std::map<std::string, std::vector<MathLib::bigint>> mUnknownReturnValues;
-    std::map<std::string, bool> mReportErrors;
-    std::map<std::string, bool> mProcessAfterCode;
-    std::set<std::string> mMarkupExtensions; // file extensions of markup files
-    std::map<std::string, std::set<std::string>> mKeywords;  // keywords for code in the library
-    std::unordered_map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
-    std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
-    std::map<std::string, std::set<std::string>> mImporters;  // keywords that import variables/functions
-    std::map<std::string, int> mReflection; // invocation of reflection
-    std::unordered_map<std::string, PodType> mPodTypes; // pod types
-    std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
-    std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
-    std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
-    std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
-    std::unordered_set<std::string> mEntrypoints;
+
+    struct LibraryData;
+    std::unique_ptr<LibraryData> mData;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 

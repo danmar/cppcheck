@@ -244,13 +244,14 @@ private:
 
         Library library;
         ASSERT(LibraryHelper::loadxmldata(library, xmldata, sizeof(xmldata)));
-        ASSERT_EQUALS(0, library.functions().at("foo").argumentChecks.at(1).notuninit);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(2).notnull);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(3).formatstr);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(4).strz);
-        ASSERT_EQUALS(false, library.functions().at("foo").argumentChecks.at(4).optional);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(5).notbool);
-        ASSERT_EQUALS(true, library.functions().at("foo").argumentChecks.at(5).optional);
+        const auto& foo_fn_args = library.functions().at("foo").argumentChecks;
+        ASSERT_EQUALS(0, foo_fn_args.at(1).notuninit);
+        ASSERT_EQUALS(true, foo_fn_args.at(2).notnull);
+        ASSERT_EQUALS(true, foo_fn_args.at(3).formatstr);
+        ASSERT_EQUALS(true, foo_fn_args.at(4).strz);
+        ASSERT_EQUALS(false, foo_fn_args.at(4).optional);
+        ASSERT_EQUALS(true, foo_fn_args.at(5).notbool);
+        ASSERT_EQUALS(true, foo_fn_args.at(5).optional);
     }
 
     void function_arg_any() const {
