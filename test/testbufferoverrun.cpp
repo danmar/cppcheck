@@ -22,7 +22,6 @@
 #include "ctu.h"
 #include "errortypes.h"
 #include "standards.h"
-#include "library.h"
 #include "platform.h"
 #include "settings.h"
 #include "fixture.h"
@@ -57,7 +56,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
@@ -69,7 +68,7 @@ private:
         errout.str("");
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
     void checkP(const char code[], const char* filename = "test.cpp")
@@ -77,7 +76,7 @@ private:
         // Clear the error buffer..
         errout.str("");
 
-        const Settings settings = settingsBuilder(settings0).severity(Severity::style).severity(Severity::warning).severity(Severity::portability).severity(Severity::performance)
+        const Settings settings = settingsBuilder(settings0).severity(Severity::performance)
                                   .c(Standards::CLatest).cpp(Standards::CPPLatest).certainty(Certainty::inconclusive).build();
 
         // Raw tokens..
@@ -96,7 +95,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check for buffer overruns..
-        runChecks<CheckBufferOverrun>(&tokenizer, &settings, this);
+        runChecks<CheckBufferOverrun>(tokenizer, this);
     }
 
     void run() override {
@@ -191,6 +190,7 @@ private:
         TEST_CASE(array_index_negative7);    // #5685
         TEST_CASE(array_index_negative8);    // #11651
         TEST_CASE(array_index_negative9);
+        TEST_CASE(array_index_negative10);
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -2335,6 +2335,20 @@ private:
               "    printf(\"%d\\n\", a[g(4)]);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:8]: (error) Array 'a[3]' accessed at index -1, which is out of bounds.\n", errout.str());
+    }
+
+    // #11844
+    void array_index_negative10()
+    {
+        check("struct S { int a[4]; };\n"
+              "void f(S* p, int k) {\n"
+              "  int m = 3;\n"
+              "  if (k)\n"
+              "    m = 2;\n"
+              "  for (int j = m + 1; j <= 4; j++)\n"
+              "    p->a[j-1];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_for_decr() {

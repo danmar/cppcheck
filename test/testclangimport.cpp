@@ -134,6 +134,8 @@ private:
 
         TEST_CASE(valueType1);
         TEST_CASE(valueType2);
+
+        TEST_CASE(crash);
     }
 
     std::string parse(const char clang[]) {
@@ -1313,6 +1315,52 @@ private:
         ASSERT(!!tok);
         ASSERT(!!tok->valueType());
         ASSERT_EQUALS("const signed char *", tok->valueType()->str());
+    }
+
+    void crash() {
+        const char* clang = "TranslationUnitDecl 0x56037914f998 <<invalid sloc>> <invalid sloc>\n"
+                            "|-TypedefDecl 0x560379150200 <<invalid sloc>> <invalid sloc> implicit __int128_t '__int128'\n"
+                            "| `-BuiltinType 0x56037914ff60 '__int128'\n"
+                            "|-TypedefDecl 0x560379150270 <<invalid sloc>> <invalid sloc> implicit __uint128_t 'unsigned __int128'\n"
+                            "| `-BuiltinType 0x56037914ff80 'unsigned __int128'\n"
+                            "|-TypedefDecl 0x5603791505e8 <<invalid sloc>> <invalid sloc> implicit __NSConstantString '__NSConstantString_tag'\n"
+                            "| `-RecordType 0x560379150360 '__NSConstantString_tag'\n"
+                            "|   `-CXXRecord 0x5603791502c8 '__NSConstantString_tag'\n"
+                            "|-TypedefDecl 0x560379150680 <<invalid sloc>> <invalid sloc> implicit __builtin_ms_va_list 'char *'\n"
+                            "| `-PointerType 0x560379150640 'char *'\n"
+                            "|   `-BuiltinType 0x56037914fa40 'char'\n"
+                            "|-TypedefDecl 0x5603791968f8 <<invalid sloc>> <invalid sloc> implicit __builtin_va_list '__va_list_tag[1]'\n"
+                            "| `-ConstantArrayType 0x5603791968a0 '__va_list_tag[1]' 1 \n"
+                            "|   `-RecordType 0x560379150770 '__va_list_tag'\n"
+                            "|     `-CXXRecord 0x5603791506d8 '__va_list_tag'\n"
+                            "|-ClassTemplateDecl 0x560379196b58 <test1.cpp:1:1, col:50> col:37 A\n"
+                            "| |-TemplateTypeParmDecl 0x560379196950 <col:11> col:19 typename depth 0 index 0\n"
+                            "| |-TemplateTypeParmDecl 0x5603791969f8 <col:21> col:29 typename depth 0 index 1\n"
+                            "| `-CXXRecordDecl 0x560379196ac8 <col:31, col:50> col:37 class A definition\n"
+                            "|   |-DefinitionData empty aggregate standard_layout trivially_copyable pod trivial literal has_constexpr_non_copy_move_ctor can_const_default_init\n"
+                            "|   | |-DefaultConstructor exists trivial constexpr needs_implicit defaulted_is_constexpr\n"
+                            "|   | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                            "|   | |-MoveConstructor exists simple trivial needs_implicit\n"
+                            "|   | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                            "|   | |-MoveAssignment exists simple trivial needs_implicit\n"
+                            "|   | `-Destructor simple irrelevant trivial needs_implicit\n"
+                            "|   |-CXXRecordDecl 0x560379196de0 <col:31, col:37> col:37 implicit referenced class A\n"
+                            "|   `-CXXRecordDecl 0x560379196e70 <col:41, col:47> col:47 class b\n"
+                            "|-CXXRecordDecl 0x560379197110 parent 0x560379196ac8 prev 0x560379196e70 <line:2:1, col:63> col:50 class b definition\n"
+                            "| |-DefinitionData empty standard_layout trivially_copyable has_user_declared_ctor can_const_default_init\n"
+                            "| | |-DefaultConstructor defaulted_is_constexpr\n"
+                            "| | |-CopyConstructor simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                            "| | |-MoveConstructor exists simple trivial needs_implicit\n"
+                            "| | |-CopyAssignment simple trivial has_const_param needs_implicit implicit_has_const_param\n"
+                            "| | |-MoveAssignment exists simple trivial needs_implicit\n"
+                            "| | `-Destructor simple irrelevant trivial needs_implicit\n"
+                            "| |-CXXRecordDecl 0x560379197250 <col:35, col:50> col:50 implicit referenced class b\n"
+                            "| `-CXXConstructorDecl 0x5603791974b8 <col:54, col:60> col:54 b 'void (A<type-parameter-0-0, type-parameter-0-1> &)'\n"
+                            "|   `-ParmVarDecl 0x560379197380 <col:56, col:59> col:59 a 'A<type-parameter-0-0, type-parameter-0-1> &'\n"
+                            "`-CXXConstructorDecl 0x5603791b5600 parent 0x560379197110 prev 0x5603791974b8 <line:3:1, col:55> col:47 b 'void (A<type-parameter-0-0, type-parameter-0-1> &)'\n"
+                            "  |-ParmVarDecl 0x5603791b5570 <col:49, col:51> col:52 'A<type-parameter-0-0, type-parameter-0-1> &'\n"
+                            "  `-CompoundStmt 0x5603791b5700 <col:54, col:55>\n";
+        parse(clang); // don't crash
     }
 };
 

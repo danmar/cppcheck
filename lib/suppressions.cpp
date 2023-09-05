@@ -28,13 +28,28 @@
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
-#include <cstdlib>
 #include <cstring>
 #include <functional> // std::bind, std::placeholders
 #include <sstream> // IWYU pragma: keep
 #include <utility>
 
 #include <tinyxml2.h>
+
+Suppressions::ErrorMessage Suppressions::ErrorMessage::fromErrorMessage(const ::ErrorMessage &msg)
+{
+    Suppressions::ErrorMessage ret;
+    ret.hash = msg.hash;
+    ret.errorId = msg.id;
+    if (!msg.callStack.empty()) {
+        ret.setFileName(msg.callStack.back().getfile(false));
+        ret.lineNumber = msg.callStack.back().line;
+    } else {
+        ret.lineNumber = Suppressions::Suppression::NO_LINE;
+    }
+    ret.certainty = msg.certainty;
+    ret.symbolNames = msg.symbolNames();
+    return ret;
+}
 
 static bool isAcceptedErrorIdChar(char c)
 {
@@ -357,11 +372,11 @@ std::string Suppressions::Suppression::getText() const
     if (!fileName.empty())
         ret += " fileName=" + fileName;
     if (lineNumber != NO_LINE)
-        ret += " lineNumber=" + MathLib::toString(lineNumber);
+        ret += " lineNumber=" + std::to_string(lineNumber);
     if (!symbolName.empty())
         ret += " symbolName=" + symbolName;
     if (hash > 0)
-        ret += " hash=" + MathLib::toString(hash);
+        ret += " hash=" + std::to_string(hash);
     if (ret.compare(0,1," ")==0)
         return ret.substr(1);
     return ret;
@@ -385,7 +400,7 @@ bool Suppressions::isSuppressed(const ::ErrorMessage &errmsg)
 {
     if (mSuppressions.empty())
         return false;
-    return isSuppressed(errmsg.toSuppressionsErrorMessage());
+    return isSuppressed(Suppressions::ErrorMessage::fromErrorMessage(errmsg));
 }
 
 void Suppressions::dump(std::ostream & out) const
@@ -461,4 +476,37 @@ void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tok
             }
         }
     }
+}
+
+bool Suppressions::reportUnmatchedSuppressions(const std::list<Suppressions::Suppression> &unmatched, ErrorLogger &errorLogger)
+{
+    bool err = false;
+    // Report unmatched suppressions
+    for (const Suppressions::Suppression &s : unmatched) {
+        // don't report "unmatchedSuppression" as unmatched
+        if (s.errorId == "unmatchedSuppression")
+            continue;
+
+        // check if this unmatched suppression is suppressed
+        bool suppressed = false;
+        for (const Suppressions::Suppression &s2 : unmatched) {
+            if (s2.errorId == "unmatchedSuppression") {
+                if ((s2.fileName.empty() || s2.fileName == "*" || s2.fileName == s.fileName) &&
+                    (s2.lineNumber == Suppressions::Suppression::NO_LINE || s2.lineNumber == s.lineNumber)) {
+                    suppressed = true;
+                    break;
+                }
+            }
+        }
+
+        if (suppressed)
+            continue;
+
+        std::list<::ErrorMessage::FileLocation> callStack;
+        if (!s.fileName.empty())
+            callStack.emplace_back(s.fileName, s.lineNumber, 0);
+        errorLogger.reportErr(::ErrorMessage(callStack, emptyString, Severity::information, "Unmatched suppression: " + s.errorId, "unmatchedSuppression", Certainty::normal));
+        err = true;
+    }
+    return err;
 }

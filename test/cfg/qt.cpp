@@ -573,4 +573,10 @@ namespace {
     // simplifyQtSignalsSlots2
     namespace Foo { class Bar; }
     class Foo::Bar : public QObject { private slots: };
+
+    // Q_PROPERTY with templates inducing a ',' should not produce a preprocessorErrorDirective
+    class AssocProperty : public QObject {
+    public:
+        Q_PROPERTY(QHash<QString, int> hash READ hash WRITE setHash)
+    };
 }

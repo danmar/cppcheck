@@ -109,14 +109,10 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mApplications(new ApplicationList(this)),
     mTranslation(th),
     mUI(new Ui::MainWindow),
-    mScratchPad(nullptr),
-    mProjectFile(nullptr),
     mPlatformActions(new QActionGroup(this)),
     mCStandardActions(new QActionGroup(this)),
     mCppStandardActions(new QActionGroup(this)),
-    mSelectLanguageActions(new QActionGroup(this)),
-    mExiting(false),
-    mIsLogfileLoaded(false)
+    mSelectLanguageActions(new QActionGroup(this))
 {
     {
         Settings tempSettings;
@@ -141,7 +137,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mLineEditFilter->setPlaceholderText(tr("Quick Filter:"));
     mLineEditFilter->setClearButtonEnabled(true);
     mUI->mToolBarFilter->addWidget(mLineEditFilter);
-    connect(mLineEditFilter, SIGNAL(textChanged(const QString&)), mFilterTimer, SLOT(start()));
+    connect(mLineEditFilter, SIGNAL(textChanged(QString)), mFilterTimer, SLOT(start()));
     connect(mLineEditFilter, &QLineEdit::returnPressed, this, &MainWindow::filterResults);
 
     connect(mUI->mActionPrint, SIGNAL(triggered()), mUI->mResults, SLOT(print()));
@@ -544,6 +540,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     }
     mThread->setProject(p);
     mThread->check(checkSettings);
+    mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrary, const bool checkConfiguration)
@@ -607,6 +604,7 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
 
     mThread->setCheckFiles(true);
     mThread->check(checkSettings);
+    mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::analyzeCode(const QString& code, const QString& filename)
@@ -614,14 +612,14 @@ void MainWindow::analyzeCode(const QString& code, const QString& filename)
     // Initialize dummy ThreadResult as ErrorLogger
     ThreadResult result;
     result.setFiles(QStringList(filename));
-    connect(&result, SIGNAL(progress(int,const QString&)),
-            mUI->mResults, SLOT(progress(int,const QString&)));
-    connect(&result, SIGNAL(error(const ErrorItem&)),
-            mUI->mResults, SLOT(error(const ErrorItem&)));
-    connect(&result, SIGNAL(log(const QString&)),
-            mUI->mResults, SLOT(log(const QString&)));
-    connect(&result, SIGNAL(debugError(const ErrorItem&)),
-            mUI->mResults, SLOT(debugError(const ErrorItem&)));
+    connect(&result, SIGNAL(progress(int,QString)),
+            mUI->mResults, SLOT(progress(int,QString)));
+    connect(&result, SIGNAL(error(ErrorItem)),
+            mUI->mResults, SLOT(error(ErrorItem)));
+    connect(&result, SIGNAL(log(QString)),
+            mUI->mResults, SLOT(log(QString)));
+    connect(&result, SIGNAL(debugError(ErrorItem)),
+            mUI->mResults, SLOT(debugError(ErrorItem)));
 
     // Create CppCheck instance
     CppCheck cppcheck(result, true, nullptr);
@@ -701,7 +699,7 @@ void MainWindow::analyzeFiles()
 
     QStringList selected = selectFilesToAnalyze(QFileDialog::ExistingFiles);
 
-    const QString file0 = (selected.size() ? selected[0].toLower() : QString());
+    const QString file0 = (!selected.empty() ? selected[0].toLower() : QString());
     if (file0.endsWith(".sln")
         || file0.endsWith(".vcxproj")
         || file0.endsWith(compile_commands_json)
@@ -1024,11 +1022,10 @@ Settings MainWindow::getCppcheckSettings()
                 premiumArgs += " --bughunting";
             if (mProjectFile->getCertIntPrecision() > 0)
                 premiumArgs += " --cert-c-int-precision=" + QString::number(mProjectFile->getCertIntPrecision());
-            if (mProjectFile->getAddons().contains("misra"))
-                premiumArgs += " --misra-c-2012";
-            for (const QString& c: mProjectFile->getCodingStandards()) {
+            for (const QString& c: mProjectFile->getCodingStandards())
                 premiumArgs += " --" + c;
-            }
+            if (!premiumArgs.contains("misra") && mProjectFile->getAddons().contains("misra"))
+                premiumArgs += " --misra-c-2012";
             result.premiumArgs = premiumArgs.mid(1).toStdString();
         }
     }
@@ -1213,7 +1210,9 @@ void MainWindow::reAnalyzeSelected(const QStringList& files)
     // considered in "Modified Files Check"  performed after "Selected Files Check"
     // TODO: Should we store per file CheckStartTime?
     QDateTime saveCheckStartTime = mThread->getCheckStartTime();
-    mThread->check(getCppcheckSettings());
+    const Settings& checkSettings = getCppcheckSettings();
+    mThread->check(checkSettings);
+    mUI->mResults->setCheckSettings(checkSettings);
     mThread->setCheckStartTime(saveCheckStartTime);
 }
 
@@ -1237,7 +1236,9 @@ void MainWindow::reAnalyze(bool all)
         qDebug() << "Rechecking project file" << mProjectFile->getFilename();
 
     mThread->setCheckFiles(all);
-    mThread->check(getCppcheckSettings());
+    const Settings& checkSettings = getCppcheckSettings();
+    mThread->check(checkSettings);
+    mUI->mResults->setCheckSettings(checkSettings);
 }
 
 void MainWindow::clearResults()
@@ -1499,16 +1500,24 @@ void MainWindow::save()
 
 void MainWindow::complianceReport()
 {
-    if (isCppcheckPremium() && mProjectFile && mProjectFile->getAddons().contains("misra")) {
-        QTemporaryFile tempResults;
-        tempResults.open();
-        tempResults.close();
-
-        mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
-
-        ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
-        dlg.exec();
+    if (!mUI->mResults->isSuccess()) {
+        QMessageBox m(QMessageBox::Critical,
+                      "Cppcheck",
+                      tr("Cannot generate a compliance report right now, an analysis must finish successfully. Try to reanalyze the code and ensure there are no critical errors."),
+                      QMessageBox::Ok,
+                      this);
+        m.exec();
+        return;
     }
+
+    QTemporaryFile tempResults;
+    tempResults.open();
+    tempResults.close();
+
+    mUI->mResults->save(tempResults.fileName(), Report::XMLV2);
+
+    ComplianceReportDialog dlg(mProjectFile, tempResults.fileName());
+    dlg.exec();
 }
 
 void MainWindow::resultsAdded()
@@ -1578,6 +1587,7 @@ void MainWindow::aboutToShowViewMenu()
 void MainWindow::stopAnalysis()
 {
     mThread->stop();
+    mUI->mResults->stopAnalysis();
     mUI->mResults->disableProgressbar();
     const QString &lastResults = getLastResults();
     if (!lastResults.isEmpty()) {
@@ -1653,7 +1663,7 @@ bool MainWindow::loadLastResults()
     const QString &lastResults = getLastResults();
     if (lastResults.isEmpty())
         return false;
-    if (!QFileInfo(lastResults).exists())
+    if (!QFileInfo::exists(lastResults))
         return false;
     mUI->mResults->readErrorsXml(lastResults);
     mUI->mResults->setCheckDirectory(mSettings->value(SETTINGS_LAST_CHECK_PATH,QString()).toString());
@@ -1796,6 +1806,7 @@ void MainWindow::newProjectFile()
     mProjectFile = new ProjectFile(this);
     mProjectFile->setActiveProject();
     mProjectFile->setFilename(filepath);
+    mProjectFile->setProjectName(filename.left(filename.indexOf(".")));
     mProjectFile->setBuildDir(filename.left(filename.indexOf(".")) + "-cppcheck-build-dir");
 
     ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
@@ -1920,7 +1931,7 @@ void MainWindow::updateMRUMenuItems()
     // Do a sanity check - remove duplicates and non-existing projects
     int removed = projects.removeDuplicates();
     for (int i = projects.size() - 1; i >= 0; i--) {
-        if (!QFileInfo(projects[i]).exists()) {
+        if (!QFileInfo::exists(projects[i])) {
             projects.removeAt(i);
             removed++;
         }

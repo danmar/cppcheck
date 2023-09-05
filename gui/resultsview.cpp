@@ -19,6 +19,7 @@
 #include "resultsview.h"
 
 #include "checkstatistics.h"
+#include "checkersreport.h"
 #include "codeeditor.h"
 #include "codeeditorstyle.h"
 #include "common.h"
@@ -67,7 +68,6 @@
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),
-    mShowNoErrorsMessage(true),
     mUI(new Ui::ResultsView),
     mStatistics(new CheckStatistics(this))
 {
@@ -91,6 +91,7 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 {
     mUI->mProgress->setMinimum(0);
     mUI->mProgress->setVisible(false);
+    mUI->mLabelCriticalErrors->setVisible(false);
 
     CodeEditorStyle theStyle(CodeEditorStyle::loadSettings(settings));
     mUI->mCode->setStyle(theStyle);
@@ -105,6 +106,7 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 ResultsView::~ResultsView()
 {
     delete mUI;
+    delete mCheckSettings;
 }
 
 void ResultsView::clear(bool results)
@@ -116,11 +118,17 @@ void ResultsView::clear(bool results)
     mUI->mDetails->setText(QString());
 
     mStatistics->clear();
+    delete mCheckSettings;
+    mCheckSettings = nullptr;
 
     //Clear the progressbar
     mUI->mProgress->setMaximum(PROGRESS_MAX);
     mUI->mProgress->setValue(0);
     mUI->mProgress->setFormat("%p%");
+
+    mUI->mLabelCriticalErrors->setVisible(false);
+
+    mSuccess = false;
 }
 
 void ResultsView::clear(const QString &filename)
@@ -146,6 +154,13 @@ void ResultsView::progress(int value, const QString& description)
 
 void ResultsView::error(const ErrorItem &item)
 {
+    if (item.severity == Severity::none && (item.errorId == "logChecker" || item.errorId.endsWith("-logChecker"))) {
+        mStatistics->addChecker(item.message);
+        return;
+    }
+
+    handleCriticalError(item);
+
     if (mUI->mTree->addErrorItem(item)) {
         emit gotResults();
         mStatistics->addItem(item.tool(), ShowTypes::SeverityToShowType(item.severity));
@@ -276,8 +291,16 @@ QString ResultsView::getCheckDirectory()
     return mUI->mTree->getCheckDirectory();
 }
 
+void ResultsView::setCheckSettings(const Settings &settings)
+{
+    delete mCheckSettings;
+    mCheckSettings = new Settings;
+    *mCheckSettings = settings;
+}
+
 void ResultsView::checkingStarted(int count)
 {
+    mSuccess = true;
     mUI->mProgress->setVisible(true);
     mUI->mProgress->setMaximum(PROGRESS_MAX);
     mUI->mProgress->setValue(0);
@@ -288,6 +311,13 @@ void ResultsView::checkingFinished()
 {
     mUI->mProgress->setVisible(false);
     mUI->mProgress->setFormat("%p%");
+
+    {
+        Settings checkSettings;
+        const std::set<std::string> activeCheckers = mStatistics->getActiveCheckers();
+        CheckersReport checkersReport(mCheckSettings ? *mCheckSettings : checkSettings, activeCheckers);
+        mStatistics->setCheckersReport(QString::fromStdString(checkersReport.getReport(mCriticalErrors.toStdString())));
+    }
 
     // TODO: Items can be mysteriously hidden when checking is finished, this function
     // call should be redundant but it "unhides" the wrongly hidden items.
@@ -350,6 +380,8 @@ void ResultsView::disableProgressbar()
 
 void ResultsView::readErrorsXml(const QString &filename)
 {
+    mSuccess = false; // Don't know if results come from an aborted analysis
+
     const int version = XmlReport::determineVersion(filename);
     if (version == 0) {
         QMessageBox msgBox;
@@ -378,13 +410,14 @@ void ResultsView::readErrorsXml(const QString &filename)
     }
 
     for (const ErrorItem& item : errors) {
+        handleCriticalError(item);
         mUI->mTree->addErrorItem(item);
     }
 
     QString dir;
     if (!errors.isEmpty() && !errors[0].errorPath.isEmpty()) {
         QString relativePath = QFileInfo(filename).canonicalPath();
-        if (QFileInfo(relativePath + '/' + errors[0].errorPath[0].file).exists())
+        if (QFileInfo::exists(relativePath + '/' + errors[0].errorPath[0].file))
             dir = relativePath;
     }
 
@@ -433,7 +466,7 @@ void ResultsView::updateDetails(const QModelIndex &index)
     const int lineNumber = data["line"].toInt();
 
     QString filepath = data["file"].toString();
-    if (!QFileInfo(filepath).exists() && QFileInfo(mUI->mTree->getCheckDirectory() + '/' + filepath).exists())
+    if (!QFileInfo::exists(filepath) && QFileInfo::exists(mUI->mTree->getCheckDirectory() + '/' + filepath))
         filepath = mUI->mTree->getCheckDirectory() + '/' + filepath;
 
     QStringList symbols;
@@ -506,4 +539,33 @@ void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
     contextMenu.addAction(tr("Copy complete Log"), this, SLOT(logCopyComplete()));
 
     contextMenu.exec(globalPos);
+}
+
+void ResultsView::stopAnalysis()
+{
+    mSuccess = false;
+    mUI->mLabelCriticalErrors->setText(tr("Analysis was stopped"));
+    mUI->mLabelCriticalErrors->setVisible(true);
+}
+
+void ResultsView::handleCriticalError(const ErrorItem &item)
+{
+    if (ErrorLogger::isCriticalErrorId(item.errorId.toStdString())) {
+        if (!mCriticalErrors.contains(item.errorId)) {
+            if (!mCriticalErrors.isEmpty())
+                mCriticalErrors += ",";
+            mCriticalErrors += item.errorId;
+        }
+        QString msg = tr("There was a critical error with id '%1'").arg(item.errorId);
+        if (!item.file0.isEmpty())
+            msg += ", " + tr("when checking %1").arg(item.file0);
+        msg += ". " + tr("Analysis was aborted.");
+        mUI->mLabelCriticalErrors->setText(msg);
+        mUI->mLabelCriticalErrors->setVisible(true);
+        mSuccess = false;
+    }
+}
+
+bool ResultsView::isSuccess() const {
+    return mSuccess;
 }

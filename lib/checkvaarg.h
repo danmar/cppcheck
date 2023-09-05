@@ -24,13 +24,13 @@
 
 #include "check.h"
 #include "config.h"
+#include "tokenize.h"
 
 #include <string>
 
 class ErrorLogger;
 class Settings;
 class Token;
-class Tokenizer;
 
 /// @addtogroup Checks
 /// @{
@@ -46,8 +46,8 @@ public:
     CheckVaarg(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckVaarg check(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckVaarg check(&tokenizer, tokenizer.getSettings(), errorLogger);
         check.va_start_argument();
         check.va_list_usage();
     }

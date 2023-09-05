@@ -23,7 +23,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
 
 class TestVaarg : public TestFixture {
@@ -44,7 +43,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        runChecks<CheckVaarg>(&tokenizer, &settings, this);
+        runChecks<CheckVaarg>(tokenizer, this);
     }
 
     void run() override {

@@ -116,6 +116,7 @@ private:
         TEST_CASE(initvar_chained_assign);      // BUG 2270433
         TEST_CASE(initvar_2constructors);       // BUG 2270353
         TEST_CASE(initvar_constvar);
+        TEST_CASE(initvar_mutablevar);
         TEST_CASE(initvar_staticvar);
         TEST_CASE(initvar_brace_init);
         TEST_CASE(initvar_union);
@@ -1191,6 +1192,18 @@ private:
               "Fred::Fred()\n"
               "{ }");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Member variable 'Fred::s' is not initialized in the constructor.\n", errout.str());
+    }
+
+
+    void initvar_mutablevar() {
+        check("class Foo {\n"
+              "public:\n"
+              "    Foo() { update(); }\n"
+              "private:\n"
+              "    void update() const;\n"
+              "    mutable int x;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

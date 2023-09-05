@@ -23,7 +23,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
 
 
@@ -45,7 +44,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check..
-        runChecks<CheckAssert>(&tokenizer, &settings, this);
+        runChecks<CheckAssert>(tokenizer, this);
     }
 
     void run() override {

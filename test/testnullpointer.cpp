@@ -189,7 +189,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(&tokenizer, &settings1, this);
+        runChecks<CheckNullPointer>(tokenizer, this);
     }
 
     void checkP(const char code[]) {
@@ -214,7 +214,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check for null pointer dereferences..
-        runChecks<CheckNullPointer>(&tokenizer, &settings1, this);
+        runChecks<CheckNullPointer>(tokenizer, this);
     }
 
 

@@ -349,7 +349,7 @@ private:
         return false;
     }
 
-    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, float value, float diff) {
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, double value, double diff) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
@@ -565,7 +565,7 @@ private:
     void valueFlowNumber() {
         ASSERT_EQUALS(123, valueOfTok("x=123;", "123").intvalue);
         ASSERT_EQUALS_DOUBLE(192.0, valueOfTok("x=0x0.3p10;", "0x0.3p10").floatValue, 1e-5); // 3 * 16^-1 * 2^10 = 192
-        ASSERT(std::fabs(valueOfTok("x=0.5;", "0.5").floatValue - 0.5f) < 0.1f);
+        ASSERT(std::fabs(valueOfTok("x=0.5;", "0.5").floatValue - 0.5) < 0.1);
         ASSERT_EQUALS(10, valueOfTok("enum {A=10,B=15}; x=A+0;", "+").intvalue);
         ASSERT_EQUALS(0, valueOfTok("x=false;", "false").intvalue);
         ASSERT_EQUALS(1, valueOfTok("x=true;", "true").intvalue);
@@ -3491,7 +3491,7 @@ private:
     void valueFlowForwardCompoundAssign() {
         const char *code;
 
-        code = "void f() {\n"
+        code = "int f() {\n"
                "    int x = 123;\n"
                "    x += 43;\n"
                "    return x;\n"
@@ -3501,19 +3501,26 @@ private:
                       "3,Compound assignment '+=', assigned value is 166\n",
                       getErrorPathForX(code, 4U));
 
-        code = "void f() {\n"
+        code = "int f() {\n"
                "    int x = 123;\n"
                "    x /= 0;\n" // don't crash when evaluating x/=0
                "    return x;\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 123));
 
-        code = "void f() {\n"
-               "    float x = 123.45;\n"
+        code = "float f() {\n"
+               "    float x = 123.45f;\n"
                "    x += 67;\n"
                "    return x;\n"
                "}";
-        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45F + 67, 0.01F));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, (double)123.45f + 67, 0.01));
+
+        code = "double f() {\n"
+               "    double x = 123.45;\n"
+               "    x += 67;\n"
+               "    return x;\n"
+               "}";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 123.45 + 67, 0.01));
 
         code = "void f() {\n"
                "    int x = 123;\n"
@@ -3522,7 +3529,7 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 61));
 
-        code = "void f() {\n"
+        code = "int f() {\n"
                "    int x = 123;\n"
                "    x <<= 1;\n"
                "    return x;\n"
@@ -5122,6 +5129,13 @@ private:
         value = valueOfTok(code, "1");
         ASSERT_EQUALS(1, value.intvalue);
         ASSERT_EQUALS(false, value.isKnown());
+
+        code = "void f(char c, struct T* t) {\n" // #11894
+               "    (*t->func)(&c, 1, t->ptr);\n"
+               "}\n";
+        value = valueOfTok(code, ", 1");
+        ASSERT_EQUALS(0, value.intvalue);
+        ASSERT_EQUALS(false, value.isKnown());
     }
 
     void valueFlowSizeofForwardDeclaredEnum() {
@@ -6609,7 +6623,7 @@ private:
                "  if (a.empty() && b.empty()) {}\n"
                "  else if (a.empty() == false && b.empty() == false) {}\n"
                "}\n";
-        ASSERT("" != isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0));
+        ASSERT(!isImpossibleContainerSizeValue(tokenValues(code, "a . empty ( ) == false"), 0).empty());
 
         code = "bool g(std::vector<int>& v) {\n"
                "    v.push_back(1);\n"
@@ -6629,6 +6643,18 @@ private:
 
         code = "int f() { auto a = std::array<int, 2>{}; return a[1]; }";
         ASSERT_EQUALS("values.size():0", isKnownContainerSizeValue(tokenValues(code, "a ["), 0));
+
+        code = "void g(std::vector<int>* w) {\n"
+               "  std::vector<int> &r = *w;\n"
+               "  r.push_back(0);\n"
+               "}\n"
+               "int f() {\n"
+               "  std::vector<int> v;\n"
+               "  g(&v);\n"
+               "  return v[0];\n"
+               "}\n";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "v ["), 0).empty());
+        ASSERT(!isPossibleContainerSizeValue(tokenValues(code, "v ["), 0).empty());
     }
 
     void valueFlowContainerElement()
@@ -6812,6 +6838,14 @@ private:
                "    dummy_resource::log.clear();\n"
                "}\n";
         valueOfTok(code, "log");
+
+        code = "struct D : B<int> {\n"
+               "    D(int i, const std::string& s) : B<int>(i, s) {}\n"
+               "};\n"
+               "template<> struct B<int>::S {\n"
+               "    int j;\n"
+               "};\n";
+        valueOfTok(code, "B");
     }
 
     void valueFlowCrash() {
@@ -7131,6 +7165,12 @@ private:
                "    (*printf)(\"%s %i\", strerror(errno), b ? 0 : 1);\n"
                "};\n";
         valueOfTok(code, "?");
+
+        code = "void f(int i) {\n" // #11914
+               "    int& r = i;\n"
+               "    int& q = (&r)[0];\n"
+               "}\n";
+        valueOfTok(code, "&");
     }
 
     void valueFlowHang() {
@@ -7339,6 +7379,22 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "i");
+
+        code = "void f() {\n"
+               "    if (llabs(0x80000000ffffffffL) == 0x7fffffff00000001L) {}\n"
+               "}\n";
+        valueOfTok(code, "f");
+
+        code = "struct T {\n"
+               "    T();\n"
+               "    static T a[6][64];\n"
+               "    static T b[2][64];\n"
+               "    static T c[64][64];\n"
+               "    static T d[2][64];\n"
+               "    static T e[64];\n"
+               "    static T f[64];\n"
+               "};\n";
+        valueOfTok(code, "(");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
@@ -7366,6 +7422,18 @@ private:
                "    }\n"
                "}";
         valueOfTok(code, "path");
+
+        code = "struct S {\n"
+               "    std::string to_string() const {\n"
+               "        return { this->p , (size_t)this->n };\n"
+               "    }\n"
+               "    const char* p;\n"
+               "    int n;\n"
+               "};\n"
+               "void f(S s, std::string& str) {\n"
+               "    str += s.to_string();\n"
+               "}\n";
+        valueOfTok(code, "s");
     }
 
     void valueFlowUnknownMixedOperators() {

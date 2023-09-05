@@ -25,7 +25,6 @@
 #include "utils.h"
 
 #include <cstddef>
-#include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
@@ -189,7 +188,7 @@ private:
 
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        runChecks<CheckStl>(&tokenizer, &settings1, this);
+        runChecks<CheckStl>(tokenizer, this);
     }
 
     void check_(const char* file, int line, const std::string& code, const bool inconclusive = false) {
@@ -207,7 +206,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        runChecks<CheckStl>(&tokenizer, &settings, this);
+        runChecks<CheckStl>(tokenizer, this);
     }
 
     void outOfBounds() {
@@ -2820,27 +2819,20 @@ private:
     }
 
     void eraseOnVector() {
-        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
-              "    std::vector<int>::iterator aIt = m_ImplementationMap.begin();\n"
-              "    m_ImplementationMap.erase(something(unknown));\n" // All iterators become invalidated when erasing from std::vector
-              "    m_ImplementationMap.erase(aIt);\n"
+        check("void f(std::vector<int>& v) {\n"
+              "    std::vector<int>::iterator aIt = v.begin();\n"
+              "    v.erase(something(unknown));\n" // All iterators become invalidated when erasing from std::vector
+              "    v.erase(aIt);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'm_ImplementationMap' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
 
-        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
-              "    std::vector<int>::iterator aIt = m_ImplementationMap.begin();\n"
-              "    m_ImplementationMap.erase(*aIt);\n" // All iterators become invalidated when erasing from std::vector
-              "    m_ImplementationMap.erase(aIt);\n"
+        check("void f(std::vector<int>& v) {\n"
+              "    std::vector<int>::iterator aIt = v.begin();\n"
+              "    std::vector<int>::iterator bIt = v.begin();\n"
+              "    v.erase(bIt);\n" // All iterators become invalidated when erasing from std::vector
+              "    aIt = v.erase(aIt);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'm_ImplementationMap' that may be invalid.\n", errout.str());
-
-        check("void f(const std::vector<int>& m_ImplementationMap) {\n"
-              "    std::vector<int>::iterator aIt = m_ImplementationMap.begin();\n"
-              "    std::vector<int>::iterator bIt = m_ImplementationMap.begin();\n"
-              "    m_ImplementationMap.erase(*bIt);\n" // All iterators become invalidated when erasing from std::vector
-              "    aIt = m_ImplementationMap.erase(aIt);\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'm_ImplementationMap' that may be invalid.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:2] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'v' that may be invalid.\n", errout.str());
     }
 
     void pushback1() {

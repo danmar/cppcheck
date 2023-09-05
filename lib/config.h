@@ -79,6 +79,13 @@
 #  define UNUSED
 #endif
 
+// warn_unused
+#if (defined(__clang__) && (__clang_major__ >= 15))
+#  define WARN_UNUSED [[gnu::warn_unused]]
+#else
+#  define WARN_UNUSED
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 #include <string>
@@ -126,13 +133,26 @@ static const std::string emptyString;
 #define STRINGISIZE(...) #__VA_ARGS__
 
 #ifdef __clang__
-#define SUPPRESS_WARNING(warning, ...)_Pragma("clang diagnostic push") _Pragma(STRINGISIZE(clang diagnostic ignored warning)) __VA_ARGS__ _Pragma("clang diagnostic pop")
-#define SUPPRESS_DEPRECATED_WARNING(...) SUPPRESS_WARNING("-Wdeprecated", __VA_ARGS__)
-#define SUPPRESS_FLOAT_EQUAL_WARNING(...) SUPPRESS_WARNING("-Wfloat-equal", __VA_ARGS__)
+#define SUPPRESS_WARNING_PUSH(warning) _Pragma("clang diagnostic push") _Pragma(STRINGISIZE(clang diagnostic ignored warning))
+#define SUPPRESS_WARNING_POP _Pragma("clang diagnostic pop")
+#define SUPPRESS_WARNING_GCC_PUSH(warning)
+#define SUPPRESS_WARNING_GCC_POP
+#define SUPPRESS_WARNING_CLANG_PUSH(warning) SUPPRESS_WARNING_PUSH(warning)
+#define SUPPRESS_WARNING_CLANG_POP SUPPRESS_WARNING_POP
+#elif defined(__GNUC__)
+#define SUPPRESS_WARNING_PUSH(warning) _Pragma("GCC diagnostic push") _Pragma(STRINGISIZE(GCC diagnostic ignored warning))
+#define SUPPRESS_WARNING_POP _Pragma("GCC diagnostic pop")
+#define SUPPRESS_WARNING_GCC_PUSH(warning) SUPPRESS_WARNING_PUSH(warning)
+#define SUPPRESS_WARNING_GCC_POP SUPPRESS_WARNING_POP
+#define SUPPRESS_WARNING_CLANG_PUSH(warning)
+#define SUPPRESS_WARNING_CLANG_POP
 #else
-#define SUPPRESS_WARNING(warning, ...) __VA_ARGS__
-#define SUPPRESS_DEPRECATED_WARNING(...) __VA_ARGS__
-#define SUPPRESS_FLOAT_EQUAL_WARNING(...) __VA_ARGS__
+#define SUPPRESS_WARNING_PUSH(warning)
+#define SUPPRESS_WARNING_POP
+#define SUPPRESS_WARNING_GCC_PUSH(warning)
+#define SUPPRESS_WARNING_GCC_POP
+#define SUPPRESS_WARNING_CLANG_PUSH(warning)
+#define SUPPRESS_WARNING_CLANG_POP
 #endif
 
 #if !defined(NO_WINDOWS_SEH) && defined(_WIN32) && defined(_MSC_VER)

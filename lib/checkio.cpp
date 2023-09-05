@@ -66,6 +66,8 @@ void CheckIO::checkCoutCerrMisusage()
     if (mTokenizer->isC())
         return;
 
+    logChecker("CheckIO::checkCoutCerrMisusage"); // c
+
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
@@ -106,14 +108,14 @@ static OpenMode getMode(const std::string& str)
 
 struct Filepointer {
     OpenMode mode;
-    nonneg int mode_indent;
-    enum class Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation;
-    nonneg int op_indent;
+    nonneg int mode_indent{};
+    enum class Operation {NONE, UNIMPORTANT, READ, WRITE, POSITIONING, OPEN, CLOSE, UNKNOWN_OP} lastOperation = Operation::NONE;
+    nonneg int op_indent{};
     enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
-    AppendMode append_mode;
+    AppendMode append_mode = AppendMode::UNKNOWN_AM;
     std::string filename;
     explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
-        : mode(mode_), mode_indent(0), lastOperation(Operation::NONE), op_indent(0), append_mode(AppendMode::UNKNOWN_AM) {}
+        : mode(mode_) {}
 };
 
 namespace {
@@ -127,6 +129,8 @@ void CheckIO::checkFileUsage()
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
     std::map<int, Filepointer> filepointers;
+
+    logChecker("CheckIO::checkFileUsage");
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
@@ -520,6 +524,8 @@ void CheckIO::checkWrongPrintfScanfArguments()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     const bool isWindows = mSettings->platform.isWindows();
+
+    logChecker("CheckIO::checkWrongPrintfScanfArguments");
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -1331,14 +1337,7 @@ void CheckIO::checkFormatString(const Token * const tok,
 /// @todo add non-string literals, and generic expressions
 
 CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings, bool _isCPP)
-    : variableInfo(nullptr)
-    , typeToken(nullptr)
-    , functionInfo(nullptr)
-    , tempToken(nullptr)
-    , element(false)
-    , _template(false)
-    , address(false)
-    , isCPP(_isCPP)
+    : isCPP(_isCPP)
 {
     if (!arg)
         return;

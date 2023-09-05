@@ -466,9 +466,15 @@ def getEssentialTypeCategory(expr):
             return expr.valueType.sign
     if expr.valueType and expr.valueType.typeScope and expr.valueType.typeScope.className:
         return "enum<" + expr.valueType.typeScope.className + ">"
+    # Unwrap membership, dereferences and array indexing
     vartok = expr
-    while simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
-        vartok = vartok.astOperand1
+    while True:
+        if simpleMatch(vartok, '[') or (vartok and vartok.str == '*' and vartok.astOperand2 is None):
+            vartok = vartok.astOperand1
+        elif simpleMatch(vartok, '.'):
+            vartok = vartok.astOperand2
+        else:
+            break
     if vartok and vartok.variable:
         typeToken = vartok.variable.typeStartToken
         while typeToken and typeToken.isName:
@@ -1451,6 +1457,15 @@ class MisraChecker:
             cppcheckdata.reportSummary(dumpfile, 'MisraUsage', names)
 
 
+    def misra_1_2(self, cfg):
+        # gcc language extensions: https://gcc.gnu.org/onlinedocs/gcc/C-Extensions.html
+        for token in cfg.tokenlist:
+            if simpleMatch(token, '? :'):
+                self.reportError(token, 1, 2)
+            elif simpleMatch(token, '( {') and simpleMatch(token.next.link.previous, '; } )'):
+                self.reportError(token, 1, 2)
+
+
     def misra_1_4(self, cfg):
         for token in cfg.tokenlist:
             if token.str in ('_Atomic', '_Noreturn', '_Generic', '_Thread_local', '_Alignas', '_Alignof'):
@@ -1534,12 +1549,12 @@ class MisraChecker:
                         if func_param.nameToken:
                             linenr = func_param.nameToken
                             if linenr not in reported_linenrs:
-                                self.reportError(func_param.nameToken, 2, 7)
+                                self.reportError(func_param.nameToken, 2, 7, '{} is unused'.format(func_param.nameToken.str))
                                 reported_linenrs.add(linenr)
                         else:
                             linenr = func.tokenDef.linenr
                             if linenr not in reported_linenrs:
-                                self.reportError(func.tokenDef, 2, 7)
+                                self.reportError(func.tokenDef, 2, 7, '{} is unused'.format(func.tokenDef.str))
                                 reported_linenrs.add(linenr)
 
     def misra_3_1(self, rawTokens):
@@ -1565,13 +1580,13 @@ class MisraChecker:
                 # Check for comment ends with trigraph which might be replaced
                 # by a backslash.
                 if token.str.endswith('??/'):
-                    self.reportError(token, 3, 2)
+                    self.reportError(token, 3, 2, "found comment ending with '??/', this might be changed by a backslash")
                 # Check for comment which has been merged with subsequent line
                 # because it ends with backslash.
                 # The last backslash is no more part of the comment token thus
                 # check if next token exists and compare line numbers.
                 elif (token.next is not None) and (token.linenr == token.next.linenr):
-                    self.reportError(token, 3, 2)
+                    self.reportError(token, 3, 2, "commented line ends with a backslash, which will extend the comment to the next line")
 
     def misra_4_1(self, rawTokens):
         for token in rawTokens:
@@ -1808,7 +1823,7 @@ class MisraChecker:
     def misra_7_2(self, data):
         for token in data.tokenlist:
             if token.isInt and ('U' not in token.str.upper()) and token.valueType and token.valueType.sign == 'unsigned':
-                self.reportError(token, 7, 2)
+                self.reportError(token, 7, 2, "suffix 'u' missing for {}".format(token.str))
 
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
@@ -2729,10 +2744,10 @@ class MisraChecker:
                     continue
                 for counter in findCounterTokens(exprs[1]):
                     if counter.valueType and counter.valueType.isFloat():
-                        self.reportError(token, 14, 1)
+                        self.reportError(token, 14, 1, "loop counter in for loop is of type float")
             elif token.str == 'while':
                 if isFloatCounterInWhileLoop(token):
-                    self.reportError(token, 14, 1)
+                    self.reportError(token, 14, 1, "loop counter in while loop is of type float")
 
     def misra_14_2(self, data):
         for token in data.tokenlist:
@@ -2741,27 +2756,27 @@ class MisraChecker:
                 if not expressions:
                     continue
                 if expressions[0] and not expressions[0].isAssignmentOp:
-                    self.reportError(token, 14, 2)
+                    self.reportError(token, 14, 2, "first clause is not empty, and does not contain an assignement operator")
                 if countSideEffectsRecursive(expressions[1]) > 0:
-                    self.reportError(token, 14, 2)
+                    self.reportError(token, 14, 2, "second clause contains side effects")
                 if countSideEffectsRecursive(expressions[2]) > 1:
-                    self.reportError(token, 14, 2)
+                    self.reportError(token, 14, 2, "third clause contains more then one side effects")
 
                 counter_vars_first_clause, counter_vars_exit_modified = getForLoopCounterVariables(token)
                 if len(counter_vars_exit_modified) == 0:
                     # if it's not possible to identify a loop counter, all 3 clauses must be empty
                     for idx in range(len(expressions)):
                         if expressions[idx]:
-                            self.reportError(token, 14, 2)
+                            self.reportError(token, 14, 2, "if it's not possible to identify a loop counter, all 3 clauses must be empty")
                             break
                 elif len(counter_vars_exit_modified) > 1:
                     # there shall be a single loop counter
-                    self.reportError(token, 14, 2)
+                    self.reportError(token, 14, 2, "there shall be a single loop counter")
                 else: # len(counter_vars_exit_modified) == 1:
                     loop_counter = counter_vars_exit_modified.pop()
                     # if the first clause is not empty, then it shall (declare and) initialize the loop counter
                     if expressions[0] is not None and loop_counter not in counter_vars_first_clause:
-                        self.reportError(token, 14, 2)
+                        self.reportError(token, 14, 2, "if the first clause is not empty, then it shall (declare and) initialize the loop counter")
 
                     # Inspect modification of loop counter in loop body
                     body_scope = token.next.link.next.scope
@@ -2773,7 +2788,7 @@ class MisraChecker:
                             if tn.next:
                                 # TODO: Check modifications in function calls
                                 if countSideEffectsRecursive(tn.next) > 0:
-                                    self.reportError(tn, 14, 2)
+                                    self.reportError(tn, 14, 2, "loop counter modified in loop body")
                         tn = tn.next
 
     def misra_14_4(self, data):
@@ -3104,9 +3119,9 @@ class MisraChecker:
         for token in data.tokenlist:
             if isFunctionCall(token) and token.astOperand1.str in (
             'va_list', 'va_arg', 'va_start', 'va_end', 'va_copy'):
-                self.reportError(token, 17, 1)
+                self.reportError(token, 17, 1, "function '{}' should not be used".format(token.astOperand1.str))
             elif token.str == 'va_list':
-                self.reportError(token, 17, 1)
+                self.reportError(token, 17, 1, "function '{}' should not be used".format(token.str))
 
     def misra_17_2(self, data):
         # find recursions..
@@ -3231,7 +3246,10 @@ class MisraChecker:
                 if token.str == '{':
                     token = token.link
 
-                if cppcheckdata.simpleMatch(token, "[ ]"):
+                # skip function pointer parameter types
+                if token.astOperand1 is None:
+                    pass
+                elif cppcheckdata.simpleMatch(token, "[ ]"):
                     self.reportError(token, 18, 7)
                     break
                 token = token.next
@@ -4067,7 +4085,7 @@ class MisraChecker:
 
                 self.addSuppressedRule(ruleNum)
 
-    def reportError(self, location, num1, num2):
+    def reportError(self, location, num1, num2, extra=''):
         ruleNum = num1 * 100 + num2
 
         if self.isRuleGloballySuppressed(ruleNum):
@@ -4111,7 +4129,7 @@ class MisraChecker:
             # skip it since it has already been displayed.
             if this_violation not in self.existing_violations:
                 self.existing_violations.add(this_violation)
-                cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity)
+                cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity, extra)
 
                 if misra_severity not in self.violations:
                     self.violations[misra_severity] = []
@@ -4302,6 +4320,7 @@ class MisraChecker:
             if not self.settings.quiet:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
+            self.executeCheck(102, self.misra_1_2, cfg)
             if not path_premium_addon:
                 self.executeCheck(104, self.misra_1_4, cfg)
             self.executeCheck(202, self.misra_2_2, cfg)

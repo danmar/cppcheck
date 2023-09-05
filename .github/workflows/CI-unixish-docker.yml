@@ -2,7 +2,14 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: CI-unixish-docker
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+    tags:
+      - '2.*'
+  pull_request:
 
 permissions:
   contents: read
@@ -91,7 +98,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:22.10"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04", "ubuntu:23.04"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04

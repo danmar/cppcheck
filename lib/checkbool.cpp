@@ -53,6 +53,8 @@ void CheckBool::checkIncrementBoolean()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckBool::checkIncrementBoolean"); // style
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -95,6 +97,8 @@ void CheckBool::checkBitwiseOnBoolean()
     //         warnings for calculations. Example: set_flag(a & b);
     if (!mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
+
+    logChecker("CheckBool::checkBitwiseOnBoolean"); // style,inconclusive
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -149,6 +153,8 @@ void CheckBool::checkComparisonOfBoolWithInt()
     if (!mSettings->severity.isEnabled(Severity::warning) || !mTokenizer->isCPP())
         return;
 
+    logChecker("CheckBool::checkComparisonOfBoolWithInt"); // warning,c++
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -200,6 +206,8 @@ void CheckBool::checkComparisonOfFuncReturningBool()
 
     if (!mTokenizer->isCPP())
         return;
+
+    logChecker("CheckBool::checkComparisonOfFuncReturningBool"); // style,c++
 
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
     auto getFunctionTok = [](const Token* tok) -> const Token* {
@@ -265,6 +273,8 @@ void CheckBool::checkComparisonOfBoolWithBool()
     if (!mTokenizer->isCPP())
         return;
 
+    logChecker("CheckBool::checkComparisonOfBoolWithBool"); // style,c++
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -308,6 +318,7 @@ void CheckBool::comparisonOfBoolWithBoolError(const Token *tok, const std::strin
 //-----------------------------------------------------------------------------
 void CheckBool::checkAssignBoolToPointer()
 {
+    logChecker("CheckBool::checkAssignBoolToPointer");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -330,6 +341,8 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckBool::checkComparisonOfBoolExpressionWithInt"); // warning
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -397,6 +410,8 @@ void CheckBool::comparisonOfBoolExpressionWithIntError(const Token *tok, bool no
 
 void CheckBool::pointerArithBool()
 {
+    logChecker("CheckBool::pointerArithBool");
+
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
@@ -451,6 +466,7 @@ void CheckBool::checkAssignBoolToFloat()
         return;
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+    logChecker("CheckBool::checkAssignBoolToFloat"); // style,c++
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -471,6 +487,8 @@ void CheckBool::returnValueOfFunctionReturningBool()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckBool::returnValueOfFunctionReturningBool"); // style
 
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
 

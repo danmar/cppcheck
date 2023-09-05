@@ -28,16 +28,6 @@
 #include <QFile>
 #include <QMutexLocker>
 
-ThreadResult::ThreadResult() : QObject(), ErrorLogger(), mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
-{
-    //ctor
-}
-
-ThreadResult::~ThreadResult()
-{
-    //dtor
-}
-
 void ThreadResult::reportOut(const std::string &outmsg, Color /*c*/)
 {
     emit log(QString::fromStdString(outmsg));

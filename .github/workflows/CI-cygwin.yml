@@ -4,7 +4,14 @@
 
 name: CI-cygwin
 
-on: [push,pull_request]
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+    tags:
+      - '2.*'
+  pull_request:
 
 permissions:
   contents: read

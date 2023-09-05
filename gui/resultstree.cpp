@@ -31,8 +31,6 @@
 #include "threadhandler.h"
 #include "xmlreportv2.h"
 
-#include <string>
-
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
@@ -83,19 +81,7 @@ static const int COLUMN_SINCE_DATE = 6;
 static const int COLUMN_TAGS       = 7;
 
 ResultsTree::ResultsTree(QWidget * parent) :
-    QTreeView(parent),
-    mSettings(nullptr),
-    mApplications(nullptr),
-    mContextItem(nullptr),
-    mShowFullPath(false),
-    mSaveFullPath(false),
-    mSaveAllErrors(true),
-    mShowErrorId(false),
-    mVisibleErrors(false),
-    mSelectionModel(nullptr),
-    mThread(nullptr),
-    mShowCppcheck(true),
-    mShowClang(true)
+    QTreeView(parent)
 {
     setModel(&mModel);
     translate(); // Adds columns to grid
@@ -104,9 +90,6 @@ ResultsTree::ResultsTree(QWidget * parent) :
 
     connect(this, &ResultsTree::doubleClicked, this, &ResultsTree::quickStartApplication);
 }
-
-ResultsTree::~ResultsTree()
-{}
 
 void ResultsTree::keyPressEvent(QKeyEvent *event)
 {
@@ -725,7 +708,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             mContextItem = mModel.itemFromIndex(index);
             if (mContextItem && mApplications->getApplicationCount() > 0 && mContextItem->parent()) {
                 //Disconnect all signals
-                for (QAction* action : actions) {
+                for (const QAction* action : actions) {
                     disconnect(action, SIGNAL(triggered()), signalMapper, SLOT(map()));
                 }
 
@@ -829,7 +812,15 @@ void ResultsTree::startApplication(QStandardItem *target, int application)
         const QString cmdLine = QString("%1 %2").arg(program).arg(params);
 
         // this is reported as deprecated in Qt 5.15.2 but no longer in Qt 6
-        const bool success = SUPPRESS_DEPRECATED_WARNING(QProcess::startDetached(cmdLine));
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        SUPPRESS_WARNING_CLANG_PUSH("-Wdeprecated")
+        SUPPRESS_WARNING_GCC_PUSH("-Wdeprecated-declarations")
+#endif
+        const bool success = QProcess::startDetached(cmdLine);
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+        SUPPRESS_WARNING_GCC_POP
+            SUPPRESS_WARNING_CLANG_POP
+#endif
         if (!success) {
             QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(program);
 
@@ -870,7 +861,7 @@ QString ResultsTree::askFileDir(const QString &file)
         return QString();
 
     // User selected root path
-    if (QFileInfo(dir + '/' + file).exists())
+    if (QFileInfo::exists(dir + '/' + file))
         mCheckPath = dir;
 
     // user selected checked folder
@@ -879,7 +870,7 @@ QString ResultsTree::askFileDir(const QString &file)
         QString folderName = file.mid(0, file.indexOf('/'));
         if (dir.indexOf('/' + folderName + '/'))
             dir = dir.mid(0, dir.lastIndexOf('/' + folderName + '/'));
-        if (QFileInfo(dir + '/' + file).exists())
+        if (QFileInfo::exists(dir + '/' + file))
             mCheckPath = dir;
     }
 
@@ -1027,7 +1018,6 @@ void ResultsTree::suppressSelectedIds()
     if (!mSelectionModel)
         return;
 
-    QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QSet<QString> selectedIds;
     for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);

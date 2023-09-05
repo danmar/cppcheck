@@ -36,7 +36,7 @@ inline bool isEqual(double x, double y)
 }
 inline bool isEqual(float x, float y)
 {
-    return isEqual(double{x}, double{y});
+    return isEqual(double(x), double(y));
 }
 
 template<class T>

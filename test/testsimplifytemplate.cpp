@@ -38,7 +38,7 @@ public:
 
 private:
     // If there are unused templates, keep those
-    const Settings settings = settingsBuilder().severity(Severity::portability).checkUnusedTemplates().build();
+    const Settings settings = settingsBuilder().severity(Severity::portability).build();
 
     void run() override {
         TEST_CASE(template1);
@@ -5318,6 +5318,7 @@ private:
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args&&...>> void f() {}"));
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args*...>> void f() {}"));
         ASSERT_EQUALS(1U, templateParameters("S<4 < sizeof(uintptr_t)> x;"));
+        ASSERT_EQUALS(2U, templateParameters("template <typename... Ts, typename = std::enable_if_t<std::is_same<Ts..., int>::value>> void g() {}")); // #11915
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition

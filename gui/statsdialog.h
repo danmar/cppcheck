@@ -73,7 +73,7 @@ private slots:
     void pdfExport();
 private:
     Ui::StatsDialog *mUI;
-    const CheckStatistics *mStatistics;
+    const CheckStatistics* mStatistics{};
 };
 
 /// @}

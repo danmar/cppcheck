@@ -84,18 +84,9 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
 
 
 CheckThread::CheckThread(ThreadResult &result) :
-    mState(Ready),
     mResult(result),
-    mCppcheck(result, true, executeCommand),
-    mAnalyseWholeProgram(false)
-{
-    //ctor
-}
-
-CheckThread::~CheckThread()
-{
-    //dtor
-}
+    mCppcheck(result, true, executeCommand)
+{}
 
 void CheckThread::check(const Settings &settings)
 {

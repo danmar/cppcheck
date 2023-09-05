@@ -172,15 +172,15 @@ public:
     CheckMemoryLeakInFunction(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakInFunction checkMemoryLeak(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkMemoryLeak.checkReallocUsage();
     }
 
     /**
      * Checking for a memory leak caused by improper realloc usage.
      */
-    void checkReallocUsage() const;
+    void checkReallocUsage();
 
 private:
     /** Report all possible errors (for the --errorlist) */
@@ -224,11 +224,11 @@ public:
     CheckMemoryLeakInClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
-    void runChecks(const Tokenizer *tokenizr, const Settings *settings, ErrorLogger *errLog) override {
-        if (!tokenizr->isCPP())
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        if (!tokenizer.isCPP())
             return;
 
-        CheckMemoryLeakInClass checkMemoryLeak(tokenizr, settings, errLog);
+        CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkMemoryLeak.check();
     }
 
@@ -269,12 +269,12 @@ public:
     CheckMemoryLeakStructMember(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakStructMember checkMemoryLeak(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckMemoryLeakStructMember checkMemoryLeak(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkMemoryLeak.check();
     }
 
-    void check() const;
+    void check();
 
 private:
 
@@ -305,8 +305,8 @@ public:
     CheckMemoryLeakNoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger), CheckMemoryLeak(tokenizer, errorLogger, settings) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckMemoryLeakNoVar checkMemoryLeak(tokenizer, settings, errorLogger);
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckMemoryLeakNoVar checkMemoryLeak(&tokenizer, tokenizer.getSettings(), errorLogger);
         checkMemoryLeak.check();
     }
 

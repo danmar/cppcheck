@@ -23,8 +23,12 @@
 
 #include <QMap>
 #include <QObject>
+#include <QSet>
 #include <QString>
 #include <QStringList>
+
+#include <set>
+#include <string>
 
 /// @addtogroup GUI
 /// @{
@@ -45,6 +49,11 @@ public:
     void addItem(const QString &tool, ShowTypes::ShowType type);
 
     /**
+     * @brief Add checker to statistics
+     */
+    void addChecker(const QString& checker);
+
+    /**
      * @brief Clear the statistics.
      *
      */
@@ -59,8 +68,23 @@ public:
      */
     unsigned getCount(const QString &tool, ShowTypes::ShowType type) const;
 
+    std::set<std::string> getActiveCheckers() const {
+        return mActiveCheckers;
+    }
+
+    int getNumberOfActiveCheckers() const {
+        return mActiveCheckers.size();
+    }
+
     /** Get tools with results */
     QStringList getTools() const;
+
+    void setCheckersReport(QString report) {
+        mCheckersReport = std::move(report);
+    }
+    QString getCheckersReport() const {
+        return mCheckersReport;
+    }
 
 private:
     QMap<QString, unsigned> mStyle;
@@ -69,6 +93,8 @@ private:
     QMap<QString, unsigned> mPortability;
     QMap<QString, unsigned> mInformation;
     QMap<QString, unsigned> mError;
+    std::set<std::string> mActiveCheckers;
+    QString mCheckersReport;
 };
 
 /// @}

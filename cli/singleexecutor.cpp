@@ -30,15 +30,12 @@
 
 class ErrorLogger;
 
-SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
-    : Executor(files, settings, errorLogger)
+SingleExecutor::SingleExecutor(CppCheck &cppcheck, const std::map<std::string, std::size_t> &files, const Settings &settings, Suppressions &suppressions, ErrorLogger &errorLogger)
+    : Executor(files, settings, suppressions, errorLogger)
     , mCppcheck(cppcheck)
 {
     assert(mSettings.jobs == 1);
 }
-
-SingleExecutor::~SingleExecutor()
-{}
 
 // TODO: markup handling is not performed with multiple jobs
 unsigned int SingleExecutor::check()
@@ -61,7 +58,7 @@ unsigned int SingleExecutor::check()
                 processedsize += i->second;
                 if (!mSettings.quiet)
                     reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                // TODO: call analyseClangTidy()
+                // TODO: call analyseClangTidy()?
                 c++;
             }
         }
@@ -92,7 +89,7 @@ unsigned int SingleExecutor::check()
                 processedsize += i->second;
                 if (!mSettings.quiet)
                     reportStatus(c + 1, mFiles.size(), processedsize, totalfilesize);
-                // TODO: call analyseClangTidy()
+                // TODO: call analyseClangTidy()?
                 c++;
             }
         }

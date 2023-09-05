@@ -25,8 +25,6 @@
 
 #include "ui_librarydialog.h"
 
-#include <string>
-
 #include <QCheckBox>
 #include <QComboBox>
 #include <QFile>
@@ -63,8 +61,7 @@ public:
 
 LibraryDialog::LibraryDialog(QWidget *parent) :
     QDialog(parent),
-    mUi(new Ui::LibraryDialog),
-    mIgnoreChanges(false)
+    mUi(new Ui::LibraryDialog)
 {
     mUi->setupUi(this);
     mUi->buttonSave->setEnabled(false);

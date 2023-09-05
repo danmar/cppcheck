@@ -48,6 +48,8 @@ void CheckPostfixOperator::postfixOperator()
     if (!mSettings->severity.isEnabled(Severity::performance))
         return;
 
+    logChecker("CheckPostfixOperator::postfixOperator"); // performance
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {

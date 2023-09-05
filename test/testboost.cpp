@@ -23,7 +23,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
 
 class TestBoost : public TestFixture {
@@ -48,7 +47,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        runChecks<CheckBoost>(&tokenizer, &settings, this);
+        runChecks<CheckBoost>(tokenizer, this);
     }
 
     void BoostForeachContainerModification() {

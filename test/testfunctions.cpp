@@ -18,13 +18,11 @@
 
 #include "checkfunctions.h"
 #include "errortypes.h"
-#include "library.h"
 #include "settings.h"
 #include "standards.h"
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
 
@@ -129,7 +127,7 @@ private:
                 errout << errline << "\n";
         }
 
-        runChecks<CheckFunctions>(&tokenizer, settings_, this);
+        runChecks<CheckFunctions>(tokenizer, this);
     }
 
     void prohibitedFunctions_posix() {
@@ -1564,18 +1562,21 @@ private:
 
         {
             const char code[] = "int main(void) {}";
-            Settings s;
+            {
+                const Settings s = settingsBuilder().c(Standards::C89).build();
 
-            s.standards.c = Standards::C89;
-            check(code, "test.c", &s); // c code (c89)
-            ASSERT_EQUALS("[test.c:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
+                check(code, "test.c", &s); // c code (c89)
+                ASSERT_EQUALS("[test.c:1]: (error) Found an exit path from function with non-void return type that has missing return statement\n", errout.str());
+            }
 
-            s.standards.c = Standards::C99;
-            check(code, "test.c", &s); // c code (c99)
-            ASSERT_EQUALS("", errout.str());
+            {
+                const Settings s = settingsBuilder().c(Standards::C99).build();
+                check(code, "test.c", &s); // c code (c99)
+                ASSERT_EQUALS("", errout.str());
 
-            check(code, "test.cpp", &s); // c++ code
-            ASSERT_EQUALS("", errout.str());
+                check(code, "test.cpp", &s); // c++ code
+                ASSERT_EQUALS("", errout.str());
+            }
         }
 
         check("F(A,B) { x=1; }");
@@ -1807,6 +1808,12 @@ private:
               "    std::cout << p->msg;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string&& f() {\n" // #11881
+              "    std::string s;\n"
+              "    return std::move(s);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void negativeMemoryAllocationSizeError() { // #389
@@ -1827,9 +1834,8 @@ private:
     }
 
     void checkLibraryMatchFunctions() {
-        Settings s = settingsBuilder(settings).checkLibrary().build();
+        Settings s = settingsBuilder(settings).checkLibrary().debugwarnings().build();
         s.daca = true;
-        s.debugwarnings = true;
 
         check("void f() {\n"
               "    lib_func();"

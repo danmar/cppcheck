@@ -84,7 +84,7 @@ private:
         CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }
 
-    void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) override {}
+    void runChecks(const Tokenizer & /*tokenizer*/, ErrorLogger * /*errorLogger*/) override {}
 
     /**
      * Dummy implementation, just to provide error for --errorlist
@@ -101,14 +101,11 @@ private:
         return "Check for functions that are never called\n";
     }
 
-    class CPPCHECKLIB FunctionUsage {
-    public:
-        FunctionUsage() : lineNumber(0), usedSameFile(false), usedOtherFile(false) {}
-
+    struct CPPCHECKLIB FunctionUsage {
         std::string filename;
-        unsigned int lineNumber;
-        bool usedSameFile;
-        bool usedOtherFile;
+        unsigned int lineNumber{};
+        bool usedSameFile{};
+        bool usedOtherFile{};
     };
 
     std::unordered_map<std::string, FunctionUsage> mFunctions;

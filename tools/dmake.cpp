@@ -233,14 +233,6 @@ static std::string make_vcxproj_cl_entry(const std::string& file, ClType type)
         outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>)";
         outstr += "\r\n";
-        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>)";
-        outstr += "\r\n";
-        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|Win32'">Create</PrecompiledHeader>)";
-        outstr += "\r\n";
-        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug-PCRE|Win32'">Create</PrecompiledHeader>)";
-        outstr += "\r\n";
-        outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>)";
-        outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>)";
         outstr += "\r\n";
         outstr += R"(      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release-PCRE|x64'">Create</PrecompiledHeader>)";
@@ -314,6 +306,7 @@ int main(int argc, char **argv)
     libfiles_h.emplace_back("analyzer.h");
     libfiles_h.emplace_back("calculate.h");
     libfiles_h.emplace_back("config.h");
+    libfiles_h.emplace_back("json.h");
     libfiles_h.emplace_back("precompiled.h");
     libfiles_h.emplace_back("smallvector.h");
     libfiles_h.emplace_back("standards.h");

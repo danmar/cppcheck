@@ -24,7 +24,6 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <map>
 #include <sstream> // IWYU pragma: keep
 #include <string>
@@ -243,7 +242,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings1, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void check_(const char* file, int line, const char code[], const Settings & s) {
@@ -258,7 +257,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings0, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void assign1() {
@@ -475,7 +474,7 @@ private:
     }
 
     void assign23() {
-        const Settings s = settingsBuilder(settings).library("posix.cfg").build();
+        const Settings s = settingsBuilder().library("posix.cfg").build();
         check("void f() {\n"
               "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
               "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
@@ -2765,8 +2764,6 @@ private:
     }
 
     void functionCallCastConfig() { // #9652
-        Settings settingsFunctionCall = settings;
-
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def format=\"2\">\n"
                                "  <function name=\"free_func\">\n"
@@ -2779,7 +2776,8 @@ private:
                                "    </arg>\n"
                                "  </function>\n"
                                "</def>";
-        ASSERT(settingsFunctionCall.library.loadxmldata(xmldata, sizeof(xmldata)));
+        const Settings settingsFunctionCall = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
+
         check("void test_func()\n"
               "{\n"
               "    char * buf = malloc(4);\n"
@@ -2811,7 +2809,7 @@ private:
                                "    <arg nr=\"1\" direction=\"in\"/>\n"
                                "  </function>\n"
                                "</def>\n";
-        const Settings settingsLeakIgnore = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
+        const Settings settingsLeakIgnore = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
         check("void f() {\n"
               "    double* a = new double[1024];\n"
               "    SomeClass::someMethod(a);\n"
@@ -2849,7 +2847,7 @@ private:
         tokenizer.simplifyTokens1("");
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void run() override {
@@ -2876,7 +2874,10 @@ private:
     }
 };
 
+#if !defined(__MINGW32__)
+// TODO: this crashes with a stack overflow for MinGW in the CI
 REGISTER_TEST(TestLeakAutoVarRecursiveCountLimit)
+#endif
 
 class TestLeakAutoVarStrcpy : public TestFixture {
 public:
@@ -2895,7 +2896,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void run() override {
@@ -2955,7 +2956,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.c"), file, line);
 
         // Check for leaks..
-        runChecks<CheckLeakAutoVar>(&tokenizer, &settings, this);
+        runChecks<CheckLeakAutoVar>(tokenizer, this);
     }
 
     void run() override {

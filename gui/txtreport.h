@@ -40,7 +40,6 @@ class TxtReport : public Report {
 
 public:
     explicit TxtReport(const QString &filename);
-    ~TxtReport() override;
 
     /**
      * @brief Create the report (file).

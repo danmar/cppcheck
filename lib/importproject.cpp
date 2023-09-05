@@ -40,8 +40,7 @@
 
 #include <simplecpp.h>
 
-#define PICOJSON_USE_INT64
-#include <picojson.h>
+#include "json.h"
 
 ImportProject::ImportProject()
 {
@@ -502,7 +501,7 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
 
 namespace {
     struct ProjectConfiguration {
-        explicit ProjectConfiguration(const tinyxml2::XMLElement *cfg) : platform(Unknown) {
+        explicit ProjectConfiguration(const tinyxml2::XMLElement *cfg) {
             const char *a = cfg->Attribute("Include");
             if (a)
                 name = a;
@@ -524,7 +523,7 @@ namespace {
         }
         std::string name;
         std::string configuration;
-        enum { Win32, x64, Unknown } platform;
+        enum { Win32, x64, Unknown } platform = Unknown;
         std::string platformStr;
     };
 
@@ -1368,5 +1367,5 @@ void ImportProject::printError(const std::string &message)
 
 bool ImportProject::sourceFileExists(const std::string &file)
 {
-    return Path::fileExists(file);
+    return Path::isFile(file);
 }

@@ -101,9 +101,6 @@ Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* tim
 
 Timer::Timer(bool fileTotal, std::string filename)
     : mStr(std::move(filename))
-    , mTimerResults(nullptr)
-    , mStart(std::clock())
-    , mShowTimeMode(SHOWTIME_MODES::SHOWTIME_FILE_TOTAL)
     , mStopped(!fileTotal)
 {}
 

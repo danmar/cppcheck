@@ -484,7 +484,7 @@ private:
         ASSERT(Result::False == isUsedAsBool("void f() { int i; if (i + 2) {} }", "i +"));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; bool b = i; }", "i ; }"));
         ASSERT(Result::True == isUsedAsBool("void f(bool b); void f() { int i; f(i); }","i )"));
-        ASSERT(Result::True == isUsedAsBool("void f() { int *i; if (*i) {} }", "i )"));
+        ASSERT(Result::False == isUsedAsBool("void f() { int *i; if (*i) {} }", "i )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int *i; if (*i) {} }", "* i )"));
         ASSERT(Result::True == isUsedAsBool("int g(); void h(bool); void f() { h(g()); }", "( ) )"));
         ASSERT(Result::True == isUsedAsBool("int g(int); void h(bool); void f() { h(g(0)); }", "( 0 ) )"));

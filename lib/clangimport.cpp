@@ -30,7 +30,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
 #include <iterator>
@@ -206,10 +205,10 @@ static std::vector<std::string> splitString(const std::string &line)
 namespace clangimport {
     struct Data {
         struct Decl {
-            explicit Decl(Scope *scope) : def(nullptr), enumerator(nullptr), function(nullptr), scope(scope), var(nullptr) {}
-            Decl(Token *def, Variable *var) : def(def), enumerator(nullptr), function(nullptr), scope(nullptr), var(var) {}
-            Decl(Token *def, Function *function) : def(def), enumerator(nullptr), function(function), scope(nullptr), var(nullptr) {}
-            Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator), function(nullptr), scope(nullptr), var(nullptr) {}
+            explicit Decl(Scope *scope) : scope(scope) {}
+            Decl(Token *def, Variable *var) : def(def), var(var) {}
+            Decl(Token *def, Function *function) : def(def), function(function) {}
+            Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator) {}
             void ref(Token *tok) const {
                 if (enumerator)
                     tok->enumerator(enumerator);
@@ -220,11 +219,11 @@ namespace clangimport {
                     tok->varId(var->declarationId());
                 }
             }
-            Token *def;
-            Enumerator *enumerator;
-            Function *function;
-            Scope *scope;
-            Variable *var;
+            Token* def{};
+            Enumerator* enumerator{};
+            Function* function{};
+            Scope* scope{};
+            Variable* var{};
         };
 
         const Settings *mSettings = nullptr;
@@ -631,7 +630,7 @@ void clangimport::AstNode::setValueType(Token *tok)
         if (!decl.front())
             break;
 
-        const ValueType valueType = ValueType::parseDecl(decl.front(), *mData->mSettings, true); // TODO: set isCpp
+        const ValueType valueType = ValueType::parseDecl(decl.front(), *mData->mSettings);
         if (valueType.type != ValueType::Type::UNKNOWN_TYPE) {
             tok->setValueType(new ValueType(valueType));
             break;
@@ -1374,7 +1373,6 @@ void clangimport::AstNode::createTokensFunctionDecl(TokenList *tokenList)
         function->nestedIn = nestedIn;
     function->argDef = par1;
     // Function arguments
-    function->argumentList.reserve(children.size());
     for (int i = 0; i < children.size(); ++i) {
         AstNodePtr child = children[i];
         if (child->nodeType != ParmVarDecl)
@@ -1546,7 +1544,7 @@ static void setValues(const Tokenizer *tokenizer, const SymbolDatabase *symbolDa
 
     for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            ValueType vt = ValueType::parseDecl(tok->tokAt(2), *settings, tokenizer->isCPP());
+            ValueType vt = ValueType::parseDecl(tok->tokAt(2), *settings);
             const int sz = vt.typeSize(settings->platform, true);
             if (sz <= 0)
                 continue;

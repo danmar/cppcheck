@@ -48,6 +48,8 @@ void CheckExceptionSafety::destructors()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
+    logChecker("CheckExceptionSafety::destructors"); // warning
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     // Perform check..
@@ -94,6 +96,8 @@ void CheckExceptionSafety::deallocThrow()
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
+
+    logChecker("CheckExceptionSafety::deallocThrow"); // warning
 
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -168,6 +172,8 @@ void CheckExceptionSafety::checkRethrowCopy()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
+    logChecker("CheckExceptionSafety::checkRethrowCopy"); // style
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope &scope : symbolDatabase->scopeList) {
@@ -209,6 +215,8 @@ void CheckExceptionSafety::checkCatchExceptionByValue()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
+
+    logChecker("CheckExceptionSafety::checkCatchExceptionByValue"); // style
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
@@ -278,6 +286,8 @@ static const Token * functionThrows(const Function * function)
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::nothrowThrows()
 {
+    logChecker("CheckExceptionSafety::nothrowThrows");
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -322,6 +332,8 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
     if (!mSettings->severity.isEnabled(Severity::style) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
+    logChecker("CheckExceptionSafety::unhandledExceptionSpecification"); // style,inconclusive
+
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -359,6 +371,7 @@ void CheckExceptionSafety::unhandledExceptionSpecificationError(const Token * co
 //--------------------------------------------------------------------------
 void CheckExceptionSafety::rethrowNoCurrentException()
 {
+    logChecker("CheckExceptionSafety::rethrowNoCurrentException");
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         const Function* function = scope->function;

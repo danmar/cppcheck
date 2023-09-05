@@ -150,11 +150,6 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
     return isPointerDeRef(tok, unknown, mSettings);
 }
 
-static bool isUnevaluatedOperator(const Token* tok)
-{
-    return Token::Match(tok, "sizeof|decltype|typeid|typeof|alignof|_Alignof|_alignof|__alignof|__alignof__ (");
-}
-
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)
 {
     unknown = false;
@@ -192,7 +187,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
 
     // Dereferencing pointer..
     const Token* grandParent = parent->astParent();
-    if (parent->isUnaryOp("*") && !(grandParent && isUnevaluatedOperator(grandParent->previous()))) {
+    if (parent->isUnaryOp("*") && !(grandParent && isUnevaluated(grandParent->previous()))) {
         // declaration of function pointer
         if (tok->variable() && tok->variable()->nameToken() == tok)
             return false;
@@ -290,7 +285,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
     const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (isUnevaluatedOperator(tok)) {
+        if (isUnevaluated(tok)) {
             tok = tok->next()->link();
             continue;
         }
@@ -324,6 +319,7 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
 
 void CheckNullPointer::nullPointer()
 {
+    logChecker("CheckNullPointer::nullPointer");
     nullPointerByDeRefAndChec();
 }
 
@@ -337,6 +333,8 @@ namespace {
 /** Dereferencing null constant (simplified token list) */
 void CheckNullPointer::nullConstantDereference()
 {
+    logChecker("CheckNullPointer::nullConstantDereference");
+
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
@@ -349,7 +347,7 @@ void CheckNullPointer::nullConstantDereference()
             tok = scope->function->token; // Check initialization list
 
         for (; tok != scope->bodyEnd; tok = tok->next()) {
-            if (isUnevaluatedOperator(tok))
+            if (isUnevaluated(tok))
                 tok = tok->next()->link();
 
             else if (Token::simpleMatch(tok, "* 0")) {
@@ -469,6 +467,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
 
 void CheckNullPointer::arithmetic()
 {
+    logChecker("CheckNullPointer::aithmetic");
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
@@ -592,6 +591,10 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
         return false;
     bool foundErrors = false;
     (void)settings; // This argument is unused
+
+    CheckNullPointer dummy(nullptr, &settings, &errorLogger);
+    dummy.
+    logChecker("CheckNullPointer::analyseWholeProgram"); // unusedfunctions
 
     const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> callsMap = ctu->getCallsMap();
 

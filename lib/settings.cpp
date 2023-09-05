@@ -23,10 +23,8 @@
 #include "vfvalue.h"
 
 #include <fstream>
-#include <utility>
 
-#define PICOJSON_USE_INT64
-#include <picojson.h>
+#include "json.h"
 
 std::atomic<bool> Settings::mTerminated;
 
@@ -37,44 +35,6 @@ const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 Settings::Settings()
-    : checkAllConfigurations(true),
-    checkConfiguration(false),
-    checkHeaders(true),
-    checkLibrary(false),
-    checksMaxTime(0),
-    checkUnusedTemplates(true),
-    clang(false),
-    clangExecutable("clang"),
-    clangTidy(false),
-    clearIncludeCache(false),
-    daca(false),
-    debugnormal(false),
-    debugSimplified(false),
-    debugtemplate(false),
-    debugwarnings(false),
-    dump(false),
-    enforcedLang(Language::None),
-    exceptionHandling(false),
-    exitCode(0),
-    force(false),
-    inlineSuppressions(false),
-    jobs(1),
-    loadAverage(0),
-    maxConfigs(12),
-    maxCtuDepth(2),
-    maxTemplateRecursion(100),
-    performanceValueFlowMaxTime(-1),
-    preprocessOnly(false),
-    quiet(false),
-    relativePaths(false),
-    reportProgress(false),
-    showtime(SHOWTIME_MODES::SHOWTIME_NONE),
-    templateMaxTime(0),
-    typedefMaxTime(0),
-    valueFlowMaxIterations(4),
-    verbose(false),
-    xml(false),
-    xml_version(2)
 {
     severity.setEnabled(Severity::error, true);
     certainty.setEnabled(Certainty::normal, true);
@@ -85,7 +45,7 @@ void Settings::loadCppcheckCfg()
 {
     std::string fileName = Path::getPathFromFilename(exename) + "cppcheck.cfg";
 #ifdef FILESDIR
-    if (Path::fileExists(FILESDIR "/cppcheck.cfg"))
+    if (Path::isFile(FILESDIR "/cppcheck.cfg"))
         fileName = FILESDIR "/cppcheck.cfg";
 #endif
 

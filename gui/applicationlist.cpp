@@ -27,8 +27,7 @@
 #include <QVariant>
 
 ApplicationList::ApplicationList(QObject *parent) :
-    QObject(parent),
-    mDefaultApplicationIndex(-1)
+    QObject(parent)
 {
     //ctor
 }
@@ -186,7 +185,7 @@ void ApplicationList::clear()
 
 bool ApplicationList::checkAndAddApplication(const QString& appPath, const QString& name, const QString& parameters)
 {
-    if (QFileInfo(appPath).exists() && QFileInfo(appPath).isExecutable()) {
+    if (QFileInfo::exists(appPath) && QFileInfo(appPath).isExecutable()) {
         Application app;
         app.setName(name);
         app.setPath("\"" + appPath + "\"");

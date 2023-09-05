@@ -23,9 +23,7 @@
 #include "fixture.h"
 #include "tokenize.h"
 
-#include <list>
 #include <sstream> // IWYU pragma: keep
-#include <string>
 
 class TestAutoVariables : public TestFixture {
 public:
@@ -46,7 +44,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
-        runChecks<CheckAutoVariables>(&tokenizer, &settings1, this);
+        runChecks<CheckAutoVariables>(tokenizer, this);
     }
 
     void run() override {
@@ -3646,6 +3644,19 @@ private:
               "S f() {\n"
               "    std::string s(\"abc\");\n"
               "    return S(s.c_str());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    explicit S(const char* p) { m = p; }\n"
+              "    void g();\n"
+              "    std::string m;\n"
+              "    int* t{};\n"
+              "};\n"
+              "void f(const std::stringstream& buffer) {\n"
+              "    S s(buffer.str().c_str());\n"
+              "    s.g();\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());

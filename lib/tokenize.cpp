@@ -34,6 +34,7 @@
 #include "token.h"
 #include "utils.h"
 #include "valueflow.h"
+#include "vfvalue.h"
 
 #include <algorithm>
 #include <cassert>
@@ -63,15 +64,14 @@ namespace {
     // local struct used in setVarId
     // in order to store information about the scope
     struct VarIdScopeInfo {
-        VarIdScopeInfo()
-            : isExecutable(false), isStructInit(false), isEnum(false), startVarid(0) {}
+        VarIdScopeInfo() = default;
         VarIdScopeInfo(bool isExecutable, bool isStructInit, bool isEnum, nonneg int startVarid)
             : isExecutable(isExecutable), isStructInit(isStructInit), isEnum(isEnum), startVarid(startVarid) {}
 
-        const bool isExecutable;
-        const bool isStructInit;
-        const bool isEnum;
-        const nonneg int startVarid;
+        const bool isExecutable{};
+        const bool isStructInit{};
+        const bool isEnum{};
+        const nonneg int startVarid{};
     };
 }
 
@@ -161,12 +161,7 @@ Tokenizer::Tokenizer(const Settings *settings, ErrorLogger *errorLogger, const P
     list(settings),
     mSettings(settings),
     mErrorLogger(errorLogger),
-    mSymbolDatabase(nullptr),
     mTemplateSimplifier(new TemplateSimplifier(*this)),
-    mVarId(0),
-    mUnnamedCount(0),
-    mCodeWithTemplates(false), //is there any templates?
-    mTimerResults(nullptr),
     mPreprocessor(preprocessor)
 {
     // make sure settings are specified
@@ -404,11 +399,10 @@ Token * Tokenizer::deleteInvalidTypedef(Token *typeDef)
 
 namespace {
     struct Space {
-        Space() : bodyEnd(nullptr), bodyEnd2(nullptr), isNamespace(false) {}
         std::string className;
-        const Token * bodyEnd;  // for body contains typedef define
-        const Token * bodyEnd2; // for body contains typedef using
-        bool isNamespace;
+        const Token* bodyEnd{};  // for body contains typedef define
+        const Token* bodyEnd2{}; // for body contains typedef using
+        bool isNamespace{};
         std::set<std::string> recordTypes;
     };
 }
@@ -454,7 +448,7 @@ static Token *splitDefinitionFromTypedef(Token *tok, nonneg int *unnamedCount)
             if (Token::Match(tok1->next(), "%type%"))
                 name = tok1->next()->str();
             else // create a unique name
-                name = "Unnamed" + MathLib::toString((*unnamedCount)++);
+                name = "Unnamed" + std::to_string((*unnamedCount)++);
             tok->next()->insertToken(name);
         } else
             return nullptr;
@@ -2926,7 +2920,7 @@ bool Tokenizer::simplifyUsing()
                 if (structEnd->strAt(2) == ";")
                     newName = name;
                 else
-                    newName = "Unnamed" + MathLib::toString(mUnnamedCount++);
+                    newName = "Unnamed" + std::to_string(mUnnamedCount++);
                 TokenList::copyTokens(structEnd->next(), tok, start);
                 structEnd->tokAt(5)->insertToken(newName, emptyString);
                 start->insertToken(newName, emptyString);
@@ -3345,8 +3339,10 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
 
     if (mTimerResults) {
         Timer t("Tokenizer::simplifyTokens1::setValueType", mSettings->showtime, mTimerResults);
+        mSymbolDatabase->setValueTypeInTokenList(false);
         mSymbolDatabase->setValueTypeInTokenList(true);
     } else {
+        mSymbolDatabase->setValueTypeInTokenList(false);
         mSymbolDatabase->setValueTypeInTokenList(true);
     }
 
@@ -3360,9 +3356,9 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (doValueFlow) {
         if (mTimerResults) {
             Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
+            ValueFlow::setValues(list, *mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
         } else {
-            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
+            ValueFlow::setValues(list, *mSymbolDatabase, mErrorLogger, mSettings, mTimerResults);
         }
     }
 
@@ -3427,8 +3423,10 @@ void Tokenizer::fillTypeSizes()
     mTypeSize["short"] = mSettings->platform.sizeof_short;
     mTypeSize["int"] = mSettings->platform.sizeof_int;
     mTypeSize["long"] = mSettings->platform.sizeof_long;
+    mTypeSize["long long"] = mSettings->platform.sizeof_long_long;
     mTypeSize["float"] = mSettings->platform.sizeof_float;
     mTypeSize["double"] = mSettings->platform.sizeof_double;
+    mTypeSize["long double"] = mSettings->platform.sizeof_long_double;
     mTypeSize["wchar_t"] = mSettings->platform.sizeof_wchar_t;
     mTypeSize["size_t"] = mSettings->platform.sizeof_size_t;
     mTypeSize["*"] = mSettings->platform.sizeof_pointer;
@@ -3739,7 +3737,7 @@ void Tokenizer::arraySize()
         Token* endStmt{};
         if (const Token* strTok = getStrTok(tok, addlength, &endStmt)) {
             const int sz = Token::getStrArraySize(strTok);
-            tok->next()->insertToken(MathLib::toString(sz));
+            tok->next()->insertToken(std::to_string(sz));
             tok = endStmt;
         }
 
@@ -3769,7 +3767,7 @@ void Tokenizer::arraySize()
             }
 
             if (sz != 0)
-                tok->insertToken(MathLib::toString(sz));
+                tok->insertToken(std::to_string(sz));
 
             tok = end->next() ? end->next() : end;
         }
@@ -3901,7 +3899,7 @@ void Tokenizer::simplifyCaseRange()
                 tok->insertToken("case");
                 for (MathLib::bigint i = end-1; i > start; i--) {
                     tok->insertToken(":");
-                    tok->insertToken(MathLib::toString(i));
+                    tok->insertToken(std::to_string(i));
                     tok->insertToken("case");
                 }
             }
@@ -4016,12 +4014,12 @@ void Tokenizer::simplifyTemplates()
 /** Class used in Tokenizer::setVarIdPass1 */
 class VariableMap {
 private:
-    std::map<std::string, nonneg int> mVariableId;
-    std::map<std::string, nonneg int> mVariableId_global;
+    std::unordered_map<std::string, nonneg int> mVariableId;
+    std::unordered_map<std::string, nonneg int> mVariableId_global;
     std::stack<std::vector<std::pair<std::string, nonneg int>>> mScopeInfo;
-    mutable nonneg int mVarId;
+    mutable nonneg int mVarId{};
 public:
-    VariableMap() : mVarId(0) {}
+    VariableMap() = default;
     void enterScope();
     bool leaveScope();
     void addVariable(const std::string& varname, bool globalNamespace);
@@ -4029,7 +4027,7 @@ public:
         return mVariableId.find(varname) != mVariableId.end();
     }
 
-    const std::map<std::string, nonneg int>& map(bool global) const {
+    const std::unordered_map<std::string, nonneg int>& map(bool global) const {
         return global ? mVariableId_global : mVariableId;
     }
     nonneg int getVarId() const {
@@ -4069,7 +4067,7 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
             mVariableId_global[varname] = mVariableId[varname];
         return;
     }
-    std::map<std::string, nonneg int>::iterator it = mVariableId.find(varname);
+    std::unordered_map<std::string, nonneg int>::iterator it = mVariableId.find(varname);
     if (it == mVariableId.end()) {
         mScopeInfo.top().emplace_back(varname, 0);
         mVariableId[varname] = ++mVarId;
@@ -4332,7 +4330,7 @@ void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
             --indentlevel;
             inEnum = false;
         } else if (initList && indentlevel == 0 && Token::Match(tok->previous(), "[,:] %name% [({]")) {
-            const std::map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+            const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
             if (it != variableMap.map(false).end()) {
                 tok->varId(it->second);
             }
@@ -4350,7 +4348,7 @@ void Tokenizer::setVarIdClassDeclaration(Token* const startToken,
                 }
 
                 if (!inEnum) {
-                    const std::map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+                    const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
                     if (it != variableMap.map(false).end()) {
                         tok->varId(it->second);
                         setVarIdStructMembers(&tok, structMembers, variableMap.getVarId());
@@ -4694,7 +4692,7 @@ void Tokenizer::setVarIdPass1()
                         while (tok != end) {
                             if (tok->isName() && !(Token::simpleMatch(tok->next(), "<") &&
                                                    Token::Match(tok->tokAt(-1), ":: %name%"))) {
-                                const std::map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
+                                const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(false).find(tok->str());
                                 if (it != variableMap.map(false).end())
                                     tok->varId(it->second);
                             }
@@ -4759,7 +4757,7 @@ void Tokenizer::setVarIdPass1()
 
             if ((!scopeStack.top().isEnum || !(Token::Match(tok->previous(), "{|,") && Token::Match(tok->next(), ",|=|}"))) &&
                 !Token::simpleMatch(tok->next(), ": ;")) {
-                const std::map<std::string, nonneg int>::const_iterator it = variableMap.map(globalNamespace).find(tok->str());
+                const std::unordered_map<std::string, nonneg int>::const_iterator it = variableMap.map(globalNamespace).find(tok->str());
                 if (it != variableMap.map(globalNamespace).end()) {
                     tok->varId(it->second);
                     setVarIdStructMembers(&tok, structMembers, variableMap.getVarId());
@@ -5787,7 +5785,7 @@ void Tokenizer::printDebugOutput(int simplification) const
                 reportError(var->typeStartToken(),
                             Severity::debug,
                             "debug",
-                            "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + MathLib::toString(var->typeStartToken()->linenr()));
+                            "Variable::typeStartToken() of variable '" + var->name() + "' is not located before Variable::typeEndToken(). The location of the typeStartToken() is '" + var->typeStartToken()->str() + "' at line " + std::to_string(var->typeStartToken()->linenr()));
             }
         }
     }
@@ -5799,134 +5797,223 @@ void Tokenizer::dump(std::ostream &out) const
     // The idea is not that this will be readable for humans. It's a
     // data dump that 3rd party tools could load and get useful info from.
 
+    std::string outs;
+
     std::set<const Library::Container*> containers;
 
     // tokens..
-    out << "  <tokenlist>" << std::endl;
+    outs += "  <tokenlist>";
+    outs += '\n';
     for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        out << "    <token id=\"" << tok << "\" file=\"" << ErrorLogger::toxml(list.file(tok)) << "\" linenr=\"" << tok->linenr() << "\" column=\"" << tok->column() << "\"";
-        out << " str=\"" << ErrorLogger::toxml(tok->str()) << '\"';
-        out << " scope=\"" << tok->scope() << '\"';
+        outs += "    <token id=\"";
+        outs += id_string(tok);
+        outs += "\" file=\"";
+        outs += ErrorLogger::toxml(list.file(tok));
+        outs += "\" linenr=\"";
+        outs += std::to_string(tok->linenr());
+        outs += "\" column=\"";
+        outs += std::to_string(tok->column());
+        outs += "\"";
+
+        outs += " str=\"";
+        outs += ErrorLogger::toxml(tok->str());
+        outs += '\"';
+
+        outs += " scope=\"";
+        outs += id_string(tok->scope());
+        outs += '\"';
         if (tok->isName()) {
-            out << " type=\"name\"";
+            outs += " type=\"name\"";
             if (tok->isUnsigned())
-                out << " isUnsigned=\"true\"";
+                outs += " isUnsigned=\"true\"";
             else if (tok->isSigned())
-                out << " isSigned=\"true\"";
+                outs += " isSigned=\"true\"";
         } else if (tok->isNumber()) {
-            out << " type=\"number\"";
+            outs += " type=\"number\"";
             if (MathLib::isInt(tok->str()))
-                out << " isInt=\"true\"";
+                outs += " isInt=\"true\"";
             if (MathLib::isFloat(tok->str()))
-                out << " isFloat=\"true\"";
-        } else if (tok->tokType() == Token::eString)
-            out << " type=\"string\" strlen=\"" << Token::getStrLength(tok) << '\"';
+                outs += " isFloat=\"true\"";
+        } else if (tok->tokType() == Token::eString) {
+            outs += " type=\"string\" strlen=\"";
+            outs += std::to_string(Token::getStrLength(tok));
+            outs += '\"';
+        }
         else if (tok->tokType() == Token::eChar)
-            out << " type=\"char\"";
+            outs += " type=\"char\"";
         else if (tok->isBoolean())
-            out << " type=\"boolean\"";
+            outs += " type=\"boolean\"";
         else if (tok->isOp()) {
-            out << " type=\"op\"";
+            outs += " type=\"op\"";
             if (tok->isArithmeticalOp())
-                out << " isArithmeticalOp=\"true\"";
+                outs += " isArithmeticalOp=\"true\"";
             else if (tok->isAssignmentOp())
-                out << " isAssignmentOp=\"true\"";
+                outs += " isAssignmentOp=\"true\"";
             else if (tok->isComparisonOp())
-                out << " isComparisonOp=\"true\"";
+                outs += " isComparisonOp=\"true\"";
             else if (tok->tokType() == Token::eLogicalOp)
-                out << " isLogicalOp=\"true\"";
+                outs += " isLogicalOp=\"true\"";
         }
         if (tok->isCast())
-            out << " isCast=\"true\"";
+            outs += " isCast=\"true\"";
         if (tok->isExternC())
-            out << " externLang=\"C\"";
+            outs += " externLang=\"C\"";
         if (tok->isExpandedMacro())
-            out << " isExpandedMacro=\"true\"";
+            outs += " isExpandedMacro=\"true\"";
         if (tok->isTemplateArg())
-            out << " isTemplateArg=\"true\"";
+            outs += " isTemplateArg=\"true\"";
         if (tok->isRemovedVoidParameter())
-            out << " isRemovedVoidParameter=\"true\"";
+            outs += " isRemovedVoidParameter=\"true\"";
         if (tok->isSplittedVarDeclComma())
-            out << " isSplittedVarDeclComma=\"true\"";
+            outs += " isSplittedVarDeclComma=\"true\"";
         if (tok->isSplittedVarDeclEq())
-            out << " isSplittedVarDeclEq=\"true\"";
+            outs += " isSplittedVarDeclEq=\"true\"";
         if (tok->isImplicitInt())
-            out << " isImplicitInt=\"true\"";
+            outs += " isImplicitInt=\"true\"";
         if (tok->isComplex())
-            out << " isComplex=\"true\"";
+            outs += " isComplex=\"true\"";
         if (tok->isRestrict())
-            out << " isRestrict=\"true\"";
+            outs += " isRestrict=\"true\"";
         if (tok->isAtomic())
-            out << " isAtomic=\"true\"";
+            outs += " isAtomic=\"true\"";
         if (tok->isAttributeExport())
-            out << " isAttributeExport=\"true\"";
-        if (tok->link())
-            out << " link=\"" << tok->link() << '\"';
-        if (tok->varId() > 0)
-            out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
-        if (tok->exprId() > 0)
-            out << " exprId=\"" << MathLib::toString(tok->exprId()) << '\"';
-        if (tok->variable())
-            out << " variable=\"" << tok->variable() << '\"';
-        if (tok->function())
-            out << " function=\"" << tok->function() << '\"';
-        if (!tok->values().empty())
-            out << " values=\"" << &tok->values() << '\"';
-        if (tok->type())
-            out << " type-scope=\"" << tok->type()->classScope << '\"';
-        if (tok->astParent())
-            out << " astParent=\"" << tok->astParent() << '\"';
-        if (tok->astOperand1())
-            out << " astOperand1=\"" << tok->astOperand1() << '\"';
-        if (tok->astOperand2())
-            out << " astOperand2=\"" << tok->astOperand2() << '\"';
-        if (!tok->originalName().empty())
-            out << " originalName=\"" << tok->originalName() << '\"';
+            outs += " isAttributeExport=\"true\"";
+        if (tok->link()) {
+            outs += " link=\"";
+            outs += id_string(tok->link());
+            outs += '\"';
+        }
+        if (tok->varId() > 0) {
+            outs += " varId=\"";
+            outs += std::to_string(tok->varId());
+            outs += '\"';
+        }
+        if (tok->exprId() > 0) {
+            outs += " exprId=\"";
+            outs += std::to_string(tok->exprId());
+            outs += '\"';
+        }
+        if (tok->variable()) {
+            outs += " variable=\"";
+            outs += id_string(tok->variable());
+            outs += '\"';
+        }
+        if (tok->function()) {
+            outs += " function=\"";
+            outs += id_string(tok->function());
+            outs += '\"';
+        }
+        if (!tok->values().empty()) {
+            outs += " values=\"";
+            outs += id_string(&tok->values());
+            outs += '\"';
+        }
+        if (tok->type()) {
+            outs += " type-scope=\"";
+            outs += id_string(tok->type()->classScope);
+            outs += '\"';
+        }
+        if (tok->astParent()) {
+            outs += " astParent=\"";
+            outs += id_string(tok->astParent());
+            outs += '\"';
+        }
+        if (tok->astOperand1()) {
+            outs += " astOperand1=\"";
+            outs += id_string(tok->astOperand1());
+            outs += '\"';
+        }
+        if (tok->astOperand2()) {
+            outs += " astOperand2=\"";
+            outs += id_string(tok->astOperand2());
+            outs += '\"';
+        }
+        if (!tok->originalName().empty()) {
+            outs += " originalName=\"";
+            outs += tok->originalName();
+            outs += '\"';
+        }
         if (tok->valueType()) {
             const std::string vt = tok->valueType()->dump();
-            if (!vt.empty())
-                out << ' ' << vt;
+            if (!vt.empty()) {
+                outs += ' ';
+                outs += vt;
+            }
             containers.insert(tok->valueType()->container);
         }
         if (!tok->varId() && tok->scope()->isExecutable() && Token::Match(tok, "%name% (")) {
             if (mSettings->library.isnoreturn(tok))
-                out << " noreturn=\"true\"";
+                outs += " noreturn=\"true\"";
         }
 
-        out << "/>" << std::endl;
+        outs += "/>";
+        outs += '\n';
     }
-    out << "  </tokenlist>" << std::endl;
+    outs += "  </tokenlist>";
+    outs += '\n';
+
+    out << outs;
+    outs.clear();
 
     mSymbolDatabase->printXml(out);
 
     containers.erase(nullptr);
     if (!containers.empty()) {
-        out << "  <containers>\n";
+        outs += "  <containers>";
+        outs += '\n';
         for (const Library::Container* c: containers) {
-            out << "    <container id=\"" << c << "\" array-like-index-op=\""
-                << (c->arrayLike_indexOp ? "true" : "false") << "\" "
-                << "std-string-like=\"" << (c->stdStringLike ? "true" : "false") << "\"/>\n";
+            outs += "    <container id=\"";
+            outs += id_string(c);
+            outs += "\" array-like-index-op=\"";
+            outs += (c->arrayLike_indexOp ? "true" : "false");
+            outs += "\" ";
+            outs += "std-string-like=\"";
+            outs +=(c->stdStringLike ? "true" : "false");
+            outs += "\"/>";
+            outs += '\n';
         }
-        out << "  </containers>\n";
+        outs += "  </containers>";
+        outs += '\n';
     }
 
     if (list.front())
         list.front()->printValueFlow(true, out);
 
     if (!mTypedefInfo.empty()) {
-        out << "  <typedef-info>" << std::endl;
+        outs += "  <typedef-info>";
+        outs += '\n';
         for (const TypedefInfo &typedefInfo: mTypedefInfo) {
-            out << "    <info"
-                << " name=\"" << typedefInfo.name << "\""
-                << " file=\"" << ErrorLogger::toxml(typedefInfo.filename) << "\""
-                << " line=\"" << typedefInfo.lineNumber << "\""
-                << " column=\"" << typedefInfo.column << "\""
-                << " used=\"" << (typedefInfo.used?1:0) << "\""
-                << "/>" << std::endl;
+            outs += "    <info";
+
+            outs += " name=\"";
+            outs += typedefInfo.name;
+            outs += "\"";
+
+            outs += " file=\"";
+            outs += ErrorLogger::toxml(typedefInfo.filename);
+            outs += "\"";
+
+            outs += " line=\"";
+            outs += std::to_string(typedefInfo.lineNumber);
+            outs += "\"";
+
+            outs += " column=\"";
+            outs += std::to_string(typedefInfo.column);
+            outs += "\"";
+
+            outs += " used=\"";
+            outs += std::to_string(typedefInfo.used?1:0);
+            outs += "\"";
+
+            outs += "/>";
+            outs += '\n';
         }
-        out << "  </typedef-info>" << std::endl;
+        outs += "  </typedef-info>";
+        outs += '\n';
     }
-    out << mTemplateSimplifier->dump();
+    outs += mTemplateSimplifier->dump();
+
+    out << outs;
 }
 
 void Tokenizer::simplifyHeadersAndUnusedTemplates()
@@ -8594,14 +8681,14 @@ void Tokenizer::simplifyStructDecl()
         // check for anonymous struct/union
         if (Token::Match(tok, "struct|union {")) {
             if (Token::Match(tok->next()->link(), "} const| *|&| const| %type% ,|;|[|(|{|=")) {
-                tok->insertToken("Anonymous" + MathLib::toString(count++));
+                tok->insertToken("Anonymous" + std::to_string(count++));
             }
         }
         // check for derived anonymous class/struct
         else if (cpp && Token::Match(tok, "class|struct :")) {
             const Token *tok1 = Token::findsimplematch(tok, "{");
             if (tok1 && Token::Match(tok1->link(), "} const| *|&| const| %type% ,|;|[|(|{")) {
-                tok->insertToken("Anonymous" + MathLib::toString(count++));
+                tok->insertToken("Anonymous" + std::to_string(count++));
             }
         }
         // check for anonymous enum
@@ -8614,7 +8701,7 @@ void Tokenizer::simplifyStructDecl()
                 start->next()->link()->deleteThis();
                 start->next()->deleteThis();
             }
-            tok->insertToken("Anonymous" + MathLib::toString(count++));
+            tok->insertToken("Anonymous" + std::to_string(count++));
         }
     }
 
@@ -8845,8 +8932,11 @@ void Tokenizer::simplifyAttribute()
 
                     // check if after variable name
                     if (Token::Match(after, ";|=")) {
-                        if (Token::Match(tok->previous(), "%type%"))
-                            vartok = tok->previous();
+                        Token *prev = tok->previous();
+                        while (Token::simpleMatch(prev, "]"))
+                            prev = prev->link()->previous();
+                        if (Token::Match(prev, "%type%"))
+                            vartok = prev;
                     }
 
                     // check if before variable name
@@ -9849,7 +9939,7 @@ void Tokenizer::simplifyOperatorName()
             tok->insertToken("(");
             str->insertToken(")");
             Token::createMutualLinks(tok->next(), str->next());
-            str->insertToken(MathLib::toString(Token::getStrLength(str)));
+            str->insertToken(std::to_string(Token::getStrLength(str)));
             str->insertToken(",");
         }
     }
@@ -10138,7 +10228,7 @@ void Tokenizer::reportError(const std::list<const Token*>& callstack, Severity::
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else
-        Check::reportError(errmsg);
+        Check::writeToErrorList(errmsg);
 }
 
 void Tokenizer::setPodTypes()

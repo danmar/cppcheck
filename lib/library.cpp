@@ -31,12 +31,12 @@
 #include <algorithm>
 #include <cctype>
 #include <climits>
-#include <cstdlib>
 #include <cstring>
 #include <list>
 #include <memory>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
+#include <stdexcept>
 #include <string>
 
 #include <tinyxml2.h>
@@ -63,9 +63,6 @@ static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList
         }
     }
 }
-
-Library::Library() : mAllocId(0)
-{}
 
 Library::Error Library::load(const char exename[], const char path[])
 {
@@ -422,7 +419,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
             const char* const inherits = node->Attribute("inherits");
             if (inherits) {
-                const std::map<std::string, Container>::const_iterator i = containers.find(inherits);
+                const std::unordered_map<std::string, Container>::const_iterator i = containers.find(inherits);
                 if (i != containers.end())
                     container = i->second; // Take values from parent and overwrite them if necessary
                 else
@@ -1161,8 +1158,17 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
     return false;
 }
 
-const Library::Container* Library::detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator, bool withoutStd) const
+const Library::Container* Library::detectContainerInternal(const Token* const typeStart, DetectContainer detect, bool* isIterator, bool withoutStd) const
 {
+    const Token* firstLinkedTok = nullptr;
+    for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
+        if (!tok->link())
+            continue;
+
+        firstLinkedTok = tok;
+        break;
+    }
+
     for (const std::pair<const std::string, Library::Container> & c : containers) {
         const Container& container = c.second;
         if (container.startPattern.empty())
@@ -1180,23 +1186,22 @@ const Library::Container* Library::detectContainerInternal(const Token* typeStar
             return &container;
         }
 
-        for (const Token* tok = typeStart; tok && !tok->varId(); tok = tok->next()) {
-            if (!tok->link())
-                continue;
+        if (!firstLinkedTok)
+            continue;
 
-            const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str() + offset);
+        const bool matchedStartPattern = Token::Match(typeStart, container.startPattern2.c_str() + offset);
+        if (!matchedStartPattern)
+            continue;
 
-            if (detect != ContainerOnly && matchedStartPattern && Token::Match(tok->link(), container.itEndPattern.c_str())) {
-                if (isIterator)
-                    *isIterator = true;
-                return &container;
-            }
-            if (detect != IteratorOnly && matchedStartPattern && Token::Match(tok->link(), container.endPattern.c_str())) {
-                if (isIterator)
-                    *isIterator = false;
-                return &container;
-            }
-            break;
+        if (detect != ContainerOnly && Token::Match(firstLinkedTok->link(), container.itEndPattern.c_str())) {
+            if (isIterator)
+                *isIterator = true;
+            return &container;
+        }
+        if (detect != IteratorOnly && Token::Match(firstLinkedTok->link(), container.endPattern.c_str())) {
+            if (isIterator)
+                *isIterator = false;
+            return &container;
         }
     }
     return nullptr;

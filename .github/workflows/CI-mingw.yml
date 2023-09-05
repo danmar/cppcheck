@@ -4,21 +4,29 @@
 
 name: CI-mingw
 
-on: [push,pull_request]
+on:
+  push:
+    branches:
+      - 'main'
+      - 'releases/**'
+    tags:
+      - '2.*'
+  pull_request:
 
 permissions:
   contents: read
 
 defaults:
   run:
-    shell: cmd
+    shell: msys2 {0}
 
 jobs:
   build_mingw:
     strategy:
       matrix:
-        os: [windows-2019] # fails to download with "windows-2022"
-        arch: [x64] # TODO: fix x86 build?
+        # the MinGW installation in windows-2019 is supposed to be 8.1 but it is 12.2
+        # the MinGW installation in windows-2022 is not including all necessary packages by default, so just use the older image instead - package versions are he same
+        os: [windows-2019]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -26,12 +34,39 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up MinGW
-        uses: egor-tensin/setup-mingw@v2
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
         with:
-          platform: ${{ matrix.arch }}
+          release: false # use pre-installed
+          install: >-
+            mingw-w64-x86_64-lld
+            mingw-w64-x86_64-ccache
 
-      # MinGW will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
-      - name: Build all and run test
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
+
+      - name: Build cppcheck
         run: |
-          mingw32-make VERBOSE=1 -j2 check
+          export PATH="/mingw64/lib/ccache/bin:$PATH"
+          # set RDYNAMIC to work around broken MinGW detection
+          make VERBOSE=1 RDYNAMIC=-lshlwapi -j2 cppcheck
+        env:
+          LDFLAGS: -fuse-ld=lld # use lld for faster linking
+
+      - name: Build test
+        run: |
+          export PATH="/mingw64/lib/ccache/bin:$PATH"
+          # set RDYNAMIC to work around broken MinGW detection
+          make VERBOSE=1 RDYNAMIC=-lshlwapi -j2 testrunner
+        env:
+          LDFLAGS: -fuse-ld=lld # use lld for faster linking
+
+      - name: Run test
+        run: |
+          export PATH="/mingw64/lib/ccache/bin:$PATH"
+          # set RDYNAMIC to work around broken MinGW detection
+          make VERBOSE=1 RDYNAMIC=-lshlwapi -j2 check
+        env:
+          LDFLAGS: -fuse-ld=lld # use lld for faster linking
