@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.41"
+SERVER_VERSION = "1.3.42"
 
 OLD_VERSION = '2.11'
 
@@ -111,7 +111,7 @@ def overviewReport() -> str:
     #html += '<a href="head-valueFlowBailout">valueFlowBailout</a><br>\n'
     #html += '<a href="head-bailoutUninitVar">bailoutUninitVar</a><br>\n'
     #html += '<a href="head-symbolDatabaseWarning">symbolDatabaseWarning</a><br>\n'
-    #html += '<a href="head-valueFlowBailoutIncompleteVar">valueFlowBailoutIncompleteVar</a><br>\n'
+    html += '<a href="value_flow_bailout_incomplete_var.html">valueFlowBailoutIncompleteVar report</a><br>\n'
     html += '<br>\n'
     html += 'Important errors:<br>\n'
     html += '<a href="head-cppcheckError">cppcheckError</a><br>\n'
@@ -897,17 +897,23 @@ def timeReportSlow(resultPath: str) -> str:
 
 
 def check_library_report(result_path: str, message_id: str) -> str:
-    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore', 'checkLibraryCheckType'):
+    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore', 'checkLibraryCheckType', 'valueFlowBailoutIncompleteVar'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
         print_ts(error_message)
         return error_message
 
-    if message_id == 'checkLibraryCheckType':
+    if message_id == 'valueFlowBailoutIncompleteVar':
+        metric = 'variables'
+        m_column = 'Variable'
+        metric_link = 'incomplete_var'
+    elif message_id == 'checkLibraryCheckType':
         metric = 'types'
         m_column = 'Type'
+        metric_link = 'check_library'
     else:
         metric = 'functions'
         m_column = 'Function'
+        metric_link = 'check_library'
 
     functions_shown_max = 5000
     html = '<!DOCTYPE html>\n'
@@ -933,17 +939,24 @@ def check_library_report(result_path: str, message_id: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line == 'info messages:\n':
-                info_messages = True
-            if not info_messages:
-                continue
+            if message_id != 'valueFlowBailoutIncompleteVar':
+                if line == 'info messages:\n':
+                    info_messages = True
+                if not info_messages:
+                    continue
             if line.endswith('[' + message_id + ']\n'):
-                if message_id == 'checkLibraryFunction':
-                    function_name = line[(line.find('for function ') + len('for function ')):line.rfind('[') - 1]
+                if message_id == 'valueFlowBailoutIncompleteVar':
+                    marker = 'incomplete variable '
+                    function_name = line[(line.find(marker) + len(marker)):line.rfind('[') - 1]
+                elif message_id == 'checkLibraryFunction':
+                    marker = 'for function '
+                    function_name = line[(line.find(marker) + len(marker)):line.rfind('[') - 1]
                 elif message_id == 'checkLibraryCheckType':
-                    function_name = line[(line.find('configuration for ') + len('configuration for ')):line.rfind('[') - 1]
+                    marker = 'configuration for '
+                    function_name = line[(line.find(marker) + len(marker)):line.rfind('[') - 1]
                 else:
-                    function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
+                    marker = ': Function '
+                    function_name = line[(line.find(marker) + len(marker)):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
 
     function_details_list = []
@@ -951,7 +964,7 @@ def check_library_report(result_path: str, message_id: str) -> str:
         if len(function_details_list) >= functions_shown_max:
             break
         function_details_list.append(str(count).rjust(column_widths[0]) + ' ' +
-                '<a href="check_library-' + urllib.parse.quote_plus(function_name) + '">' + function_name + '</a>\n')
+                '<a href="' + metric_link + '-' + urllib.parse.quote_plus(function_name) + '">' + function_name + '</a>\n')
 
     html += ''.join(function_details_list)
     html += '</pre>\n'
@@ -961,12 +974,15 @@ def check_library_report(result_path: str, message_id: str) -> str:
 
 
 # Lists all checkLibrary* messages regarding the given function name
-def check_library_function_name(result_path: str, function_name: str) -> str:
-    function_name = urllib.parse.unquote_plus(function_name)
-    if function_name.endswith('()'):
-        id = '[checkLibrary'
+def check_library_function_name(result_path: str, function_name: str, is_var: bool=False) -> str:
+    if is_var:
+        id = '[valueFlowBailoutIncompleteVar'
     else:
-        id = '[checkLibraryCheckType]'
+        function_name = urllib.parse.unquote_plus(function_name)
+        if function_name.endswith('()'):
+            id = '[checkLibrary'
+        else:
+            id = '[checkLibraryCheckType]'
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
@@ -977,12 +993,16 @@ def check_library_function_name(result_path: str, function_name: str) -> str:
         for line in open(filename, 'rt'):
             if line.startswith('ftp://'):
                 url = line
-            elif line.startswith('cppcheck-options:'):
-                cppcheck_options = line
-            elif line == 'info messages:\n':
-                info_messages = True
-            if not info_messages:
                 continue
+            if line.startswith('cppcheck-options:'):
+                cppcheck_options = line
+                continue
+            if not is_var:
+                if line == 'info messages:\n':
+                    info_messages = True
+                    continue
+                if not info_messages:
+                    continue
             if id in line:
                 if (' ' + function_name + ' ') in line:
                     if url:
@@ -1114,6 +1134,13 @@ class HttpClientThread(Thread):
             elif url.startswith('/check_library-'):
                 function_name = url[len('/check_library-'):]
                 text = check_library_function_name(self.infoPath, function_name)
+                httpGetResponse(self.connection, text, 'text/plain')
+            elif url == '/value_flow_bailout_incomplete_var.html':
+                text = check_library_report(self.resultPath, message_id='valueFlowBailoutIncompleteVar')
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url.startswith('/incomplete_var-'):
+                var_name = url[len('/incomplete_var-'):]
+                text = check_library_function_name(self.resultPath, var_name, True)
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + url
