@@ -988,6 +988,14 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 else if (!member->isConst() && !member->isStatic()) {
                     assignAllVar(usage);
                 }
+
+                // const method, assume it assigns all mutable members
+                else if (member->isConst()) {
+                    for (Usage& i: usage) {
+                        if (i.var->isMutable())
+                            i.assign = true;
+                    }
+                }
             }
 
             // not member function

@@ -3704,8 +3704,7 @@ static bool isVariableExpression(const Token* tok)
         return isVariableExpression(tok->astOperand1()) &&
                isVariableExpression(tok->astOperand2());
     if (Token::simpleMatch(tok, "["))
-        return isVariableExpression(tok->astOperand1()) &&
-               tok->astOperand2() && tok->astOperand2()->hasKnownIntValue();
+        return isVariableExpression(tok->astOperand1());
     return false;
 }
 
@@ -3764,11 +3763,17 @@ void CheckOther::checkKnownArgument()
                     mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
             // ensure that there is a integer variable in expression with unknown value
-            const Token* vartok = findAstNode(tok, [](const Token* child) {
+            const Token* vartok = nullptr;
+            visitAstNodes(tok, [&](const Token* child) {
                 if (Token::Match(child, "%var%|.|[")) {
-                    return astIsIntegral(child, false) && !astIsPointer(child) && child->values().empty();
+                    if (child->hasKnownIntValue())
+                        return ChildrenToVisit::none;
+                    if (astIsIntegral(child, false) && !astIsPointer(child) && child->values().empty()) {
+                        vartok = child;
+                        return ChildrenToVisit::done;
+                    }
                 }
-                return false;
+                return ChildrenToVisit::op1_and_op2;
             });
             if (!vartok)
                 continue;

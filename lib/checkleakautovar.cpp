@@ -295,6 +295,9 @@ bool CheckLeakAutoVar::checkScope(const Token * const startToken,
 {
 #if ASAN
     static const nonneg int recursiveLimit = 300;
+#elif defined(__MINGW32__)
+    // testrunner crashes with stack overflow in CI
+    static const nonneg int recursiveLimit = 600;
 #else
     static const nonneg int recursiveLimit = 1000;
 #endif

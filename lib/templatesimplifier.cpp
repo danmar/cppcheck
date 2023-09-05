@@ -454,8 +454,9 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 if (level == 1)
                     return numberOfParameters;
                 level -= 2;
-            } else if (tok->str() == "," && level == 0) {
-                ++numberOfParameters;
+            } else if (tok->str() == ",") {
+                if (level == 0)
+                    ++numberOfParameters;
                 tok = tok->next();
                 continue;
             }

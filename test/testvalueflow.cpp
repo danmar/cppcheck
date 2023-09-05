@@ -6643,6 +6643,18 @@ private:
 
         code = "int f() { auto a = std::array<int, 2>{}; return a[1]; }";
         ASSERT_EQUALS("values.size():0", isKnownContainerSizeValue(tokenValues(code, "a ["), 0));
+
+        code = "void g(std::vector<int>* w) {\n"
+               "  std::vector<int> &r = *w;\n"
+               "  r.push_back(0);\n"
+               "}\n"
+               "int f() {\n"
+               "  std::vector<int> v;\n"
+               "  g(&v);\n"
+               "  return v[0];\n"
+               "}\n";
+        ASSERT(!isKnownContainerSizeValue(tokenValues(code, "v ["), 0).empty());
+        ASSERT(!isPossibleContainerSizeValue(tokenValues(code, "v ["), 0).empty());
     }
 
     void valueFlowContainerElement()
@@ -7153,6 +7165,12 @@ private:
                "    (*printf)(\"%s %i\", strerror(errno), b ? 0 : 1);\n"
                "};\n";
         valueOfTok(code, "?");
+
+        code = "void f(int i) {\n" // #11914
+               "    int& r = i;\n"
+               "    int& q = (&r)[0];\n"
+               "}\n";
+        valueOfTok(code, "&");
     }
 
     void valueFlowHang() {

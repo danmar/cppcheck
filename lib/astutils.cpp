@@ -1001,29 +1001,43 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
     return false;
 }
 
-bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
+bool isAliasOf(const Token* tok, const Token* expr, int* indirect, bool* inconclusive)
 {
-    const bool pointer = astIsPointer(tok);
     const ValueFlow::Value* value = nullptr;
-    const Token* r = findAstNode(expr, [&](const Token* childTok) {
-        for (const ValueFlow::Value& val : tok->values()) {
-            if (val.isImpossible())
-                continue;
-            if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
-                if (findAstNode(val.tokvalue,
-                                [&](const Token* aliasTok) {
-                    return aliasTok->exprId() == childTok->exprId();
-                })) {
-                    if (val.isInconclusive() && inconclusive != nullptr) {
-                        value = &val;
-                    } else {
-                        return true;
+    const Token* r = nullptr;
+    if (indirect)
+        *indirect = 1;
+    for (const ReferenceToken& ref : followAllReferences(tok)) {
+        const bool pointer = astIsPointer(ref.token);
+        r = findAstNode(expr, [&](const Token* childTok) {
+            if (childTok->exprId() == 0)
+                return false;
+            if (ref.token != tok && expr->exprId() == childTok->exprId()) {
+                if (indirect)
+                    *indirect = 0;
+                return true;
+            }
+            for (const ValueFlow::Value& val : ref.token->values()) {
+                if (val.isImpossible())
+                    continue;
+                if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
+                    if (findAstNode(val.tokvalue,
+                                    [&](const Token* aliasTok) {
+                        return aliasTok->exprId() == childTok->exprId();
+                    })) {
+                        if (val.isInconclusive() && inconclusive != nullptr) {
+                            value = &val;
+                        } else {
+                            return true;
+                        }
                     }
                 }
             }
-        }
-        return false;
-    });
+            return false;
+        });
+        if (r)
+            break;
+    }
     if (!r && value && inconclusive)
         *inconclusive = true;
     return r || value;
@@ -2525,7 +2539,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 
     // Check addressof
     if (tok2->astParent() && tok2->astParent()->isUnaryOp("&")) {
-        if (isVariableChanged(tok2->astParent(), indirect + 1, settings, depth - 1))
+        if (isVariableChanged(tok2->astParent(), indirect + 1, settings, cpp, depth - 1))
             return true;
     } else {
         // If its already const then it cant be modified
@@ -2728,16 +2742,17 @@ static bool isExpressionChangedAt(const F& getExprTok,
         if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
             // TODO: Is global variable really changed by function call?
             return true;
+        int i = 1;
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
         auto expr = getExprTok();
         if (!expr)
             aliased = true;
         if (!aliased)
-            aliased = isAliasOf(tok, expr);
+            aliased = isAliasOf(tok, expr, &i);
         if (!aliased)
             return false;
-        if (isVariableChanged(tok, indirect + 1, settings, cpp, depth))
+        if (isVariableChanged(tok, indirect + i, settings, cpp, depth))
             return true;
         // TODO: Try to traverse the lambda function
         if (Token::Match(tok, "%var% ("))
