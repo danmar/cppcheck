@@ -170,5 +170,5 @@ jobs:
       - name: dmake
         if: matrix.python-version == '3.11'
         run: |
-          make -j$(nproc) run-dmake
+          make dmake && ./dmake --release
           git diff --exit-code
