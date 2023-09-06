@@ -4,14 +4,7 @@
 
 name: CI-windows
 
-on:
-  push:
-    branches:
-      - 'main'
-      - 'releases/**'
-    tags:
-      - '2.*'
-  pull_request:
+on: [push,pull_request]
 
 permissions:
   contents: read
