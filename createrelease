@@ -30,11 +30,11 @@
 # git checkout -b 2.8.x ; git push -u origin 2.8.x
 #
 # Update version numbers in:
-# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.9/" cli/main.cpp
-# sed -i -r "s|2[.][0-9]+([.]99)*|2.9.0|" cmake/versions.cmake # version must have 3 parts.
-# sed -i -r "s/MINOR [0-9]+/MINOR 9/" lib/version.h
-# sed -i -r "s/2[.][0-9]+([.]99)*/2.9/" win_installer/productInfo.wxi
-# sed -i -r "s/subtitle: Version 2\.[0-9]+/subtitle: Version 2.9/" man/*.md
+# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.12/" cli/main.cpp
+# sed -i -r "s|2[.][0-9]+([.]99)*|2.12.0|" cmake/versions.cmake # version must have 3 parts.
+# sed -i -r "s/MINOR [0-9]+/MINOR_VERSION 12/" lib/version.h
+# sed -i -r "s/2[.][0-9]+([.]99)*/2.12-rc1/" win_installer/productInfo.wxi
+# sed -i -r "s/subtitle: Version 2\.[0-9]+.*/subtitle: Version 2.12/" man/*.md
 # Ensure that "-rc1" is added in productInfo.wxi and lib/version.h
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
