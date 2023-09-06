@@ -125,18 +125,10 @@ void CmdLineParser::printError(const std::string &message)
     printMessage("error: " + message);
 }
 
-#if defined(_WIN64) || defined(_WIN32)
-bool CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
-#endif
-
 // TODO: normalize/simplify/native all path parameters
 // TODO: error out on all missing given files/paths
 bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
-#if defined(_WIN64) || defined(_WIN32)
-    bool default_platform = true;
-#endif
-
     bool def = false;
     bool maxconfigs = false;
 
@@ -632,10 +624,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
 
-#if defined(_WIN64) || defined(_WIN32)
-                default_platform = false;
-#endif
-
                 // TODO: remove
                 // these are loaded via external files and thus have Settings::PlatformFile set instead.
                 // override the type so they behave like the regular platforms.
@@ -1056,14 +1044,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         printHelp();
         return true;
     }
-
-#if defined(_WIN64)
-    if (SHOW_DEF_PLATFORM_MSG && default_platform && !mSettings.quiet)
-        printMessage("Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.");
-#elif defined(_WIN32)
-    if (SHOW_DEF_PLATFORM_MSG && default_platform && !mSettings.quiet)
-        printMessage("Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.");
-#endif
 
     // Print error only if we have "real" command and expect files
     if (!mExitAfterPrint && mPathNames.empty() && mSettings.project.fileSettings.empty()) {

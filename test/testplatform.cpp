@@ -390,13 +390,7 @@ private:
 
     void default_platform() {
         cppcheck::Platform platform;
-#if defined(_WIN64)
-        ASSERT_EQUALS(cppcheck::Platform::Type::Win64, platform.type);
-#elif defined(_WIN32)
-        ASSERT_EQUALS(cppcheck::Platform::Type::Win32A, platform.type);
-#else
         ASSERT_EQUALS(cppcheck::Platform::Type::Native, platform.type);
-#endif
     }
 };
 

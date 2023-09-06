@@ -13,4 +13,4 @@ Changed interface:
 -
 
 Other:
--
+- Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depedent on it.
