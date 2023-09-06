@@ -6867,7 +6867,7 @@ private:
                 );
             ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'result.x' is assigned a value that is never used.\n", errout.str());
         }
-g
+
         // Unknown struct type
         functionVariableUsage(
             "void fun() {"
