@@ -15,7 +15,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testrunner", "test\testrunn
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cppcheck", "lib\cppcheck.vcxproj", "{C183DB5B-AD6C-423D-80CA-1F9549555A1A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dmake", "tools\dmake.vcxproj", "{19EC86CD-0004-4917-B852-E6BD110B6E6F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dmake", "tools\dmake\dmake.vcxproj", "{19EC86CD-0004-4917-B852-E6BD110B6E6F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
