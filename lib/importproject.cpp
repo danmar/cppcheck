@@ -769,6 +769,11 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
         if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
             continue;
 
+        if (!Path::isFile(cfilename)) {
+            printError("'" + cfilename + "' from Visual Studio project does not exist");
+            continue;
+        }
+
         for (const ProjectConfiguration &p : projectConfigurationList) {
 
             if (!guiProject.checkVsConfigs.empty()) {
