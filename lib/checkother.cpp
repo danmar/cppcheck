@@ -3804,8 +3804,14 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
     const std::string &expr = tok->expressionString();
     const std::string &fun = ftok->str();
 
+    std::string ftype = "function ";
+    if (ftok->type())
+        ftype = "constructor ";
+    else if (fun == "{")
+        ftype = "init list ";
+
     const char *id;
-    std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue) + ". ";
+    std::string errmsg = "Argument '" + expr + "' to " + ftype + fun + " is always " + std::to_string(intvalue) + ". ";
     if (!isVariableExpressionHidden) {
         id = "knownArgument";
         errmsg += "It does not matter what value '" + varexpr + "' has.";
