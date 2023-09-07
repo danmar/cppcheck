@@ -18,7 +18,9 @@
 
 #include "checktype.h"
 #include "errortypes.h"
+#include "helpers.h"
 #include "platform.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "standards.h"
 #include "fixture.h"
@@ -26,6 +28,8 @@
 
 #include <sstream> // IWYU pragma: keep
 #include <string>
+
+#include <simplecpp.h>
 
 class TestType : public TestFixture {
 public:
@@ -41,6 +45,7 @@ private:
         TEST_CASE(longCastAssign);
         TEST_CASE(longCastReturn);
         TEST_CASE(checkFloatToIntegerOverflow);
+        TEST_CASE(integerOverflow); // #11794
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -54,6 +59,25 @@ private:
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
+
+        // Check..
+        runChecks<CheckType>(tokenizer, this);
+    }
+
+#define checkP(...) checkP_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkP_(const char* file, int line, const char code[], const Settings& settings, const char filename[] = "test.cpp", const simplecpp::DUI& dui = simplecpp::DUI()) {
+        // Clear the error buffer..
+        errout.str("");
+
+        const Settings settings1 = settingsBuilder(settings).severity(Severity::warning).severity(Severity::portability).build();
+
+        Preprocessor preprocessor(settings1);
+        std::vector<std::string> files(1, filename);
+        Tokenizer tokenizer(&settings1, this, &preprocessor);
+        PreprocessorHelper::preprocess(preprocessor, code, files, tokenizer, dui);
+
+        // Tokenizer..
+        ASSERT_LOC(tokenizer.simplifyTokens1(""), file, line);
 
         // Check..
         runChecks<CheckType>(tokenizer, this);
@@ -450,6 +474,26 @@ private:
               "  return 1234.5;\n"
               "}", settings);
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+    }
+
+    void integerOverflow() { // #11794
+        const Settings settings;
+        // TODO: needs to use preprocessing production code
+        simplecpp::DUI dui;
+        dui.std = "c++11";
+        // this is set by the production code via cppcheck::Platform::getLimitDefines()
+        dui.defines.emplace_back("INT_MIN=-2147483648");
+
+        checkP("int fun(int x)\n"
+               "{\n"
+               "  if(x < 0) x = -x;\n"
+               "  return x >= 0;\n"
+               "}\n"
+               "int f()\n"
+               "{\n"
+               "    fun(INT_MIN);\n"
+               "}", settings, "test.cpp", dui);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Signed integer overflow for expression '-x'.\n", errout.str());
     }
 };
 
