@@ -125,7 +125,7 @@ private:
         ASSERT(Path::isC("C:\\foo\\index.c"));
 
         // In unix .C is considered C++
-#ifdef _WIN32
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
         ASSERT_EQUALS(true, Path::isC("C:\\foo\\index.C"));
 #else
         ASSERT_EQUALS(false, Path::isC("C:\\foo\\index.C"));
@@ -136,7 +136,7 @@ private:
         ASSERT(Path::isCPP("index.c")==false);
 
         // In unix .C is considered C++
-#ifdef _WIN32
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
         ASSERT_EQUALS(false, Path::isCPP("index.C"));
 #else
         ASSERT_EQUALS(true, Path::isCPP("index.C"));
