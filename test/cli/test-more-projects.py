@@ -225,3 +225,35 @@ def test_project_missing_subproject(tmpdir):
     assert ret == 1, stdout
     assert stdout == "cppcheck: error: failed to open project '{}/dummy.json'. The file does not exist.\n".format(str(tmpdir).replace('\\', '/'))
     assert stderr == ''
+
+
+def test_project_vs_case_mismatch():
+    project_path = os.path.join(os.path.dirname(__file__), 'project', 'vs', 'case-mismatch')
+    project_file = os.path.join(project_path, 'case-mismatch.sln')
+    print(project_file)
+
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--platform=native'])
+    assert ret == 0, stdout
+    file1_path = os.path.join(project_path, 'case.cpp')
+    file2_path = os.path.join(project_path, 'CaseMismatch.cpp')
+    file2_path_l = os.path.join(project_path, 'casemismatch.cpp')
+
+    if os.path.exists(file2_path):
+        # case insensitive filesystem
+        assert stdout.splitlines() == [
+            "Checking {} Debug|x64...".format(file1_path),
+            "Checking {}: _WIN32=1;_WIN64=1;__SSE2__=1;_MSC_VER=1900...".format(file1_path),
+            '1/2 files checked 50% done',
+            # the path is made lowercase via realFilename() in the simplification
+            'Checking {} Debug|x64...'.format(file2_path_l),
+            'Checking {}: _WIN32=1;_WIN64=1;__SSE2__=1;_MSC_VER=1900...'.format(file2_path_l),
+            '2/2 files checked 100% done'
+        ]
+    else:
+        # case sensitive filesystem
+        assert stdout.splitlines() == [
+            "cppcheck: error: '{}' from Visual Studio project does not exist".format(file2_path),
+            "Checking {} Debug|x64...".format(file1_path),
+            "Checking {}: _WIN32=1;_WIN64=1;__SSE2__=1;_MSC_VER=1900...".format(file1_path),
+        ]
+    assert stderr == ''
