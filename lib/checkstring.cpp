@@ -255,9 +255,13 @@ void CheckString::strPlusCharError(const Token *tok)
 static bool isMacroUsage(const Token* tok)
 {
     if (const Token* parent = tok->astParent()) {
+        while (parent && parent->isCast())
+            parent = parent->astParent();
+        if (!parent)
+            return false;
         if (parent->isExpandedMacro())
             return true;
-        if (parent->isUnaryOp("!")) {
+        if (parent->isUnaryOp("!") || parent->isComparisonOp()) {
             int argn{};
             const Token* ftok = getTokenArgumentFunction(parent, argn);
             if (ftok && !ftok->function())
