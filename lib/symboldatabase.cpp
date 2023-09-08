@@ -6256,6 +6256,8 @@ void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocatio
     }
 }
 
+static ValueType::Type getEnumType(const Scope* scope, const cppcheck::Platform& platform);
+
 void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc)
 {
     ValueType valuetype;
@@ -6282,7 +6284,7 @@ void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, Sour
         setValueType(tok, valuetype);
     } else {
         valuetype.sign = ValueType::SIGNED;
-        valuetype.type = ValueType::INT;
+        valuetype.type = getEnumType(enumerator.scope, mSettings.platform);
         setValueType(tok, valuetype);
     }
 }
@@ -6771,15 +6773,29 @@ void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, Source
     }
 }
 
-static ValueType::Type getEnumType(const Scope* scope)
+static ValueType::Type getEnumType(const Scope* scope, const cppcheck::Platform& platform) // TODO: also determine sign?
 {
     ValueType::Type type = ValueType::Type::INT;
-    for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next())
-        if (const ValueType* vt = tok->valueType()) {
-            if ((vt->type > type && (vt->type == ValueType::Type::LONG || vt->type == ValueType::Type::LONGLONG))) {
-                type = vt->type;
+    for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        if (!tok->isAssignmentOp())
+            continue;
+        const Token* vTok = tok->astOperand2();
+        if (!vTok->hasKnownIntValue()) {
+            if (!vTok->isLiteral())
+                continue;
+            if (const ValueType* vt = vTok->valueType()) {
+                if ((vt->type > type && (vt->type == ValueType::Type::LONG || vt->type == ValueType::Type::LONGLONG)))
+                    type = vt->type;
             }
+            continue;
         }
+        const MathLib::bigint value = vTok->getKnownIntValue();
+        if (!platform.isIntValue(value)) {
+            type = ValueType::Type::LONG;
+            if (!platform.isLongValue(value))
+                ValueType::Type::LONGLONG;
+        }
+    }
     return type;
 }
 
@@ -6816,7 +6832,7 @@ static const Token* parsedecl(const Token* type,
             else if (enum_type->isStandardType())
                 valuetype->fromLibraryType(enum_type->str(), settings);
         } else
-            valuetype->type = getEnumType(valuetype->typeScope);
+            valuetype->type = getEnumType(valuetype->typeScope, settings.platform);
     } else
         valuetype->type = ValueType::Type::RECORD;
     bool par = false;
@@ -6963,7 +6979,7 @@ static const Token* parsedecl(const Token* type,
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
             if (type->type()->classScope->type == Scope::ScopeType::eEnum) {
-                valuetype->type = getEnumType(type->type()->classScope);
+                valuetype->type = getEnumType(type->type()->classScope, settings.platform);
             } else {
                 valuetype->type = ValueType::Type::RECORD;
             }
