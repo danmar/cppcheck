@@ -23,6 +23,7 @@
 #include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 
 #include <simplecpp.h>
 
@@ -1391,7 +1392,7 @@ private:
                             "STAMP(B, A);\n"
                             "STAMP(C, B);\n";
         tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
-        ASSERT_EQUALS(errout.str().compare(0, 64, "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"), 0);
+        ASSERT(startsWith(errout.str(), "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"));
     }
 
     void scopeInfo1() {

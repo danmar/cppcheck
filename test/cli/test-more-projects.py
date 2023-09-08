@@ -225,3 +225,30 @@ def test_project_missing_subproject(tmpdir):
     assert ret == 1, stdout
     assert stdout == "cppcheck: error: failed to open project '{}/dummy.json'. The file does not exist.\n".format(str(tmpdir).replace('\\', '/'))
     assert stderr == ''
+
+
+def test_project_std(tmpdir):
+    with open(os.path.join(tmpdir, 'bug1.cpp'), 'wt') as f:
+        f.write("""
+                #if __cplusplus == 201402L
+                int x = 123 / 0;
+                #endif
+                """)
+
+    compile_commands = os.path.join(tmpdir, 'compile_commands.json')
+
+    compilation_db = [
+        {
+            "directory": str(tmpdir),
+            "command": "c++ -o bug1.o -c bug1.cpp -std=c++14",
+            "file": "bug1.cpp",
+            "output": "bug1.o"
+        }
+    ]
+
+    with open(compile_commands, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    ret, stdout, stderr = cppcheck(['--project=' + compile_commands, '--enable=all', '-rp=' + str(tmpdir), '--template=cppcheck1'])
+    assert ret == 0, stdout
+    assert (stderr == '[bug1.cpp:3]: (error) Division by zero.\n')

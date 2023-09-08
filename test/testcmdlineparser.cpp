@@ -28,6 +28,7 @@
 #include "suppressions.h"
 #include "fixture.h"
 #include "timer.h"
+#include "utils.h"
 
 #include <cstdint>
 #include <cstdio>
@@ -272,7 +273,7 @@ private:
         const char * const argv[] = {"cppcheck"};
         ASSERT(parser->parseFromArgs(1, argv));
         ASSERT_EQUALS(true, parser->getShowHelp());
-        ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helpshort() {
@@ -280,7 +281,7 @@ private:
         const char * const argv[] = {"cppcheck", "-h"};
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(true, parser->getShowHelp());
-        ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helplong() {
@@ -288,7 +289,7 @@ private:
         const char * const argv[] = {"cppcheck", "--help"};
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT_EQUALS(true, parser->getShowHelp());
-        ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void showversion() {
@@ -1594,7 +1595,7 @@ private:
         const char * const argv[] = {"cppcheck", "--doc"};
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT(parser->exitAfterPrinting());
-        ASSERT(GET_REDIRECT_OUTPUT.find("## ") == 0);
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "## "));
     }
 
     void showtime() {

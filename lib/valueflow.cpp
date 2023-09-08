@@ -4494,7 +4494,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList &tokenlist, ErrorLog
         valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
     } else {
         const std::string& retVal = settings->library.returnValue(tok);
-        if (retVal.compare(0, 3, "arg") == 0) {
+        if (startsWith(retVal, "arg")) {
             std::size_t iArg{};
             try {
                 iArg = strToInt<std::size_t>(retVal.substr(3));

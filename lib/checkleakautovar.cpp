@@ -32,6 +32,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 #include "vfvalue.h"
 
 #include <algorithm>
@@ -824,7 +825,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 } else if (rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
                     // #9298, assignment through return value of a function
                     const std::string &returnValue = mSettings->library.returnValue(rhs->astOperand1());
-                    if (returnValue.compare(0, 3, "arg") == 0) {
+                    if (startsWith(returnValue, "arg")) {
                         int argn;
                         const Token *func = getTokenArgumentFunction(tok, argn);
                         if (func) {
@@ -850,7 +851,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
             alloc.status = VarInfo::NOALLOC;
         functionCall(tok, openingPar, varInfo, alloc, nullptr);
         const std::string &returnValue = mSettings->library.returnValue(tok);
-        if (returnValue.compare(0, 3, "arg") == 0)
+        if (startsWith(returnValue, "arg"))
             // the function returns one of its argument, we need to process a potential assignment
             return openingPar;
         return isCPPCast(tok->astParent()) ? openingPar : openingPar->link();

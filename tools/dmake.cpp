@@ -38,7 +38,7 @@
 
 static std::string builddir(std::string filename)
 {
-    if (filename.compare(0,4,"lib/") == 0)
+    if (startsWith(filename,"lib/"))
         filename = "$(libcppdir)" + filename.substr(3);
     return filename;
 }
@@ -77,13 +77,13 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
          * Files are searched according to the following priority:
          * [test, tools] -> cli -> lib -> externals
          */
-        if (filename.compare(0, 4, "cli/") == 0)
+        if (startsWith(filename, "cli/"))
             getDeps("lib" + filename.substr(filename.find('/')), depfiles);
-        else if (filename.compare(0, 5, "test/") == 0)
+        else if (startsWith(filename, "test/"))
             getDeps("cli" + filename.substr(filename.find('/')), depfiles);
-        else if (filename.compare(0, 6, "tools/") == 0)
+        else if (startsWith(filename, "tools/"))
             getDeps("cli" + filename.substr(filename.find('/')), depfiles);
-        else if (filename.compare(0, 4, "lib/") == 0) {
+        else if (startsWith(filename, "lib/")) {
             for (const std::string & external : externalfolders)
                 getDeps(external + filename.substr(filename.find('/')), depfiles);
         }
@@ -126,7 +126,7 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
 static void compilefiles(std::ostream &fout, const std::vector<std::string> &files, const std::string &args)
 {
     for (const std::string &file : files) {
-        const bool external(file.compare(0,10,"externals/") == 0);
+        const bool external(startsWith(file,"externals/"));
         fout << objfile(file) << ": " << file;
         std::vector<std::string> depfiles;
         getDeps(file, depfiles);

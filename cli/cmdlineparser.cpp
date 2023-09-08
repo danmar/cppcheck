@@ -1418,5 +1418,5 @@ void CmdLineParser::printHelp()
 bool CmdLineParser::isCppcheckPremium() const {
     if (mSettings.cppcheckCfgProductName.empty())
         mSettings.loadCppcheckCfg();
-    return mSettings.cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0;
+    return startsWith(mSettings.cppcheckCfgProductName, "Cppcheck Premium");
 }
