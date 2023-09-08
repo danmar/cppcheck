@@ -1252,10 +1252,6 @@ SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                 }
                 if (vartok)
                     return followAllReferences(vartok, temporary, inconclusive, std::move(errors), depth - 1);
-            } else {
-                SmallVector<ReferenceToken> refs_result;
-                refs_result.push_back({tok, std::move(errors)});
-                return refs_result;
             }
         }
     } else if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) {
