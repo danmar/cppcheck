@@ -46,9 +46,11 @@
 
 
 /** Is the filesystem case insensitive? */
-static bool caseInsensitiveFilesystem()
+static constexpr bool caseInsensitiveFilesystem()
 {
-#ifdef _WIN32
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
+    // Windows is case insensitive
+    // MacOS is case insensitive by default (also supports case sensitivity)
     return true;
 #else
     // TODO: Non-windows filesystems might be case insensitive
