@@ -644,7 +644,7 @@ private:
         ASSERT_EQUALS(false, Token::Match(sLiteral.tokens(), "%num%"));
 
         givenACodeSampleToTokenize binary("101010b", true);
-        ASSERT_EQUALS(true, Token::Match(binary.tokens(), "%num%"));
+        ASSERT_EQUALS(false, Token::Match(binary.tokens(), "%num%"));
 
         givenACodeSampleToTokenize octal("0123", true);
         ASSERT_EQUALS(true, Token::Match(octal.tokens(), "%num%"));
@@ -659,7 +659,7 @@ private:
         ASSERT_EQUALS(true, Token::Match(floatingPoint.tokens(), "%num%"));
 
         givenACodeSampleToTokenize doublePrecision("0.0d", true);
-        ASSERT_EQUALS(true, Token::Match(doublePrecision.tokens(), "%num%"));
+        ASSERT_EQUALS(false, Token::Match(doublePrecision.tokens(), "%num%"));
 
         givenACodeSampleToTokenize signedLong("0L", true);
         ASSERT_EQUALS(true, Token::Match(signedLong.tokens(), "%num%"));
