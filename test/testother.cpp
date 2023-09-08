@@ -11445,6 +11445,15 @@ private:
               "    return A{x};\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Pointer expression 'x' converted to bool is always false.\n", errout.str());
+
+        check("struct B { virtual void f() {} };\n" // #11929
+              "struct D : B {};\n"
+              "void g(B* b) {\n"
+              "    if (!b)\n"
+              "        return;\n"
+              "    if (dynamic_cast<D*>(b)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
