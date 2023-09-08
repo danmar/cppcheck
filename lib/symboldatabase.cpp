@@ -6793,7 +6793,7 @@ static ValueType::Type getEnumType(const Scope* scope, const cppcheck::Platform&
         if (!platform.isIntValue(value)) {
             type = ValueType::Type::LONG;
             if (!platform.isLongValue(value))
-                ValueType::Type::LONGLONG;
+                type = ValueType::Type::LONGLONG;
         }
     }
     return type;
