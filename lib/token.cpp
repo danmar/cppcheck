@@ -143,9 +143,15 @@ void Token::update_property_info()
                 tokType(eKeyword);
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
-        } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1])))
-            tokType(eNumber);
-        else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
+        } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1]))) {
+            try {
+                if (!MathLib::isFloat(mStr))
+                    (void)MathLib::toLongNumber(mStr);
+                tokType(eNumber);
+            } catch (const InternalError& /*e*/) {
+                tokType(eName);
+            }
+        } else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
                  (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
         else if (mStr.size() == 1 && mStr.find_first_of(",[]()?:") != std::string::npos)

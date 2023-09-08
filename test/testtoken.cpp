@@ -637,6 +637,12 @@ private:
         givenACodeSampleToTokenize nonNumeric("abc", true);
         ASSERT_EQUALS(false, Token::Match(nonNumeric.tokens(), "%num%"));
 
+        givenACodeSampleToTokenize msLiteral("5ms", true); // #11438
+        ASSERT_EQUALS(false, Token::Match(msLiteral.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize sLiteral("3s", true);
+        ASSERT_EQUALS(false, Token::Match(sLiteral.tokens(), "%num%"));
+
         givenACodeSampleToTokenize binary("101010b", true);
         ASSERT_EQUALS(true, Token::Match(binary.tokens(), "%num%"));
 
