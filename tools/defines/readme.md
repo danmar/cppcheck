@@ -16,3 +16,5 @@ Outputs the defines provided by `float.h`/`cfloat`.
 Outputs the defines provided by `limits.h`/`climits`.
 - `stdint.c`
 Outputs the defines provided by `stdint.h`/`cstdint`.
+- `create_platform_cfg.sh`
+Generates a platform file from the given compiler which can be given to Cppcheck via `--platform`.
