@@ -790,8 +790,21 @@ std::string ErrorLogger::toxml(const std::string &str)
     return xml;
 }
 
+static std::vector<std::string> mPlistHeaderFiles;
+
+static int fileToIndex(const std::string &file)
+{
+    for (std::size_t i = 0; i < mPlistHeaderFiles.size(); ++i) {
+        if (mPlistHeaderFiles[i] == file)
+            return i;
+    }
+    return 0;
+}
+
 std::string ErrorLogger::plistHeader(const std::string &version, const std::vector<std::string> &files)
 {
+    mPlistHeaderFiles = files;
+
     std::ostringstream ostr;
     ostr << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
          << "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\r\n"
@@ -811,11 +824,13 @@ std::string ErrorLogger::plistHeader(const std::string &version, const std::vect
 
 static std::string plistLoc(const char indent[], const ErrorMessage::FileLocation &loc)
 {
+    int fileIndex = fileToIndex(loc.getOrigFile(false));
+
     std::ostringstream ostr;
     ostr << indent << "<dict>\r\n"
          << indent << ' ' << "<key>line</key><integer>" << loc.line << "</integer>\r\n"
          << indent << ' ' << "<key>col</key><integer>" << loc.column << "</integer>\r\n"
-         << indent << ' ' << "<key>file</key><integer>" << loc.fileIndex << "</integer>\r\n"
+         << indent << ' ' << "<key>file</key><integer>" << fileIndex << "</integer>\r\n"
          << indent << "</dict>\r\n";
     return ostr.str();
 }
