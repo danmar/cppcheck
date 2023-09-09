@@ -1,7 +1,9 @@
 
 # python -m pytest test-other.py
 
+import glob
 import os
+import plistlib
 import pytest
 
 from testutils import cppcheck
@@ -220,3 +222,54 @@ void f() {
 
     _, _, stderr = cppcheck(args)
     assert stderr == '{}:0:0: error: Bailing from out analysis: Checking file failed: converting \'1f\' to integer failed - not an integer [internalError]\n\n^\n'.format(test_file)
+
+def test_plist_output(tmpdir):
+    header_file = os.path.join(tmpdir, "header.h")
+    source_file = os.path.join(tmpdir, "source.c")
+
+    with open(header_file, "wt", encoding="utf-8") as f:
+        f.write(
+            """\
+// line 1
+#include "missing.h"
+"""
+        )
+
+    with open(source_file, "wt", encoding="utf-8") as f:
+        f.write(
+            """\
+#include "header.h"
+// line 2
+#include <missing2.h>
+"""
+        )
+
+    args = [
+        "--enable=all",
+        f"--plist-output={tmpdir}",
+        source_file,
+    ]
+
+    _, _, stderr = cppcheck(args)
+
+    assert 'header.h:2:0: information: Include file: "missing.h" not found.' in stderr
+    assert "source.c:3:0: information: Include file: <missing2.h> not found." in stderr
+
+    # there should be only one plist file
+    plist_file = glob.glob(f"{tmpdir}/source_*.plist")[0]
+    with open(plist_file, "rb") as f:
+        plist = plistlib.load(f, fmt=plistlib.FMT_XML)
+
+    # The order of the files are important
+    assert source_file == plist["files"][0]
+    assert header_file == plist["files"][1]
+
+    # The order in which the diagnostics appear are not important
+    assert any(
+        x["check_name"] == "missingIncludeSystem" and x["location"]["file"] == 0
+        for x in plist["diagnostics"]
+    )
+    assert any(
+        x["check_name"] == "missingInclude" and x["location"]["file"] == 1
+        for x in plist["diagnostics"]
+    )
