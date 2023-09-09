@@ -6979,7 +6979,7 @@ static const Token* parsedecl(const Token* type,
             valuetype->type = type->str() == "struct" ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
         else if (!valuetype->typeScope && type->type() && type->type()->classScope) {
             if (type->type()->classScope->type == Scope::ScopeType::eEnum) {
-                valuetype->type = ValueType::Type::INT;
+                valuetype->sign = ValueType::Sign::SIGNED;
                 valuetype->type = getEnumType(type->type()->classScope, settings.platform);
             } else {
                 valuetype->type = ValueType::Type::RECORD;
