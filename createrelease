@@ -29,6 +29,8 @@
 # Create 2.8.x branch
 # git checkout -b 2.8.x ; git push -u origin 2.8.x
 #
+# Empty the releasenotes.txt in main branch
+#
 # Update version numbers in:
 # sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.9/" cli/main.cpp
 # sed -i -r "s|2[.][0-9]+([.]99)*|2.9.0|" cmake/versions.cmake # version must have 3 parts.
@@ -57,8 +59,6 @@
 # Release
 # =======
 #
-# Write release notes
-#
 # Remove "-rc1" from versions. Test: git grep "\-rc[0-9]"
 #
 # Create a release folder on sourceforge:
@@ -72,22 +72,32 @@
 #
 # Update download link on index.php main page
 #
+# Write Changelog
+# git log 2.11..2.12 > Changelog
+# <edit>
+#
+# Trac:
+# 1. Create ticket "2.12 safety cosmetic changes"
+# 2. Check priorities for all tickets in milestone. Should be: safety-*
+# 3. Create new milestone
+# 4. Close old milestone
+#
 # write a news
 #
 # save "cppcheck --doc" output on wiki
 #
 # compile new democlient:
 # ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net create
-# ./build-cppcheck.sh 2.8
+# ./build-cppcheck.sh
 #
 # run daca with new release
 # 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
 # 2. scp -i ../.ssh/osuosl_id_rsa tools/donate-cpu-server.py danielmarjamaki@cppcheck1.osuosl.org:/var/daca@home/
 #
-# self check, fix stylistic issues:
-# ./cppcheck -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp lib
-#
-# Set debug version (see 803eea912c9512c810a7e78d58bb927d89a6daa1)
+# Backup:
+# * trac: cd /var && nice tar -zcf /home/danielmarjamaki/trac.tar.gz trac-cppcheck
+# * git: git checkout -f && git checkout main && git pull && tar -zcf ~/cppchecksolutions/backups/2.12.0-git.tar.gz .git
+# * Changelog
 
 # Folder/tag to use
 folder=$1
