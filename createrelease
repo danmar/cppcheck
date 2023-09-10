@@ -89,8 +89,9 @@
 #
 # Set debug version (see 803eea912c9512c810a7e78d58bb927d89a6daa1)
 
-# Tag to use
-tag=$1
+# Folder/tag to use
+folder=$1
+tag=$folder.0
 
 # Name of release
 releasename=cppcheck-$tag
@@ -101,6 +102,7 @@ cd ~/cppcheck
 
 git checkout $tag
 
+rm -rf upload
 mkdir -p upload
 
 make clean
@@ -110,16 +112,17 @@ git archive --format=tar --prefix=$releasename/ $tag | gzip > upload/$releasenam
 git archive --format=tar --prefix=$releasename/ $tag | bzip2 > upload/$releasename.tar.bz2
 git archive --format=zip -9 --prefix=$releasename/ $tag > upload/$releasename.zip
 cd upload
-scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$tag/
+scp $releasename.* danielmarjamaki,cppcheck@frs.sourceforge.net:/home/frs/project/c/cp/cppcheck/cppcheck/$folder/
 rm $releasename.*
 cd ..
 
 # Generate version.txt
 make -j4
+rm cppcheck.cfg
 ./cppcheck --version > upload/version.txt
 
 cd ~/cppcheck/upload
-scp * danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
+scp version.txt danielmarjamaki,cppcheck@web.sourceforge.net:htdocs/
 
 cd ~/cppcheck
 rm -rf upload
