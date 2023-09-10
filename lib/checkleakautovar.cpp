@@ -281,7 +281,7 @@ static const Token * isFunctionCall(const Token * nameToken)
             nameToken = nameToken->link()->next();
         }
         // check for '('
-        if (nameToken && nameToken->link() && nameToken->str() == "(") {
+        if (nameToken && nameToken->link() && !nameToken->isCast() && nameToken->str() == "(") {
             // returning opening parenthesis pointer
             return nameToken;
         }
