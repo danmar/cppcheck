@@ -388,7 +388,7 @@ private:
         ASSERT(!readPlatform(platform, xmldata));
     }
 
-    void default_platform() {
+    void default_platform() const {
         cppcheck::Platform platform;
         ASSERT_EQUALS(cppcheck::Platform::Type::Native, platform.type);
     }
