@@ -1,48 +1,8 @@
 import glob
 import re
+import sys
 
-print("""/*
- * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2023 Cppcheck team.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-#pragma once
-
-#include <map>
-#include <string>
-#include <vector>
-
-namespace checkers {
-
-static std::map<std::string, std::string> allCheckers{""")
-
-for filename in glob.glob('../lib/*.cpp'):
-    for line in open(filename,'rt'):
-        res = re.match(r'[ \t]*logChecker\(\s*"([:_a-zA-Z0-9]+)"\s*\);.*', line)
-        if res is None:
-            continue
-        req = ''
-        if line.find('//')>0:
-            req = line[line.find('//')+2:].strip()
-        print('    {"%s","%s"},' % (res.group(1), req))
-print("};\n\n")
-
-print('static std::map<std::string, std::string> premiumCheckers{')
-
-premium_checkers = """
+PREMIUM_CHECKERS = """
 $ grep logChecker src/*.cpp | sed 's/.*logChecker/logChecker/' | sort > 1.txt
 logChecker("Autosar: A0-1-3"); // style
 logChecker("Autosar: A0-4-2"); // style
@@ -435,19 +395,7 @@ logChecker("PremiumCheckUnusedVar::unreadVariable"); // style
 logChecker("PremiumCheckUnusedVar::unusedPrivateMember"); // style
 """
 
-for line in premium_checkers.split('\n'):
-    res = re.match(r'logChecker\("([^"]+)"\);.*', line)
-    if res is None:
-        continue
-    if line.find('//') > 0:
-        req = line[line.find('//')+2:].strip()
-    else:
-        req = ''
-    print('    {"%s","%s"},' % (res.group(1), req))
-
-print('};\n\n')
-
-print("""
+MISRA_CODE = """
 struct MisraInfo {
     int a;
     int b;
@@ -697,6 +645,170 @@ static std::map<std::string, std::string> misraRuleSeverity{
 
 }
 
-""")
+"""
 
 
+def generate_checkers_h():
+
+    print("""/*
+    * Cppcheck - A tool for static C/C++ code analysis
+    * Copyright (C) 2007-2023 Cppcheck team.
+    *
+    * This program is free software: you can redistribute it and/or modify
+    * it under the terms of the GNU General Public License as published by
+    * the Free Software Foundation, either version 3 of the License, or
+    * (at your option) any later version.
+    *
+    * This program is distributed in the hope that it will be useful,
+    * but WITHOUT ANY WARRANTY; without even the implied warranty of
+    * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    * GNU General Public License for more details.
+    *
+    * You should have received a copy of the GNU General Public License
+    * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+    */
+
+    #pragma once
+
+    #include <map>
+    #include <string>
+    #include <vector>
+
+    namespace checkers {
+
+    static std::map<std::string, std::string> allCheckers{""")
+
+    for filename in glob.glob('../lib/*.cpp'):
+        for line in open(filename,'rt'):
+            res = re.match(r'[ \t]*logChecker\(\s*"([:_a-zA-Z0-9]+)"\s*\);.*', line)
+            if res is None:
+                continue
+            req = ''
+            if line.find('//')>0:
+                req = line[line.find('//')+2:].strip()
+            print('    {"%s","%s"},' % (res.group(1), req))
+    print("};\n\n")
+
+    print('static std::map<std::string, std::string> premiumCheckers{')
+
+    for line in PREMIUM_CHECKERS.split('\n'):
+        res = re.match(r'logChecker\("([^"]+)"\);.*', line)
+        if res is None:
+            continue
+        if line.find('//') > 0:
+            req = line[line.find('//')+2:].strip()
+        else:
+            req = ''
+        print('    {"%s","%s"},' % (res.group(1), req))
+
+    print('};\n\n')
+
+    print(MISRA_CODE)
+
+def generate_checkers_html():
+
+    def print_row(text1, text2, text3):
+        print(f'<tr><td><b>{text1}</b></td><td><b>{text2}</b></td><td><b>{text3}</b></td></tr>')
+
+    print("""<html>
+<head>
+<title>Cppcheck Checkers</title>
+<style>
+body {
+  font-family: Helvetica,Arial, sans-serif;
+}
+
+table, th, td {
+  border: 0px solid;
+  border-collapse: collapse;
+}
+
+table {
+  width: 900px;
+}
+
+th, td {
+  padding: 5px;
+  text-align: left;
+  font-family: Helvetica,Arial, sans-serif;
+}
+
+th {
+  font-weight: 900;
+  background-color: #2980b9;
+  color: white;
+}
+
+td {
+  color: #3d3d3d;
+}
+
+tr:nth-child(even) {
+  background-color: #e9e9e9;
+}
+</style></head><body>""")
+
+    TABLE_HEADER = '<table><thead><tr><th>Checker</th><th width="100px">Free</th><th width="100px">Premium</th></tr></thead><tbody>'
+    TABLE_FOOTER = '</tbody></table>'
+
+    print("<h1>Open source checkers</h1>")
+    print(TABLE_HEADER)
+    for filename in glob.glob('../lib/*.cpp'):
+        for line in open(filename,'rt'):
+            res = re.match(r'[ \t]*logChecker\(\s*"([:_a-zA-Z0-9]+)"\s*\);.*', line)
+            if res is None:
+                continue
+            print_row(res.group(1), 'Yes', 'Yes')
+    print(TABLE_FOOTER)
+
+    print("<h1>Premium checkers</h1>")
+    print(TABLE_HEADER)
+    for c in PREMIUM_CHECKERS.split('\n'):
+        res = re.match(r'logChecker\("([^"]+)"\);.*', c)
+        if res is None:
+            continue
+        checker_name = res.group(1)
+        if checker_name.startswith('Premium'):
+            print_row(res.group(1), 'No', 'Yes')
+    print(TABLE_FOOTER)
+
+    def print_premium_section(title, startswith):
+        print(f'<h1>{title}</h1>')
+        print(TABLE_HEADER)
+        for c in PREMIUM_CHECKERS.split('\n'):
+            res = re.match(r'logChecker\("([^"]+)"\);.*', c)
+            if res is None:
+                continue
+            checker_name = res.group(1)
+            if checker_name.startswith(startswith):
+                print_row(checker_name, 'No', 'Yes')
+        print(TABLE_FOOTER)
+
+    print_premium_section('Autosar', 'Autosar')
+    print_premium_section('Cert C', 'Cert C:')
+    print_premium_section('Cert C++', 'Cert C++:')
+
+    print("<h1>Misra C</h1>")
+    print(TABLE_HEADER)
+    for line in MISRA_CODE.split('\n'):
+        res = re.match(r'.*{[ ]*([0-9]+)[ ]*,[ ]*([0-9]+)[ ]*,[ ]*(Req|Adv|Man)[ ]*,[ ]*([0-9]+)[ ]*}.*', line)
+        if res is None:
+            continue
+        rule = res.group(1) + '.' + res.group(2)
+        amendment = int(res.group(4))
+        if amendment >= 1:
+            rule += f' (amendment {amendment})'
+        t2 = 'No' if amendment >= 3 else 'Yes'
+        t3 = 'Yes'
+        print_row(rule, t2, t3)
+    print(TABLE_FOOTER)
+
+    print_premium_section('Misra C++', 'Misra C++:')
+
+    print("</body></html>")
+
+
+if '--html' in sys.argv:
+    generate_checkers_html()
+else:
+    generate_checkers_h()
