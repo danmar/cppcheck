@@ -44,6 +44,8 @@ There are multiple compilation choices:
 
 ### CMake
 
+The minimum required version is CMake 3.5.
+
 Example, compiling Cppcheck with cmake:
 
 ```shell
