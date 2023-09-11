@@ -8777,7 +8777,7 @@ private:
 
     void ctu(const std::vector<std::string> &code) {
         const Settings settings;
-        auto &check = getCheck<CheckClass>();
+        Check &check = getCheck<CheckClass>();
 
         // getFileInfo
         std::list<Check::FileInfo*> fileInfo;
@@ -8835,9 +8835,8 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        CheckClass checkClass(&tokenizer, &settings1, this);
-
-        Check::FileInfo * fileInfo = (checkClass.getFileInfo)(&tokenizer, &settings1);
+        const Check& c = getCheck<CheckClass>();
+        Check::FileInfo * fileInfo = (c.getFileInfo)(&tokenizer, &settings1);
 
         delete fileInfo;
     }

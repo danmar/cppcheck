@@ -127,7 +127,7 @@ protected:
     template<typename T>
     static void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger)
     {
-        T& check = getCheck<T>();
+        Check& check = getCheck<T>();
         check.runChecks(tokenizer, errorLogger);
     }
 

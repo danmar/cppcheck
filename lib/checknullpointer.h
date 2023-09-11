@@ -48,7 +48,6 @@ namespace tinyxml2 {
 
 class CPPCHECKLIB CheckNullPointer : public Check {
     friend class TestNullPointer;
-    friend class TestFixture;
 
 public:
     /** @brief This constructor is used when registering the CheckNullPointer */
