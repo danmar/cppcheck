@@ -5403,9 +5403,9 @@ private:
                       "    auto s2 = std::string(\"def\");\n"
                       "}\n");
         ASSERT(db && errout.str().empty());
-        const Token* s1 = Token::findmatch(tokenizer.tokens(), "string {");
+        const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string {");
         ASSERT(s1 && !s1->isIncompleteVar());
-        const Token* s2 = Token::findmatch(s1, "string (");
+        const Token* s2 = Token::findsimplematch(s1, "string (");
         ASSERT(s2 && !s2->isIncompleteVar());
     }
 
