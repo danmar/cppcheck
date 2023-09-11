@@ -3737,7 +3737,7 @@ void CheckOther::checkKnownArgument()
                 continue;
             if (!Token::Match(tok->astParent(), "(|{|,"))
                 continue;
-            if (tok->isCast() || tok->astParent()->isCast())
+            if (tok->astParent()->isCast() || (tok->isCast() && Token::Match(tok->astOperand2(), "++|--|%assign%")))
                 continue;
             int argn = -1;
             const Token* ftok = getTokenArgumentFunction(tok, argn);
