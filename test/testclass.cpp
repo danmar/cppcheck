@@ -8835,7 +8835,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
-        Check& c = getCheck<CheckClass>();
+        const Check& c = getCheck<CheckClass>();
         Check::FileInfo * fileInfo = (c.getFileInfo)(&tokenizer, &settings1);
 
         delete fileInfo;
