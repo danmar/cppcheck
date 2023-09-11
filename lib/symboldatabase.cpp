@@ -1482,7 +1482,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (tok->type())
             continue;
-        if (Token::Match(tok->next(), "::|.|(|:|%var%"))
+        if (Token::Match(tok->next(), "::|.|(|{|:|%var%"))
             continue;
         if (Token::Match(tok->next(), "&|&&|* )|,|%var%"))
             continue;

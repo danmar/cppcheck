@@ -373,6 +373,8 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes5);
         TEST_CASE(createSymbolDatabaseFindAllScopes6);
 
+        TEST_CASE(createSymbolDatabaseIncompleteVars);
+
         TEST_CASE(enum1);
         TEST_CASE(enum2);
         TEST_CASE(enum3);
@@ -5424,6 +5426,19 @@ private:
         ASSERT_EQUALS(classNC.derivedFrom.size(), 2U);
         ASSERT_EQUALS(classNC.derivedFrom[0].type, &classNA);
         ASSERT_EQUALS(classNC.derivedFrom[1].type, &classNB);
+    }
+
+    void createSymbolDatabaseIncompleteVars()
+    {
+        GET_SYMBOL_DB("void f() {\n"
+                      "    auto s1 = std::string{ \"abc\" };\n"
+                      "    auto s2 = std::string(\"def\");\n"
+                      "}\n");
+        ASSERT(db && errout.str().empty());
+        const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string {");
+        ASSERT(s1 && !s1->isIncompleteVar());
+        const Token* s2 = Token::findsimplematch(s1, "string (");
+        ASSERT(s2 && !s2->isIncompleteVar());
     }
 
     void enum1() {
