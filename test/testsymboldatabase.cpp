@@ -370,7 +370,6 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes4);
         TEST_CASE(createSymbolDatabaseFindAllScopes5);
         TEST_CASE(createSymbolDatabaseFindAllScopes6);
-        TEST_CASE(createSymbolDatabaseFindAllScopes6);
 
         TEST_CASE(createSymbolDatabaseIncompleteVars);
 
