@@ -34,9 +34,9 @@ enum class Color {
     FgMagenta  = 35,
     FgDefault  = 39
 };
-CPPCHECKLIB std::ostream& operator<<(std::ostream& os, const Color& c);
+CPPCHECKLIB std::ostream& operator<<(std::ostream& os, Color c);
 
-CPPCHECKLIB std::string toString(const Color& c);
+CPPCHECKLIB std::string toString(Color c);
 
 extern CPPCHECKLIB bool gDisableColors; // for testing
 

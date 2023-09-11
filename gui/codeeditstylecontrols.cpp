@@ -113,7 +113,7 @@ void SelectFontWeightCombo::changeWeight(int index)
     }
 }
 
-void SelectFontWeightCombo::setWeight(const QFont::Weight& weight)
+void SelectFontWeightCombo::setWeight(QFont::Weight weight)
 {
     mWeight = weight;
     updateWeight();
