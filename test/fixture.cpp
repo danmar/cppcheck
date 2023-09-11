@@ -421,9 +421,8 @@ TestFixture::SettingsBuilder& TestFixture::SettingsBuilder::platform(cppcheck::P
 {
     const std::string platformStr = cppcheck::Platform::toString(type);
 
-    // TODO: the default platform differs between Windows and Linux
-    //if (REDUNDANT_CHECK && settings.platform.type == type)
-    //    throw std::runtime_error("redundant setting: platform (" + platformStr + ")");
+    if (REDUNDANT_CHECK && settings.platform.type == type)
+        throw std::runtime_error("redundant setting: platform (" + platformStr + ")");
 
     std::string errstr;
     // TODO: exename is not yet set
