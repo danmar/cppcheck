@@ -41,10 +41,13 @@ class Token;
  */
 
 class CPPCHECKLIB Check64BitPortability : public Check {
+    friend class Test64BitPortability;
+
 public:
     /** This constructor is used when registering the Check64BitPortability */
     Check64BitPortability() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     Check64BitPortability(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -57,8 +60,6 @@ public:
 
     /** Check for pointer assignment */
     void pointerassignment();
-
-private:
 
     void assignmentAddressToIntegerError(const Token *tok);
     void assignmentIntegerToAddressError(const Token *tok);
