@@ -26,6 +26,7 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cassert>
@@ -2513,17 +2514,17 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
                     std::string result;
 
                     if (cmp == "==")
-                        result = (op1 == op2) ? "true" : "false";
+                        result = bool_to_string(op1 == op2);
                     else if (cmp == "!=")
-                        result = (op1 != op2) ? "true" : "false";
+                        result = bool_to_string(op1 != op2);
                     else if (cmp == "<=")
-                        result = (op1 <= op2) ? "true" : "false";
+                        result = bool_to_string(op1 <= op2);
                     else if (cmp == ">=")
-                        result = (op1 >= op2) ? "true" : "false";
+                        result = bool_to_string(op1 >= op2);
                     else if (cmp == "<")
-                        result = (op1 < op2) ? "true" : "false";
+                        result = bool_to_string(op1 < op2);
                     else
-                        result = (op1 > op2) ? "true" : "false";
+                        result = bool_to_string(op1 > op2);
 
                     tok->str(result);
                     tok->deleteNext(2);

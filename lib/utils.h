@@ -325,7 +325,7 @@ static inline std::string id_string(const void* p)
     return id_string_i(reinterpret_cast<uintptr_t>(p));
 }
 
-static inline std::string bool_to_string(bool b)
+static inline const char* bool_to_string(bool b)
 {
     return b ? "true" : "false";
 }
