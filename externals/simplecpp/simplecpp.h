@@ -44,6 +44,13 @@
 #define nullptr NULL
 #endif
 
+#if defined(_MSC_VER)
+#  pragma warning(push)
+// suppress warnings about "conversion from 'type1' to 'type2', possible loss of data"
+#  pragma warning(disable : 4267)
+#  pragma warning(disable : 4244)
+#endif
+
 namespace simplecpp {
 
     typedef std::string TokenString;
@@ -287,7 +294,7 @@ namespace simplecpp {
         std::string readUntil(Stream &stream, const Location &location, char start, char end, OutputList *outputList);
         void lineDirective(unsigned int fileIndex, unsigned int line, Location *location);
 
-        std::string lastLine(int maxsize=100000) const;
+        std::string lastLine(int maxsize=1000) const;
         bool isLastLinePreprocessor(int maxsize=100000) const;
 
         unsigned int fileIndex(const std::string &filename);
@@ -363,6 +370,10 @@ namespace simplecpp {
     /** Returns the __cplusplus value for a given standard */
     SIMPLECPP_LIB std::string getCppStdString(const std::string &std);
 }
+
+#if defined(_MSC_VER)
+#  pragma warning(pop)
+#endif
 
 #if (__cplusplus < 201103L) && !defined(__APPLE__)
 #undef nullptr
