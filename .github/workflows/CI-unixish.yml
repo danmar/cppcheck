@@ -476,6 +476,8 @@ jobs:
             exit $ec
           fi
           
+          # self check simplecpp
+          ./cppcheck $selfcheck_options externals/simplecpp || ec=1
           # self check lib/cli
           mkdir b1
           ./cppcheck $selfcheck_options --cppcheck-build-dir=b1 --addon=naming.json -DCHECK_INTERNAL cli lib || ec=1
