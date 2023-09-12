@@ -1342,14 +1342,18 @@ std::string simplecpp::TokenList::lastLine(int maxsize) const
         if (++count > maxsize)
             return "";
         if (!ret.empty())
-            ret.insert(0, 1, ' ');
+            ret += ' ';
+        // add tokens in reverse for performance reasons
         if (tok->str()[0] == '\"')
-            ret.insert(0, "%str%");
+            ret += "%rts%"; // %str%
         else if (tok->number)
-            ret.insert(0, "%num%");
-        else
-            ret.insert(0, tok->str());
+            ret += "%mun%"; // %num%
+        else {
+            ret += tok->str();
+            std::reverse(ret.end() - tok->str().length(), ret.end());
+        }
     }
+    std::reverse(ret.begin(), ret.end());
     return ret;
 }
 
