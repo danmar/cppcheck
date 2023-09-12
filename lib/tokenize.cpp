@@ -5060,7 +5060,7 @@ void Tokenizer::setVarIdPass2()
                     tok2 = tok2->link();
 
                     // Skip initialization list
-                    if (Token::Match(tok2, ") :"))
+                    if (Token::simpleMatch(tok2, ") :"))
                         tok2 = skipInitializerList(tok2->next());
                 }
             }
