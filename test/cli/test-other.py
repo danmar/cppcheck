@@ -176,7 +176,7 @@ def test_slow_long_line(tmpdir):
     with open(filename, 'wt') as f:
         f.write("#define A() static const int a[] = {\n")
         for i in range(20000):
-            f.write(' -123, 456, -789, \\n')
+            f.write(" -123, 456, -789, \\\n")
         f.write("};\n")
     cppcheck([filename]) # should not take more than ~1 second
 
