@@ -4878,7 +4878,7 @@ static Token * matchMemberFunctionName(const Member &func, const std::list<Scope
     return Token::Match(tok, "~| %name% (") ? tok : nullptr;
 }
 
-template <typename T>
+template<typename T>
 static T* skipInitializerList(T* tok)
 {
     T* const start = tok;
