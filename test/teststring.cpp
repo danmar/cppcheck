@@ -799,6 +799,12 @@ private:
               "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const int* p, const int* q) {\n"
+              "    assert((p != NULL && q != NULL) || !\"abc\");\n"
+              "    ASSERT((void*)(\"def\") == 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void deadStrcmp() {
