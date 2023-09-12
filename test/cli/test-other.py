@@ -169,6 +169,18 @@ def test_slow_array_many_strings(tmpdir):
     cppcheck([filename]) # should not take more than ~1 second
 
 
+@pytest.mark.timeout(10)
+def test_slow_long_line(tmpdir):
+    # simplecpp #314
+    filename = os.path.join(tmpdir, 'hang.c')
+    with open(filename, 'wt') as f:
+        f.write("#define A() static const int a[] = {\n")
+        for i in range(20000):
+            f.write(' -123, 456, -789, \\n')
+        f.write("};\n")
+    cppcheck([filename]) # should not take more than ~1 second
+
+
 def test_execute_addon_failure(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     with open(test_file, 'wt') as f:
