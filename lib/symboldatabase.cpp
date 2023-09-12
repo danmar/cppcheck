@@ -5473,6 +5473,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             addMatchingFunctions(nestedScope);
     }
 
+    const std::size_t numberOfMatchesNonBase = matches.size();
+
     // check in base classes
     findFunctionInBase(tok->str(), args, matches);
 
@@ -5485,6 +5487,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
     // check each function against the arguments in the function call for a match
     for (std::size_t i = 0; i < matches.size();) {
+        if (i > 0 && i == numberOfMatchesNonBase && fallback1Func.empty() && !fallback2Func.empty())
+            break;
+
         bool constFallback = false;
         const Function * func = matches[i];
         size_t same = 0;
