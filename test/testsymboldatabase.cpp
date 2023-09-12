@@ -7413,6 +7413,25 @@ private:
             ASSERT(call->function()->tokenDef);
             ASSERT_EQUALS(10, call->function()->tokenDef->linenr());
         }
+        {
+            GET_SYMBOL_DB("struct STR { STR(const char * p); };\n"
+                          "class A {\n"
+                          "public:\n"
+                          "    void test(bool a = true, int b = 0);\n"
+                          "};\n"
+                          "\n"
+                          "class B : public A {\n"
+                          "public:\n"
+                          "  B(): b_obj(this) { b_obj->test(\"1\"); }\n"
+                          "  void test(const STR& str_obj);\n"
+                          "  B* b_obj;\n"
+                          "};");
+            const Token* call = Token::findsimplematch(tokenizer.tokens(), "test ( \"1\" ) ;");
+            ASSERT(call);
+            ASSERT(call->function());
+            ASSERT(call->function()->tokenDef);
+            ASSERT_EQUALS(10, call->function()->tokenDef->linenr());
+        }
     }
 
     void findFunctionContainer() {
