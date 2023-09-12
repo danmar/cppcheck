@@ -2868,7 +2868,13 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 }
 
 template<class Find>
-bool isExpressionChangedImpl(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth, Find find)
+bool isExpressionChangedImpl(const Token* expr,
+                             const Token* start,
+                             const Token* end,
+                             const Settings* settings,
+                             bool cpp,
+                             int depth,
+                             Find find)
 {
     if (depth < 0)
         return true;
@@ -2901,7 +2907,7 @@ bool isExpressionChangedImpl(const Token* expr, const Token* start, const Token*
                         return true;
                 return false;
             });
-            if(result)
+            if (result)
                 return true;
         }
         return false;
@@ -2909,8 +2915,7 @@ bool isExpressionChangedImpl(const Token* expr, const Token* start, const Token*
     return result;
 }
 
-struct ExpressionChangedSimpleFind
-{
+struct ExpressionChangedSimpleFind {
     template<class F>
     const Token* operator()(const Token* start, const Token* end, F f) const
     {
@@ -2918,12 +2923,12 @@ struct ExpressionChangedSimpleFind
     }
 };
 
-struct ExpressionChangedSkipDeadCode
-{
+struct ExpressionChangedSkipDeadCode {
     const Library* library;
     const std::function<std::vector<MathLib::bigint>(const Token* tok)>* evaluate;
-    ExpressionChangedSkipDeadCode(const Library* library, const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate)
-    : library(library), evaluate(&evaluate)
+    ExpressionChangedSkipDeadCode(const Library* library,
+                                  const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate)
+        : library(library), evaluate(&evaluate)
     {}
     template<class F>
     const Token* operator()(const Token* start, const Token* end, F f) const
@@ -2934,12 +2939,19 @@ struct ExpressionChangedSkipDeadCode
 
 bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
 {
-    return isExpressionChangedImpl(expr, start, end,settings, cpp, depth, ExpressionChangedSimpleFind{});
+    return isExpressionChangedImpl(expr, start, end, settings, cpp, depth, ExpressionChangedSimpleFind{});
 }
 
-bool isExpressionChangedSkipDeadCode(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate, int depth)
+bool isExpressionChangedSkipDeadCode(const Token* expr,
+                                     const Token* start,
+                                     const Token* end,
+                                     const Settings* settings,
+                                     bool cpp,
+                                     const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate,
+                                     int depth)
 {
-    return isExpressionChangedImpl(expr, start, end,settings, cpp, depth, ExpressionChangedSkipDeadCode{&settings->library, evaluate});
+    return isExpressionChangedImpl(
+        expr, start, end, settings, cpp, depth, ExpressionChangedSkipDeadCode{&settings->library, evaluate});
 }
 
 const Token* getArgumentStart(const Token* ftok)
