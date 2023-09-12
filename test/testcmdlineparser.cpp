@@ -179,10 +179,8 @@ private:
         TEST_CASE(templatesSelfcheck);
         TEST_CASE(templatesNoPlaceholder);
         TEST_CASE(templateFormatInvalid);
-        TEST_CASE(templateFormatInvalid2);
         TEST_CASE(templateFormatEmpty);
         TEST_CASE(templateLocationInvalid);
-        TEST_CASE(templateLocationInvalid2);
         TEST_CASE(templateLocationEmpty);
         TEST_CASE(xml);
         TEST_CASE(xmlver2);
@@ -1417,23 +1415,11 @@ private:
 
     void templateFormatInvalid() {
         REDIRECT;
-        const char* const argv[] = { "cppcheck", "--template", "--template-location={file}", "file.cpp" };
-        ASSERT(!parser->parseFromArgs(4, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--template' is missing.\n", GET_REDIRECT_OUTPUT);
-    }
-
-    // TODO: will not error out as he next option does not start with a "-"
-    void templateFormatInvalid2() {
-        REDIRECT;
         settings->templateFormat.clear();
         settings->templateLocation.clear();
         const char* const argv[] = { "cppcheck", "--template", "file.cpp" };
         ASSERT(!parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("file.cpp", settings->templateFormat);
-        ASSERT_EQUALS("", settings->templateLocation);
-        TODO_ASSERT_EQUALS("cppcheck: error: argument to '--template' is missing.\n",
-                           "cppcheck: '--template <template>' is deprecated and will be removed in 2.13 - please use '--template=<template>' instead\n"
-                           "cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--template\".\n", GET_REDIRECT_OUTPUT);
     }
 
     // will use the default
@@ -1453,21 +1439,7 @@ private:
         REDIRECT;
         const char* const argv[] = { "cppcheck", "--template-location", "--template={file}", "file.cpp" };
         ASSERT(!parser->parseFromArgs(4, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--template-location' is missing.\n", GET_REDIRECT_OUTPUT);
-    }
-
-    // TODO: will not error out as the next option does not start with a "-"
-    void templateLocationInvalid2() {
-        REDIRECT;
-        settings->templateFormat.clear();
-        settings->templateLocation.clear();
-        const char* const argv[] = { "cppcheck", "--template-location", "file.cpp" };
-        ASSERT(!parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
-        ASSERT_EQUALS("file.cpp", settings->templateLocation);
-        TODO_ASSERT_EQUALS("",
-                           "cppcheck: '--template-location <template>' is deprecated and will be removed in 2.13 - please use '--template-location=<template>' instead\n"
-                           "cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--template-location\".\n", GET_REDIRECT_OUTPUT);
     }
 
     // will use the default

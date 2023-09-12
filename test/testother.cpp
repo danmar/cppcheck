@@ -11074,6 +11074,17 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S { void operator()(int, int); };\n"
+              "void f(int i) {\n"
+              "    S()(i, 1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int& r) {\n"
+              "    g(static_cast<char>(r = 42));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S { int i; };\n"
               "void f(int i) {\n"
               "    const int a[] = { i - 1 * i, 0 };\n"

@@ -42,8 +42,6 @@ class ValueType;
 /** @brief Various small checks */
 
 class CPPCHECKLIB CheckType : public Check {
-    friend class TestFixture;
-
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckType() : Check(myName()) {}

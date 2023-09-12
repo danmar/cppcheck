@@ -7392,9 +7392,9 @@ private:
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckUninitVar check(&tokenizer, &settings, this);
-        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
-        check.analyseWholeProgram(ctu, fileInfo, settings, *this);
+        Check& c = getCheck<CheckUninitVar>();
+        fileInfo.push_back(c.getFileInfo(&tokenizer, &settings));
+        c.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();

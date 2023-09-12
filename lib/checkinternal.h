@@ -39,7 +39,6 @@ class Token;
 
 /** @brief %Check Internal cppcheck API usage */
 class CPPCHECKLIB CheckInternal : public Check {
-    friend class TestFixture;
 public:
     /** This constructor is used when registering the CheckClass */
     CheckInternal() : Check(myName()) {}

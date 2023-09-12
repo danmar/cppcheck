@@ -102,13 +102,12 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, file_in.c_str()), file, line);
 
         // Check..
-        CheckIO checkIO(&tokenizer, &settings1, this);
-        checkIO.checkWrongPrintfScanfArguments();
-        if (!onlyFormatStr) {
-            checkIO.checkCoutCerrMisusage();
-            checkIO.checkFileUsage();
-            checkIO.invalidScanf();
+        if (onlyFormatStr) {
+            CheckIO checkIO(&tokenizer, &settings1, this);
+            checkIO.checkWrongPrintfScanfArguments();
+            return;
         }
+        runChecks<CheckIO>(tokenizer, this);
     }
 
     void coutCerrMisusage() {

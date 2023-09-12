@@ -296,7 +296,7 @@ void StyleEditDialog::colorChangedKeywordFG(const QColor& newColor)
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedKeyword(const QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedKeyword(QFont::Weight newWeight)
 {
     mStyleOutgoing.keywordWeight = newWeight;
     updateStyle();
@@ -308,7 +308,7 @@ void StyleEditDialog::colorChangedClassFG(const QColor& newColor)
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedClass(const QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedClass(QFont::Weight newWeight)
 {
     mStyleOutgoing.classWeight = newWeight;
     updateStyle();
@@ -320,7 +320,7 @@ void StyleEditDialog::colorChangedQuoteFG(const QColor& newColor)
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedQuote(const QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedQuote(QFont::Weight newWeight)
 {
     mStyleOutgoing.quoteWeight = newWeight;
     updateStyle();
@@ -332,7 +332,7 @@ void StyleEditDialog::colorChangedCommentFG(const QColor& newColor)
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedComment(const QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedComment(QFont::Weight newWeight)
 {
     mStyleOutgoing.commentWeight = newWeight;
     updateStyle();
@@ -350,7 +350,7 @@ void StyleEditDialog::colorChangedSymbolBG(const QColor& newColor)
     updateStyle();
 }
 
-void StyleEditDialog::weightChangedSymbol(const QFont::Weight& newWeight)
+void StyleEditDialog::weightChangedSymbol(QFont::Weight newWeight)
 {
     mStyleOutgoing.symbolWeight = newWeight;
     updateStyle();
