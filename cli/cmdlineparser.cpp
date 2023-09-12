@@ -356,11 +356,17 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Exception handling inside cppcheck client
             else if (std::strcmp(argv[i], "--exception-handling") == 0) {
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
                 mSettings.exceptionHandling = true;
+#else
+                mLogger.printError("Option --exception-handling is not supported since Cppcheck has not been built with any exception handling enabled.");
+                return false;
+#endif
             }
 
             // Exception handling inside cppcheck client
             else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
+#if defined(USE_WINDOWS_SEH) || defined(USE_UNIX_SIGNAL_HANDLING)
                 const std::string exceptionOutfilename = argv[i] + 21;
                 if (exceptionOutfilename != "stderr" && exceptionOutfilename != "stdout") {
                     mLogger.printError("invalid '--exception-handling' argument");
@@ -368,6 +374,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
                 mSettings.exceptionHandling = true;
                 CppCheckExecutor::setExceptionOutput((exceptionOutfilename == "stderr") ? stderr : stdout);
+#else
+                mLogger.printError("Option --exception-handling is not supported since Cppcheck has not been built with any exception handling enabled.");
+                return false;
+#endif
             }
 
             // Filter errors
@@ -508,8 +518,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings.jobs = tmp;
             }
 
-#ifdef THREADING_MODEL_FORK
             else if (std::strncmp(argv[i], "-l", 2) == 0) {
+#ifdef THREADING_MODEL_FORK
                 std::string numberString;
 
                 // "-l 3"
@@ -534,8 +544,11 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
                 mSettings.loadAverage = tmp;
-            }
+#else
+                mLogger.printError("Option -l cannot be used as Cppcheck has not been built with fork threading model.");
+                return false;
 #endif
+            }
 
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
@@ -760,18 +773,25 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings.reportProgress = tmp;
             }
 
-#ifdef HAVE_RULES
             // Rule given at command line
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
+#ifdef HAVE_RULES
                 Settings::Rule rule;
                 rule.pattern = 7 + argv[i];
                 mSettings.rules.emplace_back(std::move(rule));
+#else
+                mLogger.printError("Option --rule cannot be used as Cppcheck has not been built with rules support.");
+                return false;
+#endif
             }
 
             // Rule file
             else if (std::strncmp(argv[i], "--rule-file=", 12) == 0) {
+#ifdef HAVE_RULES
+                const std::string ruleFile = argv[i] + 12;
                 tinyxml2::XMLDocument doc;
-                if (doc.LoadFile(12+argv[i]) == tinyxml2::XML_SUCCESS) {
+                const tinyxml2::XMLError err = doc.LoadFile(ruleFile.c_str());
+                if (err == tinyxml2::XML_SUCCESS) {
                     tinyxml2::XMLElement *node = doc.FirstChildElement();
                     if (node && strcmp(node->Value(), "rules") == 0)
                         node = node->FirstChildElement("rule");
@@ -806,11 +826,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             mSettings.rules.emplace_back(std::move(rule));
                     }
                 } else {
-                    mLogger.printError("unable to load rule-file: " + std::string(12+argv[i]));
+                    mLogger.printError("unable to load rule-file '" + ruleFile + "' (" + tinyxml2::XMLDocument::ErrorIDToName(err) + ").");
                     return false;
                 }
-            }
+#else
+                mLogger.printError("Option --rule-file cannot be used as Cppcheck has not been built with rules support.");
+                return false;
 #endif
+            }
 
             // show timing information..
             else if (std::strncmp(argv[i], "--showtime=", 11) == 0) {
@@ -1190,11 +1213,9 @@ void CmdLineParser::printHelp()
         "                         more comments, like: '// cppcheck-suppress warningId'\n"
         "                         on the lines before the warning to suppress.\n"
         "    -j <jobs>            Start <jobs> threads to do the checking simultaneously.\n"
-#ifdef THREADING_MODEL_FORK
     "    -l <load>            Specifies that no new threads should be started if\n"
     "                         there are other threads running and the load average is\n"
     "                         at least <load>.\n"
-#endif
     "    --language=<language>, -x <language>\n"
     "                         Forces cppcheck to check all files as the given\n"
     "                         language. Valid values are: c, c++\n"
@@ -1287,11 +1308,9 @@ void CmdLineParser::printHelp()
         "                         currently only possible to apply the base paths to\n"
         "                         files that are on a lower level in the directory tree.\n"
         "    --report-progress    Report progress messages while checking a file (single job only).\n"
-#ifdef HAVE_RULES
     "    --rule=<rule>        Match regular expression.\n"
     "    --rule-file=<file>   Use given rule file. For more information, see:\n"
     "                         http://sourceforge.net/projects/cppcheck/files/Articles/\n"
-#endif
     "    --showtime=<mode>    Show timing information.\n"
     "                         The available modes are:\n"
     "                          * none\n"
