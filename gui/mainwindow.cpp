@@ -264,6 +264,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionC89->setActionGroup(mCStandardActions);
     mUI->mActionC99->setActionGroup(mCStandardActions);
     mUI->mActionC11->setActionGroup(mCStandardActions);
+    //mUI->mActionC23->setActionGroup(mCStandardActions);
 
     mUI->mActionCpp03->setActionGroup(mCppStandardActions);
     mUI->mActionCpp11->setActionGroup(mCppStandardActions);
@@ -375,6 +376,7 @@ void MainWindow::loadSettings()
     mUI->mActionC89->setChecked(standards.c == Standards::C89);
     mUI->mActionC99->setChecked(standards.c == Standards::C99);
     mUI->mActionC11->setChecked(standards.c == Standards::C11);
+    //mUI->mActionC23->setChecked(standards.c == Standards::C23);
     standards.setCPP(mSettings->value(SETTINGS_STD_CPP, QString()).toString().toStdString());
     mUI->mActionCpp03->setChecked(standards.cpp == Standards::CPP03);
     mUI->mActionCpp11->setChecked(standards.cpp == Standards::CPP11);
@@ -454,6 +456,8 @@ void MainWindow::saveSettings() const
         mSettings->setValue(SETTINGS_STD_C, "C99");
     if (mUI->mActionC11->isChecked())
         mSettings->setValue(SETTINGS_STD_C, "C11");
+    //if (mUI->mActionC23->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_C, "C23");
 
     if (mUI->mActionCpp03->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++03");

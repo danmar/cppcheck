@@ -59,6 +59,10 @@ struct Standards {
             c = C11;
             return true;
         }
+        if (str == "c23" || str == "C23") {
+            c = C23;
+            return true;
+        }
         return false;
     }
     std::string getC() const {

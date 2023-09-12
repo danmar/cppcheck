@@ -34,18 +34,9 @@
 #define C11_KEYWORDS \
     "_Alignas", "_Alignof", "_Atomic", "_Generic", "_Noreturn", "_Static_assert", "_Thread_local"
 
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-macros"
-#endif
-
 #define C23_KEYWORDS \
     "alignas", "alignof", "bool", "constexpr", "false", "nullptr", "static_assert", "thread_local", "true", "typeof", "typeof_unqual", \
     "_BitInt", "_Decimal128", "_Decimal32", "_Decimal64"
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
 
 static const std::unordered_set<std::string> c89_keywords_all = {
     C90_KEYWORDS
@@ -205,7 +196,7 @@ const std::unordered_set<std::string>& Keywords::getOnly(Standards::cstd_t cStd)
     case Standards::cstd_t::C17:
         return c11_keywords;
     case Standards::cstd_t::C23:
-        return c23_keywords_all;
+        return c23_keywords;
     }
     cppcheck::unreachable();
 }
