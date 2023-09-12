@@ -1673,7 +1673,7 @@ void Tokenizer::simplifyTypedefCpp()
                     }
 
                     // check for member functions
-                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{")) {
+                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{:")) {
                         const Token *func = tok2->previous();
 
                         /** @todo add support for multi-token operators */
