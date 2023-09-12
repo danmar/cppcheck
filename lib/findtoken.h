@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 //---------------------------------------------------------------------------
 #ifndef findtokenH
 #define findtokenH
@@ -76,8 +75,17 @@ T* findToken(T* start, const Token* end, const Predicate& pred)
     return result;
 }
 
-template<class T, class Predicate, class Found, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-bool findTokensSkipDeadCodeImpl(const Library* library, T* start, const Token* end, const Predicate& pred, Found found, const Evaluate& evaluate)
+template<class T,
+         class Predicate,
+         class Found,
+         class Evaluate,
+         REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+bool findTokensSkipDeadCodeImpl(const Library* library,
+                                T* start,
+                                const Token* end,
+                                const Predicate& pred,
+                                Found found,
+                                const Evaluate& evaluate)
 {
     for (T* tok = start; precedes(tok, end); tok = tok->next()) {
         if (pred(tok)) {
@@ -162,13 +170,23 @@ bool findTokensSkipDeadCodeImpl(const Library* library, T* start, const Token* e
 }
 
 template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-std::vector<T*> findTokensSkipDeadCode(const Library* library, T* start, const Token* end, const Predicate& pred, const Evaluate& evaluate)
+std::vector<T*> findTokensSkipDeadCode(const Library* library,
+                                       T* start,
+                                       const Token* end,
+                                       const Predicate& pred,
+                                       const Evaluate& evaluate)
 {
     std::vector<T*> result;
-    findTokensSkipDeadCodeImpl(library, start, end, pred, [&](T* tok) {
+    findTokensSkipDeadCodeImpl(
+        library,
+        start,
+        end,
+        pred,
+        [&](T* tok) {
         result.push_back(tok);
         return false;
-    }, evaluate);
+    },
+        evaluate);
     return result;
 }
 
@@ -182,10 +200,16 @@ template<class T, class Predicate, class Evaluate, REQUIRES("T must be a Token c
 T* findTokenSkipDeadCode(const Library* library, T* start, const Token* end, const Predicate& pred, const Evaluate& evaluate)
 {
     T* result = nullptr;
-    findTokensSkipDeadCodeImpl(library, start, end, pred, [&](T* tok) {
+    findTokensSkipDeadCodeImpl(
+        library,
+        start,
+        end,
+        pred,
+        [&](T* tok) {
         result = tok;
         return true;
-    }, evaluate);
+    },
+        evaluate);
     return result;
 }
 
