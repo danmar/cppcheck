@@ -4878,23 +4878,6 @@ static Token * matchMemberFunctionName(const Member &func, const std::list<Scope
     return Token::Match(tok, "~| %name% (") ? tok : nullptr;
 }
 
-static const Token* skipInitializerList(const Token* tok)
-{
-    const Token* const start = tok;
-    while (Token::Match(tok, "[:,] ::| %name%")) {
-        tok = tok->tokAt(tok->strAt(1) == "::" ? 1 : 2);
-        while (Token::Match(tok, ":: %name%"))
-            tok = tok->tokAt(2);
-        if (!Token::Match(tok, "[({<]") || !tok->link())
-            return start;
-        const bool isTemplate = tok->str() == "<";
-        tok = tok->link()->next();
-        if (isTemplate && tok && tok->link())
-            tok = tok->link()->next();
-    }
-    return tok;
-}
-
 template <typename T>
 static T* skipInitializerList(T* tok)
 {
