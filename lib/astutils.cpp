@@ -724,7 +724,8 @@ std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* set
                 const Scope* scope = t->classScope;
                 // Check for aggregate constructors
                 if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
-                    (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) <= scope->varlist.size() && !scope->varlist.empty()) {
+                    (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) <= scope->varlist.size() &&
+                    !scope->varlist.empty()) {
                     assert(argn < scope->varlist.size());
                     auto it = std::next(scope->varlist.cbegin(), argn);
                     if (it->valueType())
