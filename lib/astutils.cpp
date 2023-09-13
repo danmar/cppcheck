@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "errortypes.h"
+#include "findtoken.h"
 #include "infer.h"
 #include "library.h"
 #include "mathlib.h"
@@ -2867,7 +2868,14 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
     return false;
 }
 
-bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
+template<class Find>
+bool isExpressionChangedImpl(const Token* expr,
+                             const Token* start,
+                             const Token* end,
+                             const Settings* settings,
+                             bool cpp,
+                             int depth,
+                             Find find)
 {
     if (depth < 0)
         return true;
@@ -2888,7 +2896,7 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
         }
 
         if (tok->exprId() > 0) {
-            for (const Token* tok2 = start; tok2 != end; tok2 = tok2->next()) {
+            const Token* result = find(start, end, [&](const Token* tok2) {
                 int indirect = 0;
                 if (const ValueType* vt = tok->valueType()) {
                     indirect = vt->pointer;
@@ -2898,11 +2906,53 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
                 for (int i = 0; i <= indirect; ++i)
                     if (isExpressionChangedAt(tok, tok2, i, global, settings, cpp, depth))
                         return true;
-            }
+                return false;
+            });
+            if (result)
+                return true;
         }
         return false;
     });
     return result;
+}
+
+struct ExpressionChangedSimpleFind {
+    template<class F>
+    const Token* operator()(const Token* start, const Token* end, F f) const
+    {
+        return findToken(start, end, f);
+    }
+};
+
+struct ExpressionChangedSkipDeadCode {
+    const Library* library;
+    const std::function<std::vector<MathLib::bigint>(const Token* tok)>* evaluate;
+    ExpressionChangedSkipDeadCode(const Library* library,
+                                  const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate)
+        : library(library), evaluate(&evaluate)
+    {}
+    template<class F>
+    const Token* operator()(const Token* start, const Token* end, F f) const
+    {
+        return findTokenSkipDeadCode(library, start, end, f, *evaluate);
+    }
+};
+
+bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
+{
+    return isExpressionChangedImpl(expr, start, end, settings, cpp, depth, ExpressionChangedSimpleFind{});
+}
+
+bool isExpressionChangedSkipDeadCode(const Token* expr,
+                                     const Token* start,
+                                     const Token* end,
+                                     const Settings* settings,
+                                     bool cpp,
+                                     const std::function<std::vector<MathLib::bigint>(const Token* tok)>& evaluate,
+                                     int depth)
+{
+    return isExpressionChangedImpl(
+        expr, start, end, settings, cpp, depth, ExpressionChangedSkipDeadCode{&settings->library, evaluate});
 }
 
 const Token* getArgumentStart(const Token* ftok)
