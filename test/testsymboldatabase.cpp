@@ -388,6 +388,7 @@ private:
         TEST_CASE(enum11);
         TEST_CASE(enum12);
         TEST_CASE(enum13);
+        TEST_CASE(enum14);
 
         TEST_CASE(sizeOfType);
 
@@ -5769,6 +5770,37 @@ private:
         const Token* const a = Token::findsimplematch(tokenizer.tokens(), "auto");
         ASSERT(a && a->valueType());
         ASSERT(E1->scope == a->valueType()->typeScope);
+    }
+
+    void enum14() {
+        GET_SYMBOL_DB("void f() {\n" // #11421
+                      "    enum E { A = 0, B = 0xFFFFFFFFFFFFFFFFull, C = 0x7FFFFFFFFFFFFFFF };\n"
+                      "    E e = B;\n"
+                      "    auto s1 = e >> 32;\n"
+                      "    auto s2 = B >> 32;\n"
+                      "    enum F { F0 = sizeof(int) };\n"
+                      "    F f = F0;\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* B = it->findEnumerator("B");
+        ASSERT(B);
+        TODO_ASSERT(B->value_known);
+        const Enumerator* C = it->findEnumerator("C");
+        ASSERT(C && C->value_known);
+        const Token* const s1 = Token::findsimplematch(tokenizer.tokens(), "s1 =");
+        ASSERT(s1 && s1->valueType());
+        ASSERT_EQUALS(s1->valueType()->type, ValueType::Type::LONGLONG);
+        const Token* const s2 = Token::findsimplematch(s1, "s2 =");
+        ASSERT(s2 && s2->valueType());
+        ASSERT_EQUALS(s2->valueType()->type, ValueType::Type::LONGLONG);
+        ++it;
+        const Enumerator* F0 = it->findEnumerator("F0");
+        ASSERT(F0 && F0->value_known);
+        const Token* const f = Token::findsimplematch(s2, "f =");
+        ASSERT(f && f->valueType());
+        ASSERT_EQUALS(f->valueType()->type, ValueType::Type::INT);
     }
 
     void sizeOfType() {
