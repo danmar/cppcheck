@@ -4602,7 +4602,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 const Variable& var = *it;
                 if (var.isReference() || var.isRValueReference()) {
                     ls.byRef(tok, tokenlist, errorLogger, settings);
-                } else {
+                } else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings)) {
                     ls.byVal(tok, tokenlist, errorLogger, settings);
                 }
                 it++;
