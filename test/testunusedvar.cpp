@@ -2641,11 +2641,11 @@ private:
                               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Variable '*(b+i)' is assigned a value that is never used.\n", "", errout.str());
 
-        functionVariableUsage("void f() {\n" // #11832
+        functionVariableUsage("void f() {\n" // #11832, #11923
                               "    int b;\n"
                               "    *(&b) = 0;\n"
                               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable '*(&b)' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar8() {

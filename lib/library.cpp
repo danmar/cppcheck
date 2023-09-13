@@ -1174,7 +1174,7 @@ const Library::Container* Library::detectContainerInternal(const Token* const ty
         if (container.startPattern.empty())
             continue;
 
-        const int offset = (withoutStd && container.startPattern2.find("std :: ") == 0) ? 7 : 0;
+        const int offset = (withoutStd && startsWith(container.startPattern2, "std :: ")) ? 7 : 0;
 
         // If endPattern is undefined, it will always match, but itEndPattern has to be defined.
         if (detect != IteratorOnly && container.endPattern.empty()) {
@@ -1754,7 +1754,7 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
 
     // set varids
     for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
-        if (tok2->str().compare(0, 3, "arg") != 0)
+        if (!startsWith(tok2->str(), "arg"))
             continue;
         nonneg int const id = strToInt<nonneg int>(tok2->str().c_str() + 3);
         tok2->varId(id);

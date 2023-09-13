@@ -42,6 +42,8 @@ private:
         TEST_CASE(join);
         TEST_CASE(isDirectory);
         TEST_CASE(isFile);
+        TEST_CASE(sameFileName);
+        TEST_CASE(getFilenameExtension);
     }
 
     void removeQuotationMarks() const {
@@ -123,7 +125,7 @@ private:
         ASSERT(Path::isC("C:\\foo\\index.c"));
 
         // In unix .C is considered C++
-#ifdef _WIN32
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
         ASSERT_EQUALS(true, Path::isC("C:\\foo\\index.C"));
 #else
         ASSERT_EQUALS(false, Path::isC("C:\\foo\\index.C"));
@@ -134,7 +136,7 @@ private:
         ASSERT(Path::isCPP("index.c")==false);
 
         // In unix .C is considered C++
-#ifdef _WIN32
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
         ASSERT_EQUALS(false, Path::isCPP("index.C"));
 #else
         ASSERT_EQUALS(true, Path::isCPP("index.C"));
@@ -175,6 +177,53 @@ private:
         ASSERT_EQUALS(false, Path::isFile("testpath.txt"));
         ASSERT_EQUALS(true, Path::isFile("testpath/testpath.txt"));
         ASSERT_EQUALS(true, Path::isFile("testpath2.txt"));
+    }
+
+    void sameFileName() const {
+        ASSERT(Path::sameFileName("test", "test"));
+
+        // case sensitivity cases
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
+        ASSERT(Path::sameFileName("test", "Test"));
+        ASSERT(Path::sameFileName("test", "TesT"));
+        ASSERT(Path::sameFileName("test.h", "test.H"));
+        ASSERT(Path::sameFileName("test.hh", "test.Hh"));
+        ASSERT(Path::sameFileName("test.hh", "test.hH"));
+#else
+        ASSERT(!Path::sameFileName("test", "Test"));
+        ASSERT(!Path::sameFileName("test", "TesT"));
+        ASSERT(!Path::sameFileName("test.h", "test.H"));
+        ASSERT(!Path::sameFileName("test.hh", "test.Hh"));
+        ASSERT(!Path::sameFileName("test.hh", "test.hH"));
+#endif
+    }
+
+    void getFilenameExtension() const {
+        ASSERT_EQUALS("", Path::getFilenameExtension("test"));
+        ASSERT_EQUALS("", Path::getFilenameExtension("Test"));
+        ASSERT_EQUALS(".h", Path::getFilenameExtension("test.h"));
+        ASSERT_EQUALS(".h", Path::getFilenameExtension("Test.h"));
+        ASSERT_EQUALS("", Path::getFilenameExtension("test", true));
+        ASSERT_EQUALS("", Path::getFilenameExtension("Test", true));
+        ASSERT_EQUALS(".h", Path::getFilenameExtension("test.h", true));
+        ASSERT_EQUALS(".h", Path::getFilenameExtension("Test.h", true));
+
+        // case sensitivity cases
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
+        ASSERT_EQUALS(".h", Path::getFilenameExtension("test.H"));
+        ASSERT_EQUALS(".hh", Path::getFilenameExtension("test.Hh"));
+        ASSERT_EQUALS(".hh", Path::getFilenameExtension("test.hH"));
+        ASSERT_EQUALS(".h", Path::getFilenameExtension("test.H", true));
+        ASSERT_EQUALS(".hh", Path::getFilenameExtension("test.Hh", true));
+        ASSERT_EQUALS(".hh", Path::getFilenameExtension("test.hH", true));
+#else
+        ASSERT_EQUALS(".H", Path::getFilenameExtension("test.H"));
+        ASSERT_EQUALS(".Hh", Path::getFilenameExtension("test.Hh"));
+        ASSERT_EQUALS(".hH", Path::getFilenameExtension("test.hH"));
+        ASSERT_EQUALS(".h", Path::getFilenameExtension("test.H", true));
+        ASSERT_EQUALS(".hh", Path::getFilenameExtension("test.Hh", true));
+        ASSERT_EQUALS(".hh", Path::getFilenameExtension("test.hH", true));
+#endif
     }
 };
 

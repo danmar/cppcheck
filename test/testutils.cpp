@@ -39,6 +39,7 @@ private:
         TEST_CASE(isCharLiteral);
         TEST_CASE(strToInt);
         TEST_CASE(id_string);
+        TEST_CASE(startsWith);
     }
 
     void isValidGlobPattern() const {
@@ -344,6 +345,19 @@ private:
         if (sizeof(void*) == 8) {
             ASSERT_EQUALS(std::string(16,'f'), id_string_i(~0ULL));
         }
+    }
+
+    void startsWith() const
+    {
+        ASSERT(::startsWith("test", "test"));
+        ASSERT(::startsWith("test2", "test"));
+        ASSERT(::startsWith("test test", "test"));
+        ASSERT(::startsWith("test", "t"));
+        ASSERT(!::startsWith("2test", "test"));
+        ASSERT(!::startsWith("", "test"));
+        ASSERT(!::startsWith("tes", "test"));
+        ASSERT(!::startsWith("2test", "t"));
+        ASSERT(!::startsWith("t", "test"));
     }
 };
 

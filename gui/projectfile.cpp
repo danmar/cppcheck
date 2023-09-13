@@ -22,6 +22,7 @@
 #include "config.h"
 #include "importproject.h"
 #include "settings.h"
+#include "utils.h"
 
 #include <utility>
 
@@ -847,7 +848,7 @@ bool ProjectFile::write(const QString &filename)
     }
 
     xmlWriter.writeStartElement(CppcheckXml::AnalyzeAllVsConfigsElementName);
-    xmlWriter.writeCharacters(mAnalyzeAllVsConfigs ? "true" : "false");
+    xmlWriter.writeCharacters(bool_to_string(mAnalyzeAllVsConfigs));
     xmlWriter.writeEndElement();
 
     if (clangParser) {
@@ -857,11 +858,11 @@ bool ProjectFile::write(const QString &filename)
     }
 
     xmlWriter.writeStartElement(CppcheckXml::CheckHeadersElementName);
-    xmlWriter.writeCharacters(mCheckHeaders ? "true" : "false");
+    xmlWriter.writeCharacters(bool_to_string(mCheckHeaders));
     xmlWriter.writeEndElement();
 
     xmlWriter.writeStartElement(CppcheckXml::CheckUnusedTemplatesElementName);
-    xmlWriter.writeCharacters(mCheckUnusedTemplates ? "true" : "false");
+    xmlWriter.writeCharacters(bool_to_string(mCheckUnusedTemplates));
     xmlWriter.writeEndElement();
 
     xmlWriter.writeStartElement(CppcheckXml::MaxCtuDepthElementName);

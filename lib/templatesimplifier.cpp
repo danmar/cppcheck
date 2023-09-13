@@ -26,6 +26,7 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cassert>
@@ -499,7 +500,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // num/type ..
-        if (!tok->isNumber() && tok->tokType() != Token::eChar && !tok->isName() && !tok->isOp())
+        if (!tok->isNumber() && tok->tokType() != Token::eChar && tok->tokType() != Token::eString && !tok->isName() && !tok->isOp())
             return 0;
         tok = tok->next();
         if (!tok)
@@ -2513,17 +2514,17 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
                     std::string result;
 
                     if (cmp == "==")
-                        result = (op1 == op2) ? "true" : "false";
+                        result = bool_to_string(op1 == op2);
                     else if (cmp == "!=")
-                        result = (op1 != op2) ? "true" : "false";
+                        result = bool_to_string(op1 != op2);
                     else if (cmp == "<=")
-                        result = (op1 <= op2) ? "true" : "false";
+                        result = bool_to_string(op1 <= op2);
                     else if (cmp == ">=")
-                        result = (op1 >= op2) ? "true" : "false";
+                        result = bool_to_string(op1 >= op2);
                     else if (cmp == "<")
-                        result = (op1 < op2) ? "true" : "false";
+                        result = bool_to_string(op1 < op2);
                     else
-                        result = (op1 > op2) ? "true" : "false";
+                        result = bool_to_string(op1 > op2);
 
                     tok->str(result);
                     tok->deleteNext(2);

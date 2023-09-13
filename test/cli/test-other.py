@@ -71,7 +71,7 @@ def test_missing_include_inline_suppr(tmpdir):
 
 
 def test_invalid_library(tmpdir):
-    args = ['--library=none', '--library=posix', '--library=none2', '--platform=native', 'file.c']
+    args = ['--library=none', '--library=posix', '--library=none2', 'file.c']
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 1
@@ -85,7 +85,7 @@ def test_message_j(tmpdir):
     with open(test_file, 'wt') as f:
         f.write("")
 
-    args = ['-j2', '--platform=native', test_file]
+    args = ['-j2', test_file]
 
     _, stdout, _ = cppcheck(args)
     assert stdout == "Checking {} ...\n".format(test_file) # we were adding stray \0 characters at the end
@@ -102,7 +102,7 @@ def test_progress(tmpdir):
                 }
                 """)
 
-    args = ['--report-progress=0', '--enable=all', '--inconclusive', '--platform=native', test_file]
+    args = ['--report-progress=0', '--enable=all', '--inconclusive', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -135,7 +135,7 @@ def test_progress_j(tmpdir):
                 }
                 """)
 
-    args = ['--report-progress=0', '--enable=all', '--inconclusive', '-j2', '--disable=unusedFunction', '--platform=native', test_file]
+    args = ['--report-progress=0', '--enable=all', '--inconclusive', '-j2', '--disable=unusedFunction', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0

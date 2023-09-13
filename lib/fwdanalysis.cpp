@@ -498,7 +498,7 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
 
 bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
 {
-    if (expr->isUnaryOp("*"))
+    if (expr->isUnaryOp("*") && !expr->astOperand1()->isUnaryOp("&"))
         return true;
 
     const bool macro = false;
@@ -540,7 +540,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
             continue;
 
         for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
-            if (isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
+            if (subexpr != addrOf && isSameExpression(mCpp, macro, subexpr, addrOf, mLibrary, pure, followVar))
                 return true;
         }
     }

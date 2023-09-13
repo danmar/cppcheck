@@ -29,14 +29,7 @@
 
 cppcheck::Platform::Platform()
 {
-    // This assumes the code you are checking is for the same architecture this is compiled on.
-#if defined(_WIN64)
-    set(Type::Win64);
-#elif defined(_WIN32)
-    set(Type::Win32A);
-#else
     set(Type::Native);
-#endif
 }
 
 

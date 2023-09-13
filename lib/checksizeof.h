@@ -43,6 +43,7 @@ public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckSizeof() : Check(myName()) {}
 
+private:
     /** @brief This constructor is used when running checks. */
     CheckSizeof(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -86,7 +87,6 @@ public:
     /** @brief %Check for using sizeof(void) */
     void sizeofVoid();
 
-private:
     // Error messages..
     void sizeofsizeofError(const Token* tok);
     void sizeofCalculationError(const Token* tok, bool inconclusive);

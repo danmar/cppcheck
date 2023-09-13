@@ -4412,9 +4412,9 @@ private:
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckNullPointer checkNullPointer(&tokenizer, &settings, this);
-        fileInfo.push_back(checkNullPointer.getFileInfo(&tokenizer, &settings));
-        checkNullPointer.analyseWholeProgram(ctu, fileInfo, settings, *this);
+        Check& c = getCheck<CheckNullPointer>();
+        fileInfo.push_back(c.getFileInfo(&tokenizer, &settings));
+        c.analyseWholeProgram(ctu, fileInfo, settings, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();

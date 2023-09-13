@@ -80,6 +80,17 @@ struct EnumClassHash {
     }
 };
 
+inline bool startsWith(const std::string& str, const char start[], std::size_t startlen)
+{
+    return str.compare(0, startlen, start) == 0;
+}
+
+template<std::size_t N>
+bool startsWith(const std::string& str, const char (&start)[N])
+{
+    return startsWith(str, start, N - 1);
+}
+
 inline bool endsWith(const std::string &str, char c)
 {
     return !str.empty() && str.back() == c;
@@ -314,7 +325,7 @@ static inline std::string id_string(const void* p)
     return id_string_i(reinterpret_cast<uintptr_t>(p));
 }
 
-static inline std::string bool_to_string(bool b)
+static inline const char* bool_to_string(bool b)
 {
     return b ? "true" : "false";
 }

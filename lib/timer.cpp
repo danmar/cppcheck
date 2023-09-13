@@ -18,6 +18,8 @@
 
 #include "timer.h"
 
+#include "utils.h"
+
 #include <algorithm>
 #include <iostream>
 #include <utility>
@@ -61,7 +63,7 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
         bool hasParent = false;
         {
             // Do not use valueFlow.. in "Overall time" because those are included in Tokenizer already
-            if (iter->first.compare(0,9,"valueFlow") == 0)
+            if (startsWith(iter->first,"valueFlow"))
                 hasParent = true;
 
             // Do not use inner timers in "Overall time"

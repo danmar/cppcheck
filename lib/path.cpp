@@ -46,9 +46,11 @@
 
 
 /** Is the filesystem case insensitive? */
-static bool caseInsensitiveFilesystem()
+static constexpr bool caseInsensitiveFilesystem()
 {
-#ifdef _WIN32
+#if defined(_WIN32) || (defined(__APPLE__) && defined(__MACH__))
+    // Windows is case insensitive
+    // MacOS is case insensitive by default (also supports case sensitivity)
     return true;
 #else
     // TODO: Non-windows filesystems might be case insensitive
@@ -169,7 +171,7 @@ bool Path::isAbsolute(const std::string& path)
         return false;
 
     // On Windows, 'C:\foo\bar' is an absolute path, while 'C:foo\bar' is not
-    return nativePath.compare(0, 2, "\\\\") == 0 || (std::isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0);
+    return startsWith(nativePath, "\\\\") || (std::isalpha(nativePath[0]) != 0 && nativePath.compare(1, 2, ":\\") == 0);
 #else
     return !nativePath.empty() && nativePath[0] == '/';
 #endif
@@ -225,7 +227,7 @@ bool Path::acceptFile(const std::string &path, const std::set<std::string> &extr
 bool Path::isHeader(const std::string &path)
 {
     const std::string extension = getFilenameExtensionInLowerCase(path);
-    return (extension.compare(0, 2, ".h") == 0);
+    return startsWith(extension, ".h");
 }
 
 std::string Path::getAbsoluteFilePath(const std::string& filePath)

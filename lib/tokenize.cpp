@@ -246,7 +246,7 @@ bool Tokenizer::duplicateTypedef(Token **tokPtr, const Token *name, const Token 
             if (end)
                 end = end->next();
         } else if (end->str() == "(") {
-            if (tok->previous()->str().compare(0, 8, "operator")  == 0)
+            if (startsWith(tok->previous()->str(), "operator"))
                 // conversion operator
                 return false;
             if (tok->previous()->str() == "typedef")
@@ -1673,7 +1673,7 @@ void Tokenizer::simplifyTypedefCpp()
                     }
 
                     // check for member functions
-                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{")) {
+                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{:")) {
                         const Token *func = tok2->previous();
 
                         /** @todo add support for multi-token operators */
@@ -4878,6 +4878,24 @@ static Token * matchMemberFunctionName(const Member &func, const std::list<Scope
     return Token::Match(tok, "~| %name% (") ? tok : nullptr;
 }
 
+template<typename T>
+static T* skipInitializerList(T* tok)
+{
+    T* const start = tok;
+    while (Token::Match(tok, "[:,] ::| %name%")) {
+        tok = tok->tokAt(tok->strAt(1) == "::" ? 1 : 2);
+        while (Token::Match(tok, ":: %name%"))
+            tok = tok->tokAt(2);
+        if (!Token::Match(tok, "[({<]") || !tok->link())
+            return start;
+        const bool isTemplate = tok->str() == "<";
+        tok = tok->link()->next();
+        if (isTemplate && tok && tok->link())
+            tok = tok->link()->next();
+    }
+    return tok;
+}
+
 void Tokenizer::setVarIdPass2()
 {
     std::map<nonneg int, std::map<std::string, nonneg int>> structMembers;
@@ -5042,8 +5060,8 @@ void Tokenizer::setVarIdPass2()
                     tok2 = tok2->link();
 
                     // Skip initialization list
-                    while (Token::Match(tok2, ") [:,] %name% ("))
-                        tok2 = tok2->linkAt(3);
+                    if (Token::simpleMatch(tok2, ") :"))
+                        tok2 = skipInitializerList(tok2->next());
                 }
             }
 
@@ -5965,10 +5983,10 @@ void Tokenizer::dump(std::ostream &out) const
             outs += "    <container id=\"";
             outs += id_string(c);
             outs += "\" array-like-index-op=\"";
-            outs += (c->arrayLike_indexOp ? "true" : "false");
+            outs += bool_to_string(c->arrayLike_indexOp);
             outs += "\" ";
             outs += "std-string-like=\"";
-            outs +=(c->stdStringLike ? "true" : "false");
+            outs += bool_to_string(c->stdStringLike);
             outs += "\"/>";
             outs += '\n';
         }
@@ -7965,7 +7983,7 @@ void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) c
  * @param floatConstant the string with stringified float constant to check against
  * @return true in case s is equal to X or X.0 and false otherwise.
  */
-static bool isNumberOneOf(const std::string &s, const MathLib::bigint& intConstant, const char* floatConstant)
+static bool isNumberOneOf(const std::string &s, MathLib::bigint intConstant, const char* floatConstant)
 {
     if (MathLib::isInt(s)) {
         if (MathLib::toLongNumber(s) == intConstant)
@@ -8124,7 +8142,7 @@ static bool isNonMacro(const Token* tok)
         return true;
     if (cAlternativeTokens.count(tok->str()) > 0)
         return true;
-    if (tok->str().compare(0, 2, "__") == 0) // attribute/annotation
+    if (startsWith(tok->str(), "__")) // attribute/annotation
         return true;
     if (Token::simpleMatch(tok, "alignas ("))
         return true;
@@ -8236,7 +8254,7 @@ void Tokenizer::reportUnknownMacros() const
                 continue;
             if (cAlternativeTokens.count(tok->linkAt(2)->next()->str()) > 0)
                 continue;
-            if (tok->next()->str().compare(0, 2, "__") == 0) // attribute/annotation
+            if (startsWith(tok->next()->str(), "__")) // attribute/annotation
                 continue;
             unknownMacroError(tok->next());
         }
@@ -8637,9 +8655,7 @@ void Tokenizer::simplifyFunctionTryCatch()
         if (!isFunctionHead(tok->previous(), "try"))
             continue;
 
-        Token* tryStartToken = tok->next();
-        while (Token::Match(tryStartToken, "[:,] %name% (|{")) // skip init list
-            tryStartToken = tryStartToken->linkAt(2)->next();
+        Token* tryStartToken = skipInitializerList(tok->next());
 
         if (!Token::simpleMatch(tryStartToken, "{"))
             syntaxError(tryStartToken, "Invalid function-try-catch block code. Did not find '{' for try body.");
@@ -8990,7 +9006,7 @@ void Tokenizer::simplifyCppcheckAttribute()
         if (!tok->previous())
             continue;
         const std::string &attr = tok->previous()->str();
-        if (attr.compare(0, 11, "__cppcheck_") != 0) // TODO: starts_with("__cppcheck_")
+        if (!startsWith(attr, "__cppcheck_"))
             continue;
         if (attr.compare(attr.size()-2, 2, "__") != 0) // TODO: ends_with("__")
             continue;
@@ -8998,7 +9014,7 @@ void Tokenizer::simplifyCppcheckAttribute()
         Token *vartok = tok->link();
         while (Token::Match(vartok->next(), "%name%|*|&|::")) {
             vartok = vartok->next();
-            if (Token::Match(vartok, "%name% (") && vartok->str().compare(0,11,"__cppcheck_") == 0)
+            if (Token::Match(vartok, "%name% (") && startsWith(vartok->str(),"__cppcheck_"))
                 vartok = vartok->linkAt(1);
         }
 
@@ -10471,7 +10487,7 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
     assert(mPreprocessor);
 
     return std::any_of(mPreprocessor->getDirectives().cbegin(), mPreprocessor->getDirectives().cend(), [&](const Directive& d) {
-        return d.str.compare(0, 3, "#if") == 0 &&
+        return startsWith(d.str, "#if") &&
         d.linenr >= start->linenr() &&
         d.linenr <= end->linenr() &&
         start->fileIndex() < list.getFiles().size() &&

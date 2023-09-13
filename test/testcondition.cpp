@@ -38,8 +38,8 @@ public:
     TestCondition() : TestFixture("TestCondition") {}
 
 private:
-    const Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).platform(cppcheck::Platform::Type::Native).build();
-    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).platform(cppcheck::Platform::Type::Native).build();
+    const Settings settings0 = settingsBuilder().library("qt.cfg").library("std.cfg").severity(Severity::style).severity(Severity::warning).build();
+    Settings settings1 = settingsBuilder().severity(Severity::style).severity(Severity::warning).build();
 
     void run() override {
         const char cfg[] = "<?xml version=\"1.0\"?>\n"

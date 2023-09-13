@@ -635,7 +635,7 @@ static void setTokenValue(Token* tok,
         // Ensure that the comma isn't a function call
         if (!callParent || (!Token::Match(callParent->previous(), "%name%|> (") && !Token::simpleMatch(callParent, "{") &&
                             (!Token::Match(callParent, "( %name%") || settings->library.isNotLibraryFunction(callParent->next())) &&
-                            !(callParent->str() == "(" && Token::simpleMatch(callParent->astOperand1(), "*")))) {
+                            !(callParent->str() == "(" && (Token::simpleMatch(callParent->astOperand1(), "*") || Token::Match(callParent->astOperand1(), "%name%|("))))) {
             setTokenValue(parent, std::move(value), settings);
             return;
         }
@@ -2953,7 +2953,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 std::string s = state ? "empty" : "not empty";
                 addErrorPath(tok, "Assuming container is " + s);
             } else {
-                std::string s = state ? "true" : "false";
+                std::string s = bool_to_string(state);
                 addErrorPath(tok, "Assuming condition is " + s);
             }
         }
@@ -4494,7 +4494,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList &tokenlist, ErrorLog
         valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
     } else {
         const std::string& retVal = settings->library.returnValue(tok);
-        if (retVal.compare(0, 3, "arg") == 0) {
+        if (startsWith(retVal, "arg")) {
             std::size_t iArg{};
             try {
                 iArg = strToInt<std::size_t>(retVal.substr(3));

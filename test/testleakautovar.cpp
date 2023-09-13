@@ -128,6 +128,7 @@ private:
         TEST_CASE(doublefree12); // #10502
         TEST_CASE(doublefree13); // #11008
         TEST_CASE(doublefree14); // #9708
+        TEST_CASE(doublefree15);
 
         // exit
         TEST_CASE(exit1);
@@ -1524,6 +1525,13 @@ private:
               "{\n"
               "    int *i = new int;\n"
               "    unique_ptr<int> x(i);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree15() { // #11966
+        check("void f(FILE* fp) {\n"
+              "    static_cast<void>(fclose(fp));\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }
