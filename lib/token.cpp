@@ -149,7 +149,7 @@ void Token::update_property_info()
             else
                 tokType(eName); // assume it is a user defined literal
         } else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
-                 (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
+                   (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
         else if (mStr.size() == 1 && mStr.find_first_of(",[]()?:") != std::string::npos)
             tokType(eExtendedOp);
