@@ -5442,6 +5442,23 @@ static std::string getTypeString(const Token *typeToken)
     return "";
 }
 
+static bool hasMatchingConstructor(const Scope* classScope, const ValueType* argType) {
+    if (!classScope || !argType)
+        return false;
+    return std::any_of(classScope->functionList.cbegin(),
+                       classScope->functionList.cend(),
+                       [&](const Function& f) {
+        if (!f.isConstructor() || f.argCount() != 1 || !f.getArgumentVar(0))
+            return false;
+        const ValueType* vt = f.getArgumentVar(0)->valueType();
+        return vt &&
+        vt->type == argType->type &&
+        (argType->sign == ValueType::Sign::UNKNOWN_SIGN || vt->sign == argType->sign) &&
+        vt->pointer == argType->pointer &&
+        (vt->constness & 1) >= (argType->constness & 1);
+    });
+}
+
 const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 {
     const bool isCall = Token::Match(tok->next(), "(|{");
@@ -5473,6 +5490,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             addMatchingFunctions(nestedScope);
     }
 
+    const std::size_t numberOfMatchesNonBase = matches.size();
+
     // check in base classes
     findFunctionInBase(tok->str(), args, matches);
 
@@ -5485,6 +5504,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
     // check each function against the arguments in the function call for a match
     for (std::size_t i = 0; i < matches.size();) {
+        if (i > 0 && i == numberOfMatchesNonBase && fallback1Func.empty() && !fallback2Func.empty())
+            break;
+
         bool constFallback = false;
         const Function * func = matches[i];
         size_t same = 0;
@@ -5591,6 +5613,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
 
             else if (funcarg->isPointer() && MathLib::isNullValue(arguments[j]->str()))
                 fallback1++;
+
+            else if (!funcarg->isPointer() && funcarg->type() && hasMatchingConstructor(funcarg->type()->classScope, arguments[j]->valueType()))
+                fallback2++;
 
             // Try to evaluate the apparently more complex expression
             else if (check->isCPP()) {
