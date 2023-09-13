@@ -38,19 +38,18 @@ inline std::vector<MathLib::bigint> evaluateKnownValues(const Token* tok)
 {
     if (!tok->hasKnownIntValue())
         return {};
-    return {tok->values().front().intvalue};
+    return {tok->getKnownIntValue()};
 }
 
 template<class T, class Predicate, class Found, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-bool findTokensImpl(T* start, const Token* end, const Predicate& pred, Found found)
+void findTokensImpl(T* start, const Token* end, const Predicate& pred, Found found)
 {
     for (T* tok = start; precedes(tok, end); tok = tok->next()) {
         if (pred(tok)) {
             if (found(tok))
-                return true;
+                break;
         }
     }
-    return false;
 }
 
 template<class T, class Predicate, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
