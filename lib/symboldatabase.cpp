@@ -5638,7 +5638,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 }
                 const Token* valuetok = arguments[j];
                 if (valuetok->str() == "::") {
-                    const Token* rml = nextAfterAstRightmostLeaf(vartok);
+                    const Token* rml = nextAfterAstRightmostLeaf(valuetok);
                     if (rml)
                         valuetok = rml->previous();
                 }
