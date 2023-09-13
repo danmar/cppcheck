@@ -5445,9 +5445,11 @@ static std::string getTypeString(const Token *typeToken)
 static bool hasMatchingConstructor(const Scope* classScope, const ValueType* argType) {
     if (!classScope || !argType)
         return false;
-    for (const Function& f: classScope->functionList) {
+    return std::any_of(classScope->functionList.cbegin(),
+                       classScope->functionList.cend(),
+                       [&](const Function& f) {
         if (!f.isConstructor() || f.argCount() != 1 || !f.getArgumentVar(0))
-            continue;
+            return false;
         const ValueType* vt = f.getArgumentVar(0)->valueType();
         if (vt &&
             vt->type == argType->type &&
@@ -5455,8 +5457,7 @@ static bool hasMatchingConstructor(const Scope* classScope, const ValueType* arg
             vt->pointer == argType->pointer &&
             (vt->constness & 1) >= (argType->constness & 1))
             return true;
-    }
-    return false;
+    });
 }
 
 const Function* Scope::findFunction(const Token *tok, bool requireConst) const
