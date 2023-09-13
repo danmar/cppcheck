@@ -3238,7 +3238,7 @@ bool Tokenizer::simplifyUsing()
 
                     // Is this a "T()" expression where T is a pointer type?
                     if (Token::Match(tok1, "%name% ( )") && !pointers.empty()) {
-                        auto tok2 = tok1->linkAt(1);
+                        Token* tok2 = tok1->linkAt(1);
                         tok1->deleteThis();
                         TokenList::copyTokens(tok1, start, usingEnd->previous());
                         tok2->insertToken("0");
