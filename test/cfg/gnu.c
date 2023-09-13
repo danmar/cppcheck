@@ -316,6 +316,7 @@ void valid_code(int argInt1, va_list valist_arg, const int * parg)
 
     if (__alignof__(int) == 4) {}
 
+    // cppcheck-suppress valueFlowBailoutIncompleteVar
     const void * p_mmap = mmap(NULL, 1, PROT_NONE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     printf("%p", p_mmap);
     munmap(p_mmap, 1);

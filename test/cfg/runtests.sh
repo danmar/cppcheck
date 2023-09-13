@@ -2,6 +2,8 @@
 set -e # abort on error
 #set -x # be verbose
 
+# TODO: do not bail out on first error - always run all tests and return error instead
+
 function exit_if_strict {
     if [ -n "${STRICT}" ] && [ "${STRICT}" -eq 1 ]; then
       exit 1
@@ -24,7 +26,8 @@ CFG="$DIR"../../cfg/
 
 # TODO: remove missingInclude disabling when it no longer is implied by --enable=information
 # Cppcheck options
-CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --error-exitcode=-1 --disable=missingInclude --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
+# need to suppress unmatchedSuppression in case valueFlowBailout is not reported
+CPPCHECK_OPT='--check-library --platform=unix64 --enable=style,information --inconclusive --force --error-exitcode=-1 --disable=missingInclude --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}" --debug-warnings --suppress=valueFlowBailout --suppress=unmatchedSuppression'
 
 # Compiler settings
 CXX=g++
@@ -33,6 +36,7 @@ CC=gcc
 CC_OPT='-fsyntax-only -w -std=c11'
 
 function get_pkg_config_cflags {
+    # TODO: get rid of the error enabling/disabling?
     set +e
     PKGCONFIG=$(pkg-config --cflags "$@")
     PKGCONFIG_RETURNCODE=$?
@@ -65,6 +69,7 @@ function qt_fn {
         if [ -n "$QTCONFIG" ]; then
             QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core Qt5Test)
             [[ $QTBUILDCONFIG =~ (^|[[:space:]])reduce_relocations($|[[:space:]]) ]] && QTCONFIG="${QTCONFIG} -fPIC"
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <QString>" | ${CXX} ${CXX_OPT} ${QTCONFIG} -x c++ -
             QTCHECK_RETURNCODE=$?
@@ -107,6 +112,7 @@ function windows_fn {
 
 # wxwidgets.cpp
 function wxwidgets_fn {
+    # TODO: get rid of the error enabling/disabling?
     set +e
     WXCONFIG=$(wx-config --cxxflags)
     WXCONFIG_RETURNCODE=$?
@@ -115,6 +121,7 @@ function wxwidgets_fn {
         echo "wx-config does not work, skipping syntax check for wxWidgets tests."
         exit_if_strict
     else
+        # TODO: get rid of the error enabling/disabling?
         set +e
         echo -e "#include <wx/filefn.h>\n#include <wx/app.h>\n#include <wx/artprov.h>\n#include <wx/version.h>\n#if wxVERSION_NUMBER<2950\n#error \"Old version\"\n#endif" | ${CXX} ${CXX_OPT} ${WXCONFIG} -x c++ -
         WXCHECK_RETURNCODE=$?
@@ -137,6 +144,7 @@ function gtk_fn {
             GTKCONFIG=$(get_pkg_config_cflags gtk+-2.0)
         fi
         if [ -n "$GTKCONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <gtk/gtk.h>" | ${CC} ${CC_OPT} ${GTKCONFIG} -x c -
             GTKCHECK_RETURNCODE=$?
@@ -157,6 +165,7 @@ function gtk_fn {
 
 # boost.cpp
 function boost_fn {
+    # TODO: get rid of the error enabling/disabling?
     set +e
     echo -e "#include <boost/config.hpp>" | ${CXX} ${CXX_OPT} -x c++ -
     BOOSTCHECK_RETURNCODE=$?
@@ -175,6 +184,7 @@ function sqlite3_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         SQLITE3CONFIG=$(get_pkg_config_cflags sqlite3)
         if [ -n "$SQLITE3CONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <sqlite3.h>" | ${CC} ${CC_OPT} ${SQLITE3CONFIG} -x c -
             SQLITE3CHECK_RETURNCODE=$?
@@ -206,6 +216,7 @@ function python_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         PYTHON3CONFIG=$(get_pkg_config_cflags python3)
         if [ -n "$PYTHON3CONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <Python.h>" | ${CC} ${CC_OPT} ${PYTHON3CONFIG} -x c -
             PYTHON3CONFIG_RETURNCODE=$?
@@ -229,6 +240,7 @@ function lua_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         LUACONFIG=$(get_pkg_config_cflags lua-5.3)
         if [ -n "$LUACONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <lua.h>" | ${CC} ${CC_OPT} ${LUACONFIG} -x c -
             LUACONFIG_RETURNCODE=$?
@@ -252,6 +264,7 @@ function libcurl_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         LIBCURLCONFIG=$(get_pkg_config_cflags libcurl)
         if [ -n "$LIBCURLCONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <curl/curl.h>" | ${CC} ${CC_OPT} ${LIBCURLCONFIG} -x c -
             LIBCURLCONFIG_RETURNCODE=$?
@@ -275,6 +288,7 @@ function cairo_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         CAIROCONFIG=$(get_pkg_config_cflags cairo)
         if [ -n "$CAIROCONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <cairo.h>" | ${CC} ${CC_OPT} ${CAIROCONFIG} -x c -
             CAIROCONFIG_RETURNCODE=$?
@@ -300,6 +314,7 @@ function googletest_fn {
 
 # kde.cpp
 function kde_fn {
+    # TODO: get rid of the error enabling/disabling?
     set +e
     KDECONFIG=$(kde4-config --path include)
     KDECONFIG_RETURNCODE=$?
@@ -313,6 +328,7 @@ function kde_fn {
             echo "Suitable Qt not present, Qt is necessary for KDE. Skipping syntax check."
             exit_if_strict
         else
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <KDE/KGlobal>\n" | ${CXX} ${CXX_OPT} -I${KDECONFIG} ${KDEQTCONFIG} -x c++ -
             KDECHECK_RETURNCODE=$?
@@ -333,6 +349,7 @@ function libsigcpp_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         LIBSIGCPPCONFIG=$(get_pkg_config_cflags sigc++-2.0)
         if [ -n "$LIBSIGCPPCONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <sigc++/sigc++.h>\n" | ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} -x c++ -
             LIBSIGCPPCONFIG_RETURNCODE=$?
@@ -356,6 +373,7 @@ function openssl_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         OPENSSLCONFIG=$(get_pkg_config_cflags libssl)
         if [ -n "$OPENSSLCONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <openssl/ssl.h>" | ${CC} ${CC_OPT} ${OPENSSLCONFIG} -x c -
             OPENSSLCONFIG_RETURNCODE=$?
@@ -379,6 +397,7 @@ function opencv2_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         OPENCVCONFIG=$(get_pkg_config_cflags opencv)
         if [ -n "$OPENCVCONFIG" ]; then
+            # TODO: get rid of the error enabling/disabling?
             set +e
             echo -e "#include <opencv2/opencv.hpp>\n" | ${CXX} ${CXX_OPT} ${OPENCVCONFIG} -x c++ -
             OPENCVCONFIG_RETURNCODE=$?
