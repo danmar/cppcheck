@@ -1673,7 +1673,7 @@ void Tokenizer::simplifyTypedefCpp()
                     }
 
                     // check for member functions
-                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{")) {
+                    else if (isCPP() && tok2->str() == "(" && isFunctionHead(tok2, "{:")) {
                         const Token *func = tok2->previous();
 
                         /** @todo add support for multi-token operators */
@@ -4878,6 +4878,24 @@ static Token * matchMemberFunctionName(const Member &func, const std::list<Scope
     return Token::Match(tok, "~| %name% (") ? tok : nullptr;
 }
 
+template<typename T>
+static T* skipInitializerList(T* tok)
+{
+    T* const start = tok;
+    while (Token::Match(tok, "[:,] ::| %name%")) {
+        tok = tok->tokAt(tok->strAt(1) == "::" ? 1 : 2);
+        while (Token::Match(tok, ":: %name%"))
+            tok = tok->tokAt(2);
+        if (!Token::Match(tok, "[({<]") || !tok->link())
+            return start;
+        const bool isTemplate = tok->str() == "<";
+        tok = tok->link()->next();
+        if (isTemplate && tok && tok->link())
+            tok = tok->link()->next();
+    }
+    return tok;
+}
+
 void Tokenizer::setVarIdPass2()
 {
     std::map<nonneg int, std::map<std::string, nonneg int>> structMembers;
@@ -5042,8 +5060,8 @@ void Tokenizer::setVarIdPass2()
                     tok2 = tok2->link();
 
                     // Skip initialization list
-                    while (Token::Match(tok2, ") [:,] %name% ("))
-                        tok2 = tok2->linkAt(3);
+                    if (Token::simpleMatch(tok2, ") :"))
+                        tok2 = skipInitializerList(tok2->next());
                 }
             }
 
@@ -8637,9 +8655,7 @@ void Tokenizer::simplifyFunctionTryCatch()
         if (!isFunctionHead(tok->previous(), "try"))
             continue;
 
-        Token* tryStartToken = tok->next();
-        while (Token::Match(tryStartToken, "[:,] %name% (|{")) // skip init list
-            tryStartToken = tryStartToken->linkAt(2)->next();
+        Token* tryStartToken = skipInitializerList(tok->next());
 
         if (!Token::simpleMatch(tryStartToken, "{"))
             syntaxError(tryStartToken, "Invalid function-try-catch block code. Did not find '{' for try body.");
