@@ -46,6 +46,8 @@ const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "instantiationError",
     "internalError",
     "premium-internalError",
+    "premium-invalidArgument",
+    "premium-invalidLicense",
     "preprocessorErrorDirective",
     "syntaxError",
     "unknownMacro"

@@ -1467,7 +1467,7 @@ bool isUsedAsBool(const Token* const tok, const Settings* settings)
     if (Token::Match(parent, "&&|!|%oror%"))
         return true;
     if (parent->isCast())
-        return isUsedAsBool(parent);
+        return !Token::simpleMatch(parent->astOperand1(), "dynamic_cast") && isUsedAsBool(parent);
     if (parent->isUnaryOp("*"))
         return isUsedAsBool(parent);
     if (Token::Match(parent, "==|!=") && (tok->astSibling()->isNumber() || tok->astSibling()->isKeyword()) && tok->astSibling()->hasKnownIntValue() &&
@@ -2246,7 +2246,7 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
             parent = parent->astParent();
 
         // passing variable to subfunction?
-        if (Token::Match(parent, "[*[(,{]"))
+        if (Token::Match(parent, "[*[(,{]") || Token::Match(parent, "%oror%|&&"))
             ;
         else if (Token::simpleMatch(parent, ":")) {
             while (Token::Match(parent, "[?:]"))

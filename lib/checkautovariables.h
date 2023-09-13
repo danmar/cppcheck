@@ -49,6 +49,7 @@ public:
     /** This constructor is used when registering the CheckClass */
     CheckAutoVariables() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     CheckAutoVariables(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -76,7 +77,6 @@ public:
 
     void checkVarLifetimeScope(const Token * start, const Token * end);
 
-private:
     void errorAutoVariableAssignment(const Token *tok, bool inconclusive);
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);

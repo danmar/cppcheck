@@ -99,11 +99,6 @@ public:
         return mIgnoredPaths;
     }
 
-#if defined(_WIN64) || defined(_WIN32)
-    // temporary variable to "un-break" tests
-    static bool SHOW_DEF_PLATFORM_MSG;
-#endif
-
 protected:
 
     /**

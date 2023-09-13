@@ -58,16 +58,17 @@ public:
         // cppcheck-suppress naming-varname - TODO: fix this
         QColor LnNumFGColor, QColor LnNumBGColor,
         // cppcheck-suppress naming-varname - TODO: fix this
-        QColor KeyWdFGColor, const QFont::Weight& KeyWdWeight,
+        QColor KeyWdFGColor, QFont::Weight KeyWdWeight,
         // cppcheck-suppress naming-varname - TODO: fix this
-        QColor ClsFGColor, const QFont::Weight& ClsWeight,
+        QColor ClsFGColor, QFont::Weight ClsWeight,
         // cppcheck-suppress naming-varname - TODO: fix this
-        QColor QteFGColor, const QFont::Weight& QteWeight,
+        QColor QteFGColor, QFont::Weight QteWeight,
         // cppcheck-suppress naming-varname - TODO: fix this
-        QColor CmtFGColor, const QFont::Weight& CmtWeight,
+        QColor CmtFGColor, QFont::Weight CmtWeight,
         // cppcheck-suppress naming-varname - TODO: fix this
         QColor SymbFGColor, QColor SymbBGColor,
-        const QFont::Weight& SymbWeight);
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QFont::Weight SymbWeight);
 
     bool operator==(const CodeEditorStyle& rhs) const;
     bool operator!=(const CodeEditorStyle& rhs) const;

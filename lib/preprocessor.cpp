@@ -854,7 +854,7 @@ void Preprocessor::dump(std::ostream &out) const
                 << " usefile=\"" << ErrorLogger::toxml(macroUsage.useLocation.file()) << "\""
                 << " useline=\"" << macroUsage.useLocation.line << "\""
                 << " usecolumn=\"" << macroUsage.useLocation.col << "\""
-                << " is-known-value=\"" << (macroUsage.macroValueKnown ? "true" : "false") << "\""
+                << " is-known-value=\"" << bool_to_string(macroUsage.macroValueKnown) << "\""
                 << "/>" << std::endl;
         }
         out << "  </macro-usage>" << std::endl;

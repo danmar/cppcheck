@@ -5965,10 +5965,10 @@ void Tokenizer::dump(std::ostream &out) const
             outs += "    <container id=\"";
             outs += id_string(c);
             outs += "\" array-like-index-op=\"";
-            outs += (c->arrayLike_indexOp ? "true" : "false");
+            outs += bool_to_string(c->arrayLike_indexOp);
             outs += "\" ";
             outs += "std-string-like=\"";
-            outs +=(c->stdStringLike ? "true" : "false");
+            outs += bool_to_string(c->stdStringLike);
             outs += "\"/>";
             outs += '\n';
         }
@@ -7965,7 +7965,7 @@ void Tokenizer::unhandledCharLiteral(const Token *tok, const std::string& msg) c
  * @param floatConstant the string with stringified float constant to check against
  * @return true in case s is equal to X or X.0 and false otherwise.
  */
-static bool isNumberOneOf(const std::string &s, const MathLib::bigint& intConstant, const char* floatConstant)
+static bool isNumberOneOf(const std::string &s, MathLib::bigint intConstant, const char* floatConstant)
 {
     if (MathLib::isInt(s)) {
         if (MathLib::toLongNumber(s) == intConstant)

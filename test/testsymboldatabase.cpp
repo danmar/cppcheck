@@ -137,7 +137,9 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection);
         TEST_CASE(test_isVariableDeclarationIdentifiesArray);
         TEST_CASE(test_isVariableDeclarationIdentifiesPointerArray);
-        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers);
+        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers1);
+        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers2);
+        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers3);
         TEST_CASE(test_isVariableDeclarationIdentifiesArrayOfFunctionPointers);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerVariable);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable);
@@ -370,6 +372,8 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes4);
         TEST_CASE(createSymbolDatabaseFindAllScopes5);
         TEST_CASE(createSymbolDatabaseFindAllScopes6);
+
+        TEST_CASE(createSymbolDatabaseIncompleteVars);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -872,9 +876,39 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesOfArrayPointers() {
+    void test_isVariableDeclarationIdentifiesOfArrayPointers1() {
         reset();
         GET_SYMBOL_DB("A (*a)[5];");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("a", vartok->str());
+        ASSERT_EQUALS("A", typetok->str());
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        ASSERT(true == v.isPointer());
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointerToArray());
+        ASSERT(false == v.isPointerArray());
+        ASSERT(false == v.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesOfArrayPointers2() {
+        reset();
+        GET_SYMBOL_DB("A (*const a)[5];");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("a", vartok->str());
+        ASSERT_EQUALS("A", typetok->str());
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        ASSERT(true == v.isPointer());
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointerToArray());
+        ASSERT(false == v.isPointerArray());
+        ASSERT(false == v.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesOfArrayPointers3() {
+        reset();
+        GET_SYMBOL_DB("A (** a)[5];");
         const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
@@ -5392,6 +5426,19 @@ private:
         ASSERT_EQUALS(classNC.derivedFrom.size(), 2U);
         ASSERT_EQUALS(classNC.derivedFrom[0].type, &classNA);
         ASSERT_EQUALS(classNC.derivedFrom[1].type, &classNB);
+    }
+
+    void createSymbolDatabaseIncompleteVars()
+    {
+        GET_SYMBOL_DB("void f() {\n"
+                      "    auto s1 = std::string{ \"abc\" };\n"
+                      "    auto s2 = std::string(\"def\");\n"
+                      "}\n");
+        ASSERT(db && errout.str().empty());
+        const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string {");
+        ASSERT(s1 && !s1->isIncompleteVar());
+        const Token* s2 = Token::findsimplematch(s1, "string (");
+        ASSERT(s2 && !s2->isIncompleteVar());
     }
 
     void enum1() {

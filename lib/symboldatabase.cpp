@@ -1482,7 +1482,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (tok->type())
             continue;
-        if (Token::Match(tok->next(), "::|.|(|:|%var%"))
+        if (Token::Match(tok->next(), "::|.|(|{|:|%var%"))
             continue;
         if (Token::Match(tok->next(), "&|&&|* )|,|%var%"))
             continue;
@@ -2243,7 +2243,7 @@ void Variable::evaluate(const Settings* settings)
             setFlag(fIsConst, true);
             setFlag(fIsStatic, true);
         } else if (tok->str() == "*") {
-            setFlag(fIsPointer, !isArray() || (isContainer && !Token::Match(tok->next(), "%name% [")) || Token::Match(tok->previous(), "( * %name% )"));
+            setFlag(fIsPointer, !isArray() || (isContainer && !Token::Match(tok->next(), "%name% [")) || Token::Match(tok, "* const| %name% )"));
             setFlag(fIsConst, false); // Points to const, isn't necessarily const itself
         } else if (tok->str() == "&") {
             if (isReference())
@@ -3662,7 +3662,7 @@ static std::ostream & operator << (std::ostream & s, Scope::ScopeType type)
     return s;
 }
 
-static std::string accessControlToString(const AccessControl& access)
+static std::string accessControlToString(AccessControl access)
 {
     switch (access) {
     case AccessControl::Public:

@@ -29,6 +29,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 #include "vfvalue.h"
 
 #include "checkother.h" // comparisonNonZeroExpressionLessThanZero and testIfNonZeroExpressionIsPositive
@@ -243,7 +244,7 @@ void CheckCondition::assignIfError(const Token *tok1, const Token *tok2, const s
     reportError(locations,
                 Severity::style,
                 "assignIfError",
-                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(result ? "true" : "false") + ".", CWE398, Certainty::normal);
+                "Mismatching assignment and comparison, comparison '" + condition + "' is always " + std::string(bool_to_string(result)) + ".", CWE398, Certainty::normal);
 }
 
 
@@ -421,8 +422,8 @@ void CheckCondition::comparisonError(const Token *tok, const std::string &bitop,
     std::ostringstream expression;
     expression << std::hex << "(X " << bitop << " 0x" << value1 << ") " << op << " 0x" << value2;
 
-    const std::string errmsg("Expression '" + expression.str() + "' is always " + (result?"true":"false") + ".\n"
-                             "The expression '" + expression.str() + "' is always " + (result?"true":"false") +
+    const std::string errmsg("Expression '" + expression.str() + "' is always " + bool_to_string(result) + ".\n"
+                             "The expression '" + expression.str() + "' is always " + bool_to_string(result) +
                              ". Check carefully constants and operators used, these errors might be hard to "
                              "spot sometimes. In case of complex expression it might help to split it to "
                              "separate expressions.");
@@ -1620,7 +1621,7 @@ void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* conditi
     const bool alwaysTrue = value && (value->intvalue != 0 || value->isImpossible());
     const std::string expr = tok ? tok->expressionString() : std::string("x");
     const std::string conditionStr = (Token::simpleMatch(condition, "return") ? "Return value" : "Condition");
-    const std::string errmsg = conditionStr + " '" + expr + "' is always " + (alwaysTrue ? "true" : "false");
+    const std::string errmsg = conditionStr + " '" + expr + "' is always " + bool_to_string(alwaysTrue);
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);
     reportError(errorPath,
                 Severity::style,
@@ -1694,7 +1695,7 @@ void CheckCondition::checkInvalidTestForOverflow()
                         result = (cmp == ">" || cmp == ">=");
                     else
                         result = (cmp == "<" || cmp == "<=");
-                    invalidTestForOverflow(tok, lhs->valueType(), result ? "true" : "false");
+                    invalidTestForOverflow(tok, lhs->valueType(), bool_to_string(result));
                     continue;
                 }
 
@@ -2031,7 +2032,7 @@ void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, co
         comparison,
         Severity::style,
         "compareValueOutOfTypeRangeError",
-        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + (result ? "true" : "false") + ".",
+        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + bool_to_string(result) + ".",
         CWE398,
         Certainty::normal);
 }

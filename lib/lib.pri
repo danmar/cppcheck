@@ -75,7 +75,10 @@ HEADERS += $${PWD}/analyzer.h \
            $${PWD}/version.h \
            $${PWD}/vfvalue.h
 
-SOURCES += $${PWD}/analyzerinfo.cpp \
+SOURCES += $${PWD}/valueflow.cpp \
+           $${PWD}/tokenize.cpp \
+           $${PWD}/symboldatabase.cpp \
+           $${PWD}/analyzerinfo.cpp \
            $${PWD}/astutils.cpp \
            $${PWD}/check.cpp \
            $${PWD}/check64bit.cpp \
@@ -127,12 +130,9 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/settings.cpp \
            $${PWD}/summaries.cpp \
            $${PWD}/suppressions.cpp \
-           $${PWD}/symboldatabase.cpp \
            $${PWD}/templatesimplifier.cpp \
            $${PWD}/timer.cpp \
            $${PWD}/token.cpp \
-           $${PWD}/tokenize.cpp \
            $${PWD}/tokenlist.cpp \
            $${PWD}/utils.cpp \
-           $${PWD}/valueflow.cpp \
            $${PWD}/vfvalue.cpp

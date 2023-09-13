@@ -31,7 +31,7 @@ endif()
 
 if (HAVE_RULES)
     find_path(PCRE_INCLUDE pcre.h)
-    find_library(PCRE_LIBRARY pcre)
+    find_library(PCRE_LIBRARY NAMES pcre pcred)
     if (NOT PCRE_LIBRARY OR NOT PCRE_INCLUDE)
         message(FATAL_ERROR "pcre dependency for RULES has not been found")
     endif()

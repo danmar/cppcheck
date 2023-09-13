@@ -74,7 +74,7 @@ def test_project_custom_platform(tmpdir):
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
 
-    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1', '-q'])
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1', '-q'])
     assert ret == 0, stdout
     assert stdout == ''
     assert stderr == ''
@@ -89,7 +89,7 @@ def test_project_empty_platform(tmpdir):
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
 
-    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1', '-q'])
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1', '-q'])
     assert ret == 0, stdout
     assert stdout == ''
     assert stderr == ''
@@ -104,7 +104,7 @@ def test_project_unspecified_platform(tmpdir):
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
 
-    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1', '-q'])
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1', '-q'])
     assert ret == 0, stdout
     assert stdout == "cppcheck: 'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.\n"
     assert stderr == ''
@@ -209,7 +209,7 @@ def test_project_empty_fields(tmpdir):
   </coding-standards>
 </project>""")
 
-    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1'])
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
     assert ret == 1, stdout # do not crash
     assert stdout == 'cppcheck: error: no C or C++ source files found.\n'
     assert stderr == ''
