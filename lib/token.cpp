@@ -147,7 +147,7 @@ void Token::update_property_info()
             if (MathLib::isInt(mStr) || MathLib::isFloat(mStr))
                 tokType(eNumber);
             else
-                tokType(eLiteral); // assume it is a user defined literal
+                tokType(eName); // assume it is a user defined literal
         } else if (mStr == "=" || mStr == "<<=" || mStr == ">>=" ||
                  (mStr.size() == 2U && mStr[1] == '=' && std::strchr("+-*/%&^|", mStr[0])))
             tokType(eAssignmentOp);
