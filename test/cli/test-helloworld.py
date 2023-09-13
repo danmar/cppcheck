@@ -78,7 +78,7 @@ def test_addon_absolute_path():
 
 def test_addon_relative_path():
     prjpath = getRelativeProjectPath()
-    ret, stdout, stderr = cppcheck(['--platform=native', '--addon=misra', '--enable=style', '--template=cppcheck1', prjpath])
+    ret, stdout, stderr = cppcheck(['--addon=misra', '--enable=style', '--template=cppcheck1', prjpath])
     filename = os.path.join(prjpath, 'main.c')
     assert ret == 0, stdout
     assert stdout == ('Checking %s ...\n'
@@ -89,7 +89,7 @@ def test_addon_relative_path():
 def test_addon_with_gui_project():
     project_file = 'helloworld/test.cppcheck'
     create_gui_project_file(project_file, paths=['.'], addon='misra')
-    ret, stdout, stderr = cppcheck(['--platform=native', '--template=cppcheck1', '--enable=style', '--project=' + project_file])
+    ret, stdout, stderr = cppcheck(['--template=cppcheck1', '--enable=style', '--project=' + project_file])
     filename = os.path.join('helloworld', 'main.c')
     assert ret == 0, stdout
     assert stdout == 'Checking %s ...\n' % filename

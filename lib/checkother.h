@@ -47,13 +47,25 @@ class ErrorLogger;
 /** @brief Various small checks */
 
 class CPPCHECKLIB CheckOther : public Check {
+    friend class TestCharVar;
+    friend class TestIncompleteStatement;
+    friend class TestOther;
+
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckOther() : Check(myName()) {}
 
+    /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
+    static bool comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+
+    /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is positive? */
+    static bool testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+
+private:
     /** @brief This constructor is used when running checks. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
+
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
@@ -102,13 +114,6 @@ public:
         checkOther.checkModuloOfOne();
         checkOther.checkOverlappingWrite();
     }
-
-    /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
-    static bool comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
-
-    /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is positive? */
-    static bool testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
-
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
@@ -229,7 +234,6 @@ public:
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token *tok);
 
-private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
     void checkCastIntToCharAndBackError(const Token *tok, const std::string &strFunctionName);

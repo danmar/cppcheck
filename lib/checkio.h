@@ -40,10 +40,13 @@ class ErrorLogger;
 
 /** @brief %Check input output operations. */
 class CPPCHECKLIB CheckIO : public Check {
+    friend class TestIO;
+
 public:
     /** @brief This constructor is used when registering CheckIO */
     CheckIO() : Check(myName()) {}
 
+private:
     /** @brief This constructor is used when running checks. */
     CheckIO(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -70,7 +73,6 @@ public:
     /** @brief %Checks type and number of arguments given to functions like printf or scanf*/
     void checkWrongPrintfScanfArguments();
 
-private:
     class ArgumentInfo {
     public:
         ArgumentInfo(const Token *arg, const Settings *settings, bool _isCPP);

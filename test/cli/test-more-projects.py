@@ -74,7 +74,7 @@ def test_project_custom_platform(tmpdir):
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
 
-    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1', '-q'])
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1', '-q'])
     assert ret == 0, stdout
     assert stdout == ''
     assert stderr == ''
@@ -89,7 +89,7 @@ def test_project_empty_platform(tmpdir):
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
 
-    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1', '-q'])
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1', '-q'])
     assert ret == 0, stdout
     assert stdout == ''
     assert stderr == ''
@@ -104,7 +104,7 @@ def test_project_unspecified_platform(tmpdir):
     with open(os.path.join(tmpdir, '1.c'), 'wt') as f:
         f.write("int x;")
 
-    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1', '-q'])
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1', '-q'])
     assert ret == 0, stdout
     assert stdout == "cppcheck: 'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.\n"
     assert stderr == ''
@@ -209,7 +209,7 @@ def test_project_empty_fields(tmpdir):
   </coding-standards>
 </project>""")
 
-    ret, stdout, stderr = cppcheck(['--platform=native', '--project=' + project_file, '--template=cppcheck1'])
+    ret, stdout, stderr = cppcheck(['--project=' + project_file, '--template=cppcheck1'])
     assert ret == 1, stdout # do not crash
     assert stdout == 'cppcheck: error: no C or C++ source files found.\n'
     assert stderr == ''
@@ -225,3 +225,30 @@ def test_project_missing_subproject(tmpdir):
     assert ret == 1, stdout
     assert stdout == "cppcheck: error: failed to open project '{}/dummy.json'. The file does not exist.\n".format(str(tmpdir).replace('\\', '/'))
     assert stderr == ''
+
+
+def test_project_std(tmpdir):
+    with open(os.path.join(tmpdir, 'bug1.cpp'), 'wt') as f:
+        f.write("""
+                #if __cplusplus == 201402L
+                int x = 123 / 0;
+                #endif
+                """)
+
+    compile_commands = os.path.join(tmpdir, 'compile_commands.json')
+
+    compilation_db = [
+        {
+            "directory": str(tmpdir),
+            "command": "c++ -o bug1.o -c bug1.cpp -std=c++14",
+            "file": "bug1.cpp",
+            "output": "bug1.o"
+        }
+    ]
+
+    with open(compile_commands, 'wt') as f:
+        f.write(json.dumps(compilation_db))
+
+    ret, stdout, stderr = cppcheck(['--project=' + compile_commands, '--enable=all', '-rp=' + str(tmpdir), '--template=cppcheck1'])
+    assert ret == 0, stdout
+    assert (stderr == '[bug1.cpp:3]: (error) Division by zero.\n')

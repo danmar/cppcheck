@@ -59,16 +59,16 @@ public slots:
     void colorChangedLineNumFG(const QColor& newColor);
     void colorChangedLineNumBG(const QColor& newColor);
     void colorChangedKeywordFG(const QColor& newColor);
-    void weightChangedKeyword(const QFont::Weight& newWeight);
+    void weightChangedKeyword(QFont::Weight newWeight);
     void colorChangedClassFG(const QColor& newColor);
-    void weightChangedClass(const QFont::Weight& newWeight);
+    void weightChangedClass(QFont::Weight newWeight);
     void colorChangedQuoteFG(const QColor& newColor);
-    void weightChangedQuote(const QFont::Weight& newWeight);
+    void weightChangedQuote(QFont::Weight newWeight);
     void colorChangedCommentFG(const QColor& newColor);
-    void weightChangedComment(const QFont::Weight& newWeight);
+    void weightChangedComment(QFont::Weight newWeight);
     void colorChangedSymbolFG(const QColor& newColor);
     void colorChangedSymbolBG(const QColor& newColor);
-    void weightChangedSymbol(const QFont::Weight& newWeight);
+    void weightChangedSymbol(QFont::Weight newWeight);
 
 private:
     CodeEditorStyle mStyleIncoming;

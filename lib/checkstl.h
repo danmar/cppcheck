@@ -47,6 +47,7 @@ public:
     /** This constructor is used when registering the CheckClass */
     CheckStl() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     CheckStl(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -184,7 +185,6 @@ public:
 
     void checkMutexes();
 
-private:
     bool isContainerSize(const Token *containerToken, const Token *expr) const;
     bool isContainerSizeGE(const Token * containerToken, const Token *expr) const;
 

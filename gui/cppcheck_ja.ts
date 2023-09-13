@@ -135,22 +135,22 @@ Parameters: -l(line) (file)</translation>
     <message>
         <location filename="compliancereportdialog.ui" line="42"/>
         <source>Coding Standard</source>
-        <translation type="unfinished"></translation>
+        <translation>コーディング標準</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="50"/>
         <source>Misra C</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA C</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="55"/>
         <source>Cert C</source>
-        <translation type="unfinished">CERT C</translation>
+        <translation>CERT C</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="60"/>
         <source>Cert C++</source>
-        <translation type="unfinished">Cert C++</translation>
+        <translation>Cert C++</translation>
     </message>
     <message>
         <location filename="compliancereportdialog.ui" line="70"/>
@@ -1183,7 +1183,7 @@ Do you want to load this project file instead?</source>
     <message>
         <location filename="mainwindow.cpp" line="1506"/>
         <source>Cannot generate a compliance report right now, an analysis must finish successfully. Try to reanalyze the code and ensure there are no critical errors.</source>
-        <translation type="unfinished"></translation>
+        <translation>コンプライアンスレポートをすぐに生成できません。解析が完了し成功していなければなりません。コードを再解析して、致命的なエラーがないことを確認してください。</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1611"/>
@@ -1609,17 +1609,17 @@ Options:
     <message>
         <location filename="projectfile.ui" line="458"/>
         <source>Check level</source>
-        <translation type="unfinished"></translation>
+        <translation>チェックレベル</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="464"/>
         <source>Normal -- meant for normal analysis in CI. Analysis should finish in reasonable time.</source>
-        <translation type="unfinished"></translation>
+        <translation>#N 通常 -- CIでの通常の解析を意味します。解析が合理的な時間内に完了すべきです。</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="471"/>
         <source>Exhaustive -- meant for nightly builds etc. Analysis time can be longer (10x slower than compilation is OK).</source>
-        <translation type="unfinished"></translation>
+        <translation>#E 徹底的 -- ナイトリービルド等を意味します。解析時間はより長くなることがあります (コンパイルの10倍以上時間がかかってもよい)。</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="512"/>
@@ -1670,17 +1670,17 @@ Options:
     <message>
         <location filename="projectfile.ui" line="813"/>
         <source>Misra C</source>
-        <translation type="unfinished"></translation>
+        <translation>MISRA C</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="821"/>
         <source>2012</source>
-        <translation type="unfinished"></translation>
+        <translation>2012</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="826"/>
         <source>2023</source>
-        <translation type="unfinished"></translation>
+        <translation>2023</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="902"/>
@@ -2306,7 +2306,7 @@ Please check the application path and parameters are correct.</source>
     <message>
         <location filename="resultsview.ui" line="60"/>
         <source>Critical errors</source>
-        <translation type="unfinished"></translation>
+        <translation>致命的なエラー</translation>
     </message>
     <message>
         <location filename="resultsview.ui" line="92"/>
@@ -2400,22 +2400,22 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="resultsview.cpp" line="547"/>
         <source>Analysis was stopped</source>
-        <translation type="unfinished"></translation>
+        <translation>解析は停止しした</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="559"/>
         <source>There was a critical error with id &apos;%1&apos;</source>
-        <translation type="unfinished"></translation>
+        <translation>id &apos;%1&apos;の致命的なエラーがあります</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="561"/>
         <source>when checking %1</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 をチェックするとき</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="562"/>
         <source>Analysis was aborted.</source>
-        <translation type="unfinished"></translation>
+        <translation>解析は中止した。</translation>
     </message>
 </context>
 <context>
@@ -2786,12 +2786,12 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.ui" line="356"/>
         <source>Active checkers:</source>
-        <translation type="unfinished"></translation>
+        <translation>有効なチェッカー:</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="374"/>
         <source>Checkers</source>
-        <translation type="unfinished"></translation>
+        <translation>チェッカー</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="399"/>

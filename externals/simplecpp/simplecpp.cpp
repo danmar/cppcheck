@@ -20,12 +20,15 @@
 #define SIMPLECPP_WINDOWS
 #define NOMINMAX
 #endif
+
 #include "simplecpp.h"
 
 #include <algorithm>
 #include <cassert>
+#include <cctype>
 #include <climits>
 #include <cstddef>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -33,17 +36,33 @@
 #include <fstream> // IWYU pragma: keep
 #include <iostream>
 #include <limits>
+#include <list>
+#include <map>
+#include <set>
 #include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
+#include <string>
 #if __cplusplus >= 201103L
+#ifdef SIMPLECPP_WINDOWS
+#include <mutex>
+#endif
 #include <unordered_map>
 #endif
 #include <utility>
+#include <vector>
 
 #ifdef SIMPLECPP_WINDOWS
 #include <windows.h>
 #undef ERROR
+#endif
+
+#if __cplusplus >= 201103L
+#define OVERRIDE override
+#define EXPLICIT explicit
+#else
+#define OVERRIDE
+#define EXPLICIT
 #endif
 
 #if (__cplusplus < 201103L) && !defined(__APPLE__)
@@ -129,11 +148,6 @@ static unsigned long long stringToULL(const std::string &s)
         istr >> std::oct;
     istr >> ret;
     return ret;
-}
-
-static bool startsWith(const std::string &str, const std::string &s)
-{
-    return (str.size() >= s.size() && str.compare(0, s.size(), s) == 0);
 }
 
 static bool endsWith(const std::string &s, const std::string &e)
@@ -230,6 +244,7 @@ void simplecpp::Token::printOut() const
     std::cout << std::endl;
 }
 
+// cppcheck-suppress noConstructor - we call init() in the inherited to initialize the private members
 class simplecpp::TokenList::Stream {
 public:
     virtual ~Stream() {}
@@ -348,23 +363,24 @@ protected:
 
 class StdIStream : public simplecpp::TokenList::Stream {
 public:
-    StdIStream(std::istream &istr)
+    // cppcheck-suppress uninitDerivedMemberVar - we call Stream::init() to initialize the private members
+    EXPLICIT StdIStream(std::istream &istr)
         : istr(istr)
     {
         assert(istr.good());
         init();
     }
 
-    virtual int get() {
+    virtual int get() OVERRIDE {
         return istr.get();
     }
-    virtual int peek() {
+    virtual int peek() OVERRIDE {
         return istr.peek();
     }
-    virtual void unget() {
+    virtual void unget() OVERRIDE {
         istr.unget();
     }
-    virtual bool good() {
+    virtual bool good() OVERRIDE {
         return istr.good();
     }
 
@@ -374,7 +390,8 @@ private:
 
 class FileStream : public simplecpp::TokenList::Stream {
 public:
-    FileStream(const std::string &filename)
+    // cppcheck-suppress uninitDerivedMemberVar - we call Stream::init() to initialize the private members
+    EXPLICIT FileStream(const std::string &filename)
         : file(fopen(filename.c_str(), "rb"))
         , lastCh(0)
         , lastStatus(0)
@@ -383,25 +400,25 @@ public:
         init();
     }
 
-    ~FileStream() {
+    ~FileStream() OVERRIDE {
         fclose(file);
         file = nullptr;
     }
 
-    virtual int get() {
+    virtual int get() OVERRIDE {
         lastStatus = lastCh = fgetc(file);
         return lastCh;
     }
-    virtual int peek() {
+    virtual int peek() OVERRIDE{
         // keep lastCh intact
         const int ch = fgetc(file);
         unget_internal(ch);
         return ch;
     }
-    virtual void unget() {
+    virtual void unget() OVERRIDE {
         unget_internal(lastCh);
     }
-    virtual bool good() {
+    virtual bool good() OVERRIDE {
         return lastStatus != EOF;
     }
 
@@ -415,6 +432,9 @@ private:
         else
             ungetc(ch, file);
     }
+
+    FileStream(const FileStream&);
+    FileStream &operator=(const FileStream&);
 
     FILE *file;
     int lastCh;
@@ -926,7 +946,7 @@ void simplecpp::TokenList::combineOperators()
                 continue;
             }
             // float literals..
-            if (tok->previous && tok->previous->number) {
+            if (tok->previous && tok->previous->number && sameline(tok->previous, tok)) {
                 tok->setstr(tok->previous->str() + '.');
                 deleteToken(tok->previous);
                 if (isFloatSuffix(tok->next) || (tok->next && tok->next->startsWithOneOf("AaBbCcDdEeFfPp"))) {
@@ -1342,14 +1362,18 @@ std::string simplecpp::TokenList::lastLine(int maxsize) const
         if (++count > maxsize)
             return "";
         if (!ret.empty())
-            ret.insert(0, 1, ' ');
+            ret += ' ';
+        // add tokens in reverse for performance reasons
         if (tok->str()[0] == '\"')
-            ret.insert(0, "%str%");
+            ret += "%rts%"; // %str%
         else if (tok->number)
-            ret.insert(0, "%num%");
-        else
-            ret.insert(0, tok->str());
+            ret += "%mun%"; // %num%
+        else {
+            ret += tok->str();
+            std::reverse(ret.end() - tok->str().length(), ret.end());
+        }
     }
+    std::reverse(ret.begin(), ret.end());
     return ret;
 }
 
@@ -1431,6 +1455,7 @@ namespace simplecpp {
                     tokenListDefine = other.tokenListDefine;
                     parseDefine(tokenListDefine.cfront());
                 }
+                usageList = other.usageList;
             }
             return *this;
         }
@@ -2207,6 +2232,12 @@ namespace simplecpp {
 
 namespace simplecpp {
 
+#ifdef __CYGWIN__
+    bool startsWith(const std::string &str, const std::string &s)
+    {
+        return (str.size() >= s.size() && str.compare(0, s.size(), s) == 0);
+    }
+
     std::string convertCygwinToWindowsPath(const std::string &cygwinPath)
     {
         std::string windowsPath;
@@ -2236,67 +2267,86 @@ namespace simplecpp {
 
         return windowsPath;
     }
+#endif
 }
 
 #ifdef SIMPLECPP_WINDOWS
 
-class ScopedLock {
+#if __cplusplus >= 201103L
+using MyMutex = std::mutex;
+template<class T>
+using MyLock = std::lock_guard<T>;
+#else
+class MyMutex {
 public:
-    explicit ScopedLock(CRITICAL_SECTION& criticalSection)
-        : m_criticalSection(criticalSection) {
-        EnterCriticalSection(&m_criticalSection);
-    }
-
-    ~ScopedLock() {
-        LeaveCriticalSection(&m_criticalSection);
-    }
-
-private:
-    ScopedLock& operator=(const ScopedLock&);
-    ScopedLock(const ScopedLock&);
-
-    CRITICAL_SECTION& m_criticalSection;
-};
-
-class RealFileNameMap {
-public:
-    RealFileNameMap() {
+    MyMutex() {
         InitializeCriticalSection(&m_criticalSection);
     }
 
-    ~RealFileNameMap() {
+    ~MyMutex() {
         DeleteCriticalSection(&m_criticalSection);
     }
 
-    bool getCacheEntry(const std::string& path, std::string* returnPath) {
-        ScopedLock lock(m_criticalSection);
+    CRITICAL_SECTION* lock() {
+        return &m_criticalSection;
+    }
+private:
+    CRITICAL_SECTION m_criticalSection;
+};
 
-        std::map<std::string, std::string>::iterator it = m_fileMap.find(path);
+template<typename T>
+class MyLock {
+public:
+    explicit MyLock(T& m)
+        : m_mutex(m) {
+        EnterCriticalSection(m_mutex.lock());
+    }
+
+    ~MyLock() {
+        LeaveCriticalSection(m_mutex.lock());
+    }
+
+private:
+    MyLock& operator=(const MyLock&);
+    MyLock(const MyLock&);
+
+    T& m_mutex;
+};
+#endif
+
+class RealFileNameMap {
+public:
+    RealFileNameMap() {}
+
+    bool getCacheEntry(const std::string& path, std::string& returnPath) {
+        MyLock<MyMutex> lock(m_mutex);
+
+        const std::map<std::string, std::string>::iterator it = m_fileMap.find(path);
         if (it != m_fileMap.end()) {
-            *returnPath = it->second;
+            returnPath = it->second;
             return true;
         }
         return false;
     }
 
     void addToCache(const std::string& path, const std::string& actualPath) {
-        ScopedLock lock(m_criticalSection);
+        MyLock<MyMutex> lock(m_mutex);
         m_fileMap[path] = actualPath;
     }
 
 private:
     std::map<std::string, std::string> m_fileMap;
-    CRITICAL_SECTION m_criticalSection;
+    MyMutex m_mutex;
 };
 
 static RealFileNameMap realFileNameMap;
 
-static bool realFileName(const std::string &f, std::string *result)
+static bool realFileName(const std::string &f, std::string &result)
 {
     // are there alpha characters in last subpath?
     bool alpha = false;
     for (std::string::size_type pos = 1; pos <= f.size(); ++pos) {
-        unsigned char c = f[f.size() - pos];
+        const unsigned char c = f[f.size() - pos];
         if (c == '/' || c == '\\')
             break;
         if (std::isalpha(c)) {
@@ -2315,16 +2365,16 @@ static bool realFileName(const std::string &f, std::string *result)
         WIN32_FIND_DATAA FindFileData;
 
 #ifdef __CYGWIN__
-        std::string fConverted = simplecpp::convertCygwinToWindowsPath(f);
-        HANDLE hFind = FindFirstFileExA(fConverted.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
+        const std::string fConverted = simplecpp::convertCygwinToWindowsPath(f);
+        const HANDLE hFind = FindFirstFileExA(fConverted.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
 #else
         HANDLE hFind = FindFirstFileExA(f.c_str(), FindExInfoBasic, &FindFileData, FindExSearchNameMatch, NULL, 0);
 #endif
 
         if (INVALID_HANDLE_VALUE == hFind)
             return false;
-        *result = FindFileData.cFileName;
-        realFileNameMap.addToCache(f, *result);
+        result = FindFileData.cFileName;
+        realFileNameMap.addToCache(f, result);
         FindClose(hFind);
     }
     return true;
@@ -2337,14 +2387,14 @@ static std::string realFilename(const std::string &f)
 {
     std::string ret;
     ret.reserve(f.size()); // this will be the final size
-    if (realFilePathMap.getCacheEntry(f, &ret))
+    if (realFilePathMap.getCacheEntry(f, ret))
         return ret;
 
     // Current subpath
     std::string subpath;
 
     for (std::string::size_type pos = 0; pos < f.size(); ++pos) {
-        unsigned char c = f[pos];
+        const unsigned char c = f[pos];
 
         // Separator.. add subpath and separator
         if (c == '/' || c == '\\') {
@@ -2354,12 +2404,12 @@ static std::string realFilename(const std::string &f)
                 continue;
             }
 
-            bool isDriveSpecification =
+            const bool isDriveSpecification =
                 (pos == 2 && subpath.size() == 2 && std::isalpha(subpath[0]) && subpath[1] == ':');
 
             // Append real filename (proper case)
             std::string f2;
-            if (!isDriveSpecification && realFileName(f.substr(0, pos), &f2))
+            if (!isDriveSpecification && realFileName(f.substr(0, pos), f2))
                 ret += f2;
             else
                 ret += subpath;
@@ -2375,7 +2425,7 @@ static std::string realFilename(const std::string &f)
 
     if (!subpath.empty()) {
         std::string f2;
-        if (realFileName(f,&f2))
+        if (realFileName(f,f2))
             ret += f2;
         else
             ret += subpath;
@@ -2471,6 +2521,7 @@ namespace simplecpp {
         if (unc)
             path = '/' + path;
 
+        // cppcheck-suppress duplicateExpressionTernary - platform-dependent implementation
         return strpbrk(path.c_str(), "*?") == nullptr ? realFilename(path) : path;
     }
 }
@@ -2564,6 +2615,7 @@ static void simplifyHasInclude(simplecpp::TokenList &expr, const simplecpp::DUI 
 
             for (simplecpp::Token *headerToken = tok1->next; headerToken != tok3; headerToken = headerToken->next)
                 header += headerToken->str();
+            // cppcheck-suppress selfAssignment - platform-dependent implementation
             header = realFilename(header);
         }
         else {
@@ -2894,32 +2946,26 @@ static const simplecpp::Token *gotoNextLine(const simplecpp::Token *tok)
 
 class NonExistingFilesCache {
 public:
-    NonExistingFilesCache() {
-        InitializeCriticalSection(&m_criticalSection);
-    }
-
-    ~NonExistingFilesCache() {
-        DeleteCriticalSection(&m_criticalSection);
-    }
+    NonExistingFilesCache() {}
 
     bool contains(const std::string& path) {
-        ScopedLock lock(m_criticalSection);
+        MyLock<MyMutex> lock(m_mutex);
         return (m_pathSet.find(path) != m_pathSet.end());
     }
 
     void add(const std::string& path) {
-        ScopedLock lock(m_criticalSection);
+        MyLock<MyMutex> lock(m_mutex);
         m_pathSet.insert(path);
     }
 
     void clear() {
-        ScopedLock lock(m_criticalSection);
+        MyLock<MyMutex> lock(m_mutex);
         m_pathSet.clear();
     }
 
 private:
     std::set<std::string> m_pathSet;
-    CRITICAL_SECTION m_criticalSection;
+    MyMutex m_mutex;
 };
 
 static NonExistingFilesCache nonExistingFilesCache;
@@ -3024,7 +3070,7 @@ std::map<std::string, simplecpp::TokenList*> simplecpp::load(const simplecpp::To
 {
 #ifdef SIMPLECPP_WINDOWS
     if (dui.clearIncludeCache)
-        nonExistingFilesCache .clear();
+        nonExistingFilesCache.clear();
 #endif
 
     std::map<std::string, simplecpp::TokenList*> ret;
@@ -3132,20 +3178,21 @@ static void getLocaltime(struct tm &ltime)
     time_t t;
     time(&t);
 #ifndef _WIN32
+    // NOLINTNEXTLINE(misc-include-cleaner) - false positive
     localtime_r(&t, &ltime);
 #else
     localtime_s(&ltime, &t);
 #endif
 }
 
-static std::string getDateDefine(struct tm *timep)
+static std::string getDateDefine(const struct tm *timep)
 {
     char buf[] = "??? ?? ????";
     strftime(buf, sizeof(buf), "%b %d %Y", timep);
     return std::string("\"").append(buf).append("\"");
 }
 
-static std::string getTimeDefine(struct tm *timep)
+static std::string getTimeDefine(const struct tm *timep)
 {
     char buf[] = "??:??:??";
     strftime(buf, sizeof(buf), "%T", timep);
@@ -3458,6 +3505,7 @@ void simplecpp::preprocess(simplecpp::TokenList &output, const simplecpp::TokenL
                                 if (systemheader) {
                                     while ((tok = tok->next) && tok->op != '>')
                                         header += tok->str();
+                                    // cppcheck-suppress selfAssignment - platform-dependent implementation
                                     header = realFilename(header);
                                     if (tok && tok->op == '>')
                                         closingAngularBracket = true;
@@ -3630,9 +3678,12 @@ std::string simplecpp::getCStdString(const std::string &std)
         return "201112L";
     if (std == "c17" || std == "c18" || std == "iso9899:2017" || std == "iso9899:2018" || std == "gnu17"|| std == "gnu18")
         return "201710L";
-    if (std == "c2x" || std == "gnu2x") {
-        // Clang 11, 12, 13 return "201710L" - correct in 14
-        return "202000L";
+    if (std == "c23" || std == "gnu23" || std == "c2x" || std == "gnu2x") {
+        // supported by GCC 9+ and Clang 9+
+        // Clang 9, 10, 11, 12, 13 return "201710L"
+        // Clang 14, 15, 16, 17 return "202000L"
+        // Clang 9, 10, 11, 12, 13, 14, 15, 16, 17 do not support "c23" and "gnu23"
+        return "202311L";
     }
     return "";
 }
@@ -3653,8 +3704,14 @@ std::string simplecpp::getCppStdString(const std::string &std)
     }
     if (std == "c++23" || std == "c++2b" || std == "gnu++23" || std == "gnu++2b") {
         // supported by GCC 11+ and Clang 12+
-        // Clang 12, 13, 14 do not support "c++23" and "gnu++23"
-        return "202100L";
+        // GCC 11, 12, 13 return "202100L"
+        // Clang 12, 13, 14, 15, 16 do not support "c++23" and "gnu++23" and return "202101L"
+        // Clang 17, 18 return "202302L"
+        return "202302L";
+    }
+    if (std == "c++26" || std == "c++2c" || std == "gnu++26" || std == "gnu++2c") {
+        // supported by Clang 17+
+        return "202400L";
     }
     return "";
 }

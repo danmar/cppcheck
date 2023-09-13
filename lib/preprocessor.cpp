@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>
@@ -370,7 +371,7 @@ static const simplecpp::Token *gotoEndIf(const simplecpp::Token *cmdtok)
     int level = 0;
     while (nullptr != (cmdtok = cmdtok->next)) {
         if (cmdtok->op == '#' && !sameline(cmdtok->previous,cmdtok) && sameline(cmdtok, cmdtok->next)) {
-            if (cmdtok->next->str().compare(0,2,"if")==0)
+            if (startsWith(cmdtok->next->str(),"if"))
                 ++level;
             else if (cmdtok->next->str() == "endif") {
                 --level;
@@ -755,7 +756,7 @@ void Preprocessor::reportOutput(const simplecpp::OutputList &outputList, bool sh
     for (const simplecpp::Output &out : outputList) {
         switch (out.type) {
         case simplecpp::Output::ERROR:
-            if (out.msg.compare(0,6,"#error")!=0 || showerror)
+            if (!startsWith(out.msg,"#error") || showerror)
                 error(out.location.file(), out.location.line, out.msg);
             break;
         case simplecpp::Output::WARNING:
@@ -853,7 +854,7 @@ void Preprocessor::dump(std::ostream &out) const
                 << " usefile=\"" << ErrorLogger::toxml(macroUsage.useLocation.file()) << "\""
                 << " useline=\"" << macroUsage.useLocation.line << "\""
                 << " usecolumn=\"" << macroUsage.useLocation.col << "\""
-                << " is-known-value=\"" << (macroUsage.macroValueKnown ? "true" : "false") << "\""
+                << " is-known-value=\"" << bool_to_string(macroUsage.macroValueKnown) << "\""
                 << "/>" << std::endl;
         }
         out << "  </macro-usage>" << std::endl;

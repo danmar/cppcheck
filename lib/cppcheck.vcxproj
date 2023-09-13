@@ -20,6 +20,9 @@
   <ItemGroup Label="SourceFiles">
     <ClCompile Include="..\externals\simplecpp\simplecpp.cpp" />
     <ClCompile Include="..\externals\tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="valueflow.cpp" />
+    <ClCompile Include="tokenize.cpp" />
+    <ClCompile Include="symboldatabase.cpp" />
     <ClCompile Include="analyzerinfo.cpp" />
     <ClCompile Include="astutils.cpp" />
     <ClCompile Include="check.cpp">
@@ -77,14 +80,11 @@
     <ClCompile Include="settings.cpp" />
     <ClCompile Include="summaries.cpp" />
     <ClCompile Include="suppressions.cpp" />
-    <ClCompile Include="symboldatabase.cpp" />
     <ClCompile Include="templatesimplifier.cpp" />
     <ClCompile Include="timer.cpp" />
     <ClCompile Include="token.cpp" />
-    <ClCompile Include="tokenize.cpp" />
     <ClCompile Include="tokenlist.cpp" />
     <ClCompile Include="utils.cpp" />
-    <ClCompile Include="valueflow.cpp" />
     <ClCompile Include="vfvalue.cpp" />
   </ItemGroup>
   <ItemGroup Label="HeaderFiles">

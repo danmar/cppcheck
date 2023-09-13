@@ -4966,7 +4966,8 @@ private:
 
     void getErrorMessages() {
         // Ticket #2292: segmentation fault when using --errorlist
-        getCheck<CheckBufferOverrun>().getErrorMessages(this, nullptr);
+        const Check& c = getCheck<CheckBufferOverrun>();
+        c.getErrorMessages(this, nullptr);
     }
 
     void arrayIndexThenCheck() {
@@ -5161,9 +5162,9 @@ private:
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckBufferOverrun checkBO(&tokenizer, &settings0, this);
-        fileInfo.push_back(checkBO.getFileInfo(&tokenizer, &settings0));
-        checkBO.analyseWholeProgram(ctu, fileInfo, settings0, *this);
+        Check& c = getCheck<CheckBufferOverrun>();
+        fileInfo.push_back(c.getFileInfo(&tokenizer, &settings0));
+        c.analyseWholeProgram(ctu, fileInfo, settings0, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();
