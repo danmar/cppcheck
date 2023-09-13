@@ -5451,12 +5451,11 @@ static bool hasMatchingConstructor(const Scope* classScope, const ValueType* arg
         if (!f.isConstructor() || f.argCount() != 1 || !f.getArgumentVar(0))
             return false;
         const ValueType* vt = f.getArgumentVar(0)->valueType();
-        if (vt &&
-            vt->type == argType->type &&
-            (argType->sign == ValueType::Sign::UNKNOWN_SIGN || vt->sign == argType->sign) &&
-            vt->pointer == argType->pointer &&
-            (vt->constness & 1) >= (argType->constness & 1))
-            return true;
+        return vt &&
+        vt->type == argType->type &&
+        (argType->sign == ValueType::Sign::UNKNOWN_SIGN || vt->sign == argType->sign) &&
+        vt->pointer == argType->pointer &&
+        (vt->constness & 1) >= (argType->constness & 1);
     });
 }
 
