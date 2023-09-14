@@ -393,10 +393,26 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     std::istringstream istr(result);
     std::string line;
     while (std::getline(istr, line)) {
-        if (!startsWith(line,"Checking ") && !line.empty() && line[0] != '{') {
+        // TODO: also bail out?
+        if (line.empty()) {
+            //std::cout << "addon '" << addonInfo.name <<  "' result contains empty line" << std::endl;
+            continue;
+        }
+
+        // TODO: get rid of this
+        if (startsWith(line,"Checking ")) {
+            //std::cout << "addon '" << addonInfo.name <<  "' result contains 'Checking ' line" << std::endl;
+            continue;
+        }
+
+        if (line[0] != '{') {
+            //std::cout << "addon '" << addonInfo.name <<  "' result is not a JSON" << std::endl;
+
             result.erase(result.find_last_not_of('\n') + 1, std::string::npos); // Remove trailing newlines
             throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result);
         }
+
+        //std::cout << "addon '" << addonInfo.name <<  "' result is " << line << std::endl;
     }
 
     // Valid results

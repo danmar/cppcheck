@@ -232,3 +232,174 @@ void f() {
 
     _, _, stderr = cppcheck(args)
     assert stderr == '{}:0:0: error: Bailing from out analysis: Checking file failed: converting \'1f\' to integer failed - not an integer [internalError]\n\n^\n'.format(test_file)
+
+
+def test_addon_misra(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+        """)
+
+    args = ['--addon=misra', '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == '{}:2:1: style: misra violation (use --rule-texts=<file> to get proper output) [misra-c2012-2.3]\ntypedef int MISRA_5_6_VIOLATION;\n^\n'.format(test_file)
+
+
+def test_addon_y2038(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    # TODO: trigger warning
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+        """)
+
+    args = ['--addon=y2038', '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''
+
+
+def test_addon_threadsafety(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    # TODO: trigger warning
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+        """)
+
+    args = ['--addon=y2038', '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''
+
+
+def test_addon_naming(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    # TODO: trigger warning
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+        """)
+
+    args = ['--addon=y2038', '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''
+
+
+def test_addon_namingng(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    # TODO: trigger warning
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+        """)
+
+    args = ['--addon=y2038', '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''
+
+
+def test_invalid_addon_json(tmpdir):
+    addon_file = os.path.join(tmpdir, 'addon1.json')
+    with open(addon_file, 'wt') as f:
+        f.write("""
+                """)
+
+    test_file = os.path.join(tmpdir, 'file.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+                """)
+
+    args = ['--addon={}'.format(addon_file), '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0  # TODO: needs to be 1
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file),
+        'Loading {} failed. syntax error at line 2 near: '.format(addon_file),
+        'Loading {} failed. syntax error at line 2 near: '.format(addon_file)
+    ]
+    assert stderr == ''
+
+
+def test_invalid_addon_py(tmpdir):
+    addon_file = os.path.join(tmpdir, 'addon1.py')
+    with open(addon_file, 'wt') as f:
+        f.write("""
+raise Exception()
+                """)
+
+    test_file = os.path.join(tmpdir, 'file.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+                """)
+
+    args = ['--addon={}'.format(addon_file), '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0  # TODO: needs to be 1
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr.startswith("{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1'".format(test_file))
+    assert stderr.endswith('Exitcode is nonzero. [internalError]\n\n^\n')
+
+
+def test_addon_result(tmpdir):
+    addon_file = os.path.join(tmpdir, 'addon1.py')
+    with open(addon_file, 'wt') as f:
+        f.write("""
+print("Checking ...")
+print("")
+print('{"file": "test.cpp", "linenr": 1, "column": 1, "severity": "style", "message": "msg", "addon": "addon1", "errorId": "id", "extra": ""}')
+print('{"loc": [{"file": "test.cpp", "linenr": 1, "column": 1, "info": ""}], "severity": "style", "message": "msg", "addon": "addon1", "errorId": "id", "extra": ""}')
+                """)
+
+    test_file = os.path.join(tmpdir, 'file.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+                """)
+
+    args = ['--addon={}'.format(addon_file), '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0  # TODO: needs to be 1
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == 'test.cpp:1:1: style: msg [addon1-id]\n\n^\n'
