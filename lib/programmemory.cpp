@@ -486,10 +486,18 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 
 void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
+    ProgramMemory pm = state;
+    auto eval = [&](const Token* cond) -> std::vector<MathLib::bigint> {
+        if (conditionIsTrue(cond, pm))
+            return {1};
+        if (conditionIsFalse(cond, pm))
+            return {0};
+        return {};
+    };
     state.erase_if([&](const ExprIdToken& e) {
         const Token* start = origins[e.getExpressionId()];
         const Token* expr = e.tok;
-        if (!expr || isExpressionChanged(expr, start, tok, settings, true)) {
+        if (!expr || isExpressionChangedSkipDeadCode(expr, start, tok, settings, true, eval)) {
             origins.erase(e.getExpressionId());
             return true;
         }

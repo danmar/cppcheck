@@ -3236,9 +3236,18 @@ bool Tokenizer::simplifyUsing()
                         }
                     }
 
-                    // just replace simple type aliases
-                    TokenList::copyTokens(tok1, start, usingEnd->previous());
-                    tok1->deleteThis();
+                    // Is this a "T()" expression where T is a pointer type?
+                    if (Token::Match(tok1, "%name% ( )") && !pointers.empty()) {
+                        Token* tok2 = tok1->linkAt(1);
+                        tok1->deleteThis();
+                        TokenList::copyTokens(tok1, start, usingEnd->previous());
+                        tok2->insertToken("0");
+                        after = tok2->next();
+                    }
+                    else { // just replace simple type aliases
+                        TokenList::copyTokens(tok1, start, usingEnd->previous());
+                        tok1->deleteThis();
+                    }
                     substitute = true;
                 }
             } else {
