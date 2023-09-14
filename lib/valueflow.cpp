@@ -5235,11 +5235,9 @@ static void valueFlowConditionExpressions(TokenList &tokenlist, const SymbolData
 {
     for (const Scope * scope : symboldatabase.functionScopes) {
         if (const Token* incompleteTok = findIncompleteVar(scope->bodyStart, scope->bodyEnd)) {
-            if (incompleteTok->isIncompleteVar()) {
-                if (settings.debugwarnings)
-                    bailoutIncompleteVar(tokenlist, errorLogger, incompleteTok, "Skipping function due to incomplete variable " + incompleteTok->str());
-                break;
-            }
+            if (settings.debugwarnings)
+                bailoutIncompleteVar(tokenlist, errorLogger, incompleteTok, "Skipping function due to incomplete variable " + incompleteTok->str());
+            break;
         }
 
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
