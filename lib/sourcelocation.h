@@ -19,12 +19,12 @@
 #ifndef sourcelocationH
 #define sourcelocationH
 
-#ifndef __has_builtin         // Optional of course.
-  #define __has_builtin(x) 0  // Compatibility with non-clang compilers.
+#ifndef __has_builtin      // Optional of course.
+#define __has_builtin(x) 0 // Compatibility with non-clang compilers.
 #endif
 
-#ifndef __has_include         // Optional of course.
-  #define __has_include(x) 0  // Compatibility with non-clang compilers.
+#ifndef __has_include      // Optional of course.
+#define __has_include(x) 0 // Compatibility with non-clang compilers.
 #endif
 
 #ifdef __CPPCHECK__
@@ -63,9 +63,10 @@ using SourceLocation = std::experimental::source_location;
 struct SourceLocation {
 #if CPPCHECK_HAS_SOURCE_LOCATION_INTRINSICS
     static SourceLocation current(std::uint_least32_t line = __builtin_LINE(),
-    std::uint_least32_t column = __builtin_COLUMN(),
-    const char* file_name = __builtin_FILE(),
-    const char* function_name = __builtin_FUNCTION()) {
+                                  std::uint_least32_t column = __builtin_COLUMN(),
+                                  const char* file_name = __builtin_FILE(),
+                                  const char* function_name = __builtin_FUNCTION())
+    {
         SourceLocation result{};
         result.m_line = line;
         result.m_column = column;
