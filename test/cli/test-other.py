@@ -375,7 +375,7 @@ typedef int MISRA_5_6_VIOLATION;
         'Checking {} ...'.format(test_file)
     ]
     assert stderr.startswith("{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1'".format(test_file))
-    assert stderr.endswith('Exitcode is nonzero. [internalError]\n\n^\n')
+    assert stderr.endswith('Exitcode is 256. [internalError]\n\n^\n')
 
 
 def test_addon_result(tmpdir):

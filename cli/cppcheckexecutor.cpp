@@ -540,7 +540,7 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const std::string& b
  */
 // cppcheck-suppress passedByValue - used as callback so we need to preserve the signature
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_)
+int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_)
 {
     output_.clear();
 
@@ -567,9 +567,12 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
 #else
     FILE *p = popen(cmd.c_str(), "r");
 #endif
+    //std::cout << "invoking command '" << cmd << "'" << std::endl;
     if (!p) {
-        // TODO: read errno
-        return false;
+        // TODO: how to provide to caller?
+        //const int err = errno;
+        //std::cout << "popen() errno " << std::to_string(err) << std::endl;
+        return -1;
     }
     char buffer[1024];
     while (fgets(buffer, sizeof(buffer), p) != nullptr)
@@ -581,13 +584,10 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
     const int res = pclose(p);
 #endif
     if (res == -1) { // error occured
-        // TODO: read errno
-        return false;
+        // TODO: how to provide to caller?
+        //const int err = errno;
+        //std::cout << "pclose() errno " << std::to_string(err) << std::endl;
     }
-    if (res != 0) { // process failed
-        // TODO: need to get error details
-        return false;
-    }
-    return true;
+    return res;
 }
 

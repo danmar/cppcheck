@@ -99,9 +99,9 @@ public:
     static bool tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename);
 
     /**
-     * Execute a shell command and read the output from it. Returns true if command terminated successfully.
+     * Execute a shell command and read the output from it. Returns exitcode of the executed command,.
      */
-    static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
+    static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output_);
 
 protected:
 

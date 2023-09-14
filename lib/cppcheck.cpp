@@ -360,7 +360,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
                 break;
             }
 #endif
-            if (executeCommand(py_exe, split("--version"), redirect, out) && startsWith(out, "Python ") && std::isdigit(out[7])) {
+            if (executeCommand(py_exe, split("--version"), redirect, out) == 0 && startsWith(out, "Python ") && std::isdigit(out[7])) {
                 pythonExe = py_exe;
                 break;
             }
@@ -380,8 +380,8 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     args += fileArg;
 
     std::string result;
-    if (!executeCommand(pythonExe, split(args), redirect, result)) {
-        std::string message("Failed to execute addon '" + addonInfo.name + "' (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
+    if (const int exitcode = executeCommand(pythonExe, split(args), redirect, result)) {
+        std::string message("Failed to execute addon '" + addonInfo.name + "' (command: '" + pythonExe + " " + args + "'). Exitcode is " + std::to_string(exitcode) + ".");
         if (result.size() > 2) {
             message = message + "\n" + message + "\nOutput:\n" + result;
             message.resize(message.find_last_not_of("\n\r"));
@@ -548,7 +548,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         std::string output2;
-        if (!mExecuteCommand(exe,split(args2),redirect2,output2) || output2.find("TranslationUnitDecl") == std::string::npos) {
+        if (mExecuteCommand(exe,split(args2),redirect2,output2) != 0 || output2.find("TranslationUnitDecl") == std::string::npos) {
             std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
             return 0;
         }
@@ -1700,8 +1700,8 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
     std::string output;
-    if (!mExecuteCommand(exe, split(args), emptyString, output)) {
-        std::cerr << "Failed to execute '" << exe << "'" << std::endl;
+    if (const int exitcode = mExecuteCommand(exe, split(args), emptyString, output)) {
+        std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << std::endl;
         return;
     }
 

@@ -50,7 +50,7 @@ class Tokenizer;
  */
 class CPPCHECKLIB CppCheck : ErrorLogger {
 public:
-    using ExecuteCmdFn = std::function<bool (std::string,std::vector<std::string>,std::string,std::string&)>;
+    using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
 
     /**
      * @brief Constructor.

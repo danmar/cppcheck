@@ -113,7 +113,7 @@ private:
             executeCommandCalled = true;
             exe = std::move(e);
             args = std::move(a);
-            return true;
+            return 0;
         });
         cppcheck.settings() = settings;
 
