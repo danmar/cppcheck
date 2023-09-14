@@ -46,6 +46,9 @@
 
 #if __has_builtin(__builtin_FILE)
 #define CPPCHECK_HAS_SOURCE_LOCATION_INTRINSICS 1
+#if !__has_builtin(__builtin_COLUMN)
+#define __builtin_COLUMN() 0
+#endif
 #else
 #define CPPCHECK_HAS_SOURCE_LOCATION_INTRINSICS 0
 #endif
