@@ -1472,9 +1472,6 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
         const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
 
         while (std::getline(istr, line)) {
-            if (!startsWith(line,"{"))
-                continue;
-
             picojson::value res;
             std::istringstream istr2(line);
             istr2 >> res;
