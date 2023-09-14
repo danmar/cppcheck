@@ -1240,7 +1240,7 @@ void CmdLineParser::printHelp()
                   << "                         Coding standards:\n"
                   << "                          * autosar           Autosar (partial)\n"
                   << "                          * cert-c-2016       Cert C 2016 checking\n"
-                  << "                          * cert-c++-2016     Cert C++ 2016 checking (partial)\n"
+                  << "                          * cert-c++-2016     Cert C++ 2016 checking\n"
                   << "                          * misra-c-2012      Misra C 2012\n"
                   << "                          * misra-c-2023      Misra C 2023\n"
                   << "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
