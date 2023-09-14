@@ -19,11 +19,11 @@
 #ifndef sourcelocationH
 #define sourcelocationH
 
-#ifndef __has_builtin      // Optional of course.
+#ifndef __has_builtin
 #define __has_builtin(x) 0 // Compatibility with non-clang compilers.
 #endif
 
-#ifndef __has_include      // Optional of course.
+#ifndef __has_include
 #define __has_include(x) 0 // Compatibility with non-clang compilers.
 #endif
 
