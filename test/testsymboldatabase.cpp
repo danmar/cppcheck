@@ -5432,15 +5432,31 @@ private:
 
     void createSymbolDatabaseIncompleteVars()
     {
-        GET_SYMBOL_DB("void f() {\n"
-                      "    auto s1 = std::string{ \"abc\" };\n"
-                      "    auto s2 = std::string(\"def\");\n"
-                      "}\n");
-        ASSERT(db && errout.str().empty());
-        const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string {");
-        ASSERT(s1 && !s1->isIncompleteVar());
-        const Token* s2 = Token::findsimplematch(s1, "string (");
-        ASSERT(s2 && !s2->isIncompleteVar());
+        {
+            GET_SYMBOL_DB("void f() {\n"
+                          "    auto s1 = std::string{ \"abc\" };\n"
+                          "    auto s2 = std::string(\"def\");\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string {");
+            ASSERT(s1 && !s1->isIncompleteVar());
+            const Token* s2 = Token::findsimplematch(s1, "string (");
+            ASSERT(s2 && !s2->isIncompleteVar());
+        }
+        {
+            GET_SYMBOL_DB("std::string f(int n) {\n"
+                          "    std::vector<std::string*> v(n);\n"
+                          "    g<const std::string &>();\n"
+                          "    return (std::string) \"abc\";\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string *");
+            ASSERT(s1 && !s1->isIncompleteVar());
+            const Token* s2 = Token::findsimplematch(s1, "string &");
+            ASSERT(s2 && !s2->isIncompleteVar());
+            const Token* s3 = Token::findsimplematch(s2, "string )");
+            ASSERT(s3 && !s3->isIncompleteVar());
+        }
     }
 
     void enum1() {
