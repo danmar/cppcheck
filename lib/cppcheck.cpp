@@ -332,7 +332,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &file,
                                 const std::string &premiumArgs,
-                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> &executeCommand)
+                                const CppCheck::ExecuteCmdFn &executeCommand)
 {
     const std::string redirect = "2>&1";
 
@@ -429,7 +429,7 @@ static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
 
 CppCheck::CppCheck(ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
-                   std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand)
+                   ExecuteCmdFn executeCommand)
     : mErrorLogger(errorLogger)
     , mUseGlobalSuppressions(useGlobalSuppressions)
     , mExecuteCommand(std::move(executeCommand))
