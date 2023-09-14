@@ -328,11 +328,11 @@ static void createDumpFile(const Settings& settings,
           << "/>" << '\n';
 }
 
-static std::string executeAddon(const AddonInfo &addonInfo,
-                                const std::string &defaultPythonExe,
-                                const std::string &file,
-                                const std::string &premiumArgs,
-                                const CppCheck::ExecuteCmdFn &executeCommand)
+static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
+                                                 const std::string &defaultPythonExe,
+                                                 const std::string &file,
+                                                 const std::string &premiumArgs,
+                                                 const CppCheck::ExecuteCmdFn &executeCommand)
 {
     const std::string redirect = "2>&1";
 
@@ -389,6 +389,8 @@ static std::string executeAddon(const AddonInfo &addonInfo,
         throw InternalError(nullptr, message);
     }
 
+    std::vector<picojson::value> addonResult;
+
     // Validate output..
     std::istringstream istr(result);
     std::string line;
@@ -413,10 +415,23 @@ static std::string executeAddon(const AddonInfo &addonInfo,
         }
 
         //std::cout << "addon '" << addonInfo.name <<  "' result is " << line << std::endl;
+
+        // TODO: make these failures?
+        picojson::value res;
+        const std::string err = picojson::parse(res, line);
+        if (!err.empty()) {
+            //std::cout << "addon '" << addonInfo.name <<  "' result is not a valid JSON (" << err << ")" << std::endl;
+            continue;
+        }
+        if (!res.is<picojson::object>()) {
+            //std::cout << "addon '" << addonInfo.name <<  "' result is not a JSON object" << std::endl;
+            continue;
+        }
+        addonResult.emplace_back(std::move(res));
     }
 
     // Valid results
-    return result;
+    return addonResult;
 }
 
 static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
@@ -1464,26 +1479,14 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
         if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
-        const std::string results =
+        const std::vector<picojson::value> results =
             executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
-        std::istringstream istr(results);
-        std::string line;
 
         const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
 
-        while (std::getline(istr, line)) {
-            picojson::value res;
-            const std::string err = picojson::parse(res, line);
-            if (!err.empty()) {
-                // TODO: report
-                //std::cout << "addon '" << addonInfo.name <<  "' result is not a valid JSON (" << err << ")" << std::endl;
-                continue;
-            }
-            if (!res.is<picojson::object>()) {
-                //std::cout << "addon '" << addonInfo.name <<  "' result is not a JSON object" << std::endl;
-                continue;
-            }
-
+        for (const picojson::value& res : results) {
+            // TODO: get rid of copy?
+            // this is a copy so we can access missing fields and get a default value
             picojson::object obj = res.get<picojson::object>();
 
             ErrorMessage errmsg;
