@@ -180,9 +180,9 @@ namespace {
 
         std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
             if (fileName[0] == '{') {
-                std::istringstream in(fileName);
                 picojson::value json;
-                in >> json;
+                const std::string err = picojson::parse(json, fileName);
+                (void)err; // TODO: report
                 return parseAddonInfo(json, fileName, exename);
             }
             if (fileName.find('.') == std::string::npos)
@@ -1473,10 +1473,16 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
 
         while (std::getline(istr, line)) {
             picojson::value res;
-            std::istringstream istr2(line);
-            istr2 >> res;
-            if (!res.is<picojson::object>())
+            const std::string err = picojson::parse(res, line);
+            if (!err.empty()) {
+                // TODO: report
+                //std::cout << "addon '" << addonInfo.name <<  "' result is not a valid JSON (" << err << ")" << std::endl;
                 continue;
+            }
+            if (!res.is<picojson::object>()) {
+                //std::cout << "addon '" << addonInfo.name <<  "' result is not a JSON object" << std::endl;
+                continue;
+            }
 
             picojson::object obj = res.get<picojson::object>();
 
