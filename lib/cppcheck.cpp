@@ -393,7 +393,9 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
         if (result.size() > 2) {
             details += "\nOutput:\n";
             details += result;
-            details.resize(details.find_last_not_of("\n\r"));
+            const auto pos = details.find_last_not_of("\n\r");
+            if (pos != std::string::npos)
+                details.resize(pos + 1);
         }
         throw InternalError(nullptr, message, details);
     }

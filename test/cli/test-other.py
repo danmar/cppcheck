@@ -414,12 +414,9 @@ Traceback (most recent call last):
 Exceptio [internalError]
     """
     # /tmp/pytest-of-user/pytest-10/test_invalid_addon_py_20/file.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1' - exitcode is 256.: python3 /home/user/CLionProjects/cppcheck/addons/runaddon.py /tmp/pytest-of-user/pytest-10/test_invalid_addon_py_20/addon1.py --cli /tmp/pytest-of-user/pytest-10/test_invalid_addon_py_20/file.cpp.24637.dump
-    # "C:\\Users\\Quotenjugendlicher\\AppData\\Local\\Temp\\pytest-of-Quotenjugendlicher\\pytest-15\\test_execute_addon_failure_20\\test.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon (command: 'python5.x S:\\GitHub\\cppcheck-fw\\bin\\debug\\addons\\runaddon.py S:\\GitHub\\cppcheck-fw\\bin\\debug\\addons\\naming.py --cli C:\\Users\\Quotenjugendlicher\\AppData\\Local\\Temp\\pytest-of-Quotenjugendlicher\\pytest-15\\test_execute_addon_failure_20\\test.cpp.9892.dump'). Exitcode is nonzero. [internalError]\n\n^\n
-    print(stderr)
     assert stderr.startswith("{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1' - exitcode is 1: ".format(test_file))
-    # TODO: string is cut off
     assert stderr.count('Output:\nTraceback')
-    assert stderr.endswith('raise Exception()\nExceptio [internalError]\n\n^\n')
+    assert stderr.endswith('raise Exception()\nException [internalError]\n\n^\n')
 
 
 def test_addon_result(tmpdir):
