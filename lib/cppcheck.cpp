@@ -369,7 +369,8 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
     else if (!defaultPythonExe.empty())
         pythonExe = cmdFileName(defaultPythonExe);
     else {
-        const std::string detectedPythonExe = detectPython(executeCommand);
+        // store in static variable so we only look this up once
+        static const std::string detectedPythonExe = detectPython(executeCommand);
         if (detectedPythonExe.empty())
             throw InternalError(nullptr, "Failed to auto detect python");
         pythonExe = detectedPythonExe;
