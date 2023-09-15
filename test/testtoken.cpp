@@ -637,8 +637,11 @@ private:
         givenACodeSampleToTokenize nonNumeric("abc", true);
         ASSERT_EQUALS(false, Token::Match(nonNumeric.tokens(), "%num%"));
 
-        givenACodeSampleToTokenize binary("101010b", true);
-        ASSERT_EQUALS(true, Token::Match(binary.tokens(), "%num%"));
+        givenACodeSampleToTokenize msLiteral("5ms", true); // #11438
+        ASSERT_EQUALS(false, Token::Match(msLiteral.tokens(), "%num%"));
+
+        givenACodeSampleToTokenize sLiteral("3s", true);
+        ASSERT_EQUALS(false, Token::Match(sLiteral.tokens(), "%num%"));
 
         givenACodeSampleToTokenize octal("0123", true);
         ASSERT_EQUALS(true, Token::Match(octal.tokens(), "%num%"));
@@ -651,9 +654,6 @@ private:
 
         givenACodeSampleToTokenize floatingPoint("0.0f", true);
         ASSERT_EQUALS(true, Token::Match(floatingPoint.tokens(), "%num%"));
-
-        givenACodeSampleToTokenize doublePrecision("0.0d", true);
-        ASSERT_EQUALS(true, Token::Match(doublePrecision.tokens(), "%num%"));
 
         givenACodeSampleToTokenize signedLong("0L", true);
         ASSERT_EQUALS(true, Token::Match(signedLong.tokens(), "%num%"));
