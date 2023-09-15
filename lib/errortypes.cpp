@@ -32,7 +32,7 @@ InternalError::InternalError(const Token *tok, std::string errorMsg, Type type) 
         id = "unknownMacro";
         break;
     case INTERNAL:
-        id = "cppcheckError";
+        id = "internalError";
         break;
     case LIMIT:
         id = "cppcheckLimit";
