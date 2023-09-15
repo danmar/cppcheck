@@ -328,6 +328,30 @@ static void createDumpFile(const Settings& settings,
           << "/>" << '\n';
 }
 
+static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
+{
+#ifdef _WIN32
+    const char *py_exes[] = { "python3.exe", "python.exe" };
+#else
+    const char *py_exes[] = { "python3", "python" };
+#endif
+    for (const char* py_exe : py_exes) {
+        std::string out;
+#ifdef _MSC_VER
+        // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
+        const std::string cmd = std::string(py_exe) + " --version >NUL";
+        if (system(cmd.c_str()) != 0) {
+            // TODO: get more detailed error?
+            break;
+        }
+#endif
+        if (executeCommand(py_exe, split("--version"), "2>&1", out) == 0 && startsWith(out, "Python ") && std::isdigit(out[7])) {
+            return py_exe;
+        }
+    }
+    return "";
+}
+
 static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
                                                  const std::string &defaultPythonExe,
                                                  const std::string &file,
@@ -345,28 +369,10 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
     else if (!defaultPythonExe.empty())
         pythonExe = cmdFileName(defaultPythonExe);
     else {
-#ifdef _WIN32
-        const char *py_exes[] = { "python3.exe", "python.exe" };
-#else
-        const char *py_exes[] = { "python3", "python" };
-#endif
-        for (const char* py_exe : py_exes) {
-            std::string out;
-#ifdef _MSC_VER
-            // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
-            const std::string cmd = std::string(py_exe) + " --version >NUL";
-            if (system(cmd.c_str()) != 0) {
-                // TODO: get more detailed error?
-                break;
-            }
-#endif
-            if (executeCommand(py_exe, split("--version"), redirect, out) == 0 && startsWith(out, "Python ") && std::isdigit(out[7])) {
-                pythonExe = py_exe;
-                break;
-            }
-        }
-        if (pythonExe.empty())
+        const std::string detectedPythonExe = detectPython(executeCommand);
+        if (detectedPythonExe.empty())
             throw InternalError(nullptr, "Failed to auto detect python");
+        pythonExe = detectedPythonExe;
     }
 
     std::string args;
