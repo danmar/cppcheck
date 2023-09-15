@@ -44,6 +44,7 @@ private:
         TEST_CASE(ErrorMessageConstructLocations);
         TEST_CASE(ErrorMessageVerbose);
         TEST_CASE(ErrorMessageVerboseLocations);
+        TEST_CASE(ErrorMessageFromInternalError);
         TEST_CASE(CustomFormat);
         TEST_CASE(CustomFormat2);
         TEST_CASE(CustomFormatLocations);
@@ -151,6 +152,36 @@ private:
         ASSERT_EQUALS("Verbose error", msg.verboseMessage());
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Programming error.", msg.toString(false));
         ASSERT_EQUALS("[foo.cpp:5] -> [bar.cpp:8]: (error) Verbose error", msg.toString(true));
+    }
+
+    void ErrorMessageFromInternalError() const {
+        // TODO: test with token
+        {
+            InternalError internalError(nullptr, "message", InternalError::INTERNAL);
+            const auto msg = ErrorMessage::fromInternalError(internalError, nullptr, "file.c");
+            ASSERT_EQUALS(1, msg.callStack.size());
+            const auto &loc = *msg.callStack.cbegin();
+            ASSERT_EQUALS(0, loc.fileIndex);
+            ASSERT_EQUALS(0, loc.line);
+            ASSERT_EQUALS(0, loc.column);
+            ASSERT_EQUALS("message", msg.shortMessage());
+            ASSERT_EQUALS("message", msg.verboseMessage());
+            ASSERT_EQUALS("[file.c:0]: (error) message", msg.toString(false));
+            ASSERT_EQUALS("[file.c:0]: (error) message", msg.toString(true));
+        }
+        {
+            InternalError internalError(nullptr, "message", "details", InternalError::INTERNAL);
+            const auto msg = ErrorMessage::fromInternalError(internalError, nullptr, "file.cpp", "msg");
+            ASSERT_EQUALS(1, msg.callStack.size());
+            const auto &loc = *msg.callStack.cbegin();
+            ASSERT_EQUALS(0, loc.fileIndex);
+            ASSERT_EQUALS(0, loc.line);
+            ASSERT_EQUALS(0, loc.column);
+            ASSERT_EQUALS("msg: message", msg.shortMessage());
+            ASSERT_EQUALS("msg: message: details", msg.verboseMessage());
+            ASSERT_EQUALS("[file.cpp:0]: (error) msg: message", msg.toString(false));
+            ASSERT_EQUALS("[file.cpp:0]: (error) msg: message: details", msg.toString(true));
+        }
     }
 
     void CustomFormat() const {

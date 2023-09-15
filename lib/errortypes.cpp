@@ -37,7 +37,11 @@ static std::string typeToString(InternalError::Type type)
 }
 
 InternalError::InternalError(const Token *tok, std::string errorMsg, Type type) :
-    token(tok), errorMessage(std::move(errorMsg)), type(type), id(typeToString(type))
+    InternalError(tok, std::move(errorMsg), "", type)
+{}
+
+InternalError::InternalError(const Token *tok, std::string errorMsg, std::string details, Type type) :
+    token(tok), errorMessage(std::move(errorMsg)), details(std::move(details)), type(type), id(typeToString(type))
 {}
 
 std::string Severity::toString(Severity::SeverityType severity)
