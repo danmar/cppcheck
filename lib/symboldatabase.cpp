@@ -1478,7 +1478,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (tok->varId() != 0)
             continue;
-        if (tok->isCast() && tok->link() && tok->str() == "(") {
+        if (tok->isCast() && !isCPPCast(tok) && tok->link() && tok->str() == "(") {
             tok = tok->link();
             continue;
         }

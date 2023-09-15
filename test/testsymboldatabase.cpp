@@ -5447,6 +5447,7 @@ private:
             GET_SYMBOL_DB("std::string f(int n) {\n"
                           "    std::vector<std::string*> v(n);\n"
                           "    g<const std::string &>();\n"
+                          "    if (static_cast<int>(x)) {}\n"
                           "    return (std::string) \"abc\";\n"
                           "}\n");
             ASSERT(db && errout.str().empty());
@@ -5454,7 +5455,9 @@ private:
             ASSERT(s1 && !s1->isIncompleteVar());
             const Token* s2 = Token::findsimplematch(s1, "string &");
             ASSERT(s2 && !s2->isIncompleteVar());
-            const Token* s3 = Token::findsimplematch(s2, "string )");
+            const Token* x = Token::findsimplematch(s2, "x");
+            ASSERT(x && x->isIncompleteVar());
+            const Token* s3 = Token::findsimplematch(x, "string )");
             ASSERT(s3 && !s3->isIncompleteVar());
         }
     }
