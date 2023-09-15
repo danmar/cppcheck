@@ -41,6 +41,14 @@
 #  include <crtdbg.h>
 #endif
 
+#ifndef __has_builtin
+#define __has_builtin(x) 0 // Compatibility with non-clang compilers.
+#endif
+
+#ifndef __has_include
+#define __has_include(x) 0 // Compatibility with non-clang compilers.
+#endif
+
 // C++11 noexcept
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
     || defined(__clang__) \
