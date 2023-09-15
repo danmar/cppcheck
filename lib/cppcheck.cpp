@@ -345,7 +345,7 @@ static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
             break;
         }
 #endif
-        if (executeCommand(py_exe, split("--version"), "2>&1", out) == 0 && startsWith(out, "Python ") && std::isdigit(out[7])) {
+        if (executeCommand(py_exe, split("--version"), "2>&1", out) == EXIT_SUCCESS && startsWith(out, "Python ") && std::isdigit(out[7])) {
             return py_exe;
         }
     }
@@ -388,7 +388,7 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
 
     std::string result;
     if (const int exitcode = executeCommand(pythonExe, split(args), redirect, result)) {
-        std::string message("Failed to execute addon '" + addonInfo.name + "' - exitcode is " + std::to_string(exitcode) + ".");
+        std::string message("Failed to execute addon '" + addonInfo.name + "' - exitcode is " + std::to_string(exitcode));
         std::string details = pythonExe + " " + args;
         if (result.size() > 2) {
             details += "\nOutput:\n";
@@ -572,7 +572,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         std::string output2;
-        if (mExecuteCommand(exe,split(args2),redirect2,output2) != 0 || output2.find("TranslationUnitDecl") == std::string::npos) {
+        if (mExecuteCommand(exe,split(args2),redirect2,output2) != EXIT_SUCCESS || output2.find("TranslationUnitDecl") == std::string::npos) {
             std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
             return 0;
         }

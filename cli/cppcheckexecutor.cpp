@@ -587,7 +587,16 @@ int CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> a
         // TODO: how to provide to caller?
         //const int err = errno;
         //std::cout << "pclose() errno " << std::to_string(err) << std::endl;
+        return res;
     }
+#if !defined(WIN32) && !defined(__MINGW32__)
+    if (WIFEXITED(res)) {
+        return WEXITSTATUS(res);
+    }
+    if (WIFSIGNALED(res)) {
+        return WTERMSIG(res);
+    }
+#endif
     return res;
 }
 
