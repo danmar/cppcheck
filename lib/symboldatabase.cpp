@@ -1482,7 +1482,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             tok = tok->link();
             continue;
         }
-        if (Token::simpleMatch(tok, "catch (")) {
+        if (Token::Match(tok, "catch|typeid (")) {
             tok = tok->linkAt(1);
             continue;
         }
