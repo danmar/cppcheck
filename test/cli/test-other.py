@@ -207,10 +207,8 @@ def test_execute_addon_failure_2(tmpdir):
     args = ['--addon=naming', '--addon-python=python5.x', test_file]
 
     _, _, stderr = cppcheck(args)
-    # /tmp/pytest-of-sshuser/pytest-215/test_execute_addon_failure_20/test.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'naming' (command: 'python5.x /mnt/s/GitHub/cppcheck-fw/addons/runaddon.py /mnt/s/GitHub/cppcheck-fw/addons/naming.py --cli /tmp/pytest-of-sshuser/pytest-215/test_execute_addon_failure_20/test.cpp.7306.dump'). Exitcode is nonzero. [internalError]\n\n^\n
-    # "C:\\Users\\Quotenjugendlicher\\AppData\\Local\\Temp\\pytest-of-Quotenjugendlicher\\pytest-15\\test_execute_addon_failure_20\\test.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon (command: 'python5.x S:\\GitHub\\cppcheck-fw\\bin\\debug\\addons\\runaddon.py S:\\GitHub\\cppcheck-fw\\bin\\debug\\addons\\naming.py --cli C:\\Users\\Quotenjugendlicher\\AppData\\Local\\Temp\\pytest-of-Quotenjugendlicher\\pytest-15\\test_execute_addon_failure_20\\test.cpp.9892.dump'). Exitcode is nonzero. [internalError]\n\n^\n
-    assert stderr.startswith('{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon \'naming\' (command: \'python5.x '.format(test_file))
-    assert stderr.endswith(' [internalError]\n\n^\n')
+    # TODO: exitcode is strange
+    assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'naming' - exitcode is 32512. [internalError]\n\n^\n".format(test_file)
 
 
 # TODO: find a test case which always fails
@@ -374,8 +372,54 @@ typedef int MISRA_5_6_VIOLATION;
     assert lines == [
         'Checking {} ...'.format(test_file)
     ]
-    assert stderr.startswith("{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1'".format(test_file))
-    assert stderr.endswith('Exitcode is 256. [internalError]\n\n^\n')
+    assert stderr == "{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1' - exitcode is 256. [internalError]\n\n^\n".format(test_file)
+
+
+def test_invalid_addon_py_verbose(tmpdir):
+    addon_file = os.path.join(tmpdir, 'addon1.py')
+    with open(addon_file, 'wt') as f:
+        f.write("""
+raise Exception()
+                """)
+
+    test_file = os.path.join(tmpdir, 'file.cpp')
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+                """)
+
+    args = ['--addon={}'.format(addon_file), '--enable=all', '--verbose', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0  # TODO: needs to be 1
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file),
+        'Defines:',
+        'Undefines:',
+        'Includes:',
+        'Platform:native'
+    ]
+    """
+/tmp/pytest-of-user/pytest-11/test_invalid_addon_py_20/file.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1' - exitcode is 256.: python3 /home/user/CLionProjects/cppcheck/addons/runaddon.py /tmp/pytest-of-user/pytest-11/test_invalid_addon_py_20/addon1.py --cli /tmp/pytest-of-user/pytest-11/test_invalid_addon_py_20/file.cpp.24762.dump
+Output:
+Traceback (most recent call last):
+  File "/home/user/CLionProjects/cppcheck/addons/runaddon.py", line 8, in <module>
+    runpy.run_path(addon, run_name='__main__')
+  File "<frozen runpy>", line 291, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/tmp/pytest-of-user/pytest-11/test_invalid_addon_py_20/addon1.py", line 2, in <module>
+    raise Exception()
+Exceptio [internalError]
+    """
+    # /tmp/pytest-of-user/pytest-10/test_invalid_addon_py_20/file.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1' - exitcode is 256.: python3 /home/user/CLionProjects/cppcheck/addons/runaddon.py /tmp/pytest-of-user/pytest-10/test_invalid_addon_py_20/addon1.py --cli /tmp/pytest-of-user/pytest-10/test_invalid_addon_py_20/file.cpp.24637.dump
+    # "C:\\Users\\Quotenjugendlicher\\AppData\\Local\\Temp\\pytest-of-Quotenjugendlicher\\pytest-15\\test_execute_addon_failure_20\\test.cpp:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon (command: 'python5.x S:\\GitHub\\cppcheck-fw\\bin\\debug\\addons\\runaddon.py S:\\GitHub\\cppcheck-fw\\bin\\debug\\addons\\naming.py --cli C:\\Users\\Quotenjugendlicher\\AppData\\Local\\Temp\\pytest-of-Quotenjugendlicher\\pytest-15\\test_execute_addon_failure_20\\test.cpp.9892.dump'). Exitcode is nonzero. [internalError]\n\n^\n
+    print(stderr)
+    assert stderr.startswith("{}:0:0: error: Bailing out from analysis: Checking file failed: Failed to execute addon 'addon1' - exitcode is 256.: ".format(test_file))
+    # TODO: string is cut off
+    assert stderr.count('Output:\nTraceback')
+    assert stderr.endswith('raise Exception()\nExceptio [internalError]\n\n^\n')
 
 
 def test_addon_result(tmpdir):

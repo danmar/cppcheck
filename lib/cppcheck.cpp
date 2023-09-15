@@ -388,12 +388,14 @@ static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
 
     std::string result;
     if (const int exitcode = executeCommand(pythonExe, split(args), redirect, result)) {
-        std::string message("Failed to execute addon '" + addonInfo.name + "' (command: '" + pythonExe + " " + args + "'). Exitcode is " + std::to_string(exitcode) + ".");
+        std::string message("Failed to execute addon '" + addonInfo.name + "' - exitcode is " + std::to_string(exitcode) + ".");
+        std::string details = pythonExe + " " + args;
         if (result.size() > 2) {
-            message = message + "\n" + message + "\nOutput:\n" + result;
-            message.resize(message.find_last_not_of("\n\r"));
+            details += "\nOutput:\n";
+            details += result;
+            details.resize(details.find_last_not_of("\n\r"));
         }
-        throw InternalError(nullptr, message);
+        throw InternalError(nullptr, message, details);
     }
 
     std::vector<picojson::value> addonResult;
@@ -634,7 +636,8 @@ unsigned int CppCheck::check(const std::string &path)
             executeAddons(dumpFile);
 
         } catch (const InternalError &e) {
-            internalError(path, "Processing Clang AST dump failed: " + e.errorMessage);
+            const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, path, "Bailing out from analysis: Processing Clang AST dump failed");
+            reportErr(errmsg);
         } catch (const TerminateException &) {
             // Analysis is terminated
             return mExitCode;
@@ -1060,7 +1063,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     } catch (const std::bad_alloc &) {
         internalError(filename, "Checking file failed: out of memory");
     } catch (const InternalError &e) {
-        internalError(filename, "Checking file failed: " + e.errorMessage);
+        const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, filename, "Bailing out from analysis: Checking file failed");
+        reportErr(errmsg);
     }
 
     if (!mSettings.buildDir.empty()) {
@@ -1548,7 +1552,8 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     try {
         executeAddons(ctuInfoFiles);
     } catch (const InternalError& e) {
-        internalError("", "Whole program analysis failed: " + e.errorMessage);
+        const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, "", "Bailing out from analysis: Whole program analysis failed");
+        reportErr(errmsg);
     }
 
     if (mSettings.buildDir.empty()) {
