@@ -189,7 +189,7 @@ namespace {
                 return getAddonInfo(fileName + ".py", exename);
 
             if (endsWith(fileName, ".py")) {
-                scriptFile = getFullPath(fileName, exename);
+                scriptFile = Path::fromNativeSeparators(getFullPath(fileName, exename));
                 if (scriptFile.empty())
                     return "Did not find addon " + fileName;
 
