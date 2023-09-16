@@ -1478,6 +1478,14 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (tok->varId() != 0)
             continue;
+        if (tok->isCast() && !isCPPCast(tok) && tok->link() && tok->str() == "(") {
+            tok = tok->link();
+            continue;
+        }
+        if (Token::Match(tok, "catch|typeid (")) {
+            tok = tok->linkAt(1);
+            continue;
+        }
         if (!tok->isNameOnly())
             continue;
         if (tok->type())
@@ -1486,16 +1494,14 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (Token::Match(tok->next(), "&|&&|* )|,|%var%"))
             continue;
-        if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
-            continue;
         // Very likely a typelist
         if (Token::Match(tok->tokAt(-2), "%type% ,") || Token::Match(tok->next(), ", %type%"))
             continue;
         // Inside template brackets
-        if (Token::Match(tok->next(), "<|>") && tok->next()->link())
+        if (Token::simpleMatch(tok->next(), "<") && tok->linkAt(1)) {
+            tok = tok->linkAt(1);
             continue;
-        if (Token::simpleMatch(tok->previous(), "<") && tok->previous()->link())
-            continue;
+        }
         // Skip goto labels
         if (Token::simpleMatch(tok->previous(), "goto"))
             continue;
