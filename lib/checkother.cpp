@@ -1244,7 +1244,13 @@ static bool canBeConst(const Variable *var, const Settings* settings)
         const Function* func_scope = var->scope()->function;
         if (func_scope && func_scope->type == Function::Type::eConstructor) {
             //could be initialized in initializer list
-            if (func_scope->arg->link()->next()->str() == ":") {
+            const Token* init = func_scope->arg->link()->next();
+            if (init->str() == "noexcept") {
+                init = init->next();
+                if (init->link())
+                    init = init->link()->next();
+            }
+            if (init->str() == ":") {
                 for (const Token* tok2 = func_scope->arg->link()->next()->next(); tok2 != var->scope()->bodyStart; tok2 = tok2->next()) {
                     if (tok2->varId() != var->declarationId())
                         continue;
