@@ -2150,6 +2150,18 @@ private:
                       "[test.cpp:18]: (performance) Function parameter 'v' should be passed by const reference.\n",
                       errout.str());
 
+        check("struct S {\n" // #11995
+              "    explicit S(std::string s) noexcept;\n"
+              "    std::string m;\n"
+              "};\n"
+              "S::S(std::string s) noexcept : m(std::move(s)) {}\n"
+              "struct T {\n"
+              "    explicit S(std::string s) noexcept(true);\n"
+              "    std::string m;\n"
+              "};\n"
+              "T::T(std::string s) noexcept(true) : m(std::move(s)) {}\n");
+        ASSERT_EQUALS("", errout.str());
+
         Settings settings1 = settingsBuilder().platform(cppcheck::Platform::Type::Win64).build();
         check("using ui64 = unsigned __int64;\n"
               "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
