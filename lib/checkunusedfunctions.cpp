@@ -83,7 +83,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         const SymbolDatabase* symbolDatabase = tokenizer.getSymbolDatabase();
         for (const Scope* scope : symbolDatabase->functionScopes) {
             const Function* func = scope->function;
-            if (!func || !func->token || scope->bodyStart->fileIndex() != 0)
+            if (!func || !func->token)
                 continue;
 
             // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
@@ -100,12 +100,15 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             if (!usage.lineNumber)
                 usage.lineNumber = func->token->linenr();
 
+            usage.fileIndex = func->token->fileIndex();
+            const std::string& fileName = tokenizer.list.file(func->token);
+
             // No filename set yet..
             if (usage.filename.empty()) {
-                usage.filename = tokenizer.list.getSourceFilePath();
+                usage.filename = fileName;
             }
             // Multiple files => filename = "+"
-            else if (usage.filename != tokenizer.list.getSourceFilePath()) {
+            else if (usage.filename != fileName) {
                 //func.filename = "+";
                 usage.usedOtherFile |= usage.usedSameFile;
             }
@@ -318,7 +321,7 @@ static bool isOperatorFunction(const std::string & funcName)
 
 bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings) const
 {
-    using ErrorParams = std::tuple<std::string, unsigned int, std::string>;
+    using ErrorParams = std::tuple<std::string, unsigned int, unsigned int, std::string>;
     std::vector<ErrorParams> errors; // ensure well-defined order
 
     for (std::unordered_map<std::string, FunctionUsage>::const_iterator it = mFunctions.cbegin(); it != mFunctions.cend(); ++it) {
@@ -333,7 +336,7 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
             std::string filename;
             if (func.filename != "+")
                 filename = func.filename;
-            errors.emplace_back(filename, func.lineNumber, it->first);
+            errors.emplace_back(filename, func.fileIndex, func.lineNumber, it->first);
         } else if (!func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*
@@ -346,17 +349,18 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
     }
     std::sort(errors.begin(), errors.end());
     for (const auto& e : errors)
-        unusedFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e));
+        unusedFunctionError(errorLogger, std::get<0>(e), std::get<1>(e), std::get<2>(e), std::get<3>(e));
     return !errors.empty();
 }
 
 void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
-                                               const std::string &filename, unsigned int lineNumber,
+                                               const std::string &filename, unsigned int fileIndex, unsigned int lineNumber,
                                                const std::string &funcname)
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
         locationList.emplace_back(filename, lineNumber);
+        locationList.back().fileIndex = fileIndex;
     }
 
     const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
@@ -470,7 +474,7 @@ void CheckUnusedFunctions::analyseWholeProgram(const Settings &settings, ErrorLo
 
         if (calls.find(functionName) == calls.end() && !isOperatorFunction(functionName)) {
             const Location &loc = decl->second;
-            unusedFunctionError(errorLogger, loc.fileName, loc.lineNumber, functionName);
+            unusedFunctionError(errorLogger, loc.fileName, /*fileIndex*/ 0, loc.lineNumber, functionName);
         }
     }
 }
