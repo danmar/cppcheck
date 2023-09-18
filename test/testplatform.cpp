@@ -34,6 +34,7 @@ private:
         TEST_CASE(valid_config_win32w);
         TEST_CASE(valid_config_unix32);
         TEST_CASE(valid_config_win64);
+        TEST_CASE(valid_config_native);
         TEST_CASE(valid_config_file_1);
         TEST_CASE(valid_config_file_2);
         TEST_CASE(valid_config_file_3);
@@ -179,6 +180,16 @@ private:
         ASSERT_EQUALS(32, platform.int_bit);
         ASSERT_EQUALS(32, platform.long_bit);
         ASSERT_EQUALS(64, platform.long_long_bit);
+    }
+
+    void valid_config_native() const {
+        cppcheck::Platform platform;
+        PLATFORM(platform, cppcheck::Platform::Type::Native);
+#ifdef _WIN32
+        ASSERT(platform.isWindows());
+#else
+        ASSERT(!platform.isWindows());
+#endif
     }
 
     void valid_config_file_1() const {
