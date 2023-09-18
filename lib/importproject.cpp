@@ -1255,6 +1255,8 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                     temp.premiumArgs += std::string(" --") + child->GetText();
             }
         }
+        else if (strcmp(node->Name(), CppcheckXml::ProjectNameElementName) == 0)
+            ; // no-op
         else {
             printError("Unknown element '" + std::string(node->Name()) + "' in Cppcheck project file");
             return false;
