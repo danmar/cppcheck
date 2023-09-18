@@ -5827,22 +5827,43 @@ private:
     }
 
     void enum15() {
-        GET_SYMBOL_DB("struct S {\n"
-                      "    S();\n"
-                      "    enum E { E0 };\n"
-                      "};\n"
-                      "S::S() {\n"
-                      "    E e = E::E0;\n"
-                      "}\n");
-        ASSERT(db != nullptr);
-        auto it = db->scopeList.begin();
-        std::advance(it, 2);
-        const Enumerator* E0 = it->findEnumerator("E0");
-        ASSERT(E0 && E0->value_known && E0->value == 0);
-        std::advance(it, 1);
-        const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
-        ASSERT(e && e->enumerator());
-        ASSERT_EQUALS(E0, e->enumerator());
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    S();\n"
+                          "    enum E { E0 };\n"
+                          "};\n"
+                          "S::S() {\n"
+                          "    E e = E::E0;\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* E0 = it->findEnumerator("E0");
+            ASSERT(E0 && E0->value_known && E0->value == 0);
+            std::advance(it, 1);
+            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    S(bool x);\n"
+                          "    enum E { E0 };\n"
+                          "};\n"
+                          "S::S(bool x) {\n"
+                          "    if (x)\n"
+                          "        E e = E::E0;\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* E0 = it->findEnumerator("E0");
+            ASSERT(E0 && E0->value_known && E0->value == 0);
+            std::advance(it, 1);
+            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+        }
     }
 
     void sizeOfType() {
