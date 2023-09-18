@@ -389,6 +389,7 @@ private:
         TEST_CASE(enum12);
         TEST_CASE(enum13);
         TEST_CASE(enum14);
+        TEST_CASE(enum15);
 
         TEST_CASE(sizeOfType);
 
@@ -5823,6 +5824,25 @@ private:
         const Token* const f = Token::findsimplematch(s2, "f =");
         ASSERT(f && f->valueType());
         ASSERT_EQUALS(f->valueType()->type, ValueType::Type::INT);
+    }
+
+    void enum15() {
+        GET_SYMBOL_DB("struct S {\n"
+                      "    S();\n"
+                      "    enum E { E0 };\n"
+                      "};\n"
+                      "S::S() {\n"
+                      "    E e = E::E0;\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* E0 = it->findEnumerator("E0");
+        ASSERT(E0 && E0->value_known && E0->value == 0);
+        std::advance(it, 1);
+        const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
+        ASSERT(e && e->enumerator());
+        ASSERT_EQUALS(E0, e->enumerator());
     }
 
     void sizeOfType() {

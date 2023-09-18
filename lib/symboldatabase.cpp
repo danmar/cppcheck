@@ -5050,14 +5050,19 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         else {
             // FIXME search base class here
 
-            // find first scope
-            while (scope && scope->nestedIn) {
-                const Scope * temp = scope->nestedIn->findRecordInNestedList(tok1->str());
-                if (temp) {
-                    scope = temp;
-                    break;
+            const Scope* temp{};
+            if (scope->functionOf && (temp = scope->functionOf->findRecordInNestedList(tok1->str()))) {
+                scope = temp;
+            } else {
+                // find first scope
+                while (scope && scope->nestedIn) {
+                    temp = scope->nestedIn->findRecordInNestedList(tok1->str());
+                    if (temp) {
+                        scope = temp;
+                        break;
+                    }
+                    scope = scope->nestedIn;
                 }
-                scope = scope->nestedIn;
             }
         }
 
