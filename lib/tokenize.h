@@ -606,12 +606,6 @@ private:
     bool operatorEnd(const Token * tok) const;
 
 public:
-
-    /** Was there templates in the code? */
-    bool codeWithTemplates() const {
-        return mCodeWithTemplates;
-    }
-
     const SymbolDatabase *getSymbolDatabase() const {
         return mSymbolDatabase;
     }
