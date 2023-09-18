@@ -719,12 +719,6 @@ private:
     nonneg int mUnnamedCount{};
 
     /**
-     * was there any templates? templates that are "unused" are
-     * removed from the token list
-     */
-    bool mCodeWithTemplates{};
-
-    /**
      * TimerResults
      */
     TimerResults* mTimerResults{};

@@ -3724,9 +3724,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
     }
 }
 
-void TemplateSimplifier::simplifyTemplates(
-    const std::time_t maxtime,
-    bool &codeWithTemplates)
+void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 {
     // convert "sizeof ..." to "sizeof..."
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
@@ -3799,7 +3797,6 @@ void TemplateSimplifier::simplifyTemplates(
         const bool hasTemplates = getTemplateDeclarations();
 
         if (passCount == 0) {
-            codeWithTemplates = hasTemplates;
             mDump.clear();
             for (const TokenAndName& t: mTemplateDeclarations)
                 mDump += t.dump(mTokenizer.list.getFiles());
