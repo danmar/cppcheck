@@ -134,32 +134,6 @@ public:
         return af ? af->groupId : 0;
     }
 
-    /** set allocation id for function */
-    // cppcheck-suppress unusedFunction - test-only
-    void setalloc(const std::string &functionname, int id, int arg) {
-        mAlloc[functionname].groupId = id;
-        mAlloc[functionname].arg = arg;
-    }
-
-    // cppcheck-suppress unusedFunction - test-only
-    void setdealloc(const std::string &functionname, int id, int arg) {
-        mDealloc[functionname].groupId = id;
-        mDealloc[functionname].arg = arg;
-    }
-
-    // cppcheck-suppress unusedFunction - test-only
-    void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
-        mRealloc[functionname].groupId = id;
-        mRealloc[functionname].arg = arg;
-        mRealloc[functionname].reallocArg = reallocArg;
-    }
-
-    /** add noreturn function setting */
-    // cppcheck-suppress unusedFunction - test-only
-    void setnoreturn(const std::string& funcname, bool noreturn) {
-        mNoReturn[funcname] = noreturn ? FalseTrueMaybe::True : FalseTrueMaybe::False;
-    }
-
     static bool isCompliantValidationExpression(const char* p);
 
     /** is allocation type memory? */
