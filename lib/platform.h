@@ -139,7 +139,11 @@ namespace cppcheck {
         bool isWindows() const {
             return type == Type::Win32A ||
                    type == Type::Win32W ||
-                   type == Type::Win64;
+                   type == Type::Win64
+#ifdef _WIN32
+                   || type == Type::Native
+#endif
+                   ;
         }
 
         const char *toString() const {
