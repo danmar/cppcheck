@@ -3794,7 +3794,7 @@ void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
             mTemplateNamePos.clear();
         }
 
-        const bool hasTemplates = getTemplateDeclarations();
+        getTemplateDeclarations();
 
         if (passCount == 0) {
             mDump.clear();
