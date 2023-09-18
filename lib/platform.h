@@ -143,7 +143,7 @@ namespace cppcheck {
 #ifdef _WIN32
                    || type == Type::Native
 #endif
-                   ;
+            ;
         }
 
         const char *toString() const {
