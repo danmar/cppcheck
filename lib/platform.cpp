@@ -87,20 +87,26 @@ bool Platform::set(const std::string& platformstr, std::string& errstr, const st
         // TODO: deprecate
         //std::cout << "Platform 'win32A' is deprecated and will be removed in a future version. Please use 'win32a' instead." << std::endl;
         t = Type::Win32A;
-        platformFile = "win32a";
+        platformFile = "win32";
     }
     else if (platformstr == "win32a") {
+        // TODO: deprecate if we have proper UNICODE support in win32.cfg
         t = Type::Win32A;
-        platformFile = platformstr;
+        platformFile = "win32";
     }
     else if (platformstr == "win32W") {
         // TODO: deprecate
         //std::cout << "Platform 'win32W' is deprecated and will be removed in a future version. Please use 'win32w' instead." << std::endl;
         t = Type::Win32W;
-        platformFile = "win32w";
+        platformFile = "win32";
     }
     else if (platformstr == "win32w") {
+        // TODO: deprecate if we have proper UNICODE support in win32.cfg
         t = Type::Win32W;
+        platformFile = "win32";
+    }
+    else if (platformstr == "win32") {
+        t = Type::Win32A;
         platformFile = platformstr;
     }
     else if (platformstr == "win64") {

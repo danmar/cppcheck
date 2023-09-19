@@ -242,6 +242,7 @@ private:
         TEST_CASE(stdmulti1);
         TEST_CASE(stdmulti2);
         TEST_CASE(platformWin64);
+        TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32a);
         TEST_CASE(platformWin32W);
@@ -1526,6 +1527,15 @@ private:
         ASSERT(settings->platform.set(Platform::Type::Unspecified));
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parser->parseFromArgs(3, argv));
         ASSERT_EQUALS(Platform::Type::Win64, settings->platform.type);
+    }
+
+    void platformWin32() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=win32", "file.cpp"};
+        ASSERT(settings->platform.set(cppcheck::Platform::Type::Unspecified));
+        ASSERT(parser->parseFromArgs(3, argv));
+        ASSERT_EQUALS(cppcheck::Platform::Type::Win32A, settings->platform.type);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
     }
 
     void platformWin32A() {
