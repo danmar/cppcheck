@@ -5464,6 +5464,15 @@ private:
             const Token* s4 = Token::findsimplematch(s3->next(), "string )");
             ASSERT(s4 && !s4->isIncompleteVar());
         }
+        {
+            GET_SYMBOL_DB("void destroy(int*, void (*cb_dealloc)(void *));\n"
+                          "void f(int* p) {\n"
+                          "    destroy(p, free);\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* free = Token::findsimplematch(tokenizer.tokens(), "free )");
+            ASSERT(free && !free->isIncompleteVar());
+        }
     }
 
     void enum1() {
