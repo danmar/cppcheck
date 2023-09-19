@@ -366,11 +366,11 @@ jobs:
       - name: Run test/cli
         run: |
           cd test/cli
-          python3 -m pytest test-*.py
+          python3 -m pytest --strict -vv test-*.py
           cd ../../..
           ln -s cppcheck 'cpp check'
           cd 'cpp check/test/cli'
-          python3 -m pytest test-*.py
+          python3 -m pytest --strict -vv test-*.py
 
       - name: Run cfg tests
         if: matrix.os != 'ubuntu-22.04'

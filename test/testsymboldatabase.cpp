@@ -389,6 +389,7 @@ private:
         TEST_CASE(enum12);
         TEST_CASE(enum13);
         TEST_CASE(enum14);
+        TEST_CASE(enum15);
 
         TEST_CASE(sizeOfType);
 
@@ -5432,15 +5433,37 @@ private:
 
     void createSymbolDatabaseIncompleteVars()
     {
-        GET_SYMBOL_DB("void f() {\n"
-                      "    auto s1 = std::string{ \"abc\" };\n"
-                      "    auto s2 = std::string(\"def\");\n"
-                      "}\n");
-        ASSERT(db && errout.str().empty());
-        const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string {");
-        ASSERT(s1 && !s1->isIncompleteVar());
-        const Token* s2 = Token::findsimplematch(s1, "string (");
-        ASSERT(s2 && !s2->isIncompleteVar());
+        {
+            GET_SYMBOL_DB("void f() {\n"
+                          "    auto s1 = std::string{ \"abc\" };\n"
+                          "    auto s2 = std::string(\"def\");\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string {");
+            ASSERT(s1 && !s1->isIncompleteVar());
+            const Token* s2 = Token::findsimplematch(s1, "string (");
+            ASSERT(s2 && !s2->isIncompleteVar());
+        }
+        {
+            GET_SYMBOL_DB("std::string f(int n, std::type_info t) {\n"
+                          "    std::vector<std::string*> v(n);\n"
+                          "    g<const std::string &>();\n"
+                          "    if (static_cast<int>(x)) {}\n"
+                          "    if (t == typeid(std::string)) {}\n"
+                          "    return (std::string) \"abc\";\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string *");
+            ASSERT(s1 && !s1->isIncompleteVar());
+            const Token* s2 = Token::findsimplematch(s1, "string &");
+            ASSERT(s2 && !s2->isIncompleteVar());
+            const Token* x = Token::findsimplematch(s2, "x");
+            ASSERT(x && x->isIncompleteVar());
+            const Token* s3 = Token::findsimplematch(x, "string )");
+            ASSERT(s3 && !s3->isIncompleteVar());
+            const Token* s4 = Token::findsimplematch(s3->next(), "string )");
+            ASSERT(s4 && !s4->isIncompleteVar());
+        }
     }
 
     void enum1() {
@@ -5801,6 +5824,25 @@ private:
         const Token* const f = Token::findsimplematch(s2, "f =");
         ASSERT(f && f->valueType());
         ASSERT_EQUALS(f->valueType()->type, ValueType::Type::INT);
+    }
+
+    void enum15() {
+        GET_SYMBOL_DB("struct S {\n"
+                      "    S();\n"
+                      "    enum E { E0 };\n"
+                      "};\n"
+                      "S::S() {\n"
+                      "    E e = E::E0;\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* E0 = it->findEnumerator("E0");
+        ASSERT(E0 && E0->value_known && E0->value == 0);
+        std::advance(it, 1);
+        const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
+        ASSERT(e && e->enumerator());
+        ASSERT_EQUALS(E0, e->enumerator());
     }
 
     void sizeOfType() {
