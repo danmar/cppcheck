@@ -273,9 +273,9 @@ private:
 
     void combine_wstrings_Windows() {
 #if defined(_WIN32) && defined(UNICODE)
-        const char code[] =  "const auto* f() {\n"
-                             "    return _T(\"abc\") _T(\"def\") _T(\"ghi\");\n"
-                             "}";
+        const char code[] = "const auto* f() {\n"
+                            "    return _T(\"abc\") _T(\"def\") _T(\"ghi\");\n"
+                            "}";
 
         ASSERT_EQUALS("const auto * f ( ) { return L\"abcdefghi\" ; }", tok(code, /*simplify*/ true, cppcheck::Platform::Type::Native));
 #endif
