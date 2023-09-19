@@ -470,6 +470,9 @@ int main(int argc, char **argv)
          << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        $(error Did not find a Python interpreter)\n"
          << "    endif\n"
+         << "    ifeq ($(VERBOSE),1)\n"
+         << "        $(info PYTHON_INTERPRETER=$(PYTHON_INTERPRETER))\n"
+         << "    endif\n"
          << "    ifdef VERIFY\n"
          << "        $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --quiet --verify)\n"
          << "    else\n"
@@ -516,7 +519,11 @@ int main(int argc, char **argv)
          << "else\n"
          << "    RDYNAMIC=-rdynamic\n" // enable backtrace
          << "endif\n"
-         << "\n";
+         << "\n"
+         << "ifeq ($(VERBOSE),1)\n"
+         << "    $(info RDYNAMIC=$(RDYNAMIC))\n"
+         << "    $(info LDFLAGS=$(LDFLAGS))\n"
+         << "endif\n";
 
     makeConditionalVariable(fout, "CXX", "g++");
     fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
@@ -531,8 +538,10 @@ int main(int argc, char **argv)
     // skip "-D_GLIBCXX_DEBUG" if clang, since it breaks the build
     fout << "ifeq (clang++, $(findstring clang++,$(CXX)))\n"
          << "    CPPCHK_GLIBCXX_DEBUG=\n"
-         << "endif\n"
-         << "\n";
+         << "endif\n";
+    fout << "ifeq ($(VERBOSE),1)\n"
+         << "    $(info CPPCHK_GLIBCXX_DEBUG=$(CPPCHK_GLIBCXX_DEBUG))\n"
+         << "endif\n";
 
     // Makefile settings..
     if (release) {
@@ -576,11 +585,20 @@ int main(int argc, char **argv)
          << "    ifeq ($(PCRE_CONFIG),)\n"
          << "        $(error Did not find pcre-config)\n"
          << "    endif\n"
-         << "    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell $(PCRE_CONFIG) --cflags)\n"
+         << "    PCRE_CFLAGS = $(shell $(PCRE_CONFIG) --cflags)\n"
+         << "    PCRE_LIBS = $(shell $(PCRE_CONFIG) --libs)\n"
+         << "\n"
+         << "    ifeq ($(VERBOSE),1)\n"
+         << "      $(info PCRE_CONFIG=$(PCRE_CONFIG))\n"
+         << "      $(info PCRE_CFLAGS=$(PCRE_CFLAGS))\n"
+         << "      $(info PCRE_LIBS=$(PCRE_LIBS))\n"
+         << "    endif\n"
+         << "\n"
+         << "    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(PCRE_CFLAGS)\n"
          << "    ifdef LIBS\n"
-         << "        LIBS += $(shell $(PCRE_CONFIG) --libs)\n"
+         << "        LIBS += $(PCRE_LIBS)\n"
          << "    else\n"
-         << "        LIBS=$(shell $(PCRE_CONFIG) --libs)\n"
+         << "        LIBS=$(PCRE_LIBS)\n"
          << "    endif\n"
          << "endif\n\n";
 

@@ -26,6 +26,9 @@ ifeq ($(MATCHCOMPILER),yes)
     ifeq ($(PYTHON_INTERPRETER),)
         $(error Did not find a Python interpreter)
     endif
+    ifeq ($(VERBOSE),1)
+        $(info PYTHON_INTERPRETER=$(PYTHON_INTERPRETER))
+    endif
     ifdef VERIFY
         $(shell $(PYTHON_INTERPRETER) tools/matchcompiler.py --quiet --verify)
     else
@@ -70,6 +73,10 @@ else
     RDYNAMIC=-rdynamic
 endif
 
+ifeq ($(VERBOSE),1)
+    $(info RDYNAMIC=$(RDYNAMIC))
+    $(info LDFLAGS=$(LDFLAGS))
+endif
 ifndef CXX
     CXX=g++
 endif
@@ -85,7 +92,9 @@ endif
 ifeq (clang++, $(findstring clang++,$(CXX)))
     CPPCHK_GLIBCXX_DEBUG=
 endif
-
+ifeq ($(VERBOSE),1)
+    $(info CPPCHK_GLIBCXX_DEBUG=$(CPPCHK_GLIBCXX_DEBUG))
+endif
 ifndef CXXFLAGS
     CXXFLAGS=-pedantic -Wall -Wextra -Wcast-qual -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar -Woverloaded-virtual $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
@@ -105,11 +114,20 @@ ifeq ($(HAVE_RULES),yes)
     ifeq ($(PCRE_CONFIG),)
         $(error Did not find pcre-config)
     endif
-    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(shell $(PCRE_CONFIG) --cflags)
+    PCRE_CFLAGS = $(shell $(PCRE_CONFIG) --cflags)
+    PCRE_LIBS = $(shell $(PCRE_CONFIG) --libs)
+
+    ifeq ($(VERBOSE),1)
+      $(info PCRE_CONFIG=$(PCRE_CONFIG))
+      $(info PCRE_CFLAGS=$(PCRE_CFLAGS))
+      $(info PCRE_LIBS=$(PCRE_LIBS))
+    endif
+
+    override CXXFLAGS += -DHAVE_RULES -DTIXML_USE_STL $(PCRE_CFLAGS)
     ifdef LIBS
-        LIBS += $(shell $(PCRE_CONFIG) --libs)
+        LIBS += $(PCRE_LIBS)
     else
-        LIBS=$(shell $(PCRE_CONFIG) --libs)
+        LIBS=$(PCRE_LIBS)
     endif
 endif
 
