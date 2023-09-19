@@ -1504,6 +1504,8 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (mSettings.standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
             continue;
+        if (mSettings.library.functions.find(tok->str()) != mSettings.library.functions.end())
+            continue;
         const_cast<Token *>(tok)->isIncompleteVar(true); // TODO: avoid const_cast
     }
 }
