@@ -94,7 +94,7 @@ std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, cons
             // no files matched
             return "";
         }
-        return "finding files failed (error: " + std::to_string(err) + ")";
+        return "finding files failed. Search pattern: '" + searchPattern + "'. (error: " + std::to_string(err) + ")";
     }
     std::unique_ptr<void, decltype(&FindClose)> hFind_deleter(hFind, FindClose);
 
