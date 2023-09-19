@@ -187,7 +187,7 @@ class MatchCompiler:
         elif tok == '%varid%':
             return '(tok->isName() && tok->varId() == varid)'
         elif (len(tok) > 2) and (tok[0] == "%"):
-            print("unhandled:" + tok)
+            print("unhandled:" + tok) # TODO: error out?
         elif tok in tokTypes:
             cond = ' || '.join(['tok->tokType() == Token::{}'.format(tokType) for tokType in tokTypes[tok]])
             return '(({cond}) && tok->str() == MatchCompiler::makeConstString("{tok}"))'.format(cond=cond, tok=tok)
@@ -483,7 +483,7 @@ class MatchCompiler:
                 res = re.match(r'\s*"((?:.|\\")*?)"\s*$', raw_pattern)
                 if res is None:
                     if self._showSkipped:
-                        print(filename + ":" + str(linenr) + " skipping match pattern:" + raw_pattern)
+                        print(filename + ":" + str(linenr) + " skipping match pattern:" + raw_pattern) # TODO: error out
                     continue # Non-const pattern - bailout
 
                 pattern = res.group(1)
@@ -638,7 +638,7 @@ class MatchCompiler:
             res = re.match(r'\s*"((?:.|\\")*?)"\s*$', pattern)
             if res is None:
                 if self._showSkipped:
-                    print(filename + ":" + str(linenr) + " skipping findmatch pattern:" + pattern)
+                    print(filename + ":" + str(linenr) + " skipping findmatch pattern:" + pattern) # TODO: error out?
                 break  # Non-const pattern - bailout
 
             pattern = res.group(1)
@@ -750,6 +750,8 @@ def main():
                         help='prefix for build files')
     parser.add_argument('--line', action='store_true', default=False,
                         help='add line directive to input files into build files')
+    parser.add_argument('--quiet', action='store_true', default=False,
+                        help='do not print any output')
     parser.add_argument('file', nargs='*',
                         help='file to compile')
     args = parser.parse_args()
@@ -757,10 +759,12 @@ def main():
     build_dir = args.write_dir
     line_directive = args.line
     files = args.file
+    quiet = args.quiet
 
     # Check if we are invoked from the right place
     if not os.path.exists(lib_dir):
-        print('Directory "' + lib_dir + '"not found.')
+        if not quiet:
+            print('Directory "' + lib_dir + '"not found.')
         sys.exit(-1)
 
     # Create build directory if needed
@@ -790,7 +794,8 @@ def main():
         pi = lib_dir + '/' + fi
         fo = args.prefix + fi
         po = build_dir + '/' + fo
-        print(pi + ' => ' + po)
+        if not quiet:
+            print(pi + ' => ' + po)
         mc.convertFile(pi, po, line_directive)
 
 if __name__ == '__main__':
