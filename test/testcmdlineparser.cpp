@@ -282,10 +282,9 @@ private:
         TEST_CASE(stdmulti1);
         TEST_CASE(stdmulti2);
         TEST_CASE(platformWin64);
+        TEST_CASE(platformWin32);
         TEST_CASE(platformWin32A);
-        TEST_CASE(platformWin32a);
         TEST_CASE(platformWin32W);
-        TEST_CASE(platformWin32w);
         TEST_CASE(platformUnix32);
         TEST_CASE(platformUnix32Unsigned);
         TEST_CASE(platformUnix64);
@@ -1805,6 +1804,14 @@ private:
         ASSERT_EQUALS(Platform::Type::Win64, settings->platform.type);
     }
 
+    void platformWin32() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--platform=win32", "file.cpp"};
+        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
+        ASSERT_EQUALS(Platform::Type::Win32A, settings->platform.type);
+        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+    }
+
     void platformWin32A() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win32A", "file.cpp"};
@@ -1812,23 +1819,9 @@ private:
         ASSERT_EQUALS(Platform::Type::Win32A, settings->platform.type);
     }
 
-    void platformWin32a() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--platform=win32a", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Platform::Type::Win32A, settings->platform.type);
-    }
-
     void platformWin32W() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--platform=win32W", "file.cpp"};
-        ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
-        ASSERT_EQUALS(Platform::Type::Win32W, settings->platform.type);
-    }
-
-    void platformWin32w() {
-        REDIRECT;
-        const char * const argv[] = {"cppcheck", "--platform=win32w", "file.cpp"};
         ASSERT_EQUALS_ENUM(CmdLineParser::Result::Success, parseFromArgs(argv));
         ASSERT_EQUALS(Platform::Type::Win32W, settings->platform.type);
     }
