@@ -1666,7 +1666,7 @@ void Tokenizer::simplifyTypedefCpp()
 
                             pattern += typeName->str();
                         } else {
-                            if (scope == 0)
+                            if (scope == 0 && !(classLevel > 1 && tok2 == spaceInfo[classLevel - 1].bodyEnd))
                                 break;
                             --scope;
                         }
