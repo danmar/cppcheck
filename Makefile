@@ -55,12 +55,6 @@ ifdef ComSpec
 endif # ComSpec
 
 ifndef WINNT
-    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-
-    ifeq ($(VERBOSE),1)
-        $(info uname_S=$(uname_S))
-    endif
-
     LDFLAGS+=-pthread
 endif # !WINNT
 

@@ -501,12 +501,6 @@ int main(int argc, char **argv)
          << "endif # ComSpec\n"
          << "\n"
          << "ifndef WINNT\n"
-         << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
-         << "\n"
-         << "    ifeq ($(VERBOSE),1)\n"
-         << "        $(info uname_S=$(uname_S))\n"
-         << "    endif\n"
-         << "\n"
          << "    LDFLAGS+=-pthread\n"
          << "endif # !WINNT\n"
          << "\n";
