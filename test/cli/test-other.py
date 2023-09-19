@@ -277,7 +277,7 @@ def test_addon_threadsafety(tmpdir):
 typedef int MISRA_5_6_VIOLATION;
         """)
 
-    args = ['--addon=y2038', '--enable=all', test_file]
+    args = ['--addon=threadsafety', '--enable=all', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -296,7 +296,7 @@ def test_addon_naming(tmpdir):
 typedef int MISRA_5_6_VIOLATION;
         """)
 
-    args = ['--addon=y2038', '--enable=all', test_file]
+    args = ['--addon=naming', '--enable=all', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -315,7 +315,45 @@ def test_addon_namingng(tmpdir):
 typedef int MISRA_5_6_VIOLATION;
         """)
 
-    args = ['--addon=y2038', '--enable=all', test_file]
+    args = ['--addon=namingng', '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''
+
+
+def test_addon_findcasts(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    # TODO: trigger warning
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+        """)
+
+    args = ['--addon=findcasts', '--enable=all', test_file]
+
+    exitcode, stdout, stderr = cppcheck(args)
+    assert exitcode == 0
+    lines = stdout.splitlines()
+    assert lines == [
+        'Checking {} ...'.format(test_file)
+    ]
+    assert stderr == ''
+
+
+def test_addon_misc(tmpdir):
+    test_file = os.path.join(tmpdir, 'test.cpp')
+    # TODO: trigger warning
+    with open(test_file, 'wt') as f:
+        f.write("""
+typedef int MISRA_5_6_VIOLATION;
+        """)
+
+    args = ['--addon=misc', '--enable=all', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
