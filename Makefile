@@ -67,9 +67,11 @@ ifeq ($(VERBOSE),1)
 endif
 
 ifneq ($(MSYSTEM),MINGW32 MINGW64)
+    # -rdynamic does not work with MinGW
     RDYNAMIC=
     LDFLAGS+=-lshlwapi
 else
+    # required for backtrace() to produce function names
     RDYNAMIC=-rdynamic
 endif
 

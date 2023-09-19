@@ -514,10 +514,12 @@ int main(int argc, char **argv)
          << "endif\n"
          << "\n"
          << "ifneq ($(MSYSTEM),MINGW32 MINGW64)\n"
+         << "    # -rdynamic does not work with MinGW\n"
          << "    RDYNAMIC=\n"
          << "    LDFLAGS+=-lshlwapi\n"
          << "else\n"
-         << "    RDYNAMIC=-rdynamic\n" // enable backtrace
+         << "    # required for backtrace() to produce function names\n"
+         << "    RDYNAMIC=-rdynamic\n"
          << "endif\n"
          << "\n"
          << "ifeq ($(VERBOSE),1)\n"
