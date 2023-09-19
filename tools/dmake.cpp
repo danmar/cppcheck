@@ -513,7 +513,7 @@ int main(int argc, char **argv)
          << "    $(info MSYSTEM=$(MSYSTEM))\n"
          << "endif\n"
          << "\n"
-         << "ifneq ($(MSYSTEM),MINGW32 MINGW64)\n"
+         << "ifneq ($(MSYSTEM),)\n"
          << "    # -rdynamic does not work with MinGW\n"
          << "    RDYNAMIC=\n"
          << "    LDFLAGS+=-lshlwapi\n"

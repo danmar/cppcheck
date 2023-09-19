@@ -66,7 +66,7 @@ ifeq ($(VERBOSE),1)
     $(info MSYSTEM=$(MSYSTEM))
 endif
 
-ifneq ($(MSYSTEM),MINGW32 MINGW64)
+ifneq ($(MSYSTEM),)
     # -rdynamic does not work with MinGW
     RDYNAMIC=
     LDFLAGS+=-lshlwapi
