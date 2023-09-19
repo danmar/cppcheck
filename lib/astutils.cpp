@@ -2809,6 +2809,11 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp,
         return false;
     if (Token::Match(start, "; %varid% =", var->declarationId()))
         start = start->tokAt(2);
+    if (Token::simpleMatch(start, "=")) {
+        const Token* next = nextAfterAstRightmostLeafGeneric(start);
+        if (next)
+            start = next;
+    }
     return isExpressionChanged(var->nameToken(), start->next(), var->scope()->bodyEnd, settings, cpp, depth);
 }
 

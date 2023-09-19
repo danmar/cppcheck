@@ -231,7 +231,7 @@ private:
                           "  if (b) { (int)((INTOF(8))result >> b); }\n"
                           "}", "if", "}");
         // #9235
-        ASSERT_EQUALS(true, isVariableChanged("void f() {\n"
+        ASSERT_EQUALS(false, isVariableChanged("void f() {\n"
                                               "    int &a = a;\n"
                                               "}\n", "= a", "}"));
 
