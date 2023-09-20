@@ -79,13 +79,6 @@ public:
     }
 
     /**
-     * Return if help is shown to user.
-     */
-    bool getShowHelp() const {
-        return mShowHelp;
-    }
-
-    /**
      * Return if we should exit after printing version, help etc.
      */
     bool exitAfterPrinting() const {

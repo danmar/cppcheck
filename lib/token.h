@@ -441,6 +441,7 @@ public:
     void isSigned(const bool sign) {
         setFlag(fIsSigned, sign);
     }
+    // cppcheck-suppress unusedFunction
     bool isPointerCompare() const {
         return getFlag(fIsPointerCompare);
     }
@@ -549,6 +550,7 @@ public:
     bool getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type type, MathLib::bigint &value) const {
         return mImpl->getCppcheckAttribute(type, value);
     }
+    // cppcheck-suppress unusedFunction
     bool hasCppcheckAttributes() const {
         return nullptr != mImpl->mCppcheckAttributes;
     }
@@ -691,6 +693,7 @@ public:
         setFlag(fIsInitComma, b);
     }
 
+    // cppcheck-suppress unusedFunction
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -962,6 +965,7 @@ public:
             options.files = true;
             return options;
         }
+        // cppcheck-suppress unusedFunction
         static stringifyOptions forDebugVarId() {
             stringifyOptions options = forDebug();
             options.varid = true;

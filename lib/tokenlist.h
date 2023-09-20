@@ -46,10 +46,6 @@ public:
     TokenList(const TokenList &) = delete;
     TokenList &operator=(const TokenList &) = delete;
 
-    void setSettings(const Settings *settings) {
-        mSettings = settings;
-    }
-
     /** @return the source file path. e.g. "file.cpp" */
     const std::string& getSourceFilePath() const;
 
@@ -205,7 +201,7 @@ private:
     std::vector<std::string> mOrigFiles;
 
     /** settings */
-    const Settings* mSettings{};
+    const Settings* const mSettings{};
 
     /** File is known to be C/C++ code */
     bool mIsC{};

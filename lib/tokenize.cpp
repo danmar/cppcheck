@@ -4014,8 +4014,7 @@ void Tokenizer::simplifyTemplates()
 
     const std::time_t maxTime = mSettings->templateMaxTime > 0 ? std::time(nullptr) + mSettings->templateMaxTime : 0;
     mTemplateSimplifier->simplifyTemplates(
-        maxTime,
-        mCodeWithTemplates);
+        maxTime);
 }
 //---------------------------------------------------------------------------
 

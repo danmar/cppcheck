@@ -444,3 +444,28 @@ typedef int MISRA_5_6_VIOLATION;
         'Checking {} ...'.format(test_file)
     ]
     assert stderr == 'test.cpp:1:1: style: msg [addon1-id]\n\n^\n'
+
+
+# #11483
+def test_unused_function_include(tmpdir):
+    test_cpp_file = os.path.join(tmpdir, 'test.cpp')
+    with open(test_cpp_file, 'wt') as f:
+        f.write("""
+                #include "test.h"
+                """)
+
+    test_h_file = os.path.join(tmpdir, 'test.h')
+    with open(test_h_file, 'wt') as f:
+        f.write("""
+                class A {
+                public:
+                    void f() {}
+                    // cppcheck-suppress unusedFunction
+                    void f2() {}
+                };
+                """)
+
+    args = ['--enable=unusedFunction', '--inline-suppr', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_cpp_file]
+
+    _, _, stderr = cppcheck(args)
+    assert stderr == "{}:4:0: style: The function 'f' is never used. [unusedFunction]\n".format(test_h_file)
