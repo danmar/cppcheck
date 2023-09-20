@@ -180,16 +180,16 @@ namespace {
 
         std::string getAddonInfo(const std::string &fileName, const std::string &exename) {
             if (fileName[0] == '{') {
-                std::istringstream in(fileName);
                 picojson::value json;
-                in >> json;
+                const std::string err = picojson::parse(json, fileName);
+                (void)err; // TODO: report
                 return parseAddonInfo(json, fileName, exename);
             }
             if (fileName.find('.') == std::string::npos)
                 return getAddonInfo(fileName + ".py", exename);
 
             if (endsWith(fileName, ".py")) {
-                scriptFile = getFullPath(fileName, exename);
+                scriptFile = Path::fromNativeSeparators(getFullPath(fileName, exename));
                 if (scriptFile.empty())
                     return "Did not find addon " + fileName;
 
@@ -328,11 +328,35 @@ static void createDumpFile(const Settings& settings,
           << "/>" << '\n';
 }
 
-static std::string executeAddon(const AddonInfo &addonInfo,
-                                const std::string &defaultPythonExe,
-                                const std::string &file,
-                                const std::string &premiumArgs,
-                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> &executeCommand)
+static std::string detectPython(const CppCheck::ExecuteCmdFn &executeCommand)
+{
+#ifdef _WIN32
+    const char *py_exes[] = { "python3.exe", "python.exe" };
+#else
+    const char *py_exes[] = { "python3", "python" };
+#endif
+    for (const char* py_exe : py_exes) {
+        std::string out;
+#ifdef _MSC_VER
+        // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
+        const std::string cmd = std::string(py_exe) + " --version >NUL";
+        if (system(cmd.c_str()) != 0) {
+            // TODO: get more detailed error?
+            break;
+        }
+#endif
+        if (executeCommand(py_exe, split("--version"), "2>&1", out) == EXIT_SUCCESS && startsWith(out, "Python ") && std::isdigit(out[7])) {
+            return py_exe;
+        }
+    }
+    return "";
+}
+
+static std::vector<picojson::value> executeAddon(const AddonInfo &addonInfo,
+                                                 const std::string &defaultPythonExe,
+                                                 const std::string &file,
+                                                 const std::string &premiumArgs,
+                                                 const CppCheck::ExecuteCmdFn &executeCommand)
 {
     const std::string redirect = "2>&1";
 
@@ -345,28 +369,11 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     else if (!defaultPythonExe.empty())
         pythonExe = cmdFileName(defaultPythonExe);
     else {
-#ifdef _WIN32
-        const char *py_exes[] = { "python3.exe", "python.exe" };
-#else
-        const char *py_exes[] = { "python3", "python" };
-#endif
-        for (const char* py_exe : py_exes) {
-            std::string out;
-#ifdef _MSC_VER
-            // FIXME: hack to avoid debug assertion with _popen() in executeCommand() for non-existing commands
-            const std::string cmd = std::string(py_exe) + " --version >NUL";
-            if (system(cmd.c_str()) != 0) {
-                // TODO: get more detailed error?
-                break;
-            }
-#endif
-            if (executeCommand(py_exe, split("--version"), redirect, out) && startsWith(out, "Python ") && std::isdigit(out[7])) {
-                pythonExe = py_exe;
-                break;
-            }
-        }
-        if (pythonExe.empty())
+        // store in static variable so we only look this up once
+        static const std::string detectedPythonExe = detectPython(executeCommand);
+        if (detectedPythonExe.empty())
             throw InternalError(nullptr, "Failed to auto detect python");
+        pythonExe = detectedPythonExe;
     }
 
     std::string args;
@@ -380,27 +387,62 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     args += fileArg;
 
     std::string result;
-    if (!executeCommand(pythonExe, split(args), redirect, result)) {
-        std::string message("Failed to execute addon '" + addonInfo.name + "' (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
+    if (const int exitcode = executeCommand(pythonExe, split(args), redirect, result)) {
+        std::string message("Failed to execute addon '" + addonInfo.name + "' - exitcode is " + std::to_string(exitcode));
+        std::string details = pythonExe + " " + args;
         if (result.size() > 2) {
-            message = message + "\n" + message + "\nOutput:\n" + result;
-            message.resize(message.find_last_not_of("\n\r"));
+            details += "\nOutput:\n";
+            details += result;
+            const auto pos = details.find_last_not_of("\n\r");
+            if (pos != std::string::npos)
+                details.resize(pos + 1);
         }
-        throw InternalError(nullptr, message);
+        throw InternalError(nullptr, message, details);
     }
+
+    std::vector<picojson::value> addonResult;
 
     // Validate output..
     std::istringstream istr(result);
     std::string line;
     while (std::getline(istr, line)) {
-        if (!startsWith(line,"Checking ") && !line.empty() && line[0] != '{') {
+        // TODO: also bail out?
+        if (line.empty()) {
+            //std::cout << "addon '" << addonInfo.name <<  "' result contains empty line" << std::endl;
+            continue;
+        }
+
+        // TODO: get rid of this
+        if (startsWith(line,"Checking ")) {
+            //std::cout << "addon '" << addonInfo.name <<  "' result contains 'Checking ' line" << std::endl;
+            continue;
+        }
+
+        if (line[0] != '{') {
+            //std::cout << "addon '" << addonInfo.name <<  "' result is not a JSON" << std::endl;
+
             result.erase(result.find_last_not_of('\n') + 1, std::string::npos); // Remove trailing newlines
             throw InternalError(nullptr, "Failed to execute '" + pythonExe + " " + args + "'. " + result);
         }
+
+        //std::cout << "addon '" << addonInfo.name <<  "' result is " << line << std::endl;
+
+        // TODO: make these failures?
+        picojson::value res;
+        const std::string err = picojson::parse(res, line);
+        if (!err.empty()) {
+            //std::cout << "addon '" << addonInfo.name <<  "' result is not a valid JSON (" << err << ")" << std::endl;
+            continue;
+        }
+        if (!res.is<picojson::object>()) {
+            //std::cout << "addon '" << addonInfo.name <<  "' result is not a JSON object" << std::endl;
+            continue;
+        }
+        addonResult.emplace_back(std::move(res));
     }
 
     // Valid results
-    return result;
+    return addonResult;
 }
 
 static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
@@ -413,7 +455,7 @@ static std::string getDefinesFlags(const std::string &semicolonSeparatedString)
 
 CppCheck::CppCheck(ErrorLogger &errorLogger,
                    bool useGlobalSuppressions,
-                   std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand)
+                   ExecuteCmdFn executeCommand)
     : mErrorLogger(errorLogger)
     , mUseGlobalSuppressions(useGlobalSuppressions)
     , mExecuteCommand(std::move(executeCommand))
@@ -532,7 +574,7 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         std::string output2;
-        if (!mExecuteCommand(exe,split(args2),redirect2,output2) || output2.find("TranslationUnitDecl") == std::string::npos) {
+        if (mExecuteCommand(exe,split(args2),redirect2,output2) != EXIT_SUCCESS || output2.find("TranslationUnitDecl") == std::string::npos) {
             std::cerr << "Failed to execute '" << exe << " " << args2 << " " << redirect2 << "'" << std::endl;
             return 0;
         }
@@ -596,7 +638,8 @@ unsigned int CppCheck::check(const std::string &path)
             executeAddons(dumpFile);
 
         } catch (const InternalError &e) {
-            internalError(path, "Processing Clang AST dump failed: " + e.errorMessage);
+            const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, path, "Bailing out from analysis: Processing Clang AST dump failed");
+            reportErr(errmsg);
         } catch (const TerminateException &) {
             // Analysis is terminated
             return mExitCode;
@@ -1022,7 +1065,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     } catch (const std::bad_alloc &) {
         internalError(filename, "Checking file failed: out of memory");
     } catch (const InternalError &e) {
-        internalError(filename, "Checking file failed: " + e.errorMessage);
+        const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, filename, "Bailing out from analysis: Checking file failed");
+        reportErr(errmsg);
     }
 
     if (!mSettings.buildDir.empty()) {
@@ -1448,23 +1492,14 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
         if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
-        const std::string results =
+        const std::vector<picojson::value> results =
             executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
-        std::istringstream istr(results);
-        std::string line;
 
         const bool misraC2023 = mSettings.premiumArgs.find("--misra-c-2023") != std::string::npos;
 
-        while (std::getline(istr, line)) {
-            if (!startsWith(line,"{"))
-                continue;
-
-            picojson::value res;
-            std::istringstream istr2(line);
-            istr2 >> res;
-            if (!res.is<picojson::object>())
-                continue;
-
+        for (const picojson::value& res : results) {
+            // TODO: get rid of copy?
+            // this is a copy so we can access missing fields and get a default value
             picojson::object obj = res.get<picojson::object>();
 
             ErrorMessage errmsg;
@@ -1519,7 +1554,8 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
     try {
         executeAddons(ctuInfoFiles);
     } catch (const InternalError& e) {
-        internalError("", "Whole program analysis failed: " + e.errorMessage);
+        const ErrorMessage errmsg = ErrorMessage::fromInternalError(e, nullptr, "", "Bailing out from analysis: Whole program analysis failed");
+        reportErr(errmsg);
     }
 
     if (mSettings.buildDir.empty()) {
@@ -1687,8 +1723,8 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
     std::string output;
-    if (!mExecuteCommand(exe, split(args), emptyString, output)) {
-        std::cerr << "Failed to execute '" << exe << "'" << std::endl;
+    if (const int exitcode = mExecuteCommand(exe, split(args), emptyString, output)) {
+        std::cerr << "Failed to execute '" << exe << "' (exitcode: " << std::to_string(exitcode) << ")" << std::endl;
         return;
     }
 

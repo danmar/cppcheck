@@ -1510,7 +1510,15 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (mSettings.standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
             continue;
-        if (mSettings.library.functions.find(tok->str()) != mSettings.library.functions.end())
+        std::string fstr = tok->str();
+        const Token* ftok = tok->previous();
+        while (Token::simpleMatch(ftok, "::")) {
+            if (!Token::Match(ftok->previous(), "%name%"))
+                break;
+            fstr.insert(0, ftok->previous()->str() + "::");
+            ftok = ftok->tokAt(-2);
+        }
+        if (mSettings.library.functions.find(fstr) != mSettings.library.functions.end())
             continue;
         const_cast<Token *>(tok)->isIncompleteVar(true); // TODO: avoid const_cast
     }
@@ -5052,19 +5060,16 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
         else {
             // FIXME search base class here
 
-            const Scope* temp{};
-            if (scope->functionOf && (temp = scope->functionOf->findRecordInNestedList(tok1->str()))) {
-                scope = temp;
-            } else {
-                // find first scope
-                while (scope && scope->nestedIn) {
-                    temp = scope->nestedIn->findRecordInNestedList(tok1->str());
-                    if (temp) {
-                        scope = temp;
-                        break;
-                    }
-                    scope = scope->nestedIn;
+            // find first scope
+            while (scope && scope->nestedIn) {
+                const Scope* temp = scope->nestedIn->findRecordInNestedList(tok1->str());
+                if (!temp && scope->functionOf)
+                    temp = scope->functionOf->findRecordInNestedList(tok1->str());
+                if (temp) {
+                    scope = temp;
+                    break;
                 }
+                scope = scope->nestedIn;
             }
         }
 

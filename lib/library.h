@@ -107,22 +107,27 @@ public:
     /** get reallocation id for function */
     int getReallocId(const Token *tok, int arg) const;
 
+    // TODO: get rid of this
     /** get allocation info for function by name (deprecated, use other alloc) */
     const AllocFunc* getAllocFuncInfo(const char name[]) const {
         return getAllocDealloc(mAlloc, name);
     }
 
+    // TODO: get rid of this
     /** get deallocation info for function by name (deprecated, use other alloc) */
     const AllocFunc* getDeallocFuncInfo(const char name[]) const {
         return getAllocDealloc(mDealloc, name);
     }
 
+    // TODO: get rid of this
     /** get allocation id for function by name (deprecated, use other alloc) */
+    // cppcheck-suppress unusedFunction
     int allocId(const char name[]) const {
         const AllocFunc* af = getAllocDealloc(mAlloc, name);
         return af ? af->groupId : 0;
     }
 
+    // TODO: get rid of this
     /** get deallocation id for function by name (deprecated, use other alloc) */
     int deallocId(const char name[]) const {
         const AllocFunc* af = getAllocDealloc(mDealloc, name);
@@ -130,16 +135,19 @@ public:
     }
 
     /** set allocation id for function */
+    // cppcheck-suppress unusedFunction - test-only
     void setalloc(const std::string &functionname, int id, int arg) {
         mAlloc[functionname].groupId = id;
         mAlloc[functionname].arg = arg;
     }
 
+    // cppcheck-suppress unusedFunction - test-only
     void setdealloc(const std::string &functionname, int id, int arg) {
         mDealloc[functionname].groupId = id;
         mDealloc[functionname].arg = arg;
     }
 
+    // cppcheck-suppress unusedFunction - test-only
     void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
         mRealloc[functionname].groupId = id;
         mRealloc[functionname].arg = arg;
@@ -147,6 +155,7 @@ public:
     }
 
     /** add noreturn function setting */
+    // cppcheck-suppress unusedFunction - test-only
     void setnoreturn(const std::string& funcname, bool noreturn) {
         mNoReturn[funcname] = noreturn ? FalseTrueMaybe::True : FalseTrueMaybe::False;
     }

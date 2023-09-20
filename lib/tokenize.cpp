@@ -1666,7 +1666,7 @@ void Tokenizer::simplifyTypedefCpp()
 
                             pattern += typeName->str();
                         } else {
-                            if (scope == 0)
+                            if (scope == 0 && !(classLevel > 1 && tok2 == spaceInfo[classLevel - 1].bodyEnd))
                                 break;
                             --scope;
                         }
@@ -4014,8 +4014,7 @@ void Tokenizer::simplifyTemplates()
 
     const std::time_t maxTime = mSettings->templateMaxTime > 0 ? std::time(nullptr) + mSettings->templateMaxTime : 0;
     mTemplateSimplifier->simplifyTemplates(
-        maxTime,
-        mCodeWithTemplates);
+        maxTime);
 }
 //---------------------------------------------------------------------------
 

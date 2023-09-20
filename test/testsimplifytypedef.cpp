@@ -3377,6 +3377,16 @@ private:
                "}\n"
                "N::C::C(T*) : p(nullptr) {}\n";
         ASSERT_EQUALS("namespace N { struct C { C ( int * ) ; void * p ; } ; } N :: C :: C ( int * ) : p ( nullptr ) { }", tok(code));
+
+        code = "namespace N {\n" // #11986
+               "    typedef char U;\n"
+               "    typedef int V;\n"
+               "    struct S {};\n"
+               "    struct T { void f(V*); };\n"
+               "}\n"
+               "void N::T::f(V*) {}\n"
+               "namespace N {}\n";
+        ASSERT_EQUALS("namespace N { struct S { } ; struct T { void f ( int * ) ; } ; } void N :: T :: f ( int * ) { }", tok(code));
     }
 
     void simplifyTypedefFunction1() {

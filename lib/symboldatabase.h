@@ -350,6 +350,7 @@ public:
      * Is variable in a namespace.
      * @return true if in a namespace, false if not
      */
+    // cppcheck-suppress unusedFunction
     bool isNamespace() const {
         return mAccess == AccessControl::Namespace;
     }
@@ -1356,6 +1357,7 @@ public:
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
+    // cppcheck-suppress unusedFunction
     bool isVarId(nonneg int varid) const {
         return varid < mVariableList.size();
     }

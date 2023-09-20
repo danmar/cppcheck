@@ -256,7 +256,6 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck"};
         ASSERT(parser->parseFromArgs(1, argv));
-        ASSERT_EQUALS(true, parser->getShowHelp());
         ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
@@ -264,7 +263,6 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-h"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS(true, parser->getShowHelp());
         ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
@@ -272,7 +270,6 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--help"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS(true, parser->getShowHelp());
         ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 

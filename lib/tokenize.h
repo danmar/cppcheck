@@ -606,12 +606,6 @@ private:
     bool operatorEnd(const Token * tok) const;
 
 public:
-
-    /** Was there templates in the code? */
-    bool codeWithTemplates() const {
-        return mCodeWithTemplates;
-    }
-
     const SymbolDatabase *getSymbolDatabase() const {
         return mSymbolDatabase;
     }
@@ -723,12 +717,6 @@ private:
 
     /** unnamed count "Unnamed0", "Unnamed1", "Unnamed2", ... */
     nonneg int mUnnamedCount{};
-
-    /**
-     * was there any templates? templates that are "unused" are
-     * removed from the token list
-     */
-    bool mCodeWithTemplates{};
 
     /**
      * TimerResults
