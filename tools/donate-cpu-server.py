@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.42"
+SERVER_VERSION = "1.3.43"
 
 OLD_VERSION = '2.12.0'
 
@@ -111,7 +111,10 @@ def overviewReport() -> str:
     #html += '<a href="head-valueFlowBailout">valueFlowBailout</a><br>\n'
     #html += '<a href="head-bailoutUninitVar">bailoutUninitVar</a><br>\n'
     #html += '<a href="head-symbolDatabaseWarning">symbolDatabaseWarning</a><br>\n'
+    html += '<br>\n'
+    html += 'Custom reports:<br>\n'
     html += '<a href="value_flow_bailout_incomplete_var.html">valueFlowBailoutIncompleteVar report</a><br>\n'
+    html += '<a href="unknown_macro.html">unknownMacro report</a><br>\n'
     html += '<br>\n'
     html += 'Important errors:<br>\n'
     html += '<a href="head-cppcheckError">cppcheckError</a><br>\n'
@@ -897,12 +900,16 @@ def timeReportSlow(resultPath: str) -> str:
 
 
 def check_library_report(result_path: str, message_id: str) -> str:
-    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore', 'checkLibraryCheckType', 'valueFlowBailoutIncompleteVar'):
+    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore', 'checkLibraryCheckType', 'valueFlowBailoutIncompleteVar', 'unknownMacro'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
         print_ts(error_message)
         return error_message
 
-    if message_id == 'valueFlowBailoutIncompleteVar':
+    if message_id == 'unknownMacro':
+        metric = 'macros'
+        m_column = 'macro'
+        metric_link = 'unknown_macro'
+    elif message_id == 'valueFlowBailoutIncompleteVar':
         metric = 'variables'
         m_column = 'Variable'
         metric_link = 'incomplete_var'
@@ -939,13 +946,17 @@ def check_library_report(result_path: str, message_id: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if message_id != 'valueFlowBailoutIncompleteVar':
+            if message_id != 'valueFlowBailoutIncompleteVar' and message_id != 'unknownMacro':
                 if line == 'info messages:\n':
                     info_messages = True
                 if not info_messages:
                     continue
             if line.endswith('[' + message_id + ']\n'):
-                if message_id == 'valueFlowBailoutIncompleteVar':
+                if message_id == 'unknownMacro':
+                    print(line)
+                    marker = 'required. If '
+                    function_name = line[(line.find(marker) + len(marker)):line.rfind('is a macro') - 1]
+                elif message_id == 'valueFlowBailoutIncompleteVar':
                     marker = 'incomplete variable '
                     function_name = line[(line.find(marker) + len(marker)):line.rfind('[') - 1]
                 elif message_id == 'checkLibraryFunction':
@@ -974,9 +985,9 @@ def check_library_report(result_path: str, message_id: str) -> str:
 
 
 # Lists all checkLibrary* messages regarding the given function name
-def check_library_function_name(result_path: str, function_name: str, is_var: bool=False) -> str:
-    if is_var:
-        id = '[valueFlowBailoutIncompleteVar'
+def check_library_function_name(result_path: str, function_name: str, nonfunc_id: str='') -> str:
+    if nonfunc_id:
+        id = '[' + nonfunc_id
     else:
         function_name = urllib.parse.unquote_plus(function_name)
         if function_name.endswith('()'):
@@ -997,7 +1008,7 @@ def check_library_function_name(result_path: str, function_name: str, is_var: bo
             if line.startswith('cppcheck-options:'):
                 cppcheck_options = line
                 continue
-            if not is_var:
+            if not nonfunc_id:
                 if line == 'info messages:\n':
                     info_messages = True
                     continue
@@ -1138,9 +1149,16 @@ class HttpClientThread(Thread):
             elif url == '/value_flow_bailout_incomplete_var.html':
                 text = check_library_report(self.resultPath, message_id='valueFlowBailoutIncompleteVar')
                 httpGetResponse(self.connection, text, 'text/html')
+            elif url == '/unknown_macro.html':
+                text = check_library_report(self.resultPath, message_id='unknownMacro')
+                httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('/incomplete_var-'):
                 var_name = url[len('/incomplete_var-'):]
-                text = check_library_function_name(self.resultPath, var_name, True)
+                text = check_library_function_name(self.resultPath, var_name, nonfunc_id='valueFlowBailoutIncompleteVar')
+                httpGetResponse(self.connection, text, 'text/plain')
+            elif url.startswith('/unknown_macro-'):
+                var_name = url[len('/unknown_macro-'):]
+                text = check_library_function_name(self.resultPath, var_name, nonfunc_id='unknownMacro')
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + url
