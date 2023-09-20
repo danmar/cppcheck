@@ -57,7 +57,7 @@
 #endif
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
+static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
 {
     output.clear();
 
@@ -80,7 +80,7 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
         std::ofstream fout(redirect.substr(3));
         fout << process.readAllStandardError().toStdString();
     }
-    return process.exitCode() == 0;
+    return process.exitCode();
 }
 
 

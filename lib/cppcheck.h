@@ -50,12 +50,14 @@ class Tokenizer;
  */
 class CPPCHECKLIB CppCheck : ErrorLogger {
 public:
+    using ExecuteCmdFn = std::function<int (std::string,std::vector<std::string>,std::string,std::string&)>;
+
     /**
      * @brief Constructor.
      */
     CppCheck(ErrorLogger &errorLogger,
              bool useGlobalSuppressions,
-             std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> executeCommand);
+             ExecuteCmdFn executeCommand);
 
     /**
      * @brief Destructor.
@@ -230,7 +232,7 @@ private:
     AnalyzerInformation mAnalyzerInformation;
 
     /** Callback for executing a shell command (exe, args, output) */
-    std::function<bool(std::string,std::vector<std::string>,std::string,std::string&)> mExecuteCommand;
+    ExecuteCmdFn mExecuteCommand;
 
     std::ofstream mPlistFile;
 };

@@ -233,7 +233,7 @@ static void serializeString(std::string &oss, const std::string & str)
     oss += str;
 }
 
-ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename)
+ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg)
 {
     if (internalError.token)
         assert(tokenList != nullptr); // we need to make sure we can look up the provided token
@@ -253,9 +253,12 @@ ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError,
     ErrorMessage errmsg(std::move(locationList),
                         tokenList ? tokenList->getSourceFilePath() : filename,
                         Severity::error,
-                        internalError.errorMessage,
+                        (msg.empty() ? "" : (msg + ": ")) + internalError.errorMessage,
                         internalError.id,
                         Certainty::normal);
+    // TODO: find a better way
+    if (!internalError.details.empty())
+        errmsg.mVerboseMessage = errmsg.mVerboseMessage + ": " + internalError.details;
     return errmsg;
 }
 
