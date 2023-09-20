@@ -1510,6 +1510,16 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (mSettings.standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
             continue;
+        std::string fstr = tok->str();
+        const Token* ftok = tok->previous();
+        while (Token::simpleMatch(ftok, "::")) {
+            if (!Token::Match(ftok->previous(), "%name%"))
+                break;
+            fstr.insert(0, ftok->previous()->str() + "::");
+            ftok = ftok->tokAt(-2);
+        }
+        if (mSettings.library.functions.find(fstr) != mSettings.library.functions.end())
+            continue;
         const_cast<Token *>(tok)->isIncompleteVar(true); // TODO: avoid const_cast
     }
 }
