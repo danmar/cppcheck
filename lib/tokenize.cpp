@@ -8196,7 +8196,7 @@ void Tokenizer::reportUnknownMacros() const
             if (Token::Match(inner, "[[({]"))
                 inner = inner->link();
             else if (inner->str() == ";")
-                unknownMacroError(inner);
+                unknownMacroError(tok);
         }
     }
 
