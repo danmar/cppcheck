@@ -43,7 +43,11 @@ private:
     static std::string findBaseDir() {
         std::string basedir;
         while (!Path::isDirectory(Path::join(basedir, ".github"))) {
+            const std::string abspath = Path::getAbsoluteFilePath(basedir);
             basedir += "../";
+            // no more going up
+            if (Path::getAbsoluteFilePath(basedir) == abspath)
+                throw std::runtime_error("could not find repository root directory");
         }
         return basedir;
     }
