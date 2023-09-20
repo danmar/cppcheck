@@ -137,7 +137,7 @@ jobs:
 
       - name: test addons
         run: |
-          python -m pytest --strict -vv addons/test/test-*.py
+          python -m pytest -Werror --strict-markers -vv addons/test/test-*.py
         env:
           PYTHONPATH: ./addons
 
@@ -149,21 +149,21 @@ jobs:
 
       - name: test reduce
         run: |
-          python -m pytest --strict -vv tools/test_reduce.py
+          python -m pytest -Werror --strict-markers -vv tools/test_reduce.py
         env:
           PYTHONPATH: ./tools
 
       - name: test donate_cpu_lib
         if: matrix.python-version != '2.7'
         run: |
-          python -m pytest --strict -vv tools/test_donate_cpu_lib.py
+          python -m pytest -Werror --strict-markers -vv tools/test_donate_cpu_lib.py
         env:
           PYTHONPATH: ./tools
 
       - name: test donate_cpu_server
         if: matrix.python-version != '2.7'
         run: |
-          python -m pytest --strict -vv tools/test_donate_cpu_server.py
+          python -m pytest -Werror --strict-markers -vv tools/test_donate_cpu_server.py
         env:
           PYTHONPATH: ./tools
 
