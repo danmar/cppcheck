@@ -324,6 +324,8 @@ int Var;
     assert stderr == '{}:2:1: style: Variable Var violates naming convention [naming-varname]\n'.format(test_file)
 
 
+# the namingng addon only works standalone and not in CLI mode - see #12005
+@pytest.mark.skip
 def test_addon_namingng(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
     # TODO: trigger warning
