@@ -66,7 +66,7 @@ private:
                                "    <unique/>\n"
                                "  </smart-pointer>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        settings = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Assign
         TEST_CASE(assign1);

@@ -75,9 +75,6 @@ public:
     Error load(const char exename[], const char path[]);
     Error load(const tinyxml2::XMLDocument &doc);
 
-    /** this is used for unit tests */
-    bool loadxmldata(const char xmldata[], std::size_t len);
-
     struct AllocFunc {
         int groupId;
         int arg;
