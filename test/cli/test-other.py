@@ -255,10 +255,14 @@ def test_addon_y2038(tmpdir):
     # TODO: trigger warning
     with open(test_file, 'wt') as f:
         f.write("""
-typedef int MISRA_5_6_VIOLATION;
+extern void f()
+{
+    time_t t = std::time(nullptr);
+    (void)t;
+}
         """)
 
-    args = ['--addon=y2038', '--enable=all', test_file]
+    args = ['--addon=y2038', '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -266,18 +270,20 @@ typedef int MISRA_5_6_VIOLATION;
     assert lines == [
         'Checking {} ...'.format(test_file)
     ]
-    assert stderr == ''
+    assert stderr == '{}:4:21: warning: time is Y2038-unsafe [y2038-unsafe-call]\n'.format(test_file)
 
 
 def test_addon_threadsafety(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
-    # TODO: trigger warning
     with open(test_file, 'wt') as f:
         f.write("""
-typedef int MISRA_5_6_VIOLATION;
+extern const char* f()
+{
+    return strerror(1);
+}
         """)
 
-    args = ['--addon=threadsafety', '--enable=all', test_file]
+    args = ['--addon=threadsafety', '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -285,18 +291,29 @@ typedef int MISRA_5_6_VIOLATION;
     assert lines == [
         'Checking {} ...'.format(test_file)
     ]
-    assert stderr == ''
+    assert stderr == '{}:4:12: warning: strerror is MT-unsafe [threadsafety-unsafe-call]\n'.format(test_file)
 
 
 def test_addon_naming(tmpdir):
+    # the addon does nothing without a config
+    addon_file = os.path.join(tmpdir, 'naming1.json')
+    with open(addon_file, 'wt') as f:
+        f.write("""
+{
+    "script": "addons/naming.py",
+    "args": [
+        "--var=[_a-z].*"
+    ]
+}
+                """)
+
     test_file = os.path.join(tmpdir, 'test.cpp')
-    # TODO: trigger warning
     with open(test_file, 'wt') as f:
         f.write("""
-typedef int MISRA_5_6_VIOLATION;
+int Var;
         """)
 
-    args = ['--addon=naming', '--enable=all', test_file]
+    args = ['--addon={}'.format(addon_file), '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -304,7 +321,7 @@ typedef int MISRA_5_6_VIOLATION;
     assert lines == [
         'Checking {} ...'.format(test_file)
     ]
-    assert stderr == ''
+    assert stderr == '{}:2:1: style: Variable Var violates naming convention [naming-varname]\n'.format(test_file)
 
 
 def test_addon_namingng(tmpdir):
@@ -328,13 +345,16 @@ typedef int MISRA_5_6_VIOLATION;
 
 def test_addon_findcasts(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
-    # TODO: trigger warning
     with open(test_file, 'wt') as f:
         f.write("""
-typedef int MISRA_5_6_VIOLATION;
+        extern void f(char c)
+        {
+            int i = (int)c;
+            (void)i;
+        }
         """)
 
-    args = ['--addon=findcasts', '--enable=all', test_file]
+    args = ['--addon=findcasts', '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -342,18 +362,20 @@ typedef int MISRA_5_6_VIOLATION;
     assert lines == [
         'Checking {} ...'.format(test_file)
     ]
-    assert stderr == ''
+    assert stderr == '{}:4:21: information: found a cast [findcasts-cast]\n'.format(test_file)
 
 
 def test_addon_misc(tmpdir):
     test_file = os.path.join(tmpdir, 'test.cpp')
-    # TODO: trigger warning
     with open(test_file, 'wt') as f:
         f.write("""
-typedef int MISRA_5_6_VIOLATION;
+extern void f()
+{
+    char char* [] = {"a" "b"}
+}
         """)
 
-    args = ['--addon=misc', '--enable=all', test_file]
+    args = ['--addon=misc', '--enable=all', '--template={file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]', test_file]
 
     exitcode, stdout, stderr = cppcheck(args)
     assert exitcode == 0
@@ -361,7 +383,7 @@ typedef int MISRA_5_6_VIOLATION;
     assert lines == [
         'Checking {} ...'.format(test_file)
     ]
-    assert stderr == ''
+    assert stderr == '{}:4:26: style: String concatenation in array initialization, missing comma? [misc-stringConcatInArrayInit]\n'.format(test_file)
 
 
 def test_invalid_addon_json(tmpdir):
