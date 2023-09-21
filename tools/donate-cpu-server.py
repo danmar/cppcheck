@@ -987,10 +987,10 @@ def check_library_report(result_path: str, message_id: str) -> str:
 # Lists all checkLibrary* messages regarding the given function name
 def check_library_function_name(result_path: str, function_name: str, query_params: dict, nonfunc_id: str='') -> str:
     pkgs = '' if query_params.get('pkgs') == '1' else None
+    function_name = urllib.parse.unquote_plus(function_name)
     if nonfunc_id:
         id = '[' + nonfunc_id
     else:
-        function_name = urllib.parse.unquote_plus(function_name)
         if function_name.endswith('()'):
             id = '[checkLibrary'
         else:
