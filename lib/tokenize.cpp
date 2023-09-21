@@ -8288,7 +8288,7 @@ void Tokenizer::reportUnknownMacros() const
                 continue;
         }
 
-        unknownMacroError(tok);
+        unknownMacroError(tok->isStandardType() ? tok2 : tok);
     }
 }
 
