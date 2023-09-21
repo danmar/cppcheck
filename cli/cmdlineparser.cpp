@@ -341,6 +341,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
                 if (enable_arg.find("style") != std::string::npos) {
+                    printMessage("'--enable=style' will no longer implicitly enable 'warning', 'performance' and 'portability' in a future version. Please specify them explicitly instead.");
                     mSettings.addEnabled("warning");
                     mSettings.addEnabled("performance");
                     mSettings.addEnabled("portability");

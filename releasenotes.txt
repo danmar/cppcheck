@@ -15,3 +15,4 @@ Changed interface:
 Other:
 - Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depedent on it.
 - The undocumented and deprecated command-line options `--template <template>` and `--template-format <template>` has been removed. Please use `--template=` and `--template-format=` instead.
+- "--enable=style" will no longer implicitly enable "warning", "performance" and "portability" in a future version. Please specify them explicitly instead.
