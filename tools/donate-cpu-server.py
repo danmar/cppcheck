@@ -1003,6 +1003,13 @@ def check_library_function_name(result_path: str, function_name: str, query_para
         package_url = None
         cppcheck_options = None
         for line in open(filename, 'rt'):
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line.startswith('ftp://'):
                 package_url = line
                 continue
