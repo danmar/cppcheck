@@ -601,11 +601,10 @@ def summaryReport(resultsPath: str, name: str, prefix: str, marker: str) -> str:
             if line.startswith(marker):
                 inResults = True
                 continue
-            if line.startswith('diff:'):
-                if inResults:
-                    break
             if not inResults:
                 continue
+            if line.startswith('diff:'):
+                break
             if not line.endswith(']'):
                 continue
             if ': note: ' in line:
@@ -658,13 +657,15 @@ def messageIdReport(resultPath: str, marker: str, messageId: str, query_params: 
         for line in open(filename, 'rt'):
             if line.startswith('ftp://'):
                 url = line
-            elif line.startswith(marker):
-                inResults = True
-            elif not inResults:
                 continue
-            elif inResults and line.startswith('diff:'):
+            if line.startswith(marker):
+                inResults = True
+                continue
+            if not inResults:
+                continue
+            if line.startswith('diff:'):
                 break
-            elif line.endswith(e):
+            if line.endswith(e):
                 if url:
                     text += url
                     if pkgs is not None:
@@ -701,13 +702,15 @@ def messageIdTodayReport(resultPath: str, messageId: str, marker: str) -> str:
                     break
             if line.startswith('ftp://'):
                 url = line
-            elif line.startswith(marker):
-                inResults = True
-            elif not inResults:
                 continue
-            elif inResults and line.startswith('diff:'):
+            if line.startswith(marker):
+                inResults = True
+                continue
+            if not inResults:
+                continue
+            if line.startswith('diff:'):
                 break
-            elif line.endswith(e):
+            if line.endswith(e):
                 if url:
                     text += url
                     url = None
