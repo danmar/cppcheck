@@ -985,7 +985,8 @@ def check_library_report(result_path: str, message_id: str) -> str:
 
 
 # Lists all checkLibrary* messages regarding the given function name
-def check_library_function_name(result_path: str, function_name: str, nonfunc_id: str='') -> str:
+def check_library_function_name(result_path: str, function_name: str, query_params: dict, nonfunc_id: str='') -> str:
+    pkgs = '' if query_params.get('pkgs') == '1' else None
     if nonfunc_id:
         id = '[' + nonfunc_id
     else:
@@ -999,11 +1000,11 @@ def check_library_function_name(result_path: str, function_name: str, nonfunc_id
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
         info_messages = False
-        url = None
+        package_url = None
         cppcheck_options = None
         for line in open(filename, 'rt'):
             if line.startswith('ftp://'):
-                url = line
+                package_url = line
                 continue
             if line.startswith('cppcheck-options:'):
                 cppcheck_options = line
@@ -1014,16 +1015,23 @@ def check_library_function_name(result_path: str, function_name: str, nonfunc_id
                     continue
                 if not info_messages:
                     continue
-            if id in line:
-                if (' ' + function_name + ' ') in line:
-                    if url:
-                        output_lines_list.append(url)
-                        url = None
-                    if cppcheck_options:
-                        output_lines_list.append(cppcheck_options)
-                        cppcheck_options = None
-                    output_lines_list.append(line)
+            if id not in line:
+                continue
+            if not (' ' + function_name + ' ') in line:
+                continue
+            if pkgs is not None and package_url is not None:
+                pkgs += '{}\n'.format(package_url.strip())
+                break
+            if package_url:
+                output_lines_list.append(package_url)
+                package_url = None
+            if cppcheck_options:
+                output_lines_list.append(cppcheck_options)
+                cppcheck_options = None
+            output_lines_list.append(line)
 
+    if pkgs is not None:
+        return pkgs
     return ''.join(output_lines_list)
 
 
@@ -1144,7 +1152,7 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('/check_library-'):
                 function_name = url[len('/check_library-'):]
-                text = check_library_function_name(self.infoPath, function_name)
+                text = check_library_function_name(self.infoPath, function_name, queryParams)
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url == '/value_flow_bailout_incomplete_var.html':
                 text = check_library_report(self.resultPath, message_id='valueFlowBailoutIncompleteVar')
@@ -1154,11 +1162,11 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('/incomplete_var-'):
                 var_name = url[len('/incomplete_var-'):]
-                text = check_library_function_name(self.resultPath, var_name, nonfunc_id='valueFlowBailoutIncompleteVar')
+                text = check_library_function_name(self.resultPath, var_name, queryParams, nonfunc_id='valueFlowBailoutIncompleteVar')
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url.startswith('/unknown_macro-'):
                 var_name = url[len('/unknown_macro-'):]
-                text = check_library_function_name(self.resultPath, var_name, nonfunc_id='unknownMacro')
+                text = check_library_function_name(self.resultPath, var_name, queryParams, nonfunc_id='unknownMacro')
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
                 filename = resultPath + url
