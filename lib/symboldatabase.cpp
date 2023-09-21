@@ -1486,7 +1486,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             tok = tok->linkAt(1);
             continue;
         }
-        if (!tok->isNameOnly())
+        if (!(tok->isNameOnly() || tok->isKeyword()))
             continue;
         if (tok->type())
             continue;
@@ -1502,6 +1502,8 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             tok = tok->linkAt(1);
             continue;
         }
+        if (tok->isKeyword())
+            continue;
         // Skip goto labels
         if (Token::simpleMatch(tok->previous(), "goto"))
             continue;
