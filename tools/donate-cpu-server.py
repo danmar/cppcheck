@@ -919,22 +919,22 @@ def check_library_report(result_path: str, message_id: str) -> str:
         metric = 'macros'
         m_column = 'macro'
         metric_link = 'unknown_macro'
-        marker = HEAD_MARKER
+        start_marker = HEAD_MARKER
     elif message_id == 'valueFlowBailoutIncompleteVar':
         metric = 'variables'
         m_column = 'Variable'
         metric_link = 'incomplete_var'
-        marker = HEAD_MARKER
+        start_marker = HEAD_MARKER
     elif message_id == 'checkLibraryCheckType':
         metric = 'types'
         m_column = 'Type'
         metric_link = 'check_library'
-        marker = INFO_MARKER
+        start_marker = INFO_MARKER
     else:
         metric = 'functions'
         m_column = 'Function'
         metric_link = 'check_library'
-        marker = INFO_MARKER
+        start_marker = INFO_MARKER
 
     functions_shown_max = 5000
     html = '<!DOCTYPE html>\n'
@@ -960,7 +960,7 @@ def check_library_report(result_path: str, message_id: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith(marker):
+            if line.startswith(start_marker):
                 in_results = True
                 continue
             if not in_results:
