@@ -325,7 +325,7 @@ bool Suppressions::Suppression::parseComment(std::string comment, std::string *e
         if (word.find_first_not_of("+-*/%#;") == std::string::npos)
             break;
         if (startsWith(word, SymbolNameString))
-            s.symbolName = word.substr(SymbolNameString.size());
+            symbolName = word.substr(SymbolNameString.size());
         else if (errorMessage && errorMessage->empty())
             *errorMessage = "Bad suppression attribute '" + word + "'. You can write comments in the comment after a ; or //. Valid suppression attributes; symbolName=sym";
     }

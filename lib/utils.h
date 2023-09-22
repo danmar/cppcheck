@@ -91,6 +91,11 @@ bool startsWith(const std::string& str, const char (&start)[N])
     return startsWith(str, start, N - 1);
 }
 
+inline bool startsWith(const std::string& str, const std::string& start)
+{
+    return startsWith(str, start.c_str(), start.length());
+}
+
 inline bool endsWith(const std::string &str, char c)
 {
     return !str.empty() && str.back() == c;
