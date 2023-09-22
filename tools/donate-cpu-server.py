@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.45"
+SERVER_VERSION = "1.3.46"
 
 OLD_VERSION = '2.12.0'
 
@@ -665,10 +665,9 @@ def messageIdReport(resultPath: str, marker: str, messageId: str, query_params: 
             if line.startswith('ftp://'):
                 url = line
                 continue
-            if line.startswith(marker):
-                inResults = True
-                continue
             if not inResults:
+                if line.startswith(marker):
+                    inResults = True
                 continue
             if line.startswith('diff:'):
                 break
@@ -710,10 +709,9 @@ def messageIdTodayReport(resultPath: str, messageId: str, marker: str) -> str:
             if line.startswith('ftp://'):
                 url = line
                 continue
-            if line.startswith(marker):
-                inResults = True
-                continue
             if not inResults:
+                if line.startswith(marker):
+                    inResults = True
                 continue
             if line.startswith('diff:'):
                 break
@@ -919,22 +917,22 @@ def check_library_report(result_path: str, message_id: str) -> str:
         metric = 'macros'
         m_column = 'macro'
         metric_link = 'unknown_macro'
-        marker = HEAD_MARKER
+        start_marker = HEAD_MARKER
     elif message_id == 'valueFlowBailoutIncompleteVar':
         metric = 'variables'
         m_column = 'Variable'
         metric_link = 'incomplete_var'
-        marker = HEAD_MARKER
+        start_marker = HEAD_MARKER
     elif message_id == 'checkLibraryCheckType':
         metric = 'types'
         m_column = 'Type'
         metric_link = 'check_library'
-        marker = INFO_MARKER
+        start_marker = INFO_MARKER
     else:
         metric = 'functions'
         m_column = 'Function'
         metric_link = 'check_library'
-        marker = INFO_MARKER
+        start_marker = INFO_MARKER
 
     functions_shown_max = 5000
     html = '<!DOCTYPE html>\n'
@@ -960,10 +958,9 @@ def check_library_report(result_path: str, message_id: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith(marker):
-                in_results = True
-                continue
             if not in_results:
+                if line.startswith(start_marker):
+                    in_results = True
                 continue
             if line.startswith('diff:'):
                 break
@@ -1033,13 +1030,12 @@ def check_library_function_name(result_path: str, function_name: str, query_para
             if line.startswith('cppcheck-options:'):
                 cppcheck_options = line
                 continue
-            if line.startswith(marker):
-                in_results = True
+            if not in_results:
+                if line.startswith(marker):
+                    in_results = True
                 continue
             if line.startswith('diff:'):
                 break
-            if not in_results:
-                continue
             if id not in line:
                 continue
             if not (' ' + function_name + ' ') in line:
