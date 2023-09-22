@@ -665,10 +665,9 @@ def messageIdReport(resultPath: str, marker: str, messageId: str, query_params: 
             if line.startswith('ftp://'):
                 url = line
                 continue
-            if line.startswith(marker):
-                inResults = True
-                continue
             if not inResults:
+                if line.startswith(marker):
+                    inResults = True
                 continue
             if line.startswith('diff:'):
                 break
@@ -710,10 +709,9 @@ def messageIdTodayReport(resultPath: str, messageId: str, marker: str) -> str:
             if line.startswith('ftp://'):
                 url = line
                 continue
-            if line.startswith(marker):
-                inResults = True
-                continue
             if not inResults:
+                if line.startswith(marker):
+                    inResults = True
                 continue
             if line.startswith('diff:'):
                 break
@@ -960,10 +958,9 @@ def check_library_report(result_path: str, message_id: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if line.startswith(start_marker):
-                in_results = True
-                continue
             if not in_results:
+                if line.startswith(start_marker):
+                    in_results = True
                 continue
             if line.startswith('diff:'):
                 break
@@ -1033,13 +1030,12 @@ def check_library_function_name(result_path: str, function_name: str, query_para
             if line.startswith('cppcheck-options:'):
                 cppcheck_options = line
                 continue
-            if line.startswith(marker):
-                in_results = True
+            if not in_results:
+                if line.startswith(marker):
+                    in_results = True
                 continue
             if line.startswith('diff:'):
                 break
-            if not in_results:
-                continue
             if id not in line:
                 continue
             if not (' ' + function_name + ' ') in line:
