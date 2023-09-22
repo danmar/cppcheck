@@ -198,7 +198,7 @@ public:
         return mSymbolNames;
     }
 
-    static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename);
+    static ErrorMessage fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg = emptyString);
 
 private:
     static std::string fixInvalidChars(const std::string& raw);

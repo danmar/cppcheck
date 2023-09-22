@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,10 +41,13 @@ class Token;
  */
 
 class CPPCHECKLIB Check64BitPortability : public Check {
+    friend class Test64BitPortability;
+
 public:
     /** This constructor is used when registering the Check64BitPortability */
     Check64BitPortability() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     Check64BitPortability(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -57,8 +60,6 @@ public:
 
     /** Check for pointer assignment */
     void pointerassignment();
-
-private:
 
     void assignmentAddressToIntegerError(const Token *tok);
     void assignmentIntegerToAddressError(const Token *tok);

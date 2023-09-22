@@ -210,6 +210,7 @@ private:
         TEST_CASE(simplifyTypedef143); // #11506
         TEST_CASE(simplifyTypedef144); // #9353
         TEST_CASE(simplifyTypedef145); // #9353
+        TEST_CASE(simplifyTypedef146);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3363,6 +3364,29 @@ private:
                "    sizeof(t);\n"
                "}\n";
         ASSERT_EQUALS("void g ( ) { sizeof ( t ) ; }", tok(code)); // TODO: handle implicit int
+    }
+
+    void simplifyTypedef146() {
+        const char* code{};
+        code = "namespace N {\n" // #11978
+               "    typedef int T;\n"
+               "    struct C {\n"
+               "        C(T*);\n"
+               "        void* p;\n"
+               "    };\n"
+               "}\n"
+               "N::C::C(T*) : p(nullptr) {}\n";
+        ASSERT_EQUALS("namespace N { struct C { C ( int * ) ; void * p ; } ; } N :: C :: C ( int * ) : p ( nullptr ) { }", tok(code));
+
+        code = "namespace N {\n" // #11986
+               "    typedef char U;\n"
+               "    typedef int V;\n"
+               "    struct S {};\n"
+               "    struct T { void f(V*); };\n"
+               "}\n"
+               "void N::T::f(V*) {}\n"
+               "namespace N {}\n";
+        ASSERT_EQUALS("namespace N { struct S { } ; struct T { void f ( int * ) ; } ; } void N :: T :: f ( int * ) { }", tok(code));
     }
 
     void simplifyTypedefFunction1() {

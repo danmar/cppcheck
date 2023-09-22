@@ -51,10 +51,18 @@ namespace tinyxml2 {
 
 /** @brief %Check classes. Uninitialized member variables, non-conforming operators, missing virtual destructor, etc */
 class CPPCHECKLIB CheckClass : public Check {
+    friend class TestClass;
+    friend class TestConstructors;
+    friend class TestUnusedPrivateFunction;
+
 public:
     /** @brief This constructor is used when registering the CheckClass */
     CheckClass() : Check(myName()) {}
 
+    /** @brief Set of the STL types whose operator[] is not const */
+    static const std::set<std::string> stl_containers_not_const;
+
+private:
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
 
@@ -191,10 +199,6 @@ public:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
-    /** @brief Set of the STL types whose operator[] is not const */
-    static const std::set<std::string> stl_containers_not_const;
-
-private:
     const SymbolDatabase* mSymbolDatabase{};
 
     // Reporting errors..

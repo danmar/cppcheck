@@ -23,6 +23,7 @@
 #include "fixture.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 
 #include <simplecpp.h>
 
@@ -70,6 +71,7 @@ private:
         TEST_CASE(simplifyUsing26); // #11090
         TEST_CASE(simplifyUsing27);
         TEST_CASE(simplifyUsing28);
+        TEST_CASE(simplifyUsing29);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -679,6 +681,14 @@ private:
                             "    T* p{ new T };\n"
                             "}\n";
         const char expected[] = "void f ( ) { int * p { new int } ; }";
+        ASSERT_EQUALS(expected, tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true));
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyUsing29() { // #11981
+        const char code[] = "using T = int*;\n"
+                            "void f(T = T()) {}\n";
+        const char expected[] = "void f ( int * = ( int * ) 0 ) { }";
         ASSERT_EQUALS(expected, tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true));
         ASSERT_EQUALS("", errout.str());
     }
@@ -1391,7 +1401,7 @@ private:
                             "STAMP(B, A);\n"
                             "STAMP(C, B);\n";
         tok(code, cppcheck::Platform::Type::Native, /*debugwarnings*/ true, /*preprocess*/ true);
-        ASSERT_EQUALS(errout.str().compare(0, 64, "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"), 0);
+        ASSERT(startsWith(errout.str(), "[test.cpp:6]: (debug) Failed to parse 'using C = S < S < S < int"));
     }
 
     void scopeInfo1() {

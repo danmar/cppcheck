@@ -26,6 +26,7 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cassert>
@@ -454,8 +455,9 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 if (level == 1)
                     return numberOfParameters;
                 level -= 2;
-            } else if (tok->str() == "," && level == 0) {
-                ++numberOfParameters;
+            } else if (tok->str() == ",") {
+                if (level == 0)
+                    ++numberOfParameters;
                 tok = tok->next();
                 continue;
             }
@@ -498,7 +500,7 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
             return 0;
 
         // num/type ..
-        if (!tok->isNumber() && tok->tokType() != Token::eChar && !tok->isName() && !tok->isOp())
+        if (!tok->isNumber() && tok->tokType() != Token::eChar && tok->tokType() != Token::eString && !tok->isName() && !tok->isOp())
             return 0;
         tok = tok->next();
         if (!tok)
@@ -2512,17 +2514,17 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, const Token *end, st
                     std::string result;
 
                     if (cmp == "==")
-                        result = (op1 == op2) ? "true" : "false";
+                        result = bool_to_string(op1 == op2);
                     else if (cmp == "!=")
-                        result = (op1 != op2) ? "true" : "false";
+                        result = bool_to_string(op1 != op2);
                     else if (cmp == "<=")
-                        result = (op1 <= op2) ? "true" : "false";
+                        result = bool_to_string(op1 <= op2);
                     else if (cmp == ">=")
-                        result = (op1 >= op2) ? "true" : "false";
+                        result = bool_to_string(op1 >= op2);
                     else if (cmp == "<")
-                        result = (op1 < op2) ? "true" : "false";
+                        result = bool_to_string(op1 < op2);
                     else
-                        result = (op1 > op2) ? "true" : "false";
+                        result = bool_to_string(op1 > op2);
 
                     tok->str(result);
                     tok->deleteNext(2);
@@ -3722,9 +3724,7 @@ void TemplateSimplifier::printOut(const std::string & text) const
     }
 }
 
-void TemplateSimplifier::simplifyTemplates(
-    const std::time_t maxtime,
-    bool &codeWithTemplates)
+void TemplateSimplifier::simplifyTemplates(const std::time_t maxtime)
 {
     // convert "sizeof ..." to "sizeof..."
     for (Token *tok = mTokenList.front(); tok; tok = tok->next()) {
@@ -3794,10 +3794,9 @@ void TemplateSimplifier::simplifyTemplates(
             mTemplateNamePos.clear();
         }
 
-        const bool hasTemplates = getTemplateDeclarations();
+        getTemplateDeclarations();
 
         if (passCount == 0) {
-            codeWithTemplates = hasTemplates;
             mDump.clear();
             for (const TokenAndName& t: mTemplateDeclarations)
                 mDump += t.dump(mTokenizer.list.getFiles());

@@ -65,7 +65,7 @@ static const struct CWE CWE825(825U);   // Expired Pointer Dereference
 static const struct CWE CWE833(833U);   // Deadlock
 static const struct CWE CWE834(834U);   // Excessive Iteration
 
-static bool isElementAccessYield(const Library::Container::Yield& yield)
+static bool isElementAccessYield(Library::Container::Yield yield)
 {
     return contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield);
 }

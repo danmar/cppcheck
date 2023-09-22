@@ -10,6 +10,35 @@ Addons are scripts that analyses Cppcheck dump files to check compatibility with
   Checks Linux system for [year 2038 problem](https://en.wikipedia.org/wiki/Year_2038_problem) safety. This required [modified environment](https://github.com/3adev/y2038). See complete description [here](https://github.com/danmar/cppcheck/blob/main/addons/doc/y2038.txt).
 + [threadsafety.py](https://github.com/danmar/cppcheck/blob/main/addons/threadsafety.py) 
   Analyse Cppcheck dump files to locate threadsafety issues like static local objects used by multiple threads.
++ [naming.py](https://github.com/danmar/cppcheck/blob/main/addons/naming.py)
+  Enforces naming conventions across the code.
++ [namingng.py](https://github.com/danmar/cppcheck/blob/main/addons/namingng.py)
+  Enforces naming conventions across the code. Enhanced version with support for type prefixes in variable and function names.
++ [findcasts.py](https://github.com/danmar/cppcheck/blob/main/addons/findcasts.py)
+  Locates casts in the code.
++ [misc.py](https://github.com/danmar/cppcheck/blob/main/addons/misc.py)
+  Performs miscellaneous checks.
+
+### Other files
+
+- doc
+  Additional files for documentation generation.
+- tests
+  Contains various unit tests for the addons.
+- cppcheck.py
+  Internal helper used by Cppcheck binary to run the addons.
+- cppcheckdata.doxyfile
+  Configuration file for documentation generation.
+- cppcheckdata.py
+  Helper class for reading Cppcheck dump files within an addon.
+- misra_9.py
+  Implementation of the MISRA 9.x rules used by `misra` addon. 
+- naming.json
+  Example configuration for `namingng` addon. 
+- ROS_naming.json
+  Example configuration for the `namingng` addon enforcing the [ROS naming convention for C++ ](http://wiki.ros.org/CppStyleGuide#Files).
+- runaddon.py
+  Internal helper used by Cppcheck binary to run the addons.
 
 ## Usage
 

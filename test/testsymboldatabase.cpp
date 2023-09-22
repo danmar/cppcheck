@@ -137,7 +137,9 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection);
         TEST_CASE(test_isVariableDeclarationIdentifiesArray);
         TEST_CASE(test_isVariableDeclarationIdentifiesPointerArray);
-        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers);
+        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers1);
+        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers2);
+        TEST_CASE(test_isVariableDeclarationIdentifiesOfArrayPointers3);
         TEST_CASE(test_isVariableDeclarationIdentifiesArrayOfFunctionPointers);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerVariable);
         TEST_CASE(isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable);
@@ -371,6 +373,8 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes5);
         TEST_CASE(createSymbolDatabaseFindAllScopes6);
 
+        TEST_CASE(createSymbolDatabaseIncompleteVars);
+
         TEST_CASE(enum1);
         TEST_CASE(enum2);
         TEST_CASE(enum3);
@@ -384,6 +388,8 @@ private:
         TEST_CASE(enum11);
         TEST_CASE(enum12);
         TEST_CASE(enum13);
+        TEST_CASE(enum14);
+        TEST_CASE(enum15);
 
         TEST_CASE(sizeOfType);
 
@@ -443,6 +449,7 @@ private:
         TEST_CASE(findFunction48);
         TEST_CASE(findFunction49); // #11888
         TEST_CASE(findFunction50); // #11904 - method with same name and arguments in derived class
+        TEST_CASE(findFunction51); // #11975 - method with same name in derived class
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -872,9 +879,39 @@ private:
         ASSERT(false == v.isReference());
     }
 
-    void test_isVariableDeclarationIdentifiesOfArrayPointers() {
+    void test_isVariableDeclarationIdentifiesOfArrayPointers1() {
         reset();
         GET_SYMBOL_DB("A (*a)[5];");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("a", vartok->str());
+        ASSERT_EQUALS("A", typetok->str());
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        ASSERT(true == v.isPointer());
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointerToArray());
+        ASSERT(false == v.isPointerArray());
+        ASSERT(false == v.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesOfArrayPointers2() {
+        reset();
+        GET_SYMBOL_DB("A (*const a)[5];");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+        ASSERT_EQUALS(true, result);
+        ASSERT_EQUALS("a", vartok->str());
+        ASSERT_EQUALS("A", typetok->str());
+        Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+        ASSERT(true == v.isPointer());
+        ASSERT(false == v.isArray());
+        ASSERT(true == v.isPointerToArray());
+        ASSERT(false == v.isPointerArray());
+        ASSERT(false == v.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesOfArrayPointers3() {
+        reset();
+        GET_SYMBOL_DB("A (** a)[5];");
         const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
@@ -5394,6 +5431,56 @@ private:
         ASSERT_EQUALS(classNC.derivedFrom[1].type, &classNB);
     }
 
+    void createSymbolDatabaseIncompleteVars()
+    {
+        {
+            GET_SYMBOL_DB("void f() {\n"
+                          "    auto s1 = std::string{ \"abc\" };\n"
+                          "    auto s2 = std::string(\"def\");\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string {");
+            ASSERT(s1 && !s1->isIncompleteVar());
+            const Token* s2 = Token::findsimplematch(s1, "string (");
+            ASSERT(s2 && !s2->isIncompleteVar());
+        }
+        {
+            GET_SYMBOL_DB("std::string f(int n, std::type_info t) {\n"
+                          "    std::vector<std::string*> v(n);\n"
+                          "    g<const std::string &>();\n"
+                          "    if (static_cast<int>(x)) {}\n"
+                          "    if (t == typeid(std::string)) {}\n"
+                          "    return (std::string) \"abc\";\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* s1 = Token::findsimplematch(tokenizer.tokens(), "string *");
+            ASSERT(s1 && !s1->isIncompleteVar());
+            const Token* s2 = Token::findsimplematch(s1, "string &");
+            ASSERT(s2 && !s2->isIncompleteVar());
+            const Token* x = Token::findsimplematch(s2, "x");
+            ASSERT(x && x->isIncompleteVar());
+            const Token* s3 = Token::findsimplematch(x, "string )");
+            ASSERT(s3 && !s3->isIncompleteVar());
+            const Token* s4 = Token::findsimplematch(s3->next(), "string )");
+            ASSERT(s4 && !s4->isIncompleteVar());
+        }
+        {
+            GET_SYMBOL_DB("void destroy(int*, void (*cb_dealloc)(void *));\n"
+                          "void f(int* p, int* q, int* r) {\n"
+                          "    destroy(p, free);\n"
+                          "    destroy(q, std::free);\n"
+                          "    destroy(r, N::free);\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* free1 = Token::findsimplematch(tokenizer.tokens(), "free");
+            ASSERT(free1 && !free1->isIncompleteVar());
+            const Token* free2 = Token::findsimplematch(free1->next(), "free");
+            ASSERT(free2 && !free2->isIncompleteVar());
+            const Token* free3 = Token::findsimplematch(free2->next(), "free");
+            ASSERT(free3 && free3->isIncompleteVar());
+        }
+    }
+
     void enum1() {
         GET_SYMBOL_DB("enum BOOL { FALSE, TRUE }; enum BOOL b;");
 
@@ -5721,6 +5808,77 @@ private:
         const Token* const a = Token::findsimplematch(tokenizer.tokens(), "auto");
         ASSERT(a && a->valueType());
         ASSERT(E1->scope == a->valueType()->typeScope);
+    }
+
+    void enum14() {
+        GET_SYMBOL_DB("void f() {\n" // #11421
+                      "    enum E { A = 0, B = 0xFFFFFFFFFFFFFFFFull, C = 0x7FFFFFFFFFFFFFFF };\n"
+                      "    E e = B;\n"
+                      "    auto s1 = e >> 32;\n"
+                      "    auto s2 = B >> 32;\n"
+                      "    enum F { F0 = sizeof(int) };\n"
+                      "    F f = F0;\n"
+                      "}\n");
+        ASSERT(db != nullptr);
+        auto it = db->scopeList.begin();
+        std::advance(it, 2);
+        const Enumerator* B = it->findEnumerator("B");
+        ASSERT(B);
+        TODO_ASSERT(B->value_known);
+        const Enumerator* C = it->findEnumerator("C");
+        ASSERT(C && C->value_known);
+        const Token* const s1 = Token::findsimplematch(tokenizer.tokens(), "s1 =");
+        ASSERT(s1 && s1->valueType());
+        ASSERT_EQUALS(s1->valueType()->type, ValueType::Type::LONGLONG);
+        const Token* const s2 = Token::findsimplematch(s1, "s2 =");
+        ASSERT(s2 && s2->valueType());
+        ASSERT_EQUALS(s2->valueType()->type, ValueType::Type::LONGLONG);
+        ++it;
+        const Enumerator* F0 = it->findEnumerator("F0");
+        ASSERT(F0 && F0->value_known);
+        const Token* const f = Token::findsimplematch(s2, "f =");
+        ASSERT(f && f->valueType());
+        ASSERT_EQUALS(f->valueType()->type, ValueType::Type::INT);
+    }
+
+    void enum15() {
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    S();\n"
+                          "    enum E { E0 };\n"
+                          "};\n"
+                          "S::S() {\n"
+                          "    E e = E::E0;\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* E0 = it->findEnumerator("E0");
+            ASSERT(E0 && E0->value_known && E0->value == 0);
+            std::advance(it, 1);
+            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+        }
+        {
+            GET_SYMBOL_DB("struct S {\n"
+                          "    S(bool x);\n"
+                          "    enum E { E0 };\n"
+                          "};\n"
+                          "S::S(bool x) {\n"
+                          "    if (x)\n"
+                          "        E e = E::E0;\n"
+                          "}\n");
+            ASSERT(db != nullptr);
+            auto it = db->scopeList.begin();
+            std::advance(it, 2);
+            const Enumerator* E0 = it->findEnumerator("E0");
+            ASSERT(E0 && E0->value_known && E0->value == 0);
+            std::advance(it, 1);
+            const Token* const e = Token::findsimplematch(tokenizer.tokens(), "E0 ;");
+            ASSERT(e && e->enumerator());
+            ASSERT_EQUALS(E0, e->enumerator());
+        }
     }
 
     void sizeOfType() {
@@ -7322,6 +7480,67 @@ private:
                           "void D::init(unsigned int value) {}\n");
             const Token* call = Token::findsimplematch(tokenizer.tokens(), "init ( 0ULL ) ;");
             ASSERT(call && call->function() && call->function()->functionScope);
+        }
+    }
+
+    void findFunction51() {
+        // Both A and B defines the method test but with different arguments.
+        // The call to test in B should match the method in B. The match is close enough.
+        {
+            GET_SYMBOL_DB("class A {\n"
+                          "public:\n"
+                          "    void test(bool a = true);\n"
+                          "};\n"
+                          "\n"
+                          "class B : public A {\n"
+                          "public:\n"
+                          "  B(): b_obj(this) { b_obj->test(\"1\"); }\n"
+                          "  void test(const std::string& str_obj);\n"
+                          "  B* b_obj;\n"
+                          "};");
+            const Token* call = Token::findsimplematch(tokenizer.tokens(), "test ( \"1\" ) ;");
+            ASSERT(call);
+            ASSERT(call->function());
+            ASSERT(call->function()->tokenDef);
+            ASSERT_EQUALS(9, call->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("struct STR { STR(const char * p); };\n"
+                          "class A {\n"
+                          "public:\n"
+                          "    void test(bool a = true);\n"
+                          "};\n"
+                          "\n"
+                          "class B : public A {\n"
+                          "public:\n"
+                          "  B(): b_obj(this) { b_obj->test(\"1\"); }\n"
+                          "  void test(const STR& str_obj);\n"
+                          "  B* b_obj;\n"
+                          "};");
+            const Token* call = Token::findsimplematch(tokenizer.tokens(), "test ( \"1\" ) ;");
+            ASSERT(call);
+            ASSERT(call->function());
+            ASSERT(call->function()->tokenDef);
+            ASSERT_EQUALS(10, call->function()->tokenDef->linenr());
+        }
+        {
+            GET_SYMBOL_DB("struct STR { STR(const char * p); };\n"
+                          "class A {\n"
+                          "public:\n"
+                          "    void test(bool a = true, int b = 0);\n"
+                          "};\n"
+                          "\n"
+                          "class B : public A {\n"
+                          "public:\n"
+                          "  B(): b_obj(this) { b_obj->test(\"1\"); }\n"
+                          "  void test(const STR& str_obj);\n"
+                          "  B* b_obj;\n"
+                          "};");
+            const Token* call = Token::findsimplematch(tokenizer.tokens(), "test ( \"1\" ) ;");
+            ASSERT(call);
+            ASSERT(call->function());
+            ASSERT(call->function()->tokenDef);
+            ASSERT_EQUALS(10, call->function()->tokenDef->linenr());
         }
     }
 

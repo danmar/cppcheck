@@ -1244,7 +1244,13 @@ static bool canBeConst(const Variable *var, const Settings* settings)
         const Function* func_scope = var->scope()->function;
         if (func_scope && func_scope->type == Function::Type::eConstructor) {
             //could be initialized in initializer list
-            if (func_scope->arg->link()->next()->str() == ":") {
+            const Token* init = func_scope->arg->link()->next();
+            if (init->str() == "noexcept") {
+                init = init->next();
+                if (init->link())
+                    init = init->link()->next();
+            }
+            if (init->str() == ":") {
                 for (const Token* tok2 = func_scope->arg->link()->next()->next(); tok2 != var->scope()->bodyStart; tok2 = tok2->next()) {
                     if (tok2->varId() != var->declarationId())
                         continue;
@@ -2785,7 +2791,7 @@ void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalse()
 }
 void CheckOther::checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result)
 {
-    const std::string strResult = result ? "true" : "false";
+    const std::string strResult = bool_to_string(result);
     const struct CWE cweResult = result ? CWE571 : CWE570;
 
     reportError(tok, Severity::warning, "comparisonFunctionIsAlwaysTrueOrFalse",
@@ -3737,7 +3743,7 @@ void CheckOther::checkKnownArgument()
                 continue;
             if (!Token::Match(tok->astParent(), "(|{|,"))
                 continue;
-            if (tok->astParent()->isCast())
+            if (tok->astParent()->isCast() || (tok->isCast() && Token::Match(tok->astOperand2(), "++|--|%assign%")))
                 continue;
             int argn = -1;
             const Token* ftok = getTokenArgumentFunction(tok, argn);
@@ -3804,8 +3810,14 @@ void CheckOther::knownArgumentError(const Token *tok, const Token *ftok, const V
     const std::string &expr = tok->expressionString();
     const std::string &fun = ftok->str();
 
+    std::string ftype = "function ";
+    if (ftok->type())
+        ftype = "constructor ";
+    else if (fun == "{")
+        ftype = "init list ";
+
     const char *id;
-    std::string errmsg = "Argument '" + expr + "' to function " + fun + " is always " + std::to_string(intvalue) + ". ";
+    std::string errmsg = "Argument '" + expr + "' to " + ftype + fun + " is always " + std::to_string(intvalue) + ". ";
     if (!isVariableExpressionHidden) {
         id = "knownArgument";
         errmsg += "It does not matter what value '" + varexpr + "' has.";
@@ -3854,7 +3866,7 @@ void CheckOther::knownPointerToBoolError(const Token* tok, const ValueFlow::Valu
         reportError(tok, Severity::style, "knownPointerToBool", "Pointer expression 'p' converted to bool is always true.");
         return;
     }
-    std::string cond = value->intvalue ? "true" : "false";
+    std::string cond = bool_to_string(value->intvalue);
     const std::string& expr = tok->expressionString();
     std::string errmsg = "Pointer expression '" + expr + "' converted to bool is always " + cond + ".";
     const ErrorPath errorPath = getErrorPath(tok, value, errmsg);

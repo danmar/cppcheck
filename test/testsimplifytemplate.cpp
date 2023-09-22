@@ -5318,6 +5318,8 @@ private:
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args&&...>> void f() {}"));
         ASSERT_EQUALS(3U, templateParameters("template <class T, class... Args, class Tup = std::tuple<Args*...>> void f() {}"));
         ASSERT_EQUALS(1U, templateParameters("S<4 < sizeof(uintptr_t)> x;"));
+        ASSERT_EQUALS(2U, templateParameters("template <typename... Ts, typename = std::enable_if_t<std::is_same<Ts..., int>::value>> void g() {}")); // #11915
+        ASSERT_EQUALS(1U, templateParameters("S<N::M<O<\"A\"_I>>> s;")); // #10837
     }
 
     // Helper function to unit test TemplateSimplifier::getTemplateNamePosition

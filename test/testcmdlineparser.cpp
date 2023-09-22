@@ -28,6 +28,7 @@
 #include "suppressions.h"
 #include "fixture.h"
 #include "timer.h"
+#include "utils.h"
 
 #include <cstdint>
 #include <cstdio>
@@ -39,17 +40,7 @@
 class TestCmdlineParser : public TestFixture {
 public:
     TestCmdlineParser() : TestFixture("TestCmdlineParser")
-    {
-#if defined(_WIN64) || defined(_WIN32)
-        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
-#endif
-    }
-
-    ~TestCmdlineParser() override {
-#if defined(_WIN64) || defined(_WIN32)
-        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
-#endif
-    }
+    {}
 
 private:
     std::unique_ptr<Settings> settings;
@@ -168,10 +159,6 @@ private:
         TEST_CASE(platformUnspecified);
         TEST_CASE(platformPlatformFile);
         TEST_CASE(platformUnknown);
-#if defined(_WIN64) || defined(_WIN32)
-        TEST_CASE(platformDefault);
-        TEST_CASE(platformDefault2);
-#endif
         TEST_CASE(plistEmpty);
         TEST_CASE(plistDoesNotExist);
         TEST_CASE(suppressionsOld);
@@ -192,10 +179,8 @@ private:
         TEST_CASE(templatesSelfcheck);
         TEST_CASE(templatesNoPlaceholder);
         TEST_CASE(templateFormatInvalid);
-        TEST_CASE(templateFormatInvalid2);
         TEST_CASE(templateFormatEmpty);
         TEST_CASE(templateLocationInvalid);
-        TEST_CASE(templateLocationInvalid2);
         TEST_CASE(templateLocationEmpty);
         TEST_CASE(xml);
         TEST_CASE(xmlver2);
@@ -271,24 +256,21 @@ private:
         REDIRECT;
         const char * const argv[] = {"cppcheck"};
         ASSERT(parser->parseFromArgs(1, argv));
-        ASSERT_EQUALS(true, parser->getShowHelp());
-        ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helpshort() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-h"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS(true, parser->getShowHelp());
-        ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void helplong() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--help"};
         ASSERT(parser->parseFromArgs(2, argv));
-        ASSERT_EQUALS(true, parser->getShowHelp());
-        ASSERT(GET_REDIRECT_OUTPUT.find("Cppcheck - A tool for static C/C++ code analysis") == 0);
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "Cppcheck - A tool for static C/C++ code analysis"));
     }
 
     void showversion() {
@@ -1236,39 +1218,6 @@ private:
         ASSERT_EQUALS("cppcheck: error: unrecognized platform: 'win128'.\n", GET_REDIRECT_OUTPUT);
     }
 
-#if defined(_WIN64) || defined(_WIN32)
-    void platformDefault() {
-        REDIRECT;
-
-        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
-
-        const char * const argv[] = {"cppcheck", "file.cpp"};
-        ASSERT(parser->parseFromArgs(2, argv));
-#if defined(_WIN64)
-        ASSERT_EQUALS(cppcheck::Platform::Type::Win64, settings->platform.type);
-        ASSERT_EQUALS("cppcheck: Windows 64-bit binaries currently default to the 'win64' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win64' explicitly if you rely on this.\n", GET_REDIRECT_OUTPUT);
-#elif defined(_WIN32)
-        ASSERT_EQUALS(cppcheck::Platform::Type::Win32A, settings->platform.type);
-        ASSERT_EQUALS("cppcheck: Windows 32-bit binaries currently default to the 'win32A' platform. Starting with Cppcheck 2.13 they will default to 'native' instead. Please specify '--platform=win32A' explicitly if you rely on this.\n", GET_REDIRECT_OUTPUT);
-#endif
-
-        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
-    }
-
-    void platformDefault2() {
-        REDIRECT;
-
-        CmdLineParser::SHOW_DEF_PLATFORM_MSG = true;
-
-        const char * const argv[] = {"cppcheck", "--platform=unix64", "file.cpp"};
-        ASSERT(parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS(cppcheck::Platform::Type::Unix64, settings->platform.type);
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
-
-        CmdLineParser::SHOW_DEF_PLATFORM_MSG = false;
-    }
-#endif
-
     void plistEmpty() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--plist-output=", "file.cpp"};
@@ -1463,23 +1412,11 @@ private:
 
     void templateFormatInvalid() {
         REDIRECT;
-        const char* const argv[] = { "cppcheck", "--template", "--template-location={file}", "file.cpp" };
-        ASSERT(!parser->parseFromArgs(4, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--template' is missing.\n", GET_REDIRECT_OUTPUT);
-    }
-
-    // TODO: will not error out as he next option does not start with a "-"
-    void templateFormatInvalid2() {
-        REDIRECT;
         settings->templateFormat.clear();
         settings->templateLocation.clear();
         const char* const argv[] = { "cppcheck", "--template", "file.cpp" };
         ASSERT(!parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("file.cpp", settings->templateFormat);
-        ASSERT_EQUALS("", settings->templateLocation);
-        TODO_ASSERT_EQUALS("cppcheck: error: argument to '--template' is missing.\n",
-                           "cppcheck: '--template <template>' is deprecated and will be removed in 2.13 - please use '--template=<template>' instead\n"
-                           "cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--template\".\n", GET_REDIRECT_OUTPUT);
     }
 
     // will use the default
@@ -1499,21 +1436,7 @@ private:
         REDIRECT;
         const char* const argv[] = { "cppcheck", "--template-location", "--template={file}", "file.cpp" };
         ASSERT(!parser->parseFromArgs(4, argv));
-        ASSERT_EQUALS("cppcheck: error: argument to '--template-location' is missing.\n", GET_REDIRECT_OUTPUT);
-    }
-
-    // TODO: will not error out as the next option does not start with a "-"
-    void templateLocationInvalid2() {
-        REDIRECT;
-        settings->templateFormat.clear();
-        settings->templateLocation.clear();
-        const char* const argv[] = { "cppcheck", "--template-location", "file.cpp" };
-        ASSERT(!parser->parseFromArgs(3, argv));
-        ASSERT_EQUALS("{file}:{line}:{column}: {inconclusive:}{severity}:{inconclusive: inconclusive:} {message} [{id}]\n{code}", settings->templateFormat);
-        ASSERT_EQUALS("file.cpp", settings->templateLocation);
-        TODO_ASSERT_EQUALS("",
-                           "cppcheck: '--template-location <template>' is deprecated and will be removed in 2.13 - please use '--template-location=<template>' instead\n"
-                           "cppcheck: error: no C or C++ source files found.\n", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--template-location\".\n", GET_REDIRECT_OUTPUT);
     }
 
     // will use the default
@@ -1594,7 +1517,7 @@ private:
         const char * const argv[] = {"cppcheck", "--doc"};
         ASSERT(parser->parseFromArgs(2, argv));
         ASSERT(parser->exitAfterPrinting());
-        ASSERT(GET_REDIRECT_OUTPUT.find("## ") == 0);
+        ASSERT(startsWith(GET_REDIRECT_OUTPUT, "## "));
     }
 
     void showtime() {

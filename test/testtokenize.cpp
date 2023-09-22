@@ -7039,6 +7039,14 @@ private:
                                                  "typedef int UStringCaseMapper(icu::BreakIterator* iter);\n"),
                             InternalError,
                             "There is an unknown macro here somewhere. Configuration is required. If U_ICU_ENTRY_POINT_RENAME is a macro then please configure it.");
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("void f() { MACRO(x(), y(), \"abc\", z(); ok = true); }\n"), // #12006
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
+
+        ASSERT_THROW_EQUALS(tokenizeAndStringify("int (*f) MACRO((void *));\n"), // #12010
+                            InternalError,
+                            "There is an unknown macro here somewhere. Configuration is required. If MACRO is a macro then please configure it.");
     }
 
 

@@ -79,13 +79,6 @@ public:
     }
 
     /**
-     * Return if help is shown to user.
-     */
-    bool getShowHelp() const {
-        return mShowHelp;
-    }
-
-    /**
      * Return if we should exit after printing version, help etc.
      */
     bool exitAfterPrinting() const {
@@ -98,11 +91,6 @@ public:
     const std::vector<std::string>& getIgnoredPaths() const {
         return mIgnoredPaths;
     }
-
-#if defined(_WIN64) || defined(_WIN32)
-    // temporary variable to "un-break" tests
-    static bool SHOW_DEF_PLATFORM_MSG;
-#endif
 
 protected:
 

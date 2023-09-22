@@ -46,6 +46,8 @@ const std::set<std::string> ErrorLogger::mCriticalErrorIds{
     "instantiationError",
     "internalError",
     "premium-internalError",
+    "premium-invalidArgument",
+    "premium-invalidLicense",
     "preprocessorErrorDirective",
     "syntaxError",
     "unknownMacro"
@@ -135,7 +137,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
         std::string info = e.second;
 
-        if (info.compare(0,8,"$symbol:") == 0 && info.find('\n') < info.size()) {
+        if (startsWith(info,"$symbol:") && info.find('\n') < info.size()) {
             const std::string::size_type pos = info.find('\n');
             const std::string &symbolName = info.substr(8, pos - 8);
             info = replaceStr(info.substr(pos+1), "$symbol", symbolName);
@@ -215,7 +217,7 @@ void ErrorMessage::setmsg(const std::string &msg)
     if (pos == std::string::npos) {
         mShortMessage = replaceStr(msg, "$symbol", symbolName);
         mVerboseMessage = replaceStr(msg, "$symbol", symbolName);
-    } else if (msg.compare(0,8,"$symbol:") == 0) {
+    } else if (startsWith(msg,"$symbol:")) {
         mSymbolNames += msg.substr(8, pos-7);
         setmsg(msg.substr(pos + 1));
     } else {
@@ -231,7 +233,7 @@ static void serializeString(std::string &oss, const std::string & str)
     oss += str;
 }
 
-ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename)
+ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError, const TokenList *tokenList, const std::string &filename, const std::string& msg)
 {
     if (internalError.token)
         assert(tokenList != nullptr); // we need to make sure we can look up the provided token
@@ -251,9 +253,12 @@ ErrorMessage ErrorMessage::fromInternalError(const InternalError &internalError,
     ErrorMessage errmsg(std::move(locationList),
                         tokenList ? tokenList->getSourceFilePath() : filename,
                         Severity::error,
-                        internalError.errorMessage,
+                        (msg.empty() ? "" : (msg + ": ")) + internalError.errorMessage,
                         internalError.id,
                         Certainty::normal);
+    // TODO: find a better way
+    if (!internalError.details.empty())
+        errmsg.mVerboseMessage = errmsg.mVerboseMessage + ": " + internalError.details;
     return errmsg;
 }
 

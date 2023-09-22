@@ -340,6 +340,7 @@ private:
                            "    <exclude>\n"
                            "        <path name=\"gui/temp/\"/>\n"
                            "    </exclude>\n"
+                           "    <project-name>test test</project-name>\n"
                            "</project>\n";
         std::istringstream istr(xml);
         Settings s;

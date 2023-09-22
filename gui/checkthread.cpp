@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "standards.h"
 #include "threadresult.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cstddef>
@@ -56,7 +57,7 @@
 #endif
 
 // NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
-static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
+static int executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string &output) // cppcheck-suppress passedByValue
 {
     output.clear();
 
@@ -75,11 +76,11 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
     } else
         output = process.readAllStandardOutput().toStdString();
 
-    if (redirect.compare(0,3,"2> ") == 0) {
+    if (startsWith(redirect, "2> ")) {
         std::ofstream fout(redirect.substr(3));
         fout << process.readAllStandardError().toStdString();
     }
-    return process.exitCode() == 0;
+    return process.exitCode();
 }
 
 
@@ -157,7 +158,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             if (!fileSettings)
                 continue;
 
-            if (!fileSettings->cfg.empty() && fileSettings->cfg.compare(0,5,"Debug") != 0)
+            if (!fileSettings->cfg.empty() && !startsWith(fileSettings->cfg,"Debug"))
                 continue;
 
             QStringList args;

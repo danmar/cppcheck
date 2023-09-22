@@ -27,6 +27,7 @@
 #include "mathlib.h"
 #include "sourcelocation.h"
 #include "token.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <cctype>
@@ -349,6 +350,7 @@ public:
      * Is variable in a namespace.
      * @return true if in a namespace, false if not
      */
+    // cppcheck-suppress unusedFunction
     bool isNamespace() const {
         return mAccess == AccessControl::Namespace;
     }
@@ -1061,7 +1063,7 @@ public:
 
     bool isAnonymous() const {
         // TODO: Check if class/struct is anonymous
-        return className.size() > 9 && className.compare(0,9,"Anonymous") == 0 && std::isdigit(className[9]);
+        return className.size() > 9 && startsWith(className,"Anonymous") && std::isdigit(className[9]);
     }
 
     const Enumerator * findEnumerator(const std::string & name) const {
@@ -1355,6 +1357,7 @@ public:
         return const_cast<Scope *>(this->findScope(tok, const_cast<const Scope *>(startScope)));
     }
 
+    // cppcheck-suppress unusedFunction
     bool isVarId(nonneg int varid) const {
         return varid < mVariableList.size();
     }

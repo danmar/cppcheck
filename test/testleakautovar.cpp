@@ -128,6 +128,7 @@ private:
         TEST_CASE(doublefree12); // #10502
         TEST_CASE(doublefree13); // #11008
         TEST_CASE(doublefree14); // #9708
+        TEST_CASE(doublefree15);
 
         // exit
         TEST_CASE(exit1);
@@ -1528,6 +1529,13 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree15() { // #11966
+        check("void f(FILE* fp) {\n"
+              "    static_cast<void>(fclose(fp));\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -2874,7 +2882,10 @@ private:
     }
 };
 
+#if !defined(__MINGW32__)
+// TODO: this crashes with a stack overflow for MinGW in the CI
 REGISTER_TEST(TestLeakAutoVarRecursiveCountLimit)
+#endif
 
 class TestLeakAutoVarStrcpy : public TestFixture {
 public:

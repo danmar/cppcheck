@@ -366,11 +366,11 @@ jobs:
       - name: Run test/cli
         run: |
           cd test/cli
-          python3 -m pytest test-*.py
+          python3 -m pytest --strict -vv test-*.py
           cd ../../..
           ln -s cppcheck 'cpp check'
           cd 'cpp check/test/cli'
-          python3 -m pytest test-*.py
+          python3 -m pytest --strict -vv test-*.py
 
       - name: Run cfg tests
         if: matrix.os != 'ubuntu-22.04'
@@ -470,7 +470,7 @@ jobs:
 
       - name: Self check
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -D__GNUC__ -DCHECK_INTERNAL -DHAVE_RULES --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=gnu --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings --check-level=exhaustive"
           ec=0
           
           # TODO: add --check-config          

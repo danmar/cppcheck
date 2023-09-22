@@ -47,31 +47,11 @@ namespace tinyxml2 {
 /** @brief check for null pointer dereferencing */
 
 class CPPCHECKLIB CheckNullPointer : public Check {
+    friend class TestNullPointer;
+
 public:
     /** @brief This constructor is used when registering the CheckNullPointer */
     CheckNullPointer() : Check(myName()) {}
-
-    /** @brief This constructor is used when running checks. */
-    CheckNullPointer(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {}
-
-    /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
-        CheckNullPointer checkNullPointer(&tokenizer, tokenizer.getSettings(), errorLogger);
-        checkNullPointer.nullPointer();
-        checkNullPointer.arithmetic();
-        checkNullPointer.nullConstantDereference();
-    }
-
-    /**
-     * @brief parse a function call and extract information about variable usage
-     * @param tok first token
-     * @param var variables that the function read / write.
-     * @param library --library files data
-     */
-    static void parseFunctionCall(const Token &tok,
-                                  std::list<const Token *> &var,
-                                  const Library *library);
 
     /**
      * Is there a pointer dereference? Everything that should result in
@@ -85,6 +65,29 @@ public:
     bool isPointerDeRef(const Token *tok, bool &unknown) const;
 
     static bool isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings);
+
+private:
+    /**
+     * @brief parse a function call and extract information about variable usage
+     * @param tok first token
+     * @param var variables that the function read / write.
+     * @param library --library files data
+     */
+    static void parseFunctionCall(const Token &tok,
+                                  std::list<const Token *> &var,
+                                  const Library *library);
+
+    /** @brief This constructor is used when running checks. */
+    CheckNullPointer(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+        : Check(myName(), tokenizer, settings, errorLogger) {}
+
+    /** @brief Run checks against the normal token list */
+    void runChecks(const Tokenizer &tokenizer, ErrorLogger *errorLogger) override {
+        CheckNullPointer checkNullPointer(&tokenizer, tokenizer.getSettings(), errorLogger);
+        checkNullPointer.nullPointer();
+        checkNullPointer.arithmetic();
+        checkNullPointer.nullConstantDereference();
+    }
 
     /** @brief possible null pointer dereference */
     void nullPointer();
@@ -117,7 +120,6 @@ public:
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
-private:
     /** Get error messages. Used by --errorlist */
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckNullPointer c(nullptr, settings, errorLogger);

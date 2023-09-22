@@ -187,9 +187,16 @@ void ComplianceReportDialog::save()
         tempFiles.close();
     }
 
+    QStringList suppressions;
+    for (const auto& suppression: mProjectFile->getSuppressions()) {
+        if (!suppression.errorId.empty())
+            suppressions.append(QString::fromStdString(suppression.errorId));
+    }
+
     QStringList args{"--project-name=" + projectName,
                      "--project-version=" + projectVersion,
-                     "--output-file=" + outFile};
+                     "--output-file=" + outFile,
+                     "--suppressions=" + suppressions.join(",")};
 
     args << ("--" + std);
 

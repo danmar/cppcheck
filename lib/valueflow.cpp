@@ -84,6 +84,7 @@
 #include "config.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "findtoken.h"
 #include "forwardanalyzer.h"
 #include "infer.h"
 #include "library.h"
@@ -635,7 +636,7 @@ static void setTokenValue(Token* tok,
         // Ensure that the comma isn't a function call
         if (!callParent || (!Token::Match(callParent->previous(), "%name%|> (") && !Token::simpleMatch(callParent, "{") &&
                             (!Token::Match(callParent, "( %name%") || settings->library.isNotLibraryFunction(callParent->next())) &&
-                            !(callParent->str() == "(" && Token::simpleMatch(callParent->astOperand1(), "*")))) {
+                            !(callParent->str() == "(" && (Token::simpleMatch(callParent->astOperand1(), "*") || Token::Match(callParent->astOperand1(), "%name%|("))))) {
             setTokenValue(parent, std::move(value), settings);
             return;
         }
@@ -2953,7 +2954,7 @@ struct ValueFlowAnalyzer : Analyzer {
                 std::string s = state ? "empty" : "not empty";
                 addErrorPath(tok, "Assuming container is " + s);
             } else {
-                std::string s = state ? "true" : "false";
+                std::string s = bool_to_string(state);
                 addErrorPath(tok, "Assuming condition is " + s);
             }
         }
@@ -4494,7 +4495,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList &tokenlist, ErrorLog
         valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
     } else {
         const std::string& retVal = settings->library.returnValue(tok);
-        if (retVal.compare(0, 3, "arg") == 0) {
+        if (startsWith(retVal, "arg")) {
             std::size_t iArg{};
             try {
                 iArg = strToInt<std::size_t>(retVal.substr(3));
@@ -4602,7 +4603,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
                 const Variable& var = *it;
                 if (var.isReference() || var.isRValueReference()) {
                     ls.byRef(tok, tokenlist, errorLogger, settings);
-                } else {
+                } else if (ValueFlow::isLifetimeBorrowed(ls.argtok, settings)) {
                     ls.byVal(tok, tokenlist, errorLogger, settings);
                 }
                 it++;
@@ -5234,11 +5235,9 @@ static void valueFlowConditionExpressions(TokenList &tokenlist, const SymbolData
 {
     for (const Scope * scope : symboldatabase.functionScopes) {
         if (const Token* incompleteTok = findIncompleteVar(scope->bodyStart, scope->bodyEnd)) {
-            if (incompleteTok->isIncompleteVar()) {
-                if (settings.debugwarnings)
-                    bailoutIncompleteVar(tokenlist, errorLogger, incompleteTok, "Skipping function due to incomplete variable " + incompleteTok->str());
-                break;
-            }
+            if (settings.debugwarnings)
+                bailoutIncompleteVar(tokenlist, errorLogger, incompleteTok, "Skipping function due to incomplete variable " + incompleteTok->str());
+            break;
         }
 
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
@@ -7800,99 +7799,6 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
                  [&](const ErrorPathItem& e) {
         return locations.insert(e.first).second;
     });
-}
-
-template<class Found, class Predicate>
-bool findTokenSkipDeadCodeImpl(const Library* library, Token* start, const Token* end, Predicate pred, Found found)
-{
-    for (Token* tok = start; precedes(tok, end); tok = tok->next()) {
-        if (pred(tok)) {
-            if (found(tok))
-                return true;
-        }
-        if (Token::simpleMatch(tok, "if (")) {
-            const Token* condTok = tok->next()->astOperand2();
-            if (!condTok)
-                continue;
-            if (!condTok->hasKnownIntValue())
-                continue;
-            if (!Token::simpleMatch(tok->linkAt(1), ") {"))
-                continue;
-            if (findTokenSkipDeadCodeImpl(library, tok->next(), tok->linkAt(1), pred, found))
-                return true;
-            Token* thenStart = tok->linkAt(1)->next();
-            Token* elseStart = nullptr;
-            if (Token::simpleMatch(thenStart->link(), "} else {"))
-                elseStart = thenStart->link()->tokAt(2);
-
-            int r = condTok->values().front().intvalue;
-            if (r == 0) {
-                if (elseStart) {
-                    if (findTokenSkipDeadCodeImpl(library, elseStart, elseStart->link(), pred, found))
-                        return true;
-                    if (isReturnScope(elseStart->link(), library))
-                        return true;
-                    tok = elseStart->link();
-                } else {
-                    tok = thenStart->link();
-                }
-            } else {
-                if (findTokenSkipDeadCodeImpl(library, thenStart, thenStart->link(), pred, found))
-                    return true;
-                if (isReturnScope(thenStart->link(), library))
-                    return true;
-                tok = thenStart->link();
-            }
-        } else if (Token::Match(tok->astParent(), "&&|?|%oror%") && astIsLHS(tok) && tok->hasKnownIntValue()) {
-            const bool cond = tok->values().front().intvalue != 0;
-            Token* next = nullptr;
-            if ((cond && Token::simpleMatch(tok->astParent(), "||")) ||
-                (!cond && Token::simpleMatch(tok->astParent(), "&&"))) {
-                next = nextAfterAstRightmostLeaf(tok->astParent());
-            } else if (Token::simpleMatch(tok->astParent(), "?")) {
-                Token* colon = tok->astParent()->astOperand2();
-                if (!cond) {
-                    next = colon;
-                } else {
-                    if (findTokenSkipDeadCodeImpl(library, tok->astParent()->next(), colon, pred, found))
-                        return true;
-                    next = nextAfterAstRightmostLeaf(colon);
-                }
-            }
-            if (next)
-                tok = next;
-        } else if (Token::simpleMatch(tok, "} else {")) {
-            const Token* condTok = getCondTokFromEnd(tok);
-            if (!condTok)
-                continue;
-            if (!condTok->hasKnownIntValue())
-                continue;
-            if (isReturnScope(tok->link(), library))
-                return true;
-            int r = condTok->values().front().intvalue;
-            if (r != 0) {
-                tok = tok->linkAt(1);
-            }
-        } else if (Token::simpleMatch(tok, "[") && Token::Match(tok->link(), "] (|{")) {
-            Token* afterCapture = tok->link()->next();
-            if (Token::simpleMatch(afterCapture, "(") && afterCapture->link())
-                tok = afterCapture->link()->next();
-            else
-                tok = afterCapture;
-        }
-    }
-    return false;
-}
-
-template<class Predicate>
-std::vector<Token*> findTokensSkipDeadCode(const Library* library, Token* start, const Token* end, Predicate pred)
-{
-    std::vector<Token*> result;
-    findTokenSkipDeadCodeImpl(library, start, end, pred, [&](Token* tok) {
-        result.push_back(tok);
-        return false;
-    });
-    return result;
 }
 
 static std::vector<Token*> findAllUsages(const Variable* var,

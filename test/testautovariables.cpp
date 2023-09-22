@@ -3750,6 +3750,15 @@ private:
               "    return A{y, x};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct a {\n"
+              "    std::string m;\n"
+              "};\n"
+              "a f() {\n"
+              "    std::array<char, 1024> m {};\n"
+              "    return { m.data() };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeInitList() {

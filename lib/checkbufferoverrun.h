@@ -58,10 +58,10 @@ class Token;
  */
 class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
-
     /** This constructor is used when registering the CheckClass */
     CheckBufferOverrun() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -96,8 +96,6 @@ public:
 
     /** @brief Analyse all file infos for all TU */
     bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
-
-private:
 
     void arrayIndex();
     void arrayIndexError(const Token* tok,

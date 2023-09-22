@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -255,9 +255,13 @@ void CheckString::strPlusCharError(const Token *tok)
 static bool isMacroUsage(const Token* tok)
 {
     if (const Token* parent = tok->astParent()) {
+        while (parent && parent->isCast())
+            parent = parent->astParent();
+        if (!parent)
+            return false;
         if (parent->isExpandedMacro())
             return true;
-        if (parent->isUnaryOp("!")) {
+        if (parent->isUnaryOp("!") || parent->isComparisonOp()) {
             int argn{};
             const Token* ftok = getTokenArgumentFunction(parent, argn);
             if (ftok && !ftok->function())
@@ -328,7 +332,7 @@ void CheckString::incorrectStringBooleanError(const Token *tok, const std::strin
 {
     const bool charLiteral = isCharLiteral(string);
     const std::string literalType = charLiteral ? "char" : "string";
-    const std::string result = getCharLiteral(string) == "\\0" ? "false" : "true";
+    const std::string result = bool_to_string(getCharLiteral(string) != "\\0");
     reportError(tok,
                 Severity::warning,
                 charLiteral ? "incorrectCharBooleanError" : "incorrectStringBooleanError",

@@ -1,27 +1,17 @@
-Release Notes for Cppcheck 2.12
+Release Notes for Cppcheck 2.13
 
 New checks:
-- uselessOverride finds overriding functions that either duplicate code from or delegate back to the base class implementation
-- knownPointerToBool finds pointer to bool conversions that are always true or false
+-
 
 Improved checking:
-- truncLongCastAssignment and truncLongCastReturn check additional types, including float/double/long double
-- duplInheritedMember also reports duplicated member functions
-- constParameter*/constVariable* checks find more instances of pointers/references that can be const, e.g. when calling library functions
+-
 
 GUI:
-- Show in statistics which checkers have been activated in latest analysis
-- Make it more visible if there has been critical errors that caused checkers to be skipped
+-
 
 Changed interface:
-- Write how many checkers was activated after a run
-- Added --checkers-report that can be used to generate a report in a file that shows what checkers was activated and disabled
-
-Deprecations:
-- The qmake build system has been deprecated and will be removed in a future version.
-- Command-line option '--template <template>' is deprecated and will be removed in 2.13 - please use '--template=<template>' instead.
-- Command-line option '--template-location <template>' is deprecated and will be removed in 2.13 - please use '--template-location=<template>' instead.
+-
 
 Other:
-- "USE_QT6=On" will no longer fallback to Qt5 when Qt6 is not found.
-- When the execution of an addon fails with an exitcode it will now result in an 'internalError' instead of being silently ignored.
+- Windows builds now default to the `native` platform instead of `win32A` or `win64`. Please specify it explicitly if you depedent on it.
+- The undocumented and deprecated command-line options `--template <template>` and `--template-format <template>` has been removed. Please use `--template=` and `--template-format=` instead.

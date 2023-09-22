@@ -125,6 +125,7 @@ std::string PreprocessorHelper::getcode(Preprocessor &preprocessor, const std::s
 
     std::string ret;
     try {
+        // TODO: also preserve location information when #include exists - enabling that will fail since #line is treated like a regular token
         ret = preprocessor.getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
     } catch (const simplecpp::Output &) {
         ret.clear();

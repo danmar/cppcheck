@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2022 Cppcheck team.
+ * Copyright (C) 2007-2023 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,10 +40,13 @@ class Token;
  */
 
 class CPPCHECKLIB CheckPostfixOperator : public Check {
+    friend class TestPostfixOperator;
+
 public:
     /** This constructor is used when registering the CheckPostfixOperator */
     CheckPostfixOperator() : Check(myName()) {}
 
+private:
     /** This constructor is used when running checks. */
     CheckPostfixOperator(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
@@ -59,7 +62,6 @@ public:
     /** Check postfix operators */
     void postfixOperator();
 
-private:
     /** Report Error */
     void postfixOperatorError(const Token *tok);
 
