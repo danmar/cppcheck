@@ -655,6 +655,13 @@ def messageIdReport(resultPath: str, marker: str, messageId: str, query_params: 
         url = None
         inResults = False
         for line in open(filename, 'rt'):
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line.startswith('ftp://'):
                 url = line
                 continue
