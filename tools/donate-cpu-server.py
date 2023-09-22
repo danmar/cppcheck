@@ -962,7 +962,6 @@ def check_library_report(result_path: str, message_id: str) -> str:
                 break
             if line.endswith('[' + message_id + ']\n'):
                 if message_id == 'unknownMacro':
-                    print(line)
                     marker = 'required. If '
                     function_name = line[(line.find(marker) + len(marker)):line.rfind('is a macro') - 1]
                 elif message_id == 'valueFlowBailoutIncompleteVar':
