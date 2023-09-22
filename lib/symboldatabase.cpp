@@ -1486,13 +1486,13 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             tok = tok->linkAt(1);
             continue;
         }
-        if (!tok->isNameOnly())
+        if (!(tok->isNameOnly() || tok->isKeyword()))
             continue;
         if (tok->type())
             continue;
         if (Token::Match(tok->next(), "::|.|(|{|:|%var%"))
             continue;
-        if (Token::Match(tok->next(), "&|&&|* )|,|%var%"))
+        if (Token::Match(tok->next(), "&|&&|* )|,|%var%|const"))
             continue;
         // Very likely a typelist
         if (Token::Match(tok->tokAt(-2), "%type% ,") || Token::Match(tok->next(), ", %type%"))
@@ -1502,6 +1502,8 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             tok = tok->linkAt(1);
             continue;
         }
+        if (tok->isKeyword())
+            continue;
         // Skip goto labels
         if (Token::simpleMatch(tok->previous(), "goto"))
             continue;
