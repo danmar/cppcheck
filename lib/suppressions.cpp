@@ -340,11 +340,11 @@ bool Suppressions::Suppression::isSuppressed(const Suppressions::ErrorMessage &e
         return false;
     if (!fileName.empty() && !matchglob(fileName, errmsg.getFileName()))
         return false;
-    if (Suppressions::Type::unique == type && lineNumber != NO_LINE && lineNumber != errmsg.lineNumber) {
+    if ((Suppressions::Type::unique == type) && (lineNumber != NO_LINE) && (lineNumber != errmsg.lineNumber)) {
         if (!thisAndNextLine || lineNumber + 1 != errmsg.lineNumber)
             return false;
     }
-    if (Suppressions::Type::block == type && (errmsg.lineNumber < lineBegin || errmsg.lineNumber > lineEnd))
+    if ((Suppressions::Type::block == type) && ((errmsg.lineNumber < lineBegin) || (errmsg.lineNumber > lineEnd)))
         return false;
     if (!symbolName.empty()) {
         for (std::string::size_type pos = 0; pos < errmsg.symbolNames.size();) {
@@ -486,7 +486,7 @@ void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tok
                         suppression.checked = true;
                     }
                 } else if (suppression.type == Suppressions::Type::block) {
-                    if ((!suppression.checked && (suppression.lineBegin <= currLineNr) && (suppression.lineEnd >= currLineNr) && suppression.fileName == tokenizer.list.file(tok))) {
+                    if ((!suppression.checked && (suppression.lineBegin <= currLineNr) && (suppression.lineEnd >= currLineNr) && (suppression.fileName == tokenizer.list.file(tok)))) {
                         suppression.checked = true;
                     }
                 } else if (!suppression.checked && suppression.fileName == tokenizer.list.file(tok)) {
