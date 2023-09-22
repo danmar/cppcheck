@@ -5483,12 +5483,15 @@ private:
             GET_SYMBOL_DB("void f(QObject* p, const char* s) {\n"
                           "    QWidget* w = dynamic_cast<QWidget*>(p);\n"
                           "    g(static_cast<const std::string>(s));\n"
+                          "    const std::uint64_t* const data = nullptr;\n"
                           "}\n");
             ASSERT(db && errout.str().empty());
             const Token* qw = Token::findsimplematch(tokenizer.tokens(), "QWidget * >");
             ASSERT(qw && !qw->isIncompleteVar());
             const Token* s = Token::findsimplematch(qw, "string >");
             ASSERT(s && !s->isIncompleteVar());
+            const Token* u = Token::findsimplematch(s, "uint64_t");
+            ASSERT(u && !u->isIncompleteVar());
         }
     }
 
