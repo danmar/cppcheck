@@ -8146,7 +8146,7 @@ static T* skipCPPOrAlignAttribute(T * tok)
 
 static bool isNonMacro(const Token* tok)
 {
-    if (tok->isKeyword())
+    if (tok->isKeyword() || tok->isStandardType())
         return true;
     if (cAlternativeTokens.count(tok->str()) > 0)
         return true;
@@ -8272,7 +8272,7 @@ void Tokenizer::reportUnknownMacros() const
     for (const Token* tok = tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
             continue;
-        if (isNonMacro(tok))
+        if (isNonMacro(tok) && !tok->isStandardType())
             continue;
 
         const Token* endTok = tok->linkAt(1);
@@ -8288,7 +8288,7 @@ void Tokenizer::reportUnknownMacros() const
                 continue;
         }
 
-        unknownMacroError(tok);
+        unknownMacroError(tok->isStandardType() ? tok2 : tok);
     }
 }
 
