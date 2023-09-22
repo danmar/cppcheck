@@ -26,7 +26,7 @@ from urllib.parse import urlparse
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.44"
+SERVER_VERSION = "1.3.45"
 
 OLD_VERSION = '2.12.0'
 
@@ -601,11 +601,10 @@ def summaryReport(resultsPath: str, name: str, prefix: str, marker: str) -> str:
             if line.startswith(marker):
                 inResults = True
                 continue
-            if line.startswith('diff:'):
-                if inResults:
-                    break
             if not inResults:
                 continue
+            if line.startswith('diff:'):
+                break
             if not line.endswith(']'):
                 continue
             if ': note: ' in line:
@@ -656,15 +655,24 @@ def messageIdReport(resultPath: str, marker: str, messageId: str, query_params: 
         url = None
         inResults = False
         for line in open(filename, 'rt'):
+            if line.startswith('cppcheck: '):
+                if OLD_VERSION not in line:
+                    # Package results seem to be too old, skip
+                    break
+                else:
+                    # Current package, parse on
+                    continue
             if line.startswith('ftp://'):
                 url = line
-            elif line.startswith(marker):
-                inResults = True
-            elif not inResults:
                 continue
-            elif inResults and line.startswith('diff:'):
+            if line.startswith(marker):
+                inResults = True
+                continue
+            if not inResults:
+                continue
+            if line.startswith('diff:'):
                 break
-            elif line.endswith(e):
+            if line.endswith(e):
                 if url:
                     text += url
                     if pkgs is not None:
@@ -701,13 +709,15 @@ def messageIdTodayReport(resultPath: str, messageId: str, marker: str) -> str:
                     break
             if line.startswith('ftp://'):
                 url = line
-            elif line.startswith(marker):
-                inResults = True
-            elif not inResults:
                 continue
-            elif inResults and line.startswith('diff:'):
+            if line.startswith(marker):
+                inResults = True
+                continue
+            if not inResults:
+                continue
+            if line.startswith('diff:'):
                 break
-            elif line.endswith(e):
+            if line.endswith(e):
                 if url:
                     text += url
                     url = None
@@ -909,18 +919,22 @@ def check_library_report(result_path: str, message_id: str) -> str:
         metric = 'macros'
         m_column = 'macro'
         metric_link = 'unknown_macro'
+        marker = HEAD_MARKER
     elif message_id == 'valueFlowBailoutIncompleteVar':
         metric = 'variables'
         m_column = 'Variable'
         metric_link = 'incomplete_var'
+        marker = HEAD_MARKER
     elif message_id == 'checkLibraryCheckType':
         metric = 'types'
         m_column = 'Type'
         metric_link = 'check_library'
+        marker = INFO_MARKER
     else:
         metric = 'functions'
         m_column = 'Function'
         metric_link = 'check_library'
+        marker = INFO_MARKER
 
     functions_shown_max = 5000
     html = '<!DOCTYPE html>\n'
@@ -937,7 +951,7 @@ def check_library_report(result_path: str, message_id: str) -> str:
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        info_messages = False
+        in_results = False
         for line in open(filename, 'rt'):
             if line.startswith('cppcheck: '):
                 if OLD_VERSION not in line:
@@ -946,14 +960,15 @@ def check_library_report(result_path: str, message_id: str) -> str:
                 else:
                     # Current package, parse on
                     continue
-            if message_id != 'valueFlowBailoutIncompleteVar' and message_id != 'unknownMacro':
-                if line == 'info messages:\n':
-                    info_messages = True
-                if not info_messages:
-                    continue
+            if line.startswith(marker):
+                in_results = True
+                continue
+            if not in_results:
+                continue
+            if line.startswith('diff:'):
+                break
             if line.endswith('[' + message_id + ']\n'):
                 if message_id == 'unknownMacro':
-                    print(line)
                     marker = 'required. If '
                     function_name = line[(line.find(marker) + len(marker)):line.rfind('is a macro') - 1]
                 elif message_id == 'valueFlowBailoutIncompleteVar':
@@ -990,16 +1005,18 @@ def check_library_function_name(result_path: str, function_name: str, query_para
     function_name = urllib.parse.unquote_plus(function_name)
     if nonfunc_id:
         id = '[' + nonfunc_id
+        marker = HEAD_MARKER
     else:
         if function_name.endswith('()'):
             id = '[checkLibrary'
         else:
             id = '[checkLibraryCheckType]'
+        marker = INFO_MARKER
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
             continue
-        info_messages = False
+        in_results = False
         package_url = None
         cppcheck_options = None
         for line in open(filename, 'rt'):
@@ -1016,12 +1033,13 @@ def check_library_function_name(result_path: str, function_name: str, query_para
             if line.startswith('cppcheck-options:'):
                 cppcheck_options = line
                 continue
-            if not nonfunc_id:
-                if line == 'info messages:\n':
-                    info_messages = True
-                    continue
-                if not info_messages:
-                    continue
+            if line.startswith(marker):
+                in_results = True
+                continue
+            if line.startswith('diff:'):
+                break
+            if not in_results:
+                continue
             if id not in line:
                 continue
             if not (' ' + function_name + ' ') in line:
