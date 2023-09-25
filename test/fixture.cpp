@@ -104,6 +104,7 @@ bool TestFixture::prepareTest(const char testname[])
         } else {
             std::cout << classname << "::" << mTestname << std::endl;
         }
+        teardownTestInternal();
         return true;
     }
     return false;
