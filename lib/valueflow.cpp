@@ -5085,7 +5085,7 @@ static const Token * findEndOfFunctionCallForParameter(const Token * parameterTo
     if (!parameterToken)
         return nullptr;
     const Token * parent = parameterToken->astParent();
-    while (parent && !parent->isOp() && parent->str() != "(")
+    while (parent && !parent->isOp() && !Token::Match(parent, "[({]"))
         parent = parent->astParent();
     if (!parent)
         return nullptr;
