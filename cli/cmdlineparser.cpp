@@ -109,21 +109,12 @@ static bool addPathsToSet(const std::string& fileName, std::set<std::string>& se
     return true;
 }
 
-CmdLineParser::CmdLineParser(Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail)
-    : mSettings(settings)
+CmdLineParser::CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail)
+    : mLogger(logger)
+    , mSettings(settings)
     , mSuppressions(suppressions)
     , mSuppressionsNoFail(suppressionsNoFail)
 {}
-
-void CmdLineParser::printMessage(const std::string &message)
-{
-    std::cout << "cppcheck: " << message << std::endl;
-}
-
-void CmdLineParser::printError(const std::string &message)
-{
-    printMessage("error: " + message);
-}
 
 // TODO: normalize/simplify/native all path parameters
 // TODO: error out on all missing given files/paths
@@ -144,7 +135,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-D") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        printError("argument to '-D' is missing.");
+                        mLogger.printError("argument to '-D' is missing.");
                         return false;
                     }
 
@@ -180,7 +171,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-I") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        printError("argument to '-I' is missing.");
+                        mLogger.printError("argument to '-I' is missing.");
                         return false;
                     }
                     path = argv[i];
@@ -208,7 +199,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-U") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        printError("argument to '-U' is missing.");
+                        mLogger.printError("argument to '-U' is missing.");
                         return false;
                     }
 
@@ -270,7 +261,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // open this file and read every input file (1 file name per line)
                 const std::string cfgExcludesFile(23 + argv[i]);
                 if (!addPathsToSet(cfgExcludesFile, mSettings.configExcludePaths)) {
-                    printError("unable to open config excludes file at '" + cfgExcludesFile + "'");
+                    mLogger.printError("unable to open config excludes file at '" + cfgExcludesFile + "'");
                     return false;
                 }
             }
@@ -281,7 +272,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings.buildDir.pop_back();
 
                 if (!Path::isDirectory(mSettings.buildDir)) {
-                    printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
+                    mLogger.printError("Directory '" + mSettings.buildDir + "' specified by --cppcheck-build-dir argument has to be existent.");
                     return false;
                 }
             }
@@ -306,7 +297,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--disable=", 10) == 0) {
                 const std::string errmsg = mSettings.removeEnabled(argv[i] + 10);
                 if (!errmsg.empty()) {
-                    printError(errmsg);
+                    mLogger.printError(errmsg);
                     return false;
                 }
             }
@@ -336,7 +327,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const std::string enable_arg = argv[i] + 9;
                 const std::string errmsg = mSettings.addEnabled(enable_arg);
                 if (!errmsg.empty()) {
-                    printError(errmsg);
+                    mLogger.printError(errmsg);
                     return false;
                 }
                 // when "style" is enabled, also enable "warning", "performance" and "portability"
@@ -347,7 +338,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
                 if (enable_arg.find("information") != std::string::npos) {
                     mSettings.addEnabled("missingInclude");
-                    printMessage("'--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.");
+                    mLogger.printMessage("'--enable=information' will no longer implicitly enable 'missingInclude' starting with 2.16. Please enable it explicitly if you require it.");
                 }
             }
 
@@ -373,7 +364,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
                 const std::string exceptionOutfilename = argv[i] + 21;
                 if (exceptionOutfilename != "stderr" && exceptionOutfilename != "stdout") {
-                    printError("invalid '--exception-handling' argument");
+                    mLogger.printError("invalid '--exception-handling' argument");
                     return false;
                 }
                 mSettings.exceptionHandling = true;
@@ -387,12 +378,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
                 std::ifstream f(filename);
                 if (!f.is_open()) {
-                    printError("couldn't open the file: \"" + filename + "\".");
+                    mLogger.printError("couldn't open the file: \"" + filename + "\".");
                     return false;
                 }
                 const std::string errmsg(mSuppressionsNoFail.parseFile(f));
                 if (!errmsg.empty()) {
-                    printError(errmsg);
+                    mLogger.printError(errmsg);
                     return false;
                 }
             }
@@ -406,7 +397,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // open this file and read every input file (1 file name per line)
                 const std::string fileList = argv[i] + 12;
                 if (!addFilesToList(fileList, mPathNames)) {
-                    printError("couldn't open the file: \"" + fileList + "\".");
+                    mLogger.printError("couldn't open the file: \"" + fileList + "\".");
                     return false;
                 }
             }
@@ -431,7 +422,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-i") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        printError("argument to '-i' is missing.");
+                        mLogger.printError("argument to '-i' is missing.");
                         return false;
                     }
                     path = argv[i];
@@ -464,7 +455,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 // open this file and read every input file (1 file name per line)
                 const std::string includesFile(16 + argv[i]);
                 if (!addIncludePathsToList(includesFile, mSettings.includePaths)) {
-                    printError("unable to open includes file at '" + includesFile + "'");
+                    mLogger.printError("unable to open includes file at '" + includesFile + "'");
                     return false;
                 }
             }
@@ -485,7 +476,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-j") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        printError("argument to '-j' is missing.");
+                        mLogger.printError("argument to '-j' is missing.");
                         return false;
                     }
 
@@ -499,20 +490,20 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 unsigned int tmp;
                 std::string err;
                 if (!strToInt(numberString, tmp, &err)) {
-                    printError("argument to '-j' is not valid - " +  err + ".");
+                    mLogger.printError("argument to '-j' is not valid - " +  err + ".");
                     return false;
                 }
                 if (tmp == 0) {
                     // TODO: implement get CPU logical core count and use that.
                     // Usually, -j 0 would mean "use all available cores," but
                     // if we get a 0, we just stall and don't do any work.
-                    printError("argument for '-j' must be greater than 0.");
+                    mLogger.printError("argument for '-j' must be greater than 0.");
                     return false;
                 }
                 if (tmp > 1024) {
                     // Almost nobody has 1024 logical cores, but somebody out
                     // there does.
-                    printError("argument for '-j' is allowed to be 1024 at max.");
+                    mLogger.printError("argument for '-j' is allowed to be 1024 at max.");
                     return false;
                 }
                 mSettings.jobs = tmp;
@@ -526,7 +517,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (std::strcmp(argv[i], "-l") == 0) {
                     ++i;
                     if (i >= argc || argv[i][0] == '-') {
-                        printError("argument to '-l' is missing.");
+                        mLogger.printError("argument to '-l' is missing.");
                         return false;
                     }
 
@@ -540,7 +531,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 int tmp;
                 std::string err;
                 if (!strToInt(numberString, tmp, &err)) {
-                    printError("argument to '-l' is not valid - " + err + ".");
+                    mLogger.printError("argument to '-l' is not valid - " + err + ".");
                     return false;
                 }
                 mSettings.loadAverage = tmp;
@@ -555,7 +546,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 } else {
                     i++;
                     if (i >= argc || argv[i][0] == '-') {
-                        printError("no language given to '-x' option.");
+                        mLogger.printError("no language given to '-x' option.");
                         return false;
                     }
                     str = argv[i];
@@ -566,7 +557,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (str == "c++")
                     mSettings.enforcedLang = Settings::Language::CPP;
                 else {
-                    printError("unknown language '" + str + "' enforced.");
+                    mLogger.printError("unknown language '" + str + "' enforced.");
                     return false;
                 }
             }
@@ -582,7 +573,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (!parseNumberArg(argv[i], 14, tmp))
                     return false;
                 if (tmp < 1) {
-                    printError("argument to '--max-configs=' must be greater than 0.");
+                    mLogger.printError("argument to '--max-configs=' must be greater than 0.");
                     return false;
                 }
 
@@ -620,7 +611,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 std::string errstr;
                 const std::vector<std::string> paths = {argv[0]};
                 if (!mSettings.platform.set(platform, errstr, paths)) {
-                    printError(errstr);
+                    mLogger.printError(errstr);
                     return false;
                 }
 
@@ -646,7 +637,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     std::string message("plist folder does not exist: \"");
                     message += plistOutput;
                     message += "\".";
-                    printError(message);
+                    mLogger.printError(message);
                     return false;
                 }
             }
@@ -680,14 +671,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     // keep existing platform from command-line intact
                     if (!platform.empty()) {
                         if (platform == "Unspecified") {
-                            printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
+                            mLogger.printMessage("'Unspecified' is a deprecated platform type and will be removed in Cppcheck 2.14. Please use 'unspecified' instead.");
                             platform = "unspecified";
                         }
 
                         std::string errstr;
                         const std::vector<std::string> paths = {projectFile, argv[0]};
                         if (!mSettings.platform.set(platform, errstr, paths)) {
-                            printError(errstr);
+                            mLogger.printError(errstr);
                             return false;
                         }
                     }
@@ -702,20 +693,20 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings.project.selectOneVsConfig(mSettings.platform.type);
                     if (!CppCheckExecutor::tryLoadLibrary(mSettings.library, argv[0], "windows.cfg")) {
                         // This shouldn't happen normally.
-                        printError("failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
+                        mLogger.printError("failed to load 'windows.cfg'. Your Cppcheck installation is broken. Please re-install.");
                         return false;
                     }
                 }
                 if (projType == ImportProject::Type::MISSING) {
-                    printError("failed to open project '" + projectFile + "'. The file does not exist.");
+                    mLogger.printError("failed to open project '" + projectFile + "'. The file does not exist.");
                     return false;
                 }
                 if (projType == ImportProject::Type::UNKNOWN) {
-                    printError("failed to load project '" + projectFile + "'. The format is unknown.");
+                    mLogger.printError("failed to load project '" + projectFile + "'. The format is unknown.");
                     return false;
                 }
                 if (projType == ImportProject::Type::FAILURE) {
-                    printError("failed to load project '" + projectFile + "'. An error occurred.");
+                    mLogger.printError("failed to load project '" + projectFile + "'. An error occurred.");
                     return false;
                 }
             }
@@ -748,7 +739,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         paths.erase(0, pos + 1);
                     }
                 } else {
-                    printError("no paths specified for the '" + std::string(argv[i]) + "' option.");
+                    mLogger.printError("no paths specified for the '" + std::string(argv[i]) + "' option.");
                     return false;
                 }
             }
@@ -811,7 +802,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                             mSettings.rules.emplace_back(std::move(rule));
                     }
                 } else {
-                    printError("unable to load rule-file: " + std::string(12+argv[i]));
+                    mLogger.printError("unable to load rule-file: " + std::string(12+argv[i]));
                     return false;
                 }
             }
@@ -831,7 +822,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 else if (showtimeMode.empty())
                     mSettings.showtime = SHOWTIME_MODES::SHOWTIME_NONE;
                 else {
-                    printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, file-total, summary, top5.");
+                    mLogger.printError("unrecognized showtime mode: \"" + showtimeMode + "\". Supported modes: file, file-total, summary, top5.");
                     return false;
                 }
             }
@@ -847,7 +838,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings.standards.c = Standards::getC(std);
                 }
                 else {
-                    printError("unknown --std value '" + std + "'");
+                    mLogger.printError("unknown --std value '" + std + "'");
                     return false;
                 }
             }
@@ -856,7 +847,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const std::string suppression = argv[i]+11;
                 const std::string errmsg(mSuppressions.addSuppressionLine(suppression));
                 if (!errmsg.empty()) {
-                    printError(errmsg);
+                    mLogger.printError(errmsg);
                     return false;
                 }
             }
@@ -878,12 +869,12 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         message += "\n    cppcheck --suppressions-list=a.txt --suppressions-list=b.txt file.cpp";
                     }
 
-                    printError(message);
+                    mLogger.printError(message);
                     return false;
                 }
                 const std::string errmsg(mSuppressions.parseFile(f));
                 if (!errmsg.empty()) {
-                    printError(errmsg);
+                    mLogger.printError(errmsg);
                     return false;
                 }
             }
@@ -892,7 +883,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const char * filename = argv[i] + 15;
                 const std::string errmsg(mSuppressions.parseXmlFile(filename));
                 if (!errmsg.empty()) {
-                    printError(errmsg);
+                    mLogger.printError(errmsg);
                     return false;
                 }
             }
@@ -965,7 +956,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 if (tmp != 2) {
                     // We only have xml version 2
-                    printError("'--xml-version' can only be 2.");
+                    mLogger.printError("'--xml-version' can only be 2.");
                     return false;
                 }
 
@@ -978,7 +969,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 std::string message("unrecognized command line option: \"");
                 message += argv[i];
                 message += "\".";
-                printError(message);
+                mLogger.printError(message);
                 return false;
             }
         }
@@ -1012,7 +1003,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         mSettings.maxConfigs = 1U;
 
     if (mSettings.checks.isEnabled(Checks::unusedFunction) && mSettings.jobs > 1 && mSettings.buildDir.empty()) {
-        printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
+        mLogger.printMessage("unusedFunction check can't be used with '-j' option. Disabling unusedFunction check.");
     }
 
     if (argc <= 1) {
@@ -1027,7 +1018,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
     // Print error only if we have "real" command and expect files
     if (!mExitAfterPrint && mPathNames.empty() && mSettings.project.fileSettings.empty()) {
-        printError("no C or C++ source files found.");
+        mLogger.printError("no C or C++ source files found.");
         return false;
     }
 

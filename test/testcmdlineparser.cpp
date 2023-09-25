@@ -32,6 +32,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <iostream>
 #include <list>
 #include <set>
 #include <string>
@@ -43,12 +44,29 @@ public:
     {}
 
 private:
+    class CmdLineLoggerTest : public CmdLineLogger
+    {
+    public:
+        CmdLineLoggerTest() = default;
+
+        void printMessage(const std::string &message) override
+        {
+            std::cout << "cppcheck: " << message << std::endl;
+        }
+
+        void printError(const std::string &message) override
+        {
+            printMessage("error: " + message);
+        }
+    };
+
+    CmdLineLoggerTest logger;
     std::unique_ptr<Settings> settings;
     std::unique_ptr<CmdLineParser> parser;
 
     void prepareTestInternal() override {
         settings.reset(new Settings());
-        parser.reset(new CmdLineParser(*settings, settings->nomsg, settings->nofail));
+        parser.reset(new CmdLineParser(logger, *settings, settings->nomsg, settings->nofail));
     }
 
     void run() override {

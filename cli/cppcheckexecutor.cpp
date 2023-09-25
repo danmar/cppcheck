@@ -85,6 +85,22 @@ class XMLErrorMessagesLogger : public ErrorLogger
     {}
 };
 
+class CmdLineLoggerStd : public CmdLineLogger
+{
+public:
+    CmdLineLoggerStd() = default;
+
+    void printMessage(const std::string &message) override
+    {
+        std::cout << "cppcheck: " << message << std::endl;
+    }
+
+    void printError(const std::string &message) override
+    {
+        printMessage("error: " + message);
+    }
+};
+
 // TODO: do not directly write to stdout
 
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
@@ -96,7 +112,8 @@ CppCheckExecutor::~CppCheckExecutor()
 
 bool CppCheckExecutor::parseFromArgs(Settings &settings, int argc, const char* const argv[])
 {
-    CmdLineParser parser(settings, settings.nomsg, settings.nofail);
+    CmdLineLoggerStd logger;
+    CmdLineParser parser(logger, settings, settings.nomsg, settings.nofail);
     const bool success = parser.parseFromArgs(argc, argv);
 
     if (success) {
