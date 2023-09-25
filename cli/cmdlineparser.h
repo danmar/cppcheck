@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "cmdlinelogger.h"
 #include "utils.h"
 
 class Settings;
@@ -44,12 +45,13 @@ class CmdLineParser {
 public:
     /**
      * The constructor.
+     * @param logger The logger instance to log messages through
      * @param settings Settings instance that will be modified according to
      * options user has given.
      * @param suppressions Suppressions instance that keeps the suppressions
      * @param suppressionsNoFail Suppressions instance that keeps the "do not fail" suppressions
      */
-    CmdLineParser(Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail);
+    CmdLineParser(CmdLineLogger &logger, Settings &settings, Suppressions &suppressions, Suppressions &suppressionsNoFail);
 
     /**
      * Parse given command line.
@@ -99,35 +101,27 @@ protected:
      */
     void printHelp();
 
-    /**
-     * Print message (to stdout).
-     */
-    static void printMessage(const std::string &message);
-
-    /**
-     * Print error message (to stdout).
-     */
-    static void printError(const std::string &message);
-
 private:
     bool isCppcheckPremium() const;
 
     template<typename T>
-    static bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool mustBePositive = false)
+    bool parseNumberArg(const char* const arg, std::size_t offset, T& num, bool mustBePositive = false)
     {
         T tmp;
         std::string err;
         if (!strToInt(arg + offset, tmp, &err)) {
-            printError("argument to '" + std::string(arg, offset) + "' is not valid - " + err + ".");
+            mLogger.printError("argument to '" + std::string(arg, offset) + "' is not valid - " + err + ".");
             return false;
         }
         if (mustBePositive && tmp < 0) {
-            printError("argument to '" + std::string(arg, offset) + "' needs to be a positive integer.");
+            mLogger.printError("argument to '" + std::string(arg, offset) + "' needs to be a positive integer.");
             return false;
         }
         num = tmp;
         return true;
     }
+
+    CmdLineLogger &mLogger;
 
     std::vector<std::string> mPathNames;
     std::vector<std::string> mIgnoredPaths;
