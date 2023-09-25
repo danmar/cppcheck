@@ -4681,9 +4681,15 @@ private:
               "}", nullptr, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
-        Settings settings;
-        settings.library.setnoreturn("exit", true);
-        settings.library.functions["exit"].argumentChecks[1] = Library::ArgumentChecks();
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"exit\">\n"
+                               "    <noreturn>true</noreturn>\n"
+                               "    <arg nr=\"1\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+
         check("void foo() {\n"
               "    exit(0);\n"
               "    break;\n"

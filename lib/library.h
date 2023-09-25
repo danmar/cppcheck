@@ -75,9 +75,6 @@ public:
     Error load(const char exename[], const char path[]);
     Error load(const tinyxml2::XMLDocument &doc);
 
-    /** this is used for unit tests */
-    bool loadxmldata(const char xmldata[], std::size_t len);
-
     struct AllocFunc {
         int groupId;
         int arg;
@@ -132,32 +129,6 @@ public:
     int deallocId(const char name[]) const {
         const AllocFunc* af = getAllocDealloc(mDealloc, name);
         return af ? af->groupId : 0;
-    }
-
-    /** set allocation id for function */
-    // cppcheck-suppress unusedFunction - test-only
-    void setalloc(const std::string &functionname, int id, int arg) {
-        mAlloc[functionname].groupId = id;
-        mAlloc[functionname].arg = arg;
-    }
-
-    // cppcheck-suppress unusedFunction - test-only
-    void setdealloc(const std::string &functionname, int id, int arg) {
-        mDealloc[functionname].groupId = id;
-        mDealloc[functionname].arg = arg;
-    }
-
-    // cppcheck-suppress unusedFunction - test-only
-    void setrealloc(const std::string &functionname, int id, int arg, int reallocArg = 1) {
-        mRealloc[functionname].groupId = id;
-        mRealloc[functionname].arg = arg;
-        mRealloc[functionname].reallocArg = reallocArg;
-    }
-
-    /** add noreturn function setting */
-    // cppcheck-suppress unusedFunction - test-only
-    void setnoreturn(const std::string& funcname, bool noreturn) {
-        mNoReturn[funcname] = noreturn ? FalseTrueMaybe::True : FalseTrueMaybe::False;
     }
 
     static bool isCompliantValidationExpression(const char* p);

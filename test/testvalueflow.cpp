@@ -55,7 +55,7 @@ private:
                            "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
                            "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
                            "</def>";
-        ASSERT_EQUALS(true, settings.library.loadxmldata(cfg, sizeof(cfg)));
+        settings = settingsBuilder(settings).libraryxml(cfg, sizeof(cfg)).build();
 
         TEST_CASE(valueFlowNumber);
         TEST_CASE(valueFlowString);

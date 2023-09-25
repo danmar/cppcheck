@@ -46,7 +46,7 @@ private:
                            "<def>\n"
                            "  <function name=\"bar\"> <pure/> </function>\n"
                            "</def>";
-        ASSERT(settings1.library.loadxmldata(cfg, sizeof(cfg)));
+        settings1 = settingsBuilder(settings1).libraryxml(cfg, sizeof(cfg)).build();
 
         TEST_CASE(assignAndCompare);   // assignment and comparison don't match
         TEST_CASE(mismatchingBitAnd);  // overlapping bitmasks

@@ -44,27 +44,29 @@ private:
     Settings settings;
 
     void run() override {
-        int id = 0;
-        while (!Library::ismemory(++id));
-        settings.library.setalloc("malloc", id, -1);
-        settings.library.setrealloc("realloc", id, -1);
-        settings.library.setdealloc("free", id, 1);
-        while (!Library::isresource(++id));
-        settings.library.setalloc("socket", id, -1);
-        settings.library.setdealloc("close", id, 1);
-        while (!Library::isresource(++id));
-        settings.library.setalloc("fopen", id, -1);
-        settings.library.setrealloc("freopen", id, -1, 3);
-        settings.library.setdealloc("fclose", id, 1);
-        settings.library.smartPointers["std::shared_ptr"];
-        settings.library.smartPointers["std::unique_ptr"];
-        settings.library.smartPointers["std::unique_ptr"].unique = true;
-
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<def>\n"
                                "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "  <memory>\n"
+                               "    <alloc>malloc</alloc>\n"
+                               "    <realloc>realloc</realloc>\n"
+                               "    <dealloc>free</dealloc>\n"
+                               "  </memory>\n"
+                               "  <resource>\n"
+                               "    <alloc>socket</alloc>\n"
+                               "    <dealloc>close</dealloc>\n"
+                               "  </resource>\n"
+                               "  <resource>\n"
+                               "    <alloc>fopen</alloc>\n"
+                               "    <realloc realloc-arg=\"3\">freopen</realloc>\n"
+                               "    <dealloc>fclose</dealloc>\n"
+                               "  </resource>\n"
+                               "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                               "  <smart-pointer class-name=\"std::unique_ptr\">\n"
+                               "    <unique/>\n"
+                               "  </smart-pointer>\n"
                                "</def>";
-        ASSERT(settings.library.loadxmldata(xmldata, sizeof(xmldata)));
+        settings = settingsBuilder(settings).libraryxml(xmldata, sizeof(xmldata)).build();
 
         // Assign
         TEST_CASE(assign1);

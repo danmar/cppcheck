@@ -187,13 +187,6 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
     return Container::Action::NO_ACTION;
 }
 
-// cppcheck-suppress unusedFunction - only used in unit tests
-bool Library::loadxmldata(const char xmldata[], std::size_t len)
-{
-    tinyxml2::XMLDocument doc;
-    return (tinyxml2::XML_SUCCESS == doc.Parse(xmldata, len)) && (load(doc).errorcode == ErrorCode::OK);
-}
-
 Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
