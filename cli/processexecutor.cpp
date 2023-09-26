@@ -28,6 +28,7 @@
 #include "importproject.h"
 #include "settings.h"
 #include "suppressions.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <numeric>
@@ -375,6 +376,9 @@ unsigned int ProcessExecutor::check()
         }
     }
 
+    // TODO: wee need to get the timing information from the subprocess
+    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY)
+        CppCheck::printTimerResults(mSettings.showtime);
 
     return result;
 }
