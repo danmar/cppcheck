@@ -4155,6 +4155,7 @@ class MisraChecker:
                 file_stream.readlines()
                 file_stream.seek(0)
             except UnicodeDecodeError:
+                file_stream.close()
                 file_stream = None
             else:
                 break
@@ -4233,6 +4234,8 @@ class MisraChecker:
                 rule.text = line
                 self.ruleTexts[rule.num] = rule
                 expect_more = True
+
+        file_stream.close()
 
     def verifyRuleTexts(self):
         """Prints rule numbers without rule text."""
