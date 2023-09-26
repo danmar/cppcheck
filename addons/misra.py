@@ -1106,11 +1106,12 @@ def getAddonRules():
     """Returns dict of MISRA rules handled by this addon."""
     addon_rules = []
     compiled = re.compile(r'.*def[ ]+misra_([0-9]+)_([0-9]+)[(].*')
-    for line in open(__file__):
-        res = compiled.match(line)
-        if res is None:
-            continue
-        addon_rules.append(res.group(1) + '.' + res.group(2))
+    with open(__file__) as f:
+        for line in f:
+            res = compiled.match(line)
+            if res is None:
+                continue
+            addon_rules.append(res.group(1) + '.' + res.group(2))
     return addon_rules
 
 
