@@ -51,3 +51,5 @@ private:
         }
     }
 };
+
+REGISTER_TEST(TestCheck)
