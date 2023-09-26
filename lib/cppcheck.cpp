@@ -468,9 +468,6 @@ CppCheck::~CppCheck()
         mFileInfo.pop_back();
     }
 
-    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE)
-        printTimerResults(mSettings.showtime);
-
     if (mPlistFile.is_open()) {
         mPlistFile << ErrorLogger::plistFooter();
         mPlistFile.close();
@@ -1101,6 +1098,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
     }
 
     mErrorList.clear();
+
+    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_FILE || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_FILE)
+        printTimerResults(mSettings.showtime);
 
     return mExitCode;
 }

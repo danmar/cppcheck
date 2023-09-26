@@ -307,7 +307,7 @@ private:
                     $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // for each file: top5 results + overall + empty line
-        TODO_ASSERT_EQUALS((5 + 1 + 1) * 2, (5 + 1 + 1), cppcheck::count_all_of(output_s, '\n'));
+        ASSERT_EQUALS((5 + 1 + 1) * 2, cppcheck::count_all_of(output_s, '\n'));
     }
 
     void showtime_top5_summary() {
@@ -318,10 +318,10 @@ private:
                     $.showtime = SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY));
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // once: top5 results + overall + empty line
-        TODO_ASSERT_EQUALS(5 + 1 + 1, 0, cppcheck::count_all_of(output_s, '\n'));
+        ASSERT_EQUALS(5 + 1 + 1, cppcheck::count_all_of(output_s, '\n'));
         // should only report the top5 once
         ASSERT(output_s.find("1 result(s)") == std::string::npos);
-        TODO_ASSERT(output_s.find("2 result(s)") != std::string::npos);
+        ASSERT(output_s.find("2 result(s)") != std::string::npos);
     }
 
     void showtime_file() {
@@ -331,7 +331,7 @@ private:
               dinit(CheckOptions,
                     $.showtime = SHOWTIME_MODES::SHOWTIME_FILE));
         const std::string output_s = GET_REDIRECT_OUTPUT;
-        TODO_ASSERT_EQUALS(2, 1, cppcheck::count_all_of(output_s, "Overall time:"));
+        ASSERT_EQUALS(2, cppcheck::count_all_of(output_s, "Overall time:"));
     }
 
     void showtime_summary() {
@@ -343,7 +343,7 @@ private:
         const std::string output_s = GET_REDIRECT_OUTPUT;
         // should only report the actual summary once
         ASSERT(output_s.find("1 result(s)") == std::string::npos);
-        TODO_ASSERT(output_s.find("2 result(s)") != std::string::npos);
+        ASSERT(output_s.find("2 result(s)") != std::string::npos);
     }
 
     // TODO: test whole program analysis

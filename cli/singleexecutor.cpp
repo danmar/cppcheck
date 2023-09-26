@@ -22,6 +22,7 @@
 #include "importproject.h"
 #include "library.h"
 #include "settings.h"
+#include "timer.h"
 
 #include <cassert>
 #include <list>
@@ -109,6 +110,9 @@ unsigned int SingleExecutor::check()
     }
     if (mCppcheck.analyseWholeProgram())
         result++;
+
+    if (mSettings.showtime == SHOWTIME_MODES::SHOWTIME_SUMMARY || mSettings.showtime == SHOWTIME_MODES::SHOWTIME_TOP5_SUMMARY)
+        CppCheck::printTimerResults(mSettings.showtime);
 
     return result;
 }
