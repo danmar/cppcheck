@@ -158,7 +158,7 @@ private:
      * @param settings Settings
      * @return Returns true if successful
      */
-    bool loadAddons(Settings& settings);
+    static bool loadAddons(Settings& settings);
 
     /**
      * @brief Write the checkers report
