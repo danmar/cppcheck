@@ -1106,11 +1106,12 @@ def getAddonRules():
     """Returns dict of MISRA rules handled by this addon."""
     addon_rules = []
     compiled = re.compile(r'.*def[ ]+misra_([0-9]+)_([0-9]+)[(].*')
-    for line in open(__file__):
-        res = compiled.match(line)
-        if res is None:
-            continue
-        addon_rules.append(res.group(1) + '.' + res.group(2))
+    with open(__file__) as f:
+        for line in f:
+            res = compiled.match(line)
+            if res is None:
+                continue
+            addon_rules.append(res.group(1) + '.' + res.group(2))
     return addon_rules
 
 
@@ -4155,6 +4156,7 @@ class MisraChecker:
                 file_stream.readlines()
                 file_stream.seek(0)
             except UnicodeDecodeError:
+                file_stream.close()
                 file_stream = None
             else:
                 break
@@ -4233,6 +4235,8 @@ class MisraChecker:
                 rule.text = line
                 self.ruleTexts[rule.num] = rule
                 expect_more = True
+
+        file_stream.close()
 
     def verifyRuleTexts(self):
         """Prints rule numbers without rule text."""
