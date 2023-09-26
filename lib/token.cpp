@@ -22,6 +22,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
+#include "simplecpp.h"
 #include "symboldatabase.h"
 #include "tokenlist.h"
 #include "utils.h"
@@ -143,7 +144,7 @@ void Token::update_property_info()
                 tokType(eKeyword);
             else if (mTokType != eVariable && mTokType != eFunction && mTokType != eType && mTokType != eKeyword)
                 tokType(eName);
-        } else if (std::isdigit((unsigned char)mStr[0]) || (mStr.length() > 1 && mStr[0] == '-' && std::isdigit((unsigned char)mStr[1]))) {
+        } else if (simplecpp::Token::isNumberLike(mStr)) {
             if (MathLib::isInt(mStr) || MathLib::isFloat(mStr))
                 tokType(eNumber);
             else

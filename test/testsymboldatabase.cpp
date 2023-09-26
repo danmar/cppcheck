@@ -450,6 +450,7 @@ private:
         TEST_CASE(findFunction49); // #11888
         TEST_CASE(findFunction50); // #11904 - method with same name and arguments in derived class
         TEST_CASE(findFunction51); // #11975 - method with same name in derived class
+        TEST_CASE(findFunction52);
         TEST_CASE(findFunctionContainer);
         TEST_CASE(findFunctionExternC);
         TEST_CASE(findFunctionGlobalScope); // ::foo
@@ -5480,6 +5481,21 @@ private:
             ASSERT(free3 && free3->isIncompleteVar());
         }
         {
+            GET_SYMBOL_DB("void f(QObject* p, const char* s) {\n"
+                          "    QWidget* w = dynamic_cast<QWidget*>(p);\n"
+                          "    g(static_cast<const std::string>(s));\n"
+                          "    const std::uint64_t* const data = nullptr;\n"
+                          "}\n");
+            ASSERT(db && errout.str().empty());
+            const Token* qw = Token::findsimplematch(tokenizer.tokens(), "QWidget * >");
+            ASSERT(qw && !qw->isIncompleteVar());
+            const Token* s = Token::findsimplematch(qw, "string >");
+            ASSERT(s && !s->isIncompleteVar());
+            const Token* u = Token::findsimplematch(s, "uint64_t");
+            ASSERT(u && !u->isIncompleteVar());
+        }
+    }
+        {
             GET_SYMBOL_DB("void f() {\n"
                           "    std::string* p = new std::string;\n"
                           "    std::string* q = new std::string(\"abc\");\n"
@@ -7556,6 +7572,16 @@ private:
             ASSERT(call->function()->tokenDef);
             ASSERT_EQUALS(10, call->function()->tokenDef->linenr());
         }
+    }
+
+    void findFunction52() {
+        GET_SYMBOL_DB("int g();\n"
+                      "void f() {\n"
+                      "    if (g != 0) {}\n"
+                      "}\n");
+        const Token* g = Token::findsimplematch(tokenizer.tokens(), "g !=");
+        ASSERT(g->function() && g->function()->tokenDef);
+        ASSERT(g->function()->tokenDef->linenr() == 1);
     }
 
     void findFunctionContainer() {

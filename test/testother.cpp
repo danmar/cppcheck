@@ -248,6 +248,7 @@ private:
         TEST_CASE(doubleMoveMemberInitialization1);
         TEST_CASE(doubleMoveMemberInitialization2);
         TEST_CASE(doubleMoveMemberInitialization3); // #9974
+        TEST_CASE(doubleMoveMemberInitialization4);
         TEST_CASE(moveAndAssign1);
         TEST_CASE(moveAndAssign2);
         TEST_CASE(moveAssignMoveAssign);
@@ -4681,9 +4682,15 @@ private:
               "}", nullptr, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
-        Settings settings;
-        settings.library.setnoreturn("exit", true);
-        settings.library.functions["exit"].argumentChecks[1] = Library::ArgumentChecks();
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def>\n"
+                               "  <function name=\"exit\">\n"
+                               "    <noreturn>true</noreturn>\n"
+                               "    <arg nr=\"1\"/>\n"
+                               "  </function>\n"
+                               "</def>";
+        Settings settings = settingsBuilder().libraryxml(xmldata, sizeof(xmldata)).build();
+
         check("void foo() {\n"
               "    exit(0);\n"
               "    break;\n"
@@ -10495,6 +10502,16 @@ private:
               "    return { .a1 = std::move(a1), .a2 = std::move(a2) };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void doubleMoveMemberInitialization4() { // #11440
+        check("struct S { void f(int); };\n"
+              "struct T {\n"
+              "    T(int c, S&& d) : c{ c }, d{ std::move(d) } { d.f(c); }\n"
+              "    int c;\n"
+              "    S d;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Access of moved variable 'd'.\n", errout.str());
     }
 
     void moveAndAssign1() {
